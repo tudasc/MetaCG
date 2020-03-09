@@ -29,7 +29,7 @@ int getNumStmtsInStmt(clang::Stmt *d) {
   } else if (llvm::isa<clang::CaseStmt>(d)) {
     numStmts += getNumStmtsInCaseStmt(llvm::dyn_cast<clang::CaseStmt>(d));
   } else {
-    if (! llvm::isa<clang::DefaultStmt>(d)) {
+    if (!llvm::isa<clang::DefaultStmt>(d)) {
       numStmts += 1;
     }
   }
@@ -46,7 +46,7 @@ int getNumStmtsInSwitchCase(clang::SwitchStmt *scStmt) {
   return numStmts;
 }
 
-int getNumStmtsInCaseStmt(clang::CaseStmt *cStmt){
+int getNumStmtsInCaseStmt(clang::CaseStmt *cStmt) {
   if (cStmt == nullptr) {
     return 0;
   }

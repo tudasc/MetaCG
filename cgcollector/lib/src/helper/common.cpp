@@ -9,7 +9,7 @@ std::string getMangledName(clang::NamedDecl const *const nd) {
 
   if (!nd || !mc) {
     std::cerr << "NamedDecl was nullptr" << std::endl;
-    assert (nd && mc && "NamedDecl and MangleContext must not be nullptr");
+    assert(nd && mc && "NamedDecl and MangleContext must not be nullptr");
     return "__NO_NAME__";
   }
 

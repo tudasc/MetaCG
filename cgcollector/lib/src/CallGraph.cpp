@@ -34,7 +34,7 @@
 #include <memory>
 #include <string>
 
-//#include <iostream>
+#include <iostream>
 
 using namespace clang;
 
@@ -42,6 +42,16 @@ using namespace clang;
 
 STATISTIC(NumObjCCallEdges, "Number of Objective-C method call edges");
 STATISTIC(NumBlockCallEdges, "Number of block call edges");
+
+void printNamedDeclToConsole(const Decl *D) {
+  assert(D);
+#ifndef NDEBUG
+  auto fd = llvm::dyn_cast<NamedDecl>(D);
+  if (fd) {
+    std::cout << fd->getNameAsString() << std::endl;
+  }
+#endif
+}
 
 /// A helper class, which walks the AST and locates all the call sites in the
 /// given function body.
@@ -55,8 +65,9 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
   void VisitStmt(Stmt *S) { VisitChildren(S); }
 
   Decl *getDeclFromCall(CallExpr *CE) {
-    if (FunctionDecl *CalleeDecl = CE->getDirectCallee())
+    if (FunctionDecl *CalleeDecl = CE->getDirectCallee()) {
       return CalleeDecl;
+    }
 
     // Simple detection of a call through a block.
     Expr *CEE = CE->getCallee()->IgnoreParenImpCasts();
@@ -91,6 +102,16 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
             }
           }
         }
+      } else {
+        if (ImplicitCastExpr *ICE = llvm::dyn_cast<ImplicitCastExpr>(*argIt)) {
+          if (DeclRefExpr *DRE = llvm::dyn_cast<DeclRefExpr>(ICE->getSubExpr())) {
+            if (FunctionDecl *FD = llvm::dyn_cast<FunctionDecl>(DRE->getDecl())) {
+              if (FunctionDecl *CalleeDecl = CE->getDirectCallee()) {
+                addCalledDecl(CalleeDecl, FD);
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -113,8 +134,9 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
   }
 
   void VisitCallExpr(CallExpr *CE) {
-    if (Decl *D = getDeclFromCall(CE))
+    if (Decl *D = getDeclFromCall(CE)) {
       addCalledDecl(D);
+    }
 
     handleFunctionPointerInArguments(CE);
     VisitChildren(CE);
@@ -140,8 +162,9 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
 
   void VisitChildren(Stmt *S) {
     for (Stmt *SubStmt : S->children())
-      if (SubStmt)
+      if (SubStmt) {
         this->Visit(SubStmt);
+      }
   }
 };
 
@@ -160,9 +183,6 @@ CallGraph::~CallGraph() = default;
 
 bool CallGraph::includeInGraph(const Decl *D) {
   assert(D);
-  // we want to include functions without body to merge them afterwards
-  // if (!D->hasBody())
-  //  return false;
 
   if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
     // We skip function template definitions, as their semantics is
@@ -172,8 +192,9 @@ bool CallGraph::includeInGraph(const Decl *D) {
 
     IdentifierInfo *II = FD->getIdentifier();
     // TODO not sure whether we want to include __inline marked functions
-    if (II && II->getName().startswith("__inline"))
-      return false;
+    if (II && II->getName().startswith("__inline")) {
+      return true;
+    }
   }
 
   return true;
@@ -181,6 +202,7 @@ bool CallGraph::includeInGraph(const Decl *D) {
 
 void CallGraph::addNodeForDecl(Decl *D, bool IsGlobal) {
   assert(D);
+  (void)IsGlobal;  // silence warning.
 
   // Allocate a new node, mark it as root, and process it's calls.
   CallGraphNode *Node = getOrInsertNode(D);
@@ -208,9 +230,28 @@ CallGraphNode *CallGraph::getOrInsertNode(const Decl *F) {
 
   Node = llvm::make_unique<CallGraphNode>(F);
   // Make Root node a parent of all functions to make sure all are reachable.
-  if (F)
+  if (F) {
+    std::cout << "Inserting: " << llvm::dyn_cast<NamedDecl>(F)->getNameAsString() << std::endl;
     Root->addCallee(Node.get());
+  } else {
+    std::cout << "F was nullptr" << std::endl;
+  }
   return Node.get();
+}
+
+bool CallGraph::VisitFunctionDecl(clang::FunctionDecl *FD) {
+  // We skip function template definitions, as their semantics is
+  // only determined when they are instantiated.
+  if (includeInGraph(FD) && FD->isThisDeclarationADefinition()) {
+    // Add all blocks declared inside this function to the graph.
+    addNodesForBlocks(FD);
+    // If this function has external linkage, anything could call it.
+    // Note, we are not precise here. For example, the function could have
+    // its address taken.
+    addNodeForDecl(FD, FD->isGlobal());
+  } else {
+  }
+  return true;
 }
 
 bool CallGraph::VisitCXXMethodDecl(clang::CXXMethodDecl *MD) {

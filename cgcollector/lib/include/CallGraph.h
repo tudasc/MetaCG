@@ -96,20 +96,7 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
 
   /// Part of recursive declaration visitation. We recursively visit all the
   /// declarations to collect the root functions.
-  bool VisitFunctionDecl(clang::FunctionDecl *FD) {
-    // We skip function template definitions, as their semantics is
-    // only determined when they are instantiated.
-    if (includeInGraph(FD) && FD->isThisDeclarationADefinition()) {
-      // Add all blocks declared inside this function to the graph.
-      addNodesForBlocks(FD);
-      // If this function has external linkage, anything could call it.
-      // Note, we are not precise here. For example, the function could have
-      // its address taken.
-      addNodeForDecl(FD, FD->isGlobal());
-    }
-    return true;
-  }
-
+  bool VisitFunctionDecl(clang::FunctionDecl *FD);
   bool VisitCXXMethodDecl(clang::CXXMethodDecl *MD);
 
   /// Part of recursive declaration visitation.

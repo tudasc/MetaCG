@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
       k = 100;
       i = 101;
       break;
-            }
+    }
     default:
       k = 11;
       break;

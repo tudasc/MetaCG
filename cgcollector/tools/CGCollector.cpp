@@ -17,8 +17,6 @@ static llvm::cl::OptionCategory cgc("CGCollector");
 typedef std::vector<MetaCollector *> MetaCollectorVector;
 
 class CallGraphCollectorConsumer : public clang::ASTConsumer {
-  CallGraph callGraph;
-
  public:
   CallGraphCollectorConsumer(MetaCollectorVector mcs, nlohmann::json &j) : _mcs(mcs), _json(j) {}
 
@@ -33,6 +31,7 @@ class CallGraphCollectorConsumer : public clang::ASTConsumer {
   }
 
  private:
+  CallGraph callGraph;
   MetaCollectorVector _mcs;
   nlohmann::json &_json;
 };
@@ -74,9 +73,6 @@ int main(int argc, const char **argv) {
   for (const auto mc : mcs) {
     addMetaInformationToJSON(j, mc->getName(), mc->getMetaInformation());
   }
-
-  //  std::cout << " --- json dump --- " << std::endl;
-  //  std::cout << j.dump(2) << std::endl;
 
   std::string filename(argv[1]);
   filename = filename.substr(0, filename.find_last_of(".")) + ".ipcg";
