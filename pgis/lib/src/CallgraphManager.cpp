@@ -80,6 +80,10 @@ void CallgraphManager::finalizeGraph(bool buildMarker) {
   if (graph.size() > 0) {
     // We assume that 'main' is always reachable.
     auto mainNode = graph.findMain();
+    if (mainNode == nullptr) {
+      std::cerr << "CallgraphManager: Cannot find main function." << std::endl;
+      exit(1);
+    }
     mainNode->setReachable();
   }
   // also update all node attributes
