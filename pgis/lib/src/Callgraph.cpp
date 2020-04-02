@@ -36,7 +36,8 @@ CgNodePtr Callgraph::findNode(std::string functionName) {
 
 void Callgraph::insert(CgNodePtr node) {
   const auto n = node->getFunctionName();
-  if (n == "main" || n == "_Z4main") {
+  // We may want to use string::find() instead of the string compare operator.
+  if (n == "main" || n == "_Z4main" || n == "_ZSt4mainiPPc") {
     mainNode = node;
   }
   graph.insert(node);
