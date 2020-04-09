@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
     std::string filePath(result["cube"].as<std::string>());
 
     std::string fileName = filePath.substr(filePath.find_last_of('/') + 1);
-    c.appName = fileName.substr(0, fileName.find_last_of('.'));  // remove .*
+    //c.appName = fileName.substr(0, fileName.find_last_of('.'));  // remove .*
 
     if (stringEndsWith(filePath, ".cubex")) {
       CubeCallgraphBuilder::buildFromCube(filePath, &c, cg);
