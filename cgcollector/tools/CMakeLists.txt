@@ -10,7 +10,7 @@ add_executable(cgmerge
   CGMerge.cpp
 )
 
-register_to_clang_tidy(cgcollector)
+# register_to_clang_tidy(cgcollector)
 
 add_collector_include(cgcollector)
 add_collector_lib(cgcollector)
@@ -33,4 +33,9 @@ configure_package_config_file(
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
   DESTINATION lib/cmake
+)
+
+install(PROGRAMS
+	${CMAKE_CURRENT_SOURCE_DIR}/cgc
+	DESTINATION bin
 )

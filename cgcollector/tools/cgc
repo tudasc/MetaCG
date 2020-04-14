@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+target=$1
+
+if [ -z "$target" ]; then
+	echo "Need to specify a target. Exit."
+	echo -e "Usage:\ncgc target.[c|cpp]"
+	exit -2
+fi
+
+clangversion=$(clang --version | awk '{print $3}' | head -n 1)
+clangpath=''
+
+if [ -z "$CLANG_BASE_PATH" ]; then
+  echo "Please export CLANG_BASE_PATH to point to the root folder of the clang 9 installation"
+	exit -1
+else
+  clangpath=$CLANG_BASE_PATH
+fi
+
+shoulddebug=false
+
+collectorCommand="cgcollector --extra-arg=-I$clangpath/lib/clang/$clangversion/include $target"
+
+if [ -z "$shoulddebug" ]; then
+  echo "Running command $collectorCommand"
+fi
+
+$collectorCommand
+
