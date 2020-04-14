@@ -27,6 +27,7 @@ run-dowload:
   before_script: *lb-setup
   variables:
     GIT_STRATEGY: clone
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - git clone https://github.com/nlohmann/json
     - *lb-tear-down
@@ -38,6 +39,7 @@ run-build:
   before_script: *lb-setup
   variables:
     GIT_STRATEGY: fetch
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - mkdir build && cd build
     - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/cgcollector-test-install -DJSON_INCLUDE_PATH=../json/single_include ..
@@ -53,6 +55,7 @@ run-test:
   before_script: *lb-setup
   variables:
     GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - ls
     - ls build
@@ -67,6 +70,7 @@ run-install:
   before_script: *lb-setup
   variables:
     GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - cd build
     - make install
