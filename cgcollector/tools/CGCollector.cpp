@@ -74,7 +74,7 @@ int main(int argc, const char **argv) {
     addMetaInformationToJSON(j, mc->getName(), mc->getMetaInformation());
   }
 
-  std::string filename(argv[1]);
+  std::string filename(*OP.getSourcePathList().begin());
   filename = filename.substr(0, filename.find_last_of(".")) + ".ipcg";
 
   std::ofstream file(filename);
