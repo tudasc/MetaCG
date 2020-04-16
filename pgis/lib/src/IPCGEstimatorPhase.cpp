@@ -340,7 +340,7 @@ void StatisticsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
     }
     auto numStmts = node->getNumberOfStatements();
     if (node->isInstrumentedWitness()) {
-      std::cout << "Processing reachable node " << node->getFunctionName() << " for statement count\n";
+      // std::cout << "Processing reachable node " << node->getFunctionName() << " for statement count\n";
       stmtsCoveredWithInstr += numStmts;
     }
     if (node->comesFromCube()) {

@@ -145,6 +145,8 @@ class CgNode {
   CgNodePtr getUniqueParent() const;
   CgNodePtr getUniqueChild() const;
 
+  std::string getFilename() { return filename; }
+  int getLineNumber() { return line; }
   void setFilename(std::string filename);
   void setLineNumber(int line);
 

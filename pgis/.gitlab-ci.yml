@@ -27,6 +27,7 @@ fetch-and-build-deps:
   before_script: *lb-setup
   variables:
     GIT_STRATEGY: clone
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - ./build_submodules.sh
     - *lb-tear-down
@@ -38,6 +39,7 @@ build-w-extrap:
   before_script: *lb-setup
   variables:
     GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - echo $PWD
     - rm -rf build
@@ -55,6 +57,7 @@ run-test:
   before_script: *lb-setup
   variables:
     GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - echo $PWD
     - ls
@@ -70,6 +73,7 @@ run-install:
   before_script: *lb-setup
   variables:
     GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - echo $PWD
     - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH

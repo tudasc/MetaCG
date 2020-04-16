@@ -127,7 +127,8 @@ void CallgraphManager::applyRegisteredPhases() {
 #endif
     phase->modifyGraph(mainFunction);
     phase->generateReport();
-
+    
+    std::cout << "## Print Phase Report" << std::endl;
     phase->printReport();
 
     CgReport report = phase->getReport();
@@ -309,7 +310,6 @@ void CallgraphManager::printDOT(std::string prefix) {
     }
 
     for (auto node : procGraph) {
-      std::cout << node->getFunctionName() << std::endl;
       node->dumpToDot(outfile, i);
     }
     if (i < numProcs) {

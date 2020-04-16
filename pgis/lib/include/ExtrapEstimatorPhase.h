@@ -65,7 +65,9 @@ class ExtrapLocalEstimatorPhaseBase : public EstimatorPhase {
 
   virtual void modifyGraph(CgNodePtr mainNode) override;
 
-  virtual bool shouldInstrument(CgNodePtr node) const;
+  virtual std::pair<bool, double> shouldInstrument(CgNodePtr node) const;
+
+  void printReport() override;
 
  protected:
   /*
@@ -77,6 +79,8 @@ class ExtrapLocalEstimatorPhaseBase : public EstimatorPhase {
   */
   auto evalModelWValue(CgNodePtr n, std::vector<std::pair<std::string, double> > values) const;
   bool allNodesToMain;
+  
+  std::vector<std::pair<double, CgNodePtr>> kernels;
 };
 
 #if 0
@@ -118,7 +122,7 @@ class ExtrapLocalEstimatorPhaseSingleValueFilter : public ExtrapLocalEstimatorPh
  public:
   ExtrapLocalEstimatorPhaseSingleValueFilter(double threshold = 1.0, bool allNodesToMain = false)
       : ExtrapLocalEstimatorPhaseBase(allNodesToMain), threshold(threshold) {}
-  virtual bool shouldInstrument(CgNodePtr node) const override;
+  virtual std::pair<bool, double> shouldInstrument(CgNodePtr node) const override;
 
  private:
   double threshold;

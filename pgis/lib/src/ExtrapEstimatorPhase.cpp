@@ -10,13 +10,18 @@
 #include "EXTRAP_Function.hpp"
 #include "EXTRAP_Model.hpp"
 
+#include <algorithm>
+
 namespace pira {
 
 void ExtrapLocalEstimatorPhaseBase::modifyGraph(CgNodePtr mainNode) {
   std::cout << "Running ExtrapLocalEstimatorPhaseBase::modifyGraph\n";
   for (const auto n : *graph) {
-    if (shouldInstrument(n)) {
+    auto [shouldInstr, funcRtVal] = shouldInstrument(n);
+    if (shouldInstr) {
       n->setState(CgNodeState::INSTRUMENT_WITNESS);
+      kernels.push_back({funcRtVal, n});
+
       if (allNodesToMain) {
         auto nodesToMain = CgHelper::allNodesToMain(n, mainNode);
         std::cout << "Node " << n->getFunctionName() << " has " << nodesToMain.size() << " nodes on paths to main."
@@ -29,14 +34,26 @@ void ExtrapLocalEstimatorPhaseBase::modifyGraph(CgNodePtr mainNode) {
   }
 }
 
-bool ExtrapLocalEstimatorPhaseBase::shouldInstrument(CgNodePtr node) const {
-  assert(false && "Base class should not be instantiated.");
-  return false;
+void ExtrapLocalEstimatorPhaseBase::printReport() {
+  std::cout << "$$ Identified Kernels (w/ Runtime) $$\n";
+
+  std::sort(std::begin(kernels), std::end(kernels), [&](auto &e1, auto &e2) { return e1.first > e2.first; });
+  for (auto [t, k] : kernels) {
+    std::cout << "- " << k->getFunctionName() << "\n  * Time: " << t << "\n";
+    std::cout << "\t" << k->getFilename() << ":" << k->getLineNumber() << "\n\n";
+  }
+
+  std::cout << "$$ End Kernels $$" << std::endl;
 }
 
-bool ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(CgNodePtr node) const {
+std::pair<bool, double> ExtrapLocalEstimatorPhaseBase::shouldInstrument(CgNodePtr node) const {
+  assert(false && "Base class should not be instantiated.");
+  return {false, -1};
+}
+
+std::pair<bool, double>  ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(CgNodePtr node) const {
   if (!node->getExtrapModelConnector().isModelSet())
-    return false;
+    return {false, -1};
 
   auto modelValue = node->getExtrapModelConnector().getEpolator().getExtrapolationValue();
 
@@ -44,15 +61,18 @@ bool ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(CgNodePtr node
 
   std::cout << "Model value for " << node->getFunctionName() << " is calculated as: " << fVal << std::endl;
 
-  return fVal > threshold;
+  return {fVal > threshold, fVal};
 }
 
 void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(CgNodePtr mainNode) {
   std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> pathsToMain;
 
   for (const auto n : *graph) {
-    if (shouldInstrument(n)) {
+    auto [shouldInstr, funcRtVal] = shouldInstrument(n);
+    if (shouldInstr) {
       n->setState(CgNodeState::INSTRUMENT_WITNESS);
+      kernels.push_back({funcRtVal, n});
+
       if (allNodesToMain) {
         if (pathsToMain.find(n) == pathsToMain.end()) {
           auto nodesToMain = CgHelper::allNodesToMain(n, mainNode, pathsToMain);
@@ -64,12 +84,12 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(CgNodePtr mainNod
           ntm->setState(CgNodeState::INSTRUMENT_WITNESS);
         }
       }
-      std::cout << "Processing " << n->getChildNodes().size() << " child nodes" << std::endl;
+
       std::unordered_set<CgNodePtr> totalToMain;
       for (const auto c : n->getChildNodes()) {
         if (!c->getExtrapModelConnector().hasModels()) {
           // We use our heuristic to deepen the instrumentation
-          StatementCountEstimatorPhase scep(200);  // we use some threshold value here?
+          StatementCountEstimatorPhase scep(200);  // TODO we use some threshold value here?
           scep.estimateStatementCount(c);
           if (allNodesToMain) {
             if (pathsToMain.find(c) == pathsToMain.end()) {
@@ -81,11 +101,6 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(CgNodePtr mainNod
             }
           }
         }
-      /*
-      for (const auto ntm : totalToMain) {
-        ntm->setState(CgNodeState::INSTRUMENT_WITNESS);
-      }
-      */
     }
   }
 }
