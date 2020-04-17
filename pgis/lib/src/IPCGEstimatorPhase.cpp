@@ -43,9 +43,12 @@ void StatementCountEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   }
 
   for (auto node : *graph) {
+    std::cout << "Processing node: " << node->getFunctionName() << " >> ";
     if (!node->isReachable()) {
+      std::cout << "skipping\n";
       continue;
     }
+    std::cout << "estimating\n";
     estimateStatementCount(node);
   }
 }

@@ -58,18 +58,30 @@ int main(int argc, char **argv) {
 
   cxxopts::Options opts("PGIS", "Generating low-overhead instrumentation selections.");
 
+  /* The marked options should go away for the PGIS release */
   // clang-format off
   opts.add_options()
+    // not sure
     ("other", "", cxxopts::value<std::string>()->default_value(""))
+    // remove
     ("s,samples", "Samples per second", cxxopts::value<long>()->default_value("0"))
+    // remove
     ("r,ref", "??", cxxopts::value<double>()->default_value("0"))
+    // not sure
     ("m,mangled", "Use mangled names", cxxopts::value<bool>()->default_value("false"))
+    // remove
     ("half", "??", cxxopts::value<long>()->default_value("0"))
+    // not sure
     ("t,tiny", "Print tiny report", cxxopts::value<bool>()->default_value("false"))
+    // remove
     ("i,ignore-sampling", "Ignore sampling", cxxopts::value<bool>()->default_value("false"))
+    // remove
     ("f,samples-file", "Input file for sampling points", cxxopts::value<std::string>())
+    // remove
     ("g,greedy-unwind", "Use greedy unwind", cxxopts::value<bool>()->default_value("false"))
+    // not sure
     ("o,out-file", "Output file name", cxxopts::value<std::string>()->default_value("out"))
+    // from here: keep all
     ("static", "Apply static selection", cxxopts::value<bool>()->default_value("false"))
     ("c,cube", "Cube file for dynamic instrumentation", cxxopts::value<std::string>()->default_value(""))
     ("h,help", "Show help", cxxopts::value<bool>()->default_value("false"))

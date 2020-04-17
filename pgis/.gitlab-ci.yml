@@ -7,6 +7,7 @@ stages:
   - download
   - build
   - test
+  - integration-test
   - install
 
 .lb-setup: &lb-setup
@@ -63,8 +64,21 @@ run-test:
     - ls
     - ls build
     - ls build/test
-    - cd build/test && ./basictests
+    - cd build/test/unit && ./basictests
     - *lb-tear-down
+
+run-integration-test:
+  stage: integration-test
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
+    - cd test/integration
+    - ./runner.sh
 
 run-install:
   stage: install

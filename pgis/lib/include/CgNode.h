@@ -98,7 +98,7 @@ class CgNode {
   void setExtrapModelConnector(extrapconnection::ExtrapConnector epCon) { this->epCon = epCon; }
   auto &getExtrapModelConnector() { return epCon; }
 
-  void setReachable() { this->reachable = true; }
+  void setReachable(bool value = true) { this->reachable = value; }
   bool isReachable() const { return this->reachable; }
   void setDominantRuntime() { this->dominantRuntime = true; }
   bool isDominantRuntime() const { return this->dominantRuntime; }

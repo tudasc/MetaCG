@@ -86,6 +86,7 @@ void CallgraphManager::finalizeGraph(bool buildMarker) {
     }
     mainNode->setReachable();
   }
+
   // also update all node attributes
   for (auto node : graph) {
     if (config->samplesFile.empty()) {
@@ -96,7 +97,10 @@ void CallgraphManager::finalizeGraph(bool buildMarker) {
 
     // graph.findMain caches the main node
     if (CgHelper::reachableFrom(graph.findMain(), node)) {
+      std::cout << "setting reachable: " << node->getFunctionName() << '\n';
       node->setReachable();
+    } else {
+      node->setReachable(false);
     }
 
     if (buildMarker) {

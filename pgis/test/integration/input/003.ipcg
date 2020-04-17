@@ -1,0 +1,22 @@
+{
+    "main": {
+        "callees": ["foo"],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 2,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    },
+    "foo": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 50000,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": ["main"]
+    }
+}

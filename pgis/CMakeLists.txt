@@ -28,4 +28,4 @@ enable_testing()
 
 add_subdirectory(lib)
 add_subdirectory(tool)
-add_subdirectory(test)
+add_subdirectory(test/unit)
