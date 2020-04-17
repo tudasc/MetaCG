@@ -1,29 +1,44 @@
 #!/usr/bin/env bash
 
-buildDirParam=$1
+# include basic functions
+. base.sh
+
+testSuite=$1
+buildDirParam=$2
 buildDir="${buildDirParam:-$PWD/../../build}"
+outDir=$PWD/out$testSuite
+logDir=$PWD/logging
+logFile=${logDir}/${testSuite}.log
 
-tests=( 001 002 003 004 )
+rm -rf $outDir && mkdir $outDir
+rm -rf $logDir && mkdir ${logDir}
 
-echo "Running tests with build directory: $buildDir"
+cd input$testSuite || error_exit "cd input$testSuite"
 
-rm -rf $PWD/out && mkdir $PWD/out
-rm -f /tmp/pgis_integration_test_res.txt
-rm -f /tmp/pgis_integration_test_bl.txt
 
+echo "Running $testSuite tests with build directory: $buildDir"
 fails=0
 
-for testNo in "${tests[@]}"; do
+for testNo in *.ipcg; do
+	if [ "$testNo" == "*.ipcg" ]; then
+		echo "No tests to run"
+#		exit $fails
+	fi
+	echo "Running $testNo"
 	thisFail=0
-	testFile="${testNo}_run.sh"
-	bash $testFile $buildDir 2>&1 > /dev/null
+
+	bash "${testSuite}_run.sh" $buildDir $outDir $testNo 2>&1 >> "$logFile"
+	#bash "${testSuite}_run.sh" $buildDir $outDir $testNo
+
+	echo -e "\n[ --------------------------------- ] \n" >> "$logFile"
+
 	if [ $? -ne 0 ]; then
 		fails=$(($fails+1))
 		thisFail=1
 	fi
-	cat $PWD/out/instrumented-${testNo}.txt | sort | uniq > /tmp/pgis_integration_test_res.txt
-	cat $PWD/input/${testNo}.afl | sort | uniq > /tmp/pgis_integration_test_bl.txt
-	diff -q /tmp/pgis_integration_test_bl.txt  /tmp/pgis_integration_test_res.txt 2>&2 > /dev/null
+	
+	check_selection $testSuite $testNo $outDir
+
 	if [ $? -ne 0 ]; then
 		fails=$(($fails+1))
 		thisFail=1

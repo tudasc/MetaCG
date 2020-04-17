@@ -559,8 +559,11 @@ double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef) {
   std::cout << "Basis for runtime threshold calculation: " << rt.size() << "\n";
 
   std::sort(rt.begin(), rt.end());
+  for (const auto r : rt) {
+    std::cout << r << " seconds\n";
+  }
 
-  size_t lastIndex = rt.size() * .9;
+  size_t lastIndex = rt.size() * .5;
   if (useLongAsRef) {
     lastIndex = rt.size() - 2;  // use the function after main.
     return rt[lastIndex] / 2;   // halve this value (first idea)

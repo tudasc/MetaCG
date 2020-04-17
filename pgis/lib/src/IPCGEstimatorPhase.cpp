@@ -27,7 +27,7 @@ void FirstNLevelsEstimatorPhase::instrumentLevel(CgNodePtr parentNode, int level
 
 StatementCountEstimatorPhase::StatementCountEstimatorPhase(int numberOfStatementsThreshold, bool inclusiveMetric,
                                                            StatisticsEstimatorPhase *prevStatEP)
-    : EstimatorPhase((inclusiveMetric ? std::string("Incl") : std::string("Excl")) + std::string("StatementCount") +
+    : EstimatorPhase((inclusiveMetric ? std::string("Incl-") : std::string("Excl-")) + std::string("StatementCount-") +
                      std::to_string(numberOfStatementsThreshold)),
       numberOfStatementsThreshold(numberOfStatementsThreshold),
       inclusiveMetric(inclusiveMetric),
@@ -173,7 +173,7 @@ void HybridEstimatorPhase::modifyGraph(CgNodePtr node) {
 // Runtime estimator phase
 
 RuntimeEstimatorPhase::RuntimeEstimatorPhase(double runTimeThreshold, bool inclusiveMetric)
-    : EstimatorPhase((inclusiveMetric ? std::string("Incl") : std::string("Excl")) + std::string("Runtime") +
+    : EstimatorPhase((inclusiveMetric ? std::string("Incl-") : std::string("Excl-")) + std::string("Runtime-") +
                      std::to_string(runTimeThreshold)),
       runTimeThreshold(runTimeThreshold),
       inclusiveMetric(inclusiveMetric) {}
@@ -186,7 +186,7 @@ void RuntimeEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   }
 
   runTimeThreshold = CgHelper::calcRuntimeThreshold(*graph, true);
-  std::cout << "The runtime threshold is now: " << runTimeThreshold << "\n";
+  std::cout << "The runtime threshold is computed as: " << runTimeThreshold << "\n";
 
   std::queue<CgNodePtr> workQueue;
   workQueue.push(mainMethod);
@@ -246,15 +246,13 @@ void RuntimeEstimatorPhase::estimateRuntime(CgNodePtr startNode) {
 
 void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
   auto runTime = inclRunTime[startNode];
-  if (runTime > runTimeThreshold) {
-#ifdef NO_DEBUG
     std::cout << "Processing: " << startNode->getFunctionName() << ":\nNode runtime:\t\t"
               << startNode->getInclusiveRuntimeInSeconds() << "\nCalculated Runtime:\t" << runTime
               << " | threshold: " << runTimeThreshold << "\n";
-#endif
+  if (runTime >= runTimeThreshold) {
     // keep the nodes on the paths in the profile, when they expose sufficient runtime.
     startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
-    std::cout << "[PGIS][Instrumenting] Node: " << startNode->getFunctionName();
+    std::cout << "[PGIS][Instrumenting] Node: " << startNode->getFunctionName() << " for its runtime.\n";
     int instrChildren = 0;
 
     std::map<CgNodePtr, long int> childStmts;
@@ -294,38 +292,62 @@ void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
     }
 
     if (maxRtChild) {
-      // std::cout << "\nDOMCHILD: " << maxRtChild->getFunctionName() << "\n";
+      std::cout << "\nDOMCHILD: " << maxRtChild->getFunctionName() << "\n";
     }
 
-    int stmtThreshold = maxStmts * .3;
+    int stmtThreshold = maxStmts;
+    // XXX Original PIRA I value
     float alpha = .1f;
-    if (startNode->getChildNodes().size() > 0) {
-      stmtThreshold = (maxStmts / startNode->getChildNodes().size()) * alpha;
+
+    /* PIRA I: simply uses the size of the children nodes container.
+     * XXX: We should only consider children that have a body defines, i.e., that are eligible for instrumentation
+     * with our method. This specifically excludes, for example, stdlib functions.
+     */
+    auto numChildren = startNode->getChildNodes().size();
+#define NEW_PIRA_ONE 1
+//#undef NEW_PIRA_ONE
+#ifdef NEW_PIRA_ONE
+    alpha = .3f;
+    numChildren = std::count_if(std::begin(startNode->getChildNodes()), std::end(startNode->getChildNodes()), [&] (const auto &n) { return childStmts[n] > 0;});
+#endif
+    if (numChildren > 0) {
+      std::cout << "[Start: " << startNode->getFunctionName() << "] The max Stmts is: " << stmtThreshold << std::endl;
+      std::cout << "[Start: " << startNode->getFunctionName() << "] The num childs is: " << numChildren << std::endl;
+      stmtThreshold = (maxStmts / numChildren) * alpha;
+      std::cout << "[Start: " << startNode->getFunctionName() << "] The set stmtThreshold is: " << stmtThreshold << std::endl;
     } else {
       stmtThreshold = 1;
     }
+
+    std::cout << " | runtime | max Stmts | alpha | tot Stmts | stmt Threshold | instrumented children \n";
+    std::cout << " | " << runTime << " | " << maxStmts << " | " << alpha << " | " << totStmts << " | " << stmtThreshold
+              << " | " << instrChildren << "\n";
+
     if (stmtThreshold < 1) {
       // This can happen, if all leaves are std lib functions.
-      std::cerr << "WARNING: RETURNING\n";
+      std::cout << "Statement Threshold < 1: RETURNING\n\n";
       return;
     }
     if (maxRtChild) {
+      std::cout << "This is the dominant runtime path" << std::endl;
       maxRtChild->setState(CgNodeState::INSTRUMENT_WITNESS);
       maxRtChild->setDominantRuntime();
     } else {
+      std::cout << "This is the non-dominant runtime path" << std::endl;
       if (startNode->isDominantRuntime()) {
-        // std::cout << "\tDOM: " << startNode->getFunctionName();
+        std::cout << "\tDOM: " << startNode->getFunctionName();
         for (auto child : startNode->getChildNodes()) {
-          // std::cout << "\n\t" << child->getFunctionName() << " | " << childStmts[child] << " | " << stmtThreshold;
+          std::cout << "\n\tEvaluating: " << child->getFunctionName() << "\t| " << childStmts[child] << " | " << stmtThreshold;
           if (childStmts[child] > stmtThreshold) {
             child->setState(CgNodeState::INSTRUMENT_WITNESS);
             instrChildren++;
           }
         }
+        std::cout << "\n\n";
       }
     }
-    std::cout << " | " << runTime << " | " << maxStmts << " | " << alpha << " | " << totStmts << " | " << stmtThreshold
-              << " | " << instrChildren << "\n";
+    std::cout << "End of processing " << startNode->getFunctionName() << " | " << runTime << " | " << maxStmts << " | " << alpha << " | " << totStmts << " | " << stmtThreshold
+              << " | " << instrChildren << "\n\n";
   }
 }
 
