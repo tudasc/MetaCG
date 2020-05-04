@@ -11,7 +11,9 @@ class CallgraphManagerTest : public ::testing::Test {
 
 TEST_F(CallgraphManagerTest, EmptyCG) {
   Config cfg;
-  CallgraphManager cm(&cfg);
+  // CallgraphManager cm(&cfg);
+  auto &cm = CallgraphManager::get();
+  cm.setConfig(&cfg);
   ASSERT_EQ(0, cm.size());
   auto graph = cm.getCallgraph(&cm);
   ASSERT_EQ(false, graph.hasNode("main"));
@@ -21,7 +23,9 @@ TEST_F(CallgraphManagerTest, EmptyCG) {
 
 TEST_F(CallgraphManagerTest, OneNodeCG) {
   Config cfg;
-  CallgraphManager cm(&cfg);
+  //CallgraphManager cm(&cfg);
+  auto &cm = CallgraphManager::get();
+  cm.setConfig(&cfg);
   cm.findOrCreateNode("main");
   cm.setNodeComesFromCube("main");
   auto nPtr = cm.findOrCreateNode("main");
@@ -33,7 +37,9 @@ TEST_F(CallgraphManagerTest, OneNodeCG) {
 
 TEST_F(CallgraphManagerTest, TwoNodeCG) {
   Config cfg;
-  CallgraphManager cm(&cfg);
+  //CallgraphManager cm(&cfg);
+  auto &cm = CallgraphManager::get();
+  cm.setConfig(&cfg);
   int mainLineNumber = 1;
   auto mainNode = cm.findOrCreateNode("main");
   auto childNode = cm.findOrCreateNode("child1");
@@ -49,7 +55,9 @@ TEST_F(CallgraphManagerTest, TwoNodeCG) {
 
 TEST_F(CallgraphManagerTest, ThreeNodeCG) {
   Config cfg;
-  CallgraphManager cm(&cfg);
+  //CallgraphManager cm(&cfg);
+  auto &cm = CallgraphManager::get();
+  cm.setConfig(&cfg);
   int mainLineNumber = 1;
   auto mainNode = cm.findOrCreateNode("main");
   auto childNode = cm.findOrCreateNode("child1");

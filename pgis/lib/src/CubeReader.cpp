@@ -2,8 +2,11 @@
 
 #include "spdlog/spdlog.h"
 
-CallgraphManager CubeCallgraphBuilder::build(std::string filePath, Config *c) {
-  CallgraphManager *cg = new CallgraphManager(c, {});
+void CubeCallgraphBuilder::build(std::string filePath, Config *c) {
+  //CallgraphManager *cg = new CallgraphManager(c, {});
+
+  auto &cg = CallgraphManager::get();
+  cg.setConfig(c);
 
   try {
     // get logger
@@ -30,7 +33,7 @@ CallgraphManager CubeCallgraphBuilder::build(std::string filePath, Config *c) {
     for (auto cnode : cnodes) {
       // I don't know when this happens, but it does.
       if (cnode->get_parent() == nullptr) {
-        cg->findOrCreateNode(
+        cg.findOrCreateNode(
             c->useMangledNames ? cnode->get_callee()->get_mangled_name() : cnode->get_callee()->get_name(),
             cube.get_sev(timeMetric, cnode, threads.at(0)));
         continue;
@@ -47,7 +50,7 @@ CallgraphManager CubeCallgraphBuilder::build(std::string filePath, Config *c) {
         unsigned long long numberOfCalls = (unsigned long long)cube.get_sev(visitsMetric, cnode, threads.at(i));
         double timeInSeconds = cube.get_sev(timeMetric, cnode, threads.at(i));
 
-        cg->putEdge(parentName, parentNode->get_mod(), parentNode->get_begn_ln(), childName, numberOfCalls,
+        cg.putEdge(parentName, parentNode->get_mod(), parentNode->get_begn_ln(), childName, numberOfCalls,
                     timeInSeconds, threads.at(i)->get_id(), threads.at(i)->get_parent()->get_id());
 
         overallNumberOfCalls += numberOfCalls;
@@ -60,8 +63,8 @@ CallgraphManager CubeCallgraphBuilder::build(std::string filePath, Config *c) {
         }
       }
 
-      cg->setNodeComesFromCube(parentName);
-      cg->setNodeComesFromCube(childName);
+      cg.setNodeComesFromCube(parentName);
+      cg.setNodeComesFromCube(childName);
     }
 
     // read in samples per second TODO these are hardcoded for 10kHz
@@ -79,7 +82,7 @@ CallgraphManager CubeCallgraphBuilder::build(std::string filePath, Config *c) {
 
         inFile >> numberOfSamples >> name;
 
-        cg->putNumberOfSamples(name, numberOfSamples);
+        cg.putNumberOfSamples(name, numberOfSamples);
       }
     }
 
@@ -111,7 +114,7 @@ CallgraphManager CubeCallgraphBuilder::build(std::string filePath, Config *c) {
               << " | edgesWithZeroRuntime: " << edgesWithZeroRuntime << std::setprecision(6) << std::endl
               << std::endl;
 
-    return *cg;
+    //return cg;
 
   } catch (const cube::RuntimeError &e) {
     std::cout << "CubeReader failed: " << std::endl << e.get_msg() << std::endl;

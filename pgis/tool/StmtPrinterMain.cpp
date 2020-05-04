@@ -108,7 +108,9 @@ int main(int argc, char **argv) {
   c.appName = ipcg_fileName.substr(0, ipcg_fileName.find_last_of('.'));
 
   float runTimeThreshold{.0f};
-  CallgraphManager cg(&c);
+  //CallgraphManager cg(&c);
+  auto &cg = CallgraphManager::get();
+  cg.setConfig(&c);
 
   if (stringEndsWith(filePath_ipcg, ".ipcg")) {
     std::cout << "Reading from ipcg file " << filePath_ipcg << std::endl;
@@ -134,7 +136,7 @@ int main(int argc, char **argv) {
       CubeCallgraphBuilder::buildFromCube(filePath, &c, cg);
       // smRTT = CubeCallgraphBuilder::CalculateRuntimeThreshold(&cg);
     } else if (stringEndsWith(filePath, ".dot")) {
-      cg = DOTCallgraphBuilder::build(filePath, &c);
+      DOTCallgraphBuilder::build(filePath, &c);
     } else {
       std::cerr << "ERROR: Unknown file ending in " << filePath << std::endl;
       exit(-1);

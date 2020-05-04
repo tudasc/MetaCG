@@ -1,7 +1,5 @@
 #include "IPCGReader.h"
 
-#include "nlohmann/json.hpp"
-
 /** RN: note that the format is child -> parent for whatever reason.. */
 void IPCGAnal::build(CallgraphManager &cg, std::string filename, Config *c) {
   // CallgraphManager *cg = new CallgraphManager(c);
@@ -92,6 +90,10 @@ void buildFromJSON(CallgraphManager &cgm, std::string filename, Config *c) {
   json j;
   {
     std::ifstream in(filename);
+    if (!in.is_open()) {
+      std::cerr << "[ERROR] opening file failed." << std::endl;
+    }
+    std::cout << "Reading ... " << std::endl;
     in >> j;
   }
   std::cout << "Done reading in file." << std::endl;
@@ -145,4 +147,5 @@ void buildFromJSON(CallgraphManager &cgm, std::string filename, Config *c) {
     cgm.putNumberOfStatements(pfi.first, pfi.second.numStatements);
   }
 }
+
 }  // namespace IPCGAnal

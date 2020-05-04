@@ -2,7 +2,9 @@
 add_executable(basictests CgNodeTest.cpp
                           CallgraphTest.cpp
                           CallgraphManagerTest.cpp
-                          IPCGEstimatorPhaseTest.cpp)
+                          IPCGEstimatorPhaseTest.cpp
+													IPCGAnnotation.cpp
+													)
 
 target_link_libraries(basictests gtest_main)
 add_pgoe_includes(basictests)

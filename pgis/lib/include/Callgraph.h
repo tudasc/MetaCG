@@ -27,6 +27,13 @@ class Callgraph {
 
   void erase(CgNodePtr node, bool rewireAfterDeletion = false, bool force = false);
 
+  void clear() {
+    graph.clear();
+    lastSearched = nullptr;
+    mainNode = nullptr;
+  }
+
+
   ContainerT::iterator begin() const { return graph.begin(); }
   ContainerT::iterator end() const { return graph.end(); }
   ContainerT::const_iterator cbegin() const;

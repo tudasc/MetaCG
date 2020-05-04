@@ -11,9 +11,8 @@ set(PGOE_LIB_SOURCES
   src/EdgeBasedOptimumEstimatorPhase.cpp
   src/EstimatorPhase.cpp
   src/IPCGEstimatorPhase.cpp
-  src/IPCGReader.cpp
   src/NodeBasedOptimumEstimatorPhase.cpp
-  src/ProximityMeasureEstimatorPhase.cpp
+	#src/ProximityMeasureEstimatorPhase.cpp
   src/SanityCheckEstimatorPhase.cpp
   src/ExtrapConnection.cpp
   src/ExtrapEstimatorPhase.cpp)
@@ -22,18 +21,27 @@ add_library(pgoelib SHARED
   ${PGOE_LIB_SOURCES}
 )
 
+add_library(ipcg SHARED
+	src/libIPCG/IPCGReader.cpp
+)
+
 add_pgoe_includes(pgoelib)
 add_cube_includes(pgoelib)
 add_cube_libraries(pgoelib)
-add_json_parser(pgoelib)
 add_extrap_includes(pgoelib)
 add_extrap_libraries(pgoelib)
-
 add_logger_libraries(pgoelib)
+add_json_parser(pgoelib)
+
+add_pgoe_includes(ipcg)
+add_json_parser(ipcg)
+add_ipcg_includes(ipcg)
+add_extrap_includes(ipcg)
+add_logger_libraries(ipcg)
 
 
 install(
-  TARGETS pgoelib
+  TARGETS pgoelib ipcg
   EXPORT ${TARGETS_EXPORT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

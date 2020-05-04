@@ -12,7 +12,10 @@ class IPCGEstimatorPhaseBasic : public ::testing::Test {
 
 TEST_F(IPCGEstimatorPhaseBasic, EmptyCG) {
   Config cfg;
-  CallgraphManager cm(&cfg);
+  //CallgraphManager cm(&cfg);
+  auto &cm = CallgraphManager::get();
+  cm.clear();
+  cm.setConfig(&cfg);
   cm.setNoOutput();
   StatementCountEstimatorPhase sce(10);
   cm.registerEstimatorPhase(&sce);
@@ -21,7 +24,10 @@ TEST_F(IPCGEstimatorPhaseBasic, EmptyCG) {
 
 TEST_F(IPCGEstimatorPhaseBasic, OneNodeCG) {
   Config cfg;
-  CallgraphManager cm(&cfg);
+  //CallgraphManager cm(&cfg);
+  auto &cm = CallgraphManager::get();
+  cm.clear();
+  cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
   StatementCountEstimatorPhase sce(10);
@@ -35,7 +41,10 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCG) {
 
 TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCG) {
   Config cfg;
-  CallgraphManager cm(&cfg);
+  //CallgraphManager cm(&cfg);
+  auto &cm = CallgraphManager::get();
+  cm.clear();
+  cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
   auto childNode = cm.findOrCreateNode("child1", 2.0);
@@ -51,7 +60,10 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCG) {
 
 TEST_F(IPCGEstimatorPhaseBasic, OneNodeCGwStmt) {
   Config cfg;
-  CallgraphManager cm(&cfg);
+  //CallgraphManager cm(&cfg);
+  auto &cm = CallgraphManager::get();
+  cm.clear();
+  cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
   cm.putNumberOfStatements("main", 12);
@@ -66,7 +78,10 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCGwStmt) {
   Config cfg;
-  CallgraphManager cm(&cfg);
+  //CallgraphManager cm(&cfg);
+  auto &cm = CallgraphManager::get();
+  cm.clear();
+  cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
   cm.putNumberOfStatements("main", 12);
@@ -87,7 +102,10 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCGwStmt) {
   Config cfg;
-  CallgraphManager cm(&cfg);
+  //CallgraphManager cm(&cfg);
+  auto &cm = CallgraphManager::get();
+  cm.clear();
+  cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
   cm.putNumberOfStatements("main", 12);
@@ -115,7 +133,10 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCycleCGwStmt) {
   Config cfg;
-  CallgraphManager cm(&cfg);
+  //CallgraphManager cm(&cfg);
+  auto &cm = CallgraphManager::get();
+  cm.clear();
+  cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
   cm.putNumberOfStatements("main", 12);
@@ -144,7 +165,10 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCycleCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, FourNodeCGwStmt) {
   Config cfg;
-  CallgraphManager cm(&cfg);
+  //CallgraphManager cm(&cfg);
+  auto &cm = CallgraphManager::get();
+  cm.clear();
+  cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
   cm.putNumberOfStatements("main", 12);
@@ -178,7 +202,10 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, FourNodeDiamondCGwStmt) {
   Config cfg;
-  CallgraphManager cm(&cfg);
+  //CallgraphManager cm(&cfg);
+  auto &cm = CallgraphManager::get();
+  cm.clear();
+  cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
   cm.putNumberOfStatements("main", 12);
@@ -222,7 +249,10 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeDiamondCGwStmt) {
 */
 TEST_F(IPCGEstimatorPhaseBasic, FiveNodeDiamondCGwStmt) {
   Config cfg;
-  CallgraphManager cm(&cfg);
+  //CallgraphManager cm(&cfg);
+  auto &cm = CallgraphManager::get();
+  cm.clear();
+  cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
   cm.putNumberOfStatements("main", 12);
@@ -263,7 +293,7 @@ TEST_F(IPCGEstimatorPhaseBasic, FiveNodeDiamondCGwStmt) {
 
 class IPCGEstimatorPhaseTest : public ::testing::Test {
  protected:
-  IPCGEstimatorPhaseTest() : cm(new Config()) {}
+  IPCGEstimatorPhaseTest() {}
   /* Construct a call graph that has the following structure
    o
   / \ \
@@ -274,6 +304,7 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
    o   o
 */
   void createCalleeNode(std::string name, std::string caller, int numStatements, double runtime, int numCalls) {
+    auto &cm = CallgraphManager::get();
     auto nodeCaller = cm.findOrCreateNode(caller, runtime);
     cm.putNumberOfStatements(name, numStatements);
     cm.putEdge(caller, "main.c", 1, name, numCalls, runtime, 0, 0);
@@ -281,6 +312,9 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
 
   void SetUp() override {
     loggerutil::getLogger();
+  auto &cm = CallgraphManager::get();
+  cm.clear();
+  cm.setConfig(new Config());
     cm.setNoOutput();
     auto mainNode = cm.findOrCreateNode("main", 1.4);
     cm.putNumberOfStatements("main", 12);
@@ -295,10 +329,10 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
     createCalleeNode("child7", "child6", 1, 20.2, 1002);
   }
 
-  CallgraphManager cm;
 };
 
 TEST_F(IPCGEstimatorPhaseTest, ValidateBasics) {
+  auto &cm = CallgraphManager::get();
   auto graph = cm.getCallgraph(&cm);
   ASSERT_NE(nullptr, graph.findMain());
 
@@ -313,6 +347,7 @@ TEST_F(IPCGEstimatorPhaseTest, ValidateBasics) {
 
 // TODO: THis seems more like a test for CallgraphManager?
 TEST_F(IPCGEstimatorPhaseTest, InitiallyNoneReachable) {
+  auto &cm = CallgraphManager::get();
   ASSERT_NE(0, cm.size());
   int count = 0;
   for (const auto n : cm) {
@@ -323,6 +358,7 @@ TEST_F(IPCGEstimatorPhaseTest, InitiallyNoneReachable) {
 }
 
 TEST_F(IPCGEstimatorPhaseTest, ApplyPhaseFinalizesGraph) {
+  auto &cm = CallgraphManager::get();
   auto nep = std::make_unique<NopEstimatorPhase>();
   ASSERT_EQ(false, nep->didRun);
   cm.registerEstimatorPhase(nep.get());

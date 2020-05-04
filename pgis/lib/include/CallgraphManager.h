@@ -17,12 +17,41 @@
 
 class CallgraphManager {
  public:
+
+   static CallgraphManager &get() {
+     static CallgraphManager instance;
+     return instance;
+   }
+
+   void clear() {
+     graph.clear();
+     removeAllEstimatorPhases();
+     donePhases.clear();
+   }
+
+   void setConfig(Config *cfg) {
+     config = cfg;
+   }
+
+   void setExtrapConfig(extrapconnection::ExtrapConfig epCfg) {
+     epModelProvider = extrapconnection::ExtrapModelProvider(epCfg);
+   }
+
+   extrapconnection::ExtrapModelProvider &getModelProvider() {
+     return epModelProvider;
+   }
+
+private:
+  CallgraphManager() : config(nullptr), epModelProvider({}){} ;
   CallgraphManager(Config *config, extrapconnection::ExtrapConfig epCfg = {});
+
   CallgraphManager(const CallgraphManager &other) = default;
   CallgraphManager(CallgraphManager &&other) = default;
 
   CallgraphManager &operator=(const CallgraphManager &other) = delete;
   CallgraphManager &operator=(CallgraphManager &&other) = default;
+
+public:
 
   ~CallgraphManager() {}
 

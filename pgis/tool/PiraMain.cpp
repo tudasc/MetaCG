@@ -97,6 +97,7 @@ int main(int argc, char **argv) {
     ("a,all-threads","Show all Threads even if unused.", cxxopts::value<bool>()->default_value("false"))
     ("w, whitelist", "Filter nodes through given whitelist", cxxopts::value<std::string>()->default_value(""))
     ("debug", "Whether debug messages should be printed", cxxopts::value<int>()->default_value("0"));
+    ("x,export", "Export the profiling info into IPCG file", cxxopts::value<bool>()->default_value("false"));
   // clang-format on
 
   Config c;
@@ -156,7 +157,10 @@ int main(int argc, char **argv) {
   };
 
   float runTimeThreshold = .0f;
-  CallgraphManager cg(&c, parseExtrapArgs(result));
+  //CallgraphManager cg(&c, parseExtrapArgs(result));
+  auto &cg = CallgraphManager::get();
+  cg.setConfig(&c);
+  cg.setExtrapConfig(parseExtrapArgs(result));
 
   if (stringEndsWith(ipcgFullPath, ".ipcg")) {
     console->info("Reading ipcg file: {}", ipcgFullPath);
@@ -166,10 +170,6 @@ int main(int argc, char **argv) {
       cg.applyRegisteredPhases();
       cg.removeAllEstimatorPhases();
     }
-    /*} else {
-      std::cerr << "Unknown file format given for static call graph" << std::endl;
-      return -1;
-    */
   }
 
   if (result.count("cube")) {
@@ -182,7 +182,7 @@ int main(int argc, char **argv) {
     if (stringEndsWith(filePath, ".cubex")) {
       CubeCallgraphBuilder::buildFromCube(filePath, &c, cg);
     } else if (stringEndsWith(filePath, ".dot")) {
-      cg = DOTCallgraphBuilder::build(filePath, &c);
+      DOTCallgraphBuilder::build(filePath, &c);
     } else {
       spdlog::get("errconsole")->error("Unknown file ending in {}", filePath);
       exit(-1);
@@ -206,11 +206,15 @@ int main(int argc, char **argv) {
       cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(true, false));  // remove unrelated
       cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(1.0, true));
     }
+    if (result.count("export")) {
+      IPCGAnal::annotateJSON(cg.getCallgraph(&CallgraphManager::get()), ipcgFullPath, IPCGAnal::retriever::PlacementInfoRetriever());
+   }
   }
 
   if (cg.hasPassesRegistered()) {
     cg.applyRegisteredPhases();
   }
+
 
   return EXIT_SUCCESS;
 }

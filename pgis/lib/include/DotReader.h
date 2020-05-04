@@ -21,8 +21,9 @@ std::string extractBetween(const std::string &s, const std::string &pattern, siz
   return s.substr(first, second - first);
 }
 
-CallgraphManager build(std::string filePath, Config *c) {
-  CallgraphManager *cg = new CallgraphManager(c);
+void build(std::string filePath, Config *c) {
+  //CallgraphManager *cg = new CallgraphManager(c);
+  auto &cg = CallgraphManager::get();
 
   std::ifstream file(filePath);
   std::string line;
@@ -48,7 +49,7 @@ CallgraphManager build(std::string filePath, Config *c) {
       unsigned long numCalls = stoul(line.substr(numCallsStart));
 
       // filename & line unknown; time already added with node
-      cg->putEdge(parent, "", -1, child, numCalls, 0.0, 0, 0);
+      cg.putEdge(parent, "", -1, child, numCalls, 0.0, 0, 0);
 
     } else {
       // node
@@ -56,11 +57,10 @@ CallgraphManager build(std::string filePath, Config *c) {
       std::string name = extractBetween(line, "\"", start);
       double time = stod(extractBetween(line, "\\n", start));
 
-      cg->findOrCreateNode(name, time);
+      cg.findOrCreateNode(name, time);
     }
   }
   file.close();
-  return *cg;
 }
 };  // namespace DOTCallgraphBuilder
 

@@ -15,7 +15,7 @@
  */
 namespace CubeCallgraphBuilder {
 
-CallgraphManager build(std::string filePath, Config *c);
+void build(std::string filePath, Config *c);
 // float CalculateRuntimeThreshold(std::string filePath, Config* c);
 float CalculateRuntimeThreshold(CallgraphManager *cg);
 void buildFromCube(std::string filePath, Config *c, CallgraphManager &cg);

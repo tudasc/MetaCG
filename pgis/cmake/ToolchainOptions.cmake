@@ -105,9 +105,23 @@ function(add_pgoe_includes target)
 	)
 endfunction()
 
+function(add_ipcg_includes target)
+	target_include_directories(${target}
+		PUBLIC
+		$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/lib/include/libIPCG>
+	)
+endfunction()
+
+
 function(add_pgoe_library target)
   target_link_libraries(${target}
     pgoelib
+  )
+endfunction()
+
+function(add_ipcg_library target)
+  target_link_libraries(${target}
+		ipcg
   )
 endfunction()
 
