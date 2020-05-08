@@ -22,7 +22,7 @@ std::string extractBetween(const std::string &s, const std::string &pattern, siz
 }
 
 void build(std::string filePath, Config *c) {
-  //CallgraphManager *cg = new CallgraphManager(c);
+  // CallgraphManager *cg = new CallgraphManager(c);
   auto &cg = CallgraphManager::get();
 
   std::ifstream file(filePath);

@@ -4,28 +4,30 @@
 
 #define RENDER_DEPS 0
 
-CgNode::CgNode(std::string function) : epCon({}, {}) {
-  this->functionName = function;
-  this->parentNodes = CgNodePtrSet();
-  this->childNodes = CgNodePtrSet();
+using namespace pira;
 
-  this->spantreeParents = CgNodePtrSet();
-
-  this->line = -1;
-  this->state = CgNodeState::NONE;
-  this->numberOfUnwindSteps = 0;
-
-  this->runtimeInSeconds = 0.0;
-  // Mark the inclusive runtime as uninitialized
-  this->inclusiveRuntimeInSeconds = -1.0;
-  this->expectedNumberOfSamples = 0L;
-
-  this->numberOfCalls = 0;
-  this->uniqueCallPath = false;
-
-  this->numberOfStatements = 0;
-  this->wasInPreviousProfile = false;
-  this->reachable = false;
+CgNode::CgNode(std::string function)
+    : functionName(function),
+      line(-1),
+      state(CgNodeState::NONE),
+      numberOfUnwindSteps(0),
+      expectedNumberOfSamples(0L),
+      uniqueCallPath(false),
+      reachable(false),
+      parentNodes(),
+      childNodes(),
+      spantreeParents() {
+  /* Attah meta data container */
+  auto bpd = new BaseProfileData();
+  bpd->setRuntimeInSeconds(.0);
+  bpd->setInclusiveRuntimeInSeconds(.0);
+  bpd->setNumberOfCalls(0);
+  this->addMetaData(bpd);
+  
+  auto pod = new PiraOneData();
+  pod->setNumberOfStatements(0);
+  pod->setComesFromCube(false);
+  this->addMetaData(pod);
 }
 
 void CgNode::addChildNode(CgNodePtr childNode) { childNodes.insert(childNode); }
@@ -34,10 +36,7 @@ void CgNode::addParentNode(CgNodePtr parentNode) { parentNodes.insert(parentNode
 
 void CgNode::removeChildNode(CgNodePtr childNode) { childNodes.erase(childNode); }
 
-void CgNode::removeParentNode(CgNodePtr parentNode) {
-  numberOfCallsBy.erase(parentNode);
-  parentNodes.erase(parentNode);
-}
+void CgNode::removeParentNode(CgNodePtr parentNode) { parentNodes.erase(parentNode); }
 
 CgNodePtrSet &CgNode::getMarkerPositions() { return potentialMarkerPositions; }
 const CgNodePtrSet &CgNode::getMarkerPositionsConst() const { return potentialMarkerPositions; }
@@ -53,13 +52,12 @@ bool CgNode::isSpantreeParent(CgNodePtr parentNode) {
 void CgNode::reset() {
   this->state = CgNodeState::NONE;
   this->numberOfUnwindSteps = 0;
-
   this->spantreeParents.clear();
 }
 
 void CgNode::updateNodeAttributes(bool updateNumberOfSamples) {
-  // this number will not change
-  this->numberOfCalls = getNumberOfCallsWithCurrentEdges();
+  auto bpd = this->get<BaseProfileData>();
+  bpd->setNumberOfCalls(bpd->getNumberOfCallsWithCurrentEdges());
 
   // has unique call path
   CgNodePtrSet visitedNodes;
@@ -83,8 +81,9 @@ void CgNode::updateNodeAttributes(bool updateNumberOfSamples) {
 }
 
 void CgNode::updateExpectedNumberOfSamples() {
+  auto bpd = this->get<BaseProfileData>();
   // expected samples in this function (always round up)
-  this->expectedNumberOfSamples = (unsigned long long)((double)CgConfig::samplesPerSecond * runtimeInSeconds + 1);
+  this->expectedNumberOfSamples = (unsigned long long)(CgConfig::samplesPerSecond * bpd->getRuntimeInSeconds() + 1);
 }
 void CgNode::setExpectedNumberOfSamples(unsigned long long samples) { this->expectedNumberOfSamples = samples; }
 
@@ -190,18 +189,18 @@ const CgNodePtrSet &CgNode::getChildNodes() const { return childNodes; }
 
 const CgNodePtrSet &CgNode::getParentNodes() const { return parentNodes; }
 
+#if false
 void CgNode::addCallData(CgNodePtr parentNode, unsigned long long calls, double timeInSeconds, int threadId,
                          int procId) {
   this->numberOfCallsBy[parentNode] += calls;
   this->runtimeInSeconds += timeInSeconds;
   this->cgLoc.push_back(CgLocation(timeInSeconds, threadId, procId, calls));
 }
+#endif
 
 void CgNode::setState(CgNodeState state, int numberOfUnwindSteps) {
   // TODO i think this breaks something
   if (this->state == CgNodeState::INSTRUMENT_CONJUNCTION && this->state != state) {
-    //		std::cerr << "# setState old:" << this->state << " new:" << state <<
-    // std::endl;
 
     if (state == CgNodeState::INSTRUMENT_WITNESS) {
       return;  // instrument conjunction is stronger
@@ -217,6 +216,7 @@ void CgNode::setState(CgNodeState state, int numberOfUnwindSteps) {
   }
 }
 
+#if false
 void CgNode::setInclusiveRuntimeInSeconds(double newInclusiveRuntimeInSeconds) {
   inclusiveRuntimeInSeconds = newInclusiveRuntimeInSeconds;
 }
@@ -230,6 +230,7 @@ double CgNode::getInclusiveRuntimeInSeconds() {
   }
   return inclusiveRuntimeInSeconds;
 }
+#endif
 
 CgNodeState CgNode::getStateRaw() const { return state; }
 bool CgNode::isInstrumented() const { return isInstrumentedWitness() || isInstrumentedConjunction(); }
@@ -242,30 +243,11 @@ bool CgNode::isUnwoundInstr() const { return state == CgNodeState::UNWIND_INSTR;
 
 int CgNode::getNumberOfUnwindSteps() const { return numberOfUnwindSteps; }
 
-unsigned long long CgNode::getNumberOfCalls() const { return numberOfCalls; }
-
-unsigned long long CgNode::getNumberOfCallsWithCurrentEdges() const {
-  unsigned long long numberOfCalls = 0;
-  for (auto n : numberOfCallsBy) {
-    numberOfCalls += n.second;
-  }
-
-  return numberOfCalls;
-}
-
 std::vector<CgLocation> CgNode::getCgLocation() const { return cgLoc; }
 
-unsigned long long CgNode::getNumberOfCalls(CgNodePtr parentNode) { return numberOfCallsBy[parentNode]; }
-
-double CgNode::getRuntimeInSeconds() const { return runtimeInSeconds; }
-
-void CgNode::setRuntimeInSeconds(double newRuntimeInSeconds) { runtimeInSeconds = newRuntimeInSeconds; }
 
 unsigned long long CgNode::getExpectedNumberOfSamples() const { return expectedNumberOfSamples; }
 
-void CgNode::setNumberOfStatements(int numStmts) { numberOfStatements = numStmts; }
-
-int CgNode::getNumberOfStatements() const { return numberOfStatements; }
 void CgNode::printMinimal() { std::cout << this->functionName; }
 
 void CgNode::print() {
@@ -302,22 +284,6 @@ std::ostream &operator<<(std::ostream &stream, const CgNodePtrSet &s) {
 namespace std {
 bool less<std::shared_ptr<CgNode>>::operator()(const std::shared_ptr<CgNode> &a,
                                                const std::shared_ptr<CgNode> &b) const {
-#if 0
-  if(a == nullptr) {
-    std::cout << "a null" << std::endl;
-    if (b != nullptr) {
-      std::cout << b->getFunctionName() << std::endl;
-    }
-    exit(13);
-  }
-  if(b == nullptr) {
-    std::cout << "b null" << std::endl;
-    if (a != nullptr) {
-      std::cout << a->getFunctionName() << std::endl;
-    }
-    exit(14);
-  }
-#endif
   return a->getFunctionName() < b->getFunctionName();
 }
 

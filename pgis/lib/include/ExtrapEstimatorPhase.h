@@ -98,17 +98,17 @@ ExtrapLocalEstimatorPhaseBase::value_type ExtrapLocalEstimatorPhaseBase::evalMod
 
 auto ExtrapLocalEstimatorPhaseBase::evalModelWValue(CgNodePtr n,
                                                     std::vector<std::pair<std::string, double>> values) const {
-  auto fModel = n->getExtrapModelConnector().getEPModelFunction();
+  auto fModel = n->get<PiraTwoData>()->getExtrapModelConnector().getEPModelFunction();
 
   std::map<EXTRAP::Parameter, double> evalOps;
-  
+
   auto console = spdlog::get("console");
   for (const auto &p : values) {
     console->trace("Setting {} to {}", p.first, p.second);
     evalOps.insert(std::make_pair(EXTRAP::Parameter(p.first), p.second));
   }
 
-  //if (isConstant(evalOps, fModel)) {
+  // if (isConstant(evalOps, fModel)) {
   //  return -1.0;
   //}
 

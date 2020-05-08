@@ -2,6 +2,7 @@
 #define CUBECALLGRAPHTOOL_IPCG_READER_H
 
 #include "CallgraphManager.h"
+#include "Utility.h"
 
 #include "nlohmann/json.hpp"
 
@@ -69,7 +70,7 @@ void annotateJSON(Callgraph &cg, std::string filename, PropRetriever retriever) 
     in >> j;
   }
 
-  int annotated = doAnnotate(cg, retriever, j);
+  int annotated = IPCGAnal::doAnnotate(cg, retriever, j);
   std::cout << "Annotated " << annotated << " nodes / json elements" << std::endl;
 
   {
@@ -80,9 +81,21 @@ void annotateJSON(Callgraph &cg, std::string filename, PropRetriever retriever) 
 
 namespace retriever {
 struct RuntimeRetriever {
-  bool handles(const CgNodePtr n) { return n->getRuntimeInSeconds() > .0; }
+  bool handles(const CgNodePtr n) {
+    const auto &[hasLHS, objLHS] = n->checkAndGet<pira::BaseProfileData>();
+    if (hasLHS) {
+      return objLHS->getRuntimeInSeconds() > .0;
+    }
+    return false;
+  }
 
-  double value(const CgNodePtr n) { return n->getRuntimeInSeconds(); }
+  double value(const CgNodePtr n) {
+    const auto &[hasLHS, objLHS] = n->checkAndGet<pira::BaseProfileData>();
+    if (hasLHS) {
+      return objLHS->getRuntimeInSeconds();
+    }
+    return .0;
+  }
 
   std::string toolName() { return "test"; }
 };
@@ -97,17 +110,26 @@ struct PlacementInfo {
   std::string modelString;
 };
 
+struct ExperimentParamData {
+  std::vector<std::pair<std::string, int>> params;
+  std::map<std::string, double> runtimes;
+};
+
 void to_json(json &j, const PlacementInfo &pi) {
   std::cout << "to_json from PlacementInfo called" << std::endl;
-  j["env"] = json{"id", pi.platformId};
-  j["experiments"] = json{{"params", pi.params}, {"runtimes", pi.runtimeInSecondsPerProcess}};
+  j["env"]["id"] = pi.platformId;
+  j["experiments"] = json::array({{"params", pi.params}, {"runtimes", pi.runtimeInSecondsPerProcess}});
   j["model"] = json{"text", pi.modelString};
   std::cout << j << std::endl;
 }
 
 struct PlacementInfoRetriever {
   bool handles(const CgNodePtr n) {
-    return n->getExtrapModelConnector().hasModels();
+    const auto &[has, obj] = n->checkAndGet<pira::PiraTwoData>();
+    if (has) {
+      return obj->getExtrapModelConnector().hasModels();
+    }
+    return false;
   }
 
   PlacementInfo value(const CgNodePtr n) {
@@ -123,7 +145,7 @@ struct PlacementInfoRetriever {
     };
 
     PlacementInfo pi;
-    pi.platformId = "Lichtenberg I Phase II";
+    pi.platformId = getHostname();
     pi.params = CallgraphManager::get().getModelProvider().getConfigValues();
     pi.runtimeInSecondsPerProcess = runtimePerProcess(n);
     for (const auto &p : pi.runtimeInSecondsPerProcess) {

@@ -1,8 +1,11 @@
 #include "CgNode.h"
+#include "CgHelper.h"
 
 #include "LoggerUtil.h"
 
 #include "gtest/gtest.h"
+
+using namespace pira;
 
 namespace {
 class CgNodeBasics : public ::testing::Test {
@@ -13,12 +16,14 @@ class CgNodeBasics : public ::testing::Test {
 TEST_F(CgNodeBasics, CreateNodeDefaults) {
   auto n = std::make_shared<CgNode>("foo");
   ASSERT_STREQ("foo", n->getFunctionName().c_str());
+  ASSERT_TRUE(n->get<BaseProfileData>());
   ASSERT_EQ(-1, n->getLineNumber());
-  ASSERT_EQ(0.0, n->getRuntimeInSeconds());
-  ASSERT_EQ(.0, n->getInclusiveRuntimeInSeconds());
-  ASSERT_EQ(0, n->getNumberOfCalls());
-  ASSERT_EQ(0, n->getNumberOfStatements());
-  ASSERT_EQ(false, n->inPreviousProfile());
+  ASSERT_EQ(0.0, n->get<BaseProfileData>()->getRuntimeInSeconds());
+  ASSERT_EQ(.0, n->get<BaseProfileData>()->getInclusiveRuntimeInSeconds());
+  ASSERT_EQ(0, n->get<BaseProfileData>()->getNumberOfCalls());
+  ASSERT_TRUE(n->get<PiraOneData>());
+  ASSERT_EQ(0, n->get<PiraOneData>()->getNumberOfStatements());
+  ASSERT_EQ(false, n->get<PiraOneData>()->inPreviousProfile());
   ASSERT_EQ(false, n->hasUniqueCallPath());
   ASSERT_EQ(0, n->getParentNodes().size());
   ASSERT_EQ(0, n->getChildNodes().size());
@@ -29,21 +34,29 @@ TEST_F(CgNodeBasics, CreateNodeDefaults) {
 
 TEST_F(CgNodeBasics, CreateSingleNodeWithRuntime) {
   auto n = std::make_shared<CgNode>("foo");
-  n->setRuntimeInSeconds(1.23);
-  ASSERT_EQ(1.23, n->getRuntimeInSeconds());
+  ASSERT_TRUE(n->get<BaseProfileData>());
+  n->get<BaseProfileData>()->setRuntimeInSeconds(1.23);
+  ASSERT_EQ(1.23, n->get<BaseProfileData>()->getRuntimeInSeconds());
   // This is true for nodes w/o children
-  ASSERT_EQ(1.23, n->getInclusiveRuntimeInSeconds());
+  //ASSERT_EQ(1.23, n->get<BaseProfileData>()->getInclusiveRuntimeInSeconds());
+  ASSERT_EQ(1.23, CgHelper::calcInclusiveRuntime(n.get()));
 }
 
 TEST_F(CgNodeBasics, CreateSingleNodeWithStatements) {
   auto n = std::make_shared<CgNode>("foo");
-  n->setNumberOfStatements(42);
-  ASSERT_EQ(42, n->getNumberOfStatements());
+  ASSERT_TRUE(n->get<BaseProfileData>());
+  ASSERT_TRUE(n->get<PiraOneData>());
+  n->get<PiraOneData>()->setNumberOfStatements(42);
+  ASSERT_EQ(42, n->get<PiraOneData>()->getNumberOfStatements());
 }
 
 TEST_F(CgNodeBasics, CreateChildNodeDefaults) {
   auto n = std::make_shared<CgNode>("parent");
   auto c = std::make_shared<CgNode>("child");
+  ASSERT_TRUE(n->get<BaseProfileData>());
+  ASSERT_TRUE(n->get<PiraOneData>());
+  ASSERT_TRUE(c->get<BaseProfileData>());
+  ASSERT_TRUE(c->get<PiraOneData>());
   ASSERT_EQ(0, n->getChildNodes().size());
   ASSERT_EQ(0, c->getParentNodes().size());
   n->addChildNode(c);
@@ -68,15 +81,20 @@ TEST_F(CgNodeBasics, CreateChildParentNodeDefaults) {
 TEST_F(CgNodeBasics, CreateChildParentRuntime) {
   auto n = std::make_shared<CgNode>("parent");
   auto c = std::make_shared<CgNode>("child");
-  c->setComesFromCube();
-  n->setComesFromCube();
-  n->setRuntimeInSeconds(1.25);
-  c->setRuntimeInSeconds(0.25);
+  ASSERT_TRUE(n->get<BaseProfileData>());
+  ASSERT_TRUE(n->get<PiraOneData>());
+  ASSERT_TRUE(c->get<BaseProfileData>());
+  ASSERT_TRUE(c->get<PiraOneData>());
+  c->get<PiraOneData>()->setComesFromCube();
+  n->get<PiraOneData>()->setComesFromCube();
+  n->get<BaseProfileData>()->setRuntimeInSeconds(1.25);
+  c->get<BaseProfileData>()->setRuntimeInSeconds(0.25);
   n->addChildNode(c);
   c->addParentNode(n);
-  ASSERT_EQ(1.25, n->getRuntimeInSeconds());
-  ASSERT_EQ(0.25, c->getRuntimeInSeconds());
-  ASSERT_EQ(1.5, n->getInclusiveRuntimeInSeconds());
+  ASSERT_EQ(1.25, n->get<BaseProfileData>()->getRuntimeInSeconds());
+  ASSERT_EQ(0.25, c->get<BaseProfileData>()->getRuntimeInSeconds());
+  //ASSERT_EQ(1.5, n->get<BaseProfileData>()->getInclusiveRuntimeInSeconds());
+  ASSERT_EQ(1.5, CgHelper::calcInclusiveRuntime(n.get()));
   ASSERT_EQ(true, c->isLeafNode());
   ASSERT_EQ(true, n->isRootNode());
   ASSERT_EQ(false, n->isLeafNode());

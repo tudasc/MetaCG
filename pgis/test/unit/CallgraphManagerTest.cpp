@@ -4,6 +4,8 @@
 
 #include "CallgraphManager.h"
 
+using namespace pira;
+
 class CallgraphManagerTest : public ::testing::Test {
  protected:
   void SetUp() override { loggerutil::getLogger(); }
@@ -32,7 +34,11 @@ TEST_F(CallgraphManagerTest, OneNodeCG) {
   auto graph = cm.getCallgraph(&cm);
   ASSERT_NE(nullptr, graph.findMain());
   ASSERT_EQ(nPtr, graph.findMain());
-  ASSERT_EQ(true, nPtr->comesFromCube());
+  ASSERT_TRUE(graph.findMain()->get<BaseProfileData>());
+  ASSERT_TRUE(graph.findMain()->get<PiraOneData>());
+  ASSERT_TRUE(nPtr->get<BaseProfileData>());
+  ASSERT_TRUE(nPtr->get<PiraOneData>());
+  ASSERT_EQ(true, nPtr->get<PiraOneData>()->comesFromCube());
 }
 
 TEST_F(CallgraphManagerTest, TwoNodeCG) {

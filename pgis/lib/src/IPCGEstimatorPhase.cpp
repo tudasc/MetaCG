@@ -7,6 +7,8 @@
 
 #include <unordered_map>
 
+using namespace pira;
+
 FirstNLevelsEstimatorPhase::FirstNLevelsEstimatorPhase(int levels)
     : EstimatorPhase(std::string("FirstNLevels") + std::to_string(levels)), levels(levels) {}
 
@@ -66,11 +68,12 @@ void StatementCountEstimatorPhase::estimateStatementCount(CgNodePtr startNode) {
 
     while (!workQueue.empty()) {
       auto node = workQueue.front();
+      const auto nodePOD = node->get<PiraOneData>();
       workQueue.pop();
 
       visitedNodes.insert(node);
 
-      inclStmtCount += node->getNumberOfStatements();
+      inclStmtCount += nodePOD->getNumberOfStatements();
 
       for (auto childNode : node->getChildNodes()) {
         if (visitedNodes.find(childNode) == visitedNodes.end()) {
@@ -83,7 +86,8 @@ void StatementCountEstimatorPhase::estimateStatementCount(CgNodePtr startNode) {
     inclStmtCounts[startNode] = inclStmtCount;
   } else {
     // EXCLUSIVE
-    inclStmtCount = startNode->getNumberOfStatements();
+    const auto snPOD = startNode->get<PiraOneData>();
+    inclStmtCount = snPOD->getNumberOfStatements();
   }
 
   spdlog::get("console")->trace("Function: {} >> InclStatementCount: {}", startNode->getFunctionName(), inclStmtCount);
@@ -97,17 +101,20 @@ void MaxRuntimeSelectionStrategy::operator()(CgNodePtr node) {
   CgNodePtr maxRtChild{(node->getChildNodes().empty() ? nullptr : *(node->getChildNodes().begin()))};
 
   for (auto childNode : node->getChildNodes()) {
-    if (childNode->getInclusiveRuntimeInSeconds() > maxRtChild->getInclusiveRuntimeInSeconds()) {
+    const auto childPOD = childNode->get<BaseProfileData>();
+    const auto maxRtPOD = maxRtChild->get<BaseProfileData>();
+    if (childPOD->getInclusiveRuntimeInSeconds() > maxRtPOD->getInclusiveRuntimeInSeconds()) {
       maxRtChild = childNode;
     }
   }
   // If we have a maxRtChild, this is not a leaf node.
   if (maxRtChild) {
+    const auto maxRtPOD = maxRtChild->get<PiraOneData>();
     maxRtChild->setState(CgNodeState::INSTRUMENT_WITNESS);
-    maxRtChild->setDominantRuntime();
+    maxRtPOD->setDominantRuntime();
   } else {
     // This is a leaf node. Instrument the children
-    if (node->isDominantRuntime()) {
+    if (node->get<PiraOneData>()->isDominantRuntime()) {
       for (auto child : node->getChildNodes()) {
         child->setState(CgNodeState::INSTRUMENT_WITNESS);
       }
@@ -145,19 +152,19 @@ void MaxStmtSelectionStrategy::operator()(CgNodePtr node) {
     if (!childNode->isReachable()) {
       continue;
     }
-    if (childNode->getNumberOfStatements() >= stmtThreshold) {
+    if (childNode->get<PiraOneData>()->getNumberOfStatements() >= stmtThreshold) {
       childNode->setState(CgNodeState::INSTRUMENT_WITNESS);
     }
   }
 }
 
 void RuntimeFilteredMixedStrategy::operator()(CgNodePtr node) {
-  if (node->getInclusiveRuntimeInSeconds() > rtThresh) {
+  if (node->get<BaseProfileData>()->getInclusiveRuntimeInSeconds() > rtThresh) {
     for (auto child : node->getChildNodes()) {
-      if (child->comesFromCube()) {
+      if (child->get<PiraOneData>()->comesFromCube()) {
         continue;
       }
-      if (child->getNumberOfStatements() > stmtThresh) {
+      if (child->get<PiraOneData>()->getNumberOfStatements() > stmtThresh) {
         child->setState(CgNodeState::INSTRUMENT_WITNESS);
       }
     }
@@ -226,30 +233,30 @@ void RuntimeEstimatorPhase::estimateRuntime(CgNodePtr startNode) {
       visitedNodes.insert(node);
 
       // Only count the runtime of nodes comming from the profile
-      if (node->comesFromCube()) {
-        runTime += node->getRuntimeInSeconds();
+      if (node->get<PiraOneData>()->comesFromCube()) {
+        runTime += node->get<BaseProfileData>()->getRuntimeInSeconds();
       }
 
       for (auto childNode : node->getChildNodes()) {
         // Only visit unseen, profiled nodes. Only those have actual timing info!
-        if (visitedNodes.find(childNode) == visitedNodes.end() && childNode->comesFromCube()) {
+        if (visitedNodes.find(childNode) == visitedNodes.end() && childNode->get<PiraOneData>()->comesFromCube()) {
           workQueue.push(childNode);
         }
       }
     }
 
     inclRunTime[startNode] = runTime;
-    startNode->setInclusiveRuntimeInSeconds(runTime);
+    startNode->get<BaseProfileData>()->setInclusiveRuntimeInSeconds(runTime);
   } else {
     // EXCLUSIVE
-    runTime = startNode->getRuntimeInSeconds();
+    runTime = startNode->get<BaseProfileData>()->getRuntimeInSeconds();
   }
 }
 
 void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
   auto runTime = inclRunTime[startNode];
   spdlog::get("console")->debug("Processing {}:\n\tNode RT:\t{}\n\tCalced RT:\t{}\n\tThreshold:\t{}",
-                                startNode->getFunctionName(), startNode->getInclusiveRuntimeInSeconds(), runTime,
+                                startNode->getFunctionName(), startNode->get<BaseProfileData>()->getInclusiveRuntimeInSeconds(), runTime,
                                 runTimeThreshold);
   if (runTime >= runTimeThreshold) {
     // keep the nodes on the paths in the profile, when they expose sufficient runtime.
@@ -272,8 +279,8 @@ void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
         maxStmts = childStmts[childNode];
       }
 
-      if (childNode->comesFromCube()) {
-        if (childNode->getInclusiveRuntimeInSeconds() < runTimeThreshold) {
+      if (childNode->get<PiraOneData>()->comesFromCube()) {
+        if (childNode->get<BaseProfileData>()->getInclusiveRuntimeInSeconds() < runTimeThreshold) {
           continue;
         }
         if (maxRtChild == nullptr) {
@@ -283,7 +290,7 @@ void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
           maxRtChild = childNode;
         } else if (maxRtChild->getFunctionName() == childNode->getFunctionName() && maxRtChild != childNode) {
           // std::cerr << "\nWARNING NAMES EQUAL< POINTERS NOT\n";
-        } else if (childNode->getInclusiveRuntimeInSeconds() >= maxRtChild->getInclusiveRuntimeInSeconds()) {
+        } else if (childNode->get<BaseProfileData>()->getInclusiveRuntimeInSeconds() >= maxRtChild->get<BaseProfileData>()->getInclusiveRuntimeInSeconds()) {
           if (childNode == startNode) {
             continue;
           }
@@ -335,10 +342,10 @@ void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
     if (maxRtChild) {
       spdlog::get("console")->debug("This is the dominant runtime path");
       maxRtChild->setState(CgNodeState::INSTRUMENT_WITNESS);
-      maxRtChild->setDominantRuntime();
+      maxRtChild->get<PiraOneData>()->setDominantRuntime();
     } else {
       spdlog::get("console")->debug("This is the non-dominant runtime path");
-      if (startNode->isDominantRuntime()) {
+      if (startNode->get<PiraOneData>()->isDominantRuntime()) {
         spdlog::get("console")->debug("\tPrincipal: {}", startNode->getFunctionName());
         for (auto child : startNode->getChildNodes()) {
           spdlog::get("console")->trace("\tEvaluating {} with {} [stmt threshold: {}]", child->getFunctionName(),
@@ -370,12 +377,12 @@ void StatisticsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
     if (!node->isReachable()) {
       continue;
     }
-    auto numStmts = node->getNumberOfStatements();
+    auto numStmts = node->get<PiraOneData>()->getNumberOfStatements();
     if (node->isInstrumentedWitness()) {
       // std::cout << "Processing reachable node " << node->getFunctionName() << " for statement count\n";
       stmtsCoveredWithInstr += numStmts;
     }
-    if (node->comesFromCube()) {
+    if (node->get<PiraOneData>()->comesFromCube()) {
       stmtsActuallyCovered += numStmts;
     }
     auto &histElem = stmtHist[numStmts];

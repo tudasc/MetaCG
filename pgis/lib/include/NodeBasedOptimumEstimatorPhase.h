@@ -98,8 +98,9 @@ struct NodeBasedState {
 
   inline unsigned long long getCosts() {
     // note that the scumbag zero will break everything unless it is explicitly "ULL"
-    return std::accumulate(nodeSet.begin(), nodeSet.end(), 0ULL,
-                           [](unsigned long long calls, CgNodePtr node) { return calls + node->getNumberOfCalls(); });
+    return std::accumulate(nodeSet.begin(), nodeSet.end(), 0ULL, [](unsigned long long calls, CgNodePtr node) {
+      return calls + node->get<pira::BaseProfileData>()->getNumberOfCalls();
+    });
   }
 
   friend std::ostream &operator<<(std::ostream &stream, const NodeBasedState &state) {

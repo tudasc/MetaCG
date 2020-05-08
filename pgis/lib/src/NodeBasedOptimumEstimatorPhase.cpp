@@ -1,6 +1,8 @@
 
 #include "NodeBasedOptimumEstimatorPhase.h"
 
+using namespace pira;
+
 #define DEBUG 0
 #define USE_OPTIMIZED_ORDER 1  // XXX in the long term both cases should lead to the same results
 

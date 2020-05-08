@@ -16,10 +16,7 @@
 namespace CubeCallgraphBuilder {
 
 void build(std::string filePath, Config *c);
-// float CalculateRuntimeThreshold(std::string filePath, Config* c);
-float CalculateRuntimeThreshold(CallgraphManager *cg);
 void buildFromCube(std::string filePath, Config *c, CallgraphManager &cg);
-float bucket_sort(float *, int);
 }  // namespace CubeCallgraphBuilder
 
 #endif

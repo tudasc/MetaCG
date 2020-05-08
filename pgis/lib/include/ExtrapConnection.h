@@ -8,6 +8,8 @@
 #include "EXTRAP_CubeFileReader.hpp"
 #include "EXTRAP_Experiment.hpp"
 
+#include "spdlog/spdlog.h"
+
 #include "cxxabi.h"
 
 #include <map>
@@ -137,6 +139,9 @@ class ExtrapModelProvider {
     auto paramList = getParameterList();
 
     auto m = models[demangledName];
+    spdlog::get("console")->debug(
+        "Model for {}: {}", demangledName,
+        m.size() > 0 ? m.front()->getModelFunction()->getAsString(getParameterList()) : " NONE ");
     return ExtrapConnector(m, paramList);
   }
 

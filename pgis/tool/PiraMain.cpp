@@ -21,6 +21,8 @@
 
 #include "cxxopts.hpp"
 
+using namespace pira;
+
 void registerEstimatorPhases(CallgraphManager &cg, Config *c, bool isIPCG, float runtimeThreshold) {
   auto statEstimator = new StatisticsEstimatorPhase(false);
   cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(true, false));  // remove unrelated
@@ -39,8 +41,6 @@ void registerEstimatorPhases(CallgraphManager &cg, Config *c, bool isIPCG, float
   }
 
   cg.registerEstimatorPhase(new StatisticsEstimatorPhase(true));
-
-  //  cg.registerEstimatorPhase(new ResetEstimatorPhase());
 }
 
 bool stringEndsWith(const std::string &s, const std::string &suffix) {
@@ -97,12 +97,13 @@ int main(int argc, char **argv) {
     ("a,all-threads","Show all Threads even if unused.", cxxopts::value<bool>()->default_value("false"))
     ("w, whitelist", "Filter nodes through given whitelist", cxxopts::value<std::string>()->default_value(""))
     ("debug", "Whether debug messages should be printed", cxxopts::value<int>()->default_value("0"));
-    ("x,export", "Export the profiling info into IPCG file", cxxopts::value<bool>()->default_value("false"));
+    ("x, export", "Export the profiling info into IPCG file", cxxopts::value<bool>()->default_value("false"));
   // clang-format on
 
   Config c;
   bool applyStaticFilter = false;
   bool applyModelFilter = false;
+  bool shouldExport = false;
   int printDebug = 0;
   auto result = opts.parse(argc, argv);
 
@@ -130,6 +131,7 @@ int main(int argc, char **argv) {
   checkAndSet<bool>("all-threads", result, c.showAllThreads);
   checkAndSet<std::string>("whitelist", result, c.whitelist);
   checkAndSet<int>("debug", result, printDebug);
+  checkAndSet<bool>("export", result, shouldExport);
 
   if (printDebug == 1) {
     spdlog::set_level(spdlog::level::debug);
@@ -207,6 +209,7 @@ int main(int argc, char **argv) {
       cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(1.0, true));
     }
     if (result.count("export")) {
+      console->info("Exporting to IPCG file.");
       IPCGAnal::annotateJSON(cg.getCallgraph(&CallgraphManager::get()), ipcgFullPath, IPCGAnal::retriever::PlacementInfoRetriever());
    }
   }
@@ -214,7 +217,6 @@ int main(int argc, char **argv) {
   if (cg.hasPassesRegistered()) {
     cg.applyRegisteredPhases();
   }
-
 
   return EXIT_SUCCESS;
 }

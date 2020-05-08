@@ -5,6 +5,8 @@ int CgConfig::samplesPerSecond = 10000;
 
 namespace CgHelper {
 
+  using namespace pira;
+
 /** returns true for nodes with two or more parents */
 bool isConjunction(CgNodePtr node) { return (node->getParentNodes().size() > 1); }
 
@@ -18,7 +20,12 @@ unsigned long long getInstrumentationOverheadOfPath(CgNodePtr node) {
     // RN: the main function can be instrumented as this is part of the
     // heuristic
     if (potentiallyMarked->isInstrumentedWitness()) {
-      costInNanos += potentiallyMarked->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall;
+      const auto &[has, bpd] = potentiallyMarked->checkAndGet<BaseProfileData>();
+      if (has) {
+        costInNanos += bpd->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall;
+      } else {
+      }
+      // costInNanos += potentiallyMarked->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall;
     }
   }
 
@@ -177,7 +184,11 @@ unsigned long long getInstrumentationOverheadOfConjunction(CgNodePtr conjunction
   return std::accumulate(potentiallyInstrumented.begin(), potentiallyInstrumented.end(), 0ULL,
                          [](unsigned long long acc, CgNodePtr node) {
                            if (node->isInstrumentedWitness()) {
-                             return acc + (node->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall);
+                             auto nrCalls = 0ull;
+                             if (node->has<BaseProfileData>()) {
+                               nrCalls = node->get<BaseProfileData>()->getNumberOfCalls();
+                             }
+                             return acc + (nrCalls * CgConfig::nanosPerInstrumentedCall);
                            }
                            return acc;
                          });
@@ -203,7 +214,11 @@ unsigned long long getInstrumentationOverheadOfConjunction(CgNodePtrSet conjunct
   return std::accumulate(potentiallyInstrumented.begin(), potentiallyInstrumented.end(), 0ULL,
                          [](unsigned long long acc, CgNodePtr node) {
                            if (node->isInstrumentedWitness()) {
-                             return acc + (node->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall);
+                             auto nrCalls = 0ull;
+                             if (node->has<BaseProfileData>()) {
+                               nrCalls = node->get<BaseProfileData>()->getNumberOfCalls();
+                             }
+                             return acc + (nrCalls * CgConfig::nanosPerInstrumentedCall);
                            }
                            return acc;
                          });
@@ -223,7 +238,11 @@ unsigned long long getInstrumentationOverheadServingOnlyThisConjunction(CgNodePt
                          [](unsigned long long acc, CgNodePtr node) {
                            bool onlyOneDependendConjunction = node->getDependentConjunctionsConst().size() == 1;
                            if (node->isInstrumentedWitness() && onlyOneDependendConjunction) {
-                             return acc + (node->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall);
+                             auto nrCalls = 0ull;
+                             if (node->has<BaseProfileData>()) {
+                               nrCalls = node->get<BaseProfileData>()->getNumberOfCalls();
+                             }
+                             return acc + (nrCalls * CgConfig::nanosPerInstrumentedCall);
                            }
                            return acc;
                          });
@@ -253,7 +272,11 @@ unsigned long long getInstrumentationOverheadServingOnlyThisConjunction(CgNodePt
                            }
 
                            if (node->isInstrumentedWitness() && onlyOneDependendConjunction) {
-                             return acc + (node->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall);
+                             auto nrCalls = 0ull;
+                             if (node->has<BaseProfileData>()) {
+                               nrCalls = node->get<BaseProfileData>()->getNumberOfCalls();
+                             }
+                             return acc + (nrCalls * CgConfig::nanosPerInstrumentedCall);
                            }
                            return acc;
                          });
@@ -551,8 +574,12 @@ CgNodePtrSet getAncestors(CgNodePtr startingNode) {
 double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef) {
   std::vector<double> rt;
   for (const auto &n : cg) {
-    if (n->comesFromCube()) {
-      rt.push_back(n->getInclusiveRuntimeInSeconds());
+    const auto &[hasBPD, bpd] = n->checkAndGet<BaseProfileData>();
+    const auto &[hasPOD, pod] = n->checkAndGet<PiraOneData>();
+    if (hasPOD && pod->comesFromCube()) {
+      if (hasBPD) {
+        rt.push_back(bpd->getInclusiveRuntimeInSeconds());
+      }
     }
   }
   std::cout << "Basis for runtime threshold calculation: " << rt.size() << "\n";
@@ -584,14 +611,20 @@ double calcInclusiveRuntime(CgNode *node) {
     visitedNodes.insert(node);
 
     // Only count the runtime of nodes comming from the profile
-    if (node->comesFromCube()) {
-      runTime += node->getRuntimeInSeconds();
-    }
+    const auto &[hasPOD, pod] = node->checkAndGet<PiraOneData>();
+    const auto &[hasBPD, bpd] = node->checkAndGet<BaseProfileData>();
+    //if (hasPOD && pod->comesFromCube()) {
+      if (hasBPD) {
+        runTime += bpd->getRuntimeInSeconds();
+      }
+    //}
 
     for (auto childNode : node->getChildNodes()) {
       // Only visit unseen, profiled nodes. Only those have actual timing info!
       CgNode *cn = childNode.get();
-      if (visitedNodes.find(cn) == visitedNodes.end() && childNode->comesFromCube()) {
+      const auto &[has, obj] = childNode->checkAndGet<PiraOneData>();
+      //if (visitedNodes.find(cn) == visitedNodes.end() && has && obj->comesFromCube()) {
+      if (visitedNodes.find(cn) == visitedNodes.end()) {
         workQueue.push(cn);
       }
     }

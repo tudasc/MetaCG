@@ -3,6 +3,7 @@
 //
 
 #include "ExtrapConnection.h"
+#include "CubeReader.h"
 
 #include "nlohmann/json.hpp"
 #include "spdlog/spdlog.h"
@@ -161,7 +162,14 @@ void ExtrapModelProvider::buildModels() {
   }
   spdlog::get("console")->debug(dbgOut);
 
-  std::cout << "Read cube files for experiment data." << std::endl;
+  auto fns = reader.getFileNames(dimensions);
+  for (int i = 0; i < fns.size(); ++i) {
+    if (i % config.repetitions == 0) {
+      std::cout << "Attaching Cube info from file: " << fns.at(i) << std::endl;
+      CubeCallgraphBuilder::buildFromCube(std::string(fns.at(i)) + ".cubex", new Config(), CallgraphManager::get());
+    }
+  }
+
   try {
     experiment = reader.readCubeFiles(dimensions);
   } catch (std::exception &e) {

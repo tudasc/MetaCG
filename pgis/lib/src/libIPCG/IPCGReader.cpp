@@ -1,5 +1,5 @@
 #include "IPCGReader.h"
-
+using namespace pira;
 /** RN: note that the format is child -> parent for whatever reason.. */
 void IPCGAnal::build(CallgraphManager &cg, std::string filename, Config *c) {
   // CallgraphManager *cg = new CallgraphManager(c);
@@ -56,8 +56,10 @@ int IPCGAnal::addRuntimeDispatchCallsFromCubexProfile(CallgraphManager &ipcg, Ca
     for (const auto callee : cubeNode->getChildNodes()) {
       auto res = ipcgEquivNode->getChildNodes().find(callee);  // XXX How is this comparison actually done?
       if (res == ipcgEquivNode->getChildNodes().end()) {
+        const auto &[has, obj] = callee->checkAndGet<BaseProfileData>();
+        auto nrOfCalls = has ? obj->getNumberOfCalls() : 0;
         // we do not have the call stored!
-        ipcg.putEdge(cubeNode->getFunctionName(), "ndef", 0, callee->getFunctionName(), callee->getNumberOfCalls(), .0,
+        ipcg.putEdge(cubeNode->getFunctionName(), "ndef", 0, callee->getFunctionName(), nrOfCalls, .0,
                      0, 0);
         numNewlyInsertedEdges++;
       }

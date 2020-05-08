@@ -17,32 +17,27 @@
 
 class CallgraphManager {
  public:
+  static CallgraphManager &get() {
+    static CallgraphManager instance;
+    return instance;
+  }
 
-   static CallgraphManager &get() {
-     static CallgraphManager instance;
-     return instance;
-   }
+  void clear() {
+    graph.clear();
+    removeAllEstimatorPhases();
+    donePhases.clear();
+  }
 
-   void clear() {
-     graph.clear();
-     removeAllEstimatorPhases();
-     donePhases.clear();
-   }
+  void setConfig(Config *cfg) { config = cfg; }
 
-   void setConfig(Config *cfg) {
-     config = cfg;
-   }
+  void setExtrapConfig(extrapconnection::ExtrapConfig epCfg) {
+    epModelProvider = extrapconnection::ExtrapModelProvider(epCfg);
+  }
 
-   void setExtrapConfig(extrapconnection::ExtrapConfig epCfg) {
-     epModelProvider = extrapconnection::ExtrapModelProvider(epCfg);
-   }
+  extrapconnection::ExtrapModelProvider &getModelProvider() { return epModelProvider; }
 
-   extrapconnection::ExtrapModelProvider &getModelProvider() {
-     return epModelProvider;
-   }
-
-private:
-  CallgraphManager() : config(nullptr), epModelProvider({}){} ;
+ private:
+  CallgraphManager() : config(nullptr), epModelProvider({}){};
   CallgraphManager(Config *config, extrapconnection::ExtrapConfig epCfg = {});
 
   CallgraphManager(const CallgraphManager &other) = default;
@@ -51,8 +46,7 @@ private:
   CallgraphManager &operator=(const CallgraphManager &other) = delete;
   CallgraphManager &operator=(CallgraphManager &&other) = default;
 
-public:
-
+ public:
   ~CallgraphManager() {}
 
   void putEdge(std::string parentName, std::string parentFilename, int parentLine, std::string childName,

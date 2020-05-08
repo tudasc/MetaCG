@@ -5,10 +5,9 @@ set(PGOE_LIB_SOURCES
   src/Callgraph.cpp
   src/CallgraphManager.cpp
   src/CgHelper.cpp
-  src/CgLocation.cpp
   src/CgNode.cpp
   src/CubeReader.cpp
-  src/EdgeBasedOptimumEstimatorPhase.cpp
+  #  src/EdgeBasedOptimumEstimatorPhase.cpp
   src/EstimatorPhase.cpp
   src/IPCGEstimatorPhase.cpp
   src/NodeBasedOptimumEstimatorPhase.cpp

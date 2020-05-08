@@ -2,6 +2,8 @@
 
 #include "libIPCG/IPCGReader.h"
 
+using namespace pira;
+
   struct DummyRetriever {
     bool handles(const CgNodePtr n) {
       return true;
@@ -99,10 +101,10 @@ TEST(IPCGAnnotation, HandlesTwoNodes) {
 TEST(IPCGAnnotation, AttachesRuntime) {
   Callgraph c;
   auto n = std::make_shared<CgNode>("main");
-  n->setRuntimeInSeconds(1.2);
+  n->get<BaseProfileData>()->setRuntimeInSeconds(1.2);
   c.insert(n);
   n = std::make_shared<CgNode>("foo");
-  n->setRuntimeInSeconds(0.0);
+  n->get<BaseProfileData>()->setRuntimeInSeconds(0.0);
   c.insert(n);
   nlohmann::json j;
     j["main"] = {
@@ -138,7 +140,7 @@ TEST(IPCGAnnotation, AttachesRuntime) {
 TEST(IPCGAnnotation, PlacementOutput) {
   Callgraph c;
   auto n = std::make_shared<CgNode>("main");
-  n->setRuntimeInSeconds(1.2);
+  n->get<BaseProfileData>()->setRuntimeInSeconds(1.2);
   c.insert(n);
   nlohmann::json j;
     j["main"] = {
@@ -149,5 +151,6 @@ TEST(IPCGAnnotation, PlacementOutput) {
   // we filter for attached model, thus do not annotate
   IPCGAnal::retriever::PlacementInfoRetriever pr;
   int annotCount = IPCGAnal::doAnnotate(c, pr, j);
+  std::cout << j << std::endl;
   ASSERT_EQ(0, annotCount);
 }

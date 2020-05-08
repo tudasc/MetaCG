@@ -2,6 +2,8 @@
 
 #include "spdlog/spdlog.h"
 
+using namespace pira;
+
 void CubeCallgraphBuilder::build(std::string filePath, Config *c) {
   //CallgraphManager *cg = new CallgraphManager(c, {});
 
@@ -122,63 +124,6 @@ void CubeCallgraphBuilder::build(std::string filePath, Config *c) {
   }
 }
 
-float CubeCallgraphBuilder::CalculateRuntimeThreshold(CallgraphManager *cg) {
-  int i = 0;
-  Callgraph cgptr = cg->getCallgraph(cg);
-  Callgraph::ContainerT cgptrset = cgptr.getGraph();
-  int nodes_count = cgptrset.size();
-  float data[nodes_count];
-  for (auto it = std::begin(cgptrset); it != std::end(cgptrset); ++it) {
-    auto funNode = *it;
-    // std::cout << funNode->getFunctionName() << " -> " <<
-    // funNode->getInclusiveRuntimeInSeconds() << "\n";
-    if (funNode->getInclusiveRuntimeInSeconds() > 0) {
-      data[i++] = funNode->getInclusiveRuntimeInSeconds();
-    }
-  }
-  float ret_val = bucket_sort(data, i);
-  return ret_val;
-}
-
-float CubeCallgraphBuilder::bucket_sort(float arr[], int n) {
-  float minValue = arr[0];
-  float maxValue = arr[0];
-
-  for (int i = 0; i < n; i++) {
-    if (arr[i] > maxValue)
-      maxValue = arr[i];
-    if (arr[i] < minValue)
-      minValue = arr[i];
-  }
-  int bucketLength = (int)(maxValue - minValue + 1);
-  std::vector<float> b[bucketLength];
-  int bi = 0;
-
-  // 2) Put array elements in different buckets
-  for (int i = 0; i < n; i++) {
-    /*if(arr[i] < 1){ bi = 0; }
-    else if(arr[i] < 2){bi=1;}
-    else if(arr[i] < 3){bi=2;}
-    else if(arr[i] < 4){bi=3;}
-    else if(arr[i] < 5){bi=4;}
-    else{bi = 5;}*/
-    int bi = (int)(arr[i] - minValue);  // Index in bucket
-    b[bi].push_back(arr[i]);
-  }
-
-  // 3) Sort individual buckets
-  for (int i = 0; i < bucketLength; i++)
-    sort(b[i].begin(), b[i].end());
-
-  int index = 0;
-  for (int i = 0; i < bucketLength; i++)
-    for (int j = 0; j < b[i].size(); j++)
-      arr[index++] = b[i][j];
-
-  int threshold_index = (90 * n) / 100;
-  return arr[threshold_index];
-}
-
 void CubeCallgraphBuilder::buildFromCube(std::string filePath, Config *c, CallgraphManager &cg) {
   try {
     // Create cube instance
@@ -213,7 +158,7 @@ void CubeCallgraphBuilder::buildFromCube(std::string filePath, Config *c, Callgr
       auto parentName = c->useMangledNames ? parentNode->get_mangled_name() : parentNode->get_name();
       auto childName = c->useMangledNames ? childNode->get_mangled_name() : childNode->get_name();
 
-      for (unsigned int i = 0; i < threads.size(); i++) {
+      for (unsigned int i = 0; i < threads.size(); ++i) {
         unsigned long long numberOfCalls = (unsigned long long)cube.get_sev(visitsMetric, cnode, threads.at(i));
         double timeInSeconds = cube.get_sev(timeMetric, cnode, threads.at(i));
 

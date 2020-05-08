@@ -1,20 +1,21 @@
 #ifndef CG_NODE_H
 #define CG_NODE_H
 
+#include "CgLocation.h"
+#include "CgNodeMetaData.h"
+#include "CgNodePtr.h"
+
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include <map>
 #include <queue>
 #include <set>
-
-#include "CgLocation.h"
-#include "ExtrapConnection.h"
-#include <algorithm>
-#include <unordered_set>
 
 // iterate priority_queue as of: http://stackoverflow.com/a/1385520
 template <class T, class S, class C>
@@ -25,43 +26,50 @@ S &Container(std::priority_queue<T, S, C> &q) {
   return HackedQueue::Container(q);
 }
 
-class CgNode;
-
-namespace std {
-template <>
-struct less<std::shared_ptr<CgNode>> {
-  bool operator()(const std::shared_ptr<CgNode> &a, const std::shared_ptr<CgNode> &b) const;
-};
-template <>
-struct less_equal<std::shared_ptr<CgNode>> {
-  bool operator()(const std::shared_ptr<CgNode> &a, const std::shared_ptr<CgNode> &b) const;
-};
-
-template <>
-struct equal_to<std::shared_ptr<CgNode>> {
-  bool operator()(const std::shared_ptr<CgNode> &a, const std::shared_ptr<CgNode> &b) const;
-};
-template <>
-struct greater<std::shared_ptr<CgNode>> {
-  bool operator()(const std::shared_ptr<CgNode> &a, const std::shared_ptr<CgNode> &b) const;
-};
-
-template <>
-struct greater_equal<std::shared_ptr<CgNode>> {
-  bool operator()(const std::shared_ptr<CgNode> &a, const std::shared_ptr<CgNode> &b) const;
-};
-}  // namespace std
-
 enum CgNodeState { NONE, INSTRUMENT_WITNESS, UNWIND_SAMPLE, INSTRUMENT_CONJUNCTION, UNWIND_INSTR, INSTRUMENT_CUBE };
 
-typedef std::shared_ptr<CgNode> CgNodePtr;  // hopefully this typedef helps readability
-
-typedef std::set<CgNodePtr> CgNodePtrSet;
-typedef std::unordered_set<CgNodePtr> CgNodePtrUnorderedSet;
-
 class CgNode {
+  using MetaData = pira::MetaData;
+  // XXX Meta package
+  mutable std::unordered_map<std::string, MetaData *> metaFields;
+
  public:
+  template <typename T>
+  inline bool has() const {
+    return metaFields.find(T::key()) != metaFields.end();
+  }
+
+  template <typename T>
+  inline T *get() const {
+    auto val = metaFields[T::key()];
+    return reinterpret_cast<T *>(val);
+  }
+
+  template <typename T>
+  inline std::pair<bool, T *> checkAndGet() const {
+    if (this->has<T>()) {
+      auto bpd = this->get<T>();
+      return {true, bpd};
+    }
+    return {false, nullptr};
+  }
+
+  template <typename T>
+  inline void addMetaData(T *md) {
+    if (this->has<T>()) {
+      assert(false && "MetaData with key " T::key() " already attached");
+    }
+    metaFields[T::key()] = md;
+  }
+  // XXX Meta package
+
   CgNode(std::string function);
+  ~CgNode() {
+    for (auto md : metaFields) {
+      delete md.second;
+    }
+  }
+
   CgNode(const CgNode &other) = delete;
   CgNode(const CgNode &&other) = delete;
 
@@ -73,43 +81,35 @@ class CgNode {
   void addParentNode(CgNodePtr parentNode);
   void removeChildNode(CgNodePtr childNode);
   void removeParentNode(CgNodePtr parentNode);
+  const CgNodePtrSet &getChildNodes() const;
+  const CgNodePtrSet &getParentNodes() const;
 
+  void setReachable(bool reachable = true) { this->reachable = reachable; }
+  bool isReachable() const { return this->reachable; }
   bool isSameFunction(CgNodePtr otherNode) const;
 
   std::string getFunctionName() const;
   int getLineNumber() const { return line; }
+  void setLineNumber(int line);
+  int getLineNumber() { return line; }
+  void setFilename(std::string filename);
+  std::string getFilename() { return filename; }
 
-  const CgNodePtrSet &getChildNodes() const;
-  const CgNodePtrSet &getParentNodes() const;
   const CgNodePtrSet &getSpantreeParents() const { return spantreeParents; }
 
-  void addCallData(CgNodePtr parentNode, unsigned long long calls, double timeInSeconds, int threadId, int procId);
-  unsigned long long getNumberOfCalls() const;
-  unsigned long long getNumberOfCallsWithCurrentEdges() const;
-  unsigned long long getNumberOfCalls(CgNodePtr parentNode);
+  // Load imbalance relevant data?
   std::vector<CgLocation> getCgLocation() const;
 
-  void setNumberOfStatements(int numStmts);
-  int getNumberOfStatements() const;
-  void setComesFromCube() { this->wasInPreviousProfile = true; }
-  bool comesFromCube() const { return this->wasInPreviousProfile || !this->filename.empty(); }
-  bool inPreviousProfile() const { return wasInPreviousProfile; }
-
-  void setExtrapModelConnector(extrapconnection::ExtrapConnector epCon) { this->epCon = epCon; }
-  auto &getExtrapModelConnector() { return epCon; }
-
-  void setReachable(bool value = true) { this->reachable = value; }
-  bool isReachable() const { return this->reachable; }
-  void setDominantRuntime() { this->dominantRuntime = true; }
-  bool isDominantRuntime() const { return this->dominantRuntime; }
-
-  double getRuntimeInSeconds() const;
-  /* FIXME: The behaviour of this method needs to be easier. */
-  double getInclusiveRuntimeInSeconds();
-  void setInclusiveRuntimeInSeconds(double newInclusiveRuntimeInSeconds);
-  void setRuntimeInSeconds(double newRuntimeInSeconds);
+  // PGOE stuff
   unsigned long long getExpectedNumberOfSamples() const;
+  int getNumberOfUnwindSteps() const;
+  // marker pos & dependent conjunction stuff
+  CgNodePtrSet &getMarkerPositions();
+  CgNodePtrSet &getDependentConjunctions();
+  const CgNodePtrSet &getMarkerPositionsConst() const;
+  const CgNodePtrSet &getDependentConjunctionsConst() const;
 
+  // Node states
   void setState(CgNodeState state, int numberOfUnwindSteps = 0);
   CgNodeState getStateRaw() const;
   bool isInstrumented() const;
@@ -118,14 +118,6 @@ class CgNode {
   bool isUnwound() const;
   bool isUnwoundSample() const;
   bool isUnwoundInstr() const;
-
-  int getNumberOfUnwindSteps() const;
-
-  // marker pos & dependent conjunction stuff
-  CgNodePtrSet &getMarkerPositions();
-  CgNodePtrSet &getDependentConjunctions();
-  const CgNodePtrSet &getMarkerPositionsConst() const;
-  const CgNodePtrSet &getDependentConjunctionsConst() const;
 
   // spanning tree stuff
   void addSpantreeParent(CgNodePtr parentNode);
@@ -145,11 +137,6 @@ class CgNode {
   CgNodePtr getUniqueParent() const;
   CgNodePtr getUniqueChild() const;
 
-  std::string getFilename() { return filename; }
-  int getLineNumber() { return line; }
-  void setFilename(std::string filename);
-  void setLineNumber(int line);
-
   void dumpToDot(std::ofstream &outputStream, int procNum);
 
   void print();
@@ -166,27 +153,15 @@ class CgNode {
   CgNodeState state;
 
   int numberOfUnwindSteps;
-  unsigned long long numberOfCalls;
-  int numberOfStatements;
-
-  extrapconnection::ExtrapConnector epCon;
 
   // note that these metrics are based on a profile and might be pessimistic
-  double runtimeInSeconds;
-  double inclusiveRuntimeInSeconds;
   unsigned long long expectedNumberOfSamples;
   std::vector<CgLocation> cgLoc;
 
-  bool wasInPreviousProfile;
-
   bool reachable;
-  bool dominantRuntime;
 
   CgNodePtrSet childNodes;
   CgNodePtrSet parentNodes;
-
-  // parentNode -> number of calls by that parent
-  std::map<CgNodePtr, unsigned long long> numberOfCallsBy;
 
   //
   std::map<CgNodePtr, double> dominanceMap;
@@ -208,21 +183,27 @@ class CgNode {
 };
 
 struct CalledMoreOften {
-  bool operator()(const CgNodePtr &lhs, const CgNodePtr &rhs) {
-    return lhs->getNumberOfCalls() < rhs->getNumberOfCalls();
+  inline bool operator()(const CgNodePtr &lhs, const CgNodePtr &rhs) {
+    const auto &[hasLHS, objLHS] = lhs->checkAndGet<pira::BaseProfileData>();
+    const auto &[hasRHS, objRHS] = rhs->checkAndGet<pira::BaseProfileData>();
+    assert(hasLHS && hasRHS && "For CalledMoreOften struct, both nodes need meta data");
+    return objLHS->getNumberOfCalls() < objRHS->getNumberOfCalls();
   }
 };
 typedef std::priority_queue<CgNodePtr, std::vector<CgNodePtr>, CalledMoreOften> CgNodePtrQueueMostCalls;
 
 struct MoreRuntimeAndLeavesFirst {
-  bool operator()(const CgNodePtr &lhs, const CgNodePtr &rhs) {
+  inline bool operator()(const CgNodePtr &lhs, const CgNodePtr &rhs) {
     if (!lhs->isLeafNode() && rhs->isLeafNode()) {
       return true;
     }
     if (lhs->isLeafNode() && !rhs->isLeafNode()) {
       return false;
     }
-    return lhs->getRuntimeInSeconds() < rhs->getRuntimeInSeconds();
+    const auto &[hasLHS, objLHS] = lhs->checkAndGet<pira::BaseProfileData>();
+    const auto &[hasRHS, objRHS] = rhs->checkAndGet<pira::BaseProfileData>();
+    assert(hasLHS && hasRHS && "For CalledMoreOften struct, both nodes need meta data");
+    return objLHS->getNumberOfCalls() < objRHS->getNumberOfCalls();
   }
 };
 typedef std::priority_queue<CgNodePtr, std::vector<CgNodePtr>, MoreRuntimeAndLeavesFirst> CgNodePtrQueueUnwHeur;
@@ -233,7 +214,7 @@ struct CgEdge {
 
   CgEdge(CgNodePtr from, CgNodePtr to) : from(from), to(to) {}
 
-  bool operator<(const CgEdge &other) const { return std::tie(from, to) < std::tie(other.from, other.to); }
+  inline bool operator<(const CgEdge &other) const { return std::tie(from, to) < std::tie(other.from, other.to); }
 
   friend bool operator==(const CgEdge &lhs, const CgEdge &rhs) {
     return std::tie(lhs.from, lhs.to) == std::tie(rhs.from, rhs.to);

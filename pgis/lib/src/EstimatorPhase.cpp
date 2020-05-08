@@ -1,6 +1,8 @@
 
 #include "EstimatorPhase.h"
 
+using namespace pira;
+
 #define NO_DEBUG
 
 EstimatorPhase::EstimatorPhase(std::string name, bool isMetaPhase)
@@ -14,9 +16,10 @@ EstimatorPhase::EstimatorPhase(std::string name, bool isMetaPhase)
 
 void EstimatorPhase::generateReport() {
   for (auto node : (*graph)) {
+    const auto bpd = node->get<BaseProfileData>();
     if (node->isInstrumented()) {
       report.instrumentedMethods += 1;
-      report.instrumentedCalls += node->getNumberOfCalls();
+      report.instrumentedCalls += bpd->getNumberOfCalls();
 
       report.instrumentedNames.insert(node->getFunctionName());
       report.instrumentedNodes.push(node);
@@ -24,7 +27,7 @@ void EstimatorPhase::generateReport() {
     if (node->isUnwound()) {
       unsigned long long unwindSamples = 0;
       if (node->isUnwoundInstr()) {
-        unwindSamples = node->getNumberOfCalls();
+        unwindSamples = bpd->getNumberOfCalls();
       } else if (node->isUnwoundSample()) {
         unwindSamples = node->getExpectedNumberOfSamples();
       } else {
@@ -189,10 +192,12 @@ void RemoveUnrelatedNodesEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
     for (auto node : Container(pq)) {
       if (node->hasUniqueChild() && node->hasUniqueParent()) {
         auto uniqueChild = node->getUniqueChild();
+        auto nodeData = node->get<BaseProfileData>();
+        auto childData = uniqueChild->get<BaseProfileData>();
         if (uniqueChild->hasUniqueParent() && (!CgHelper::isOnCycle(node) || node->hasUniqueChild())) {
           numChainsRemoved++;
 
-          if (node->getNumberOfCalls() >= uniqueChild->getNumberOfCalls()) {
+          if (nodeData->getNumberOfCalls() >= childData->getNumberOfCalls()) {
             graph->erase(node, true);
           } else {
             graph->erase(uniqueChild, true);
@@ -211,7 +216,9 @@ void RemoveUnrelatedNodesEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
     // advanced optimization (remove node with subset of dependentConjunctions
     if (node->hasUniqueParent() && node->hasUniqueChild()) {
       auto uniqueParent = node->getUniqueParent();
-      bool uniqueParentHasLessCalls = uniqueParent->getNumberOfCalls() <= node->getNumberOfCalls();
+      auto nodeData = node->get<BaseProfileData>();
+      auto parentData = uniqueParent->get<BaseProfileData>();
+      bool uniqueParentHasLessCalls = parentData->getNumberOfCalls() <= nodeData->getNumberOfCalls();
       bool uniqueParentServesMoreOrEqualsNodes =
           CgHelper::isSubsetOf(node->getDependentConjunctionsConst(), uniqueParent->getDependentConjunctionsConst());
 
@@ -277,10 +284,12 @@ void GraphStatsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
 
   for (auto node : (*graph)) {
     if (CgHelper::isConjunction(node)) {
-      unsigned long long unwindCostsNanos = node->getNumberOfCalls() * CgConfig::nanosPerUnwindStep;
+      const auto nodeData = node->get<BaseProfileData>();
+      unsigned long long unwindCostsNanos = nodeData->getNumberOfCalls() * CgConfig::nanosPerUnwindStep;
       unsigned long long instrCostsNanos = 0;
       for (auto parent : node->getParentNodes()) {
-        instrCostsNanos += parent->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall;
+        const auto parentData = parent->get<BaseProfileData>();
+        instrCostsNanos += parentData->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall;
       }
 
       if (unwindCostsNanos < instrCostsNanos) {
@@ -299,76 +308,18 @@ void GraphStatsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
 
   unsigned long long nanosInstrCosts = 0;
   for (auto notInstrNode : nodesWithRemovedInstr) {
-    nanosInstrCosts += notInstrNode->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall;
+    const auto nodeData = notInstrNode->get<BaseProfileData>();
+    nanosInstrCosts += nodeData->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall;
   }
   unsigned long long nanosUnwCosts = 0;
   for (auto unwNode : unwoundNodes) {
-    nanosUnwCosts += unwNode->getNumberOfCalls() * CgConfig::nanosPerUnwindStep;
+    const auto nodeData = unwNode->get<BaseProfileData>();
+    nanosUnwCosts += nodeData->getNumberOfCalls() * CgConfig::nanosPerUnwindStep;
   }
   double secondsSavedOverall = (double)(nanosInstrCosts - nanosUnwCosts) / 1e9;
   std::cout << "overall save is: " << secondsSavedOverall << " s in " << unwoundNodes.size() << " functions "
             << std::endl;
 
-  //	// detect cycles
-  //	for (auto node : (*graph)) {
-  //		if (CgHelper::isOnCycle(node)) {
-  //			numCyclesDetected++;
-  //		}
-  //	}
-  //
-  //	// dependent conjunctions
-  //	for (auto node : (*graph)) {
-  //
-  //		if (!CgHelper::isConjunction(node)) {
-  //			continue;
-  //		}
-  //
-  //		numberOfConjunctions++;
-  //		if (hasDependencyFor(node)) {
-  //			continue;
-  //		}
-  //
-  //		CgNodePtrSet dependentConjunctions = {node};
-  //		CgNodePtrSet validMarkerPositions = node->getMarkerPositions();
-  //
-  //		unsigned int numberOfDependentConjunctions = 0;
-  //		while (numberOfDependentConjunctions !=
-  // dependentConjunctions.size()) { 			numberOfDependentConjunctions =
-  // dependentConjunctions.size();
-  //
-  //			CgNodePtrSet reachableConjunctions =
-  // CgHelper::getReachableConjunctions(validMarkerPositions); 			for (auto depConj
-  //: dependentConjunctions) { 				reachableConjunctions.erase(depConj);
-  //			}
-  //
-  //			for (auto reachableConjunction : reachableConjunctions)
-  //{ 				CgNodePtrSet otherValidMarkerPositions =
-  // CgHelper::getPotentialMarkerPositions(reachableConjunction);
-  //
-  //				if (!CgHelper::setIntersect(validMarkerPositions,
-  // otherValidMarkerPositions).empty()) {
-  //					dependentConjunctions.insert(reachableConjunction);
-  //					validMarkerPositions.insert(otherValidMarkerPositions.begin(),
-  // otherValidMarkerPositions.end());
-  //				}
-  //			}
-  //		}
-  //
-  //		///XXX
-  ////		if (dependentConjunctions.size() > 100) {
-  ////			for (auto& dep : dependentConjunctions) {
-  ////				graph->erase(dep, false, true);
-  ////			}
-  ////			for (auto& marker: allValidMarkerPositions) {
-  ////				graph->erase(marker, false, true);
-  ////			}
-  ////		}
-  //
-  //		dependencies.push_back(ConjunctionDependency(dependentConjunctions,
-  // validMarkerPositions));
-  //		allValidMarkerPositions.insert(validMarkerPositions.begin(),
-  // validMarkerPositions.end());
-  //	}
 }
 
 void GraphStatsEstimatorPhase::printAdditionalReport() {
@@ -394,11 +345,13 @@ OverheadCompensationEstimatorPhase::OverheadCompensationEstimatorPhase(int nanos
 
 void OverheadCompensationEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   for (auto node : *graph) {
-    auto oldRuntime = node->getRuntimeInSeconds();
-    unsigned long long numberOfOwnOverheads = node->getNumberOfCalls();
+    auto nodeData = node->get<BaseProfileData>();
+    auto oldRuntime = nodeData->getRuntimeInSeconds();
+    unsigned long long numberOfOwnOverheads = nodeData->getNumberOfCalls();
     unsigned long long numberOfChildOverheads = 0;
     for (auto child : node->getChildNodes()) {
-      numberOfChildOverheads += child->getNumberOfCalls(node);
+      const auto childData = child->get<BaseProfileData>();
+      numberOfChildOverheads += childData->getNumberOfCalls(node);
     }
 
     unsigned long long timestampOverheadNanos =
@@ -406,11 +359,11 @@ void OverheadCompensationEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
     double timestampOverheadSeconds = (double)timestampOverheadNanos / 1e9;
     double newRuntime = oldRuntime - timestampOverheadSeconds;
     if (newRuntime < 0) {
-      node->setRuntimeInSeconds(0);
+      nodeData->setRuntimeInSeconds(0);
       numOvercompensatedFunctions++;
-      numOvercompensatedCalls += node->getNumberOfCalls();
+      numOvercompensatedCalls += nodeData->getNumberOfCalls();
     } else {
-      node->setRuntimeInSeconds(newRuntime);
+      nodeData->setRuntimeInSeconds(newRuntime);
     }
 
     if (config->samplesFile.empty()) {
@@ -596,15 +549,17 @@ void MoveInstrumentationUpwardsEstimatorPhase::modifyGraph(CgNodePtr mainMethod)
     }
 
     auto minimalCalls = nextAncestor;
+    const auto minCallData = minimalCalls->get<BaseProfileData>();
 
     // If it was selected, look for a "cheaper" node upwards
     while (nextAncestor->hasUniqueParent()) {
       nextAncestor = nextAncestor->getUniqueParent();
+      const auto naData = nextAncestor->get<BaseProfileData>();
       if (nextAncestor->getChildNodes().size() > 1) {
         break;  // don't move if parent has multiple children
       }
 
-      if (nextAncestor->getNumberOfCalls() < minimalCalls->getNumberOfCalls()) {
+      if (naData->getNumberOfCalls() < minCallData->getNumberOfCalls()) {
         minimalCalls = nextAncestor;
       }
     }
@@ -678,7 +633,8 @@ void ConjunctionInstrumentHeuristicEstimatorPhase::modifyGraph(CgNodePtr mainMet
   CgNodePtrQueueMostCalls pq(graph->begin(), graph->end());
   for (auto node : Container(pq)) {
     if (CgHelper::isConjunction(node)) {
-      unsigned long long conjInstrCosts = node->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall;
+      const auto nodeData = node->get<BaseProfileData>();
+      unsigned long long conjInstrCosts = nodeData->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall;
 
       unsigned long long expectedInstrumentationOverheadNanos = CgHelper::getInstrumentationOverheadOfConjunction(node);
       unsigned long long expectedActualInstrumentationSavedNanos =
@@ -792,7 +748,8 @@ void UnwindEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
 
     unsigned long long unwindOverhead = getUnwindOverheadNanos(unwoundNodes);
     if (unwindInInstr) {
-      unwindOverhead = node->getNumberOfCalls() * CgConfig::nanosPerUnwindStep;
+      const auto nodeData = node->get<BaseProfileData>();
+      unwindOverhead = nodeData->getNumberOfCalls() * CgConfig::nanosPerUnwindStep;
     }
 
     unsigned long long instrumentationOverhead = getInstrOverheadNanos(unwoundNodes);

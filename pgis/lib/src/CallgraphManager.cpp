@@ -6,6 +6,8 @@
 
 #include "spdlog/spdlog.h"
 
+using namespace pira;
+
 CallgraphManager::CallgraphManager(Config *config, extrapconnection::ExtrapConfig epCfg)
     : config(config), epModelProvider(epCfg) {}
 
@@ -14,15 +16,25 @@ CgNodePtr CallgraphManager::findOrCreateNode(std::string name, double timeInSeco
     return graph.getLastSearched();
   } else {
     auto node = std::make_shared<CgNode>(name);
+    auto bpd = new BaseProfileData();
+    bpd->setRuntimeInSeconds(timeInSeconds);
+    node->addMetaData(bpd);
+
     graph.insert(node);
-    node->setRuntimeInSeconds(timeInSeconds);
     return node;
   }
 }
 
 void CallgraphManager::putNumberOfStatements(std::string name, int numberOfStatements) {
   CgNodePtr node = findOrCreateNode(name);
-  node->setNumberOfStatements(numberOfStatements);
+  auto [has, obj] = node->checkAndGet<PiraOneData>();
+  if (has) {
+    obj->setNumberOfStatements(numberOfStatements);
+  } else {
+    auto *pod = new PiraOneData();
+    pod->setNumberOfStatements(numberOfStatements);
+    node->addMetaData(pod);
+  }
 }
 
 void CallgraphManager::putNumberOfSamples(std::string name, unsigned long long numberOfSamples) {
@@ -33,7 +45,12 @@ void CallgraphManager::putNumberOfSamples(std::string name, unsigned long long n
 
 void CallgraphManager::setNodeComesFromCube(std::string name) {
   auto node = findOrCreateNode(name);
-  node->setComesFromCube();
+  auto [has, obj] = node->checkAndGet<PiraOneData>();
+  if (has) {
+    obj->setComesFromCube();
+  } else {
+    assert(false && "Node has no PiraOneData");
+  }
 }
 
 void CallgraphManager::putEdge(std::string parentName, std::string childName) {
@@ -62,7 +79,9 @@ void CallgraphManager::putEdge(std::string parentName, std::string parentFilenam
 
   auto childNode = graph.findNode(childName);
   if (childNode) {
-    childNode->addCallData(parentNode, numberOfCalls, timeInSeconds, threadId, procId);
+    auto bpd = new BaseProfileData();
+    bpd->addCallData(parentNode, numberOfCalls, timeInSeconds, threadId, procId);
+    childNode->addMetaData(bpd);
   } else {
     spdlog::get("errconsole")->warn("No Child {} found in graph", childName);
   }
@@ -227,6 +246,15 @@ void CallgraphManager::printDOT(std::string prefix) {
         int activeThreads = 0;
         unsigned long long numCalls = 0;
 
+        const auto &[hasBPD, bpd] = node->checkAndGet<BaseProfileData>();
+        const auto &[hasPOD, pod] = node->checkAndGet<PiraOneData>();
+        const auto &[hasPTD, ptd] = node->checkAndGet<PiraTwoData>();
+
+        const auto getCalls = [&] (const auto md) { if (hasBPD) { return md->getNumberOfCalls(); } else { return 0ull; }};
+        const auto getInclRT = [&] (const auto md) { if (hasBPD) { return md->getInclusiveRuntimeInSeconds(); } else { return .0; }};
+        const auto getRT = [&] (const auto md) { if (hasBPD) { return md->getRuntimeInSeconds(); } else { return .0; }};
+        const auto isFromCube = [&] (const auto md) { if (hasPOD) { return md->comesFromCube(); } else { return false; }};
+
         for (CgLocation cgLoc : node->getCgLocation()) {
           std::ostringstream threadTime;
           if (cgLoc.get_procId() == i) {
@@ -270,7 +298,7 @@ void CallgraphManager::printDOT(std::string prefix) {
           if (node->isInstrumentedWitness()) {
             attributes += "style=filled, ";
 
-            if (node->getNumberOfCalls() > callsForThreePercentOfOverhead) {
+            if (getCalls(bpd) > callsForThreePercentOfOverhead) {
               attributes += "fillcolor=red, ";
             } else {
               attributes += "fillcolor=grey, ";
@@ -289,25 +317,28 @@ void CallgraphManager::printDOT(std::string prefix) {
           }
 
           additionalLabel += std::string("\\n #calls Total: ");
-          additionalLabel += std::to_string(node->getNumberOfCalls());
+          additionalLabel += std::to_string(getCalls(bpd));
           additionalLabel += std::string("\\n #calls in Process: ");
           additionalLabel += std::to_string(numCalls);
           additionalLabel += std::string("\\n CubeInclRT: ");
-          additionalLabel += std::to_string(node->getInclusiveRuntimeInSeconds());
+          additionalLabel += std::to_string(getInclRT(bpd));
           additionalLabel += std::string("\\n IsFromCube: ");
-          additionalLabel += std::string((node->comesFromCube() ? "True" : "False"));
+          additionalLabel += std::string((isFromCube(pod) ? "True" : "False"));
 
-          if (node->getExtrapModelConnector().hasModels()) {
-            if (!node->getExtrapModelConnector().isModelSet()) {
-              node->getExtrapModelConnector().useFirstModel();
+          if (hasPTD) {
+            auto conn = ptd->getExtrapModelConnector();
+          if (conn.hasModels()) {
+            if (!conn.isModelSet()) {
+              conn.useFirstModel();
             }
-            auto theModel = node->getExtrapModelConnector().getEPModelFunction();
+            auto theModel = conn.getEPModelFunction();
             additionalLabel += '\n' + std::string(theModel->getAsString(this->epModelProvider.getParameterList()));
+          }
           }
 
           // runtime & expectedSamples in node label
           outfile << "\"" << functionName << i << "\"[" << attributes << "label=\"{" << functionName << "\\n"
-                  << "Total Time: " << node->getRuntimeInSeconds() << "s"
+                  << "Total Time: " << getRT(bpd) << "s"
                   << "\\n"
                   << "|{ #samples: " << node->getExpectedNumberOfSamples() << additionalLabel << "}" << nodeTime << "|{"
                   << threadLabel.substr(0, threadLabel.size() - 1) << "}}\"]" << std::endl;
@@ -396,10 +427,15 @@ Callgraph &CallgraphManager::getCallgraph(CallgraphManager *cg) { return cg->gra
 
 void CallgraphManager::attachExtrapModels() {
   epModelProvider.buildModels();
-  for (const auto &n : graph) {
-    // std::cout << n->getFunctionName() << "\n";
-    n->setExtrapModelConnector(epModelProvider.getModelFor(n->getFunctionName()));
-    n->getExtrapModelConnector().setEpolator(extrapconnection::ExtrapExtrapolator(epModelProvider.getConfigValues()));
+  for (const auto n : graph) {
+    spdlog::get("console")->debug("Attaching models for {}", n->getFunctionName());
+    auto ptd = new PiraTwoData(epModelProvider.getModelFor(n->getFunctionName()));
+    ptd->getExtrapModelConnector().setEpolator(extrapconnection::ExtrapExtrapolator(epModelProvider.getConfigValues()));
+    if (ptd->getExtrapModelConnector().hasModels()) {
+      ptd->getExtrapModelConnector().useFirstModel();
+    }
+    n->addMetaData(ptd);
+    spdlog::get("console")->debug("Model ist set {}", n->get<PiraTwoData>()->getExtrapModelConnector().isModelSet());
   }
   spdlog::get("console")->info("Attaching Extra-P models done");
 }
