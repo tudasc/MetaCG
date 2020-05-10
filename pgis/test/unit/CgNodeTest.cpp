@@ -1,9 +1,16 @@
 #include "CgNode.h"
 
+#include "LoggerUtil.h"
+
 #include "gtest/gtest.h"
 
 namespace {
-TEST(CgNodeBasics, CreateNodeDefaults) {
+class CgNodeBasics : public ::testing::Test {
+ protected:
+  void SetUp() override { loggerutil::getLogger(); }
+};
+
+TEST_F(CgNodeBasics, CreateNodeDefaults) {
   auto n = std::make_shared<CgNode>("foo");
   ASSERT_STREQ("foo", n->getFunctionName().c_str());
   ASSERT_EQ(-1, n->getLineNumber());
@@ -20,7 +27,7 @@ TEST(CgNodeBasics, CreateNodeDefaults) {
   ASSERT_EQ(true, n->isRootNode());
 }
 
-TEST(CgNodeBasics, CreateSingleNodeWithRuntime) {
+TEST_F(CgNodeBasics, CreateSingleNodeWithRuntime) {
   auto n = std::make_shared<CgNode>("foo");
   n->setRuntimeInSeconds(1.23);
   ASSERT_EQ(1.23, n->getRuntimeInSeconds());
@@ -28,13 +35,13 @@ TEST(CgNodeBasics, CreateSingleNodeWithRuntime) {
   ASSERT_EQ(1.23, n->getInclusiveRuntimeInSeconds());
 }
 
-TEST(CgNodeBasics, CreateSingleNodeWithStatements) {
+TEST_F(CgNodeBasics, CreateSingleNodeWithStatements) {
   auto n = std::make_shared<CgNode>("foo");
   n->setNumberOfStatements(42);
   ASSERT_EQ(42, n->getNumberOfStatements());
 }
 
-TEST(CgNodeBasics, CreateChildNodeDefaults) {
+TEST_F(CgNodeBasics, CreateChildNodeDefaults) {
   auto n = std::make_shared<CgNode>("parent");
   auto c = std::make_shared<CgNode>("child");
   ASSERT_EQ(0, n->getChildNodes().size());
@@ -45,7 +52,7 @@ TEST(CgNodeBasics, CreateChildNodeDefaults) {
   ASSERT_TRUE(c->isSameFunction(*(n->getChildNodes().begin())));
 }
 
-TEST(CgNodeBasics, CreateChildParentNodeDefaults) {
+TEST_F(CgNodeBasics, CreateChildParentNodeDefaults) {
   auto n = std::make_shared<CgNode>("parent");
   auto c = std::make_shared<CgNode>("child");
   ASSERT_EQ(0, n->getChildNodes().size());
@@ -58,7 +65,7 @@ TEST(CgNodeBasics, CreateChildParentNodeDefaults) {
   ASSERT_TRUE(n->isSameFunction(*(c->getParentNodes().begin())));
 }
 
-TEST(CgNodeBasics, CreateChildParentRuntime) {
+TEST_F(CgNodeBasics, CreateChildParentRuntime) {
   auto n = std::make_shared<CgNode>("parent");
   auto c = std::make_shared<CgNode>("child");
   c->setComesFromCube();
@@ -76,7 +83,7 @@ TEST(CgNodeBasics, CreateChildParentRuntime) {
   ASSERT_EQ(false, c->isRootNode());
 }
 
-TEST(CgNodeBasics, CreateChildParentRemove) {
+TEST_F(CgNodeBasics, CreateChildParentRemove) {
   auto n = std::make_shared<CgNode>("parent");
   auto c = std::make_shared<CgNode>("child");
   n->addChildNode(c);

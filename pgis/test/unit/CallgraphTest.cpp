@@ -1,14 +1,21 @@
 #include "gtest/gtest.h"
 
+#include "LoggerUtil.h"
+
 #include "Callgraph.h"
 
-TEST(CallgraphBasics, EmptyCG) {
+class CallgraphTest : public ::testing::Test {
+ protected:
+  void SetUp() override { loggerutil::getLogger(); }
+};
+
+TEST_F(CallgraphTest, EmptyCG) {
   Callgraph c;
   ASSERT_EQ(nullptr, c.findMain());
   ASSERT_EQ(0, c.size());
 }
 
-TEST(CallgraphBasics, OnlyMainCG) {
+TEST_F(CallgraphTest, OnlyMainCG) {
   Callgraph c;
   ASSERT_EQ(nullptr, c.findMain());
   auto n = std::make_shared<CgNode>("main");
@@ -20,7 +27,7 @@ TEST(CallgraphBasics, OnlyMainCG) {
   ASSERT_EQ(1, c.size());
 }
 
-TEST(CallgraphBasics, TwoNodeConnectedCG) {
+TEST_F(CallgraphTest, TwoNodeConnectedCG) {
   Callgraph c;
   auto main = std::make_shared<CgNode>("main");
   auto child = std::make_shared<CgNode>("child");
@@ -36,7 +43,7 @@ TEST(CallgraphBasics, TwoNodeConnectedCG) {
   ASSERT_EQ(child, (*founMain->getChildNodes().begin()));
 }
 
-TEST(CallgraphBasics, HasNodeGetLastSearchedTest) {
+TEST_F(CallgraphTest, HasNodeGetLastSearchedTest) {
   Callgraph c;
   auto main = std::make_shared<CgNode>("child");
   c.insert(main);
@@ -45,7 +52,7 @@ TEST(CallgraphBasics, HasNodeGetLastSearchedTest) {
   ASSERT_EQ(main, c.getLastSearched());
 }
 
-TEST(CallgraphBasics, InsertTwiceTest) {
+TEST_F(CallgraphTest, InsertTwiceTest) {
   Callgraph c;
   auto node1 = std::make_shared<CgNode>("node");
   auto node2 = std::make_shared<CgNode>("node");
@@ -54,7 +61,7 @@ TEST(CallgraphBasics, InsertTwiceTest) {
   ASSERT_EQ(1, c.size());
 }
 
-TEST(CallrgaphBasics, SearchNodes) {
+TEST_F(CallgraphTest, SearchNodes) {
   Callgraph c;
   auto node = std::make_shared<CgNode>("node1");
   c.insert(node);

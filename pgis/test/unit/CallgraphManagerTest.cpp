@@ -1,8 +1,15 @@
 #include "gtest/gtest.h"
 
+#include "LoggerUtil.h"
+
 #include "CallgraphManager.h"
 
-TEST(CallgraphManagerBasics, EmptyCG) {
+class CallgraphManagerTest : public ::testing::Test {
+ protected:
+  void SetUp() override { loggerutil::getLogger(); }
+};
+
+TEST_F(CallgraphManagerTest, EmptyCG) {
   Config cfg;
   CallgraphManager cm(&cfg);
   ASSERT_EQ(0, cm.size());
@@ -12,7 +19,7 @@ TEST(CallgraphManagerBasics, EmptyCG) {
   ASSERT_EQ(0, graph.size());
 }
 
-TEST(CallgraphManagerBasics, OneNodeCG) {
+TEST_F(CallgraphManagerTest, OneNodeCG) {
   Config cfg;
   CallgraphManager cm(&cfg);
   cm.findOrCreateNode("main");
@@ -24,7 +31,7 @@ TEST(CallgraphManagerBasics, OneNodeCG) {
   ASSERT_EQ(true, nPtr->comesFromCube());
 }
 
-TEST(CallgraphManagerBasics, TwoNodeCG) {
+TEST_F(CallgraphManagerTest, TwoNodeCG) {
   Config cfg;
   CallgraphManager cm(&cfg);
   int mainLineNumber = 1;
@@ -40,7 +47,7 @@ TEST(CallgraphManagerBasics, TwoNodeCG) {
   ASSERT_EQ(mainLineNumber, mainNode->getLineNumber());
 }
 
-TEST(CallgraphManagerBasics, ThreeNodeCG) {
+TEST_F(CallgraphManagerTest, ThreeNodeCG) {
   Config cfg;
   CallgraphManager cm(&cfg);
   int mainLineNumber = 1;

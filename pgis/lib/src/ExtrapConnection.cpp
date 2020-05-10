@@ -79,7 +79,7 @@ ExtrapConfig getExtrapConfigFromJSON(std::string filePath) {
       std::cerr << "This should not happen\n" << std::endl;
     }
     std::reverse(std::begin(cfg.params), std::end(cfg.params));
-    for(auto & p : cfg.params) {
+    for (auto &p : cfg.params) {
       std::cout << "p.first: " << p.first << std::endl;
     }
   }
@@ -93,7 +93,7 @@ ExtrapConfig getExtrapConfigFromJSON(std::string filePath) {
 const auto getKeys = [](const auto c) {
   std::vector<typename decltype(c)::value_type::first_type> keys;
   for (const auto &e : c) {
-    if(std::find(std::begin(keys), std::end(keys), e.first) == std::end(keys)) {
+    if (std::find(std::begin(keys), std::end(keys), e.first) == std::end(keys)) {
       keys.push_back(e.first);
     }
   }
@@ -124,29 +124,29 @@ void ExtrapModelProvider::buildModels() {
   std::vector<std::string> paramPrefixes{std::cbegin(keyCont), std::cend(keyCont)};
   // Actual parameter values: Inner vector is values for the parameter, outer vector corresponds to paramPrefixes
   std::vector<std::vector<int>> paramValues;
-  
+
   for (const auto pv : config.params) {
     paramValues.push_back(pv.second);
   }
 
-  for(auto pp : paramPrefixes) {
+  for (auto pp : paramPrefixes) {
     std::cout << pp << std::endl;
   }
 
   // We always access the previous iteration.
   std::string finalDir = config.directory + '/' + 'i' + std::to_string(config.iteration - 1);
- 
+
   reader.prepareCubeFileReader(scalingType, finalDir, config.prefix, config.postfix, cubeFileName, extrapParams,
                                paramPrefixes, paramValues, config.repetitions);
 
   std::cout << "Dimension: " << extrapParams.size() << std::endl;
-  for(auto p : extrapParams) {
+  for (auto p : extrapParams) {
     std::cout << p.getName() << std::endl;
   }
 
   std::cout << "ParamVals: " << paramValues.size() << std::endl;
-  for(auto p : paramValues) {
-    for(auto v : p) {
+  for (auto p : paramValues) {
+    for (auto v : p) {
       std::cout << v << std::endl;
     }
   }
@@ -161,7 +161,7 @@ void ExtrapModelProvider::buildModels() {
 
   if (!experiment) {
     std::cerr << "Reading of cube files went wrong. Aborting" << std::endl;
-    abort ();
+    abort();
   }
 
   std::cout << "Read cube files for experiment data DONE." << std::endl;

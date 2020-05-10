@@ -51,7 +51,7 @@ std::pair<bool, double> ExtrapLocalEstimatorPhaseBase::shouldInstrument(CgNodePt
   return {false, -1};
 }
 
-std::pair<bool, double>  ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(CgNodePtr node) const {
+std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(CgNodePtr node) const {
   if (!node->getExtrapModelConnector().isModelSet())
     return {false, -1};
 
@@ -97,10 +97,10 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(CgNodePtr mainNod
               auto nodesToMain = CgHelper::allNodesToMain(cLocal, mainNode, pathsToMain);
               pathsToMain[cLocal] = nodesToMain;
               totalToMain.insert(nodesToMain.begin(), nodesToMain.end());
-              }
             }
           }
         }
+      }
     }
   }
 }

@@ -2,6 +2,9 @@
 #include "IPCGEstimatorPhase.h"
 #include "CgHelper.h"
 
+#include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/spdlog.h"
+
 #include <unordered_map>
 
 FirstNLevelsEstimatorPhase::FirstNLevelsEstimatorPhase(int levels)
@@ -39,16 +42,16 @@ void StatementCountEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   if (pSEP) {
     numberOfStatementsThreshold = pSEP->getMaxNumInclStmts() * .5;
     numberOfStatementsThreshold = pSEP->getMedianNumInclStmts();
-    std::cout << "CHANGED COUNT: NOW USING " << numberOfStatementsThreshold << " AS THRESHOLD!" << std::endl;
+    spdlog::get("console")->debug("Changed count: now using {} as threshold", numberOfStatementsThreshold);
   }
 
   for (auto node : *graph) {
-    std::cout << "Processing node: " << node->getFunctionName() << " >> ";
+    spdlog::get("console")->trace("Processing node: {}", node->getFunctionName());
     if (!node->isReachable()) {
-      std::cout << "skipping\n";
+      spdlog::get("console")->trace("\tskipping.");
       continue;
     }
-    std::cout << "estimating\n";
+    spdlog::get("console")->trace("\testimating.");
     estimateStatementCount(node);
   }
 }
@@ -83,7 +86,7 @@ void StatementCountEstimatorPhase::estimateStatementCount(CgNodePtr startNode) {
     inclStmtCount = startNode->getNumberOfStatements();
   }
 
-  // std::cout << startNode->getFunctionName() << ": " << inclStmtCount << "\n";
+  spdlog::get("console")->trace("Function: {} >> InclStatementCount: {}", startNode->getFunctionName(), inclStmtCount);
   if (inclStmtCount >= numberOfStatementsThreshold) {
     startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
   }
@@ -139,7 +142,6 @@ void MaxStmtSelectionStrategy::operator()(CgNodePtr node) {
     return;
   }
   for (auto childNode : node->getChildNodes()) {
-    //std::cout << "Node " << node->getFunctionName() << " has Extra-P model: " << childNode->getEPMetric() << std::endl;
     if (!childNode->isReachable()) {
       continue;
     }
@@ -186,7 +188,7 @@ void RuntimeEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   }
 
   runTimeThreshold = CgHelper::calcRuntimeThreshold(*graph, true);
-  std::cout << "The runtime threshold is computed as: " << runTimeThreshold << "\n";
+  spdlog::get("console")->debug("The runtime is threshold is computed as: {}", runTimeThreshold);
 
   std::queue<CgNodePtr> workQueue;
   workQueue.push(mainMethod);
@@ -246,13 +248,13 @@ void RuntimeEstimatorPhase::estimateRuntime(CgNodePtr startNode) {
 
 void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
   auto runTime = inclRunTime[startNode];
-    std::cout << "Processing: " << startNode->getFunctionName() << ":\nNode runtime:\t\t"
-              << startNode->getInclusiveRuntimeInSeconds() << "\nCalculated Runtime:\t" << runTime
-              << " | threshold: " << runTimeThreshold << "\n";
+  spdlog::get("console")->debug("Processing {}:\n\tNode RT:\t{}\n\tCalced RT:\t{}\n\tThreshold:\t{}",
+                                startNode->getFunctionName(), startNode->getInclusiveRuntimeInSeconds(), runTime,
+                                runTimeThreshold);
   if (runTime >= runTimeThreshold) {
     // keep the nodes on the paths in the profile, when they expose sufficient runtime.
     startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
-    std::cout << "[PGIS][Instrumenting] Node: " << startNode->getFunctionName() << " for its runtime.\n";
+    spdlog::get("console")->info("Instrumenting {} because of its runtime", startNode->getFunctionName());
     int instrChildren = 0;
 
     std::map<CgNodePtr, long int> childStmts;
@@ -292,7 +294,7 @@ void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
     }
 
     if (maxRtChild) {
-      std::cout << "\nDOMCHILD: " << maxRtChild->getFunctionName() << "\n";
+      spdlog::get("console")->debug("The principal node set to {}", maxRtChild->getFunctionName());
     }
 
     int stmtThreshold = maxStmts;
@@ -308,36 +310,39 @@ void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
 //#undef NEW_PIRA_ONE
 #ifdef NEW_PIRA_ONE
     alpha = .3f;
-    numChildren = std::count_if(std::begin(startNode->getChildNodes()), std::end(startNode->getChildNodes()), [&] (const auto &n) { return childStmts[n] > 0;});
+    numChildren = std::count_if(std::begin(startNode->getChildNodes()), std::end(startNode->getChildNodes()),
+                                [&](const auto &n) { return childStmts[n] > 0; });
 #endif
     if (numChildren > 0) {
-      std::cout << "[Start: " << startNode->getFunctionName() << "] The max Stmts is: " << stmtThreshold << std::endl;
-      std::cout << "[Start: " << startNode->getFunctionName() << "] The num childs is: " << numChildren << std::endl;
       stmtThreshold = (maxStmts / numChildren) * alpha;
-      std::cout << "[Start: " << startNode->getFunctionName() << "] The set stmtThreshold is: " << stmtThreshold << std::endl;
+      spdlog::get("console")->debug(
+          "=== Children Info for {} ===\n\tMax Stmts:\t{}\n\tNum Children:\t{}\n\tStmt Threshold:\t{}",
+          startNode->getFunctionName(), maxStmts, numChildren, stmtThreshold);
     } else {
       stmtThreshold = 1;
     }
 
-    std::cout << " | runtime | max Stmts | alpha | tot Stmts | stmt Threshold | instrumented children \n";
-    std::cout << " | " << runTime << " | " << maxStmts << " | " << alpha << " | " << totStmts << " | " << stmtThreshold
-              << " | " << instrChildren << "\n";
+    spdlog::get("console")->trace(
+        ">>> Algorithm Infos <<<\n\tRuntime:\t{}\n\tMax Stmts:\t{}\n\tAlpha:\t\t{}\n\tTotal Stmts:\t{}\n\tStmt "
+        "Threshold:\t{}\n\tInstr Children:\t{}\n",
+        runTime, maxStmts, alpha, totStmts, stmtThreshold, instrChildren);
 
     if (stmtThreshold < 1) {
       // This can happen, if all leaves are std lib functions.
-      std::cout << "Statement Threshold < 1: RETURNING\n\n";
+      spdlog::get("console")->debug("Statement Threshold < 1: Returning");
       return;
     }
     if (maxRtChild) {
-      std::cout << "This is the dominant runtime path" << std::endl;
+      spdlog::get("console")->debug("This is the dominant runtime path");
       maxRtChild->setState(CgNodeState::INSTRUMENT_WITNESS);
       maxRtChild->setDominantRuntime();
     } else {
-      std::cout << "This is the non-dominant runtime path" << std::endl;
+      spdlog::get("console")->debug("This is the non-dominant runtime path");
       if (startNode->isDominantRuntime()) {
-        std::cout << "\tDOM: " << startNode->getFunctionName();
+        spdlog::get("console")->debug("\tPrincipal: {}", startNode->getFunctionName());
         for (auto child : startNode->getChildNodes()) {
-          std::cout << "\n\tEvaluating: " << child->getFunctionName() << "\t| " << childStmts[child] << " | " << stmtThreshold;
+          spdlog::get("console")->trace("\tEvaluating {} with {} [stmt threshold: {}]", child->getFunctionName(),
+                                        childStmts[child], stmtThreshold);
           if (childStmts[child] > stmtThreshold) {
             child->setState(CgNodeState::INSTRUMENT_WITNESS);
             instrChildren++;
@@ -346,8 +351,10 @@ void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
         std::cout << "\n\n";
       }
     }
-    std::cout << "End of processing " << startNode->getFunctionName() << " | " << runTime << " | " << maxStmts << " | " << alpha << " | " << totStmts << " | " << stmtThreshold
-              << " | " << instrChildren << "\n\n";
+    spdlog::get("console")->debug(
+        "End of Processing {}:\n\tRuntime:\t{}\n\tMax Stmts:\t{}\n\tAlpha:\t\t{}\n\tTotal Stmt:\t{}\n\tStmt "
+        "Threshold:\t{}\n\tInstr Children:\t{}",
+        startNode->getFunctionName(), runTime, maxStmts, alpha, totStmts, stmtThreshold, instrChildren);
   }
 }
 
@@ -357,7 +364,7 @@ void StatisticsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   StatementCountEstimatorPhase sce(999999999);
   sce.setGraph(graph);
   sce.modifyGraph(mainMethod);
-  std::cout << "Running modify graph\n";
+  spdlog::get("console")->info("Running StatisticsEstimatorPhase::modifyGraph");
 
   for (auto node : *graph) {
     if (!node->isReachable()) {
@@ -381,7 +388,7 @@ void StatisticsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
 
 void StatisticsEstimatorPhase::printReport() {
   if (!shouldPrintReport) {
-    std::cout << "Should not print report\n";
+    spdlog::get("console")->trace("Should not print report");
     return;
   }
 
@@ -412,14 +419,12 @@ void StatisticsEstimatorPhase::printReport() {
   const long int maxNumStmts = (*(minMaxIncl.second)).first;
   const long int minNumStmts = (*(minMaxIncl.first)).first;
 
-  std::cout << " === Call graph statistics ===\nNumber of Functions: " << numFunctions
-            << "\nNumber of statements: " << totalStmts << "\n\nMax num incl statements: " << maxNumStmts
-            << "\nMedian num incl statements: " << medianNumStmts << "\nMin num incl statements: " << minNumStmts
-            << "\nMax num Stmts: " << maxNumSingleStmts << "\nMedian num statements: " << medianNumSingleStmts
-            << "\nMin num statements: " << minNumSingleStmts
-            << "\nCovered with Instrumentation: " << stmtsCoveredWithInstr
-            << "\nCovered with Cube: " << stmtsActuallyCovered
-            << "\nStmts not covered: " << (totalStmts - stmtsCoveredWithInstr) << "\n===============================\n";
+  spdlog::get("console")->info(
+      " === Call graph statistics ===\nNo. of Functions:\t{}\nNo. of statements:\t{}\nMax No. Incl Stmt:\t{}\nMedian "
+      "No. Incl Stmt:\t{}\nMin No. Incl Stmt:\t{}\nMax No. Stmt:\t\t{}\nMedian No. Stmt:\t{}\nMin No. "
+      "Stmt:\t\t{}\nCovered w/ Instr:\t{}\nStmt not Covered:\t{}\n === === === === ===",
+      numFunctions, totalStmts, maxNumStmts, medianNumStmts, minNumStmts, maxNumSingleStmts, medianNumSingleStmts,
+      minNumSingleStmts, stmtsCoveredWithInstr, stmtsActuallyCovered, (totalStmts - stmtsCoveredWithInstr));
 }
 
 long int StatisticsEstimatorPhase::getMedianNumInclStmts() {
@@ -462,7 +467,7 @@ void WLCallpathDifferentiationEstimatorPhase::modifyGraph(CgNodePtr mainMethod) 
   // TODO: move this parsing somewhere else
   std::ifstream file(whitelistName);
   if (!file) {
-    std::cerr << "Error in WLCallpathDifferentiation: Could not open " << whitelistName << std::endl;
+    spdlog::get("errconsole")->error("Error in WLCallpathDifferentitation: Could not open {}", whitelistName);
     exit(1);
   }
   std::string line;

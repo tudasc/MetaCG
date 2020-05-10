@@ -23,6 +23,12 @@ function(add_extrap_libraries target)
   )
 endfunction()
 
+function(add_logger_libraries target)
+	target_link_libraries(${target} 
+		spdlog::spdlog
+	)
+endfunction()
+
 function(add_cube_includes target)
 	target_include_directories(${target} PUBLIC
 		${CUBE_INCLUDE}
@@ -140,4 +146,37 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
 if (CMAKE_VERSION VERSION_LESS 2.8.11)
   include_directories("${gtest_SOURCE_DIR}/include")
 endif()
+
+
+
+# Download and unpack googletest at configure time
+configure_file(cmake/spdlog.cmake.in spdlog-download/CMakeLists.txt)
+execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+  RESULT_VARIABLE spdresult
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/spdlog-download )
+if(spdresult)
+  message(FATAL_ERROR "CMake step for spdlog failed: ${spdresult}")
+endif()
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
+  RESULT_VARIABLE spdresult
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/spdlog-download)
+if(spdresult)
+  message(FATAL_ERROR "Build step for spdlog failed: ${spdresult}")
+endif()
+
+# Prevent overriding the parent project's compiler/linker
+# settings on Windows
+set(spdlog_force_shared_crt ON CACHE BOOL "" FORCE)
+
+# Add googletest directly to our build. This defines
+# the gtest and gtest_main targets.
+add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/spdlog-src
+                 ${CMAKE_CURRENT_BINARY_DIR}/spdlog-build
+                 EXCLUDE_FROM_ALL)
+
+install(
+	TARGETS spdlog
+	DESTINATION lib
+	)
+
 

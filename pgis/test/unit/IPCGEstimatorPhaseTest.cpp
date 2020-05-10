@@ -1,9 +1,16 @@
 #include "gtest/gtest.h"
 
+#include "LoggerUtil.h"
+
 #include "CallgraphManager.h"
 #include "IPCGEstimatorPhase.h"
 
-TEST(IPCGEstimatorPhaseBasics, EmptyCG) {
+class IPCGEstimatorPhaseBasic : public ::testing::Test {
+ protected:
+  void SetUp() override { loggerutil::getLogger(); }
+};
+
+TEST_F(IPCGEstimatorPhaseBasic, EmptyCG) {
   Config cfg;
   CallgraphManager cm(&cfg);
   cm.setNoOutput();
@@ -12,7 +19,7 @@ TEST(IPCGEstimatorPhaseBasics, EmptyCG) {
   ASSERT_DEATH(cm.applyRegisteredPhases(), "CallgraphManager: Cannot find main function.");
 }
 
-TEST(IPCGEstimatorPhaseBasics, OneNodeCG) {
+TEST_F(IPCGEstimatorPhaseBasic, OneNodeCG) {
   Config cfg;
   CallgraphManager cm(&cfg);
   cm.setNoOutput();
@@ -26,7 +33,7 @@ TEST(IPCGEstimatorPhaseBasics, OneNodeCG) {
   ASSERT_EQ(0, sce.getNumStatements(mainNode));
 }
 
-TEST(IPCGEstimatorPhaseBasics, TwoNodeCG) {
+TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCG) {
   Config cfg;
   CallgraphManager cm(&cfg);
   cm.setNoOutput();
@@ -42,7 +49,7 @@ TEST(IPCGEstimatorPhaseBasics, TwoNodeCG) {
   ASSERT_EQ(0, sce.getNumStatements(mainNode));
 }
 
-TEST(IPCGEstimatorPhaseBasics, OneNodeCGwStmt) {
+TEST_F(IPCGEstimatorPhaseBasic, OneNodeCGwStmt) {
   Config cfg;
   CallgraphManager cm(&cfg);
   cm.setNoOutput();
@@ -57,7 +64,7 @@ TEST(IPCGEstimatorPhaseBasics, OneNodeCGwStmt) {
   ASSERT_EQ(12, sce.getNumStatements(mainNode));
 }
 
-TEST(IPCGEstimatorPhaseBasics, TwoNodeCGwStmt) {
+TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCGwStmt) {
   Config cfg;
   CallgraphManager cm(&cfg);
   cm.setNoOutput();
@@ -78,7 +85,7 @@ TEST(IPCGEstimatorPhaseBasics, TwoNodeCGwStmt) {
   ASSERT_EQ(7, sce.getNumStatements(childNode));
 }
 
-TEST(IPCGEstimatorPhaseBasics, ThreeNodeCGwStmt) {
+TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCGwStmt) {
   Config cfg;
   CallgraphManager cm(&cfg);
   cm.setNoOutput();
@@ -106,7 +113,7 @@ TEST(IPCGEstimatorPhaseBasics, ThreeNodeCGwStmt) {
   ASSERT_EQ(42, sce.getNumStatements(childNode2));
 }
 
-TEST(IPCGEstimatorPhaseBasics, ThreeNodeCycleCGwStmt) {
+TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCycleCGwStmt) {
   Config cfg;
   CallgraphManager cm(&cfg);
   cm.setNoOutput();
@@ -135,7 +142,7 @@ TEST(IPCGEstimatorPhaseBasics, ThreeNodeCycleCGwStmt) {
   ASSERT_EQ(49, sce.getNumStatements(childNode2));
 }
 
-TEST(IPCGEstimatorPhaseBasics, FourNodeCGwStmt) {
+TEST_F(IPCGEstimatorPhaseBasic, FourNodeCGwStmt) {
   Config cfg;
   CallgraphManager cm(&cfg);
   cm.setNoOutput();
@@ -169,7 +176,7 @@ TEST(IPCGEstimatorPhaseBasics, FourNodeCGwStmt) {
   ASSERT_EQ(22, sce.getNumStatements(childNode3));
 }
 
-TEST(IPCGEstimatorPhaseBasics, FourNodeDiamondCGwStmt) {
+TEST_F(IPCGEstimatorPhaseBasic, FourNodeDiamondCGwStmt) {
   Config cfg;
   CallgraphManager cm(&cfg);
   cm.setNoOutput();
@@ -213,7 +220,7 @@ TEST(IPCGEstimatorPhaseBasics, FourNodeDiamondCGwStmt) {
    |
    o
 */
-TEST(IPCGEstimatorPhaseBasics, FiveNodeDiamondCGwStmt) {
+TEST_F(IPCGEstimatorPhaseBasic, FiveNodeDiamondCGwStmt) {
   Config cfg;
   CallgraphManager cm(&cfg);
   cm.setNoOutput();
@@ -273,6 +280,7 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
   }
 
   void SetUp() override {
+    loggerutil::getLogger();
     cm.setNoOutput();
     auto mainNode = cm.findOrCreateNode("main", 1.4);
     cm.putNumberOfStatements("main", 12);
@@ -303,6 +311,7 @@ TEST_F(IPCGEstimatorPhaseTest, ValidateBasics) {
   EXPECT_EQ("child5", (*(++nodeIter))->getFunctionName());
 }
 
+// TODO: THis seems more like a test for CallgraphManager?
 TEST_F(IPCGEstimatorPhaseTest, InitiallyNoneReachable) {
   ASSERT_NE(0, cm.size());
   int count = 0;

@@ -29,6 +29,9 @@ add_json_parser(pgoelib)
 add_extrap_includes(pgoelib)
 add_extrap_libraries(pgoelib)
 
+add_logger_libraries(pgoelib)
+
+
 install(
   TARGETS pgoelib
   EXPORT ${TARGETS_EXPORT_NAME}

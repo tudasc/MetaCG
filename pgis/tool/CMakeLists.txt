@@ -16,11 +16,15 @@ add_pgoe_library(pgis_pira)
 add_cxxopts_includes(pgis_pira)
 add_extrap_libraries(pgis_pira)
 add_cube_libraries(pgis_pira)
+add_logger_libraries(pgis_pira)
 
 add_pgoe_includes(pgis_stmt_printer)
 add_pgoe_library(pgis_stmt_printer)
 add_extrap_libraries(pgis_stmt_printer)
 add_cube_libraries(pgis_stmt_printer)
+add_logger_libraries(pgis_stmt_printer)
+
+
 
 install(
   TARGETS pgis_pira pgis_stmt_printer 

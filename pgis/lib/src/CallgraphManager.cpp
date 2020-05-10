@@ -4,6 +4,8 @@
 
 #include "EXTRAP_Model.hpp"
 
+#include "spdlog/spdlog.h"
+
 CallgraphManager::CallgraphManager(Config *config, extrapconnection::ExtrapConfig epCfg)
     : config(config), epModelProvider(epCfg) {}
 
@@ -39,7 +41,7 @@ void CallgraphManager::putEdge(std::string parentName, std::string childName) {
   CgNodePtr childNode = findOrCreateNode(childName);
 
   if (parentNode == nullptr || childNode == nullptr) {
-    std::cerr << "[warning] One of the edge nodes is a nullptr\n";
+    spdlog::get("errconsole")->warn("One of the edge nodes is a nullptr");
   }
 
   parentNode->addChildNode(childNode);
@@ -53,7 +55,7 @@ void CallgraphManager::putEdge(std::string parentName, std::string parentFilenam
 
   auto parentNode = graph.findNode(parentName);
   if (parentNode == nullptr) {
-    std::cerr << "ERROR in looking up node." << std::endl;
+    spdlog::get("errconsole")->warn("Problem in looking up node");
   }
   parentNode->setFilename(parentFilename);
   parentNode->setLineNumber(parentLine);
@@ -62,7 +64,7 @@ void CallgraphManager::putEdge(std::string parentName, std::string parentFilenam
   if (childNode) {
     childNode->addCallData(parentNode, numberOfCalls, timeInSeconds, threadId, procId);
   } else {
-    std::cerr << "No child " << childName << " found in graph\n";
+    spdlog::get("errconsole")->warn("No Child {} found in graph", childName);
   }
 }
 
@@ -81,7 +83,7 @@ void CallgraphManager::finalizeGraph(bool buildMarker) {
     // We assume that 'main' is always reachable.
     auto mainNode = graph.findMain();
     if (mainNode == nullptr) {
-      std::cerr << "CallgraphManager: Cannot find main function." << std::endl;
+      spdlog::get("errconsole")->error("CallgraphManager: Cannot find main function");
       exit(1);
     }
     mainNode->setReachable();
@@ -97,7 +99,7 @@ void CallgraphManager::finalizeGraph(bool buildMarker) {
 
     // graph.findMain caches the main node
     if (CgHelper::reachableFrom(graph.findMain(), node)) {
-      std::cout << "setting reachable: " << node->getFunctionName() << '\n';
+      spdlog::get("console")->trace("Setting reachable: {}", node->getFunctionName());
       node->setReachable();
     } else {
       node->setReachable(false);
@@ -119,7 +121,7 @@ void CallgraphManager::applyRegisteredPhases() {
   auto mainFunction = graph.findMain();
 
   if (mainFunction == nullptr) {
-    std::cerr << "CallgraphManager: Cannot find main function." << std::endl;
+    spdlog::get("errconsole")->error("CallgraphManager: Cannot find main function.");
     exit(1);
   }
 
@@ -131,8 +133,8 @@ void CallgraphManager::applyRegisteredPhases() {
 #endif
     phase->modifyGraph(mainFunction);
     phase->generateReport();
-    
-    std::cout << "## Print Phase Report" << std::endl;
+
+    spdlog::get("console")->info("Print phase report");
     phase->printReport();
 
     CgReport report = phase->getReport();
@@ -149,8 +151,7 @@ void CallgraphManager::applyRegisteredPhases() {
 #if BENCHMARK_PHASES
     auto endTime = std::chrono::system_clock::now();
     double calculationTime = (endTime - startTime).count() / 1e6;
-    std::cout << "\t- "
-              << "calculation took " << calculationTime << " sec" << std::endl;
+    spdlog::get("console")->debug("Calculating phase {} took {} sec", phase->getName(), calculationTime);
 #endif
 
     phases.pop();
@@ -159,6 +160,7 @@ void CallgraphManager::applyRegisteredPhases() {
   }
 
   if (!noOutputRequired) {
+    // XXX Change to spdlog
     std::cout << " ---- "
               << "Fastest Phase: " << std::setw(8) << config->fastestPhaseOvPercent << " % with "
               << config->fastestPhaseName << std::endl;
@@ -333,7 +335,7 @@ bool CallgraphManager::readWhitelist(std::vector<std::string> &whiteNodes) {
   std::ifstream in(config->whitelist.c_str());
 
   if (!in) {
-    std::cerr << "Cannot open the File : " << config->whitelist << std::endl;
+    spdlog::get("errconsole")->error("Cannot open file {}", config->whitelist);
     return false;
   }
 
@@ -366,7 +368,7 @@ void CallgraphManager::dumpInstrumentedNames(CgReport report) {
     filename = config->outputFile + "/instrumented-" + config->appName + ".txt";
   }
   filename = config->outputFile + "/instrumented-" + config->appName + ".txt";
-  std::cout << "Writing to " << filename << std::endl;
+  spdlog::get("console")->info("Writing to {}", filename);
   std::ofstream outfile(filename, std::ofstream::out);
 
   if (report.instrumentedNodes.empty()) {
@@ -399,5 +401,5 @@ void CallgraphManager::attachExtrapModels() {
     n->setExtrapModelConnector(epModelProvider.getModelFor(n->getFunctionName()));
     n->getExtrapModelConnector().setEpolator(extrapconnection::ExtrapExtrapolator(epModelProvider.getConfigValues()));
   }
-  std::cout << "Attaching Extra-P Models done." << std::endl;
+  spdlog::get("console")->info("Attaching Extra-P models done");
 }

@@ -25,6 +25,7 @@ CgNode::CgNode(std::string function) : epCon({}, {}) {
 
   this->numberOfStatements = 0;
   this->wasInPreviousProfile = false;
+  this->reachable = false;
 }
 
 void CgNode::addChildNode(CgNodePtr childNode) { childNodes.insert(childNode); }

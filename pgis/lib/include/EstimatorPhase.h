@@ -84,6 +84,8 @@ class EstimatorPhase {
 
   void setNoReport() { noReportRequired = true; }
 
+  std::string getName() { return name; }
+
  protected:
   Callgraph *graph;
 

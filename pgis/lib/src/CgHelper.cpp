@@ -413,12 +413,13 @@ bool reachableFrom(CgNodePtr parentNode, CgNodePtr childNode) {
   return false;
 }
 
-CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode, const std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> &init) {
+CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,
+                                     const std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> &init) {
   {
-  auto it = init.find(startNode);
-  if (it != init.end()) {
-    return (*it).second;
-  }
+    auto it = init.find(startNode);
+    if (it != init.end()) {
+      return (*it).second;
+    }
   }
 
   CgNodePtrUnorderedSet pNodes;
@@ -435,9 +436,9 @@ CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode, co
     visitedNodes.insert(node);
 
     // XXX This is itself an expensive computation!
-  //  if (reachableFrom(mainNode, node)){
-  //    pNodes.insert(node);
-  //  }
+    //  if (reachableFrom(mainNode, node)){
+    //    pNodes.insert(node);
+    //  }
     if (!node->isReachable()) {
       continue;
     } else {
@@ -455,11 +456,9 @@ CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode, co
   return pNodes;
 }
 
-
 CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode) {
   return allNodesToMain(startNode, mainNode, {});
 }
-
 
 /** true if the two nodes are connected via spanning tree edges */
 // XXX RN: this method is ugly and has horrible complexity
@@ -601,6 +600,5 @@ double calcInclusiveRuntime(CgNode *node) {
   // startNode->setInclusiveRuntimeInSeconds(runTime);
   return runTime;
 }
-
 
 }  // namespace CgHelper

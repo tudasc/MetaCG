@@ -15,6 +15,10 @@
 #include "ProximityMeasureEstimatorPhase.h"
 #include "SanityCheckEstimatorPhase.h"
 
+
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+
 #include "cxxopts.hpp"
 
 void registerEstimatorPhases(CallgraphManager &cg, Config *c, bool isIPCG, float runtimeThreshold) {
@@ -26,11 +30,11 @@ void registerEstimatorPhases(CallgraphManager &cg, Config *c, bool isIPCG, float
 
   // Actually do the selection
   if (!isIPCG) {
-    std::cout << "New threshold runtime for profiling: " << runtimeThreshold << std::endl;
+    spdlog::get("console")->info("New runtime threshold for profiling: {}", runtimeThreshold);
     cg.registerEstimatorPhase(new RuntimeEstimatorPhase(runtimeThreshold));
   } else {
     const int nStmt = 2000;
-    std::cout << "[PGIS] [STATIC] $" << nStmt << "$" << std::endl;
+    spdlog::get("console")->info("New statement threshold for profiling: ${}$", nStmt);
     cg.registerEstimatorPhase(new StatementCountEstimatorPhase(nStmt, true, statEstimator));
   }
 
@@ -51,8 +55,11 @@ void checkAndSet(const char *id, const OptsT &opts, ConfigT &cfg) {
 }
 
 int main(int argc, char **argv) {
+  auto console = spdlog::stdout_color_mt("console");
+  auto errconsole= spdlog::stderr_color_mt("errconsole");
+
   if (argc == 1) {
-    std::cerr << "ERROR: too few arguments. Use --help to show help." << std::endl;
+    spdlog::get("errconsole")->error("Too few arguments. Use --help to show help.");
     exit(-1);
   }
 
@@ -88,12 +95,14 @@ int main(int argc, char **argv) {
     ("e,extrap", "File to read Extra-P info from", cxxopts::value<std::string>()->default_value(""))
     ("model-filter", "Use Extra-P models to filter only.", cxxopts::value<bool>()->default_value("false"))
     ("a,all-threads","Show all Threads even if unused.", cxxopts::value<bool>()->default_value("false"))
-    ("w, whitelist", "Filter nodes through given whitelist", cxxopts::value<std::string>()->default_value(""));
+    ("w, whitelist", "Filter nodes through given whitelist", cxxopts::value<std::string>()->default_value(""))
+    ("debug", "Whether debug messages should be printed", cxxopts::value<int>()->default_value("0"));
   // clang-format on
 
   Config c;
   bool applyStaticFilter = false;
   bool applyModelFilter = false;
+  int printDebug = 0;
   auto result = opts.parse(argc, argv);
 
   if (result.count("help")) {
@@ -119,6 +128,16 @@ int main(int argc, char **argv) {
   checkAndSet<bool>("model-filter", result, applyModelFilter);
   checkAndSet<bool>("all-threads", result, c.showAllThreads);
   checkAndSet<std::string>("whitelist", result, c.whitelist);
+  checkAndSet<int>("debug", result, printDebug);
+
+  if (printDebug == 1) {
+    spdlog::set_level(spdlog::level::debug);
+  } else if (printDebug == 2) {
+    spdlog::set_level(spdlog::level::trace);
+  } else {
+    spdlog::set_level(spdlog::level::info);
+  }
+
   // for static instrumentation
   std::string ipcgFullPath(argv[argc - 1]);
   // checkAndSet<std::string>("ipcg-file", result, ipcgFullPath);
@@ -140,7 +159,7 @@ int main(int argc, char **argv) {
   CallgraphManager cg(&c, parseExtrapArgs(result));
 
   if (stringEndsWith(ipcgFullPath, ".ipcg")) {
-    std::cout << "Reading from ipcg file " << ipcgFullPath << std::endl;
+    console->info("Reading ipcg file: {}", ipcgFullPath);
     IPCGAnal::buildFromJSON(cg, ipcgFullPath, &c);
     if (applyStaticFilter) {
       registerEstimatorPhases(cg, &c, true, 0);
@@ -165,14 +184,14 @@ int main(int argc, char **argv) {
     } else if (stringEndsWith(filePath, ".dot")) {
       cg = DOTCallgraphBuilder::build(filePath, &c);
     } else {
-      std::cerr << "ERROR: Unknown file ending in " << filePath << std::endl;
+      spdlog::get("errconsole")->error("Unknown file ending in {}", filePath);
       exit(-1);
     }
 
     c.totalRuntime = c.actualRuntime;
     /* This runtime threshold currently unused */
     registerEstimatorPhases(cg, &c, false, runTimeThreshold);
-    std::cout << "Registered estimator phases.\n";
+    console->info("Registered estimator phases");
   }
 
   if (result["extrap"].count()) {
@@ -180,10 +199,10 @@ int main(int argc, char **argv) {
     cg.printDOT("extrap");
 
     if (applyModelFilter) {
-      std::cout << "Applying model filter" << std::endl;
+      console->info("Applying model filter");
       cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueFilter(1.0, true));
     } else {
-      std::cout << "Applying model expander" << std::endl;
+      console->info("Applying model expander");
       cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(true, false));  // remove unrelated
       cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(1.0, true));
     }
