@@ -28,7 +28,7 @@ struct ExtrapConfig {
   std::string directory;
   std::string prefix;
   std::string postfix;
-  //std::map<std::string, std::vector<int>> params;
+  // std::map<std::string, std::vector<int>> params;
   std::vector<std::pair<std::string, std::vector<int>>> params;
   int repetitions;
   int iteration;
@@ -56,11 +56,10 @@ class ExtrapExtrapolator {
       auto interPolValue = sum / steps.size();
       auto lastVal = *(it2);
       result.emplace_back(std::make_pair(param_pair.first, lastVal + interPolValue));
-      //result.emplace_back(std::make_pair(param_pair.first, 4 * param_pair.second.back()));
+      // result.emplace_back(std::make_pair(param_pair.first, 4 * param_pair.second.back()));
     }
 
     return result;
-
   }
 
  private:
@@ -133,7 +132,7 @@ class ExtrapModelProvider {
 
     // PGIS uses mangled names, Extra-P apparently demangled names.
     auto demangledName = demangle(functionName);
-    //std::cout << "Mangled: " << functionName << "\nDemangl: " << demangledName << std::endl;
+    // std::cout << "Mangled: " << functionName << "\nDemangl: " << demangledName << std::endl;
 
     auto paramList = getParameterList();
 
@@ -157,9 +156,7 @@ class ExtrapModelProvider {
     return vals;
   }
 
-  auto getConfigValues() {
-    return config.params;
-  }
+  auto getConfigValues() { return config.params; }
 
   void buildModels();
 

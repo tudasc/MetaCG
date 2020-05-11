@@ -7,14 +7,13 @@
 #include <unordered_map>
 #include <unordered_set>
 
-
 namespace IPCGAnal {
 
-struct FunctionInfo {          
+struct FunctionInfo {
   FunctionInfo() : functionName("_UNDEF_"), isVirtual(false), doesOverride(false), numStatements(-1) {}
   std::string functionName;
-  bool isVirtual;              
-  bool doesOverride;           
+  bool isVirtual;
+  bool doesOverride;
   int numStatements;
   std::unordered_set<std::string> callees;
   std::unordered_set<std::string> parents;
@@ -29,6 +28,6 @@ int addRuntimeDispatchCallsFromCubexProfile(CallgraphManager &ipcg, CallgraphMan
 
 FuncMapT::mapped_type &getOrInsert(std::string key, FuncMapT &functions);
 void buildFromJSON(CallgraphManager &cgm, std::string filename, Config *c);
-}
+}  // namespace IPCGAnal
 
 #endif

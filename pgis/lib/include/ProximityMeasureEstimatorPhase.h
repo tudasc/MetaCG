@@ -6,8 +6,7 @@
 #include "EstimatorPhase.h"
 
 class ProximityMeasureEstimatorPhase : public EstimatorPhase {
-
-public:
+ public:
   ProximityMeasureEstimatorPhase(std::string filename);
   virtual void modifyGraph(CgNodePtr mainMethod) override;
 
@@ -33,17 +32,17 @@ public:
    */
   std::map<CgNodePtr, double> buildDominanceMap(CgNodePtr node);
 
-	/**
-	 * The severity is defined as
-	 * 
-	 * sev_{node}(child(node)) = T_i(child(node)) * calls_{node}(child(node))
-	 *
-	 */
-	std::map<CgNodePtr, double> buildSeverityMap(CgNodePtr node);
+  /**
+   * The severity is defined as
+   *
+   * sev_{node}(child(node)) = T_i(child(node)) * calls_{node}(child(node))
+   *
+   */
+  std::map<CgNodePtr, double> buildSeverityMap(CgNodePtr node);
 
-	void printReport() override;
+  void printReport() override;
 
-private:
+ private:
   double childrenPreserved(CgNodePtr orig, CgNodePtr filtered);
   void prepareList(std::set<CgNodePtr> &worklist, CgNodePtr mainM);
   void prepareListOneLevel(std::set<CgNodePtr> &worklist, CgNodePtr root);
@@ -56,7 +55,6 @@ private:
 
   std::map<CgNodePtr, double> domMap;
   std::map<CgNodePtr, double> sevMap;
-
 
   std::string filename;
   CallgraphManager compareAgainst;
