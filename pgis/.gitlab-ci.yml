@@ -80,6 +80,19 @@ run-static-test:
     - cd test/integration
     - ./runner.sh static
 
+run-modeling-test:
+  stage: integration-test
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
+    - cd test/integration
+    - ./runner.sh modeling
+
 run-dynamic-test:
   stage: integration-test
   tags:
