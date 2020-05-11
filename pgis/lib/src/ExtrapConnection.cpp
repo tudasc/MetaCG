@@ -3,10 +3,11 @@
 //
 
 #include "ExtrapConnection.h"
-#include "EXTRAP_SingleParameterModelGenerator.hpp"
+
 #include "nlohmann/json.hpp"
 #include "spdlog/spdlog.h"
 
+#include "EXTRAP_SingleParameterModelGenerator.hpp"
 #include <EXTRAP_MultiParameterSimpleModelGenerator.hpp>
 #include <EXTRAP_SingleParameterSimpleModelGenerator.hpp>
 

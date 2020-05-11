@@ -7,6 +7,8 @@
 
 #include "EstimatorPhase.h"
 
+#include "spdlog/spdlog.h"
+
 #include "EXTRAP_MultiParameterFunction.hpp"
 #include "EXTRAP_SingleParameterFunction.hpp"
 
@@ -23,26 +25,21 @@ auto zip_to_map(ContT1 &keys, ContT2 &vals) {
   return v_map;
 }
 
+inline bool isConstant(EXTRAP::MultiParameterFunction *func) { return func->getMultiParameterTerms().size() == 0; }
 
-inline bool isConstant(EXTRAP::MultiParameterFunction *func) {
-  return func->getMultiParameterTerms().size() == 0;
-}
+inline bool isConstant(EXTRAP::SingleParameterFunction *func) { return func->getCompoundTerms().size() == 0; }
 
-inline bool isConstant(EXTRAP::SingleParameterFunction *func) {
-  return func->getCompoundTerms().size() == 0;
-}
-
-template<typename T>
+template <typename T>
 inline bool isConstant(T paramCont, EXTRAP::Function *func) {
   if (paramCont.size() < 1) {
-    std::cerr << __FUNCTION__ << ": Less than one parameter found." << std::endl;
+    spdlog::get("errconsole")->error("{}: Less than one parameter found.", __FUNCTION__);
     assert(paramCont.size() > 0 && "There should be at least one parameter stored per function");
   }
 
   if (paramCont.size() == 1) {
-    return isConstant(static_cast<EXTRAP::SingleParameterFunction*>(func));
+    return isConstant(static_cast<EXTRAP::SingleParameterFunction *>(func));
   } else {
-    return isConstant(static_cast<EXTRAP::MultiParameterFunction*>(func));
+    return isConstant(static_cast<EXTRAP::MultiParameterFunction *>(func));
   }
 }
 
@@ -77,9 +74,9 @@ class ExtrapLocalEstimatorPhaseBase : public EstimatorPhase {
   template <typename... Vals>
   value_type evalModelWValue(CgNodePtr n, Vals... values) const;
   */
-  auto evalModelWValue(CgNodePtr n, std::vector<std::pair<std::string, double> > values) const;
+  auto evalModelWValue(CgNodePtr n, std::vector<std::pair<std::string, double>> values) const;
   bool allNodesToMain;
-  
+
   std::vector<std::pair<double, CgNodePtr>> kernels;
 };
 
@@ -99,16 +96,18 @@ ExtrapLocalEstimatorPhaseBase::value_type ExtrapLocalEstimatorPhaseBase::evalMod
 }
 #endif
 
-auto ExtrapLocalEstimatorPhaseBase::evalModelWValue(CgNodePtr n, std::vector<std::pair<std::string, double> > values) const {
+auto ExtrapLocalEstimatorPhaseBase::evalModelWValue(CgNodePtr n,
+                                                    std::vector<std::pair<std::string, double>> values) const {
   auto fModel = n->getExtrapModelConnector().getEPModelFunction();
 
   std::map<EXTRAP::Parameter, double> evalOps;
-
+  
+  auto console = spdlog::get("console");
   for (const auto &p : values) {
-    std::cout << "Setting: " << p.first << " = " << p.second << std::endl;
+    console->trace("Setting {} to {}", p.first, p.second);
     evalOps.insert(std::make_pair(EXTRAP::Parameter(p.first), p.second));
   }
-  
+
   //if (isConstant(evalOps, fModel)) {
   //  return -1.0;
   //}
