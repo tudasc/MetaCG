@@ -5,6 +5,7 @@
 #include "ExtrapConnection.h"
 #include "EXTRAP_SingleParameterModelGenerator.hpp"
 #include "nlohmann/json.hpp"
+#include "spdlog/spdlog.h"
 
 #include <EXTRAP_MultiParameterSimpleModelGenerator.hpp>
 #include <EXTRAP_SingleParameterSimpleModelGenerator.hpp>
@@ -139,7 +140,8 @@ void ExtrapModelProvider::buildModels() {
   reader.prepareCubeFileReader(scalingType, finalDir, config.prefix, config.postfix, cubeFileName, extrapParams,
                                paramPrefixes, paramValues, config.repetitions);
 
-  std::cout << "Dimension: " << extrapParams.size() << std::endl;
+  int dimensions = extrapParams.size();
+  std::cout << "Dimension: " << dimensions << std::endl;
   for (auto p : extrapParams) {
     std::cout << p.getName() << std::endl;
   }
@@ -151,7 +153,13 @@ void ExtrapModelProvider::buildModels() {
     }
   }
 
-  int dimensions = extrapParams.size();
+  auto cubeFiles = reader.getFileNames(dimensions);
+  std::string dbgOut("Reading cube files:\n");
+  for (const auto f : cubeFiles) {
+    dbgOut += "- " + f + "\n";
+  }
+  spdlog::get("console")->debug(dbgOut);
+
   std::cout << "Read cube files for experiment data." << std::endl;
   try {
     experiment = reader.readCubeFiles(dimensions);

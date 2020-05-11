@@ -1,12 +1,17 @@
 #include "CubeReader.h"
 
+#include "spdlog/spdlog.h"
+
 CallgraphManager CubeCallgraphBuilder::build(std::string filePath, Config *c) {
   CallgraphManager *cg = new CallgraphManager(c, {});
 
   try {
+    // get logger
+    auto console = spdlog::get("console");
     // Create cube instance
     cube::Cube cube;
     // Read our cube file
+    console->info("Reading cube file {}", filePath);
     cube.openCubeReport(filePath);
     // Get the cube nodes
     const std::vector<cube::Cnode *> &cnodes = cube.get_cnodev();
