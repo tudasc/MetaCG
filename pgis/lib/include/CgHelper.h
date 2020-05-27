@@ -2,14 +2,14 @@
 #ifndef CGNODEHELPER_H_
 #define CGNODEHELPER_H_
 
+#include "CgNode.h"
+
 #include <algorithm>  // std::set_intersection
 #include <memory>
-#include <numeric>  // for std::accumulate
 #include <queue>
 
 #include <cassert>
 
-#include "CgNode.h"
 
 class Callgraph;
 

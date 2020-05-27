@@ -6,6 +6,8 @@
 
 #include "spdlog/spdlog.h"
 
+#include <iomanip>  //  std::setw()
+
 using namespace pira;
 
 CallgraphManager::CallgraphManager(Config *config, extrapconnection::ExtrapConfig epCfg)

@@ -7,12 +7,8 @@ set(PGOE_LIB_SOURCES
   src/CgHelper.cpp
   src/CgNode.cpp
   src/CubeReader.cpp
-  #  src/EdgeBasedOptimumEstimatorPhase.cpp
   src/EstimatorPhase.cpp
   src/IPCGEstimatorPhase.cpp
-  src/NodeBasedOptimumEstimatorPhase.cpp
-	#src/ProximityMeasureEstimatorPhase.cpp
-  src/SanityCheckEstimatorPhase.cpp
   src/ExtrapConnection.cpp
   src/ExtrapEstimatorPhase.cpp)
 

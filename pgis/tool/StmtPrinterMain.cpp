@@ -8,11 +8,7 @@
 
 #include "Callgraph.h"
 
-#include "EdgeBasedOptimumEstimatorPhase.h"
 #include "IPCGEstimatorPhase.h"
-#include "NodeBasedOptimumEstimatorPhase.h"
-#include "ProximityMeasureEstimatorPhase.h"
-#include "SanityCheckEstimatorPhase.h"
 
 void registerEstimatorPhases(CallgraphManager &cg, Config *c, bool isIPCG, float runtimeThreshold) {
   auto statEstimator = new StatisticsEstimatorPhase(false);  // used to compute values for other phases

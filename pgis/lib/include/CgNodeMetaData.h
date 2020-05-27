@@ -4,7 +4,6 @@
 #include "CgNodePtr.h"
 
 #include "ExtrapConnection.h"
-#include <unordered_set>
 
 namespace pira {
 

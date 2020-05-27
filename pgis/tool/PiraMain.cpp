@@ -8,12 +8,8 @@
 
 #include "Callgraph.h"
 
-#include "EdgeBasedOptimumEstimatorPhase.h"
 #include "ExtrapEstimatorPhase.h"
 #include "IPCGEstimatorPhase.h"
-#include "NodeBasedOptimumEstimatorPhase.h"
-#include "ProximityMeasureEstimatorPhase.h"
-#include "SanityCheckEstimatorPhase.h"
 
 
 #include "spdlog/spdlog.h"

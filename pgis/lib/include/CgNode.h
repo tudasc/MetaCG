@@ -5,17 +5,10 @@
 #include "CgNodeMetaData.h"
 #include "CgNodePtr.h"
 
-#include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <memory>
 #include <string>
-#include <unordered_set>
 #include <vector>
-
 #include <map>
 #include <queue>
-#include <set>
 
 // iterate priority_queue as of: http://stackoverflow.com/a/1385520
 template <class T, class S, class C>
@@ -182,6 +175,7 @@ class CgNode {
   int line;
 };
 
+
 struct CalledMoreOften {
   inline bool operator()(const CgNodePtr &lhs, const CgNodePtr &rhs) {
     const auto &[hasLHS, objLHS] = lhs->checkAndGet<pira::BaseProfileData>();
@@ -191,22 +185,6 @@ struct CalledMoreOften {
   }
 };
 typedef std::priority_queue<CgNodePtr, std::vector<CgNodePtr>, CalledMoreOften> CgNodePtrQueueMostCalls;
-
-struct MoreRuntimeAndLeavesFirst {
-  inline bool operator()(const CgNodePtr &lhs, const CgNodePtr &rhs) {
-    if (!lhs->isLeafNode() && rhs->isLeafNode()) {
-      return true;
-    }
-    if (lhs->isLeafNode() && !rhs->isLeafNode()) {
-      return false;
-    }
-    const auto &[hasLHS, objLHS] = lhs->checkAndGet<pira::BaseProfileData>();
-    const auto &[hasRHS, objRHS] = rhs->checkAndGet<pira::BaseProfileData>();
-    assert(hasLHS && hasRHS && "For CalledMoreOften struct, both nodes need meta data");
-    return objLHS->getNumberOfCalls() < objRHS->getNumberOfCalls();
-  }
-};
-typedef std::priority_queue<CgNodePtr, std::vector<CgNodePtr>, MoreRuntimeAndLeavesFirst> CgNodePtrQueueUnwHeur;
 
 struct CgEdge {
   CgNodePtr from;
