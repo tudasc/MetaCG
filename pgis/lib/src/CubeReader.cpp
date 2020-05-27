@@ -8,6 +8,15 @@ using namespace pira;
 
 namespace CubeCallgraphBuilder::impl {
 
+template <typename T, typename U>
+inline auto has(U u) {
+  return u->template has<T>();
+}
+template <typename T, typename U>
+inline auto get(U u) {
+  return u->template get<T>();
+}
+
 const auto mangledName = [](const auto cn) { return cn->get_callee()->get_mangled_name(); };
 const auto demangledName = [](const auto cn) { return cn->get_callee()->get_name(); };
 const auto cMetric = [](std::string &&name, auto &&cube, auto cn) {
@@ -46,33 +55,33 @@ const auto getName = [](const bool mangled, const auto cn) {
   }
 };
 
-const auto attRuntime = [](auto &cube, auto cnode, CgNodePtr n) {
-  if (n->has<BaseProfileData>()) {
+const auto attRuntime = [](auto &cube, auto cnode, auto n) {
+  if (has<BaseProfileData>(n)) {
     spdlog::get("console")->info("Attaching runtime {} to node {}", impl::time(cube, cnode), n->getFunctionName());
-    n->get<BaseProfileData>()->setRuntimeInSeconds(impl::time(cube, cnode));
+    get<BaseProfileData>(n)->setRuntimeInSeconds(impl::time(cube, cnode));
   } else {
     spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
   }
-  if(n->has<PiraOneData>()){
-    n->get<PiraOneData>()->setComesFromCube();
+  if(has<PiraOneData>(n)){
+    get<PiraOneData>(n)->setComesFromCube();
   }
 };
 
-const auto attNrCall = [] (auto &cube, auto cnode, CgNodePtr n) {
-  if (n->has<BaseProfileData>()){
+const auto attNrCall = [] (auto &cube, auto cnode, auto n) {
+  if (has<BaseProfileData>(n)){
     spdlog::get("console")->info("Attaching visits {} to node {}", impl::visits(cube, cnode), n->getFunctionName());
-    n->get<BaseProfileData>()->setNumberOfCalls(impl::visits(cube, cnode));
+    get<BaseProfileData>(n)->setNumberOfCalls(impl::visits(cube, cnode));
   } else {
     spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
   }
 };
 
-const auto attInclRuntime = [] (auto &cube, auto cnode, CgNodePtr n) {
-  if (n->has<BaseProfileData>()){
-    n->get<BaseProfileData>()->setInclusiveRuntimeInSeconds(cubeInclTime(cube, cnode));
+const auto attInclRuntime = [] (auto &cube, auto cnode, auto n) {
+  if (has<BaseProfileData>(n)){
+    get<BaseProfileData>(n)->setInclusiveRuntimeInSeconds(cubeInclTime(cube, cnode));
   }
-  if(n->has<PiraOneData>()){
-    n->get<PiraOneData>()->setComesFromCube();
+  if(has<PiraOneData>(n)){
+    get<PiraOneData>(n)->setComesFromCube();
   }
 };
 
