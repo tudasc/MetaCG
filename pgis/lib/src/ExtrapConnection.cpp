@@ -8,9 +8,16 @@
 #include "nlohmann/json.hpp"
 #include "spdlog/spdlog.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wextra"
+#pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wsign-compare"
 #include "EXTRAP_SingleParameterModelGenerator.hpp"
 #include <EXTRAP_MultiParameterSimpleModelGenerator.hpp>
 #include <EXTRAP_SingleParameterSimpleModelGenerator.hpp>
+#pragma GCC diagnostic pop
+
 
 namespace extrapconnection {
 

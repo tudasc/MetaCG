@@ -1,207 +1,124 @@
 #include "CubeReader.h"
+#include "CgNodeMetaData.h"
+#include "CgNode.h"
 
 #include "spdlog/spdlog.h"
 
 using namespace pira;
 
-void CubeCallgraphBuilder::build(std::string filePath, Config *c) {
-  //CallgraphManager *cg = new CallgraphManager(c, {});
+namespace CubeCallgraphBuilder::impl {
 
+const auto mangledName = [](const auto cn) { return cn->get_callee()->get_mangled_name(); };
+const auto demangledName = [](const auto cn) { return cn->get_callee()->get_name(); };
+const auto cMetric = [](std::string &&name, auto &&cube, auto cn) {
+  if constexpr (std::is_pointer_v<decltype(cn)>) {
+    typedef decltype(cube.get_sev(cube.get_met(name.c_str()), cn, cube.get_thrdv().at(0))) RetType;
+    RetType metric{};
+    for (auto t : cube.get_thrdv()) {
+        metric += cube.get_sev(cube.get_met(name.c_str()), cn, t);
+    }
+    return metric;
+  } else {
+    assert(false);
+  }
+};
+const auto time = [](auto &&cube, auto cn) {
+  return cMetric(std::string("time"), cube, cn);
+};
+const auto visits =[](auto &&cube, auto cn) {
+  return cMetric(std::string("visits"), cube, cn);
+};
+
+const auto cubeInclTime = [](auto &&cube, auto cn) {
+  double inclusiveTime = 0;
+  for (auto t : cube.get_thrdv()) {
+     inclusiveTime += cube.get_sev(cube.get_met("time"), cube::CUBE_CALCULATE_INCLUSIVE, cn,
+                                        cube::CUBE_CALCULATE_INCLUSIVE, t, cube::CUBE_CALCULATE_INCLUSIVE);
+  }
+  return inclusiveTime;
+};
+
+const auto getName = [](const bool mangled, const auto cn) {
+  if (mangled) {
+    return mangledName(cn);
+  } else {
+    return demangledName(cn);
+  }
+};
+
+const auto attRuntime = [](auto &cube, auto cnode, CgNodePtr n) {
+  if (n->has<BaseProfileData>()) {
+    spdlog::get("console")->info("Attaching runtime {} to node {}", impl::time(cube, cnode), n->getFunctionName());
+    n->get<BaseProfileData>()->setRuntimeInSeconds(impl::time(cube, cnode));
+  } else {
+    spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
+  }
+  if(n->has<PiraOneData>()){
+    n->get<PiraOneData>()->setComesFromCube();
+  }
+};
+
+const auto attNrCall = [] (auto &cube, auto cnode, CgNodePtr n) {
+  if (n->has<BaseProfileData>()){
+    spdlog::get("console")->info("Attaching visits {} to node {}", impl::visits(cube, cnode), n->getFunctionName());
+    n->get<BaseProfileData>()->setNumberOfCalls(impl::visits(cube, cnode));
+  } else {
+    spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
+  }
+};
+
+const auto attInclRuntime = [] (auto &cube, auto cnode, CgNodePtr n) {
+  if (n->has<BaseProfileData>()){
+    n->get<BaseProfileData>()->setInclusiveRuntimeInSeconds(cubeInclTime(cube, cnode));
+  }
+  if(n->has<PiraOneData>()){
+    n->get<PiraOneData>()->setComesFromCube();
+  }
+};
+
+template <typename... Largs>
+void build(std::string filePath, Largs... largs) {
   auto &cg = CallgraphManager::get();
-  cg.setConfig(c);
+  bool useMangledNames = false;
+
+  auto console = spdlog::get("console");
 
   try {
-    // get logger
-    auto console = spdlog::get("console");
-    // Create cube instance
     cube::Cube cube;
     // Read our cube file
     console->info("Reading cube file {}", filePath);
     cube.openCubeReport(filePath);
     // Get the cube nodes
-    const std::vector<cube::Cnode *> &cnodes = cube.get_cnodev();
-    unsigned long long overallNumberOfCalls = 0;
-    double overallRuntime = 0.0;
+    const auto &cnodes = cube.get_cnodev();
 
-    double smallestFunctionInSeconds = 1e9;
-    std::string smallestFunctionName;
-    int edgesWithZeroRuntime = 0;
-
-    cube::Metric *timeMetric = cube.get_met("time");
-    cube::Metric *visitsMetric = cube.get_met("visits");
-
-    const std::vector<cube::Thread *> threads = cube.get_thrdv();
-
-    for (auto cnode : cnodes) {
-      // I don't know when this happens, but it does.
-      if (cnode->get_parent() == nullptr) {
-        cg.findOrCreateNode(
-            c->useMangledNames ? cnode->get_callee()->get_mangled_name() : cnode->get_callee()->get_name(),
-            cube.get_sev(timeMetric, cnode, threads.at(0)));
+    for (const auto cnode : cnodes) {
+      if (!cnode->get_parent()) {
+        cg.findOrCreateNode(getName(useMangledNames, cnode), time(cube, cnode));
         continue;
       }
 
-      // Put the parent/child pair into our call graph
-      auto parentNode = cnode->get_parent()->get_callee();  // RN: don't trust no one. It IS the parent node
-      auto childNode = cnode->get_callee();
+      auto pNode = cnode->get_parent();
+      auto cNode = cnode;
+      auto pName = getName(useMangledNames, pNode);
+      auto cName = getName(useMangledNames, cNode);
 
-      auto parentName = c->useMangledNames ? parentNode->get_mangled_name() : parentNode->get_name();
-      auto childName = c->useMangledNames ? childNode->get_mangled_name() : childNode->get_name();
-
-      for (unsigned int i = 0; i < threads.size(); i++) {
-        unsigned long long numberOfCalls = (unsigned long long)cube.get_sev(visitsMetric, cnode, threads.at(i));
-        double timeInSeconds = cube.get_sev(timeMetric, cnode, threads.at(i));
-
-        cg.putEdge(parentName, parentNode->get_mod(), parentNode->get_begn_ln(), childName, numberOfCalls,
-                    timeInSeconds, threads.at(i)->get_id(), threads.at(i)->get_parent()->get_id());
-
-        overallNumberOfCalls += numberOfCalls;
-        overallRuntime += timeInSeconds;
-
-        double runtimePerCallInSeconds = timeInSeconds / numberOfCalls;
-        if (runtimePerCallInSeconds < smallestFunctionInSeconds) {
-          smallestFunctionInSeconds = runtimePerCallInSeconds;
-          smallestFunctionName = childName;
-        }
-      }
-
-      cg.setNodeComesFromCube(parentName);
-      cg.setNodeComesFromCube(childName);
+      // Insert edge
+      cg.putEdge(pName, cName);
+      // Leave what to capture and attach to the user
+      apply(cube, cnode, cName, largs...);
     }
 
-    // read in samples per second TODO these are hardcoded for 10kHz
-    auto samplesFilename = c->samplesFile;
-    if (!samplesFilename.empty()) {
-      std::ifstream inFile(samplesFilename);
-      if (!inFile.is_open()) {
-        std::cerr << "Can not open samples-file: " << samplesFilename << std::endl;
-        exit(1);
-      }
-      std::string line;
-      while (std::getline(inFile, line)) {
-        std::string name;
-        unsigned long long numberOfSamples;
-
-        inFile >> numberOfSamples >> name;
-
-        cg.putNumberOfSamples(name, numberOfSamples);
-      }
-    }
-
-    c->actualRuntime = overallRuntime;
-    bool hasRefTime = c->referenceRuntime > .0;
-    unsigned long long normalProbeNanos = overallNumberOfCalls * CgConfig::nanosPerNormalProbe;
-
-    double probeSeconds = (double(normalProbeNanos)) / (1000 * 1000 * 1000);
-    double probePercent = probeSeconds / (overallRuntime - probeSeconds) * 100;
-    if (hasRefTime) {
-      probeSeconds = overallRuntime - c->referenceRuntime;
-      probePercent = probeSeconds / c->referenceRuntime * 100;
-    }
-
-    std::cout << "####################### " << c->appName << " #######################" << std::endl;
-    if (!hasRefTime) {
-      std::cout << "HAS NO REF TIME" << std::endl;
-    }
-    std::cout << "    "
-              << "numberOfCalls: " << overallNumberOfCalls << " | "
-              << "samplesPerSecond : " << CgConfig::samplesPerSecond << std::endl
-              << "    "
-              << "runtime: " << overallRuntime << " s (ref " << c->referenceRuntime << " s)";
-    std::cout << " | "
-              << "overhead: " << (hasRefTime ? "" : "(est.) ") << probeSeconds << " s"
-              << " or " << std::setprecision(4) << probePercent << " %" << std::endl;
-
-    std::cout << "    smallestFunction : " << smallestFunctionName << " : " << smallestFunctionInSeconds * 1e9 << "ns"
-              << " | edgesWithZeroRuntime: " << edgesWithZeroRuntime << std::setprecision(6) << std::endl
-              << std::endl;
-
-    //return cg;
-
-  } catch (const cube::RuntimeError &e) {
-    std::cout << "CubeReader failed: " << std::endl << e.get_msg() << std::endl;
-    exit(-1);
+  } catch (...) {
   }
+  }
+  }  // namespace CubeCallgraphBuilder::impl
+
+void CubeCallgraphBuilder::build(std::string filepath, Config *c) {
+  impl::build(filepath, impl::attRuntime);
 }
 
 void CubeCallgraphBuilder::buildFromCube(std::string filePath, Config *c, CallgraphManager &cg) {
-  try {
-    // Create cube instance
-    cube::Cube cube;
-    // Read our cube file
-    cube.openCubeReport(filePath);
-    // Get the cube nodes
-    const std::vector<cube::Cnode *> &cnodes = cube.get_cnodev();
-    unsigned long long overallNumberOfCalls = 0;
-    double overallRuntime = 0.0;
-
-    double smallestFunctionInSeconds = 1e9;
-    std::string smallestFunctionName;
-    int edgesWithZeroRuntime = 0;
-
-    cube::Metric *timeMetric = cube.get_met("time");
-    cube::Metric *visitsMetric = cube.get_met("visits");
-
-    const std::vector<cube::Thread *> threads = cube.get_thrdv();
-    for (auto cnode : cnodes) {
-      // This happens for static initializers
-      if (cnode->get_parent() == nullptr) {
-        auto fName = c->useMangledNames ? cnode->get_callee()->get_mangled_name() : cnode->get_callee()->get_name();
-        cg.findOrCreateNode(fName, cube.get_sev(timeMetric, cnode, threads.at(0)));
-        cg.setNodeComesFromCube(fName);
-        continue;
-      }
-
-      // Put the parent/child pair into our call graph
-      auto parentNode = cnode->get_parent()->get_callee();  // RN: don't trust no one. It IS the parent node
-      auto childNode = cnode->get_callee();
-      auto parentName = c->useMangledNames ? parentNode->get_mangled_name() : parentNode->get_name();
-      auto childName = c->useMangledNames ? childNode->get_mangled_name() : childNode->get_name();
-
-      for (unsigned int i = 0; i < threads.size(); ++i) {
-        unsigned long long numberOfCalls = (unsigned long long)cube.get_sev(visitsMetric, cnode, threads.at(i));
-        double timeInSeconds = cube.get_sev(timeMetric, cnode, threads.at(i));
-
-        cg.putEdge(parentName, parentNode->get_mod(), parentNode->get_begn_ln(), childName, numberOfCalls,
-                   timeInSeconds, threads.at(i)->get_id(), threads.at(i)->get_parent()->get_id());
-
-        overallNumberOfCalls += numberOfCalls;
-        overallRuntime += timeInSeconds;
-
-        double runtimePerCallInSeconds = timeInSeconds / numberOfCalls;
-        if (runtimePerCallInSeconds < smallestFunctionInSeconds) {
-          smallestFunctionInSeconds = runtimePerCallInSeconds;
-          smallestFunctionName = childName;
-        }
-      }
-
-      cg.setNodeComesFromCube(parentName);
-      cg.setNodeComesFromCube(childName);
-    }
-
-    c->actualRuntime = overallRuntime;
-
-    std::cout << "####################### " << c->appName << " #######################" << std::endl;
-    std::cout << "    "
-              << "numberOfCalls: " << overallNumberOfCalls << " | "
-              << "samplesPerSecond : " << CgConfig::samplesPerSecond << std::endl
-              << "    "
-              << "runtime: " << overallRuntime << " s (ref " << c->referenceRuntime << " s)";
-
-    std::cout << "    smallestFunction : " << smallestFunctionName << " : " << smallestFunctionInSeconds * 1e9 << "ns"
-              << " | edgesWithZeroRuntime: " << edgesWithZeroRuntime << std::setprecision(6) << std::endl
-              << std::endl;
-
-    // Check for nullptrs
-    for (auto node : cg) {
-      if (node == nullptr) {
-        std::cout << "detected null pointer at construction" << std::endl;
-        abort();
-      }
-    }
-
-  } catch (const cube::RuntimeError &e) {
-    std::cout << "CubeReader failed: " << std::endl << e.get_msg() << std::endl;
-    exit(-1);
-  }
+  impl::build(filePath, impl::attRuntime, impl::attNrCall);
+  //impl::build(filePath, impl::attRuntime, impl::attNrCall, impl::attInclRuntime);
 }
+

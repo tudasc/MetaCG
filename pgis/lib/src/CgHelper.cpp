@@ -580,6 +580,10 @@ double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef) {
       if (hasBPD) {
         rt.push_back(bpd->getInclusiveRuntimeInSeconds());
       }
+    } else {
+      auto incRT = CgHelper::calcInclusiveRuntime(n.get());
+      n->get<BaseProfileData>()->setInclusiveRuntimeInSeconds(incRT);
+      rt.push_back(incRT);
     }
   }
   std::cout << "Basis for runtime threshold calculation: " << rt.size() << "\n";

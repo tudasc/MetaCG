@@ -31,6 +31,7 @@ add_extrap_includes(pgoelib)
 add_extrap_libraries(pgoelib)
 add_logger_libraries(pgoelib)
 add_json_parser(pgoelib)
+target_project_compile_options(pgoelib)
 
 add_pgoe_includes(ipcg)
 add_json_parser(ipcg)

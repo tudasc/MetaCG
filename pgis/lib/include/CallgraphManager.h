@@ -86,6 +86,8 @@ class CallgraphManager {
 
   void attachExtrapModels();
 
+  void putEdge(std::string parentName, std::string childName);
+
  private:
   // this set represents the call graph during the actual computation
   Callgraph graph;
@@ -98,8 +100,6 @@ class CallgraphManager {
   // estimator phases run in a defined order
   std::queue<EstimatorPhase *> phases;
   std::vector<std::shared_ptr<EstimatorPhase>> donePhases;
-
-  void putEdge(std::string parentName, std::string childName);
 
   void finalizeGraph(bool finalizeGraph = false);
 

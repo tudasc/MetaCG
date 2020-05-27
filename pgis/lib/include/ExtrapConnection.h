@@ -5,8 +5,14 @@
 #ifndef PGOE_EXTRAPCONNECTION_H
 #define PGOE_EXTRAPCONNECTION_H
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wextra"
+#pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wsign-compare"
 #include "EXTRAP_CubeFileReader.hpp"
 #include "EXTRAP_Experiment.hpp"
+#pragma GCC diagnostic pop
 
 #include "spdlog/spdlog.h"
 

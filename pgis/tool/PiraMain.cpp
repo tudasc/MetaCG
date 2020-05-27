@@ -32,7 +32,7 @@ void registerEstimatorPhases(CallgraphManager &cg, Config *c, bool isIPCG, float
 
   // Actually do the selection
   if (!isIPCG) {
-    spdlog::get("console")->info("New runtime threshold for profiling: {}", runtimeThreshold);
+    spdlog::get("console")->info("Why? New runtime threshold for profiling: {}", runtimeThreshold);
     cg.registerEstimatorPhase(new RuntimeEstimatorPhase(runtimeThreshold));
   } else {
     const int nStmt = 2000;

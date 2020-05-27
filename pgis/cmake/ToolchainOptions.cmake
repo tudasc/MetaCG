@@ -61,7 +61,6 @@ function(target_project_compile_options target)
     -Wunreachable-code -Wwrite-strings
     -Wpointer-arith -Wcast-align
     -Wcast-qual -Wno-unused-parameter
-    -Werror
   )
 
   if(ARG_PRIVATE_FLAGS)
