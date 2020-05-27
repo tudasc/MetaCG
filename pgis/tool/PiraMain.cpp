@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
     ("model-filter", "Use Extra-P models to filter only.", cxxopts::value<bool>()->default_value("false"))
     ("a,all-threads","Show all Threads even if unused.", cxxopts::value<bool>()->default_value("false"))
     ("w, whitelist", "Filter nodes through given whitelist", cxxopts::value<std::string>()->default_value(""))
-    ("debug", "Whether debug messages should be printed", cxxopts::value<int>()->default_value("0"));
+    ("debug", "Whether debug messages should be printed", cxxopts::value<int>()->default_value("0"))
     ("x, export", "Export the profiling info into IPCG file", cxxopts::value<bool>()->default_value("false"));
   // clang-format on
 
@@ -204,9 +204,11 @@ int main(int argc, char **argv) {
       cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(true, false));  // remove unrelated
       cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(1.0, true));
     }
+    // XXX Should this be done after filter / expander were run? Currently we do this after model creation, yet, *before*
+    // running the estimator phase
     if (result.count("export")) {
       console->info("Exporting to IPCG file.");
-      IPCGAnal::annotateJSON(cg.getCallgraph(&CallgraphManager::get()), ipcgFullPath, IPCGAnal::retriever::PlacementInfoRetriever());
+      IPCGAnal::annotateJSON(cg.getCallgraph(&CallgraphManager::get()), ipcgFullPath, IPCGAnal::retriever::PiraTwoDataRetriever());
    }
   }
 

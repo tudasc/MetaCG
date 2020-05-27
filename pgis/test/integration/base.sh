@@ -18,7 +18,9 @@ function check_selection {
 	cat ${outDir}/instrumented-${testNo}.txt | sort | uniq > /tmp/pgis_temp_${testSuite}_res.txt
 	cat ${PWD}/${testNo}.afl | sort | uniq > /tmp/pgis_temp_${testSuite}_bl.txt
 	diff -q /tmp/pgis_temp_${testSuite}_res.txt /tmp/pgis_temp_${testSuite}_bl.txt 2>&1 > /dev/null
-	return $?
+  resultOfTest=$?
+  rm /tmp/pgis_temp_${testSuite}_bl.txt /tmp/pgis_temp_${testSuite}_res.txt ${outDir}/instrumented-${testNo}.txt
+	return $resultOfTest
 }
 
 

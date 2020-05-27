@@ -96,14 +96,14 @@ bool CgNode::hasUniqueParent() const { return getParentNodes().size() == 1; }
 bool CgNode::hasUniqueChild() const { return getChildNodes().size() == 1; }
 CgNodePtr CgNode::getUniqueParent() const {
   if (!hasUniqueParent()) {
-    std::cerr << "Error: no unique parent." << std::endl;
+    spdlog::get("errconsole")->error("Error: no unique parent.");
     exit(1);
   }
   return *(getParentNodes().begin());
 }
 CgNodePtr CgNode::getUniqueChild() const {
   if (!hasUniqueChild()) {
-    std::cerr << "Error: no unique child." << std::endl;
+    spdlog::get("errconsole")->error("Error: no unique child.");
     exit(1);
   }
   return *(getChildNodes().begin());
@@ -248,7 +248,7 @@ std::vector<CgLocation> CgNode::getCgLocation() const { return cgLoc; }
 
 unsigned long long CgNode::getExpectedNumberOfSamples() const { return expectedNumberOfSamples; }
 
-void CgNode::printMinimal() { std::cout << this->functionName; }
+void CgNode::printMinimal() { spdlog::get("console")->debug(this->functionName); }
 
 void CgNode::print() {
   std::cout << this->functionName << std::endl;

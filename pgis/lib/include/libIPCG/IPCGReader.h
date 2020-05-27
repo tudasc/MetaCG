@@ -71,7 +71,7 @@ void annotateJSON(Callgraph &cg, std::string filename, PropRetriever retriever) 
   }
 
   int annotated = IPCGAnal::doAnnotate(cg, retriever, j);
-  std::cout << "Annotated " << annotated << " nodes / json elements" << std::endl;
+  spdlog::get("console")->trace("Annotated {} json nodes", annotated);
 
   {
     std::ofstream out(filename);
@@ -116,11 +116,10 @@ struct ExperimentParamData {
 };
 
 void to_json(json &j, const PlacementInfo &pi) {
-  std::cout << "to_json from PlacementInfo called" << std::endl;
+  spdlog::get("console")->trace("to_json from PlacementInfo called");
   j["env"]["id"] = pi.platformId;
   j["experiments"] = json::array({{"params", pi.params}, {"runtimes", pi.runtimeInSecondsPerProcess}});
   j["model"] = json{"text", pi.modelString};
-  std::cout << j << std::endl;
 }
 
 struct PlacementInfoRetriever {
@@ -156,6 +155,25 @@ struct PlacementInfoRetriever {
   }
 
   std::string toolName() { return "plcmt_profiling"; }
+};
+
+struct PiraTwoDataRetriever {
+  bool handles(const CgNodePtr n) {
+    spdlog::get("console")->trace("PiraTwoRetriever:handles {}", n->getFunctionName());
+    auto [has, o] = n->checkAndGet<pira::PiraTwoData>();
+    if (has && o && o->hasExtrapModel()) {
+      spdlog::get("console")->debug("handles: Retriever handles node {} with {} runtimes", n->getFunctionName(), o->getRuntimeVec().size());
+      return true;
+    }
+    spdlog::get("console")->trace("Does not handle");
+    return false;
+  }
+
+  pira::PiraTwoData value(const CgNodePtr n) {
+    return *(n->get<pira::PiraTwoData>());
+  }
+
+  std::string toolName() { return "PiraIIData"; }
 };
 
 }  // namespace retriever

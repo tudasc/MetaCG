@@ -48,7 +48,7 @@ ExtrapConfig getExtrapConfigFromJSON(std::string filePath) {
   ExtrapConfig cfg;
   for (json::iterator it = j.begin(); it != j.end(); ++it) {
     auto key = it.key();
-    std::cout << "Iterating for " << key << std::endl;
+    spdlog::get("console")->debug("Iterating for {}", key);
 
     if (key == "dir") {
       cfg.directory = it.value().get<std::string>();
@@ -86,7 +86,7 @@ ExtrapConfig getExtrapConfigFromJSON(std::string filePath) {
         cfg.params.emplace_back(std::make_pair(paramName, paramValues));
       }
     } else {
-      std::cerr << "This should not happen\n" << std::endl;
+      spdlog::get("errconsole")->warn("This should not happen! Unkown json identifier found.");
     }
     std::reverse(std::begin(cfg.params), std::end(cfg.params));
     for (auto &p : cfg.params) {
@@ -94,7 +94,8 @@ ExtrapConfig getExtrapConfigFromJSON(std::string filePath) {
     }
   }
 
-  std::cout << "Parsed File. Resulting Config:\n";
+  // XXX How to have this neat and tidy in a single statement?
+  spdlog::get("console")->info("Parsed File. Resulting Config:");
   printConfig(cfg);
 
   return cfg;
@@ -150,45 +151,73 @@ void ExtrapModelProvider::buildModels() {
                                paramPrefixes, paramValues, config.repetitions);
 
   int dimensions = extrapParams.size();
-  std::cout << "Dimension: " << dimensions << std::endl;
-  for (auto p : extrapParams) {
-    std::cout << p.getName() << std::endl;
-  }
+  auto console = spdlog::get("console");
+  auto cubeFiles = reader.getFileNames(dimensions);
+  auto fns = reader.getFileNames(dimensions);
 
-  std::cout << "ParamVals: " << paramValues.size() << std::endl;
-  for (auto p : paramValues) {
-    for (auto v : p) {
-      std::cout << v << std::endl;
+  const auto &printDbgInfos = [&]() {
+    console->debug("Dimension: {}", dimensions);
+    for (auto p : extrapParams) {
+      console->debug("Param: {}", p.getName());
+    }
+
+    console->debug("ParamVals: {}", paramValues.size());
+    for (auto p : paramValues) {
+      for (auto v : p) {
+        console->debug("{}", v);
+      }
+    }
+    std::string dbgOut("Reading cube files:\n");
+    for (const auto f : cubeFiles) {
+      dbgOut += "- " + f + "\n";
+    }
+    console->debug(dbgOut);
+  };
+
+  printDbgInfos();
+
+  for (int i = 0; i < fns.size(); ++i) {
+    if (i % config.repetitions == 0) {
+      const auto attEpData = [&](auto &cube, auto cnode, auto n) {
+        console->debug("Attaching Cube info from file {}", fns.at(i));
+        auto ptd = getOrCreateMD<pira::PiraTwoData>(n, ExtrapConnector({},{}));
+        ptd->setExtrapParameters(config.params);
+        ptd->addToRuntimeVec(CubeCallgraphBuilder::impl::time(cube, cnode));
+      };
+
+      CubeCallgraphBuilder::impl::build(std::string(fns.at(i)), attEpData);
     }
   }
 
-  auto cubeFiles = reader.getFileNames(dimensions);
-  std::string dbgOut("Reading cube files:\n");
-  for (const auto f : cubeFiles) {
-    dbgOut += "- " + f + "\n";
-  }
-  spdlog::get("console")->debug(dbgOut);
-
-  auto fns = reader.getFileNames(dimensions);
-  for (int i = 0; i < fns.size(); ++i) {
-    if (i % config.repetitions == 0) {
-      std::cout << "Attaching Cube info from file: " << fns.at(i) << std::endl;
-      CubeCallgraphBuilder::buildFromCube(std::string(fns.at(i)) + ".cubex", new Config(), CallgraphManager::get());
+  for (const auto n : CallgraphManager::get()) {
+    console->trace("No PiraTwoData meta data");
+    if (n->has<pira::PiraTwoData>()) {
+      auto ptd = CubeCallgraphBuilder::impl::get<pira::PiraTwoData>(n);
+      const auto la = [&]() {
+        std::string s;
+        for (auto rtv : ptd->getRuntimeVec()) {
+          s += std::to_string(rtv) + " ";
+        }
+        return s;
+      };
+      console->debug("ExtrapModelProvider::buildModels: Node {} has {} many runtime values: {}", n->getFunctionName(),
+                                    ptd->getRuntimeVec().size(), la());
     }
   }
 
   try {
+    console->info("Read cubes with Extra-P library");
     experiment = reader.readCubeFiles(dimensions);
   } catch (std::exception &e) {
-    std::cerr << e.what() << std::endl;
+    spdlog::get("errconsole")->warn("CubeReader failed with message:\n{}", e.what());
   }
 
   if (!experiment) {
-    std::cerr << "Reading of cube files went wrong. Aborting" << std::endl;
+    spdlog::get("errconsole")->error("No experiment was constructed. Aborting.");
     abort();
   }
 
-  std::cout << "Read cube files for experiment data DONE." << std::endl;
+  console->info("Reading of experiment CUBEs done.");
 
   /*
    * Notes
@@ -211,7 +240,7 @@ void ExtrapModelProvider::buildModels() {
   }
 
   if (!mg) {
-    std::cerr << "Creation of Model Generator failed." << std::endl;
+    spdlog::get("errconsole")->error("Creation of Model Generator failed.");
   }
 
   experiment->addModelGenerator(mg);
@@ -229,16 +258,16 @@ void ExtrapModelProvider::buildModels() {
       if (m->getName() != "time") {
         continue;
       }
-      std::cout << "Processing for " << cp->getRegion()->getName() << std::endl;
+      console->debug("Processing for {}", cp->getRegion()->getName());
       // Currently only one model is generated at a time. // How to handle multiple?
       auto functionModels = experiment->getModels(*m, *cp);
 
       for (auto i : functionModels) {
         if (!i) {
-          std::cerr << "Function model is NULL" << std::endl;
+          spdlog::get("errconsole")->warn("Function model is NULL");
           auto tf = i->getModelFunction();
           if (!tf) {
-            std::cerr << "Modelfunction is NULL" << std::endl;
+            spdlog::get("errconsole")->warn("Function model is NULL");
           }
         }
         std::cout << i->getModelFunction()->getAsString(extrapParams) << std::endl;
@@ -248,7 +277,7 @@ void ExtrapModelProvider::buildModels() {
     }
   }
 
-  std::cout << "Finished model creation." << std::endl;
+  console->info("Finished model creation.");
 }
 
 }  // namespace extrapconnection

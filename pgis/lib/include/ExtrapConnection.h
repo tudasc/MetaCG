@@ -24,7 +24,6 @@
 #include <unordered_map>
 #include <vector>
 
-
 namespace cube {
 class Cnode;
 }
@@ -96,12 +95,19 @@ inline std::string demangle(std::string &input) {
 class ExtrapConnector {
  public:
   explicit ExtrapConnector(std::vector<EXTRAP::Model *> models, EXTRAP::ParameterList parameterList)
-      : models(models), paramList(parameterList), epolator(ExtrapExtrapolator({})) {}
+      : models(models), paramList(parameterList), epolator(ExtrapExtrapolator({})) {
+    spdlog::get("console")->trace("ExtrapConnector: explicit ctor: models {}", models.size());
+  }
+
+  ExtrapConnector(const ExtrapConnector &other)
+      : epModel(other.epModel), models(other.models), paramList(other.paramList), epolator(other.epolator) {
+    spdlog::get("console")->trace("ExtrapConnector: copy ctor\nother.models: {}\nthis.models: {}", other.models.size(), this->models.size());
+      }
 
   /* Test whether models were generated and set */
-  bool hasModels() { return models.size() > 0; }
+  bool hasModels() const { return models.size() > 0; }
   /* Check whether specific model hast been set */
-  bool isModelSet() { return epModel != nullptr; }
+  bool isModelSet() const { return epModel != nullptr; }
 
   /* Get the specific model set */
   auto getEPModelFunction() const { return epModel->getModelFunction(); }
@@ -114,10 +120,10 @@ class ExtrapConnector {
 
   void useFirstModel() { epModel = models.front(); }
 
-  inline void printModels() const {
-    std::cout << epModel->getModelFunction() << " : ";
+  inline void printModels(std::ostream &os = std::cout) const {
+    os << epModel->getModelFunction() << " : ";
     for (auto f : models) {
-      std::cout << f->getModelFunction() << std::endl;
+      os << f->getModelFunction() << std::endl;
     }
   }
 
@@ -147,7 +153,7 @@ class ExtrapModelProvider {
 
     auto m = models[demangledName];
     spdlog::get("console")->debug(
-        "Model for {}: {}", demangledName,
+        "ModelProvider:getModelFor {}: {}", demangledName,
         m.size() > 0 ? m.front()->getModelFunction()->getAsString(getParameterList()) : " NONE ");
     return ExtrapConnector(m, paramList);
   }

@@ -10,7 +10,6 @@
 
 #include <cassert>
 
-
 class Callgraph;
 
 // TODO these numbers should be in a config file

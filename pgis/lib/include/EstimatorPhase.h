@@ -5,10 +5,9 @@
 #include "CgHelper.h"
 #include "CgNode.h"
 
-#include <string>
-#include <queue>
 #include <map>
-
+#include <queue>
+#include <string>
 
 struct CgReport {
   CgReport()
@@ -30,7 +29,7 @@ struct CgReport {
         phaseName(std::string()),
         metaPhase(false),
         instrumentedNames(),
-        instrumentedNodes(){}
+        instrumentedNodes() {}
 
   unsigned int instrumentedMethods;
   unsigned int overallMethods;
@@ -124,7 +123,6 @@ class RemoveUnrelatedNodesEstimatorPhase : public EstimatorPhase {
 
   CgNodePtrSet nodesToRemove;
 };
-
 
 /**
  * Read out some statistics about the current call graph

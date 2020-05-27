@@ -30,8 +30,6 @@ for testNo in *.ipcg; do
 	bash "${testSuite}_run.sh" $buildDir $outDir $testNo 2>&1 >> "$logFile"
 	#bash "${testSuite}_run.sh" $buildDir $outDir $testNo
 
-	echo -e "\n[ --------------------------------- ] \n" >> "$logFile"
-
 	if [ $? -ne 0 ]; then
 		fails=$(($fails+1))
 		thisFail=1
@@ -48,6 +46,7 @@ for testNo in *.ipcg; do
 	else
 		failStr=' PASS'
 	fi
+	echo -e "\n[ --------------------------------- ] \n" >> "$logFile"
 	echo "Running PGIS Integration Test $testNo : $testFile | $failStr"
 done
 

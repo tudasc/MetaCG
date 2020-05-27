@@ -5,10 +5,10 @@
 #include "CgNodeMetaData.h"
 #include "CgNodePtr.h"
 
-#include <string>
-#include <vector>
 #include <map>
 #include <queue>
+#include <string>
+#include <vector>
 
 // iterate priority_queue as of: http://stackoverflow.com/a/1385520
 template <class T, class S, class C>
@@ -34,16 +34,20 @@ class CgNode {
 
   template <typename T>
   inline T *get() const {
+    assert(metaFields[T::key()] && "meta field with value " T::key() " exists");
     auto val = metaFields[T::key()];
     return reinterpret_cast<T *>(val);
   }
 
   template <typename T>
   inline std::pair<bool, T *> checkAndGet() const {
+    spdlog::get("console")->trace("checkAndGet() [{}]", this->getFunctionName());
     if (this->has<T>()) {
       auto bpd = this->get<T>();
+      assert(bpd && "Pira data attached");
       return {true, bpd};
     }
+    spdlog::get("console")->trace("checkAndGet() return nullptr [{}]", this->getFunctionName());
     return {false, nullptr};
   }
 
@@ -175,7 +179,6 @@ class CgNode {
   int line;
 };
 
-
 struct CalledMoreOften {
   inline bool operator()(const CgNodePtr &lhs, const CgNodePtr &rhs) {
     const auto &[hasLHS, objLHS] = lhs->checkAndGet<pira::BaseProfileData>();
@@ -203,5 +206,17 @@ struct CgEdge {
     return stream;
   }
 };
+
+template <typename T, typename ... Args>
+T* getOrCreateMD(CgNodePtr p, const Args& ...args) {
+  auto [has, md] = p->checkAndGet<T>();
+  if (has) {
+    return md;
+  } else {
+    auto nmd = new T(args...);
+    p->addMetaData(nmd);
+    return nmd;
+  }
+}
 
 #endif

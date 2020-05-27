@@ -148,7 +148,6 @@ RemoveUnrelatedNodesEstimatorPhase::~RemoveUnrelatedNodesEstimatorPhase() { node
 void RemoveUnrelatedNodesEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   /* remove unrelated nodes (not reachable from main) */
   CgNodePtrSet nodesReachableFromMain = CgHelper::getDescendants(mainMethod);
-  std::cout << "REACHABLE: " << nodesReachableFromMain.size() << std::endl;
 
   for (auto node : nodesReachableFromMain) {
     if (graph->getGraph().find(node) != graph->getGraph().end()) {

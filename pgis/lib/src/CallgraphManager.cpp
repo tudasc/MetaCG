@@ -431,13 +431,20 @@ void CallgraphManager::attachExtrapModels() {
   epModelProvider.buildModels();
   for (const auto n : graph) {
     spdlog::get("console")->debug("Attaching models for {}", n->getFunctionName());
-    auto ptd = new PiraTwoData(epModelProvider.getModelFor(n->getFunctionName()));
+    auto ptd = getOrCreateMD<PiraTwoData>(n, epModelProvider.getModelFor(n->getFunctionName()));
+    if (!ptd->getExtrapModelConnector().hasModels()) {
+      spdlog::get("console")->trace("attachExtrapModels hasModels == false -> Setting new ModelConnector");
+      ptd->setExtrapModelConnector(epModelProvider.getModelFor(n->getFunctionName()));
+    }
+
     ptd->getExtrapModelConnector().setEpolator(extrapconnection::ExtrapExtrapolator(epModelProvider.getConfigValues()));
+
     if (ptd->getExtrapModelConnector().hasModels()) {
+      spdlog::get("console")->trace("attachExtrapModels hasModels == true -> Use first attached model.");
       ptd->getExtrapModelConnector().useFirstModel();
     }
-    n->addMetaData(ptd);
-    spdlog::get("console")->debug("Model ist set {}", n->get<PiraTwoData>()->getExtrapModelConnector().isModelSet());
+    spdlog::get("console")->debug("Model is set {}", n->get<PiraTwoData>()->getExtrapModelConnector().isModelSet());
   }
   spdlog::get("console")->info("Attaching Extra-P models done");
 }
+

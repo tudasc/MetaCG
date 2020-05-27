@@ -42,7 +42,7 @@ PenaltyReturnTypeOnItsOwnLine: 200
 PointerAlignment: Right
 SpacesBeforeTrailingComments: 2
 Cpp11BracedListStyle: true
-Standard:        Cpp11
+Standard:        Latest
 IndentWidth:     2
 TabWidth:        2
 UseTab:          Never
@@ -55,8 +55,10 @@ SpacesInCStyleCastParentheses: false
 SpaceAfterCStyleCast: false
 SpacesInContainerLiterals: true
 SpaceBeforeAssignmentOperators: true
+SpaceBeforeRangeBasedForLoopColon: true
 ContinuationIndentWidth: 4
 CommentPragmas:  '^ IWYU pragma:'
 ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
 SpaceBeforeParens: ControlStatements
 DisableFormat:   false
+FixNamespaceComments: true
