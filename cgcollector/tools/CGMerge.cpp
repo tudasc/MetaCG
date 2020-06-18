@@ -1,6 +1,7 @@
 #include "nlohmann/json.hpp"
 
 #include <fstream>
+#include <set>
 
 #include <iostream>
 
@@ -15,6 +16,18 @@ int main(int argc, char **argv) {
   }
 
   nlohmann::json wholeCG;
+
+  const auto doMerge = [&](auto &t, const auto &s) {
+    auto &callees = s["callees"];
+    auto &tCallees = t["callees"];
+    for (auto c : callees) {
+      tCallees.push_back(c.template get<std::string>());
+    }
+    t["isVirtual"] = s["isVirtual"];
+    t["doesOverride"] = s["doesOverride"];
+    t["overriddenFunctions"] = s["overriddenFunctions"];
+    t["hasBody"] = s["hasBody"];
+  };
 
   for (auto &filename : inputFiles) {
     std::ifstream file(filename);
@@ -37,18 +50,16 @@ int main(int argc, char **argv) {
         auto &c = wholeCG[it.key()];
         auto &v = it.value();
         // TODO multiple bodies possible, if the body is in header?
+        // TODO separate merge of meta information
         if (v["hasBody"].get<bool>() && c["hasBody"].get<bool>()) {
-          std::cout << "WARNING: merge of " << it.key() << " has detected multiple bodies" << std::endl;
+          std::cout << "WARNING: merge of " << it.key()
+                    << " has detected multiple bodies (adding numStatements for now)" << std::endl;
           // TODO check for equal values
+          doMerge(c, v);
+          auto val = c["numStatements"].get<int>() + v["numStatements"].get<int>();
+          c["numStatements"] = val;
         } else if (v["hasBody"].get<bool>()) {
-          c["callees"] = v["callees"];
-          c["isVirtual"] = v["isVirtual"];
-          c["doesOverride"] = v["doesOverride"];
-          c["overriddenFunctions"] = v["overriddenFunctions"];
-
-          c["hasBody"] = v["hasBody"];
-
-          // TODO separate merge of meta information
+          doMerge(c, v);
           c["numStatements"] = v["numStatements"];
         } else if (c["hasBody"].get<bool>()) {
           // callees, isVirtual, doesOverride and overriddenFunctions unchanged
