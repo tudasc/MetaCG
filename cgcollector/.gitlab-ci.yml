@@ -13,7 +13,7 @@ stages:
   - eval $(ssh-agent -s)
   - ssh-add ~/.ssh/gitlab_rsa
   - module use /home/groups/sc/modules/modulefiles
-  - module load gcc/8 git clang/9.0 cmake python/3
+  - module load gcc/8 git llvm/10.0.0 cmake python/3
 
 .lb-tear-down: &lb-tear-down
   - echo $SSH_AUTH_SOCK
