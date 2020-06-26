@@ -5,7 +5,7 @@ int CgConfig::samplesPerSecond = 10000;
 
 namespace CgHelper {
 
-  using namespace pira;
+using namespace pira;
 
 /** returns true for nodes with two or more parents */
 bool isConjunction(CgNodePtr node) { return (node->getParentNodes().size() > 1); }
@@ -617,17 +617,17 @@ double calcInclusiveRuntime(CgNode *node) {
     // Only count the runtime of nodes comming from the profile
     const auto &[hasPOD, pod] = node->checkAndGet<PiraOneData>();
     const auto &[hasBPD, bpd] = node->checkAndGet<BaseProfileData>();
-    //if (hasPOD && pod->comesFromCube()) {
-      if (hasBPD) {
-        runTime += bpd->getRuntimeInSeconds();
-      }
+    // if (hasPOD && pod->comesFromCube()) {
+    if (hasBPD) {
+      runTime += bpd->getRuntimeInSeconds();
+    }
     //}
 
     for (auto childNode : node->getChildNodes()) {
       // Only visit unseen, profiled nodes. Only those have actual timing info!
       CgNode *cn = childNode.get();
       const auto &[has, obj] = childNode->checkAndGet<PiraOneData>();
-      //if (visitedNodes.find(cn) == visitedNodes.end() && has && obj->comesFromCube()) {
+      // if (visitedNodes.find(cn) == visitedNodes.end() && has && obj->comesFromCube()) {
       if (visitedNodes.find(cn) == visitedNodes.end()) {
         workQueue.push(cn);
       }

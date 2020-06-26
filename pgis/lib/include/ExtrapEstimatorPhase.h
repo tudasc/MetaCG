@@ -114,9 +114,9 @@ auto ExtrapLocalEstimatorPhaseBase::evalModelWValue(CgNodePtr n,
     evalOps.insert(std::make_pair(EXTRAP::Parameter(p.first), p.second));
   }
 
-  // if (isConstant(evalOps, fModel)) {
-  //  return -1.0;
-  //}
+  if (false && isConstant(evalOps, fModel)) {
+    return -1.0;
+  }
 
   auto fVal = fModel->evaluate(evalOps);
 

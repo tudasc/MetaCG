@@ -94,6 +94,9 @@ void StatementCountEstimatorPhase::estimateStatementCount(CgNodePtr startNode) {
   if (inclStmtCount >= numberOfStatementsThreshold) {
     startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
   }
+  if (!startNode->get<PiraOneData>()->getHasBody() && startNode->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
+    startNode->setState(CgNodeState::INSTRUMENT_PATH);
+  }
 }
 
 void MaxRuntimeSelectionStrategy::operator()(CgNodePtr node) {
@@ -255,9 +258,9 @@ void RuntimeEstimatorPhase::estimateRuntime(CgNodePtr startNode) {
 
 void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
   auto runTime = inclRunTime[startNode];
-  spdlog::get("console")->debug("Processing {}:\n\tNode RT:\t{}\n\tCalced RT:\t{}\n\tThreshold:\t{}",
-                                startNode->getFunctionName(), startNode->get<BaseProfileData>()->getInclusiveRuntimeInSeconds(), runTime,
-                                runTimeThreshold);
+  spdlog::get("console")->debug(
+      "Processing {}:\n\tNode RT:\t{}\n\tCalced RT:\t{}\n\tThreshold:\t{}", startNode->getFunctionName(),
+      startNode->get<BaseProfileData>()->getInclusiveRuntimeInSeconds(), runTime, runTimeThreshold);
   if (runTime >= runTimeThreshold) {
     // keep the nodes on the paths in the profile, when they expose sufficient runtime.
     startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
@@ -290,7 +293,8 @@ void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
           maxRtChild = childNode;
         } else if (maxRtChild->getFunctionName() == childNode->getFunctionName() && maxRtChild != childNode) {
           // std::cerr << "\nWARNING NAMES EQUAL< POINTERS NOT\n";
-        } else if (childNode->get<BaseProfileData>()->getInclusiveRuntimeInSeconds() >= maxRtChild->get<BaseProfileData>()->getInclusiveRuntimeInSeconds()) {
+        } else if (childNode->get<BaseProfileData>()->getInclusiveRuntimeInSeconds() >=
+                   maxRtChild->get<BaseProfileData>()->getInclusiveRuntimeInSeconds()) {
           if (childNode == startNode) {
             continue;
           }

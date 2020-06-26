@@ -1,8 +1,8 @@
 
 #include "EstimatorPhase.h"
-#include <iostream>
-#include <iomanip>  //  std::setw()
 #include <fstream>
+#include <iomanip>  //  std::setw()
+#include <iostream>
 
 using namespace pira;
 
@@ -24,6 +24,11 @@ void EstimatorPhase::generateReport() {
       report.instrumentedMethods += 1;
       report.instrumentedCalls += bpd->getNumberOfCalls();
 
+      if (node->isInstrumentedCallpath()) {
+        spdlog::get("console")->debug("Adding {} to the list of call path instrumentations", node->getFunctionName());
+        report.instrumentedPaths.insert({node->getFunctionName(), node});
+        continue;
+      }
       report.instrumentedNames.insert(node->getFunctionName());
       report.instrumentedNodes.push(node);
     }
@@ -71,7 +76,7 @@ void EstimatorPhase::generateReport() {
     report.samplingOvSeconds = report.samplesTaken * CgConfig::nanosPerSample / 1e9;
     report.samplingOvPercent = (double)(CgConfig::nanosPerSample * CgConfig::samplesPerSecond) / 1e7;
   }
-  
+
   report.overallSeconds = report.instrOvSeconds + report.unwindOvSeconds + report.samplingOvSeconds;
   report.overallPercent = report.instrOvPercent + report.unwindOvPercent + report.samplingOvPercent;
 
@@ -321,7 +326,6 @@ void GraphStatsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   double secondsSavedOverall = (double)(nanosInstrCosts - nanosUnwCosts) / 1e9;
   std::cout << "overall save is: " << secondsSavedOverall << " s in " << unwoundNodes.size() << " functions "
             << std::endl;
-
 }
 
 void GraphStatsEstimatorPhase::printAdditionalReport() {
@@ -335,7 +339,6 @@ void GraphStatsEstimatorPhase::printAdditionalReport() {
               << " | validMarkerPositions: " << std::setw(3) << dependency.markerPositions.size() << std::endl;
   }
 }
-
 
 //// WL INSTR ESTIMATOR PHASE
 
@@ -374,4 +377,3 @@ void ResetEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
 void ResetEstimatorPhase::printReport() {
   std::cout << "==" << report.phaseName << "== Phase " << std::endl << std::endl;
 }
-

@@ -120,7 +120,7 @@ const auto attInclRuntime = [] (auto &cube, auto cnode, auto n) {
 template <typename... Largs>
 void build(std::string filePath, Largs... largs) {
   auto &cg = CallgraphManager::get();
-  bool useMangledNames = false;
+  bool useMangledNames = true;
 
   auto console = spdlog::get("console");
 

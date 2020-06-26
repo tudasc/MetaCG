@@ -81,6 +81,8 @@ class PiraOneData : public MetaData {
 
   void setNumberOfStatements(int numStmts) { this->numStmts = numStmts; }
   int getNumberOfStatements() const { return this->numStmts; }
+  void setHasBody(bool hasBody) { this->hasBody = hasBody; }
+  bool getHasBody() const { return this->hasBody; }
   void setDominantRuntime() { this->dominantRuntime = true; }
   bool isDominantRuntime() const { return this->dominantRuntime; }
   void setComesFromCube(bool fromCube = true) { this->wasInPreviousProfile = fromCube; }
@@ -90,6 +92,7 @@ class PiraOneData : public MetaData {
  private:
   bool wasInPreviousProfile = false;
   bool dominantRuntime = false;
+  bool hasBody = false;
   int numStmts = 0;
   std::string filename;
 };

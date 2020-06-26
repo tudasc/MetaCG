@@ -23,7 +23,7 @@ CgNode::CgNode(std::string function)
   bpd->setInclusiveRuntimeInSeconds(.0);
   bpd->setNumberOfCalls(0);
   this->addMetaData(bpd);
-  
+
   auto pod = new PiraOneData();
   pod->setNumberOfStatements(0);
   pod->setComesFromCube(false);
@@ -201,7 +201,6 @@ void CgNode::addCallData(CgNodePtr parentNode, unsigned long long calls, double 
 void CgNode::setState(CgNodeState state, int numberOfUnwindSteps) {
   // TODO i think this breaks something
   if (this->state == CgNodeState::INSTRUMENT_CONJUNCTION && this->state != state) {
-
     if (state == CgNodeState::INSTRUMENT_WITNESS) {
       return;  // instrument conjunction is stronger
     }
@@ -233,9 +232,12 @@ double CgNode::getInclusiveRuntimeInSeconds() {
 #endif
 
 CgNodeState CgNode::getStateRaw() const { return state; }
-bool CgNode::isInstrumented() const { return isInstrumentedWitness() || isInstrumentedConjunction(); }
+bool CgNode::isInstrumented() const {
+  return isInstrumentedWitness() || isInstrumentedConjunction() || isInstrumentedCallpath();
+}
 bool CgNode::isInstrumentedWitness() const { return state == CgNodeState::INSTRUMENT_WITNESS; }
 bool CgNode::isInstrumentedConjunction() const { return state == CgNodeState::INSTRUMENT_CONJUNCTION; }
+bool CgNode::isInstrumentedCallpath() const { return state == CgNodeState::INSTRUMENT_PATH; }
 
 bool CgNode::isUnwound() const { return state == CgNodeState::UNWIND_SAMPLE || state == CgNodeState::UNWIND_INSTR; }
 bool CgNode::isUnwoundSample() const { return state == CgNodeState::UNWIND_SAMPLE; }
@@ -244,7 +246,6 @@ bool CgNode::isUnwoundInstr() const { return state == CgNodeState::UNWIND_INSTR;
 int CgNode::getNumberOfUnwindSteps() const { return numberOfUnwindSteps; }
 
 std::vector<CgLocation> CgNode::getCgLocation() const { return cgLoc; }
-
 
 unsigned long long CgNode::getExpectedNumberOfSamples() const { return expectedNumberOfSamples; }
 

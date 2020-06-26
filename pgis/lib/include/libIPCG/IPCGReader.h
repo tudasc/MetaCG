@@ -15,11 +15,12 @@ namespace IPCGAnal {
 using json = nlohmann::json;
 
 struct FunctionInfo {
-  FunctionInfo() : functionName("_UNDEF_"), isVirtual(false), doesOverride(false), numStatements(-1) {}
+  FunctionInfo() : functionName("_UNDEF_"), isVirtual(false), doesOverride(false), numStatements(-1), hasBody(false) {}
   std::string functionName;
   bool isVirtual;
   bool doesOverride;
   int numStatements;
+  bool hasBody;
   std::unordered_set<std::string> callees;
   std::unordered_set<std::string> parents;
   std::unordered_set<std::string> overriddenFunctions;

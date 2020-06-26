@@ -66,7 +66,7 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCGwStmt) {
   cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
-  cm.putNumberOfStatements("main", 12);
+  cm.putNumberOfStatements("main", 12, true);
   StatementCountEstimatorPhase sce(10);
   sce.setNoReport();
   cm.registerEstimatorPhase(&sce);
@@ -84,9 +84,9 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCGwStmt) {
   cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
-  cm.putNumberOfStatements("main", 12);
+  cm.putNumberOfStatements("main", 12, true);
   auto childNode = cm.findOrCreateNode("child1", 2.0);
-  cm.putNumberOfStatements("child1", 7);
+  cm.putNumberOfStatements("child1", 7, true);
   childNode->setReachable();
   cm.putEdge("main", "main.c", 1, "child1", 100, 1.2, 0, 0);
 
@@ -108,15 +108,15 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCGwStmt) {
   cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
-  cm.putNumberOfStatements("main", 12);
+  cm.putNumberOfStatements("main", 12, true);
 
   auto childNode = cm.findOrCreateNode("child1", 2.0);
-  cm.putNumberOfStatements("child1", 7);
+  cm.putNumberOfStatements("child1", 7, true);
   cm.putEdge("main", "main.c", 1, "child1", 100, 1.2, 0, 0);
   childNode->setReachable();
 
   auto childNode2 = cm.findOrCreateNode("child2", 23.0);
-  cm.putNumberOfStatements("child2", 42);
+  cm.putNumberOfStatements("child2", 42, true);
   cm.putEdge("main", "main.c", 1, "child2", 10, 1.9, 0, 0);
   childNode2->setReachable();
 
@@ -139,15 +139,15 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCycleCGwStmt) {
   cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
-  cm.putNumberOfStatements("main", 12);
+  cm.putNumberOfStatements("main", 12, true);
 
   auto childNode = cm.findOrCreateNode("child1", 2.0);
-  cm.putNumberOfStatements("child1", 7);
+  cm.putNumberOfStatements("child1", 7, true);
   cm.putEdge("main", "main.c", 1, "child1", 100, 1.2, 0, 0);
   childNode->setReachable();
 
   auto childNode2 = cm.findOrCreateNode("child2", 23.0);
-  cm.putNumberOfStatements("child2", 42);
+  cm.putNumberOfStatements("child2", 42, true);
   cm.putEdge("child1", "main.c", 1, "child2", 10, 1.9, 0, 0);
   cm.putEdge("child2", "main.c", 1, "child1", 10, 1.9, 0, 0);
   childNode2->setReachable();
@@ -171,20 +171,20 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeCGwStmt) {
   cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
-  cm.putNumberOfStatements("main", 12);
+  cm.putNumberOfStatements("main", 12, true);
 
   auto childNode = cm.findOrCreateNode("child1", 2.0);
-  cm.putNumberOfStatements("child1", 7);
+  cm.putNumberOfStatements("child1", 7, true);
   cm.putEdge("main", "main.c", 1, "child1", 100, 1.2, 0, 0);
   childNode->setReachable();
 
   auto childNode2 = cm.findOrCreateNode("child2", 23.0);
-  cm.putNumberOfStatements("child2", 42);
+  cm.putNumberOfStatements("child2", 42, true);
   cm.putEdge("main", "main.c", 1, "child2", 10, 1.9, 0, 0);
   childNode2->setReachable();
 
   auto childNode3 = cm.findOrCreateNode("child3", 14.0);
-  cm.putNumberOfStatements("child3", 22);
+  cm.putNumberOfStatements("child3", 22, true);
   cm.putEdge("child1", "main.c", 1, "child3", 10, 1.9, 0, 0);
   childNode3->setReachable();
 
@@ -208,20 +208,20 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeDiamondCGwStmt) {
   cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
-  cm.putNumberOfStatements("main", 12);
+  cm.putNumberOfStatements("main", 12, true);
 
   auto childNode = cm.findOrCreateNode("child1", 2.0);
-  cm.putNumberOfStatements("child1", 7);
+  cm.putNumberOfStatements("child1", 7, true);
   cm.putEdge("main", "main.c", 1, "child1", 100, 1.2, 0, 0);
   childNode->setReachable();
 
   auto childNode2 = cm.findOrCreateNode("child2", 23.0);
-  cm.putNumberOfStatements("child2", 42);
+  cm.putNumberOfStatements("child2", 42, true);
   cm.putEdge("main", "main.c", 1, "child2", 10, 1.9, 0, 0);
   childNode2->setReachable();
 
   auto childNode3 = cm.findOrCreateNode("child3", 14.0);
-  cm.putNumberOfStatements("child3", 22);
+  cm.putNumberOfStatements("child3", 22, true);
   cm.putEdge("child1", "main.c", 1, "child3", 10, 1.9, 0, 0);
   cm.putEdge("child2", "main.c", 1, "child3", 10, 1.9, 0, 0);
   childNode3->setReachable();
@@ -255,26 +255,26 @@ TEST_F(IPCGEstimatorPhaseBasic, FiveNodeDiamondCGwStmt) {
   cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = cm.findOrCreateNode("main", 1.4);
-  cm.putNumberOfStatements("main", 12);
+  cm.putNumberOfStatements("main", 12 ,true);
 
   auto childNode = cm.findOrCreateNode("child1", 2.0);
-  cm.putNumberOfStatements("child1", 7);
+  cm.putNumberOfStatements("child1", 7, true);
   cm.putEdge("main", "main.c", 1, "child1", 100, 1.2, 0, 0);
   childNode->setReachable();
 
   auto childNode2 = cm.findOrCreateNode("child2", 23.0);
-  cm.putNumberOfStatements("child2", 42);
+  cm.putNumberOfStatements("child2", 42, true);
   cm.putEdge("main", "main.c", 1, "child2", 10, 1.9, 0, 0);
   childNode2->setReachable();
 
   auto childNode3 = cm.findOrCreateNode("child3", 14.0);
-  cm.putNumberOfStatements("child3", 22);
+  cm.putNumberOfStatements("child3", 22, true);
   cm.putEdge("child1", "main.c", 1, "child3", 10, 1.9, 0, 0);
   cm.putEdge("child2", "main.c", 1, "child3", 10, 1.9, 0, 0);
   childNode3->setReachable();
 
   auto childNode4 = cm.findOrCreateNode("child4", 11.2);
-  cm.putNumberOfStatements("child4", 4);
+  cm.putNumberOfStatements("child4", 4, true);
   cm.putEdge("child3", "main.c", 1, "child4", 12, 1.4, 0, 0);
   childNode4->setReachable();
 
@@ -306,7 +306,7 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
   void createCalleeNode(std::string name, std::string caller, int numStatements, double runtime, int numCalls) {
     auto &cm = CallgraphManager::get();
     auto nodeCaller = cm.findOrCreateNode(caller, runtime);
-    cm.putNumberOfStatements(name, numStatements);
+    cm.putNumberOfStatements(name, numStatements, true);
     cm.putEdge(caller, "main.c", 1, name, numCalls, runtime, 0, 0);
   }
 
@@ -317,7 +317,7 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
   cm.setConfig(new Config());
     cm.setNoOutput();
     auto mainNode = cm.findOrCreateNode("main", 1.4);
-    cm.putNumberOfStatements("main", 12);
+    cm.putNumberOfStatements("main", 12, true);
 
     createCalleeNode("child1", "main", 7, 2.0, 100);
     createCalleeNode("child2", "main", 42, 23.0, 10);

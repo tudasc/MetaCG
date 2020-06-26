@@ -19,7 +19,7 @@ S &Container(std::priority_queue<T, S, C> &q) {
   return HackedQueue::Container(q);
 }
 
-enum CgNodeState { NONE, INSTRUMENT_WITNESS, UNWIND_SAMPLE, INSTRUMENT_CONJUNCTION, UNWIND_INSTR, INSTRUMENT_CUBE };
+enum CgNodeState { NONE, INSTRUMENT_WITNESS, UNWIND_SAMPLE, INSTRUMENT_CONJUNCTION, UNWIND_INSTR, INSTRUMENT_CUBE, INSTRUMENT_PATH };
 
 class CgNode {
   using MetaData = pira::MetaData;
@@ -112,6 +112,7 @@ class CgNode {
   bool isInstrumented() const;
   bool isInstrumentedWitness() const;
   bool isInstrumentedConjunction() const;
+  bool isInstrumentedCallpath() const;
   bool isUnwound() const;
   bool isUnwoundSample() const;
   bool isUnwoundInstr() const;

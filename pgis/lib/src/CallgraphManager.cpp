@@ -27,14 +27,16 @@ CgNodePtr CallgraphManager::findOrCreateNode(std::string name, double timeInSeco
   }
 }
 
-void CallgraphManager::putNumberOfStatements(std::string name, int numberOfStatements) {
+void CallgraphManager::putNumberOfStatements(std::string name, int numberOfStatements, bool hasBody) {
   CgNodePtr node = findOrCreateNode(name);
   auto [has, obj] = node->checkAndGet<PiraOneData>();
   if (has) {
     obj->setNumberOfStatements(numberOfStatements);
+    obj->setHasBody(hasBody);
   } else {
     auto *pod = new PiraOneData();
     pod->setNumberOfStatements(numberOfStatements);
+    pod->setHasBody(hasBody);
     node->addMetaData(pod);
   }
 }
@@ -252,10 +254,34 @@ void CallgraphManager::printDOT(std::string prefix) {
         const auto &[hasPOD, pod] = node->checkAndGet<PiraOneData>();
         const auto &[hasPTD, ptd] = node->checkAndGet<PiraTwoData>();
 
-        const auto getCalls = [&] (const auto md) { if (hasBPD) { return md->getNumberOfCalls(); } else { return 0ull; }};
-        const auto getInclRT = [&] (const auto md) { if (hasBPD) { return md->getInclusiveRuntimeInSeconds(); } else { return .0; }};
-        const auto getRT = [&] (const auto md) { if (hasBPD) { return md->getRuntimeInSeconds(); } else { return .0; }};
-        const auto isFromCube = [&] (const auto md) { if (hasPOD) { return md->comesFromCube(); } else { return false; }};
+        const auto getCalls = [&](const auto md) {
+          if (hasBPD) {
+            return md->getNumberOfCalls();
+          } else {
+            return 0ull;
+          }
+        };
+        const auto getInclRT = [&](const auto md) {
+          if (hasBPD) {
+            return md->getInclusiveRuntimeInSeconds();
+          } else {
+            return .0;
+          }
+        };
+        const auto getRT = [&](const auto md) {
+          if (hasBPD) {
+            return md->getRuntimeInSeconds();
+          } else {
+            return .0;
+          }
+        };
+        const auto isFromCube = [&](const auto md) {
+          if (hasPOD) {
+            return md->comesFromCube();
+          } else {
+            return false;
+          }
+        };
 
         for (CgLocation cgLoc : node->getCgLocation()) {
           std::ostringstream threadTime;
@@ -329,13 +355,13 @@ void CallgraphManager::printDOT(std::string prefix) {
 
           if (hasPTD) {
             auto conn = ptd->getExtrapModelConnector();
-          if (conn.hasModels()) {
-            if (!conn.isModelSet()) {
-              conn.useFirstModel();
+            if (conn.hasModels()) {
+              if (!conn.isModelSet()) {
+                conn.useFirstModel();
+              }
+              auto theModel = conn.getEPModelFunction();
+              additionalLabel += '\n' + std::string(theModel->getAsString(this->epModelProvider.getParameterList()));
             }
-            auto theModel = conn.getEPModelFunction();
-            additionalLabel += '\n' + std::string(theModel->getAsString(this->epModelProvider.getParameterList()));
-          }
           }
 
           // runtime & expectedSamples in node label
@@ -395,6 +421,7 @@ void CallgraphManager::dumpInstrumentedNames(CgReport report) {
   if (noOutputRequired) {
     return;
   }
+
   std::string filename = config->outputFile + "/instrumented-" + config->appName + "-" + report.phaseName + ".txt";
   std::size_t found = filename.find(config->outputFile + "/instrumented-" + config->appName + "-" + "Incl");
   if (found != std::string::npos) {
@@ -404,12 +431,37 @@ void CallgraphManager::dumpInstrumentedNames(CgReport report) {
   spdlog::get("console")->info("Writing to {}", filename);
   std::ofstream outfile(filename, std::ofstream::out);
 
-  if (report.instrumentedNodes.empty()) {
-    outfile << "aFunctionThatDoesNotExist" << std::endl;
-  } else {
-    for (auto name : report.instrumentedNames) {
-      outfile << name << std::endl;
+  // The simple whitelist used so far in PIRA
+  if (!scorepOutput) {
+    spdlog::get("console")->debug("Using plain whitelist format");
+    if (report.instrumentedNodes.empty()) {
+      outfile << "aFunctionThatDoesNotExist" << std::endl;
+    } else {
+      for (auto name : report.instrumentedNames) {
+        outfile << name << std::endl;
+      }
     }
+  } else {
+    spdlog::get("console")->debug("Using score-p format");
+    const std::string scorepBegin{"SCOREP_REGION_NAMES_BEGIN"};
+    const std::string scorepEnd{"SCOREP_REGION_NAMES_END"};
+    const std::string mangled{"MANGLED"};
+    const std::string arrow{"->"};
+    const std::string include{"INCLUDE"};
+
+    std::stringstream ss;
+    ss << scorepBegin << "\n";
+    for (const auto name : report.instrumentedNames) {
+      ss << include << " " << name << "\n";
+    }
+    for (const auto [name, node] : report.instrumentedPaths) {
+      for (const auto parent : node->getParentNodes()) {
+        ss << include << " " << parent->getFunctionName() << " " << arrow << " " << name << "\n";
+      }
+    }
+    ss << scorepEnd << "\n";
+
+    outfile << ss.str();
   }
 }
 
@@ -447,4 +499,3 @@ void CallgraphManager::attachExtrapModels() {
   }
   spdlog::get("console")->info("Attaching Extra-P models done");
 }
-

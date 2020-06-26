@@ -52,7 +52,7 @@ class CallgraphManager {
   void putEdge(std::string parentName, std::string parentFilename, int parentLine, std::string childName,
                unsigned long long numberOfCalls, double timeInSeconds, int threadId, int procId);
 
-  void putNumberOfStatements(std::string name, int numberOfStatements);
+  void putNumberOfStatements(std::string name, int numberOfStatements, bool hasBody);
   void putNumberOfSamples(std::string name, unsigned long long numberOfSamples);
   CgNodePtr findOrCreateNode(std::string name, double timeInSeconds = 0.0);
   void setNodeComesFromCube(std::string name);
@@ -84,6 +84,8 @@ class CallgraphManager {
   Callgraph &getCallgraph(CallgraphManager *);
   void setNoOutput() { noOutputRequired = true; }
 
+  void setScorepOutputFormat(bool val = true) { scorepOutput = val;}
+
   void attachExtrapModels();
 
   void putEdge(std::string parentName, std::string childName);
@@ -93,6 +95,7 @@ class CallgraphManager {
   Callgraph graph;
   Config *config;
   bool noOutputRequired = false;
+  bool scorepOutput = false;
 
   // Extrap interaction
   extrapconnection::ExtrapModelProvider epModelProvider;

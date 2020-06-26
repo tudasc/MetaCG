@@ -1,4 +1,7 @@
 #include "IPCGReader.h"
+
+#include "spdlog/spdlog.h"
+
 using namespace pira;
 /** RN: note that the format is child -> parent for whatever reason.. */
 void IPCGAnal::build(CallgraphManager &cg, std::string filename, Config *c) {
@@ -35,7 +38,7 @@ void IPCGAnal::build(CallgraphManager &cg, std::string filename, Config *c) {
         //    ND = Not Definied
       } else {
         childNumStmts = std::stoi(line.substr(endPos));
-        cg.putNumberOfStatements(child, childNumStmts);
+        cg.putNumberOfStatements(child, childNumStmts, childNumStmts > 0);
       }
     }
   }
@@ -88,23 +91,24 @@ void buildFromJSON(CallgraphManager &cgm, std::string filename, Config *c) {
 
   FuncMapT functions;
 
-  std::cout << "About to read-in file" << std::endl;
+  spdlog::get("console")->info("Reading IPCG file from: {}", filename);
   json j;
   {
     std::ifstream in(filename);
     if (!in.is_open()) {
-      std::cerr << "[ERROR] opening file failed." << std::endl;
+      spdlog::get("errconsole")->error("Opening file failed.");
+      exit(-1);
     }
-    std::cout << "Reading ... " << std::endl;
     in >> j;
   }
-  std::cout << "Done reading in file." << std::endl;
 
   for (json::iterator it = j.begin(); it != j.end(); ++it) {
     auto &fi = getOrInsert(it.key(), functions);
 
     fi.functionName = it.key();
     int ns = it.value()["numStatements"].get<int>();
+    bool hasBody = it.value()["hasBody"].get<bool>();
+    fi.hasBody = hasBody;
     // ns == -1 means that there was no definition.
     if (ns > -1) {
       fi.numStatements = ns;
@@ -146,7 +150,7 @@ void buildFromJSON(CallgraphManager &cgm, std::string filename, Config *c) {
         }
       }
     }
-    cgm.putNumberOfStatements(pfi.first, pfi.second.numStatements);
+    cgm.putNumberOfStatements(pfi.first, pfi.second.numStatements, pfi.second.hasBody);
   }
 }
 

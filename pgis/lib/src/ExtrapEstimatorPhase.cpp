@@ -19,11 +19,16 @@ namespace pira {
 
 void ExtrapLocalEstimatorPhaseBase::modifyGraph(CgNodePtr mainNode) {
   auto console = spdlog::get("console");
-  console->info("Running ExtrapLocalEstimatorPhaseBase::modifyGraph");
+  console->trace("Running ExtrapLocalEstimatorPhaseBase::modifyGraph");
   for (const auto n : *graph) {
     auto [shouldInstr, funcRtVal] = shouldInstrument(n);
     if (shouldInstr) {
-      n->setState(CgNodeState::INSTRUMENT_WITNESS);
+      if (!n->get<PiraOneData>()->getHasBody()) {
+        // If no definition, use call-site instrumentation
+        n->setState(CgNodeState::INSTRUMENT_PATH);
+      } else {
+        n->setState(CgNodeState::INSTRUMENT_WITNESS);
+      }
       kernels.push_back({funcRtVal, n});
 
       if (allNodesToMain) {
@@ -58,7 +63,7 @@ std::pair<bool, double> ExtrapLocalEstimatorPhaseBase::shouldInstrument(CgNodePt
 
 std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(CgNodePtr node) const {
   if (!node->get<PiraTwoData>()->getExtrapModelConnector().isModelSet()) {
-    spdlog::get("console")->warn("Model not set for {}", node->getFunctionName());
+    spdlog::get("console")->debug("Model not set for {}", node->getFunctionName());
     return {false, -1};
   }
 
@@ -76,10 +81,15 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(CgNodePtr mainNod
 
   for (const auto n : *graph) {
     auto console = spdlog::get("console");
-    console->info("Running ExtrapLocalEstimatorPhaseExpander::modifyGraph on {}", n->getFunctionName());
+    console->trace("Running ExtrapLocalEstimatorPhaseExpander::modifyGraph on {}", n->getFunctionName());
     auto [shouldInstr, funcRtVal] = shouldInstrument(n);
     if (shouldInstr) {
-      n->setState(CgNodeState::INSTRUMENT_WITNESS);
+      if (!n->get<PiraOneData>()->getHasBody() && n->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
+        // If no definition, use call-site instrumentation
+        n->setState(CgNodeState::INSTRUMENT_PATH);
+      } else {
+        n->setState(CgNodeState::INSTRUMENT_WITNESS);
+      }
       kernels.push_back({funcRtVal, n});
 
       if (allNodesToMain) {

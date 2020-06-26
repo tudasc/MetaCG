@@ -93,6 +93,7 @@ int main(int argc, char **argv) {
     ("a,all-threads","Show all Threads even if unused.", cxxopts::value<bool>()->default_value("false"))
     ("w, whitelist", "Filter nodes through given whitelist", cxxopts::value<std::string>()->default_value(""))
     ("debug", "Whether debug messages should be printed", cxxopts::value<int>()->default_value("0"))
+    ("scorep-out", "Write instrumentation file with Score-P syntax", cxxopts::value<bool>()->default_value("false"))
     ("x, export", "Export the profiling info into IPCG file", cxxopts::value<bool>()->default_value("false"));
   // clang-format on
 
@@ -100,6 +101,7 @@ int main(int argc, char **argv) {
   bool applyStaticFilter = false;
   bool applyModelFilter = false;
   bool shouldExport = false;
+  bool useScorepFormat = false;
   int printDebug = 0;
   auto result = opts.parse(argc, argv);
 
@@ -128,6 +130,7 @@ int main(int argc, char **argv) {
   checkAndSet<std::string>("whitelist", result, c.whitelist);
   checkAndSet<int>("debug", result, printDebug);
   checkAndSet<bool>("export", result, shouldExport);
+  checkAndSet<bool>("scorep-out", result, useScorepFormat);
 
   if (printDebug == 1) {
     spdlog::set_level(spdlog::level::debug);
@@ -159,15 +162,20 @@ int main(int argc, char **argv) {
   auto &cg = CallgraphManager::get();
   cg.setConfig(&c);
   cg.setExtrapConfig(parseExtrapArgs(result));
+  
+  if (result.count("scorep-out")) {
+    spdlog::get("console")->info("Setting Score-P Output Format");
+    cg.setScorepOutputFormat();
+  }
 
   if (stringEndsWith(ipcgFullPath, ".ipcg")) {
-    console->info("Reading ipcg file: {}", ipcgFullPath);
     IPCGAnal::buildFromJSON(cg, ipcgFullPath, &c);
     if (applyStaticFilter) {
       registerEstimatorPhases(cg, &c, true, 0);
       cg.applyRegisteredPhases();
       cg.removeAllEstimatorPhases();
     }
+
   }
 
   if (result.count("cube")) {
@@ -213,6 +221,7 @@ int main(int argc, char **argv) {
   }
 
   if (cg.hasPassesRegistered()) {
+    spdlog::get("console")->info("Running registered estimator phases");
     cg.applyRegisteredPhases();
   }
 

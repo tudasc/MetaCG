@@ -18,7 +18,6 @@
 #include <EXTRAP_SingleParameterSimpleModelGenerator.hpp>
 #pragma GCC diagnostic pop
 
-
 namespace extrapconnection {
 
 void printConfig(ExtrapConfig &cfg) {
@@ -180,7 +179,7 @@ void ExtrapModelProvider::buildModels() {
     if (i % config.repetitions == 0) {
       const auto attEpData = [&](auto &cube, auto cnode, auto n) {
         console->debug("Attaching Cube info from file {}", fns.at(i));
-        auto ptd = getOrCreateMD<pira::PiraTwoData>(n, ExtrapConnector({},{}));
+        auto ptd = getOrCreateMD<pira::PiraTwoData>(n, ExtrapConnector({}, {}));
         ptd->setExtrapParameters(config.params);
         ptd->addToRuntimeVec(CubeCallgraphBuilder::impl::time(cube, cnode));
       };
@@ -201,7 +200,7 @@ void ExtrapModelProvider::buildModels() {
         return s;
       };
       console->debug("ExtrapModelProvider::buildModels: Node {} has {} many runtime values: {}", n->getFunctionName(),
-                                    ptd->getRuntimeVec().size(), la());
+                     ptd->getRuntimeVec().size(), la());
     }
   }
 
