@@ -1,0 +1,10 @@
+{
+	"dir": "./002",
+	"prefix": "t",
+	"postfix": "postfix",
+	"reps": 5,
+	"iter": 1,
+	"params" : {
+		"X": ["3", "5", "7", "9", "11"]
+	}
+}

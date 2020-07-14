@@ -1,0 +1,32 @@
+{
+    "main": {
+        "callees": ["foo", "bar"],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 2,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    },
+    "foo": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 5,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": ["main"]
+    },
+    "bar": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": ["main"]
+    }
+}
