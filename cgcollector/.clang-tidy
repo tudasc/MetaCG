@@ -1,0 +1,10 @@
+---
+Checks: '-clang-analyzer-core*,
+         -clang-analyzer-cplusplus*,
+         -cppcoreguidelines-*,
+         -cert-err61-cpp,
+         -modernize-raw-string-literal,
+         -modernize-make*,
+         -performance*
+         '
+...
