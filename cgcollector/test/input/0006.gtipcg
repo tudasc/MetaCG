@@ -1,0 +1,1 @@
+{"_ZN7MyClass3fooEv":{"callees":[],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":0,"overriddenBy":[],"overriddenFunctions":[],"parents":["main"]},"main":{"callees":["_ZN7MyClass3fooEv"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":3,"overriddenBy":[],"overriddenFunctions":[],"parents":[]}}
