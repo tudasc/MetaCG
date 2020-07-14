@@ -1,0 +1,84 @@
+# File: .gitlab-ci.yml
+# License: Part of the PIRA proect. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/jplehr/pira/LICENSE.txt
+# Description: File to configure our Gitlab CI
+
+# Stages
+stages:
+  - download
+  - build
+  - test
+  - install
+
+.lb-setup: &lb-setup
+  - eval $(ssh-agent -s)
+  - ssh-add ~/.ssh/gitlab_rsa
+  - module use /home/groups/sc/modules/modulefiles
+  - module load gcc/8 git cmake scorep cube/4.4_gcc8 python/3
+
+.lb-tear-down: &lb-tear-down
+  - echo $SSH_AUTH_SOCK
+  - rm -rf $(dirname $(echo $SSH_AUTH_SOCK))
+  - ssh-agent -k
+
+fetch-and-build-deps:
+  stage: download
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: clone
+  script:
+    - ./build_submodules.sh
+    - *lb-tear-down
+
+build-w-extrap:
+  stage: build
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - echo $PWD
+    - rm -rf build
+    - mkdir build && cd build
+    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/pgis-test-install -DCXXOPTS_INCLUDE=../deps/src/cxxopts -DJSON_INCLUDE=../deps/src/json/single_include -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=../deps/src/extrap/extrap-3.0/include -DEXTRAP_LIB=../deps/install/extrap/lib ..
+    - make -j $(cat /proc/cpuinfo | grep processor | wc -l)
+    - echo $PWD
+    - ls test
+    - *lb-tear-down
+
+run-test:
+  stage: test
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - echo $PWD
+    - ls
+    - ls build
+    - ls build/test
+    - cd build/test && ./basictests
+    - *lb-tear-down
+
+run-install:
+  stage: install
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - echo $PWD
+    - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
+    - cd build
+    - make install
+    - stat /tmp/pgis-test-install/bin/pgis_pira
+    - export LD_LIBRARY_PATH=/tmp/pgis-test-install/lib:$LD_LIBRARY_PATH
+    - /tmp/pgis-test-install/bin/pgis_pira --help
+    - rm -r /tmp/pgis-*
+    - *lb-tear-down
+
+

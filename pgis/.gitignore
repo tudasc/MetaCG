@@ -1,0 +1,12 @@
+.project
+.cproject
+
+*.dot
+*.swp
+
+src/*.o
+src/*.d
+
+build/**
+
+*.user
