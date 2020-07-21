@@ -34,7 +34,7 @@ mgc-dowload:
     - git clone https://github.com/nlohmann/json
     - *lb-tear-down
 
-cgc-build:
+build-cgc:
   stage: build
   tags:
     - general
@@ -51,7 +51,7 @@ cgc-build:
     - ls test
     - *lb-tear-down
 
-cgc-test:
+test-cgc:
   stage: test
   tags:
     - general
@@ -67,7 +67,7 @@ cgc-test:
     - cd test && bash run_simple_test.sh
     - *lb-tear-down
 
-cgc-install:
+install-cgc:
   stage: install
   tags:
     - general
@@ -86,7 +86,7 @@ cgc-install:
     - rm -r /tmp/cgcollector-*
     - *lb-tear-down
 
-pgis-build-deps:
+build-pgis-deps:
   stage: build-deps
   tags:
     - general
@@ -117,7 +117,7 @@ build-pgis:
     - ls test
     - *lb-tear-down
 
-run-test:
+test-pgis:
   stage: test
   tags:
     - general
@@ -134,7 +134,7 @@ run-test:
     - cd build/test/unit && ./basictests
     - *lb-tear-down
 
-run-static-test:
+test-static-pgis:
   stage: integration-test
   tags:
     - general
@@ -148,7 +148,7 @@ run-static-test:
     - cd test/integration
     - ./runner.sh static
 
-run-modeling-test:
+test-modeling-pgis:
   stage: integration-test
   tags:
     - general
@@ -162,7 +162,7 @@ run-modeling-test:
     - cd test/integration
     - ./runner.sh modeling
 
-run-dynamic-test:
+test-dynamic-pgis:
   stage: integration-test
   tags:
     - general
@@ -176,7 +176,7 @@ run-dynamic-test:
     - cd test/integration
     - ./runner.sh dynamic
 
-run-install:
+install-pgis:
   stage: install
   tags:
     - general
