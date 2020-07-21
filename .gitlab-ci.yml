@@ -1,0 +1,198 @@
+# File: .gitlab-ci.yml
+# License: Part of the MetaCG proect. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/jplehr/pira/LICENSE.txt
+# Description: File to configure our Gitlab CI
+
+# Stages
+stages:
+  - download
+  - build-deps
+  - build
+  - test
+  - integration-test
+  - install
+
+.lb-setup: &lb-setup
+  - eval $(ssh-agent -s)
+  - ssh-add ~/.ssh/gitlab_rsa
+  - module use /home/groups/sc/modules/modulefiles
+  - module load gcc/8 git llvm/10.0.0 cmake python/3 cube/4.4_gcc8
+
+.lb-tear-down: &lb-tear-down
+  - echo $SSH_AUTH_SOCK
+  - rm -rf $(dirname $(echo $SSH_AUTH_SOCK))
+  - ssh-agent -k
+
+mgc-dowload:
+  stage: download
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: clone
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - git clone https://github.com/nlohmann/json
+    - *lb-tear-down
+
+cgc-build:
+  stage: build
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd cgcollector
+    - mkdir build && cd build
+    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/cgcollector-test-install -DJSON_INCLUDE_PATH=../json/single_include ..
+    - make -j $(cat /proc/cpuinfo | grep processor | wc -l)
+    - echo $PWD
+    - ls test
+    - *lb-tear-down
+
+cgc-test:
+  stage: test
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd cgcollector
+    - ls
+    - ls build
+    - ls build/test
+    - cd test && bash run_simple_test.sh
+    - *lb-tear-down
+
+cgc-install:
+  stage: install
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd cgcollector
+    - cd build
+    - make install
+    - stat /tmp/cgcollector-test-install/bin/cgcollector
+    - stat /tmp/cgcollector-test-install/bin/cgmerge
+    - export LD_LIBRARY_PATH=/tmp/cgcollector-test-install/lib:$LD_LIBRARY_PATH
+    - /tmp/cgcollector-test-install/bin/cgcollector --help
+    - rm -r /tmp/cgcollector-*
+    - *lb-tear-down
+
+pgis-build-deps:
+  stage: build-deps
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd pgis
+    - ./build_submodules.sh
+    - *lb-tear-down
+
+build-pgis:
+  stage: build
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd pgis
+    - rm -rf build
+    - mkdir build && cd build
+    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/pgis-test-install -DCXXOPTS_INCLUDE=../deps/src/cxxopts -DJSON_INCLUDE=../deps/src/json/single_include -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=../deps/src/extrap/extrap-3.0/include -DEXTRAP_LIB=../deps/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON ..
+    - make -j $(cat /proc/cpuinfo | grep processor | wc -l)
+    - echo $PWD
+    - ls test
+    - *lb-tear-down
+
+run-test:
+  stage: test
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd pgis
+    - echo $PWD
+    - ls
+    - ls build
+    - ls build/test
+    - cd build/test/unit && ./basictests
+    - *lb-tear-down
+
+run-static-test:
+  stage: integration-test
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd pgis
+    - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
+    - cd test/integration
+    - ./runner.sh static
+
+run-modeling-test:
+  stage: integration-test
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd pgis
+    - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
+    - cd test/integration
+    - ./runner.sh modeling
+
+run-dynamic-test:
+  stage: integration-test
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd pgis
+    - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
+    - cd test/integration
+    - ./runner.sh dynamic
+
+run-install:
+  stage: install
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd pgis
+    - echo $PWD
+    - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
+    - cd build
+    - make install
+    - stat /tmp/pgis-test-install/bin/pgis_pira
+    - export LD_LIBRARY_PATH=/tmp/pgis-test-install/lib:$LD_LIBRARY_PATH
+    - /tmp/pgis-test-install/bin/pgis_pira --help
+    - rm -r /tmp/pgis-*
+    - *lb-tear-down
+
