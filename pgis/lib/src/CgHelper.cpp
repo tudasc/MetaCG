@@ -405,6 +405,30 @@ CgNodePtrSet getReachableConjunctions(CgNodePtrSet markerPositions) {
   return reachableConjunctions;
 }
 
+void reachableFromMainAnalysis(CgNodePtr mainNode) {
+  CgNodePtrSet visitedNodes;
+  std::queue<CgNodePtr> workQueue;
+  workQueue.push(mainNode);
+
+  while (!workQueue.empty()) {
+    auto node = workQueue.front();
+    workQueue.pop();
+
+    // mark as visited and reachable
+    spdlog::get("console")->trace("Setting reachable: {}", node->getFunctionName());
+    node->setReachable(true);
+    visitedNodes.insert(node);
+
+    // children need to be processed
+    for (auto childNode : node->getChildNodes()) {
+      if (visitedNodes.find(childNode) == visitedNodes.end()) {
+        workQueue.push(childNode);
+      }
+    }
+  }
+}
+
+
 // note: a function is reachable from itself
 bool reachableFrom(CgNodePtr parentNode, CgNodePtr childNode) {
   if (parentNode == childNode) {

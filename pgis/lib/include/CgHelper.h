@@ -77,6 +77,11 @@ bool isValidMarkerPosition(CgNodePtr markerPosition, CgNodePtr conjunction);
 bool isOnCycle(CgNodePtr node);
 CgNodePtrSet getReachableConjunctions(CgNodePtrSet markerPositions);
 
+/**
+ * Runs analysis on the call-graph and marks every node which is reachable from main
+ */
+void reachableFromMainAnalysis(CgNodePtr mainNode);
+
 bool reachableFrom(CgNodePtr parentNode, CgNodePtr childNode);
 CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,
                                      const std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> &init);

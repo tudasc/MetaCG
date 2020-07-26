@@ -110,6 +110,9 @@ void CallgraphManager::finalizeGraph(bool buildMarker) {
       exit(1);
     }
     mainNode->setReachable();
+
+    // run reachability analysis -> mark reachable nodes
+    CgHelper::reachableFromMainAnalysis(graph.findMain());
   }
 
   // also update all node attributes
@@ -118,14 +121,6 @@ void CallgraphManager::finalizeGraph(bool buildMarker) {
       node->updateNodeAttributes();
     } else {
       node->updateNodeAttributes(false);
-    }
-
-    // graph.findMain caches the main node
-    if (CgHelper::reachableFrom(graph.findMain(), node)) {
-      spdlog::get("console")->trace("Setting reachable: {}", node->getFunctionName());
-      node->setReachable();
-    } else {
-      node->setReachable(false);
     }
 
     if (buildMarker) {
