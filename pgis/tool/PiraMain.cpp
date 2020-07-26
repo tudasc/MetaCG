@@ -90,6 +90,7 @@ int main(int argc, char **argv) {
     ("h,help", "Show help", cxxopts::value<bool>()->default_value("false"))
     ("e,extrap", "File to read Extra-P info from", cxxopts::value<std::string>()->default_value(""))
     ("model-filter", "Use Extra-P models to filter only.", cxxopts::value<bool>()->default_value("false"))
+    ("runtime-only", "Do not use model, but multiple runtimes", cxxopts::value<bool>()->default_value("false"))
     ("a,all-threads","Show all Threads even if unused.", cxxopts::value<bool>()->default_value("false"))
     ("w, whitelist", "Filter nodes through given whitelist", cxxopts::value<std::string>()->default_value(""))
     ("debug", "Whether debug messages should be printed", cxxopts::value<int>()->default_value("0"))
@@ -98,11 +99,12 @@ int main(int argc, char **argv) {
   // clang-format on
 
   Config c;
-  bool applyStaticFilter = false;
-  bool applyModelFilter = false;
-  bool shouldExport = false;
-  bool useScorepFormat = false;
-  int printDebug = 0;
+  bool applyStaticFilter {false};
+  bool applyModelFilter {false};
+  bool shouldExport {false};
+  bool useScorepFormat {false};
+  bool extrapRuntimeOnly {false};
+  int printDebug { 0};
   auto result = opts.parse(argc, argv);
 
   if (result.count("help")) {
@@ -126,6 +128,7 @@ int main(int argc, char **argv) {
   checkAndSet<std::string>("out-file", result, c.outputFile);
   checkAndSet<bool>("static", result, applyStaticFilter);
   checkAndSet<bool>("model-filter", result, applyModelFilter);
+  checkAndSet<bool>("runtime-only", result, extrapRuntimeOnly);
   checkAndSet<bool>("all-threads", result, c.showAllThreads);
   checkAndSet<std::string>("whitelist", result, c.whitelist);
   checkAndSet<int>("debug", result, printDebug);

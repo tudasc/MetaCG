@@ -62,6 +62,16 @@ std::pair<bool, double> ExtrapLocalEstimatorPhaseBase::shouldInstrument(CgNodePt
 }
 
 std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(CgNodePtr node) const {
+  if (this->useRuntimeOnly) {
+    const auto median = [&] (auto vec) { if (vec.size() % 2 == 0) {return vec[vec.size()/2];} else { return vec[vec.size()/2 + 1]; }};
+    auto rtVec = node->get<PiraTwoData>()->getRuntimeVec();
+    auto medianValue = median(rtVec);
+    const float someThreshold = 2.1f;
+    if (medianValue > someThreshold) {
+      return {true, medianValue};
+    }
+  }
+
   if (!node->get<PiraTwoData>()->getExtrapModelConnector().isModelSet()) {
     spdlog::get("console")->debug("Model not set for {}", node->getFunctionName());
     return {false, -1};
