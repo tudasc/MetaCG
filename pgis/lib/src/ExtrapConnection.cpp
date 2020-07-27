@@ -176,7 +176,7 @@ void ExtrapModelProvider::buildModels() {
   printDbgInfos();
 
   for (int i = 0; i < fns.size(); ++i) {
-    if (i % config.repetitions == 0) {
+//    if (i % config.repetitions == 0) {
       const auto attEpData = [&](auto &cube, auto cnode, auto n) {
         console->debug("Attaching Cube info from file {}", fns.at(i));
         auto ptd = getOrCreateMD<pira::PiraTwoData>(n, ExtrapConnector({}, {}));
@@ -185,7 +185,7 @@ void ExtrapModelProvider::buildModels() {
       };
 
       CubeCallgraphBuilder::impl::build(std::string(fns.at(i)), attEpData);
-    }
+ //   }
   }
 
   for (const auto n : CallgraphManager::get()) {

@@ -209,11 +209,11 @@ int main(int argc, char **argv) {
 
     if (applyModelFilter) {
       console->info("Applying model filter");
-      cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueFilter(1.0, true));
+      cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueFilter(1.0, true, extrapRuntimeOnly));
     } else {
       console->info("Applying model expander");
       cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(true, false));  // remove unrelated
-      cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(1.0, true));
+      cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(1.0, true, extrapRuntimeOnly));
     }
     // XXX Should this be done after filter / expander were run? Currently we do this after model creation, yet, *before*
     // running the estimator phase

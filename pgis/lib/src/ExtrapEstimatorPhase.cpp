@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <cassert>
 
 namespace pira {
 
@@ -62,18 +63,35 @@ std::pair<bool, double> ExtrapLocalEstimatorPhaseBase::shouldInstrument(CgNodePt
 }
 
 std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(CgNodePtr node) const {
-  if (this->useRuntimeOnly) {
-    const auto median = [&] (auto vec) { if (vec.size() % 2 == 0) {return vec[vec.size()/2];} else { return vec[vec.size()/2 + 1]; }};
-    auto rtVec = node->get<PiraTwoData>()->getRuntimeVec();
+  spdlog::get("console")->debug("Running {}", __PRETTY_FUNCTION__);
+  if (useRuntimeOnly) {
+    auto pdII = node->get<PiraTwoData>();
+    auto rtVec = pdII->getRuntimeVec();
+
+    const auto median = [&] (auto vec) { 
+      spdlog::get("console")->debug("Vec size {}", vec.size());
+      if (vec.size() % 2 == 0) {
+        return vec[vec.size()/2];
+      } else {
+        return vec[vec.size()/2 + 1];
+      }
+    };
+
+    if (rtVec.size() == 0) {
+      return {false, .0};
+    }
+
     auto medianValue = median(rtVec);
     const float someThreshold = 2.1f;
+    std::string funcName { __PRETTY_FUNCTION__ };
+    spdlog::get("console")->debug("{}: No. of RT values: {}, median RT value {}, threshold value {}", funcName, rtVec.size(), medianValue, someThreshold);
     if (medianValue > someThreshold) {
       return {true, medianValue};
     }
   }
 
   if (!node->get<PiraTwoData>()->getExtrapModelConnector().isModelSet()) {
-    spdlog::get("console")->debug("Model not set for {}", node->getFunctionName());
+    spdlog::get("console")->trace("Model not set for {}", node->getFunctionName());
     return {false, -1};
   }
 
