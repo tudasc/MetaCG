@@ -1,0 +1,53 @@
+{
+    "_Z3barv": {
+        "callees": [
+            "_Z3foov"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z3harv"
+        ]
+    },
+    "_Z3foov": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z3barv",
+            "_Z2hfv"
+        ]
+    },
+    "_Z3harv": {
+        "callees": [
+            "_Z3barv"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    },
+    "_Z2hfv": {
+        "callees": [
+            "_Z3foov"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    }
+}

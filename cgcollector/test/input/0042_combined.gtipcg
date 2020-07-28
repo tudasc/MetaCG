@@ -1,0 +1,50 @@
+{
+    "_Z3barv": {
+        "callees": [
+            "_Z3boov"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    },
+    "_Z3bazv": {
+        "callees": [
+            "_Z3foov"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    },
+    "_Z3boov": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 3,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z3barv"
+        ]
+    },
+    "_Z3foov": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z3bazv"
+        ]
+    }
+}
