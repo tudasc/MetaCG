@@ -14,8 +14,7 @@ stages:
 .lb-setup: &lb-setup
   - eval $(ssh-agent -s)
   - ssh-add ~/.ssh/gitlab_rsa
-  - module use /home/groups/sc/modules/modulefiles
-  - module load gcc/8 git llvm/10.0.0 cmake python/3 cube/4.4_gcc8
+  - module load gcc/8 git llvm/10.0.0 cmake python/3 cube/4.4
 
 .lb-tear-down: &lb-tear-down
   - echo $SSH_AUTH_SOCK
