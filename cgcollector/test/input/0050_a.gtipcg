@@ -1,0 +1,39 @@
+{
+    "_ZN4Base3fooEv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [
+            "_ZN9DeriveTwo3fooEv",
+            "_ZN6Derive3fooEv"
+        ],
+        "overriddenFunctions": [],
+        "parents": []
+    },
+    "_ZN6Derive3fooEv": {
+        "callees": [],
+        "doesOverride": true,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [
+            "_ZN4Base3fooEv"
+        ],
+        "parents": []
+    },
+    "_ZN9DeriveTwo3fooEv": {
+        "callees": [],
+        "doesOverride": true,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [
+            "_ZN4Base3fooEv"
+        ],
+        "parents": []
+    }
+}

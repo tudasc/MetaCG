@@ -4,7 +4,7 @@
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
-        "numStatements": 2,
+        "numStatements": 4,
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": [
@@ -12,6 +12,18 @@
         ]
     },
     "_Z3onev": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "_Z4dfltv": {
         "callees": [],
         "doesOverride": false,
         "hasBody": true,
@@ -39,8 +51,9 @@
     },
     "main": {
         "callees": [
-            "_Z3onev",
-            "_Z4get2i"
+            "_Z4dfltv",
+            "_Z4get2i",
+            "_Z3onev"
         ],
         "doesOverride": false,
         "hasBody": true,

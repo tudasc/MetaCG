@@ -17,15 +17,30 @@ int main(int argc, char **argv) {
 
   nlohmann::json wholeCG;
 
+  const auto toSet = [&](auto &jsonObj, std::string id) {
+    const auto &obj = jsonObj[id];
+    std::set<std::string> target;
+    for (const auto e : obj) {
+      target.insert(e.template get<std::string>());
+    }
+    return target;
+  };
+
   const auto doMerge = [&](auto &t, const auto &s) {
     auto &callees = s["callees"];
-    auto &tCallees = t["callees"];
+    std::set<std::string> tCallees{toSet(t, "callees")};
     for (auto c : callees) {
-      tCallees.push_back(c.template get<std::string>());
+      tCallees.insert(c.template get<std::string>());
     }
+
+    auto &overriddenFuncs = s["overriddenFunctions"];
+    std::set<std::string> tOverriddenFuncs{toSet(t, "overriddenFunctions")};
+    for (auto of : overriddenFuncs) {
+      tOverriddenFuncs.insert(of.template get<std::string>());
+    }
+
     t["isVirtual"] = s["isVirtual"];
     t["doesOverride"] = s["doesOverride"];
-    t["overriddenFunctions"] = s["overriddenFunctions"];
     t["hasBody"] = s["hasBody"];
   };
 
@@ -35,15 +50,6 @@ int main(int argc, char **argv) {
     file >> current;
 
     for (nlohmann::json::iterator it = current.begin(); it != current.end(); ++it) {
-      // j[getMangledName(f_decl)] = {
-      //   {"callees", callees},
-      //   {"isVirtual", isVirtual},
-      //   {"doesOverride", doesOverride},
-      //   {"overriddenFunctions", overriddenFunctions},
-      //   {"overriddenBy", overriddenBy},
-      //   {"parents", callers}
-      // };
-
       if (wholeCG[it.key()].empty()) {
         wholeCG[it.key()] = it.value();
       } else {

@@ -6,16 +6,15 @@ int dflt() { return 42; }
 typedef int (*Fn)();
 
 Fn get(int i) {
+  Fn a = dflt;
   if (i == 1)
     return one;
-  return dflt;
+  return a;
 }
 
 Fn get2(int i) { return get(i); }
 
 int main() {
-  int (*f)() = get2(1);
-  f();
-
+  get2(1)();
   return 0;
 }

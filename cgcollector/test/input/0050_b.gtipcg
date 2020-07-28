@@ -1,0 +1,40 @@
+{
+    "_ZN12DeriveDerive3fooEv": {
+        "callees": [],
+        "doesOverride": true,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [
+            "_ZN6Derive3fooEv"
+        ],
+        "parents": []
+    },
+    "_ZN4Base3fooEv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [
+            "_ZN6Derive3fooEv"
+        ],
+        "overriddenFunctions": [],
+        "parents": []
+    },
+    "_ZN6Derive3fooEv": {
+        "callees": [],
+        "doesOverride": true,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [
+            "_ZN12DeriveDerive3fooEv"
+        ],
+        "overriddenFunctions": [
+            "_ZN4Base3fooEv"
+        ],
+        "parents": []
+    }
+}
