@@ -121,36 +121,68 @@ void buildFromJSON(CallgraphManager &cgm, std::string filename, Config *c) {
     auto ofs = it.value()["overriddenFunctions"].get<std::set<std::string>>();
     fi.overriddenFunctions.insert(ofs.begin(), ofs.end());
 
+    auto overriddenBy = it.value()["overriddenBy"].get<std::set<std::string>>();
+    fi.overriddenBy.insert(overriddenBy.begin(), overriddenBy.end());
+
     auto ps = it.value()["parents"].get<std::set<std::string>>();
     fi.parents.insert(ps.begin(), ps.end());
   }
 
   // Now the functions map holds all the information
   std::unordered_map<std::string, std::unordered_set<std::string>> vCallSites;
-  for (const auto pfi : functions) {
-    if (pfi.second.isVirtual) {
-      vCallSites.insert({pfi.first, pfi.second.parents});
-      for (const auto ovcs : pfi.second.overriddenFunctions) {
-        vCallSites.insert({ovcs, {pfi.first}});
+  
+  std::unordered_map<std::string, std::unordered_set<std::string>> potentialTargets;
+  for (const auto [k, funcInfo] : functions) {
+    if (!funcInfo.isVirtual) {
+      // No virtual function, continue
+      continue;
+    }
+
+    /*
+     * The current function can: 1. override a function, or, 2. be overridden by a function
+     * 
+     * (1) Add this function as potential target for any overridden function
+     * (2) Add the overriding function as potential target for this function
+     *
+     */
+    if (funcInfo.doesOverride) {
+      for (const auto overriddenFunction : funcInfo.overriddenFunctions) {
+        // Adds this function as potential target to all overridden functions
+        //potentialTargets.insert( {overriddenFunction, k} );
+        potentialTargets[overriddenFunction].insert(k);
+        auto &pTargets = potentialTargets[k];
+        potentialTargets[overriddenFunction].insert(pTargets.begin(), pTargets.end());
       }
-      // auto &vcs = vCallSites[pfi.first];
-      // vcs.insert(std::begin(pfi.second.overriddenFunctions), std::end(pfi.second.overriddenFunctions));
+    }
+
+    for (const auto overridingFunction : funcInfo.overriddenBy) {
+      //potentialTargets.insert( {k, overridingFunction) };
+      potentialTargets[k].insert(overridingFunction);
+      // Adjust other call sites
+      auto &pTargets = potentialTargets[overridingFunction];
+      potentialTargets[k].insert(pTargets.begin(), pTargets.end());
     }
   }
 
-  for (const auto pfi : functions) {
-    for (const auto c : pfi.second.callees) {
-      cgm.putEdge(pfi.first, "", 0, c, 0, .0, 0, 0);
+  for (const auto &[k, s] : potentialTargets) {
+    std::string targets;
+    for (const auto &t : s) {
+      targets += t + ", ";
     }
-    if (pfi.second.isVirtual || pfi.second.doesOverride) {
-      for (const auto om : pfi.second.overriddenFunctions) {
-        for (const auto vcs : vCallSites[om]) {
-          // parent -> child: vcs -> pfi.first
-          cgm.putEdge(om, "", 0, pfi.first, 0, .0, 0, 0);
-        }
+    spdlog::get("console")->debug("Potential call targets for {}: {}", k, targets);
+  }
+
+  for (const auto &[k, fi] : functions) {
+    cgm.putNumberOfStatements(k, fi.numStatements, fi.hasBody);
+    for (const auto &c : fi.callees) {
+      cgm.putEdge(k, "", 0, c, 0, .0, 0, 0); // regular call edges
+      cgm.putNumberOfStatements(c, functions[c].numStatements, functions[c].hasBody);
+      auto &potTargets = potentialTargets[c];
+      for (const auto &pt : potTargets) {
+        cgm.putEdge(k, "", 0, pt, 0, .0, 0, 0); // potential edges through virtual calls
+        cgm.putNumberOfStatements(pt, functions[pt].numStatements, functions[pt].hasBody);
       }
     }
-    cgm.putNumberOfStatements(pfi.first, pfi.second.numStatements, pfi.second.hasBody);
   }
 }
 

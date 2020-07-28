@@ -49,7 +49,7 @@ class CallgraphManager {
  public:
   ~CallgraphManager() {}
 
-  void putEdge(std::string parentName, std::string parentFilename, int parentLine, std::string childName,
+  void putEdge(const std::string &parentName, std::string parentFilename, int parentLine, std::string childName,
                unsigned long long numberOfCalls, double timeInSeconds, int threadId, int procId);
 
   void putNumberOfStatements(std::string name, int numberOfStatements, bool hasBody);

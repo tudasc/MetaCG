@@ -12,11 +12,11 @@ function check_selection {
 		return 255
 	fi
 
-	cat ${PWD}/${testNo}.afl 2>&1 > /dev/null
+	cat ${PWD}/${testNo}.afl > /dev/null 2>&1 
 	if [ $? -eq 0 ]; then
 		aflFileExt="afl"
 	else
-	  cat ${PWD}/${testNo}.spl 2>&1 > /dev/null
+	  cat ${PWD}/${testNo}.spl > /dev/null 2>&1 
 		if [ $? -eq 0 ]; then
 			aflFileExt="spl"
 		fi

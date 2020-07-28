@@ -24,6 +24,7 @@ struct FunctionInfo {
   std::unordered_set<std::string> callees;
   std::unordered_set<std::string> parents;
   std::unordered_set<std::string> overriddenFunctions;
+  std::unordered_set<std::string> overriddenBy;
 };
 
 typedef std::unordered_map<std::string, FunctionInfo> FuncMapT;

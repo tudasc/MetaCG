@@ -69,7 +69,7 @@ void CallgraphManager::putEdge(std::string parentName, std::string childName) {
   childNode->addParentNode(parentNode);
 }
 
-void CallgraphManager::putEdge(std::string parentName, std::string parentFilename, int parentLine,
+void CallgraphManager::putEdge(const std::string &parentName, std::string parentFilename, int parentLine,
                                std::string childName, unsigned long long numberOfCalls, double timeInSeconds,
                                int threadId, int procId) {
   putEdge(parentName, childName);
