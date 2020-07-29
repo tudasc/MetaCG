@@ -109,7 +109,7 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
   }
 
   // We are only collecting the declarations, so do not step into the bodies.
-  bool TraverseStmt(clang::Stmt *S) { return true; }
+  bool TraverseStmt([[maybe_unused]] clang::Stmt *S) { return true; }
 
   bool shouldWalkTypesOfTypeLocs() const { return false; }
   bool shouldVisitTemplateInstantiations() const { return true; }

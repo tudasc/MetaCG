@@ -335,7 +335,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
 
   void VisitCallExpr(CallExpr *CE) {
     Decl *D = nullptr;
-    if (D = getDeclFromCall(CE)) {
+    if ((D = getDeclFromCall(CE))) {
       addCalledDecl(D);
     }
 
