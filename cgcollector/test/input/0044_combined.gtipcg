@@ -22,8 +22,8 @@
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": [
-            "_Z3barv",
-            "_Z2hfv"
+            "_Z2hfv",
+            "_Z3barv"
         ]
     },
     "_Z3harv": {
