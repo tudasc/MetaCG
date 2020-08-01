@@ -1,0 +1,26 @@
+{
+    "_ZN13MyClassDerive3fooEv": {
+        "callees": [],
+        "doesOverride": true,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [
+            "_ZN7MyClass3fooEv"
+        ],
+        "parents": []
+    },
+    "_ZN7MyClass3fooEv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": false,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [
+            "_ZN13MyClassDerive3fooEv"
+        ],
+        "overriddenFunctions": [],
+        "parents": []
+    }
+}

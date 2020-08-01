@@ -5,7 +5,8 @@ testerExe=cgsimpletester
 cgmergeExe=cgmerge
 
 
-if [ command -v $testerExe ]; then
+#if [ command -v $testerExe ]; then
+if [[ $(type -P $testerExe) ]]; then
 	echo "The CGSimpleTester binary (cgsimpletester) could not be found in path, testing with relative path."
 fi
 stat ../build/test/cgsimpletester > /dev/null
@@ -16,7 +17,7 @@ else
 	testerExe=../build/test/cgsimpletester
 fi
 
-if [ command -v $cgcollectorExe ]; then
+if [[ $(type -P $cgcollectorExe) ]]; then
 	echo "No cgcollector in PATH. Trying relative path ../build/tools"
 fi
 stat ../build/tools/cgcollector > /dev/null
@@ -27,7 +28,7 @@ else
   cgcollectorExe=../build/tools/cgcollector
 fi
 
-if [ command -v $cgmergeExe ]; then
+if [[ $(type -P $cgmergeExe) ]]; then
 	echo "No cgcollector in PATH. Trying relative path ../build/tools"
 fi
 stat ../build/tools/cgmerge > /dev/null
@@ -42,7 +43,7 @@ fi
 tests=(0001 0002 0003 0004 0005 0006 0007 0008 0009 0010 0011 0012 0013 0014 0015 0016 0017 0018 0019 0020 0021 0022 0023 0024 0025 0026 0027 0028 0029 0030 0031 0032 0033 0034 0035 0036 0037 0038 0039 0040 0041 0045 0046 0047 0048 0049 0051 0052 0100 0101 0102 0103)
 
 # Multi-file tests
-multiTests=(0042 0043 0044 0050)
+multiTests=(0042 0043 0044 0050 0053)
 
 fails=0
 
