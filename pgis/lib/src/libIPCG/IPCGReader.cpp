@@ -2,6 +2,8 @@
 
 #include "spdlog/spdlog.h"
 
+#include <queue>
+
 using namespace pira;
 /** RN: note that the format is child -> parent for whatever reason.. */
 void IPCGAnal::build(CallgraphManager &cg, std::string filename, Config *c) {
@@ -129,8 +131,6 @@ void buildFromJSON(CallgraphManager &cgm, std::string filename, Config *c) {
   }
 
   // Now the functions map holds all the information
-  std::unordered_map<std::string, std::unordered_set<std::string>> vCallSites;
-  
   std::unordered_map<std::string, std::unordered_set<std::string>> potentialTargets;
   for (const auto [k, funcInfo] : functions) {
     if (!funcInfo.isVirtual) {
@@ -148,31 +148,42 @@ void buildFromJSON(CallgraphManager &cgm, std::string filename, Config *c) {
     if (funcInfo.doesOverride) {
       for (const auto overriddenFunction : funcInfo.overriddenFunctions) {
         // Adds this function as potential target to all overridden functions
-        //potentialTargets.insert( {overriddenFunction, k} );
         potentialTargets[overriddenFunction].insert(k);
-        auto &pTargets = potentialTargets[k];
-        potentialTargets[overriddenFunction].insert(pTargets.begin(), pTargets.end());
-      }
-    }
+       
+        // In IPCG files, only the immediate overridden functions are stored currently.
+        std::queue<std::string> workQ;
+        std::set<std::string> visited;
+        workQ.push(overriddenFunction);
+        // Add this function as a potential target for all overridden functions
+        while (!workQ.empty()) {
+          const auto next = workQ.front();
+          workQ.pop();
 
-    for (const auto overridingFunction : funcInfo.overriddenBy) {
-      //potentialTargets.insert( {k, overridingFunction) };
-      potentialTargets[k].insert(overridingFunction);
-      // Adjust other call sites
-      auto &pTargets = potentialTargets[overridingFunction];
-      potentialTargets[k].insert(pTargets.begin(), pTargets.end());
+          const auto fi = functions[next];
+          visited.insert(next);
+          spdlog::get("console")->debug("In while: working on {}", next);
+
+          potentialTargets[next].insert(k);
+          for (const auto om : fi.overriddenFunctions) {
+            if (visited.find(om) == visited.end()) {
+              spdlog::get("console")->debug("Adding {} to the list to process", om);
+              workQ.push(om);
+            }
+          }
+        }
+      }
     }
   }
 
-  for (const auto &[k, s] : potentialTargets) {
+  for (const auto [k, s] : potentialTargets) {
     std::string targets;
-    for (const auto &t : s) {
+    for (const auto t : s) {
       targets += t + ", ";
     }
     spdlog::get("console")->debug("Potential call targets for {}: {}", k, targets);
   }
 
-  for (const auto &[k, fi] : functions) {
+  for (const auto [k, fi] : functions) {
     cgm.putNumberOfStatements(k, fi.numStatements, fi.hasBody);
     for (const auto &c : fi.callees) {
       cgm.putEdge(k, "", 0, c, 0, .0, 0, 0); // regular call edges
