@@ -4,6 +4,7 @@
 #include "CgNodePtr.h"
 
 #include "ExtrapConnection.h"
+#include "GlobalConfig.h"
 
 #include "nlohmann/json.hpp"
 
@@ -173,6 +174,9 @@ auto valTup(C1 co, C2 ct, int numReps) {
 }
 
 inline void to_json(nlohmann::json &j, const PiraTwoData &data) {
+  auto &gOpts = pgis::config::GlobalConfig::get();
+  auto rtOnly = gOpts.getAs<bool>("runtime-only");
+
   auto rtAndParams = valTup(data.getRuntimeVec(), data.getExtrapParameters(), data.getNumReps());
   nlohmann::json experiments;
   for (auto elem : rtAndParams) {
@@ -181,8 +185,11 @@ inline void to_json(nlohmann::json &j, const PiraTwoData &data) {
     exp[elem.second.first] = elem.second.second;
     experiments += exp;
   }
-  //j = nlohmann::json {{"experiments", experiments}, {"model", data.getExtrapModel()->getAsString(data.getExtrapModelConnector().getParamList())}};
-  j = nlohmann::json {{"experiments", experiments} };
+  if (!rtOnly) {
+    j = nlohmann::json {{"experiments", experiments}, {"model", data.getExtrapModel()->getAsString(data.getExtrapModelConnector().getParamList())}};
+  } else {
+    j = nlohmann::json {{"experiments", experiments} };
+  }
   spdlog::get("console")->debug("PiraTwoData to_json:\n{}", j.dump());
 }
 

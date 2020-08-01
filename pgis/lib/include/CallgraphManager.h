@@ -84,7 +84,7 @@ class CallgraphManager {
   Callgraph &getCallgraph(CallgraphManager *);
   void setNoOutput() { noOutputRequired = true; }
 
-  void setScorepOutputFormat(bool val = true) { scorepOutput = val;}
+  void setScorepOutputFormat(bool val = true) { scorepOutput_ = val;}
 
   void attachExtrapModels();
 
@@ -95,7 +95,7 @@ class CallgraphManager {
   Callgraph graph;
   Config *config;
   bool noOutputRequired = false;
-  bool scorepOutput = false;
+  bool scorepOutput_ = false;
 
   // Extrap interaction
   extrapconnection::ExtrapModelProvider epModelProvider;

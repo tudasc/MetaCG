@@ -10,6 +10,6 @@ else
 fi
 
 echo -e "Static Selection\nRunning $binary"
-echo "${binary} ${scorepOut} -o $outDir --static ${PWD}/$testNo"
-${binary} ${scorepOut} -o $outDir --static ${PWD}/$testNo
+echo "${binary} ${scorepOut} --out-file $outDir --static ${PWD}/$testNo"
+${binary} ${scorepOut} --out-file $outDir --static ${PWD}/$testNo
 

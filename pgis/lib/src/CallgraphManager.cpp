@@ -1,4 +1,5 @@
 #include "CallgraphManager.h"
+#include "GlobalConfig.h"
 
 #include "ExtrapConnection.h"
 
@@ -9,6 +10,7 @@
 #include <iomanip>  //  std::setw()
 
 using namespace pira;
+using namespace pgis::options;
 
 CallgraphManager::CallgraphManager(Config *config, extrapconnection::ExtrapConfig epCfg)
     : config(config), epModelProvider(epCfg) {}
@@ -277,7 +279,7 @@ void CallgraphManager::printDOT(std::string prefix) {
             return false;
           }
         };
-
+#if 0
         for (CgLocation cgLoc : node->getCgLocation()) {
           std::ostringstream threadTime;
           if (cgLoc.get_procId() == i) {
@@ -309,6 +311,7 @@ void CallgraphManager::printDOT(std::string prefix) {
           sumTime << nodeTimeSum;
           nodeTime = "|{ Threads Total: " + sumTime.str() + "s}";
         }
+#endif
 
         if (!threadLabel.empty() || (i == numProcs && node->getCgLocation().empty())) {
           procGraph.insert(node);
@@ -427,6 +430,7 @@ void CallgraphManager::dumpInstrumentedNames(CgReport report) {
   std::ofstream outfile(filename, std::ofstream::out);
 
   // The simple whitelist used so far in PIRA
+  bool scorepOutput = pgis::config::GlobalConfig::get().getAs<bool>("scorep-out");
   if (!scorepOutput) {
     spdlog::get("console")->debug("Using plain whitelist format");
     if (report.instrumentedNodes.empty()) {

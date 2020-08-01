@@ -137,12 +137,13 @@ void CgNode::dumpToDot(std::ofstream &outStream, int procNum) {
             thisNode = parentNode;
           }
         }
-
+#if 0
         for (auto cgLoc : childNode->getCgLocation()) {
           if (cgLoc.get_procId() == i) {
             numCalls += cgLoc.get_numCalls();
           }
         }
+#endif
 
         outStream << "\"" << this->functionName << procNum << "\""
                   << " -> \"" << childNode->getFunctionName() << i << "\" [label=" << numCalls << edgeColor << "];"
