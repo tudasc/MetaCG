@@ -66,6 +66,19 @@ test-cgc:
     - cd test && bash run_simple_test.sh
     - *lb-tear-down
 
+test-cgverify:
+  stage: integration-test
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd cgcollector
+    - cd test/integration
+    - ./runner.sh
+
 install-cgc:
   stage: install
   tags:
