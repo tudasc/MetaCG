@@ -10,6 +10,13 @@ add_executable(cgmerge
   CGMerge.cpp
 )
 
+add_executable(cgverify
+  CGVerify.cpp
+)
+
+add_cube_includes(cgverify)
+add_cube_libraries(cgverify)
+
 # register_to_clang_tidy(cgcollector)
 
 add_collector_include(cgcollector)
@@ -19,7 +26,7 @@ default_compile_options(cgcollector)
 
 
 install(
-  TARGETS cgcollector cgmerge
+  TARGETS cgcollector cgmerge cgverify
   EXPORT ${TARGETS_EXPORT_NAME}
 	RUNTIME DESTINATION bin
 )

@@ -5,6 +5,10 @@ find_package(LLVM REQUIRED CONFIG)
 # Clang related stuff
 find_package(Clang REQUIRED CONFIG)
 
+# Cube library installation
+find_library(CUBE_LIB cube4)
+find_path(CUBE_INCLUDE cube)
+
 function(add_clang target)
 # clang specified as system lib to suppress all warnings from clang headers
   target_include_directories(${target} SYSTEM PUBLIC
@@ -71,3 +75,16 @@ function(register_to_clang_tidy target)
       CXX_CLANG_TIDY ${CLANG_TIDY}
   )
 endfunction()
+
+function(add_cube_includes target)
+  target_include_directories(${target} PUBLIC
+    ${CUBE_INCLUDE}
+  )
+endfunction()
+
+function(add_cube_libraries target)
+  target_link_libraries(${target}
+    cube4
+  )
+endfunction()
+
