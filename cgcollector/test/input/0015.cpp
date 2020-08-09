@@ -8,7 +8,7 @@ class MyClass {
 
 class MyClass2 : public MyClass {
  public:
-  virtual void foo() override {}  // TODO witout override callgraph core dump
+  virtual void foo() override {}
 };
 
 class MyClassDerive : public MyClass2 {

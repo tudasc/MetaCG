@@ -13,6 +13,7 @@ clangpath=''
 
 if [ -z "$CLANG_BASE_PATH" ]; then
   echo "Please export CLANG_BASE_PATH to point to the root folder of the clang 9 installation"
+	echo "Current binary is: " $(which clang)
 	exit -1
 else
   clangpath=$CLANG_BASE_PATH

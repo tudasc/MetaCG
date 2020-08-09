@@ -168,6 +168,7 @@ int main(int argc, char **argv) {
     for (auto c : callees) {
       tCallees.insert(c.template get<std::string>());
     }
+    t["callees"] = tCallees;
 
     auto &overriddenFuncs = s["overriddenFunctions"];
     std::set<std::string> tOverriddenFuncs{toSet(t, "overriddenFunctions")};
