@@ -83,6 +83,9 @@ function(add_cube_includes target)
 endfunction()
 
 function(add_cube_libraries target)
+	target_link_directories(${target} PUBLIC
+		${CUBE_LIB}
+	)
   target_link_libraries(${target}
     cube4
   )
