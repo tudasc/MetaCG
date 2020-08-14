@@ -14,7 +14,7 @@ namespace options {
 template <typename OptValT>
 struct Opt {
   typedef OptValT type;
-  const std::string cliName; // XXX Find better name.
+  const std::string cliName;       // XXX Find better name.
   const std::string defaultValue;  // This is std::string to be easy compatible with cxxopts
 };
 

@@ -84,7 +84,7 @@ class CallgraphManager {
   Callgraph &getCallgraph(CallgraphManager *);
   void setNoOutput() { noOutputRequired = true; }
 
-  void setScorepOutputFormat(bool val = true) { scorepOutput_ = val;}
+  void setScorepOutputFormat(bool val = true) { scorepOutput_ = val; }
 
   void attachExtrapModels();
 

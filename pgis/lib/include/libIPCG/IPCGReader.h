@@ -164,20 +164,20 @@ struct PiraTwoDataRetriever {
     spdlog::get("console")->trace("PiraTwoRetriever:handles {}", n->getFunctionName());
     auto [has, o] = n->checkAndGet<pira::PiraTwoData>();
     if (has && o && o->hasExtrapModel()) {
-      spdlog::get("console")->debug("PiraTwoDataRetriever handles node {} for model.", n->getFunctionName(), o->getRuntimeVec().size());
+      spdlog::get("console")->debug("PiraTwoDataRetriever handles node {} for model.", n->getFunctionName(),
+                                    o->getRuntimeVec().size());
       return true;
     }
     if (has && o && o->getRuntimeVec().size() > 1) {
-      spdlog::get("console")->debug("PiraTwoDataRetriever handles node {} for runtime.", n->getFunctionName(), o->getRuntimeVec().size());
+      spdlog::get("console")->debug("PiraTwoDataRetriever handles node {} for runtime.", n->getFunctionName(),
+                                    o->getRuntimeVec().size());
       return true;
     }
     spdlog::get("console")->trace("Does not handle");
     return false;
   }
 
-  pira::PiraTwoData value(const CgNodePtr n) {
-    return *(n->get<pira::PiraTwoData>());
-  }
+  pira::PiraTwoData value(const CgNodePtr n) { return *(n->get<pira::PiraTwoData>()); }
 
   std::string toolName() { return "PiraIIData"; }
 };

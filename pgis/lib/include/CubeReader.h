@@ -1,8 +1,8 @@
 #ifndef CUBEREADER_H_
 #define CUBEREADER_H_
 
-#include "CgNodeMetaData.h"
 #include "CallgraphManager.h"
+#include "CgNodeMetaData.h"
 
 #include <Cube.h>
 #include <CubeMetric.h>
@@ -17,9 +17,9 @@ namespace CubeCallgraphBuilder {
 
 namespace impl {
 
-  using BaseProfileData = pira::BaseProfileData;
-  using PiraOneData = pira::PiraOneData;
-  using PiraTwoData = pira::PiraTwoData;
+using BaseProfileData = pira::BaseProfileData;
+using PiraOneData = pira::PiraOneData;
+using PiraTwoData = pira::PiraTwoData;
 
 template <typename N, typename... Largs>
 void applyOne(cube::Cube &cu, cube::Cnode *cnode, N node, Largs... largs) {
@@ -56,25 +56,21 @@ const auto cMetric = [](std::string &&name, auto &&cube, auto cn) {
     typedef decltype(cube.get_sev(cube.get_met(name.c_str()), cn, cube.get_thrdv().at(0))) RetType;
     RetType metric{};
     for (auto t : cube.get_thrdv()) {
-        metric += cube.get_sev(cube.get_met(name.c_str()), cn, t);
+      metric += cube.get_sev(cube.get_met(name.c_str()), cn, t);
     }
     return metric;
   } else {
     assert(false);
   }
 };
-const auto time = [](auto &&cube, auto cn) {
-  return cMetric(std::string("time"), cube, cn);
-};
-const auto visits =[](auto &&cube, auto cn) {
-  return cMetric(std::string("visits"), cube, cn);
-};
+const auto time = [](auto &&cube, auto cn) { return cMetric(std::string("time"), cube, cn); };
+const auto visits = [](auto &&cube, auto cn) { return cMetric(std::string("visits"), cube, cn); };
 
 const auto cubeInclTime = [](auto &&cube, auto cn) {
   double inclusiveTime = 0;
   for (auto t : cube.get_thrdv()) {
-     inclusiveTime += cube.get_sev(cube.get_met("time"), cube::CUBE_CALCULATE_INCLUSIVE, cn,
-                                        cube::CUBE_CALCULATE_INCLUSIVE, t, cube::CUBE_CALCULATE_INCLUSIVE);
+    inclusiveTime += cube.get_sev(cube.get_met("time"), cube::CUBE_CALCULATE_INCLUSIVE, cn,
+                                  cube::CUBE_CALCULATE_INCLUSIVE, t, cube::CUBE_CALCULATE_INCLUSIVE);
   }
   return inclusiveTime;
 };
@@ -94,13 +90,13 @@ const auto attRuntime = [](auto &cube, auto cnode, auto n) {
   } else {
     spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
   }
-  if(has<PiraOneData>(n)){
+  if (has<PiraOneData>(n)) {
     get<PiraOneData>(n)->setComesFromCube();
   }
 };
 
-const auto attNrCall = [] (auto &cube, auto cnode, auto n) {
-  if (has<BaseProfileData>(n)){
+const auto attNrCall = [](auto &cube, auto cnode, auto n) {
+  if (has<BaseProfileData>(n)) {
     spdlog::get("console")->info("Attaching visits {} to node {}", impl::visits(cube, cnode), n->getFunctionName());
     get<BaseProfileData>(n)->setNumberOfCalls(impl::visits(cube, cnode));
   } else {
@@ -108,11 +104,11 @@ const auto attNrCall = [] (auto &cube, auto cnode, auto n) {
   }
 };
 
-const auto attInclRuntime = [] (auto &cube, auto cnode, auto n) {
-  if (has<BaseProfileData>(n)){
+const auto attInclRuntime = [](auto &cube, auto cnode, auto n) {
+  if (has<BaseProfileData>(n)) {
     get<BaseProfileData>(n)->setInclusiveRuntimeInSeconds(cubeInclTime(cube, cnode));
   }
-  if(has<PiraOneData>(n)){
+  if (has<PiraOneData>(n)) {
     get<PiraOneData>(n)->setComesFromCube();
   }
 };
