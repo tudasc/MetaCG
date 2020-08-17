@@ -478,7 +478,7 @@ bool CallGraph::VisitFunctionDecl(clang::FunctionDecl *FD) {
     // its address taken.
     addNodeForDecl(FD, FD->isGlobal());
   } else {
-    std::cout << "Not including in graph " << FD->getNameAsString() << std::endl;
+    //std::cout << "Not including in graph " << FD->getNameAsString() << std::endl;
   }
   return true;
 }
