@@ -46,6 +46,9 @@ build-cgc:
     - mkdir build && cd build
     - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/cgcollector-test-install -DJSON_INCLUDE_PATH=../json/single_include ..
     - make -j $(cat /proc/cpuinfo | grep processor | wc -l)
+    - rm -rf *
+    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/cgcollector-test-install -DJSON_INCLUDE_PATH=../json/single_include -DLOGLEVEL=1 ..
+    - make -j $(cat /proc/cpuinfo | grep processor | wc -l)
     - echo $PWD
     - ls test
     - *lb-tear-down
@@ -66,7 +69,7 @@ test-cgc:
     - cd test && bash run_simple_test.sh
     - *lb-tear-down
 
-test-cgverify:
+test-cgvalidate:
   stage: integration-test
   tags:
     - general
