@@ -1,12 +1,11 @@
 #include "nlohmann/json.hpp"
 
 #include <fstream>
+#include <queue>
 #include <set>
 #include <unordered_set>
-#include <queue>
 
 #include <iostream>
-
 
 struct FunctionInfo {
   FunctionInfo() : functionName("_UNDEF_"), isVirtual(false), doesOverride(false), numStatements(-1), hasBody(false) {}
@@ -20,7 +19,6 @@ struct FunctionInfo {
   std::unordered_set<std::string> overriddenFunctions;
   std::unordered_set<std::string> overriddenBy;
 };
-
 
 typedef std::map<std::string, FunctionInfo> FuncMapT;
 
@@ -87,7 +85,7 @@ void buildFromJSON(FuncMapT &functionMap, const std::string &filename) {
 
     /*
      * The current function can: 1. override a function, or, 2. be overridden by a function
-     * 
+     *
      * (1) Add this function as potential target for any overridden function
      * (2) Add the overriding function as potential target for this function
      *
@@ -96,7 +94,7 @@ void buildFromJSON(FuncMapT &functionMap, const std::string &filename) {
       for (const auto overriddenFunction : funcInfo.overriddenFunctions) {
         // Adds this function as potential target to all overridden functions
         potentialTargets[overriddenFunction].insert(k);
-       
+
         // In IPCG files, only the immediate overridden functions are stored currently.
         std::queue<std::string> workQ;
         std::set<std::string> visited;
@@ -123,7 +121,7 @@ void buildFromJSON(FuncMapT &functionMap, const std::string &filename) {
 
   // All potential parents is the set of keys in the potentialTargets set.
   // TODO Check if tests are correct for this case!
-  //for (const auto [k, uoSet] : potentialTargets) {
+  // for (const auto [k, uoSet] : potentialTargets) {
   //  for (const auto name : uoSet) {
   //    auto &fi = functionMap[name];
   //    fi.parents.insert(k);
@@ -133,11 +131,11 @@ void buildFromJSON(FuncMapT &functionMap, const std::string &filename) {
   for (auto &[k, funcInfo] : functionMap) {
     funcInfo.overriddenBy.insert(potentialTargets[k].begin(), potentialTargets[k].end());
     funcInfo.overriddenFunctions.insert(overrides[k].begin(), overrides[k].end());
-    //std::cout << "Targets for " << k << " are: ";
-    //for (auto s : funcInfo.overriddenBy) {
-      //std::cout << ", " << s;
+    // std::cout << "Targets for " << k << " are: ";
+    // for (auto s : funcInfo.overriddenBy) {
+    // std::cout << ", " << s;
     //}
-    //std::cout << std::endl;
+    // std::cout << std::endl;
   }
 }
 
@@ -206,7 +204,8 @@ int main(int argc, char **argv) {
           // The num Statements should not differ
           if (c["numStatements"].get<int>() != v["numStatements"].get<int>()) {
             std::cout << "[WARNING] Number of statements for function " << it.key() << " differ." << std::endl;
-            std::cout << "[WholeCG]: " << c["numStatements"].get<int>() << "\n[MergeCG]: " << v["numStatements"].get<int>() << std::endl;
+            std::cout << "[WholeCG]: " << c["numStatements"].get<int>()
+                      << "\n[MergeCG]: " << v["numStatements"].get<int>() << std::endl;
             bool shouldAbort = false;
             if (shouldAbort) {
               abort();
@@ -227,15 +226,15 @@ int main(int argc, char **argv) {
         // merge callers
         {
           auto v_parents = v["parents"].get<std::set<std::string>>();
-          std::set<std::string> parents { c["parents"].get<std::set<std::string>>() };
-          parents.insert( std::begin(v_parents), std::end(v_parents) );
+          std::set<std::string> parents{c["parents"].get<std::set<std::string>>()};
+          parents.insert(std::begin(v_parents), std::end(v_parents));
           c["parents"] = parents;
         }
       }
     }
   }
 
-  for (auto it = wholeCG.begin(); it  != wholeCG.end(); ++it) {
+  for (auto it = wholeCG.begin(); it != wholeCG.end(); ++it) {
     auto curFunc = it.key();
     if (functionInfoMap.find(curFunc) != functionInfoMap.end()) {
       auto &jsonFunc = it.value();
@@ -243,7 +242,6 @@ int main(int argc, char **argv) {
       jsonFunc["overriddenFunctions"] = functionInfoMap[curFunc].overriddenFunctions;
     }
   }
-    
 
   std::ofstream file(argv[1]);
   file << wholeCG;

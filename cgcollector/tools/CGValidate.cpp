@@ -5,12 +5,18 @@
 #include <iostream>
 #include <string>
 
+#ifndef LOGLEVEL
+#define LOGLEVEL 0
+#endif
+
 void readIPCG(char const *const filename, nlohmann::json &callgraph) {
   std::ifstream file(filename);
   file >> callgraph;
 }
 
 void readCube(char const *const filename, cube::Cube &cube) { cube.openCubeReport(filename); }
+
+bool isMain(const std::string &name) { return (name.compare("main") == 0); }
 
 int main(int argc, char **argv) {
   if (argc != 3) {
@@ -44,28 +50,50 @@ int main(int argc, char **argv) {
       continue;
     }
     std::string nodeName = cnode->get_callee()->get_mangled_name();
-    // TODO check for main
-    if (nodeName.compare("main") == 0) {
+    if (isMain(nodeName)) {
       continue;
     }
     std::string parentName = cnode->get_parent()->get_callee()->get_mangled_name();
 
+    if (LOGLEVEL > 0) {
+      std::cout << "[INFO] edge reached: " << parentName << " --> " << nodeName << std::endl;
+    }
+
     // get callgraph elements
-    const auto &parent = callgraph[parentName];
-    const auto &callees = parent["callees"];
-    const auto &node = callgraph[nodeName];
-    const auto &parents = node["parents"];
+    auto parent = callgraph[parentName];
+    auto callees = parent["callees"];
+    auto node = callgraph[nodeName];
+    auto parents = node["parents"];
 
     // check if parent contains callee and callee contains parent
-    bool calleeFound = (std::find(callees.begin(), callees.end(), nodeName) != callees.end());
-    bool parentFound = (std::find(parents.begin(), parents.end(), parentName) != parents.end());
+    auto calleeFound =
+        (std::find(callees.begin(), callees.end(), nodeName) != callees.end());  // doesInclude(callees, nodeName);
+    auto parentFound =
+        (std::find(parents.begin(), parents.end(), parentName) != parents.end());  // doesInclude(parents, parentName);
+    // check polymorphism (currently only first hierarchy level)
+    bool overriddenFunctionParentFound = false;
+    bool overriddenFunctionCalleeFound = false;
+    const auto &overriddenFunctions = node["overriddenFunctions"];
+    for (const std::string overriddenFunctionName : overriddenFunctions) {
+      const auto &overriddenFunction = callgraph[overriddenFunctionName];
+      const auto &parents = overriddenFunction["parents"];
+      overriddenFunctionParentFound = (std::find(parents.begin(), parents.end(), parentName) != parents.end());
+      if (overriddenFunctionParentFound)
+        break;
+    }
+    for (const std::string overriddenFunctionName : overriddenFunctions) {
+      overriddenFunctionCalleeFound =
+          (std::find(callees.begin(), callees.end(), overriddenFunctionName) != callees.end());
+      if (overriddenFunctionCalleeFound)
+        break;
+    }
 
     // reporting
-    if (!parentFound) {
+    if (!parentFound && !overriddenFunctionParentFound) {
       std::cout << "[ERROR] " << nodeName << " does not contain parent " << parentName << std::endl;
       verified = false;
     }
-    if (!calleeFound) {
+    if (!calleeFound && !overriddenFunctionCalleeFound) {
       std::cout << "[ERROR] " << parentName << " does not contain callee " << nodeName << std::endl;
       verified = false;
     }

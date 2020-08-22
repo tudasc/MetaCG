@@ -10,12 +10,16 @@ add_executable(cgmerge
   CGMerge.cpp
 )
 
-add_executable(cgverify
-  CGVerify.cpp
+add_executable(cgvalidate
+  CGValidate.cpp
 )
 
-add_cube_includes(cgverify)
-add_cube_libraries(cgverify)
+add_cube_includes(cgvalidate)
+add_cube_libraries(cgvalidate)
+
+if(LOGLEVEL)
+  target_compile_definitions(cgvalidate PRIVATE LOGLEVEL=${LOGLEVEL})
+endif()
 
 # register_to_clang_tidy(cgcollector)
 
@@ -26,7 +30,7 @@ default_compile_options(cgcollector)
 
 
 install(
-  TARGETS cgcollector cgmerge cgverify
+  TARGETS cgcollector cgmerge cgvalidate
   EXPORT ${TARGETS_EXPORT_NAME}
 	RUNTIME DESTINATION bin
 )
