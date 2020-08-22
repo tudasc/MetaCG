@@ -44,7 +44,8 @@ class CallGraphCollectorFactory : clang::ASTFrontendAction {
     return std::unique_ptr<clang::ASTConsumer>(new CallGraphCollectorConsumer(_mcs, _json));
   }
 
-  std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance &compiler, llvm::StringRef sr) {
+  std::unique_ptr<clang::ASTConsumer> CreateASTConsumer([[maybe_unused]] clang::CompilerInstance &compiler,
+                                                        [[maybe_unused]] llvm::StringRef sr) {
     return std::unique_ptr<clang::ASTConsumer>(new CallGraphCollectorConsumer(_mcs, _json));
   }
 

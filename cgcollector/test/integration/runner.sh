@@ -2,8 +2,8 @@
 
 fails=0
 
-cd cgverify
-bash cgverify_run.sh
+cd cgvalidate
+bash cgvalidate-run.sh
 
 fails=$(($fails+$?))
 

@@ -13,6 +13,7 @@ void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j) {
   for (auto it = ++cg.begin(); it != cg.end(); ++it) {
     if (auto f_decl = llvm::dyn_cast<clang::FunctionDecl>(it->getFirst())) {
       FunctionNames callees;
+      auto mName = getMangledName(f_decl);
       for (auto &it : *(it->getSecond())) {
         if (auto f_decl = llvm::dyn_cast<clang::FunctionDecl>(it->getDecl())) {
           callees.insert(getMangledName(f_decl));

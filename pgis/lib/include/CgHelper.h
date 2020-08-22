@@ -12,7 +12,7 @@
 
 class Callgraph;
 
-// TODO these numbers should be in a config file
+// XXX These numbers probably go away.
 namespace CgConfig {
 const unsigned long long nanosPerInstrumentedCall = 7;
 

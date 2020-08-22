@@ -335,7 +335,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
 
   void VisitCallExpr(CallExpr *CE) {
     Decl *D = nullptr;
-    if (D = getDeclFromCall(CE)) {
+    if ((D = getDeclFromCall(CE))) {
       addCalledDecl(D);
     }
 
@@ -478,13 +478,16 @@ bool CallGraph::VisitFunctionDecl(clang::FunctionDecl *FD) {
     // its address taken.
     addNodeForDecl(FD, FD->isGlobal());
   } else {
+    //std::cout << "Not including in graph " << FD->getNameAsString() << std::endl;
   }
   return true;
 }
 
 bool CallGraph::VisitCXXMethodDecl(clang::CXXMethodDecl *MD) {
-  if (!MD->isVirtual())
+  if (!MD->isVirtual()) {
+    std::cout << "Method " << MD->getNameAsString() << " not known to be virtual" << std::endl;
     return true;
+  }
 
   // std::cout << "virtual function " << MD->getParent()->getNameAsString() << "::" << MD->getNameAsString() <<
   // std::endl;

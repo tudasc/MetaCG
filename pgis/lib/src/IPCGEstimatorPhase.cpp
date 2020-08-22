@@ -379,11 +379,12 @@ void StatisticsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
 
   for (auto node : *graph) {
     if (!node->isReachable()) {
+      spdlog::get("console")->debug("Running on non-reachable function {}", node->getFunctionName());
+      numReachableFunctions++;
       continue;
     }
     auto numStmts = node->get<PiraOneData>()->getNumberOfStatements();
     if (node->isInstrumentedWitness()) {
-      // std::cout << "Processing reachable node " << node->getFunctionName() << " for statement count\n";
       stmtsCoveredWithInstr += numStmts;
     }
     if (node->get<PiraOneData>()->comesFromCube()) {
@@ -431,10 +432,10 @@ void StatisticsEstimatorPhase::printReport() {
   const long int minNumStmts = (*(minMaxIncl.first)).first;
 
   spdlog::get("console")->info(
-      " === Call graph statistics ===\nNo. of Functions:\t{}\nNo. of statements:\t{}\nMax No. Incl Stmt:\t{}\nMedian "
+      " === Call graph statistics ===\nNo. of Functions:\t{}\nNo. of reach. Funcs:\t{}\nNo. of statements:\t{}\nMax No. Incl Stmt:\t{}\nMedian "
       "No. Incl Stmt:\t{}\nMin No. Incl Stmt:\t{}\nMax No. Stmt:\t\t{}\nMedian No. Stmt:\t{}\nMin No. "
       "Stmt:\t\t{}\nCovered w/ Instr:\t{}\nStmt not Covered:\t{}\n === === === === ===",
-      numFunctions, totalStmts, maxNumStmts, medianNumStmts, minNumStmts, maxNumSingleStmts, medianNumSingleStmts,
+      numFunctions, numReachableFunctions, totalStmts, maxNumStmts, medianNumStmts, minNumStmts, maxNumSingleStmts, medianNumSingleStmts,
       minNumSingleStmts, stmtsCoveredWithInstr, stmtsActuallyCovered, (totalStmts - stmtsCoveredWithInstr));
 }
 

@@ -1,6 +1,4 @@
-#include <cstdlib>
-#include <fstream>
-#include <vector>
+#include "GlobalConfig.h"
 
 #include "CubeReader.h"
 #include "DotReader.h"
@@ -17,7 +15,21 @@
 
 #include "cxxopts.hpp"
 
+#include <cstdlib>
+#include <fstream>
+#include <vector>
+
+namespace pgis::options {
+
+    template <typename T>
+      auto optType(T &obj) {
+        return cxxopts::value< arg_t<decltype(obj)> >();
+      }
+}
+
 using namespace pira;
+using namespace pgis::options;
+   
 
 void registerEstimatorPhases(CallgraphManager &cg, Config *c, bool isIPCG, float runtimeThreshold) {
   auto statEstimator = new StatisticsEstimatorPhase(false);
@@ -44,9 +56,14 @@ bool stringEndsWith(const std::string &s, const std::string &suffix) {
 }
 
 template <typename Target, typename OptsT, typename ConfigT>
-void checkAndSet(const char *id, const OptsT &opts, ConfigT &cfg) {
+void checkAndSet(const std::string id, const OptsT &opts, ConfigT &cfg) {
+  auto &gConfig = pgis::config::GlobalConfig::get();
   if (opts.count(id)) {
     cfg = opts[id].template as<Target>();
+   
+    gConfig.putOption(id, cfg);
+  } else {
+    gConfig.putOption(id, opts[id].template as<Target>());
   }
 }
 
@@ -83,19 +100,19 @@ int main(int argc, char **argv) {
     // remove
     ("g,greedy-unwind", "Use greedy unwind", cxxopts::value<bool>()->default_value("false"))
     // not sure
-    ("o,out-file", "Output file name", cxxopts::value<std::string>()->default_value("out"))
+    (outDirectory.cliName, "Output file name", optType(outDirectory)->default_value("out"))
     // from here: keep all
-    ("static", "Apply static selection", cxxopts::value<bool>()->default_value("false"))
+    (staticSelection.cliName, "Apply static selection", optType(staticSelection)->default_value("false"))
     ("c,cube", "Cube file for dynamic instrumentation", cxxopts::value<std::string>()->default_value(""))
     ("h,help", "Show help", cxxopts::value<bool>()->default_value("false"))
-    ("e,extrap", "File to read Extra-P info from", cxxopts::value<std::string>()->default_value(""))
-    ("model-filter", "Use Extra-P models to filter only.", cxxopts::value<bool>()->default_value("false"))
-    ("runtime-only", "Do not use model, but multiple runtimes", cxxopts::value<bool>()->default_value("false"))
+    (extrapConfig.cliName, "File to read Extra-P info from", optType(extrapConfig)->default_value(""))
+    (modelFilter.cliName, "Use Extra-P models to filter only.", optType(modelFilter)->default_value("false"))
+    (runtimeOnly.cliName, "Do not use model, but multiple runtimes", optType(runtimeOnly)->default_value("false"))
     ("a,all-threads","Show all Threads even if unused.", cxxopts::value<bool>()->default_value("false"))
     ("w, whitelist", "Filter nodes through given whitelist", cxxopts::value<std::string>()->default_value(""))
-    ("debug", "Whether debug messages should be printed", cxxopts::value<int>()->default_value("0"))
-    ("scorep-out", "Write instrumentation file with Score-P syntax", cxxopts::value<bool>()->default_value("false"))
-    ("x, export", "Export the profiling info into IPCG file", cxxopts::value<bool>()->default_value("false"));
+    (debugLevel.cliName, "Whether debug messages should be printed", optType(debugLevel)->default_value("0"))
+    (scorepOut.cliName, "Write instrumentation file with Score-P syntax", optType(scorepOut)->default_value("false"))
+    (ipcgExport.cliName, "Export the profiling info into IPCG file", optType(ipcgExport)->default_value("false"));
   // clang-format on
 
   Config c;
@@ -105,6 +122,7 @@ int main(int argc, char **argv) {
   bool useScorepFormat {false};
   bool extrapRuntimeOnly {false};
   int printDebug { 0};
+
   auto result = opts.parse(argc, argv);
 
   if (result.count("help")) {
@@ -112,28 +130,29 @@ int main(int argc, char **argv) {
     return 0;
   }
 
-  /* Required positional arguments */
-  // opts.parse_positional("ipcg-file");
+  /* Options - populated into global config */
+  //checkAndSet<std::string>("other", result, c.otherPath);
+  //checkAndSet<int>("samples", result, CgConfig::samplesPerSecond);
+  //checkAndSet<double>("ref", result, c.referenceRuntime);
+  //checkAndSet<bool>("mangled", result, c.useMangledNames);
+  //checkAndSet<int>("half", result, c.nanosPerHalfProbe);
+  //checkAndSet<bool>("tiny", result, c.tinyReport);
+  //checkAndSet<bool>("ignore-sampling", result, c.ignoreSamplingOv);
+  //checkAndSet<std::string>("samples-file", result, c.samplesFile);
+  //checkAndSet<bool>("greedy-unwind", result, c.greedyUnwind);
+  //checkAndSet<bool>("all-threads", result, c.showAllThreads);
+  //checkAndSet<std::string>("whitelist", result, c.whitelist);
 
-  /* Additional options */
-  checkAndSet<std::string>("other", result, c.otherPath);
-  checkAndSet<int>("samples", result, CgConfig::samplesPerSecond);
-  checkAndSet<double>("ref", result, c.referenceRuntime);
-  checkAndSet<bool>("mangled", result, c.useMangledNames);
-  checkAndSet<int>("half", result, c.nanosPerHalfProbe);
-  checkAndSet<bool>("tiny", result, c.tinyReport);
-  checkAndSet<bool>("ignore-sampling", result, c.ignoreSamplingOv);
-  checkAndSet<std::string>("samples-file", result, c.samplesFile);
-  checkAndSet<bool>("greedy-unwind", result, c.greedyUnwind);
   checkAndSet<std::string>("out-file", result, c.outputFile);
-  checkAndSet<bool>("static", result, applyStaticFilter);
-  checkAndSet<bool>("model-filter", result, applyModelFilter);
-  checkAndSet<bool>("runtime-only", result, extrapRuntimeOnly);
-  checkAndSet<bool>("all-threads", result, c.showAllThreads);
-  checkAndSet<std::string>("whitelist", result, c.whitelist);
-  checkAndSet<int>("debug", result, printDebug);
-  checkAndSet<bool>("export", result, shouldExport);
-  checkAndSet<bool>("scorep-out", result, useScorepFormat);
+
+  checkAndSet<bool>(staticSelection.cliName, result, applyStaticFilter);
+  checkAndSet<bool>(modelFilter.cliName, result, applyModelFilter);
+  checkAndSet<bool>(runtimeOnly.cliName, result, extrapRuntimeOnly);
+  checkAndSet<int>(debugLevel.cliName, result, printDebug);
+  checkAndSet<bool>(ipcgExport.cliName, result, shouldExport);
+  checkAndSet<bool>(scorepOut.cliName, result, useScorepFormat);
+  std::string disposable;
+  checkAndSet<std::string>(extrapConfig.cliName, result, disposable);
 
   if (printDebug == 1) {
     spdlog::set_level(spdlog::level::debug);
@@ -145,14 +164,14 @@ int main(int argc, char **argv) {
 
   // for static instrumentation
   std::string ipcgFullPath(argv[argc - 1]);
-  // checkAndSet<std::string>("ipcg-file", result, ipcgFullPath);
   std::string ipcgFilename = ipcgFullPath.substr(ipcgFullPath.find_last_of('/') + 1);
   c.appName = ipcgFilename.substr(0, ipcgFilename.find_last_of('.'));
 
   const auto parseExtrapArgs = [](auto argsRes) {
     if (argsRes.count("extrap")) {
       // Read in extra-p configuration
-      std::string filePath(argsRes["extrap"].template as<std::string>());
+      auto &gConfig = pgis::config::GlobalConfig::get();
+      auto filePath = gConfig.getAs<std::string>(extrapConfig.cliName);
       std::ifstream epFile(filePath);
       return extrapconnection::getExtrapConfigFromJSON(filePath);
     } else {
@@ -161,7 +180,6 @@ int main(int argc, char **argv) {
   };
 
   float runTimeThreshold = .0f;
-  //CallgraphManager cg(&c, parseExtrapArgs(result));
   auto &cg = CallgraphManager::get();
   cg.setConfig(&c);
   cg.setExtrapConfig(parseExtrapArgs(result));
@@ -186,7 +204,6 @@ int main(int argc, char **argv) {
     std::string filePath(result["cube"].as<std::string>());
 
     std::string fileName = filePath.substr(filePath.find_last_of('/') + 1);
-    //c.appName = fileName.substr(0, fileName.find_last_of('.'));  // remove .*
 
     if (stringEndsWith(filePath, ".cubex")) {
       CubeCallgraphBuilder::buildFromCube(filePath, &c, cg);

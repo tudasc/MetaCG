@@ -101,8 +101,9 @@ class ExtrapConnector {
 
   ExtrapConnector(const ExtrapConnector &other)
       : epModel(other.epModel), models(other.models), paramList(other.paramList), epolator(other.epolator) {
-    spdlog::get("console")->trace("ExtrapConnector: copy ctor\nother.models: {}\nthis.models: {}", other.models.size(), this->models.size());
-      }
+    spdlog::get("console")->trace("ExtrapConnector: copy ctor\nother.models: {}\nthis.models: {}", other.models.size(),
+                                  this->models.size());
+  }
 
   /* Test whether models were generated and set */
   bool hasModels() const { return models.size() > 0; }

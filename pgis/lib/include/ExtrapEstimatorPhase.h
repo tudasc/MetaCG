@@ -54,7 +54,9 @@ class ExtrapLocalEstimatorPhaseBase : public EstimatorPhase {
   using value_type = EXTRAP::Value;
 
   ExtrapLocalEstimatorPhaseBase(bool allNodesToMain = false, bool useRuntimeOnly = false)
-      : EstimatorPhase("ExtrapLocalEstimatorPhaseBase"), allNodesToMain(allNodesToMain), useRuntimeOnly(useRuntimeOnly) {}
+      : EstimatorPhase("ExtrapLocalEstimatorPhaseBase"),
+        allNodesToMain(allNodesToMain),
+        useRuntimeOnly(useRuntimeOnly) {}
 
   virtual ~ExtrapLocalEstimatorPhaseBase() = default;
 
@@ -126,7 +128,8 @@ auto ExtrapLocalEstimatorPhaseBase::evalModelWValue(CgNodePtr n,
 
 class ExtrapLocalEstimatorPhaseSingleValueFilter : public ExtrapLocalEstimatorPhaseBase {
  public:
-  ExtrapLocalEstimatorPhaseSingleValueFilter(double threshold = 1.0, bool allNodesToMain = false, bool useRuntimeOnly = false)
+  ExtrapLocalEstimatorPhaseSingleValueFilter(double threshold = 1.0, bool allNodesToMain = false,
+                                             bool useRuntimeOnly = false)
       : ExtrapLocalEstimatorPhaseBase(allNodesToMain, useRuntimeOnly), threshold(threshold) {}
   virtual std::pair<bool, double> shouldInstrument(CgNodePtr node) const override;
 
@@ -136,7 +139,8 @@ class ExtrapLocalEstimatorPhaseSingleValueFilter : public ExtrapLocalEstimatorPh
 
 class ExtrapLocalEstimatorPhaseSingleValueExpander : public ExtrapLocalEstimatorPhaseSingleValueFilter {
  public:
-  ExtrapLocalEstimatorPhaseSingleValueExpander(double threshold = 1.0, bool allNodesToMain = true, bool useRuntimeOnly = false)
+  ExtrapLocalEstimatorPhaseSingleValueExpander(double threshold = 1.0, bool allNodesToMain = true,
+                                               bool useRuntimeOnly = false)
       : ExtrapLocalEstimatorPhaseSingleValueFilter(threshold, allNodesToMain, useRuntimeOnly) {}
 
   virtual void modifyGraph(CgNodePtr mainNode) override;

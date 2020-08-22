@@ -4,6 +4,7 @@
 #include "CgNodePtr.h"
 
 #include "ExtrapConnection.h"
+#include "GlobalConfig.h"
 
 #include "nlohmann/json.hpp"
 
@@ -40,8 +41,7 @@ class BaseProfileData : public MetaData {
   void setRuntimeInSeconds(double newRuntimeInSeconds) { this->timeInSeconds = newRuntimeInSeconds; }
   double getRuntimeInSecondsForParent(CgNodePtr parent) { return this->timeFrom[parent]; }
 
-  [[deprecated("requires a call to CgHelper::calcInclusiveRuntime first")]]
-  double getInclusiveRuntimeInSeconds()
+  [[deprecated("requires a call to CgHelper::calcInclusiveRuntime first")]] double getInclusiveRuntimeInSeconds()
       const {
     return this->inclTimeInSeconds;
   }
@@ -97,8 +97,8 @@ class PiraOneData : public MetaData {
   std::string filename;
 };
 
-inline void to_json(nlohmann::json &j, const PiraOneData &data){
-  j = nlohmann::json {{"numStatements", data.getNumberOfStatements()}};
+inline void to_json(nlohmann::json &j, const PiraOneData &data) {
+  j = nlohmann::json{{"numStatements", data.getNumberOfStatements()}};
 }
 
 /**
@@ -109,9 +109,10 @@ class PiraTwoData : public MetaData {
  public:
   static constexpr const char *key() { return "PiraTwoData"; }
 
-  PiraTwoData() : epCon({}, {}) {}
-  PiraTwoData(const extrapconnection::ExtrapConnector &ec) : epCon(ec), params(), rtVec() {}
-  PiraTwoData(const PiraTwoData &other) : epCon(other.epCon), params(other.params), rtVec(other.rtVec) {
+  PiraTwoData() : epCon({}, {}), params(), rtVec(), numReps(0) {}
+  PiraTwoData(const extrapconnection::ExtrapConnector &ec) : epCon(ec), params(), rtVec(), numReps(0) {}
+  PiraTwoData(const PiraTwoData &other)
+      : epCon(other.epCon), params(other.params), rtVec(other.rtVec), numReps(other.numReps) {
     spdlog::get("console")->trace("PiraTwo Copy CTor\n\tother: {}\n\tThis: {}", other.rtVec.size(), rtVec.size());
   }
 
@@ -125,43 +126,54 @@ class PiraTwoData : public MetaData {
   void addToRuntimeVec(double runtime) { this->rtVec.push_back(runtime); }
   auto &getRuntimeVec() const { return this->rtVec; }
 
-  auto getExtrapModel() const {
-    return this->epCon.getEPModelFunction();
-  }
+  auto getExtrapModel() const { return epCon.getEPModelFunction(); }
 
-  bool hasExtrapModel() const {
-    return this->epCon.hasModels();
-  }
+  bool hasExtrapModel() const { return epCon.hasModels(); }
+
+  int getNumReps() const { return numReps; }
 
  private:
   extrapconnection::ExtrapConnector epCon;
   std::vector<std::pair<std::string, std::vector<int>>> params;
   std::vector<double> rtVec;
+  int numReps;
 };
 
 /**
  * TODO This works for only a single parameter for now!
  */
-template<typename C1, typename C2>
-auto valTup(C1 co, C2 ct) {
+template <typename C1, typename C2>
+auto valTup(C1 co, C2 ct, int numReps) {
   assert(co.size() == ct.size() && "Can only value-tuple evenly sized containers");
-  std::vector<std::pair<typename C1::value_type, std::pair<std::string, typename C2::value_type::second_type::value_type>>> res;
+  std::vector<
+      std::pair<typename C1::value_type, std::pair<std::string, typename C2::value_type::second_type::value_type>>>
+      res;
   if (ct.size() < 1) {
-    return res; 
+    return res;
   }
   assert(ct.size() == 1 && "Current limitation, only single parameter possible");
   auto coIt = std::begin(co);
+  // Compute the median per numReps from co first.
+  const auto median = [&](auto startIt, auto numElems) {
+    if (numElems % 2 == 0) {
+      return startIt[(numElems / 2) + 1];
+    }
+    return startIt[numElems / 2];
+  };
   auto innerC = ct[0].second;
   auto ctIt = std::begin(innerC);
   res.reserve(co.size());
-  for(; coIt != co.end() && ctIt != innerC.end(); ++coIt, ++ctIt) {
-    res.push_back(std::make_pair(*coIt, std::make_pair(ct[0].first, *ctIt)));
+  for (; coIt != co.end() && ctIt != innerC.end(); std::advance(coIt, numReps), ++ctIt) {
+    res.push_back(std::make_pair(median(coIt, numReps), std::make_pair(ct[0].first, *ctIt)));
   }
   return res;
 }
 
 inline void to_json(nlohmann::json &j, const PiraTwoData &data) {
-  auto rtAndParams = valTup(data.getRuntimeVec(), data.getExtrapParameters());
+  auto &gOpts = pgis::config::GlobalConfig::get();
+  auto rtOnly = gOpts.getAs<bool>("runtime-only");
+
+  auto rtAndParams = valTup(data.getRuntimeVec(), data.getExtrapParameters(), data.getNumReps());
   nlohmann::json experiments;
   for (auto elem : rtAndParams) {
     nlohmann::json exp{};
@@ -169,10 +181,14 @@ inline void to_json(nlohmann::json &j, const PiraTwoData &data) {
     exp[elem.second.first] = elem.second.second;
     experiments += exp;
   }
-  j = nlohmann::json {{"experiments", experiments}, {"model", data.getExtrapModel()->getAsString(data.getExtrapModelConnector().getParamList())}};
+  if (!rtOnly) {
+    j = nlohmann::json{{"experiments", experiments},
+                       {"model", data.getExtrapModel()->getAsString(data.getExtrapModelConnector().getParamList())}};
+  } else {
+    j = nlohmann::json{{"experiments", experiments}};
+  }
   spdlog::get("console")->debug("PiraTwoData to_json:\n{}", j.dump());
 }
-
 
 }  // namespace pira
 

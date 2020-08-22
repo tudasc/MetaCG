@@ -19,7 +19,15 @@ S &Container(std::priority_queue<T, S, C> &q) {
   return HackedQueue::Container(q);
 }
 
-enum CgNodeState { NONE, INSTRUMENT_WITNESS, UNWIND_SAMPLE, INSTRUMENT_CONJUNCTION, UNWIND_INSTR, INSTRUMENT_CUBE, INSTRUMENT_PATH };
+enum CgNodeState {
+  NONE,
+  INSTRUMENT_WITNESS,
+  UNWIND_SAMPLE,
+  INSTRUMENT_CONJUNCTION,
+  UNWIND_INSTR,
+  INSTRUMENT_CUBE,
+  INSTRUMENT_PATH
+};
 
 class CgNode {
   using MetaData = pira::MetaData;
@@ -208,8 +216,8 @@ struct CgEdge {
   }
 };
 
-template <typename T, typename ... Args>
-T* getOrCreateMD(CgNodePtr p, const Args& ...args) {
+template <typename T, typename... Args>
+T *getOrCreateMD(CgNodePtr p, const Args &... args) {
   auto [has, md] = p->checkAndGet<T>();
   if (has) {
     return md;

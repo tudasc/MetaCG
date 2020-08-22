@@ -27,6 +27,7 @@ class StatisticsEstimatorPhase : public EstimatorPhase {
       : EstimatorPhase("StatisticsEstimatorPhase"),
         shouldPrintReport(shouldPrintReport),
         numFunctions(0),
+        numReachableFunctions(0),
         totalStmts(0),
         stmtsCoveredWithInstr(0),
         stmtsActuallyCovered(0) {}
@@ -39,6 +40,7 @@ class StatisticsEstimatorPhase : public EstimatorPhase {
  private:
   bool shouldPrintReport;
   long int numFunctions;
+  long int numReachableFunctions;
   long int totalStmts;
   std::map<long int, long int> stmtHist;
   std::map<long int, long int> stmtInclHist;
