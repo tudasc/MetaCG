@@ -1,7 +1,11 @@
+#include "config.h"
+
+
 #include "JSONManager.h"
 #include "MetaCollector.h"
 
 #include "CallGraph.h"
+
 
 #include <clang/AST/ASTConsumer.h>
 #include <clang/Frontend/FrontendAction.h>
@@ -61,6 +65,8 @@ int main(int argc, const char **argv) {
   if (argc < 2) {
     return -1;
   }
+
+  std::cout << "Running MetaCG::CGCollector (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR << ')' << std::endl;
 
   clang::tooling::CommonOptionsParser OP(argc, argv, cgc);
   clang::tooling::ClangTool CT(OP.getCompilations(), OP.getSourcePathList());

@@ -2,16 +2,26 @@
 
 # CGCollector
 
-Clang-based call graph collector for PIRA.
+Clang-based call-graph generation tool of the MetaCG tool.
 
-DO **NOT** DEVELOP ON ```master```, instead use either a feature branch or work on ```devel```!
+## Build CGCollector
 
-Please always give the asana issue number in commits in the form
+CGCollector requires Clang/LLVM version 10.
+The software requires the **nlohmann/json** library (here)[github.com/nlohmann/json] and the cube library to read `.cubex` profiles for CG validation (here)[https://www.scalasca.org/software/cube-4.x/download.html].
+
+```{.sh}
+$> mkdir build && cd build
+$> cmake -DCUBE_INCLUDE=$(cubelib-config --include) -DJSON_LIBRARY=/path/to/json-library/single_include -DCMAKE_INSTALL_PREFIX=/where/it/should/live ..
+$> make
+$> make install
 ```
-COMMIT-SUMMARY
 
-More info about the commit
+## Using CGCollector
 
-(asana) #NUMBER
+It is easiest to apply CGCollector, when a `compilation_commands.json` database is present.
+
+```{.sh}
+$> cgc target.cpp
 ```
-You can find the number as part of the URL: *https://app.asana.com/0/1136665616116890/1144847688491909* the last number of the link is the issue number, i.e., here it is *1144847688491909*
+
+`cgc` is a wrapper script that (tries to) determines the paths to the Clang standard includes.
