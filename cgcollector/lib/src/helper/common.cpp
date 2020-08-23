@@ -4,57 +4,66 @@
 
 #include <iostream>
 
-std::string getMangledName(clang::NamedDecl const *const nd) {
+std::vector<std::string> mangleCtorDtor(const clang::FunctionDecl *const nd, clang::MangleContext *mc) {
+  if (llvm::isa<clang::CXXConstructorDecl>(nd) || llvm::isa<clang::CXXDestructorDecl>(nd)) {
+    std::vector<std::string> manglings;
+
+    const auto mangleCXXCtorAs = [&] (clang::CXXCtorType type, const clang::CXXConstructorDecl *nd) {
+      std::string functionName;
+      llvm::raw_string_ostream out(functionName);
+      mc->mangleCXXCtor(nd, type, out);
+      return out.str();
+    };
+
+    const auto mangleCXXDtorAs = [&] (clang::CXXDtorType type, const clang::CXXDestructorDecl *nd) {
+      std::string functionName;
+      llvm::raw_string_ostream out(functionName);
+      mc->mangleCXXDtor(nd, type, out);
+      return out.str();
+    };
+
+    // We generate all potential manglings for Ctor/Dtor, as we don't know which one is the actual mangling.
+    // Idk if we can figure it out at some point.
+    if (const auto ctor = llvm::dyn_cast<clang::CXXConstructorDecl>(nd)) {
+      manglings.push_back(mangleCXXCtorAs(clang::CXXCtorType::Ctor_Complete, ctor));
+      manglings.push_back(mangleCXXCtorAs(clang::CXXCtorType::Ctor_Base, ctor));
+      manglings.push_back(mangleCXXCtorAs(clang::CXXCtorType::Ctor_Comdat, ctor));
+      manglings.push_back(mangleCXXCtorAs(clang::CXXCtorType::Ctor_CopyingClosure, ctor));
+      manglings.push_back(mangleCXXCtorAs(clang::CXXCtorType::Ctor_DefaultClosure, ctor));
+    }
+    if (const auto dtor = llvm::dyn_cast<clang::CXXDestructorDecl>(nd)) {
+      manglings.push_back(mangleCXXDtorAs(clang::CXXDtorType::Dtor_Complete, dtor));
+      manglings.push_back(mangleCXXDtorAs(clang::CXXDtorType::Dtor_Deleting, dtor));
+      manglings.push_back(mangleCXXDtorAs(clang::CXXDtorType::Dtor_Base, dtor));
+      manglings.push_back(mangleCXXDtorAs(clang::CXXDtorType::Dtor_Comdat, dtor));
+    }
+    return manglings;
+  }
+  return {};
+}
+
+std::vector<std::string> getMangledName(clang::NamedDecl const *const nd) {
   std::unique_ptr<clang::MangleContext> mc(nd->getASTContext().createMangleContext());
-    if (!nd || !mc) {
-          std::cerr << "NamedDecl was nullptr" << std::endl;
-              assert(nd && mc && "NamedDecl and MangleContext must not be nullptr");
-                  return "__NO_NAME__";
-                    }
+  if (!nd || !mc) {
+    std::cerr << "NamedDecl was nullptr" << std::endl;
+    assert(nd && mc && "NamedDecl and MangleContext must not be nullptr");
+    return {"__NO_NAME__"};
+  }
 
-      if (llvm::isa<clang::CXXConstructorDecl>(nd) || llvm::isa<clang::CXXDestructorDecl>(nd)) {
-            std::string functionName;
-                llvm::raw_string_ostream out(functionName);
-                    // FIXME: This code assumes that Ctors and Dtors are complete object constructors and destructors.
-                    //     // I do not know when this is the case / not the case. The clang code does not help me terrible much
-                    //         // in figuring it out.
-                    //             // See https://clang.llvm.org/doxygen/Mangle_8cpp_source.html
-                    if (llvm::isa<clang::CXXConstructorDecl>(nd)) {
-                    mc->mangleCXXCtor(llvm::dyn_cast<clang::CXXConstructorDecl>(nd), clang::CXXCtorType::Ctor_Complete, out);
-                    }
-                    if (llvm::isa<clang::CXXDestructorDecl>(nd)) {
-                    mc->mangleCXXDtor(llvm::dyn_cast<clang::CXXDestructorDecl>(nd), clang::CXXDtorType::Dtor_Complete, out);
-                    }
-                    return out.str();
-                    }
-                    
-                   if (const clang::FunctionDecl *dc = llvm::dyn_cast<clang::FunctionDecl>(nd)) {
-                    if (dc->isExternC()) {
-                    return dc->getNameAsString();
-                    }
-                    if (dc->isMain()) {
-                    return "main";
-                    }
-                    }
-                    std::string functionName;
-                    llvm::raw_string_ostream llvmName(functionName);
-                    mc->mangleName(nd, llvmName);
-                    return llvmName.str();
+  if (llvm::isa<clang::CXXConstructorDecl>(nd) || llvm::isa<clang::CXXDestructorDecl>(nd)) {
+    return mangleCtorDtor(llvm::dyn_cast<clang::FunctionDecl>(nd), mc.get());
+  }
 
-  // FIXME: This code crashes for AD LULESH
-  clang::ASTNameGenerator ang(nd->getASTContext());
-  auto mName = ang.getName(nd);
-  std::cout << "Mangled name is: " << mName << std::endl;
-  if (mName == "" || mName.empty()) {
-    std::cout << "Processing manglings for " << nd->getNameAsString() << std::endl;
-    nd->dump();
-    auto manglings = ang.getAllManglings(nd);
-    if (!manglings.empty()) {
-      std::sort(std::begin(manglings), std::end(manglings));
-      for (const auto &m : manglings) {
-        std::cout << "Mangling is: " << m << std::endl;
-      }
+  if (const clang::FunctionDecl *dc = llvm::dyn_cast<clang::FunctionDecl>(nd)) {
+    if (dc->isExternC()) {
+      return {dc->getNameAsString()};
+    }
+    if (dc->isMain()) {
+      return {"main"};
     }
   }
-  return mName;
+  std::string functionName;
+  llvm::raw_string_ostream llvmName(functionName);
+  mc->mangleName(nd, llvmName);
+  return {llvmName.str()};
 }

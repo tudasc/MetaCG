@@ -20,7 +20,7 @@ bool isMain(const std::string &name) { return (name.compare("main") == 0); }
 
 int main(int argc, char **argv) {
   if (argc != 3) {
-    std::cerr << "pleaes pass ipcg file as first and cubex file as second parameter" << std::endl;
+    std::cerr << "CGValidate usage:\nPlease pass the ipcg file as the first and the cubex file as the second parameter" << std::endl;
     return 1;
   }
 
@@ -28,16 +28,16 @@ int main(int argc, char **argv) {
   try {
     readIPCG(argv[1], callgraph);
   } catch (std::exception e) {
-    std::cerr << "ipcg not readable" << std::endl;
-    return 1;
+    std::cerr << "[Error] ipcg file " << argv[1] << " not readable" << std::endl;
+    return 2;
   }
 
   cube::Cube cube;
   try {
     readCube(argv[2], cube);
   } catch (std::exception e) {
-    std::cerr << "cube not readable" << std::endl;
-    return 1;
+    std::cerr << "[Error] cube file " << argv[2] << " not readable" << std::endl;
+    return 3;
   }
 
   // iterate over cube to check if edges are in callgraph
@@ -66,10 +66,15 @@ int main(int argc, char **argv) {
     auto parents = node["parents"];
 
     // check if parent contains callee and callee contains parent
+    std::cout << parentName << std::endl;
+    bool pHasBody = parent["hasBody"];
+    //bool cHasBody = node["hasBody"].get<bool>();
     auto calleeFound =
         (std::find(callees.begin(), callees.end(), nodeName) != callees.end());  // doesInclude(callees, nodeName);
+    calleeFound = calleeFound && !pHasBody; // if no body av, how should we know?
     auto parentFound =
         (std::find(parents.begin(), parents.end(), parentName) != parents.end());  // doesInclude(parents, parentName);
+    //parentFound = parentFound && !cHasBody; // if no body av, how should we know?
     // check polymorphism (currently only first hierarchy level)
     bool overriddenFunctionParentFound = false;
     bool overriddenFunctionCalleeFound = false;
