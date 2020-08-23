@@ -49,7 +49,7 @@ multiTests=(0042 0043 0044 0050 0053)
 fails=0
 
 # Single File 
-echo "Running single file tests"
+echo " --- Running single file tests ---"
 for tc in ${tests[@]}; do
 	echo "Running test ${tc}"
   tfile=$tc.cpp
@@ -88,13 +88,12 @@ for tc in ./input/allCtorDtor/*.cpp ; do
 		rm $gfile 
 	fi
 
-	echo "Failuers: $fails"
-
 done
+	echo "Single file test failuers: $fails"
 
 
 # Multi File
-echo "Running multi file tests"
+echo " --- Running multi file tests ---"
 for tc in ${multiTests[@]}; do
 	echo "Running test ${tc}"
 	# Input files
@@ -127,7 +126,7 @@ for tc in ${multiTests[@]}; do
 	${testerExe} ./input/multiTU/${combFile} ./input/multiTU/${gtCombFile} >>log/testrun.log 2>&1 
 	cErr=$?
 
-	echo "$aErr or $bErr or $mErr or $cErr"
+	#echo "$aErr or $bErr or $mErr or $cErr"
 
 	if [[ ${aErr} -ne 0 || ${bErr} -ne 0 || ${mErr} -ne 0 || ${cErr} -ne 0 ]]; then 
 		echo "Failure for file: $combFile. Keeping generated file for inspection" 
@@ -136,9 +135,9 @@ for tc in ${multiTests[@]}; do
 		rm ./input/multiTU/$combFile ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile}
 	fi
 
-	echo "Failuers: $fails"
-
 done
+
+echo "Multi file test failuers: $fails"
 
 echo -e "$fails failures occured when running tests"
 exit $fails

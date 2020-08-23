@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "nlohmann/json.hpp"
 
 #include <cubelib/Cube.h>
@@ -24,6 +26,8 @@ int main(int argc, char **argv) {
               << std::endl;
     return 1;
   }
+
+  std::cout << "Running MetaCG::CGValidate (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR << ')' << std::endl;
 
   /**
    * If we don't have a function's definition, we cannot find any edges anyway.
@@ -96,8 +100,8 @@ int main(int argc, char **argv) {
     }
 
     if (useNoBodyDetection) {
-      bool pHasBody{false};
-      bool cHasBody{false};
+      bool pHasBody{true};
+      bool cHasBody{true};
       if (parent["hasBody"].is_null()) {
         std::cerr << "[Warning] No CGCollector data for " << parentName << " in IPCG." << std::endl;
       } else {

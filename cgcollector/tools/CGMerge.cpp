@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "nlohmann/json.hpp"
 
 #include <fstream>
@@ -144,6 +146,8 @@ int main(int argc, char **argv) {
   if (argc < 3) {
     return -1;
   }
+
+  std::cout << "Running MetaCG::CGMerge (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR << ')' << std::endl;
 
   std::vector<std::string> inputFiles;
   //inputFiles.reserve(argc - 2);
