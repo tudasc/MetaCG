@@ -4,14 +4,13 @@ cgcollectorExe=cgcollector
 testerExe=cgsimpletester
 cgmergeExe=cgmerge
 
-
 mkdir log
 
 #if [ command -v $testerExe ]; then
 if [[ $(type -P $testerExe) ]]; then
 	echo "The CGSimpleTester binary (cgsimpletester) could not be found in path, testing with relative path."
 fi
-stat ../build/test/cgsimpletester > /dev/null
+stat ../build/test/cgsimpletester >>log/testrun.log 2>&1 
 if [ $? -eq 1 ]; then
 	echo "The file seems also non-present in ../build/test. Aborting test. Failure! Please build the tester first."
 	exit 1
@@ -22,7 +21,7 @@ fi
 if [[ $(type -P $cgcollectorExe) ]]; then
 	echo "No cgcollector in PATH. Trying relative path ../build/tools"
 fi
-stat ../build/tools/cgcollector > /dev/null
+stat ../build/tools/cgcollector >>log/testrun.log 2>&1 
 if [ $? -eq 1 ]; then
 	echo "The file seems also non-present in ../build/tools. Aborting test. Failure! Please build the collector first."
 	exit 1
@@ -33,7 +32,7 @@ fi
 if [[ $(type -P $cgmergeExe) ]]; then
 	echo "No cgcollector in PATH. Trying relative path ../build/tools"
 fi
-stat ../build/tools/cgmerge > /dev/null
+stat ../build/tools/cgmerge >>log/testrun.log 2>&1 
 if [ $? -eq 1 ]; then
 	echo "The file seems also non-present in ../build/tools. Aborting test. Failure! Please build the collector first."
 	exit 1
@@ -57,8 +56,8 @@ for tc in ${tests[@]}; do
 	gfile=$tc.ipcg
 	tgt=$tc.gtipcg
 
-	$cgcollectorExe ./input/singleTU/$tfile -- >log/testrun.log 2>&1 
-	$testerExe ./input/singleTU/$tgt ./input/singleTU/$gfile >log/testrun.log 2>&1 
+	$cgcollectorExe ./input/singleTU/$tfile -- >>log/testrun.log 2>&1 
+	$testerExe ./input/singleTU/$tgt ./input/singleTU/$gfile >>log/testrun.log 2>&1 
 
 	if [ $? -ne 0 ]; then 
 		echo "Failure for file: $gfile. Keeping generated file for inspection" 
@@ -78,9 +77,9 @@ for tc in ./input/allCtorDtor/*.cpp ; do
 	gfile="${tc/cpp/ipcg}"
 	tgt="${tc/cpp/gtipcg}"
 
-  $cgcollectorExe --capture-ctors-dtors $tfile -- >log/testrun.log 2>&1 
+  $cgcollectorExe --capture-ctors-dtors $tfile -- >>log/testrun.log 2>&1 
 	#$cgcollectorExe --capture-ctors-dtors $tfile -- 
-	$testerExe $tgt $gfile >log/testrun.log 2>&1 
+	$testerExe $tgt $gfile >>log/testrun.log 2>&1 
 
 	if [ $? -ne 0 ]; then 
 		echo "Failure for file: $gfile. Keeping generated file for inspection" 
@@ -112,20 +111,20 @@ for tc in ${multiTests[@]}; do
 	gtCombFile="${tc}_combined.gtipcg"
 
   # Translation-unit-local
-	$cgcollectorExe ./input/multiTU/$taFile -- >log/testrun.log 2>&1
-	$cgcollectorExe ./input/multiTU/$tbFile -- >log/testrun.log 2>&1
+	$cgcollectorExe ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
+	$cgcollectorExe ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
 
-	$testerExe ./input/multiTU/${ipcgTaFile} ./input/multiTU/${gtaFile} >log/testrun.log 2>&1
+	$testerExe ./input/multiTU/${ipcgTaFile} ./input/multiTU/${gtaFile} >>log/testrun.log 2>&1
 	aErr=$?
-	$testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile} >log/testrun.log 2>&1
+	$testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile} >>log/testrun.log 2>&1
 	bErr=$?
 
 	combFile=${tc}_combined.ipcg
 	echo "null" > ./input/multiTU/${combFile}
 
-	${cgmergeExe} ./input/multiTU/${combFile} ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile} >log/testrun.log 2>&1 
+	${cgmergeExe} ./input/multiTU/${combFile} ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile} >>log/testrun.log 2>&1 
 	mErr=$?
-	${testerExe} ./input/multiTU/${combFile} ./input/multiTU/${gtCombFile} >log/testrun.log 2>&1 
+	${testerExe} ./input/multiTU/${combFile} ./input/multiTU/${gtCombFile} >>log/testrun.log 2>&1 
 	cErr=$?
 
 	echo "$aErr or $bErr or $mErr or $cErr"

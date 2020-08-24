@@ -20,9 +20,16 @@ bool isMain(const std::string &name) { return (name.compare("main") == 0); }
 
 int main(int argc, char **argv) {
   if (argc != 3) {
-    std::cerr << "CGValidate usage:\nPlease pass the ipcg file as the first and the cubex file as the second parameter" << std::endl;
+    std::cerr << "CGValidate usage:\nPlease pass the ipcg file as the first and the cubex file as the second parameter"
+              << std::endl;
     return 1;
   }
+
+  /**
+   * If we don't have a function's definition, we cannot find any edges anyway.
+   * XXX This should be a feature w/ a CLI swtich
+   */
+  bool useNoBodyDetection {false};
 
   nlohmann::json callgraph;
   try {
@@ -66,15 +73,10 @@ int main(int argc, char **argv) {
     auto parents = node["parents"];
 
     // check if parent contains callee and callee contains parent
-    std::cout << parentName << std::endl;
-    bool pHasBody = parent["hasBody"];
-    //bool cHasBody = node["hasBody"].get<bool>();
     auto calleeFound =
         (std::find(callees.begin(), callees.end(), nodeName) != callees.end());  // doesInclude(callees, nodeName);
-    calleeFound = calleeFound && !pHasBody; // if no body av, how should we know?
     auto parentFound =
         (std::find(parents.begin(), parents.end(), parentName) != parents.end());  // doesInclude(parents, parentName);
-    //parentFound = parentFound && !cHasBody; // if no body av, how should we know?
     // check polymorphism (currently only first hierarchy level)
     bool overriddenFunctionParentFound = false;
     bool overriddenFunctionCalleeFound = false;
@@ -93,13 +95,30 @@ int main(int argc, char **argv) {
         break;
     }
 
+    if (useNoBodyDetection) {
+      bool pHasBody{false};
+      bool cHasBody{false};
+      if (parent["hasBody"].is_null()) {
+        std::cerr << "[Warning] No CGCollector data for " << parentName << " in IPCG." << std::endl;
+      } else {
+        pHasBody = parent["hasBody"].get<bool>();
+      }
+      if (node["hasBody"].is_null()) {
+        std::cerr << "[Warning] No CGCollector data for " << nodeName << " in IPCG." << std::endl;
+      } else {
+        cHasBody = node["hasBody"].get<bool>();
+      }
+      calleeFound = calleeFound || !pHasBody;  // if no body av, how should we know?
+      parentFound = parentFound || !cHasBody;  // if no body av, how should we know?
+    }
+
     // reporting
     if (!parentFound && !overriddenFunctionParentFound) {
-      std::cout << "[ERROR] " << nodeName << " does not contain parent " << parentName << std::endl;
+      std::cout << "[Error] " << nodeName << " does not contain parent " << parentName << std::endl;
       verified = false;
     }
     if (!calleeFound && !overriddenFunctionCalleeFound) {
-      std::cout << "[ERROR] " << parentName << " does not contain callee " << nodeName << std::endl;
+      std::cout << "[Error] " << parentName << " does not contain callee " << nodeName << std::endl;
       verified = false;
     }
   }
