@@ -1,11 +1,9 @@
 #include "config.h"
 
-
 #include "JSONManager.h"
 #include "MetaCollector.h"
 
 #include "CallGraph.h"
-
 
 #include <clang/AST/ASTConsumer.h>
 #include <clang/Frontend/FrontendAction.h>
@@ -17,7 +15,9 @@
 #include <string>
 
 static llvm::cl::OptionCategory cgc("CGCollector");
-static llvm::cl::opt<bool> captureCtorsDtors("capture-ctors-dtors", llvm::cl::desc("Capture calls to Constructors and Destructors"), llvm::cl::cat(cgc));
+static llvm::cl::opt<bool> captureCtorsDtors("capture-ctors-dtors",
+                                             llvm::cl::desc("Capture calls to Constructors and Destructors"),
+                                             llvm::cl::cat(cgc));
 
 typedef std::vector<MetaCollector *> MetaCollectorVector;
 
@@ -66,7 +66,8 @@ int main(int argc, const char **argv) {
     return -1;
   }
 
-  std::cout << "Running MetaCG::CGCollector (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR << ')' << std::endl;
+  std::cout << "Running MetaCG::CGCollector (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
+            << ')' << std::endl;
 
   clang::tooling::CommonOptionsParser OP(argc, argv, cgc);
   clang::tooling::ClangTool CT(OP.getCompilations(), OP.getSourcePathList());

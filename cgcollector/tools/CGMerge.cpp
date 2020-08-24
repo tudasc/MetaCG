@@ -147,14 +147,14 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  std::cout << "Running MetaCG::CGMerge (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR << ')' << std::endl;
+  std::cout << "Running MetaCG::CGMerge (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
+            << ')' << std::endl;
 
   std::vector<std::string> inputFiles;
-  //inputFiles.reserve(argc - 2);
+  // inputFiles.reserve(argc - 2);
   for (int i = 2; i < argc; ++i) {
     inputFiles.emplace_back(std::string(argv[i]));
   }
-
 
   const auto toSet = [&](auto &jsonObj, std::string id) {
     const auto &obj = jsonObj[id];
@@ -194,7 +194,7 @@ int main(int argc, char **argv) {
 
   std::cout << "Now starting merge of " << inputFiles.size() << " files." << std::endl;
   for (const auto &filename : inputFiles) {
-    //std::cout << "[Info] Processing " << filename << std::endl;
+    // std::cout << "[Info] Processing " << filename << std::endl;
 
     auto current = buildFromJSON(functionInfoMap, filename);
 
@@ -207,14 +207,14 @@ int main(int argc, char **argv) {
         // TODO multiple bodies possible, if the body is in header?
         // TODO separate merge of meta information
         if (v["hasBody"].get<bool>() && c["hasBody"].get<bool>()) {
-          //std::cout << "WARNING: merge of " << it.key()
+          // std::cout << "WARNING: merge of " << it.key()
           //          << " has detected multiple bodies (equal number of statements would be good.)" << std::endl;
           // TODO check for equal values
           doMerge(c, v);
           // The num Statements should not differ
           if (c["numStatements"].get<int>() != v["numStatements"].get<int>()) {
-            //std::cout << "[WARNING] Number of statements for function " << it.key() << " differ." << std::endl;
-            //std::cout << "[WholeCG]: " << c["numStatements"].get<int>()
+            // std::cout << "[WARNING] Number of statements for function " << it.key() << " differ." << std::endl;
+            // std::cout << "[WholeCG]: " << c["numStatements"].get<int>()
             //          << "\n[MergeCG]: " << v["numStatements"].get<int>() << std::endl;
             bool shouldAbort = false;
             if (shouldAbort) {

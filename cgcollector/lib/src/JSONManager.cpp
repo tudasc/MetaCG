@@ -3,10 +3,8 @@
 
 #include <clang/AST/Mangle.h>
 
-#include <unordered_set>
 #include <iostream>
-
-
+#include <unordered_set>
 
 void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j) {
   using FunctionNames = std::unordered_set<std::string>;
@@ -58,14 +56,14 @@ void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j) {
       bool hasBody = f_decl->hasBody();
 
       // TODO names of fields
-      for (const auto &n : mNames) { 
+      for (const auto &n : mNames) {
         j[n] = {{"callees", callees},
-                                   {"isVirtual", isVirtual},
-                                   {"doesOverride", doesOverride},
-                                   {"overriddenFunctions", overriddenFunctions},
-                                   {"overriddenBy", overriddenBy},
-                                   {"parents", callers},
-                                   {"hasBody", hasBody}};
+                {"isVirtual", isVirtual},
+                {"doesOverride", doesOverride},
+                {"overriddenFunctions", overriddenFunctions},
+                {"overriddenBy", overriddenBy},
+                {"parents", callers},
+                {"hasBody", hasBody}};
       }
     }
   }
