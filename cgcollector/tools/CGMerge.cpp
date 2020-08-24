@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
   }
 
   std::cout << "Running MetaCG::CGMerge (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
-            << ')' << std::endl;
+            << ")\nGit revision: " << MetaCG_GIT_SHA << std::endl;
 
   std::vector<std::string> inputFiles;
   // inputFiles.reserve(argc - 2);

@@ -67,7 +67,7 @@ int main(int argc, const char **argv) {
   }
 
   std::cout << "Running MetaCG::CGCollector (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
-            << ')' << std::endl;
+            << ")\nGit revision: " << MetaCG_GIT_SHA << std::endl;
 
   clang::tooling::CommonOptionsParser OP(argc, argv, cgc);
   clang::tooling::ClangTool CT(OP.getCompilations(), OP.getSourcePathList());

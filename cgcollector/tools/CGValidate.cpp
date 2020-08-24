@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
   }
 
   std::cout << "Running MetaCG::CGValidate (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
-            << ')' << std::endl;
+            << ")\nGit revision: " << MetaCG_GIT_SHA << std::endl;
 
   /**
    * If we don't have a function's definition, we cannot find any edges anyway.
