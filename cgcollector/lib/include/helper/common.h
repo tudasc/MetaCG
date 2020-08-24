@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-
 /**
  * Returns mangled names for all named decls, including Ctor/Dtor.
  */

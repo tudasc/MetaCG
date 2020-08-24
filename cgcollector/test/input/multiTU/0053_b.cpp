@@ -8,7 +8,6 @@ class MyClassDeriveD : public MyClassDerive {
 };
 
 int main(int argc, char *argv[]) {
-
   MyClass *m = new MyClassDeriveD();
   m->foo();
 

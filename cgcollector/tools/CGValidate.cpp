@@ -27,13 +27,14 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  std::cout << "Running MetaCG::CGValidate (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR << ')' << std::endl;
+  std::cout << "Running MetaCG::CGValidate (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
+            << ')' << std::endl;
 
   /**
    * If we don't have a function's definition, we cannot find any edges anyway.
    * XXX This should be a feature w/ a CLI swtich
    */
-  bool useNoBodyDetection {false};
+  bool useNoBodyDetection{false};
 
   nlohmann::json callgraph;
   try {

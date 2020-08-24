@@ -194,7 +194,8 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
   bool captureCtorsDtors;
 
  public:
-  CGBuilder(CallGraph *g, CallGraphNode *N, bool captureCtorsDtors) : G(g), CallerNode(N), captureCtorsDtors(captureCtorsDtors) {}
+  CGBuilder(CallGraph *g, CallGraphNode *N, bool captureCtorsDtors)
+      : G(g), CallerNode(N), captureCtorsDtors(captureCtorsDtors) {}
 
   void VisitStmt(Stmt *S) { VisitChildren(S); }
 
