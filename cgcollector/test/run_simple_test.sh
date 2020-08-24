@@ -4,7 +4,7 @@ cgcollectorExe=cgcollector
 testerExe=cgsimpletester
 cgmergeExe=cgmerge
 
-mkdir log
+mkdir -p log
 
 #if [ command -v $testerExe ]; then
 if [[ $(type -P $testerExe) ]]; then
