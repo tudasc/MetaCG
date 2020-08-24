@@ -191,8 +191,11 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
   const VarDecl *currentFunctionPointerVar = nullptr;
   llvm::SmallSet<FunctionDecl *, 16> functionPointerTargets;
 
+  bool captureCtorsDtors;
+
  public:
-  CGBuilder(CallGraph *g, CallGraphNode *N) : G(g), CallerNode(N) {}
+  CGBuilder(CallGraph *g, CallGraphNode *N, bool captureCtorsDtors)
+      : G(g), CallerNode(N), captureCtorsDtors(captureCtorsDtors) {}
 
   void VisitStmt(Stmt *S) { VisitChildren(S); }
 
@@ -333,6 +336,33 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     G->getOrInsertNode(Caller)->addCallee(G->getOrInsertNode(Callee));
   }
 
+  void VisitCXXConstructExpr(CXXConstructExpr *CE) {
+    if (!captureCtorsDtors) {
+      return;
+    }
+
+    if (auto ctor = CE->getConstructor()) {
+      addCalledDecl(ctor);
+    }
+  }
+
+  void VisitCXXDeleteExpr(CXXDeleteExpr *DE) {
+    if (!captureCtorsDtors) {
+      return;
+    }
+
+    auto DT = DE->getDestroyedType();
+    if (auto ty = DT.getTypePtrOrNull()) {
+      if (!ty->isBuiltinType()) {
+        if (auto clDecl = ty->getAsCXXRecordDecl()) {
+          if (auto dtor = clDecl->getDestructor()) {
+            addCalledDecl(dtor);
+          }
+        }
+      }
+    }
+  }
+
   void VisitCallExpr(CallExpr *CE) {
     Decl *D = nullptr;
     if ((D = getDeclFromCall(CE))) {
@@ -436,7 +466,7 @@ void CallGraph::addNodeForDecl(Decl *D, bool IsGlobal) {
   CallGraphNode *Node = getOrInsertNode(D);
 
   // Process all the calls by this function as well.
-  CGBuilder builder(this, Node);
+  CGBuilder builder(this, Node, captureCtorsDtors);
   if (Stmt *Body = D->getBody())
     builder.Visit(Body);
 }
@@ -478,7 +508,7 @@ bool CallGraph::VisitFunctionDecl(clang::FunctionDecl *FD) {
     // its address taken.
     addNodeForDecl(FD, FD->isGlobal());
   } else {
-    //std::cout << "Not including in graph " << FD->getNameAsString() << std::endl;
+    // std::cout << "Not including in graph " << FD->getNameAsString() << std::endl;
   }
   return true;
 }

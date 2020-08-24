@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(CGCollector)
+project(CGCollector VERSION 0.2)
+
+configure_file(Config.h.in config.h)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_VERBOSE_MAKEFILE ON)

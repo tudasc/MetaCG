@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "nlohmann/json.hpp"
 
 #include <cubelib/Cube.h>
@@ -20,24 +22,34 @@ bool isMain(const std::string &name) { return (name.compare("main") == 0); }
 
 int main(int argc, char **argv) {
   if (argc != 3) {
-    std::cerr << "pleaes pass ipcg file as first and cubex file as second parameter" << std::endl;
+    std::cerr << "CGValidate usage:\nPlease pass the ipcg file as the first and the cubex file as the second parameter"
+              << std::endl;
     return 1;
   }
+
+  std::cout << "Running MetaCG::CGValidate (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
+            << ')' << std::endl;
+
+  /**
+   * If we don't have a function's definition, we cannot find any edges anyway.
+   * XXX This should be a feature w/ a CLI swtich
+   */
+  bool useNoBodyDetection{false};
 
   nlohmann::json callgraph;
   try {
     readIPCG(argv[1], callgraph);
   } catch (std::exception e) {
-    std::cerr << "ipcg not readable" << std::endl;
-    return 1;
+    std::cerr << "[Error] ipcg file " << argv[1] << " not readable" << std::endl;
+    return 2;
   }
 
   cube::Cube cube;
   try {
     readCube(argv[2], cube);
   } catch (std::exception e) {
-    std::cerr << "cube not readable" << std::endl;
-    return 1;
+    std::cerr << "[Error] cube file " << argv[2] << " not readable" << std::endl;
+    return 3;
   }
 
   // iterate over cube to check if edges are in callgraph
@@ -88,13 +100,30 @@ int main(int argc, char **argv) {
         break;
     }
 
+    if (useNoBodyDetection) {
+      bool pHasBody{true};
+      bool cHasBody{true};
+      if (parent["hasBody"].is_null()) {
+        std::cerr << "[Warning] No CGCollector data for " << parentName << " in IPCG." << std::endl;
+      } else {
+        pHasBody = parent["hasBody"].get<bool>();
+      }
+      if (node["hasBody"].is_null()) {
+        std::cerr << "[Warning] No CGCollector data for " << nodeName << " in IPCG." << std::endl;
+      } else {
+        cHasBody = node["hasBody"].get<bool>();
+      }
+      calleeFound = calleeFound || !pHasBody;  // if no body av, how should we know?
+      parentFound = parentFound || !cHasBody;  // if no body av, how should we know?
+    }
+
     // reporting
     if (!parentFound && !overriddenFunctionParentFound) {
-      std::cout << "[ERROR] " << nodeName << " does not contain parent " << parentName << std::endl;
+      std::cout << "[Error] " << nodeName << " does not contain parent " << parentName << std::endl;
       verified = false;
     }
     if (!calleeFound && !overriddenFunctionCalleeFound) {
-      std::cout << "[ERROR] " << parentName << " does not contain callee " << nodeName << std::endl;
+      std::cout << "[Error] " << parentName << " does not contain callee " << nodeName << std::endl;
       verified = false;
     }
   }

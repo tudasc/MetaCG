@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "nlohmann/json.hpp"
 
 #include <fstream>
@@ -35,7 +37,7 @@ FuncMapT::mapped_type &getOrInsert(std::string function, FuncMapT &functions) {
   }
 }
 
-void buildFromJSON(FuncMapT &functionMap, const std::string &filename) {
+nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename) {
   using json = nlohmann::json;
 
   json j;
@@ -137,6 +139,7 @@ void buildFromJSON(FuncMapT &functionMap, const std::string &filename) {
     //}
     // std::cout << std::endl;
   }
+  return j;
 }
 
 int main(int argc, char **argv) {
@@ -144,12 +147,14 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  std::vector<std::string> inputFiles(argc - 2);
-  for (int i = 2; i < argc; ++i) {
-    inputFiles[i - 2] = argv[i];
-  }
+  std::cout << "Running MetaCG::CGMerge (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
+            << ')' << std::endl;
 
-  nlohmann::json wholeCG;
+  std::vector<std::string> inputFiles;
+  // inputFiles.reserve(argc - 2);
+  for (int i = 2; i < argc; ++i) {
+    inputFiles.emplace_back(std::string(argv[i]));
+  }
 
   const auto toSet = [&](auto &jsonObj, std::string id) {
     const auto &obj = jsonObj[id];
@@ -180,13 +185,18 @@ int main(int argc, char **argv) {
   };
 
   FuncMapT functionInfoMap;
+  nlohmann::json wholeCG;
+  {
+    std::cout << "Reading " << argv[1] << " as wholeCG file\n";
+    std::ifstream file(argv[1]);
+    file >> wholeCG;
+  }
 
-  for (auto &filename : inputFiles) {
-    std::ifstream file(filename);
-    nlohmann::json current;
-    file >> current;
+  std::cout << "Now starting merge of " << inputFiles.size() << " files." << std::endl;
+  for (const auto &filename : inputFiles) {
+    // std::cout << "[Info] Processing " << filename << std::endl;
 
-    buildFromJSON(functionInfoMap, filename);
+    auto current = buildFromJSON(functionInfoMap, filename);
 
     for (nlohmann::json::iterator it = current.begin(); it != current.end(); ++it) {
       if (wholeCG[it.key()].empty()) {
@@ -197,15 +207,15 @@ int main(int argc, char **argv) {
         // TODO multiple bodies possible, if the body is in header?
         // TODO separate merge of meta information
         if (v["hasBody"].get<bool>() && c["hasBody"].get<bool>()) {
-          std::cout << "WARNING: merge of " << it.key()
-                    << " has detected multiple bodies (equal number of statements would be good.)" << std::endl;
+          // std::cout << "WARNING: merge of " << it.key()
+          //          << " has detected multiple bodies (equal number of statements would be good.)" << std::endl;
           // TODO check for equal values
           doMerge(c, v);
           // The num Statements should not differ
           if (c["numStatements"].get<int>() != v["numStatements"].get<int>()) {
-            std::cout << "[WARNING] Number of statements for function " << it.key() << " differ." << std::endl;
-            std::cout << "[WholeCG]: " << c["numStatements"].get<int>()
-                      << "\n[MergeCG]: " << v["numStatements"].get<int>() << std::endl;
+            // std::cout << "[WARNING] Number of statements for function " << it.key() << " differ." << std::endl;
+            // std::cout << "[WholeCG]: " << c["numStatements"].get<int>()
+            //          << "\n[MergeCG]: " << v["numStatements"].get<int>() << std::endl;
             bool shouldAbort = false;
             if (shouldAbort) {
               abort();
