@@ -337,9 +337,28 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
   }
 
   void VisitCXXConstructExpr(CXXConstructExpr *CE) {
+    if (!captureCtorsDtors) {
+      return;
+    }
+
     if (auto ctor = CE->getConstructor()) {
-      if (captureCtorsDtors) {
-        addCalledDecl(ctor);
+      addCalledDecl(ctor);
+    }
+  }
+
+  void VisitCXXDeleteExpr(CXXDeleteExpr *DE) {
+    if (!captureCtorsDtors) {
+      return;
+    }
+
+    auto DT = DE->getDestroyedType();
+    if (auto ty = DT.getTypePtrOrNull()) {
+      if (!ty->isBuiltinType()) {
+        if (auto clDecl = ty->getAsCXXRecordDecl()) {
+          if (auto dtor = clDecl->getDestructor()) {
+            addCalledDecl(dtor);
+          }
+        }
       }
     }
   }
