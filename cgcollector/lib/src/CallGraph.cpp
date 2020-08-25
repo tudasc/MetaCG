@@ -95,10 +95,10 @@ class FunctionReturnsFinder : public StmtVisitor<FunctionReturnsFinder> {
         if (auto ice = dyn_cast<ImplicitCastExpr>(rhs)) {
           insertFuncAlias(vDecl, ice);
         } else {
-          std::cout << "RHS is not an ImplicitCastExpr" << std::endl;
+          // std::cout << "RHS is not an ImplicitCastExpr" << std::endl;
         }
       } else {
-        std::cout << "LHS is not a VarDecl" << std::endl;
+        // std::cout << "LHS is not a VarDecl" << std::endl;
       }
     }
   }
@@ -108,7 +108,7 @@ class FunctionReturnsFinder : public StmtVisitor<FunctionReturnsFinder> {
     if (CallExpr *ce = dyn_cast<CallExpr>(retExpr)) {
       if (auto decl = dyn_cast<FunctionDecl>(ce->getDirectCallee())) {
         auto transitiveTargets = getTargetFunctions(decl);
-        std::cout << "Detected more calls. Inserting " << transitiveTargets.size() << " call targets" << std::endl;
+        // std::cout << "Detected more calls. Inserting " << transitiveTargets.size() << " call targets" << std::endl;
         targets.insert(transitiveTargets.begin(), transitiveTargets.end());
       }
     }
@@ -142,7 +142,7 @@ class FunctionReturnsFinder : public StmtVisitor<FunctionReturnsFinder> {
     if (auto dre = dyn_cast<DeclRefExpr>(expr)) {
       insertFuncAlias(vDecl, dre);
     } else {
-      std::cout << "VarDeclInit not a DeclRefExpr" << std::endl;
+      // std::cout << "VarDeclInit not a DeclRefExpr" << std::endl;
     }
   }
 
@@ -152,14 +152,15 @@ class FunctionReturnsFinder : public StmtVisitor<FunctionReturnsFinder> {
         functionAliases.insert({vDecl, llvm::SmallSet<FunctionDecl *, 8>()});
       }
       functionAliases[vDecl].insert(fd);
-      std::cout << "VisitDeclStmt: " << vDecl->getNameAsString() << " aliases " << fd->getNameAsString() << std::endl;
+      // std::cout << "VisitDeclStmt: " << vDecl->getNameAsString() << " aliases " << fd->getNameAsString() <<
+      // std::endl;
     }
   }
 
   FunctionDecl *getFunctionDecl(DeclRefExpr *dre) {
     auto decl = dre->getDecl();
     if (decl && isa<FunctionDecl>(*decl)) {
-      std::cout << "Found function Reference" << std::endl;
+      // std::cout << "Found function Reference" << std::endl;
     }
     return dyn_cast<FunctionDecl>(decl);
   }
@@ -167,14 +168,14 @@ class FunctionReturnsFinder : public StmtVisitor<FunctionReturnsFinder> {
   VarDecl *getVarDecl(DeclRefExpr *dre) {
     auto decl = dre->getDecl();
     if (decl && isa<VarDecl>(*decl)) {
-      std::cout << "Found function Reference" << std::endl;
+      // std::cout << "Found function Reference" << std::endl;
     }
     return dyn_cast<VarDecl>(decl);
   }
 };
 
 llvm::SmallSet<FunctionDecl *, 16> getTargetFunctions(Decl *FD) {
-  std::cout << "Running on " << dyn_cast<FunctionDecl>(FD)->getNameAsString() << "\n";
+  // std::cout << "Running on " << dyn_cast<FunctionDecl>(FD)->getNameAsString() << "\n";
   FunctionReturnsFinder frf;
   if (Stmt *Body = FD->getBody()) {
     frf.Visit(Body);
@@ -236,7 +237,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
               }
             } else if (VarDecl *varDecl = dyn_cast<VarDecl>(DRE->getDecl())) {
               if (varDecl->getType()->isFunctionPointerType()) {
-                std::cout << "Found addressed-of VarDecl" << std::endl;
+                // std::cout << "Found addressed-of VarDecl" << std::endl;
                 // TODO: Determine which functions are assigned to the parameter in the function's definition.
                 //       Within a single TU, this can be done the same way as with the return statements.
                 //       Across TUs is currently neither supported in this case nor in the Return stmt case.
@@ -289,7 +290,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     };
 
     if (isTargetCalledImmediately(CE, ctx)) {
-      std::cout << "Target is Called immediately" << std::endl;
+      // std::cout << "Target is Called immediately" << std::endl;
       for (auto tFunc : targetFuncSet) {
         addCalledDecl(tFunc);
       }
@@ -316,7 +317,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       return;
     }
 
-    std::cout << "Case in which multiple call-chain shit is going on." << std::endl;
+    // std::cout << "Case in which multiple call-chain shit is going on." << std::endl;
   }
 
   // add a called decl to the current function
@@ -344,6 +345,8 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     if (auto ctor = CE->getConstructor()) {
       addCalledDecl(ctor);
     }
+
+    VisitChildren(CE);
   }
 
   void VisitCXXDeleteExpr(CXXDeleteExpr *DE) {
@@ -361,6 +364,24 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
         }
       }
     }
+    VisitChildren(DE);
+  }
+
+  void VisitExprWithCleanups(ExprWithCleanups *EWC) {
+    auto nEWC = EWC->getNumObjects();
+    auto qty = EWC->getType();
+    if (captureCtorsDtors) {
+      if (auto ty = qty.getTypePtrOrNull()) {
+        if (!ty->isBuiltinType()) {
+          if (auto clDecl = ty->getAsCXXRecordDecl()) {
+            if (auto dtor = clDecl->getDestructor()) {
+              addCalledDecl(dtor);
+            }
+          }
+        }
+      }
+    }
+    VisitChildren(EWC);
   }
 
   void VisitCallExpr(CallExpr *CE) {
@@ -388,7 +409,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
         if (DeclRefExpr *dre = dyn_cast<DeclRefExpr>(cast)) {
           auto decl = dre->getDecl();
           if (decl && decl == currentFunctionPointerVar) {
-            std::cout << "Found call reference to funtion pointer" << std::endl;
+            // std::cout << "Found call reference to funtion pointer" << std::endl;
             for (auto func : functionPointerTargets) {
               addCalledDecl(func);
             }
@@ -515,7 +536,7 @@ bool CallGraph::VisitFunctionDecl(clang::FunctionDecl *FD) {
 
 bool CallGraph::VisitCXXMethodDecl(clang::CXXMethodDecl *MD) {
   if (!MD->isVirtual()) {
-    std::cout << "Method " << MD->getNameAsString() << " not known to be virtual" << std::endl;
+    // std::cout << "Method " << MD->getNameAsString() << " not known to be virtual" << std::endl;
     return true;
   }
 
