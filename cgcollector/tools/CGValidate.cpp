@@ -1,5 +1,6 @@
 #include "config.h"
 
+#include "cxxopts.hpp"
 #include "nlohmann/json.hpp"
 
 #include <cubelib/Cube.h>
@@ -11,44 +12,79 @@
 #define LOGLEVEL 0
 #endif
 
-void readIPCG(char const *const filename, nlohmann::json &callgraph) {
+void readIPCG(std::string &filename, nlohmann::json &callgraph) {
   std::ifstream file(filename);
   file >> callgraph;
+  file.close();
 }
 
-void readCube(char const *const filename, cube::Cube &cube) { cube.openCubeReport(filename); }
+void writeIPCG(std::string &filename, nlohmann::json &callgraph) {
+  std::ofstream file(filename);
+  file << callgraph;
+  file.close();
+}
+
+void readCube(std::string &filename, cube::Cube &cube) { cube.openCubeReport(filename); }
 
 bool isMain(const std::string &name) { return (name.compare("main") == 0); }
 
-int main(int argc, char **argv) {
-  if (argc != 3) {
-    std::cerr << "CGValidate usage:\nPlease pass the ipcg file as the first and the cubex file as the second parameter"
-              << std::endl;
-    return 1;
+void handleOptions(int argc, char **argv, std::string &ipcg, std::string &cubex, bool &fix, std::string &output,
+                   bool &useNoBodyDetection) {
+  cxxopts::Options options("cgvalidate", "Validation of ipcg files using cubex files");
+  options.add_options()("i,ipcg", "ipcg file name", cxxopts::value<std::string>())(
+      "c,cubex", "cubex file name", cxxopts::value<std::string>())("b,useNoBodyDetection",
+                                                                   "handling of existing function definitions",
+                                                                   cxxopts::value<bool>()->default_value("false"))(
+      "f,fix", "fix ipcg using the cubex file", cxxopts::value<bool>()->default_value("false"))(
+      "o,output", "output file for fixed ipcg", cxxopts::value<std::string>()->default_value(""))("h,help",
+                                                                                                  "Print help");
+  cxxopts::ParseResult result = options.parse(argc, argv);
+
+  if (result.count("help")) {
+    std::cout << options.help({""}) << std::endl;
+    exit(0);
   }
+
+  ipcg = result["ipcg"].as<std::string>();
+  cubex = result["cubex"].as<std::string>();
+  fix = result["fix"].as<bool>();
+  output = result["output"].as<std::string>();
+  if (fix && output.compare("") == 0) {
+    output = ipcg + ".fix";
+  }
+
+  std::cout << ipcg << std::endl;
+  std::cout << cubex << std::endl;
+}
+
+int main(int argc, char **argv) {
+  std::string ipcg;
+  std::string cubex;
+  bool fix;
+  std::string output;
+  /**
+   * If we don't have a function's definition, we cannot find any edges anyway.
+   */
+  bool useNoBodyDetection;
+
+  handleOptions(argc, argv, ipcg, cubex, fix, output, useNoBodyDetection);
 
   std::cout << "Running MetaCG::CGValidate (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
             << ")\nGit revision: " << MetaCG_GIT_SHA << std::endl;
 
-  /**
-   * If we don't have a function's definition, we cannot find any edges anyway.
-   * XXX This should be a feature w/ a CLI swtich
-   */
-  bool useNoBodyDetection{false};
-
   nlohmann::json callgraph;
   try {
-    readIPCG(argv[1], callgraph);
+    readIPCG(ipcg, callgraph);
   } catch (std::exception e) {
-    std::cerr << "[Error] ipcg file " << argv[1] << " not readable" << std::endl;
+    std::cerr << "[Error] ipcg file " << ipcg << " not readable" << std::endl;
     return 2;
   }
 
   cube::Cube cube;
   try {
-    readCube(argv[2], cube);
+    readCube(cubex, cube);
   } catch (std::exception e) {
-    std::cerr << "[Error] cube file " << argv[2] << " not readable" << std::endl;
+    std::cerr << "[Error] cube file " << cubex << " not readable" << std::endl;
     return 3;
   }
 
@@ -121,11 +157,23 @@ int main(int argc, char **argv) {
     if (!parentFound && !overriddenFunctionParentFound) {
       std::cout << "[Error] " << nodeName << " does not contain parent " << parentName << std::endl;
       verified = false;
+      if (fix) {
+        callgraph[nodeName]["parents"].push_back(parentName);
+        std::cout << "fixed in " << output << std::endl;
+      }
     }
     if (!calleeFound && !overriddenFunctionCalleeFound) {
       std::cout << "[Error] " << parentName << " does not contain callee " << nodeName << std::endl;
       verified = false;
+      if (fix) {
+        callgraph[parentName]["callees"].push_back(nodeName);
+        std::cout << "fixed in " << output << std::endl;
+      }
     }
+  }
+
+  if (fix) {
+    writeIPCG(output, callgraph);
   }
 
   if (!verified) {

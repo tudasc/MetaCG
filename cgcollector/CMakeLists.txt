@@ -44,11 +44,30 @@ else()
       BUILD_COMMAND       ""
       INSTALL_COMMAND     ""
       TEST_COMMAND        ""
+      GIT_SHALLOW         true
     )
     set(JSON_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/extern/json/single_include)
   endif()
 endif()
 include_directories(${JSON_INCLUDE_PATH})
+
+if(DEFINED CXXOPTS_INCLUDE_PATH)
+  message("CXXOPTS_INCLUDE_PATH predefined: ${CXXOPTS_INCLUDE_PATH}")
+else()
+  message("CXXOPTS library not found, download into extern during make")
+  ExternalProject_Add(cxxopts
+    SOURCE_DIR          ${CMAKE_CURRENT_SOURCE_DIR}/extern/cxxopts
+    GIT_REPOSITORY      "https://github.com/jarro2783/cxxopts.git"
+    GIT_TAG             v2.2.1
+    CONFIGURE_COMMAND   ""
+    BUILD_COMMAND       ""
+    INSTALL_COMMAND     ""
+    TEST_COMMAND        ""
+    GIT_SHALLOW         true
+  )
+set(CXXOPTS_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/extern/cxxopts/include)
+endif()
+include_directories(${CXXOPTS_INCLUDE_PATH})
 
 add_subdirectory(lib)
 add_subdirectory(tools)
