@@ -20,6 +20,10 @@ function(add_clang target)
   )
 endfunction()
 
+
+include(json)
+include(cxxopts)
+
 # TODO Add GoogleTest
 
 
