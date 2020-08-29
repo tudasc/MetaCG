@@ -2,35 +2,31 @@ set(PROJECT_NAME collector-tools)
 set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 
 
-add_executable(cgcollector
-  CGCollector.cpp
-)
+add_executable(cgcollector CGCollector.cpp)
+add_executable(cgmerge CGMerge.cpp)
+add_executable(cgvalidate CGValidate.cpp)
 
-add_executable(cgmerge
-  CGMerge.cpp
-)
 
-add_executable(cgvalidate
-  CGValidate.cpp
-)
+# register_to_clang_tidy(cgcollector)
+add_collector_include(cgcollector)
+add_collector_lib(cgcollector)
+add_config_include(cgcollector)
+add_json(cgcollector)
+default_compile_options(cgcollector)
+
+
+add_config_include(cgmerge)
+add_json(cgmerge)
+
 
 add_cube_includes(cgvalidate)
 add_cube_libraries(cgvalidate)
 add_config_include(cgvalidate)
-
+add_json(cgvalidate)
+add_cxxopts(cgvalidate)
 if(LOGLEVEL)
   target_compile_definitions(cgvalidate PRIVATE LOGLEVEL=${LOGLEVEL})
 endif()
-
-# register_to_clang_tidy(cgcollector)
-
-add_collector_include(cgcollector)
-add_collector_lib(cgcollector)
-add_config_include(cgcollector)
-
-default_compile_options(cgcollector)
-
-add_config_include(cgmerge)
 
 install(
   TARGETS cgcollector cgmerge cgvalidate

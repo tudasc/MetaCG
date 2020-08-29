@@ -30,8 +30,6 @@ mgc-dowload:
     GIT_STRATEGY: clone
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - git clone --depth=1 --branch master https://github.com/nlohmann/json
-    - git clone --depth=1 --branch v2.2.1  https://github.com/jarro2783/cxxopts.git
     - *lb-tear-down
 
 build-cgc:
@@ -45,10 +43,10 @@ build-cgc:
   script:
     - cd cgcollector
     - mkdir build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/cgcollector-test-install -DJSON_INCLUDE_PATH=../json/single_include -DCXXOPTS_INCLUDE_PATH=../cxxopts/include ..
+    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/cgcollector-test-install ..
     - make -j $(cat /proc/cpuinfo | grep processor | wc -l)
     - rm -rf *
-    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/cgcollector-test-install -DJSON_INCLUDE_PATH=../json/single_include -DLOGLEVEL=1 -DCXXOPTS_INCLUDE_PATH=../cxxopts/include ..
+    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/cgcollector-test-install -DLOGLEVEL=1 ..
     - make -j $(cat /proc/cpuinfo | grep processor | wc -l)
     - echo $PWD
     - ls test
