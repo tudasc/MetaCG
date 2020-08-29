@@ -16,6 +16,7 @@ add_collector_include(collectorlib)
 register_to_clang_tidy(collectorlib)
 
 add_clang(collectorlib)
+add_json(collectorlib)
 
 default_compile_options(collectorlib)
 
