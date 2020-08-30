@@ -60,13 +60,13 @@ $executable -i $inputDir/virtual/exp3.ipcg -c $inputDir/virtual/exp3.cubex >> $l
 checkErrorCode 0
 
 #fix
-echo "Invocation: $executable -i $inputDir/fix/miss.ipcg -c $inputDir/fix/0001.cubex -f" >> $logFile
-$executable -i $inputDir/fix/miss.ipcg -c $inputDir/fix/0001.cubex -f >> $logFile
-$executable -i $inputDir/fix/miss.ipcg.fix -c $inputDir/fix/0001.cubex >> $logFile
+echo "Invocation: $executable -i $inputDir/fix/miss.ipcg -c $inputDir/fix/0001.cubex -p" >> $logFile
+$executable -i $inputDir/fix/miss.ipcg -c $inputDir/fix/0001.cubex -p >> $logFile
+$executable -i $inputDir/fix/miss.ipcg.patched -c $inputDir/fix/0001.cubex >> $logFile
 checkErrorCode 0
-echo "Invocation: $executable -i $inputDir/fixvirtual/miss.ipcg -c $inputDir/fixvirtual/exp1.cubex -f" >> $logFile
-$executable -i $inputDir/fixvirtual/miss.ipcg -c $inputDir/fixvirtual/exp1.cubex -f >> $logFile
-$executable -i $inputDir/fixvirtual/miss.ipcg.fix -c $inputDir/fixvirtual/exp1.cubex >> $logFile
+echo "Invocation: $executable -i $inputDir/fixvirtual/miss.ipcg -c $inputDir/fixvirtual/exp1.cubex -p" >> $logFile
+$executable -i $inputDir/fixvirtual/miss.ipcg -c $inputDir/fixvirtual/exp1.cubex -p >> $logFile
+$executable -i $inputDir/fixvirtual/miss.ipcg.patched -c $inputDir/fixvirtual/exp1.cubex >> $logFile
 checkErrorCode 0
 
 
