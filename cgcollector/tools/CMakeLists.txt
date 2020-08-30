@@ -15,10 +15,12 @@ add_json(cgcollector)
 default_compile_options(cgcollector)
 
 
+add_collector_include(cgmerge)
 add_config_include(cgmerge)
 add_json(cgmerge)
 
 
+add_collector_include(cgvalidate)
 add_cube_includes(cgvalidate)
 add_cube_libraries(cgvalidate)
 add_config_include(cgvalidate)
