@@ -3,12 +3,10 @@
 
 #include <clang/AST/Mangle.h>
 
+#include <fstream>
 #include <iostream>
-#include <unordered_set>
 
 void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j) {
-  using FunctionNames = std::unordered_set<std::string>;
-
   for (auto it = ++cg.begin(); it != cg.end(); ++it) {
     if (auto f_decl = llvm::dyn_cast<clang::FunctionDecl>(it->getFirst())) {
       FunctionNames callees;
@@ -19,7 +17,7 @@ void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j) {
         if (auto calleeDecl = llvm::dyn_cast<clang::FunctionDecl>(it->getDecl())) {
           auto calleeNames = getMangledName(calleeDecl);
           for (const auto &n : calleeNames) {
-            //std::cout << mNames.front() << " -- " << n << std::endl;
+            // std::cout << mNames.front() << " -- " << n << std::endl;
           }
           callees.insert(std::begin(calleeNames), std::end(calleeNames));
         }
@@ -57,13 +55,7 @@ void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j) {
 
       // TODO names of fields
       for (const auto &n : mNames) {
-        j[n] = {{"callees", callees},
-                {"isVirtual", isVirtual},
-                {"doesOverride", doesOverride},
-                {"overriddenFunctions", overriddenFunctions},
-                {"overriddenBy", overriddenBy},
-                {"parents", callers},
-                {"hasBody", hasBody}};
+        insertNode(j, n, callees, callers, overriddenBy, overriddenFunctions, isVirtual, doesOverride, hasBody);
       }
     }
   }
@@ -74,4 +66,34 @@ void addMetaInformationToJSON(nlohmann::json &j, const std::string &metaInformat
   for (auto &m : meta) {
     m.second->applyOnJSON(j, m.first, metaInformationName);
   }
+}
+
+void insertDefaultNode(nlohmann::json &callgraph, const std::string &nodeName) {
+  const FunctionNames empty;
+  insertNode(callgraph, nodeName, empty, empty, empty, empty, false, false, false);
+}
+
+void insertNode(nlohmann::json &callgraph, const std::string &nodeName, const FunctionNames &callees,
+                const FunctionNames &callers, const FunctionNames &overriddenBy,
+                const FunctionNames &overriddenFunctions, const bool isVirtual, const bool doesOverride,
+                const bool hasBody) {
+  callgraph[nodeName] = {{"callees", callees},
+                         {"isVirtual", isVirtual},
+                         {"doesOverride", doesOverride},
+                         {"overriddenFunctions", overriddenFunctions},
+                         {"overriddenBy", overriddenBy},
+                         {"parents", callers},
+                         {"hasBody", hasBody}};
+}
+
+void readIPCG(const std::string &filename, nlohmann::json &callgraph) {
+  std::ifstream file(filename);
+  file >> callgraph;
+  file.close();
+}
+
+void writeIPCG(const std::string &filename, const nlohmann::json &callgraph) {
+  std::ofstream file(filename);
+  file << callgraph;
+  file.close();
 }
