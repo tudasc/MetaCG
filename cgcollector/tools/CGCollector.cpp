@@ -1,6 +1,6 @@
 #include "config.h"
 
-#include "JSONManager.h"
+#include "CallgraphToJSON.h"
 #include "MetaCollector.h"
 
 #include "CallGraph.h"

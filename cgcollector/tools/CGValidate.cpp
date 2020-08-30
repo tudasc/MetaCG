@@ -1,13 +1,13 @@
 #include "config.h"
 
+#include "JSONManager.h"
+
 #include "cxxopts.hpp"
-#include "nlohmann/json.hpp"
 
 #include <cubelib/Cube.h>
 
 #include <iostream>
 #include <string>
-#include <unordered_set>
 
 #ifndef LOGLEVEL
 #define LOGLEVEL 0
@@ -45,29 +45,9 @@ void handleOptions(int argc, char **argv, std::string &ipcg, std::string &cubex,
   std::cout << cubex << std::endl;
 }
 
-// TODO using JSONManager
-void readIPCG(const std::string &filename, nlohmann::json &callgraph) {
-  std::ifstream file(filename);
-  file >> callgraph;
-  file.close();
-}
-
-void writeIPCG(const std::string &filename, const nlohmann::json &callgraph) {
-  std::ofstream file(filename);
-  file << callgraph;
-  file.close();
-}
-
-void insertDefaultNode(nlohmann::json &callgraph, const std::string &nodeName) {
-  std::unordered_set<std::string> emptyvec;
-  callgraph[nodeName] = {
-      {"callees", emptyvec},      {"isVirtual", false},  {"doesOverride", false}, {"overriddenFunctions", emptyvec},
-      {"overriddenBy", emptyvec}, {"parents", emptyvec}, {"hasBody", false}};
-}
-
 void readCube(const std::string &filename, cube::Cube &cube) { cube.openCubeReport(filename); }
 
-bool isMain(const std::string &name) { return (name.compare("main") == 0); }
+bool isMain(const std::string &mangledName) { return mangledName.compare("main") == 0; }
 
 bool getOrInsert(nlohmann::json &callgraph, const std::string &nodeName, const bool insertNewNodes) {
   if (callgraph.contains(nodeName)) {

@@ -4,7 +4,7 @@ set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 set(COLLECTORLIB_SOURCES
   src/helper/ASTHelper.cpp
   src/helper/common.cpp
-  src/JSONManager.cpp
+  src/CallgraphToJSON.cpp
   src/CallGraph.cpp
 )
 

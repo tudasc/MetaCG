@@ -1,11 +1,10 @@
 #include "config.h"
 
-#include "nlohmann/json.hpp"
+#include "JSONManager.h"
 
 #include <fstream>
 #include <queue>
 #include <set>
-#include <unordered_set>
 
 #include <iostream>
 
@@ -16,10 +15,10 @@ struct FunctionInfo {
   bool doesOverride;
   int numStatements;
   bool hasBody;
-  std::unordered_set<std::string> callees;
-  std::unordered_set<std::string> parents;
-  std::unordered_set<std::string> overriddenFunctions;
-  std::unordered_set<std::string> overriddenBy;
+  FunctionNames callees;
+  FunctionNames parents;
+  FunctionNames overriddenFunctions;
+  FunctionNames overriddenBy;
 };
 
 typedef std::map<std::string, FunctionInfo> FuncMapT;
@@ -41,13 +40,7 @@ nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename)
   using json = nlohmann::json;
 
   json j;
-  {
-    std::ifstream in(filename);
-    if (!in.is_open()) {
-      exit(-1);
-    }
-    in >> j;
-  }
+  readIPCG(filename, j);
 
   for (json::iterator it = j.begin(); it != j.end(); ++it) {
     auto &fi = getOrInsert(it.key(), functionMap);
@@ -76,8 +69,8 @@ nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename)
   }
 
   // Now the functions map holds all the information
-  std::map<std::string, std::unordered_set<std::string>> potentialTargets;
-  std::map<std::string, std::unordered_set<std::string>> overrides;
+  std::map<std::string, FunctionNames> potentialTargets;
+  std::map<std::string, FunctionNames> overrides;
 
   for (auto [k, funcInfo] : functionMap) {
     if (!funcInfo.isVirtual) {
@@ -186,11 +179,8 @@ int main(int argc, char **argv) {
 
   FuncMapT functionInfoMap;
   nlohmann::json wholeCG;
-  {
-    std::cout << "Reading " << argv[1] << " as wholeCG file\n";
-    std::ifstream file(argv[1]);
-    file >> wholeCG;
-  }
+  std::cout << "Reading " << argv[1] << " as wholeCG file\n";
+  readIPCG(argv[1], wholeCG);
 
   std::cout << "Now starting merge of " << inputFiles.size() << " files." << std::endl;
   for (const auto &filename : inputFiles) {
@@ -253,8 +243,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  std::ofstream file(argv[1]);
-  file << wholeCG;
+  writeIPCG(argv[1], wholeCG);
 
   return 0;
 }
