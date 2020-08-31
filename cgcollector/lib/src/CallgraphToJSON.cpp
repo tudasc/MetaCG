@@ -1,9 +1,8 @@
-#include "JSONManager.h"
+#include "CallgraphToJSON.h"
 #include "helper/common.h"
 
 #include <clang/AST/Mangle.h>
 
-#include <fstream>
 #include <iostream>
 
 void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j) {
@@ -66,34 +65,4 @@ void addMetaInformationToJSON(nlohmann::json &j, const std::string &metaInformat
   for (auto &m : meta) {
     m.second->applyOnJSON(j, m.first, metaInformationName);
   }
-}
-
-void insertDefaultNode(nlohmann::json &callgraph, const std::string &nodeName) {
-  const FunctionNames empty;
-  insertNode(callgraph, nodeName, empty, empty, empty, empty, false, false, false);
-}
-
-void insertNode(nlohmann::json &callgraph, const std::string &nodeName, const FunctionNames &callees,
-                const FunctionNames &callers, const FunctionNames &overriddenBy,
-                const FunctionNames &overriddenFunctions, const bool isVirtual, const bool doesOverride,
-                const bool hasBody) {
-  callgraph[nodeName] = {{"callees", callees},
-                         {"isVirtual", isVirtual},
-                         {"doesOverride", doesOverride},
-                         {"overriddenFunctions", overriddenFunctions},
-                         {"overriddenBy", overriddenBy},
-                         {"parents", callers},
-                         {"hasBody", hasBody}};
-}
-
-void readIPCG(const std::string &filename, nlohmann::json &callgraph) {
-  std::ifstream file(filename);
-  file >> callgraph;
-  file.close();
-}
-
-void writeIPCG(const std::string &filename, const nlohmann::json &callgraph) {
-  std::ofstream file(filename);
-  file << callgraph;
-  file.close();
 }

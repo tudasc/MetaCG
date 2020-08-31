@@ -5,28 +5,12 @@
 #include "helper/common.h"
 
 #include "CallGraph.h"
-
-#include "nlohmann/json.hpp"
+#include "MetaInformation.h"
 
 #include <clang/AST/Decl.h>
 
-#include <iostream>
 #include <memory>
 #include <unordered_map>
-
-class MetaInformation {
-  // std::string name;
-
-  // protected:
-  // MetaInformation(std::string name) : name(name) {}
-
- public:
-  virtual void applyOnJSON(nlohmann::json &json, const std::string &functionName, const std::string &metaFieldName) = 0;
-
-  // std::string getName() {
-  //  return name;
-  //}
-};
 
 class MetaCollector {
   std::string name;
@@ -57,17 +41,6 @@ class MetaCollector {
   std::string getName() { return name; }
 };
 
-class NumberOfStatementsResult final : public MetaInformation {
- public:
-  int numberOfStatements;
-
-  void applyOnJSON(nlohmann::json &json, const std::string &functionName, const std::string &metaFieldName) override {
-    json[functionName][metaFieldName] = numberOfStatements;
-  };
-
-  // NumberOfStatementsResult() : MetaInformation("NumberOfStatements") {}
-};
-
 class NumberOfStatementsCollector final : public MetaCollector {
   std::unique_ptr<MetaInformation> calculateForFunctionDecl(clang::FunctionDecl const *const decl) override {
     std::unique_ptr<NumberOfStatementsResult> result = std::make_unique<NumberOfStatementsResult>();
@@ -81,4 +54,4 @@ class NumberOfStatementsCollector final : public MetaCollector {
   NumberOfStatementsCollector() : MetaCollector("numStatements") {}
 };
 
-#endif
+#endif /* ifndef CGCOLLECTOR_METACOLLECTOR_H */
