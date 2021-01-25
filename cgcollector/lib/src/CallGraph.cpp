@@ -44,6 +44,7 @@ STATISTIC(NumObjCCallEdges, "Number of Objective-C method call edges");
 STATISTIC(NumBlockCallEdges, "Number of block call edges");
 
 void printNamedDeclToConsole(const Decl *D) {
+  std::function<void()> func;
   assert(D);
 #ifndef NDEBUG
   auto fd = llvm::dyn_cast<NamedDecl>(D);
@@ -53,146 +54,350 @@ void printNamedDeclToConsole(const Decl *D) {
 #endif
 }
 
-// Forward
-llvm::SmallSet<FunctionDecl *, 16> getTargetFunctions(Decl *FD);
+auto Location(Decl *decl, Stmt *expr) {
+  const auto &ctx = decl->getASTContext();
+  const auto &man = ctx.getSourceManager();
+  return expr->getSourceRange().getBegin().printToString(man);
+}
 
-class FunctionReturnsFinder : public StmtVisitor<FunctionReturnsFinder> {
+class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
  public:
+  FunctionPointerTracer(CallGraph *g, const llvm::DenseMap<const Decl *, llvm::SmallSet<const Decl *, 8>> &aliases,
+                        CallExpr *ce, llvm::SmallSet<const CallExpr *, 16> closed_ces = {})
+      : closedCes(closed_ces), G(g), CE(ce), aliases(aliases) {
+    closedCes.insert(ce);
+  }
   void VisitChildren(Stmt *S) {
-    for (Stmt *SubStmt : S->children())
-      if (SubStmt) {
-        this->Visit(SubStmt);
+    for (Stmt *subStmt : S->children()) {
+      if (subStmt) {
+        this->Visit(subStmt);
       }
+    }
+  }
+  void VisitCallExpr(CallExpr *ce) {
+    // Visit definition
+    RecursiveLookUpCallExpr(ce);
+    VisitChildren(ce);
+  }
+  void RecursiveLookUpCallExpr(CallExpr *ce) {
+    if (closedCes.find(ce) != closedCes.end()) {
+      return;
+    }
+    if (auto directCallee = ce->getDirectCallee()) {
+      if (auto body = directCallee->getBody()) {
+        {
+          std::size_t i = 0;
+          for (auto argIter = ce->arg_begin(); argIter != ce->arg_end(); argIter++) {
+            if (i < ce->getDirectCallee()->getNumParams()) {
+              auto paramDecl = directCallee->getParamDecl(i);
+              if (auto refDecl = (*argIter)->getReferencedDeclOfCallee()) {
+                aliases[paramDecl].insert(refDecl);
+              }
+            }
+            i++;
+          }
+        }
+        FunctionPointerTracer fpt(G, aliases, ce, closedCes);
+        fpt.Visit(body);
+
+        std::size_t i = 0;
+        for (auto iter = ce->arg_begin(); iter != ce->arg_end(); iter++) {
+          auto directCallee = ce->getDirectCallee();
+
+          VarDecl *varDecl = nullptr;
+          // if an adress of operator is used in argument list
+          if (UnaryOperator *uo = dyn_cast<UnaryOperator>(*iter)) {
+            if (uo->getOpcode() == UO_AddrOf) {
+              if (DeclRefExpr *dre = dyn_cast<DeclRefExpr>(uo->getSubExpr())) {
+                varDecl = dyn_cast<VarDecl>(dre->getDecl());
+              }
+            }
+          } else if (ImplicitCastExpr *ice = dyn_cast<ImplicitCastExpr>(*iter)) {
+            if (DeclRefExpr *dre = dyn_cast<DeclRefExpr>(ice->getSubExpr())) {
+              varDecl = dyn_cast<VarDecl>(dre->getDecl());
+            }
+          }
+
+          if (i < directCallee->getNumParams()) {
+            ParmVarDecl *parm_decl = directCallee->getParamDecl(i);
+            auto targets = fpt.target_params(parm_decl);
+            aliases[varDecl].insert(targets.begin(), targets.end());
+          }
+
+          i++;
+        }
+
+        auto getAssignedVar = [&](CallExpr *ce, ASTContext &c) -> const Decl * {
+          const Decl *result = nullptr;
+          auto parents = c.getParents(*ce);
+          auto pIt = parents.begin();
+          if (auto pDecl = (*pIt).get<Decl>()) {
+            result = dyn_cast<VarDecl>(pDecl);
+          } else if (auto bo = (*pIt).get<BinaryOperator>()) {
+            if (auto lhs = bo->getLHS()) {
+              if (auto uo = dyn_cast<UnaryOperator>(lhs)) {
+                if (auto ice = dyn_cast<ImplicitCastExpr>(uo->getSubExpr())) {
+                  if (auto dre = dyn_cast<DeclRefExpr>(ice->getSubExpr())) {
+                    result = dre->getDecl();
+                  }
+                }
+              } else if (auto ice = dyn_cast<ImplicitCastExpr>(lhs)) {
+                if (auto dre = dyn_cast<DeclRefExpr>(ice->getSubExpr())) {
+                  result = dre->getDecl();
+                }
+              } else if (auto dre = dyn_cast<DeclRefExpr>(lhs)) {
+                result = dre->getDecl();
+              }
+            }
+          }
+          return result;
+        };
+
+        const auto dStmt = getAssignedVar(ce, ce->getCalleeDecl()->getASTContext());
+        const Decl *fVar = dStmt;
+        if (fVar) {
+          auto tr = fpt.getTargetsReturn();
+          aliases[fVar].insert(tr.begin(), tr.end());
+        }
+      }
+    } else {
+      if (auto ice = dyn_cast<ImplicitCastExpr>(*ce->children().begin())) {
+        if (auto dre = dyn_cast<DeclRefExpr>(ice->getSubExpr())) {
+          if (auto decl = dre->getDecl()) {
+            llvm::SmallSet<const FunctionDecl *, 16> result;
+            FindTargetParams(result, decl, decl);
+            for (const auto *fd : result) {
+              addCalledDecl(CE->getCalleeDecl(), fd);
+            }
+          }
+        }
+      }
+    }
   }
   void VisitStmt(Stmt *S) { VisitChildren(S); }
-
-  void VisitDeclStmt(DeclStmt *DS) {
+  void VisitBinaryOperator(BinaryOperator *bo) {
+    if (bo->isAssignmentOp()) {
+      auto lhs = bo->getLHS();
+      auto rhs = bo->getRHS();
+      if (auto declRefExpr = dyn_cast<DeclRefExpr>(lhs)) {
+        if (auto *vDecl = getVarDecl(declRefExpr)) {
+          if (auto ice = dyn_cast<ImplicitCastExpr>(rhs)) {
+            insertFuncAlias(vDecl, ice);
+          } else if (auto ce = dyn_cast<CallExpr>(rhs)) {
+            RecursiveLookUpCallExpr(ce);
+          } else {
+            // std::cout << "RHS is not an ImplicitCastExpr" << std::endl;
+          }
+        } else {
+          // std::cout << "LHS is not a VarDecl" << std::endl;
+        }
+      } else if (auto unaryOp = dyn_cast<UnaryOperator>(lhs)) {
+        if (auto subExpr = unaryOp->getSubExpr()) {
+          if (auto implicitCastExpr = dyn_cast<ImplicitCastExpr>(subExpr)) {
+            if (auto subExpr = implicitCastExpr->getSubExpr()) {
+              if (auto declRefExpr = dyn_cast<DeclRefExpr>(subExpr)) {
+                if (auto vDecl = getVarDecl(declRefExpr)) {
+                  if (auto ice = dyn_cast<ImplicitCastExpr>(rhs)) {
+                    if (auto *se = ice->getSubExpr()) {
+                      if (auto *dre = dyn_cast<DeclRefExpr>(se)) {
+                        aliases[vDecl].insert(dre->getDecl());
+                      }
+                    }
+                  } else if (auto innerCe = dyn_cast<CallExpr>(rhs)) {
+                    RecursiveLookUpCallExpr(innerCe);
+                  } else {
+                    // std::cout << "RHS is not an ImplicitCastExpr" << std::endl;
+                  }
+                } else {
+                  // std::cout << "LHS is not a VarDecl" << std::endl;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    VisitChildren(bo);
+  }
+  void VisitDeclStmt(DeclStmt *ds) {
     /*
      * We check for declarations of function pointer variables that could then be used inside return statements.
      * We compute path-insensitive target sets of function pointers that a function could return.
      */
-    if (DS->isSingleDecl()) {
-      auto decl = DS->getSingleDecl();
-      if (auto vDecl = dyn_cast<VarDecl>(decl)) {
-        if (vDecl->hasInit()) {
-          auto initializer = vDecl->getInit();
-          if (auto ice = dyn_cast<ImplicitCastExpr>(initializer)) {
-            insertFuncAlias(vDecl, ice);
+    if (ds->isSingleDecl()) {
+      if (auto decl = ds->getSingleDecl()) {
+        if (auto vDecl = dyn_cast<VarDecl>(decl)) {
+          if (vDecl->hasInit()) {
+            auto initializer = vDecl->getInit();
+            if (auto ice = dyn_cast<ImplicitCastExpr>(initializer)) {
+              insertFuncAlias(vDecl, ice);
+            } else if (auto innerCe = dyn_cast<CallExpr>(initializer)) {
+              RecursiveLookUpCallExpr(innerCe);
+            }
           }
         }
       }
     } else {
-      std::cerr << "Decl groups are currently unsupported" << std::endl;
-      exit(-1);
+      // std::cerr << "Decl groups are currently unsupported" << std::endl;
+      // exit(-1);
     }
+    VisitChildren(ds);
   }
-
-  void VisitBinaryOperator(BinaryOperator *BO) {
-    if (BO->isAssignmentOp()) {
-      auto rhs = BO->getRHS();
-      auto lhs = BO->getLHS();
-      if (auto vDecl = getVarDecl(dyn_cast<DeclRefExpr>(lhs))) {
-        if (auto ice = dyn_cast<ImplicitCastExpr>(rhs)) {
-          insertFuncAlias(vDecl, ice);
-        } else {
-          std::cout << "RHS is not an ImplicitCastExpr" << std::endl;
-        }
-      } else {
-        std::cout << "LHS is not a VarDecl" << std::endl;
-      }
-    }
-  }
-
   void VisitReturnStmt(ReturnStmt *RS) {
-    auto retExpr = RS->getRetValue();
-    if (CallExpr *ce = dyn_cast<CallExpr>(retExpr)) {
-      if (auto decl = dyn_cast<FunctionDecl>(ce->getDirectCallee())) {
-        auto transitiveTargets = getTargetFunctions(decl);
-        std::cout << "Detected more calls. Inserting " << transitiveTargets.size() << " call targets" << std::endl;
-        targets.insert(transitiveTargets.begin(), transitiveTargets.end());
-      }
-    }
-
-    if (ImplicitCastExpr *ice = dyn_cast<ImplicitCastExpr>(retExpr)) {
-      // This may be what we want
-      Expr *cast = ice->getSubExpr();
-      if (DeclRefExpr *dre = dyn_cast<DeclRefExpr>(cast)) {
-        auto fd = getFunctionDecl(dre);
-        if (fd) {
-          targets.insert(fd);
+    if (auto retExpr = RS->getRetValue()) {
+      if (CallExpr *ce = dyn_cast<CallExpr>(retExpr)) {
+        if (auto decl = dyn_cast<FunctionDecl>(ce->getDirectCallee())) {
+          if (auto body = decl->getBody()) {
+            {
+              std::size_t i = 0;
+              for (auto argIter = ce->arg_begin(); argIter != ce->arg_end(); argIter++) {
+                if (i < ce->getDirectCallee()->getNumParams()) {
+                  auto paramDecl = decl->getParamDecl(i);
+                  if (auto refDecl = (*argIter)->getReferencedDeclOfCallee()) {
+                    aliases[paramDecl].insert(refDecl);
+                  }
+                }
+                i++;
+              }
+            }
+            FunctionPointerTracer fpt(G, aliases, ce, closedCes);
+            fpt.Visit(body);
+            auto tr = fpt.getTargetsReturn();
+            targetsReturn.insert(tr.begin(), tr.end());
+            // std::cout << "Detected more calls. Inserting " << tr.size() << " call targets" << std::endl;
+          }
         }
-        auto vd = getVarDecl(dre);
-        if (vd) {
-          auto aliases = functionAliases[vd];
-          targets.insert(aliases.begin(), aliases.end());
+      } else if (ImplicitCastExpr *ice = dyn_cast<ImplicitCastExpr>(retExpr)) {
+        // This may be what we want
+        Expr *cast = ice->getSubExpr();
+        if (DeclRefExpr *dre = dyn_cast<DeclRefExpr>(cast)) {
+          auto fd = getFunctionDecl(dre);
+          if (auto rfd = dyn_cast<FunctionDecl>(fd)) {
+            targetsReturn.insert(rfd);
+          }
+          auto vd = getVarDecl(dre);
+          if (vd) {
+            llvm::SmallSet<const FunctionDecl *, 16> result;
+            FindTargetParams(result, vd, vd);
+            for (const FunctionDecl *decl : result) {
+              targetsReturn.insert(decl);
+            }
+            // auto aliases = _aliases[vd];
+            // for (auto alias : aliases)
+            //{
+            //  if (auto func_decl = dyn_cast<FunctionDecl>(alias))
+            //  {
+            //    _targets_return.insert(func_decl);
+            //  }
+            //}
+          }
         }
       }
     }
     // XXX Other cases *should* not be of interested to us.
+    VisitChildren(RS);
   }
-
-  llvm::SmallSet<FunctionDecl *, 16> getTarget() { return targets; }
+  // FindTargetParams puts all alias FucntionDecls into result
+  // To avoid endless circle look ups, (e.g. auto f1 = func; auto f2 = f1; f1 = f2) we use a closed list to track the
+  // already processed variables
+  void FindTargetParams(llvm::SmallSet<const FunctionDecl *, 16> &result, const Decl *parm, const Decl *cur,
+                        llvm::SmallSet<const Decl *, 16> closed = {}) {
+    auto alias_iter = aliases.find(cur);
+    if (alias_iter != aliases.end()) {
+      closed.insert(cur);
+      for (auto *new_cur : alias_iter->second) {
+        if (auto func_decl = dyn_cast<FunctionDecl>(new_cur)) {
+          result.insert(func_decl);
+        } else {
+          // If new_cur is in closed, we found a circle, we then simply ignore that declartion, elsewise we recursively
+          // look up the declartion
+          if (closed.find(new_cur) == closed.end()) {
+            FindTargetParams(result, parm, new_cur, closed);
+          }
+        }
+      }
+    }
+  }
+  llvm::SmallSet<const FunctionDecl *, 16> target_params(const ParmVarDecl *parm_decl) {
+    llvm::SmallSet<const FunctionDecl *, 16> result;
+    FindTargetParams(result, parm_decl, parm_decl);
+    return result;
+  }
+  llvm::SmallSet<const FunctionDecl *, 16> getTargetsReturn() const { return targetsReturn; }
 
  private:
-  llvm::SmallSet<FunctionDecl *, 16> targets;
-  llvm::DenseMap<VarDecl *, llvm::SmallSet<FunctionDecl *, 8>> functionAliases;
-
+  // add a called decl to another function
+  void addCalledDecl(const Decl *caller, const Decl *callee) {
+    if (!G->includeInGraph(callee)) {
+      return;
+    }
+    G->getOrInsertNode(caller)->addCallee(G->getOrInsertNode(callee));
+  }
+  auto getAliases() { return aliases; }
   void insertFuncAlias(VarDecl *vDecl, ImplicitCastExpr *ice) {
     auto expr = ice->getSubExpr();
     if (auto dre = dyn_cast<DeclRefExpr>(expr)) {
       insertFuncAlias(vDecl, dre);
     } else {
-      std::cout << "VarDeclInit not a DeclRefExpr" << std::endl;
+      // std::cout << "VarDeclInit not a DeclRefExpr" << std::endl;
     }
   }
-
   void insertFuncAlias(VarDecl *vDecl, DeclRefExpr *dre) {
     if (auto fd = getFunctionDecl(dre)) {
-      if (functionAliases.find(vDecl) == functionAliases.end()) {
-        functionAliases.insert({vDecl, llvm::SmallSet<FunctionDecl *, 8>()});
-      }
-      functionAliases[vDecl].insert(fd);
-      std::cout << "VisitDeclStmt: " << vDecl->getNameAsString() << " aliases " << fd->getNameAsString() << std::endl;
+      aliases[vDecl].insert(fd);
+      // std::cout << "VisitDeclStmt: " << vDecl->getNameAsString() << " aliases " << fd->getNameAsString() <<
+      // std::endl;
     }
   }
-
-  FunctionDecl *getFunctionDecl(DeclRefExpr *dre) {
-    auto decl = dre->getDecl();
-    if (decl && isa<FunctionDecl>(*decl)) {
-      std::cout << "Found function Reference" << std::endl;
-    }
-    return dyn_cast<FunctionDecl>(decl);
-  }
-
   VarDecl *getVarDecl(DeclRefExpr *dre) {
     auto decl = dre->getDecl();
     if (decl && isa<VarDecl>(*decl)) {
-      std::cout << "Found function Reference" << std::endl;
+      // std::cout << "Found function Reference" << std::endl;
     }
     return dyn_cast<VarDecl>(decl);
   }
+  Decl *getFunctionDecl(DeclRefExpr *dre) {
+    auto decl = dre->getDecl();
+    return decl;
+    // if (decl && isa<FunctionDecl>(*decl))
+    //{
+    //  //std::cout << "Found function Reference" << std::endl;
+    //}
+    // return dyn_cast<FunctionDecl>(decl);
+  }
+  
+  llvm::SmallSet<const CallExpr *, 16> closedCes;
+  CallGraph *G;
+  CallExpr *CE;
+  llvm::DenseMap<const Decl *, llvm::SmallSet<const Decl *, 8>> aliases;
+  llvm::DenseMap<const VarDecl *, llvm::SmallSet<const FunctionDecl *, 16>> targetParams;
+  llvm::SmallSet<const FunctionDecl *, 16> targetsReturn;
 };
 
-llvm::SmallSet<FunctionDecl *, 16> getTargetFunctions(Decl *FD) {
-  std::cout << "Running on " << dyn_cast<FunctionDecl>(FD)->getNameAsString() << "\n";
-  FunctionReturnsFinder frf;
-  if (Stmt *Body = FD->getBody()) {
-    frf.Visit(Body);
+template <class T>
+llvm::SmallSet<const FunctionDecl *, 16> getTargetFunctions(CallGraph *g, const T &aliases, CallExpr *ce) {
+  FunctionPointerTracer frf(g, aliases, ce);
+  Decl *de = ce->getDirectCallee();
+  if (de) {
+    if (Stmt *Body = de->getBody()) {
+      frf.Visit(Body);
+    }
   }
-  return frf.getTarget();
+  return frf.getTargetsReturn();
 }
 
 /// A helper class, which walks the AST and locates all the call sites in the
 /// given function body.
 class CGBuilder : public StmtVisitor<CGBuilder> {
   CallGraph *G;
-  CallGraphNode *CallerNode;
+  CallGraphNode *callerNode;
+  llvm::DenseMap<const Decl *, llvm::SmallSet<const Decl *, 8>> aliases;
+  std::vector<std::string> vtaInstances;
 
-  const VarDecl *currentFunctionPointerVar = nullptr;
-  llvm::SmallSet<FunctionDecl *, 16> functionPointerTargets;
+  std::unordered_map<const VarDecl *, llvm::SmallSet<const FunctionDecl *, 16>> functionPointerTargets;
 
  public:
-  CGBuilder(CallGraph *g, CallGraphNode *N) : G(g), CallerNode(N) {}
+  CGBuilder(CallGraph *g, CallGraphNode *N) : G(g), callerNode(N) {}
 
   void VisitStmt(Stmt *S) { VisitChildren(S); }
 
@@ -212,53 +417,96 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
   }
 
   void handleFunctionPointerInArguments(CallExpr *CE) {
-    for (auto argIt = CE->arg_begin(); argIt != CE->arg_end(); ++argIt) {
-      // if an adress of operator is used in argument list
-      if (UnaryOperator *UO = dyn_cast<UnaryOperator>(*argIt)) {
-        if (UO->getOpcode() == UO_AddrOf) {
-          // if the adress in the argument list is taken of a function -> function pointer in argument list
-          if (DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(UO->getSubExpr())) {
-            if (FunctionDecl *FD = dyn_cast<FunctionDecl>(DRE->getDecl())) {
-              // get the called function, which gets the function pointer
-              if (FunctionDecl *CalleeDecl = CE->getDirectCallee()) {
-                // assumption: callee calls the function which is given in argument list
-                addCalledDecl(CalleeDecl, FD);
-                // std::cout << "method " << CalleeDecl->getNameAsString() << " calls " << FD->getNameAsString() << " by
-                // function pointer" << std::endl;
+    std::string loc;
+    if (CE->getCalleeDecl()) {
+      loc = Location(CE->getCalleeDecl(), CE);
+    }
+    // New
+    if (auto directCallee = CE->getDirectCallee()) {
+      {
+        std::size_t i = 0;
+        for (auto argIter = CE->arg_begin(); argIter != CE->arg_end(); argIter++) {
+          if (i < CE->getDirectCallee()->getNumParams()) {
+            auto paramDecl = directCallee->getParamDecl(i);
+            if (auto refDecl = (*argIter)->getReferencedDeclOfCallee()) {
+              aliases[paramDecl].insert(refDecl);
+            }
+          }
+          i++;
+        }
+      }
+      FunctionPointerTracer fpt(G, aliases, CE);
+      if (auto body = directCallee->getBody()) {
+        fpt.Visit(body);
+      }
+      std::size_t i = 0;
+      for (auto argIt = CE->arg_begin(); argIt != CE->arg_end(); ++argIt) {
+        VarDecl *varDecl = nullptr;
+        // if an adress of operator is used in argument list
+        if (UnaryOperator *uo = dyn_cast<UnaryOperator>(*argIt)) {
+          if (uo->getOpcode() == UO_AddrOf) {
+            if (DeclRefExpr *dre = dyn_cast<DeclRefExpr>(uo->getSubExpr())) {
+              // if the adress in the argument list is taken of a function -> function pointer in argument list
+              if (FunctionDecl *fd = dyn_cast<FunctionDecl>(dre->getDecl())) {
+                // get the called function, which gets the function pointer
+                if (FunctionDecl *calleeDecl = CE->getDirectCallee()) {
+                  // assumption: callee calls the function which is given in argument list
+                  if (!calleeDecl->hasBody()) {
+                    addCalledDecl(calleeDecl, fd);
+                  }
+                  // std::cout << "method " << CalleeDecl->getNameAsString() << " calls " << FD->getNameAsString() << "
+                  // by function pointer" << std::endl;
 
-                // TODO what is done in handle indirects of the old cg? this is a poor implementation we dont want to
-                // follow this here if (CalleeDecl && FD) {
-                //  indirects.insert({CalleeDecl, FD});
-                //}
+                  // TODO what is done in handle indirects of the old cg? this is a poor implementation we dont want to
+                  // follow this here if (CalleeDecl && FD) {
+                  //  indirects.insert({CalleeDecl, FD});
+                  //}
+                }
+              } else {
+                varDecl = dyn_cast<VarDecl>(dre->getDecl());
+                if (varDecl && !varDecl->getType()->isFunctionPointerType()) {
+                  varDecl = nullptr;
+                }
               }
-            } else if (VarDecl *varDecl = dyn_cast<VarDecl>(DRE->getDecl())) {
-              if (varDecl->getType()->isFunctionPointerType()) {
-                std::cout << "Found addressed-of VarDecl" << std::endl;
-                // TODO: Determine which functions are assigned to the parameter in the function's definition.
-                //       Within a single TU, this can be done the same way as with the return statements.
-                //       Across TUs is currently neither supported in this case nor in the Return stmt case.
-                //       We have to follow the different symbols along a (potential) call path.
-                //       XXX we could actually use the meta information export: Annotate each function that accepts
-                //       a pointer to a pointer to a function with the set of functions it assigns to that pointer.
-                //       Then the merge tool can construct the edges accordingly.
+            }
+          }
+        } else {
+          if (ImplicitCastExpr *ice = llvm::dyn_cast<ImplicitCastExpr>(*argIt)) {
+            if (DeclRefExpr *dre = llvm::dyn_cast<DeclRefExpr>(ice->getSubExpr())) {
+              // if (auto var_decl = dyn_cast<VarDecl>(dre))
+              //{
+              //  if (var_decl->getType()->isFunctionPointerType())
+              //  {
+              //    var_decl = dyn_cast<VarDecl>(dre->getDecl());
+              //  }
+              //}
+              // else
+              if (FunctionDecl *fd = llvm::dyn_cast<FunctionDecl>(dre->getDecl())) {
+                if (FunctionDecl *cd = CE->getDirectCallee()) {
+                  if (!cd->hasBody()) {
+                    addCalledDecl(cd, fd);
+                  }
+                }
+              } else {
+                varDecl = dyn_cast<VarDecl>(dre->getDecl());
               }
             }
           }
         }
-      } else {
-        if (ImplicitCastExpr *ICE = llvm::dyn_cast<ImplicitCastExpr>(*argIt)) {
-          if (DeclRefExpr *DRE = llvm::dyn_cast<DeclRefExpr>(ICE->getSubExpr())) {
-            if (FunctionDecl *FD = llvm::dyn_cast<FunctionDecl>(DRE->getDecl())) {
-              if (FunctionDecl *CalleeDecl = CE->getDirectCallee()) {
-                addCalledDecl(CalleeDecl, FD);
-              }
+        if (varDecl) {
+          // std::cout << "Found addressed-of VarDecl" << std::endl;
+          if (directCallee->getBody()) {
+            if (directCallee->getNumParams() > i) {
+              ParmVarDecl *parmDecl = directCallee->getParamDecl(i);
+              auto targets = fpt.target_params(parmDecl);
+              functionPointerTargets[varDecl].insert(targets.begin(), targets.end());
             }
           }
         }
+        i++;
       }
     }
   }
-
   void handleFunctionPointerAsReturn(CallExpr *CE, ASTContext &ctx) {
     // TODO:
     // First, identify which functions can be returned from the call target function
@@ -272,7 +520,8 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       std::cerr << "Call graph will be incomplete, cannot determine source for function pointers.\n";
     }
 
-    auto targetFuncSet = getTargetFunctions(calleeDecl);
+    // auto targetFuncSet = getTargetFunctions(calleeDecl);
+    auto targetFuncSet = getTargetFunctions(G, aliases, CE);
 
     const auto isTargetCalledImmediately = [&](CallExpr *ce, ASTContext &c) {
       auto parents = c.getParents(*ce);
@@ -286,7 +535,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     };
 
     if (isTargetCalledImmediately(CE, ctx)) {
-      std::cout << "Target is Called immediately" << std::endl;
+      // std::cout << "Target is Called immediately" << std::endl;
       for (auto tFunc : targetFuncSet) {
         addCalledDecl(tFunc);
       }
@@ -308,21 +557,38 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     const VarDecl *fVar = dStmt;
     if (fVar) {
       // Store the variable that refers to different functions.
-      currentFunctionPointerVar = fVar;
-      functionPointerTargets = targetFuncSet;
+      functionPointerTargets[fVar].insert(targetFuncSet.begin(), targetFuncSet.end());
       return;
     }
 
     std::cout << "Case in which multiple call-chain shit is going on." << std::endl;
   }
 
+  void TraceFunctionPointer(CallExpr *CE) {
+    Decl *D = nullptr;
+    if ((D = getDeclFromCall(CE))) {
+      addCalledDecl(D);
+    }
+    // If we have CE(foo, 1,2) <- CE gets a function pointer as first argument
+    handleFunctionPointerInArguments(CE);
+
+    // If we have foo = CE() <- CE returns a function pointer, then bound to foo
+    if (D) {
+      auto &ctx = D->getASTContext();
+      auto qType = CE->getCallReturnType(ctx);
+      if (qType->isFunctionPointerType()) {
+        handleFunctionPointerAsReturn(CE, ctx);
+      }
+    }
+  }
+
   // add a called decl to the current function
-  void addCalledDecl(Decl *D) {
+  void addCalledDecl(const Decl *D) {
     if (!G->includeInGraph(D))
       return;
 
     CallGraphNode *CalleeNode = G->getOrInsertNode(D);
-    CallerNode->addCallee(CalleeNode);
+    callerNode->addCallee(CalleeNode);
   }
 
   // add a called decl to another function
@@ -350,16 +616,19 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
         handleFunctionPointerAsReturn(CE, ctx);
       }
     }
-
-    if (currentFunctionPointerVar) {
-      if (ImplicitCastExpr *ice = dyn_cast<ImplicitCastExpr>(CE->getCallee())) {
-        // This may be what we want
-        Expr *cast = ice->getSubExpr();
-        if (DeclRefExpr *dre = dyn_cast<DeclRefExpr>(cast)) {
-          auto decl = dre->getDecl();
-          if (decl && decl == currentFunctionPointerVar) {
-            std::cout << "Found call reference to funtion pointer" << std::endl;
-            for (auto func : functionPointerTargets) {
+    if (ImplicitCastExpr *ice = dyn_cast<ImplicitCastExpr>(CE->getCallee())) {
+      // This may be what we want
+      Expr *cast = ice->getSubExpr();
+      if (DeclRefExpr *dre = dyn_cast<DeclRefExpr>(cast)) {
+        auto *decl = dre->getDecl();
+        // if (decl && decl == _currentFunctionPointerVar) {
+        if (decl) {
+          // std::cout << decl->getNameAsString() << "\n";
+          // std::cout << dre->getNameInfo().getAsString() << "\n";
+          auto iter = functionPointerTargets.find(reinterpret_cast<const VarDecl *>(decl));
+          if (iter != functionPointerTargets.end()) {
+            // std::cout << "Found call reference to function pointer" << std::endl;
+            for (auto func : iter->second) {
               addCalledDecl(func);
             }
           }
@@ -393,6 +662,113 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       if (SubStmt) {
         this->Visit(SubStmt);
       }
+  }
+
+  void insertFuncAlias(VarDecl *vDecl, ImplicitCastExpr *ice) {
+    auto expr = ice->getSubExpr();
+    if (auto dre = dyn_cast<DeclRefExpr>(expr)) {
+      insertFuncAlias(vDecl, dre);
+    } else {
+      // std::cout << "VarDeclInit not a DeclRefExpr" << std::endl;
+    }
+  }
+  FunctionDecl *getFunctionDecl(DeclRefExpr *dre) {
+    auto decl = dre->getDecl();
+    if (decl && isa<FunctionDecl>(*decl)) {
+      // std::cout << "Found function Reference" << std::endl;
+    }
+    return dyn_cast<FunctionDecl>(decl);
+  }
+  void insertFuncAlias(VarDecl *vDecl, DeclRefExpr *dre) {
+    if (auto fd = getFunctionDecl(dre)) {
+      aliases[vDecl].insert(fd);
+      // std::cout << "VisitDeclStmt: " << vDecl->getNameAsString() << " aliases " << fd->getNameAsString() <<
+      // std::endl;
+    }
+  }
+  VarDecl *getVarDecl(DeclRefExpr *dre) {
+    auto decl = dre->getDecl();
+    if (decl && isa<VarDecl>(*decl)) {
+      // std::cout << "Found function Reference" << std::endl;
+    }
+    return dyn_cast<VarDecl>(decl);
+  }
+  void VisitBinaryOperator(BinaryOperator *bo) {
+    if (bo->isAssignmentOp()) {
+      auto lhs = bo->getLHS();
+      auto rhs = bo->getRHS();
+      if (auto declRefExpr = dyn_cast<DeclRefExpr>(lhs)) {
+        if (auto *vDecl = getVarDecl(declRefExpr)) {
+          if (auto ice = dyn_cast<ImplicitCastExpr>(rhs)) {
+            insertFuncAlias(vDecl, ice);
+          } else if (auto ce = dyn_cast<CallExpr>(rhs)) {
+            // RecursiveLookUpCallExpr(ce);
+          } else {
+            // std::cout << "RHS is not an ImplicitCastExpr" << std::endl;
+          }
+        } else {
+          // std::cout << "LHS is not a VarDecl" << std::endl;
+        }
+      } else if (auto unaryOp = dyn_cast<UnaryOperator>(lhs)) {
+        if (auto subExpr = unaryOp->getSubExpr()) {
+          if (auto implicitCastExpr = dyn_cast<ImplicitCastExpr>(subExpr)) {
+            if (auto subExpr = implicitCastExpr->getSubExpr()) {
+              if (auto declRefExpr = dyn_cast<DeclRefExpr>(subExpr)) {
+                if (auto vDecl = getVarDecl(declRefExpr)) {
+                  if (auto ice = dyn_cast<ImplicitCastExpr>(rhs)) {
+                    if (auto *se = ice->getSubExpr()) {
+                      if (auto *dre = dyn_cast<DeclRefExpr>(se)) {
+                        aliases[vDecl].insert(dre->getDecl());
+                      }
+                    }
+                  } else if (auto innerCe = dyn_cast<CallExpr>(rhs)) {
+                    // RecursiveLookUpCallExpr(inner_ce);
+                  } else {
+                    // std::cout << "RHS is not an ImplicitCastExpr" << std::endl;
+                  }
+                } else {
+                  // std::cout << "LHS is not a VarDecl" << std::endl;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    VisitChildren(bo);
+  }
+  void VisitDeclStmt(DeclStmt *ds) {
+    /*
+     * We check for declarations of function pointer variables that could then be used inside return statements.
+     * We compute path-insensitive target sets of function pointers that a function could return.
+     */
+    if (ds->isSingleDecl()) {
+      if (auto rd = dyn_cast<CXXRecordDecl>(ds->getSingleDecl())) {
+        vtaInstances.push_back(rd->getQualifiedNameAsString());
+      }
+      if (auto decl = ds->getSingleDecl()) {
+        if (auto vDecl = dyn_cast<VarDecl>(decl)) {
+          if (vDecl->hasInit()) {
+            auto initializer = vDecl->getInit();
+            if (auto ice = dyn_cast<ImplicitCastExpr>(initializer)) {
+              insertFuncAlias(vDecl, ice);
+            } else if (auto innerCe = dyn_cast<CallExpr>(initializer)) {
+              // RecursiveLookUpCallExpr(innerCe);
+            }
+          }
+        }
+      }
+    } else {
+      // std::cerr << "Decl groups are currently unsupported" << std::endl;
+      // exit(-1);
+    }
+    VisitChildren(ds);
+  }
+  void VisitCXXNewExpr(CXXNewExpr *new_expr) {
+    if (auto *rd = new_expr->getAllocatedType()->getAsCXXRecordDecl()) {
+      vtaInstances.push_back(rd->getQualifiedNameAsString());
+    }
+    VisitChildren(new_expr);
   }
 };
 
@@ -478,14 +854,14 @@ bool CallGraph::VisitFunctionDecl(clang::FunctionDecl *FD) {
     // its address taken.
     addNodeForDecl(FD, FD->isGlobal());
   } else {
-    //std::cout << "Not including in graph " << FD->getNameAsString() << std::endl;
+    // std::cout << "Not including in graph " << FD->getNameAsString() << std::endl;
   }
   return true;
 }
 
 bool CallGraph::VisitCXXMethodDecl(clang::CXXMethodDecl *MD) {
   if (!MD->isVirtual()) {
-    std::cout << "Method " << MD->getNameAsString() << " not known to be virtual" << std::endl;
+    // std::cout << "Method " << MD->getNameAsString() << " not known to be virtual" << std::endl;
     return true;
   }
 
