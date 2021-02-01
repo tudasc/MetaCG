@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include <loadImbalance/LIRetriever.h>
 
 #include "libIPCG/IPCGReader.h"
 

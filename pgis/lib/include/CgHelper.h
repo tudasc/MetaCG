@@ -82,6 +82,11 @@ CgNodePtrSet getReachableConjunctions(CgNodePtrSet markerPositions);
  */
 void reachableFromMainAnalysis(CgNodePtr mainNode);
 
+/**
+ * Calculates the inclusive statement count for every node which is reachable from mainNode and saves in the node field
+ */
+void calculateInclusiveStatementCounts(CgNodePtr mainNode);
+
 bool reachableFrom(CgNodePtr parentNode, CgNodePtr childNode);
 CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,
                                      const std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> &init);

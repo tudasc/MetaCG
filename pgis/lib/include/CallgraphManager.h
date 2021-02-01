@@ -49,8 +49,13 @@ class CallgraphManager {
  public:
   ~CallgraphManager() {}
 
+  // legacy version without inclusive time
   void putEdge(const std::string &parentName, std::string parentFilename, int parentLine, std::string childName,
                unsigned long long numberOfCalls, double timeInSeconds, int threadId, int procId);
+
+  void putEdge(const std::string &parentName, std::string parentFilename, int parentLine, std::string childName,
+               unsigned long long numberOfCalls, double timeInSeconds, double inclusiveTimeInSeconds, int threadId,
+               int procId);
 
   void putNumberOfStatements(std::string name, int numberOfStatements, bool hasBody);
   void putNumberOfSamples(std::string name, unsigned long long numberOfSamples);

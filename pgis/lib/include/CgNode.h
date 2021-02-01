@@ -102,9 +102,6 @@ class CgNode {
 
   const CgNodePtrSet &getSpantreeParents() const { return spantreeParents; }
 
-  // Load imbalance relevant data?
-  std::vector<CgLocation> getCgLocation() const;
-
   // PGOE stuff
   unsigned long long getExpectedNumberOfSamples() const;
   int getNumberOfUnwindSteps() const;
@@ -162,7 +159,6 @@ class CgNode {
 
   // note that these metrics are based on a profile and might be pessimistic
   unsigned long long expectedNumberOfSamples;
-  std::vector<CgLocation> cgLoc;
 
   bool reachable;
 

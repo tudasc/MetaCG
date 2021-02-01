@@ -35,6 +35,8 @@ static const IntOpt debugLevel{"debug", "0"};
 static const StringOpt extrapConfig{"extrap", ""};
 static const StringOpt outDirectory{"out-file", "out"};
 
+static const StringOpt loadImbalanceConfig{"load-imbalance", ""};
+
 template <typename OptObject>
 struct OptHelper {
   typedef typename std::remove_reference<typename std::remove_cv<OptObject>::type>::type::type type;

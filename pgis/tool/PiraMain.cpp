@@ -8,7 +8,9 @@
 
 #include "ExtrapEstimatorPhase.h"
 #include "IPCGEstimatorPhase.h"
-
+#include <loadImbalance/LIRetriever.h>
+#include <loadImbalance/OnlyMainEstimatorPhase.h>
+#include <loadImbalance/LIEstimatorPhase.h>
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
@@ -17,6 +19,7 @@
 
 #include <cstdlib>
 #include <fstream>
+#include <nlohmann/json.hpp>
 #include <vector>
 
 namespace pgis::options {
@@ -112,7 +115,8 @@ int main(int argc, char **argv) {
     ("w, whitelist", "Filter nodes through given whitelist", cxxopts::value<std::string>()->default_value(""))
     (debugLevel.cliName, "Whether debug messages should be printed", optType(debugLevel)->default_value("0"))
     (scorepOut.cliName, "Write instrumentation file with Score-P syntax", optType(scorepOut)->default_value("false"))
-    (ipcgExport.cliName, "Export the profiling info into IPCG file", optType(ipcgExport)->default_value("false"));
+    (ipcgExport.cliName, "Export the profiling info into IPCG file", optType(ipcgExport)->default_value("false"))
+    (loadImbalanceConfig.cliName, "File path to configuration file for load imbalance detection", optType(loadImbalanceConfig)->default_value(""));
   // clang-format on
 
   Config c;
@@ -153,6 +157,7 @@ int main(int argc, char **argv) {
   checkAndSet<bool>(scorepOut.cliName, result, useScorepFormat);
   std::string disposable;
   checkAndSet<std::string>(extrapConfig.cliName, result, disposable);
+  checkAndSet<std::string>(loadImbalanceConfig.cliName, result, disposable);
 
   if (printDebug == 1) {
     spdlog::set_level(spdlog::level::debug);
@@ -192,11 +197,23 @@ int main(int argc, char **argv) {
   if (stringEndsWith(ipcgFullPath, ".ipcg")) {
     IPCGAnal::buildFromJSON(cg, ipcgFullPath, &c);
     if (applyStaticFilter) {
-      registerEstimatorPhases(cg, &c, true, 0);
-      cg.applyRegisteredPhases();
-      cg.removeAllEstimatorPhases();
-    }
+      // load imbalance detection
+      // ========================
+      if(result.count(loadImbalanceConfig.cliName)) {
+        spdlog::get("console")->info("Using trivial static analysis for load imbalance detection (OnlyMainEstimatorPhase");
+        // static instrumentation -> OnlyMainEstimatorPhase
+        if (!result.count("cube")) {
+          cg.registerEstimatorPhase(new LoadImbalance::OnlyMainEstimatorPhase());
+          cg.applyRegisteredPhases();
 
+          return EXIT_SUCCESS;
+        }
+      } else {
+        registerEstimatorPhases(cg, &c, true, 0);
+        cg.applyRegisteredPhases();
+        cg.removeAllEstimatorPhases();
+      }
+    }
   }
 
   if (result.count("cube")) {
@@ -214,10 +231,37 @@ int main(int argc, char **argv) {
       exit(-1);
     }
 
-    c.totalRuntime = c.actualRuntime;
-    /* This runtime threshold currently unused */
-    registerEstimatorPhases(cg, &c, false, runTimeThreshold);
-    console->info("Registered estimator phases");
+    // load imbalance detection
+    // ========================
+    if(result.count(loadImbalanceConfig.cliName)) {
+      spdlog::get("console")->info("Using load imbalance detection mode");
+      auto &gConfig = pgis::config::GlobalConfig::get();
+      try {
+        LoadImbalance::Config liConfig =
+            LoadImbalance::Config::generateFromJSON(gConfig.getAs<std::string>(loadImbalanceConfig.cliName));
+        cg.registerEstimatorPhase(new LoadImbalance::LIEstimatorPhase(liConfig));
+      } catch(nlohmann::json::exception& e) {
+        spdlog::get("errconsole")->error("Unable to parse load imbalance configuration file: {}", e.what());
+        return EXIT_FAILURE;
+      }
+
+      cg.applyRegisteredPhases();
+
+      // should be set for working load imbalance detection
+      if (result.count("export")) {
+        console->info("Exporting load imbalance data to IPCG file.");
+        IPCGAnal::annotateJSON(cg.getCallgraph(&CallgraphManager::get()), ipcgFullPath, LoadImbalance::LIRetriever());
+      } else {
+        spdlog::get("console")->warn("--export-flag is highly recommended for load imbalance detection");
+      }
+
+      return EXIT_SUCCESS;
+    } else {
+      c.totalRuntime = c.actualRuntime;
+      /* This runtime threshold currently unused */
+      registerEstimatorPhases(cg, &c, false, runTimeThreshold);
+      console->info("Registered estimator phases");
+    }
   }
 
   if (result["extrap"].count()) {

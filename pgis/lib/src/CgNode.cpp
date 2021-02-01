@@ -1,6 +1,7 @@
 
 #include "CgNode.h"
 #include "CgHelper.h"
+#include <loadImbalance/LIMetaData.h>
 
 #define RENDER_DEPS 0
 
@@ -17,7 +18,7 @@ CgNode::CgNode(std::string function)
       parentNodes(),
       childNodes(),
       spantreeParents() {
-  /* Attah meta data container */
+  /* Attach meta data container */
   auto bpd = new BaseProfileData();
   bpd->setRuntimeInSeconds(.0);
   bpd->setInclusiveRuntimeInSeconds(.0);
@@ -28,6 +29,11 @@ CgNode::CgNode(std::string function)
   pod->setNumberOfStatements(0);
   pod->setComesFromCube(false);
   this->addMetaData(pod);
+
+  auto lid = new LoadImbalance::LIMetaData();
+  lid->setNumberOfInclusiveStatements(0);
+  lid->setVirtual(false);
+  this->addMetaData(lid);
 }
 
 void CgNode::addChildNode(CgNodePtr childNode) { childNodes.insert(childNode); }
@@ -153,7 +159,7 @@ void CgNode::dumpToDot(std::ofstream &outStream, int procNum) {
   } else {
     for (auto parentNode : parentNodes) {
       int numCalls = 0;
-      if (!parentNode->getCgLocation().empty()) {
+      if (!parentNode->get<BaseProfileData>()->getCgLocation().empty()) {
         std::string edgeColor = "";
         if (isSpantreeParent(parentNode)) {
           edgeColor = ", color=red, fontcolor=red";
@@ -162,9 +168,9 @@ void CgNode::dumpToDot(std::ofstream &outStream, int procNum) {
           edgeColor = ", color=blue, fontcolor=blue";
         }
 
-        for (auto cgLoc : this->getCgLocation()) {
-          if (cgLoc.get_procId() == procNum) {
-            numCalls += cgLoc.get_numCalls();
+        for (auto cgLoc : this->get<BaseProfileData>()->getCgLocation()) {
+          if (cgLoc.getProcId() == procNum) {
+            numCalls += cgLoc.getNumCalls();
           }
         }
 
@@ -245,8 +251,6 @@ bool CgNode::isUnwoundSample() const { return state == CgNodeState::UNWIND_SAMPL
 bool CgNode::isUnwoundInstr() const { return state == CgNodeState::UNWIND_INSTR; }
 
 int CgNode::getNumberOfUnwindSteps() const { return numberOfUnwindSteps; }
-
-std::vector<CgLocation> CgNode::getCgLocation() const { return cgLoc; }
 
 unsigned long long CgNode::getExpectedNumberOfSamples() const { return expectedNumberOfSamples; }
 
