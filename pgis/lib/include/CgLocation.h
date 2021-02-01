@@ -3,20 +3,23 @@
 
 class CgLocation {
  public:
-  CgLocation(double time, int threadId, int procId, unsigned long long numCalls) {
+  CgLocation(double time, double inclusiveTime, int threadId, int procId, unsigned long long numCalls) {
     this->time = time;
     this->threadId = threadId;
     this->procId = procId;
     this->numCalls = numCalls;
+    this->inclusiveTime = inclusiveTime;
   }
 
-  inline double get_time() const { return time; }
-  inline int get_threadId() const { return threadId; }
-  inline int get_procId() const { return procId; }
-  inline unsigned long long get_numCalls() const { return numCalls; }
+  inline double getTime() const { return time; }
+  inline double getInclusiveTime() const { return inclusiveTime; }
+  inline int getThreadId() const { return threadId; }
+  inline int getProcId() const { return procId; }
+  inline unsigned long long getNumCalls() const { return numCalls; }
 
  private:
   double time;
+  double inclusiveTime;
   int threadId;
   int procId;
   unsigned long long numCalls;

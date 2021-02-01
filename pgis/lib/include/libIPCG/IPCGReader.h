@@ -6,6 +6,7 @@
 
 #include "nlohmann/json.hpp"
 
+#include <loadImbalance/LIMetaData.h>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -25,16 +26,19 @@ struct FunctionInfo {
   std::unordered_set<std::string> parents;
   std::unordered_set<std::string> overriddenFunctions;
   std::unordered_set<std::string> overriddenBy;
+
+  // load imbalance detection data
+  bool visited = false;
+  bool irrelevant = false;
 };
 
 typedef std::unordered_map<std::string, FunctionInfo> FuncMapT;
-
-void build(CallgraphManager &cg, std::string filepath, Config *c);
 
 int addRuntimeDispatchCallsFromCubexProfile(CallgraphManager &ipcg, CallgraphManager &cubecg);
 
 FuncMapT::mapped_type &getOrInsert(std::string key, FuncMapT &functions);
 void buildFromJSON(CallgraphManager &cgm, std::string filename, Config *c);
+void buildFromJSON(CallgraphManager &cgm, json &jk, Config *c);
 
 template <typename PropRetriever>
 int doAnnotate(Callgraph &cg, PropRetriever retriever, json &j) {
@@ -117,12 +121,7 @@ struct ExperimentParamData {
   std::map<std::string, double> runtimes;
 };
 
-void to_json(json &j, const PlacementInfo &pi) {
-  spdlog::get("console")->trace("to_json from PlacementInfo called");
-  j["env"]["id"] = pi.platformId;
-  j["experiments"] = json::array({{"params", pi.params}, {"runtimes", pi.runtimeInSecondsPerProcess}});
-  j["model"] = json{"text", pi.modelString};
-}
+void to_json(json &j, const PlacementInfo &pi);
 
 struct PlacementInfoRetriever {
   bool handles(const CgNodePtr n) {
@@ -135,12 +134,12 @@ struct PlacementInfoRetriever {
 
   PlacementInfo value(const CgNodePtr n) {
     const auto runtimePerProcess = [](CgNodePtr n) {
-      auto locations = n->getCgLocation();
+      auto locations = n->get<pira::BaseProfileData>()->getCgLocation();
       std::map<std::string, double> rtPerProc;
       for (auto loc : locations) {
-        std::string k("P" + std::to_string(loc.get_procId()));
+        std::string k("P" + std::to_string(loc.getProcId()));
         auto &t = rtPerProc[k];
-        t += loc.get_time();
+        t += loc.getTime();
       }
       return rtPerProc;
     };

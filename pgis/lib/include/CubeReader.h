@@ -65,16 +65,6 @@ const auto cMetric = [](std::string &&name, auto &&cube, auto cn) {
 };
 const auto time = [](auto &&cube, auto cn) { return cMetric(std::string("time"), cube, cn); };
 const auto visits = [](auto &&cube, auto cn) { return cMetric(std::string("visits"), cube, cn); };
-
-const auto cubeInclTime = [](auto &&cube, auto cn) {
-  double inclusiveTime = 0;
-  for (auto t : cube.get_thrdv()) {
-    inclusiveTime += cube.get_sev(cube.get_met("time"), cube::CUBE_CALCULATE_INCLUSIVE, cn,
-                                  cube::CUBE_CALCULATE_INCLUSIVE, t, cube::CUBE_CALCULATE_INCLUSIVE);
-  }
-  return inclusiveTime;
-};
-
 const auto getName = [](const bool mangled, const auto cn) {
   if (mangled) {
     return mangledName(cn);
@@ -106,8 +96,28 @@ const auto attNrCall = [](auto &cube, auto cnode, auto n) {
 
 const auto attInclRuntime = [](auto &cube, auto cnode, auto n) {
   if (has<BaseProfileData>(n)) {
-    get<BaseProfileData>(n)->setInclusiveRuntimeInSeconds(cubeInclTime(cube, cnode));
-  }
+    // fill CgLocations and calculate inclusive runtime
+    double cumulatedTime = 0;
+    for (cube::Thread* thread : cube.get_thrdv()) {
+      int threadId = thread->get_id();
+      int procId = thread->get_parent()->get_id();
+
+      unsigned long long numberOfCalls = (unsigned long long)cube.get_sev(cube.get_met("visits"), cnode, thread);
+
+      double inclusiveTime =  cube.get_sev(cube.get_met("time"), cube::CUBE_CALCULATE_INCLUSIVE, cnode,
+                                    cube::CUBE_CALCULATE_INCLUSIVE, thread, cube::CUBE_CALCULATE_INCLUSIVE);
+
+      double timeInSeconds = cube.get_sev(cube.get_met("time"), cnode, thread);
+
+      CgLocation cgLoc(timeInSeconds, inclusiveTime, threadId, procId, numberOfCalls);
+      get<BaseProfileData>(n)->pushCgLocation(cgLoc);
+
+      cumulatedTime += inclusiveTime;
+    }
+
+    get<BaseProfileData>(n)->setInclusiveRuntimeInSeconds(cumulatedTime);
+    spdlog::get("console")->info("Attaching inclusive runtime {} to node {}", cumulatedTime, n->getFunctionName());
+  } else
   if (has<PiraOneData>(n)) {
     get<PiraOneData>(n)->setComesFromCube();
   }
