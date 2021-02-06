@@ -21,8 +21,8 @@ class LIMetaData : public pira::MetaData {
  public:
   static constexpr const char *key() { return "LIMetaData"; }
 
-  void setNumberOfInclusiveStatements(int inclusiveStatements) { this->inclusiveStatements = inclusiveStatements; }
-  int getNumberOfInclusiveStatements() const { return this->inclusiveStatements; }
+  void setNumberOfInclusiveStatements(pira::Statements inclusiveStatements) { this->inclusiveStatements = inclusiveStatements; }
+  pira::Statements getNumberOfInclusiveStatements() const { return this->inclusiveStatements; }
 
   bool isVirtual() const { return this->isVirtualFunction; }
   void setVirtual(bool isVirtual) { this->isVirtualFunction = isVirtual; }
