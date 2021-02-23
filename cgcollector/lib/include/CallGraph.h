@@ -45,9 +45,13 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
   /// This is a virtual root node that has edges to all the functions.
   CallGraphNode *Root;
 
+  bool captureCtorsDtors {false};
+
  public:
   CallGraph();
   ~CallGraph();
+
+  void setCaptureCtorsDtors(bool capture) { captureCtorsDtors = capture; }
 
   /// Populate the call graph with the functions in the given
   /// declaration.

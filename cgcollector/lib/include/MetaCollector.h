@@ -43,7 +43,10 @@ class MetaCollector {
     for (auto &node : cg) {
       if (node.first) {
         if (auto f = llvm::dyn_cast<clang::FunctionDecl>(node.first)) {
-          values[getMangledName(f)] = calculateForFunctionDecl(f);
+          auto names = getMangledName(f);
+          for (const auto n : names) {
+            values[n] = calculateForFunctionDecl(f);
+          }
         }
       }
     }

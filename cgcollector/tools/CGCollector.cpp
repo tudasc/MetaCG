@@ -13,6 +13,7 @@
 #include <string>
 
 static llvm::cl::OptionCategory cgc("CGCollector");
+static llvm::cl::opt<bool> captureCtorsDtors("capture-ctors-dtors", llvm::cl::desc("Capture calls to Constructors and Destructors"), llvm::cl::cat(cgc));
 
 typedef std::vector<MetaCollector *> MetaCollectorVector;
 
@@ -21,6 +22,7 @@ class CallGraphCollectorConsumer : public clang::ASTConsumer {
   CallGraphCollectorConsumer(MetaCollectorVector mcs, nlohmann::json &j) : _mcs(mcs), _json(j) {}
 
   virtual void HandleTranslationUnit(clang::ASTContext &Context) {
+    callGraph.setCaptureCtorsDtors(captureCtorsDtors);
     callGraph.TraverseDecl(Context.getTranslationUnitDecl());
 
     for (const auto mc : _mcs) {

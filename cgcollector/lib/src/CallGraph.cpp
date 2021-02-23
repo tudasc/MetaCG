@@ -396,8 +396,10 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
 
   std::unordered_map<const VarDecl *, llvm::SmallSet<const FunctionDecl *, 16>> functionPointerTargets;
 
+  bool captureCtorsDtors;
+
  public:
-  CGBuilder(CallGraph *g, CallGraphNode *N) : G(g), callerNode(N) {}
+  CGBuilder(CallGraph *g, CallGraphNode *N, bool captureCtorsDtors) : G(g), CallerNode(N), captureCtorsDtors(captureCtorsDtors) {}
 
   void VisitStmt(Stmt *S) { VisitChildren(S); }
 
@@ -597,6 +599,14 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       return;
 
     G->getOrInsertNode(Caller)->addCallee(G->getOrInsertNode(Callee));
+  }
+
+  void VisitCXXConstructExpr(CXXConstructExpr *CE) {
+    if (auto ctor = CE->getConstructor()) {
+      if (captureCtorsDtors) {
+        addCalledDecl(ctor);
+      }
+    }
   }
 
   void VisitCallExpr(CallExpr *CE) {
@@ -812,7 +822,7 @@ void CallGraph::addNodeForDecl(Decl *D, bool IsGlobal) {
   CallGraphNode *Node = getOrInsertNode(D);
 
   // Process all the calls by this function as well.
-  CGBuilder builder(this, Node);
+  CGBuilder builder(this, Node, captureCtorsDtors);
   if (Stmt *Body = D->getBody())
     builder.Visit(Body);
 }
