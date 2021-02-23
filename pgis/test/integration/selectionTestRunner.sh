@@ -10,6 +10,7 @@ outDir=$PWD/out$testSuite
 logDir=$PWD/logging
 logFile=${logDir}/${testSuite}.log
 
+
 rm -rf $outDir && mkdir $outDir
 rm -rf $logDir && mkdir ${logDir}
 
