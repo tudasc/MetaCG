@@ -202,7 +202,7 @@ test-dynamic-pgis:
     - cd pgis
     - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
-    - ./runner.sh dynamic
+    - ./selectionTestRunner.sh dynamic
     
 test-imbalance-pgis:
   stage: integration-test
@@ -216,7 +216,7 @@ test-imbalance-pgis:
     - cd pgis
     - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
-    - ./runner.sh imbalance
+    - ./selectionTestRunner.sh imbalance
 
 install-pgis:
   stage: install

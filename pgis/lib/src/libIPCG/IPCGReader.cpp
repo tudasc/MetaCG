@@ -52,17 +52,6 @@ void buildFromJSON(CallgraphManager &cgm, json &j, Config *c) {
 
   FuncMapT functions;
 
-  spdlog::get("console")->info("Reading IPCG file from: {}", filename);
-  json j;
-  {
-    std::ifstream in(filename);
-    if (!in.is_open()) {
-      spdlog::get("errconsole")->error("Opening file failed.");
-      exit(-1);
-    }
-    in >> j;
-  }
-
   const auto setIfNotNull = [&](auto &field, auto jsonValue, const std::string key) {
     auto jsonField = jsonValue.value()[key];
     if (!jsonField.is_null()) {
