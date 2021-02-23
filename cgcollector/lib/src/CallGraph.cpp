@@ -564,7 +564,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       return;
     }
 
-    std::cout << "Case in which multiple call-chain shit is going on." << std::endl;
+    // std::cout << "Case in which multiple call-chain shit is going on." << std::endl;
   }
 
   void TraceFunctionPointer(CallExpr *CE) {
@@ -610,6 +610,8 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     if (auto ctor = CE->getConstructor()) {
       addCalledDecl(ctor);
     }
+
+    VisitChildren(CE);
   }
 
   void VisitCXXDeleteExpr(CXXDeleteExpr *DE) {
@@ -627,6 +629,24 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
         }
       }
     }
+    VisitChildren(DE);
+  }
+
+  void VisitExprWithCleanups(ExprWithCleanups *EWC) {
+    auto nEWC = EWC->getNumObjects();
+    auto qty = EWC->getType();
+    if (captureCtorsDtors) {
+      if (auto ty = qty.getTypePtrOrNull()) {
+        if (!ty->isBuiltinType()) {
+          if (auto clDecl = ty->getAsCXXRecordDecl()) {
+            if (auto dtor = clDecl->getDestructor()) {
+              addCalledDecl(dtor);
+            }
+          }
+        }
+      }
+    }
+    VisitChildren(EWC);
   }
 
   void VisitCallExpr(CallExpr *CE) {
