@@ -1,5 +1,6 @@
 
 
+
 function check_selection {
   testSuite=$1
 	testNo=$(echo $2 | cut -d'.' -f 1)
@@ -41,3 +42,22 @@ function error_exit {
 	echo "An error occured with argument $1"
 	exit -1
 }
+
+function check_and_print {
+	fails=$1
+	testFile=$2
+	errCode=$3
+	thisFail=0
+	if [ ${errCode} -ne 0 ]; then
+		fails=$((fails+1))
+		thisFail=1
+	fi
+	if [ $thisFail -eq 1 ]; then
+		failStr=' FAIL'
+	else
+	  failStr=' PASS'
+	fi
+	echo "Test ${testFile} | ${failStr}"
+	return ${fails}
+}
+

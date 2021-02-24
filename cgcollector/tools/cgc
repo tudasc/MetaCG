@@ -21,7 +21,7 @@ fi
 
 shoulddebug=false
 
-collectorCommand="cgcollector --extra-arg=-I$clangpath/lib/clang/$clangversion/include $target"
+collectorCommand="cgcollector --capture-ctors-dtors --extra-arg=-I$clangpath/lib/clang/$clangversion/include $target"
 
 if [ -z "$shoulddebug" ]; then
   echo "Running command $collectorCommand"

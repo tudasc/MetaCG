@@ -4,12 +4,13 @@ cgcollectorExe=cgcollector
 testerExe=cgsimpletester
 cgmergeExe=cgmerge
 
+mkdir -p log
 
 #if [ command -v $testerExe ]; then
 if [[ $(type -P $testerExe) ]]; then
 	echo "The CGSimpleTester binary (cgsimpletester) could not be found in path, testing with relative path."
 fi
-stat ../build/test/cgsimpletester > /dev/null
+stat ../build/test/cgsimpletester >>log/testrun.log 2>&1 
 if [ $? -eq 1 ]; then
 	echo "The file seems also non-present in ../build/test. Aborting test. Failure! Please build the tester first."
 	exit 1
@@ -20,7 +21,7 @@ fi
 if [[ $(type -P $cgcollectorExe) ]]; then
 	echo "No cgcollector in PATH. Trying relative path ../build/tools"
 fi
-stat ../build/tools/cgcollector > /dev/null
+stat ../build/tools/cgcollector >>log/testrun.log 2>&1 
 if [ $? -eq 1 ]; then
 	echo "The file seems also non-present in ../build/tools. Aborting test. Failure! Please build the collector first."
 	exit 1
@@ -31,7 +32,7 @@ fi
 if [[ $(type -P $cgmergeExe) ]]; then
 	echo "No cgcollector in PATH. Trying relative path ../build/tools"
 fi
-stat ../build/tools/cgmerge > /dev/null
+stat ../build/tools/cgmerge >>log/testrun.log 2>&1 
 if [ $? -eq 1 ]; then
 	echo "The file seems also non-present in ../build/tools. Aborting test. Failure! Please build the collector first."
 	exit 1
@@ -48,30 +49,51 @@ multiTests=(0042 0043 0044 0050 0053)
 fails=0
 
 # Single File 
-echo "Running single file tests"
+echo " --- Running single file tests ---"
 for tc in ${tests[@]}; do
 	echo "Running test ${tc}"
   tfile=$tc.cpp
 	gfile=$tc.ipcg
 	tgt=$tc.gtipcg
 
-	$cgcollectorExe ./input/$tfile --
-	$testerExe ./input/$tgt ./input/$gfile
+	$cgcollectorExe ./input/singleTU/$tfile -- >>log/testrun.log 2>&1 
+	$testerExe ./input/singleTU/$tgt ./input/singleTU/$gfile >>log/testrun.log 2>&1 
 
 	if [ $? -ne 0 ]; then 
 		echo "Failure for file: $gfile. Keeping generated file for inspection" 
 		fails=$((fails + 1))
   else 
-		rm ./input/$gfile 
+		rm ./input/singleTU/$gfile 
 	fi
 
-	echo "Failuers: $fails"
+done
+	echo "Single file test failuers: $fails"
+
+# Single File and full Ctor/Dtor coverage
+echo " --- Running single file full ctor/dtor tests ---"
+for tc in ./input/allCtorDtor/*.cpp ; do
+	echo "Running test ${tc}"
+  tfile=$tc
+	gfile="${tc/cpp/ipcg}"
+	tgt="${tc/cpp/gtipcg}"
+
+  $cgcollectorExe --capture-ctors-dtors $tfile -- >>log/testrun.log 2>&1 
+	#$cgcollectorExe --capture-ctors-dtors $tfile -- 
+	$testerExe $tgt $gfile >>log/testrun.log 2>&1 
+
+	if [ $? -ne 0 ]; then 
+		echo "Failure for file: $gfile. Keeping generated file for inspection" 
+		fails=$((fails + 1))
+  else 
+		rm $gfile 
+	fi
 
 done
+	echo "Single file test failuers: $fails"
 
 
 # Multi File
-echo "Running multi file tests"
+echo " --- Running multi file tests ---"
 for tc in ${multiTests[@]}; do
 	echo "Running test ${tc}"
 	# Input files
@@ -88,34 +110,34 @@ for tc in ${multiTests[@]}; do
 	gtCombFile="${tc}_combined.gtipcg"
 
   # Translation-unit-local
-	$cgcollectorExe ./input/$taFile --
-	$cgcollectorExe ./input/$tbFile --
+	$cgcollectorExe ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
+	$cgcollectorExe ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
 
-	$testerExe ./input/${ipcgTaFile} ./input/${gtaFile}
+	$testerExe ./input/multiTU/${ipcgTaFile} ./input/multiTU/${gtaFile} >>log/testrun.log 2>&1
 	aErr=$?
-	$testerExe ./input/${ipcgTbFile} ./input/${gtbFile}
+	$testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile} >>log/testrun.log 2>&1
 	bErr=$?
 
 	combFile=${tc}_combined.ipcg
-	echo "null" > ./input/${combFile}
+	echo "null" > ./input/multiTU/${combFile}
 
-	${cgmergeExe} ./input/${combFile} ./input/${ipcgTaFile} ./input/${ipcgTbFile} 
+	${cgmergeExe} ./input/multiTU/${combFile} ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile} >>log/testrun.log 2>&1 
 	mErr=$?
-	${testerExe} ./input/${combFile} ./input/${gtCombFile} 
+	${testerExe} ./input/multiTU/${combFile} ./input/multiTU/${gtCombFile} >>log/testrun.log 2>&1 
 	cErr=$?
 
-	echo "$aErr or $bErr or $mErr or $cErr"
+	#echo "$aErr or $bErr or $mErr or $cErr"
 
 	if [[ ${aErr} -ne 0 || ${bErr} -ne 0 || ${mErr} -ne 0 || ${cErr} -ne 0 ]]; then 
 		echo "Failure for file: $combFile. Keeping generated file for inspection" 
 		fails=$((fails + 1))
   else 
-		rm ./input/$combFile ./input/${ipcgTaFile} ./input/${ipcgTbFile}
+		rm ./input/multiTU/$combFile ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile}
 	fi
 
-	echo "Failuers: $fails"
-
 done
+
+echo "Multi file test failuers: $fails"
 
 echo -e "$fails failures occured when running tests"
 exit $fails

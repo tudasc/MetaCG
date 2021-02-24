@@ -17,7 +17,6 @@
 
 #include "cxxopts.hpp"
 
-#include <cstdlib>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <vector>
@@ -125,7 +124,7 @@ int main(int argc, char **argv) {
   bool shouldExport {false};
   bool useScorepFormat {false};
   bool extrapRuntimeOnly {false};
-  int printDebug { 0};
+  int printDebug{0};
 
   auto result = opts.parse(argc, argv);
 
@@ -135,6 +134,7 @@ int main(int argc, char **argv) {
   }
 
   /* Options - populated into global config */
+  /* XXX These are currently only here for reference, while refactoring the options part of PGIS. */
   //checkAndSet<std::string>("other", result, c.otherPath);
   //checkAndSet<int>("samples", result, CgConfig::samplesPerSecond);
   //checkAndSet<double>("ref", result, c.referenceRuntime);
@@ -194,7 +194,7 @@ int main(int argc, char **argv) {
     cg.setScorepOutputFormat();
   }
 
-  if (stringEndsWith(ipcgFullPath, ".ipcg")) {
+  if (stringEndsWith(ipcgFullPath, ".ipcg") || stringEndsWith(ipcgFullPath, ".mcg")) {
     IPCGAnal::buildFromJSON(cg, ipcgFullPath, &c);
     if (applyStaticFilter) {
       // load imbalance detection

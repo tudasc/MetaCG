@@ -8,8 +8,10 @@ add_executable(cgsimpletester
 
 register_to_clang_tidy(cgsimpletester)
 
-default_compile_options(cgsimpletester)
+add_json(cgsimpletester)
 
+
+default_compile_options(cgsimpletester)
 
 install(
   TARGETS cgsimpletester

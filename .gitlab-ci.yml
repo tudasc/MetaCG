@@ -30,7 +30,6 @@ mgc-dowload:
     GIT_STRATEGY: clone
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - git clone https://github.com/nlohmann/json
     - *lb-tear-down
 
 build-cgc:
@@ -44,10 +43,10 @@ build-cgc:
   script:
     - cd cgcollector
     - mkdir build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/cgcollector-test-install -DJSON_INCLUDE_PATH=../json/single_include ..
+    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/cgcollector-test-install ..
     - make -j $(cat /proc/cpuinfo | grep processor | wc -l)
     - rm -rf *
-    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/cgcollector-test-install -DJSON_INCLUDE_PATH=../json/single_include -DLOGLEVEL=1 ..
+    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/cgcollector-test-install -DLOGLEVEL=1 ..
     - make -j $(cat /proc/cpuinfo | grep processor | wc -l)
     - echo $PWD
     - ls test
@@ -161,7 +160,21 @@ test-static-pgis:
     - cd pgis
     - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
-    - ./runner.sh static
+    - ./selectionTestRunner.sh static
+
+test-basic-pgis:
+  stage: integration-test
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd pgis
+    - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
+    - cd test/integration
+    - ./basicTestRunner.sh
 
 test-modeling-pgis:
   stage: integration-test
@@ -175,7 +188,7 @@ test-modeling-pgis:
     - cd pgis
     - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
-    - ./runner.sh modeling
+    - ./selectionTestRunner.sh modeling
 
 test-dynamic-pgis:
   stage: integration-test
@@ -189,7 +202,7 @@ test-dynamic-pgis:
     - cd pgis
     - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
-    - ./runner.sh dynamic
+    - ./selectionTestRunner.sh dynamic
     
 test-imbalance-pgis:
   stage: integration-test
@@ -203,7 +216,7 @@ test-imbalance-pgis:
     - cd pgis
     - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
-    - ./runner.sh imbalance
+    - ./selectionTestRunner.sh imbalance
 
 install-pgis:
   stage: install

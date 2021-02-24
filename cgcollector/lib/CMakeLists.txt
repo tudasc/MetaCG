@@ -4,7 +4,7 @@ set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 set(COLLECTORLIB_SOURCES
   src/helper/ASTHelper.cpp
   src/helper/common.cpp
-  src/JSONManager.cpp
+  src/CallgraphToJSON.cpp
   src/CallGraph.cpp
 )
 
@@ -16,6 +16,7 @@ add_collector_include(collectorlib)
 register_to_clang_tidy(collectorlib)
 
 add_clang(collectorlib)
+add_json(collectorlib)
 
 default_compile_options(collectorlib)
 

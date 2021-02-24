@@ -52,30 +52,42 @@ void buildFromJSON(CallgraphManager &cgm, json &j, Config *c) {
 
   FuncMapT functions;
 
+  const auto setIfNotNull = [&](auto &field, auto jsonValue, const std::string key) {
+    auto jsonField = jsonValue.value()[key];
+    if (!jsonField.is_null()) {
+      field = jsonField.template get<typename std::remove_reference<decltype(field)>::type>();
+    } else {
+      spdlog::get("errconsole")->warn("Tried to read non-existing field {} for node.", key);
+    }
+  };
+
   for (json::iterator it = j.begin(); it != j.end(); ++it) {
     auto &fi = getOrInsert(it.key(), functions);
 
+    /* This is structural and basic information */
     fi.functionName = it.key();
-    int ns = it.value()["numStatements"].get<int>();
-    bool hasBody = it.value()["hasBody"].get<bool>();
-    fi.hasBody = hasBody;
-    // ns == -1 means that there was no definition.
-    if (ns > -1) {
-      fi.numStatements = ns;
-      fi.isVirtual = it.value()["isVirtual"].get<bool>();
-      fi.doesOverride = it.value()["doesOverride"].get<bool>();
-    }
-    auto callees = it.value()["callees"].get<std::set<std::string>>();
+    setIfNotNull(fi.hasBody, it, "hasBody");
+    setIfNotNull(fi.isVirtual, it, "isVirtual");
+    setIfNotNull(fi.doesOverride, it, "doesOverride");
+
+    std::set<std::string> callees;
+    setIfNotNull(callees, it, "callees");
     fi.callees.insert(callees.begin(), callees.end());
 
-    auto ofs = it.value()["overriddenFunctions"].get<std::set<std::string>>();
+    std::set<std::string> ofs;
+    setIfNotNull(ofs, it, "overriddenFunctions");
     fi.overriddenFunctions.insert(ofs.begin(), ofs.end());
 
-    auto overriddenBy = it.value()["overriddenBy"].get<std::set<std::string>>();
+    std::set<std::string> overriddenBy;
+    setIfNotNull(overriddenBy, it, "overriddenBy");
     fi.overriddenBy.insert(overriddenBy.begin(), overriddenBy.end());
 
-    auto ps = it.value()["parents"].get<std::set<std::string>>();
+    std::set<std::string> ps;
+    setIfNotNull(ps, it, "parents");
     fi.parents.insert(ps.begin(), ps.end());
+
+    /* Meta information, will be refactored any way */
+    setIfNotNull(fi.numStatements, it, "numStatements");
 
     // this needs to be done in a more generic way in the future!
     if (!it.value()["meta"].is_null() && !it.value()["meta"]["LIData"].is_null()) {

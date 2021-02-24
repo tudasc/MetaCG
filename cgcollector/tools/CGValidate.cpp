@@ -1,4 +1,8 @@
-#include "nlohmann/json.hpp"
+#include "config.h"
+
+#include "JSONManager.h"
+
+#include "cxxopts.hpp"
 
 #include <cubelib/Cube.h>
 
@@ -9,35 +13,98 @@
 #define LOGLEVEL 0
 #endif
 
-void readIPCG(char const *const filename, nlohmann::json &callgraph) {
-  std::ifstream file(filename);
-  file >> callgraph;
+void handleOptions(int argc, char **argv, std::string &ipcg, std::string &cubex, bool &patch, std::string &output,
+                   bool &useNoBodyDetection, bool &insertNewNodes) {
+  cxxopts::Options options("cgvalidate", "Validation of ipcg files using cubex files");
+  options.add_options()("i,ipcg", "ipcg file name", cxxopts::value<std::string>())(
+      "c,cubex", "cubex file name", cxxopts::value<std::string>())("b,useNoBodyDetection",
+                                                                   "handling of existing function definitions",
+                                                                   cxxopts::value<bool>()->default_value("false"))(
+      "p,patch", "patch ipcg using the cubex file", cxxopts::value<bool>()->default_value("false"))(
+      "o,output", "output file for patched ipcg", cxxopts::value<std::string>()->default_value(""))(
+      "n,noNewNodes", "disable adding of new nodes by patch", cxxopts::value<bool>()->default_value("false"))(
+      "h,help", "Print help");
+  cxxopts::ParseResult result = options.parse(argc, argv);
+
+  if (result.count("help")) {
+    std::cout << options.help({""}) << std::endl;
+    exit(0);
+  }
+
+  ipcg = result["ipcg"].as<std::string>();
+  cubex = result["cubex"].as<std::string>();
+  patch = result["patch"].as<bool>();
+  output = result["output"].as<std::string>();
+  if (patch && output.compare("") == 0) {
+    output = ipcg + ".patched";
+  }
+  useNoBodyDetection = result["useNoBodyDetection"].as<bool>();
+  insertNewNodes = !(result["noNewNodes"].as<bool>());
+
+  std::cout << ipcg << std::endl;
+  std::cout << cubex << std::endl;
 }
 
-void readCube(char const *const filename, cube::Cube &cube) { cube.openCubeReport(filename); }
+void readCube(const std::string &filename, cube::Cube &cube) { cube.openCubeReport(filename); }
 
-bool isMain(const std::string &name) { return (name.compare("main") == 0); }
+bool isMain(const std::string &mangledName) { return mangledName.compare("main") == 0; }
+
+bool getOrInsert(nlohmann::json &callgraph, const std::string &nodeName, const bool insertNewNodes) {
+  if (callgraph.contains(nodeName)) {
+    return true;
+  } else {
+    if (insertNewNodes) {
+      insertDefaultNode(callgraph, nodeName);
+      std::cout << "[Warning] Inserted previously undeclared node " << nodeName << std::endl;
+      return true;
+    } else {
+      std::cout << "[Warning] Not inserted undeclared node " << nodeName << std::endl;
+      return false;
+    }
+  }
+}
+
+void patchCallgraph(nlohmann::json &callgraph, const std::string &nodeName, const std::string &valueName,
+                    const std::string &mode, const std::string &outputFileName, const bool insertNewNodes) {
+  auto nExists = getOrInsert(callgraph, nodeName, insertNewNodes);
+  auto valueExists = getOrInsert(callgraph, valueName, insertNewNodes);
+
+  if (nExists && valueExists) {
+    callgraph[nodeName][mode].push_back(valueName);
+    std::cout << "patched in " << outputFileName << std::endl;
+  }
+}
 
 int main(int argc, char **argv) {
-  if (argc != 3) {
-    std::cerr << "pleaes pass ipcg file as first and cubex file as second parameter" << std::endl;
-    return 1;
-  }
+  std::string ipcg;
+  std::string cubex;
+  bool patch;
+  std::string output;
+  /**
+   * If we don't have a function's definition, we cannot find any edges anyway.
+   */
+  bool useNoBodyDetection;
+  bool insertNewNodes;
+
+  handleOptions(argc, argv, ipcg, cubex, patch, output, useNoBodyDetection, insertNewNodes);
+
+  std::cout << "Running MetaCG::CGValidate (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
+            << ")\nGit revision: " << MetaCG_GIT_SHA << std::endl;
 
   nlohmann::json callgraph;
   try {
-    readIPCG(argv[1], callgraph);
+    readIPCG(ipcg, callgraph);
   } catch (std::exception e) {
-    std::cerr << "ipcg not readable" << std::endl;
-    return 1;
+    std::cerr << "[Error] ipcg file " << ipcg << " not readable" << std::endl;
+    return 2;
   }
 
   cube::Cube cube;
   try {
-    readCube(argv[2], cube);
+    readCube(cubex, cube);
   } catch (std::exception e) {
-    std::cerr << "cube not readable" << std::endl;
-    return 1;
+    std::cerr << "[Error] cube file " << cubex << " not readable" << std::endl;
+    return 3;
   }
 
   // iterate over cube to check if edges are in callgraph
@@ -60,8 +127,14 @@ int main(int argc, char **argv) {
     }
 
     // get callgraph elements
+    if (!getOrInsert(callgraph, parentName, insertNewNodes)) {
+      continue;
+    }
     auto parent = callgraph[parentName];
     auto callees = parent["callees"];
+    if (!getOrInsert(callgraph, nodeName, insertNewNodes)) {
+      continue;
+    }
     auto node = callgraph[nodeName];
     auto parents = node["parents"];
 
@@ -75,6 +148,9 @@ int main(int argc, char **argv) {
     bool overriddenFunctionCalleeFound = false;
     const auto &overriddenFunctions = node["overriddenFunctions"];
     for (const std::string overriddenFunctionName : overriddenFunctions) {
+      if (!getOrInsert(callgraph, overriddenFunctionName, insertNewNodes)) {
+        continue;
+      }
       const auto &overriddenFunction = callgraph[overriddenFunctionName];
       const auto &parents = overriddenFunction["parents"];
       overriddenFunctionParentFound = (std::find(parents.begin(), parents.end(), parentName) != parents.end());
@@ -88,21 +164,50 @@ int main(int argc, char **argv) {
         break;
     }
 
+    if (useNoBodyDetection) {
+      bool pHasBody{true};
+      bool cHasBody{true};
+      if (parent["hasBody"].is_null()) {
+        std::cerr << "[Warning] No CGCollector data for " << parentName << " in IPCG." << std::endl;
+      } else {
+        pHasBody = parent["hasBody"].get<bool>();
+      }
+      if (node["hasBody"].is_null()) {
+        std::cerr << "[Warning] No CGCollector data for " << nodeName << " in IPCG." << std::endl;
+      } else {
+        cHasBody = node["hasBody"].get<bool>();
+      }
+      calleeFound = calleeFound || !pHasBody;  // if no body av, how should we know?
+      parentFound = parentFound || !cHasBody;  // if no body av, how should we know?
+    }
+
     // reporting
     if (!parentFound && !overriddenFunctionParentFound) {
-      std::cout << "[ERROR] " << nodeName << " does not contain parent " << parentName << std::endl;
+      std::cout << "[Error] " << nodeName << " does not contain parent " << parentName << std::endl;
       verified = false;
+      if (patch) {
+        patchCallgraph(callgraph, nodeName, parentName, "parents", output, insertNewNodes);
+      }
     }
     if (!calleeFound && !overriddenFunctionCalleeFound) {
-      std::cout << "[ERROR] " << parentName << " does not contain callee " << nodeName << std::endl;
+      std::cout << "[Error] " << parentName << " does not contain callee " << nodeName << std::endl;
       verified = false;
+      if (patch) {
+        patchCallgraph(callgraph, parentName, nodeName, "callees", output, insertNewNodes);
+      }
     }
   }
 
+  /*
+   * finalize
+   */
   if (!verified) {
+    if (patch) {
+      writeIPCG(output, callgraph);
+    }
     return 1;
+  } else {
+    std::cout << "callgraph does match cube file" << std::endl;
+    return 0;
   }
-
-  std::cout << "callgraph does match cube file" << std::endl;
-  return 0;
 }

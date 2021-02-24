@@ -25,30 +25,50 @@ fi
 
 #general
 ## wrong input files
-$executable $inputDir/general/0001.cubex $inputDir/general/0001.cubex >> $logFile
-checkErrorCode 1
-$executable $inputDir/general/0001.ipcg $inputDir/general/0001.ipcg >> $logFile
-checkErrorCode 1
+echo "Invocation: $executable -i $inputDir/general/0001.cubex -c $inputDir/general/0001.cubex" >> $logFile
+$executable -i $inputDir/general/0001.cubex -c $inputDir/general/0001.cubex >> $logFile
+checkErrorCode 2
+echo "Invocation: $executable -i $inputDir/general/0001.ipcg -c $inputDir/general/0001.ipcg" >> $logFile
+$executable -i $inputDir/general/0001.ipcg -c $inputDir/general/0001.ipcg >> $logFile
+checkErrorCode 3
 
 ## missing edges
-$executable $inputDir/general/0001_missedcallee.ipcg $inputDir/general/0001.cubex >> $logFile
+echo "Invocation: $executable -i $inputDir/general/0001_missedcallee.ipcg -c $inputDir/general/0001.cubex" >> $logFile
+$executable -i $inputDir/general/0001_missedcallee.ipcg -c $inputDir/general/0001.cubex >> $logFile
 checkErrorCode 1
-$executable $inputDir/general/0001_missedparent.ipcg $inputDir/general/0001.cubex >> $logFile
+echo "Invocation: $executable -i $inputDir/general/0001_missedparent.ipcg -c $inputDir/general/0001.cubex" >> $logFile
+$executable -i $inputDir/general/0001_missedparent.ipcg -c $inputDir/general/0001.cubex >> $logFile
 checkErrorCode 1
-$executable $inputDir/general/0001_missedboth.ipcg $inputDir/general/0001.cubex >> $logFile
+echo "Invocation: $executable -i $inputDir/general/0001_missedboth.ipcg -c $inputDir/general/0001.cubex" >> $logFile
+$executable -i $inputDir/general/0001_missedboth.ipcg -c $inputDir/general/0001.cubex >> $logFile
 checkErrorCode 1
 
 ## successfull run
-$executable $inputDir/general/0001.ipcg $inputDir/general/0001.cubex >> $logFile
+echo "Invocation $executable -i $inputDir/general/0001.ipcg -c $inputDir/general/0001.cubex" >> $logFile
+$executable -i $inputDir/general/0001.ipcg -c $inputDir/general/0001.cubex >> $logFile
 checkErrorCode 0
 
 #virtual
-$executable $inputDir/virtual/exp1.ipcg $inputDir/virtual/exp1.cubex >> $logFile
+echo "Invocation: $executable -i $inputDir/virtual/exp1.ipcg -c $inputDir/virtual/exp1.cubex" >> $logFile
+$executable -i $inputDir/virtual/exp1.ipcg -c $inputDir/virtual/exp1.cubex >> $logFile
 checkErrorCode 0
-$executable $inputDir/virtual/exp2.ipcg $inputDir/virtual/exp2.cubex >> $logFile
+echo "Invocation: $executable -i $inputDir/virtual/exp2.ipcg -c $inputDir/virtual/exp2.cubex" >> $logFile
+$executable -i $inputDir/virtual/exp2.ipcg -c $inputDir/virtual/exp2.cubex >> $logFile
 checkErrorCode 0
-$executable $inputDir/virtual/exp3.ipcg $inputDir/virtual/exp3.cubex >> $logFile
+echo "Invocation: $executable -i $inputDir/virtual/exp3.ipcg -c $inputDir/virtual/exp3.cubex" >> $logFile
+$executable -i $inputDir/virtual/exp3.ipcg -c $inputDir/virtual/exp3.cubex >> $logFile
 checkErrorCode 0
+
+#fix
+echo "Invocation: $executable -i $inputDir/fix/miss.ipcg -c $inputDir/fix/0001.cubex -p" >> $logFile
+$executable -i $inputDir/fix/miss.ipcg -c $inputDir/fix/0001.cubex -p >> $logFile
+$executable -i $inputDir/fix/miss.ipcg.patched -c $inputDir/fix/0001.cubex >> $logFile
+checkErrorCode 0
+echo "Invocation: $executable -i $inputDir/fixvirtual/miss.ipcg -c $inputDir/fixvirtual/exp1.cubex -p" >> $logFile
+$executable -i $inputDir/fixvirtual/miss.ipcg -c $inputDir/fixvirtual/exp1.cubex -p >> $logFile
+$executable -i $inputDir/fixvirtual/miss.ipcg.patched -c $inputDir/fixvirtual/exp1.cubex >> $logFile
+checkErrorCode 0
+
 
 # finalize
 exit $fails

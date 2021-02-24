@@ -20,8 +20,19 @@ function(add_clang target)
   )
 endfunction()
 
+
+include(json)
+include(cxxopts)
+
 # TODO Add GoogleTest
 
+
+function(add_config_include target)
+	target_include_directories(${target}
+		PUBLIC
+		"${PROJECT_BINARY_DIR}"
+	)
+endfunction()
 
 # include directories
 function(add_collector_include target)
@@ -46,7 +57,6 @@ function(default_compile_options target)
     -Wpointer-arith -Wcast-align -Wcast-qual
     -fno-rtti
   )
-
   #-Werror not possible because of warnings caused by clang
 
   if(ARG_PRIVATE_FLAGS)
