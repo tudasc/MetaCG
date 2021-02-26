@@ -42,11 +42,11 @@ mkdir build && cd build
 # TODO This should be done just a little less fragile
 command -v locate "/Python.h"
 if [ $? -eq 1 ]; then
-	pythonheader=$(dirname $(which python))/../include/python3.7m
+	pythonheader=$(dirname $(which python3))/../include/python3.8
 else
 	pythonlocation=$(locate "/Python.h" | grep "python3.")
 	if [ -z $pythonlocation ]; then
-	  pythonheader=$(dirname $(which python))/../include/python3.7m
+	  pythonheader=$(dirname $(which python3))/../include/python3.8
 	else
     pythonheader=$(dirname $pythonlocation)
 	fi
