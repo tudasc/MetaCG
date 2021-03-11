@@ -1,1 +1,54 @@
-{"_ZN13MyClassDerive3fooEv":{"callees":[],"doesOverride":true,"hasBody":true,"isVirtual":true,"numStatements":0,"overriddenBy":["_ZN19MyClassDeriveDerive3fooEv"],"overriddenFunctions":["_ZN7MyClass3fooEv"],"parents":["main"]},"_ZN19MyClassDeriveDerive3fooEv":{"callees":[],"doesOverride":true,"hasBody":true,"isVirtual":true,"numStatements":0,"overriddenBy":[],"overriddenFunctions":["_ZN13MyClassDerive3fooEv"],"parents":[]},"_ZN7MyClass3fooEv":{"callees":[],"doesOverride":false,"hasBody":true,"isVirtual":true,"numStatements":0,"overriddenBy":["_ZN13MyClassDerive3fooEv"],"overriddenFunctions":[],"parents":[]},"main":{"callees":["_ZN13MyClassDerive3fooEv"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":5,"overriddenBy":[],"overriddenFunctions":[],"parents":[]}}
+{
+    "_ZN13MyClassDerive3fooEv": {
+        "callees": [],
+        "doesOverride": true,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [
+            "_ZN19MyClassDeriveDerive3fooEv"
+        ],
+        "overriddenFunctions": [
+            "_ZN7MyClass3fooEv"
+        ],
+        "parents": [
+            "main"
+        ]
+    },
+    "_ZN19MyClassDeriveDerive3fooEv": {
+        "callees": [],
+        "doesOverride": true,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [
+            "_ZN13MyClassDerive3fooEv"
+        ],
+        "parents": []
+    },
+    "_ZN7MyClass3fooEv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [
+            "_ZN13MyClassDerive3fooEv"
+        ],
+        "overriddenFunctions": [],
+        "parents": []
+    },
+    "main": {
+        "callees": [
+            "_ZN13MyClassDerive3fooEv"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 5,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    }
+}

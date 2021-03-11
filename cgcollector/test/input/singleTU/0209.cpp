@@ -6,12 +6,12 @@ struct A {
 };
 using func_t = void (A::*)();
 func_t get_f(bool b) {
-  func_t foo;
-  foo = &A::foo;
+  func_t fooPtr;
+  fooPtr = &A::foo;
   if (b) {
     return &A::bar;
   }
-  return foo;
+  return fooPtr;
 }
 int main() {
   A a;

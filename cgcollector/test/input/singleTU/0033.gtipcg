@@ -1,1 +1,56 @@
-{"_Z3bari":{"callees":["_Z8sentineli"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":6,"overriddenBy":[],"overriddenFunctions":[],"parents":["main"]},"_Z3fooi":{"callees":["_Z8sentineli"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":2,"overriddenBy":[],"overriddenFunctions":[],"parents":["main"]},"_Z8sentineli":{"callees":[],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":1,"overriddenBy":[],"overriddenFunctions":[],"parents":["_Z3fooi","_Z3bari"]},"main":{"callees":["_Z3bari","_Z3fooi"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":10,"overriddenBy":[],"overriddenFunctions":[],"parents":[]}}
+{
+    "_Z3bari": {
+        "callees": [
+            "_Z8sentineli"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 6,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "_Z3fooi": {
+        "callees": [
+            "_Z8sentineli"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 2,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "_Z8sentineli": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z3fooi",
+            "_Z3bari"
+        ]
+    },
+    "main": {
+        "callees": [
+            "_Z3bari",
+            "_Z3fooi"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 10,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    }
+}

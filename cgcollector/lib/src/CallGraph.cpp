@@ -33,6 +33,7 @@
 #include <cassert>
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include <iostream>
 
@@ -59,6 +60,93 @@ auto Location(Decl *decl, Stmt *expr) {
   const auto &man = ctx.getSourceManager();
   return expr->getSourceRange().getBegin().printToString(man);
 }
+
+const Type *resolveToUnderlyingType(const Type *ty) {
+  if (!ty->isPointerType()) {
+    return ty;
+    // std::cout << "resolveToUnderlyingType: isPointerType" << std::endl;
+  }
+  return resolveToUnderlyingType(ty->getPointeeType().getTypePtr());
+}
+/**
+ * Helper to retrieve a set of symbols reference in a subtree.
+ */
+template <typename Filter>
+class DeclRefRetriever : public StmtVisitor<DeclRefRetriever<Filter>> {
+ public:
+  DeclRefRetriever(Filter filt, const std::unordered_set<const VarDecl *> &relevantSymbols, const std::string name = "")
+      : filt(filt), relevantSymbols(relevantSymbols), instanceName(name) {}
+  void VisitStmt(Stmt *S) { VisitChildren(S); }
+
+  void VisitDeclRefExpr(DeclRefExpr *dre) {
+    if (const auto decl = dre->getDecl()) {
+      //	  std::cout << "DeclRefRetriever::VisitDeclRefExpr: decl non null" << std::endl;
+      if (const auto valueDecl = dyn_cast<ValueDecl>(decl)) {
+        const auto ty = resolveToUnderlyingType(valueDecl->getType().getTypePtr());
+        const auto inRelevantMemberExpr = [](DeclRefExpr *dre) {
+          const auto decl = dre->getDecl();
+          auto &ctx = decl->getASTContext();
+          auto pMap = ctx.getParents(*dre);
+          auto firstParent = pMap.begin();
+          if (const auto memExp = dyn_cast<MemberExpr>((*firstParent).get<Stmt>())) {
+            return true;
+          }
+          return false;
+        };
+        const auto inRelevantSymbols = [&](const ValueDecl *vd) {
+          if (const auto vDecl = dyn_cast<VarDecl>(vd)) {
+            bool relevant = relevantSymbols.find(vDecl) != relevantSymbols.end();
+            return relevant;
+          }
+          return false;
+        };
+
+        bool relevant = ty->isFunctionPointerType() || ty->isFunctionType() || ty->isMemberPointerType() ||
+                        inRelevantMemberExpr(dre) || inRelevantSymbols(valueDecl);
+        if (!relevant) {
+          return;
+        }
+      }
+
+      if (filt(dre)) {
+        return;
+      }
+      // case 1: variable declaration
+      if (isa<VarDecl>(*decl)) {
+        // std::cout << "DeclRefRetriever::VisitDeclRefExpr: decl is VarDecl" << std::endl;
+        symbols.insert(decl);
+      }
+      // case 2: function declaration
+      if (const auto fd = dyn_cast<FunctionDecl>(decl)) {  // isa<FunctionDecl>(*decl)) {
+        symbols.insert(decl);
+      }
+    }
+  }
+
+  const std::unordered_set<Decl *> &getSymbols() { return symbols; }
+
+  void VisitChildren(Stmt *S) {
+    for (Stmt *SubStmt : S->children())
+      if (SubStmt) {
+        this->Visit(SubStmt);
+      }
+  }
+
+  void printSymbols() const {
+    std::cout << "=== DeclRefRetriever " << instanceName << " Symbols ===" << std::endl;
+    for (const auto sym : symbols) {
+      if (const auto nd = dyn_cast<NamedDecl>(sym)) {
+        std::cout << nd->getNameAsString() << std::endl;
+      }
+    }
+  }
+
+ private:
+  std::unordered_set<Decl *> symbols;
+  Filter filt;
+  const std::unordered_set<const VarDecl *> &relevantSymbols;
+  std::string instanceName;
+};
 
 class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
  public:
@@ -179,46 +267,47 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
     if (bo->isAssignmentOp()) {
       auto lhs = bo->getLHS();
       auto rhs = bo->getRHS();
-      if (auto declRefExpr = dyn_cast<DeclRefExpr>(lhs)) {
-        if (auto *vDecl = getVarDecl(declRefExpr)) {
-          if (auto ice = dyn_cast<ImplicitCastExpr>(rhs)) {
-            insertFuncAlias(vDecl, ice);
-          } else if (auto ce = dyn_cast<CallExpr>(rhs)) {
-            RecursiveLookUpCallExpr(ce);
-          } else {
-            // std::cout << "RHS is not an ImplicitCastExpr" << std::endl;
-          }
-        } else {
-          // std::cout << "LHS is not a VarDecl" << std::endl;
+
+      DeclRefRetriever lhsDRR([](DeclRefExpr *dre) { return false; }, relevantSymbols);
+      lhsDRR.Visit(lhs);
+      auto lhsSymbols = lhsDRR.getSymbols();
+#if 0
+      std::cout << "FunctionPointerTracer\n=== LHS ===" << std::endl;
+      for (const auto sym : lhsSymbols) {
+        if (const auto nd = dyn_cast<NamedDecl>(sym)) {
+          std::cout << "| " << nd->getNameAsString() << std::endl;
         }
-      } else if (auto unaryOp = dyn_cast<UnaryOperator>(lhs)) {
-        if (auto subExpr = unaryOp->getSubExpr()) {
-          if (auto implicitCastExpr = dyn_cast<ImplicitCastExpr>(subExpr)) {
-            if (auto subExpr = implicitCastExpr->getSubExpr()) {
-              if (auto declRefExpr = dyn_cast<DeclRefExpr>(subExpr)) {
-                if (auto vDecl = getVarDecl(declRefExpr)) {
-                  if (auto ice = dyn_cast<ImplicitCastExpr>(rhs)) {
-                    if (auto *se = ice->getSubExpr()) {
-                      if (auto *dre = dyn_cast<DeclRefExpr>(se)) {
-                        aliases[vDecl].insert(dre->getDecl());
-                      }
-                    }
-                  } else if (auto innerCe = dyn_cast<CallExpr>(rhs)) {
-                    RecursiveLookUpCallExpr(innerCe);
-                  } else {
-                    // std::cout << "RHS is not an ImplicitCastExpr" << std::endl;
-                  }
-                } else {
-                  // std::cout << "LHS is not a VarDecl" << std::endl;
-                }
-              }
-            }
+      }
+#endif
+
+      DeclRefRetriever rhsDRR([](DeclRefExpr *dre) { return false; }, relevantSymbols);
+      rhsDRR.Visit(rhs);
+      auto rhsSymbols = rhsDRR.getSymbols();
+#if 0
+      std::cout << "FunctionPointerTracer\n=== RHS ===" << std::endl;
+      for (const auto sym : rhsSymbols) {
+        if (const auto nd = dyn_cast<NamedDecl>(sym)) {
+          std::cout << "| " << nd->getNameAsString() << std::endl;
+        }
+      }
+#endif
+
+      /* Assume all RHS symbols can be reached from all symbols of the LHS */
+      for (const auto symLHS : lhsSymbols) {
+        // XXX do we need to check that LHS must be of type pointer to function or similar?
+        for (const auto symRHS : rhsSymbols) {
+          if (const auto vDecl = dyn_cast<VarDecl>(symLHS)) {
+            aliases[vDecl].insert(symRHS);
+            relevantSymbols.insert(vDecl);
+          } else {
+            std::cerr << "[Warning]: LHS symbol is not of type VarDecl" << std::endl;
           }
         }
       }
     }
     VisitChildren(bo);
   }
+
   void VisitDeclStmt(DeclStmt *ds) {
     /*
      * We check for declarations of function pointer variables that could then be used inside return statements.
@@ -245,6 +334,42 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
   }
   void VisitReturnStmt(ReturnStmt *RS) {
     if (auto retExpr = RS->getRetValue()) {
+      DeclRefRetriever drr(
+          [&](DeclRefExpr *dre) {
+            const auto isNonCallFuncSym = [](DeclRefExpr *dre) {
+              const auto decl = dre->getDecl();
+              auto &ctx = decl->getASTContext();
+              auto parents = ctx.getParents(*dre);
+              auto firstParent = parents.begin();
+              if (const auto implCastExpr = dyn_cast<ImplicitCastExpr>((*firstParent).get<Stmt>())) {
+                auto implParents = ctx.getParents(*implCastExpr);
+                auto potentialCallExpr = implParents.begin();
+                if (const auto callExpr = dyn_cast<CallExpr>((*potentialCallExpr).get<Stmt>())) {
+                  return false;
+                }
+              }
+              return true;  // This *could* be true
+            };
+            // Filter semantics: keep if returns false
+            return !isNonCallFuncSym(dre);
+          },
+          relevantSymbols, "FunctionPointerTracer::ReturnStatements");
+      drr.Visit(retExpr);
+      //drr.printSymbols();
+      llvm::SmallSet<const FunctionDecl *, 16> funcSymbols;
+      for (const auto sym : drr.getSymbols()) {
+        if (const auto fSym = dyn_cast<FunctionDecl>(sym)) {
+          funcSymbols.insert(fSym);
+        } else if (const auto vSym = dyn_cast<VarDecl>(sym)) {
+          for (const auto alias : aliases[vSym]) {
+            if (const auto fSym = dyn_cast<FunctionDecl>(alias)) {
+              funcSymbols.insert(fSym);
+            }
+          }
+        }
+      }
+      targetsReturn.insert(funcSymbols.begin(), funcSymbols.end());
+
       if (CallExpr *ce = dyn_cast<CallExpr>(retExpr)) {
         if (auto decl = dyn_cast<FunctionDecl>(ce->getDirectCallee())) {
           if (auto body = decl->getBody()) {
@@ -267,29 +392,14 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
             // std::cout << "Detected more calls. Inserting " << tr.size() << " call targets" << std::endl;
           }
         }
-      } else if (ImplicitCastExpr *ice = dyn_cast<ImplicitCastExpr>(retExpr)) {
-        // This may be what we want
-        Expr *cast = ice->getSubExpr();
-        if (DeclRefExpr *dre = dyn_cast<DeclRefExpr>(cast)) {
-          auto fd = getFunctionDecl(dre);
-          if (auto rfd = dyn_cast<FunctionDecl>(fd)) {
-            targetsReturn.insert(rfd);
-          }
-          auto vd = getVarDecl(dre);
-          if (vd) {
-            llvm::SmallSet<const FunctionDecl *, 16> result;
-            FindTargetParams(result, vd, vd);
-            for (const FunctionDecl *decl : result) {
-              targetsReturn.insert(decl);
-            }
-            // auto aliases = _aliases[vd];
-            // for (auto alias : aliases)
-            //{
-            //  if (auto func_decl = dyn_cast<FunctionDecl>(alias))
-            //  {
-            //    _targets_return.insert(func_decl);
-            //  }
-            //}
+      }
+
+      for (const auto sym : drr.getSymbols()) {
+        if (const auto vSym = dyn_cast<VarDecl>(sym)) {
+          llvm::SmallSet<const FunctionDecl *, 16> result;
+          FindTargetParams(result, vSym, vSym);
+          for (const FunctionDecl *decl : result) {
+            targetsReturn.insert(decl);
           }
         }
       }
@@ -365,18 +475,23 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
     //}
     // return dyn_cast<FunctionDecl>(decl);
   }
-  
+
   llvm::SmallSet<const CallExpr *, 16> closedCes;
   CallGraph *G;
   CallExpr *CE;
   llvm::DenseMap<const Decl *, llvm::SmallSet<const Decl *, 8>> aliases;
   llvm::DenseMap<const VarDecl *, llvm::SmallSet<const FunctionDecl *, 16>> targetParams;
   llvm::SmallSet<const FunctionDecl *, 16> targetsReturn;
+  std::unordered_set<const VarDecl *> relevantSymbols;
 };
 
 template <class T>
 llvm::SmallSet<const FunctionDecl *, 16> getTargetFunctions(CallGraph *g, const T &aliases, CallExpr *ce) {
-  FunctionPointerTracer frf(g, aliases, ce);
+  llvm::DenseMap<const Decl *, llvm::SmallSet<const Decl *, 8>> someAliases;
+  for (const auto p : aliases) {
+    someAliases.insert({p.first, p.second});
+  }
+  FunctionPointerTracer frf(g, someAliases, ce);
   Decl *de = ce->getDirectCallee();
   if (de) {
     if (Stmt *Body = de->getBody()) {
@@ -391,16 +506,36 @@ llvm::SmallSet<const FunctionDecl *, 16> getTargetFunctions(CallGraph *g, const 
 class CGBuilder : public StmtVisitor<CGBuilder> {
   CallGraph *G;
   CallGraphNode *callerNode;
-  llvm::DenseMap<const Decl *, llvm::SmallSet<const Decl *, 8>> aliases;
   std::vector<std::string> vtaInstances;
+
+  bool captureCtorsDtors;
+  typedef llvm::DenseMap<const VarDecl *, llvm::SmallSet<const Decl *, 8>> AliasMapT;
+  // Stores the aliases per variable
+  AliasMapT aliases;
+  // We mark functions that have unresolved function symbols left, after we visited them.
+  std::unordered_map<const FunctionDecl *, std::unordered_set<const VarDecl *>> unresolvedSymbols;
+  std::unordered_set<const VarDecl *> relevantSymbols;
+
+  // Stores the alias sets for variables per function
+  std::unordered_map<const FunctionDecl *, AliasMapT> aliasMap;
 
   std::unordered_map<const VarDecl *, llvm::SmallSet<const FunctionDecl *, 16>> functionPointerTargets;
 
-  bool captureCtorsDtors;
-
  public:
-  CGBuilder(CallGraph *g, CallGraphNode *N, bool captureCtorsDtors)
-      : G(g), callerNode(N), captureCtorsDtors(captureCtorsDtors) {}
+  CGBuilder(CallGraph *g, CallGraphNode *N, bool captureCtorsDtors, CallGraph::UnresolvedMapTy unresolvedSyms)
+      : G(g), callerNode(N), captureCtorsDtors(captureCtorsDtors), unresolvedSymbols(unresolvedSyms) {}
+
+  void printAliases() const {
+    for (const auto &aliasP : aliases) {
+      std::cout << "Alias Set for " << aliasP.first->getNameAsString() << " (" << aliasP.first << "\n";
+      for (const auto &alias : aliasP.second) {
+        std::cout << " |- " << dyn_cast<NamedDecl>(alias)->getNameAsString() << " (" << dyn_cast<NamedDecl>(alias)
+                  << ")" << std::endl;
+      }
+    }
+  }
+
+  CallGraph::UnresolvedMapTy getUnresolvedSymbols() { return unresolvedSymbols; }
 
   void VisitStmt(Stmt *S) { VisitChildren(S); }
 
@@ -426,76 +561,112 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     }
     // New
     if (auto directCallee = CE->getDirectCallee()) {
-      {
+      {  // RAII, so we can declare i again later
         std::size_t i = 0;
         for (auto argIter = CE->arg_begin(); argIter != CE->arg_end(); argIter++) {
           if (i < CE->getDirectCallee()->getNumParams()) {
             auto paramDecl = directCallee->getParamDecl(i);
-            if (auto refDecl = (*argIter)->getReferencedDeclOfCallee()) {
-              aliases[paramDecl].insert(refDecl);
+            // Get the i-th ParameterDecl in the target function
+            if (const auto vDecl = dyn_cast<VarDecl>(paramDecl)) {
+              // *argIter can be any expression
+              const auto argExpr = *argIter;
+              DeclRefRetriever drr([](DeclRefExpr *dre) { return false; }, relevantSymbols, "Argument Expr Retriever");
+              drr.Visit(argExpr);
+              //drr.printSymbols();
+              for (const auto sym : drr.getSymbols()) {
+                aliases[vDecl].insert(sym);
+              }
             }
           }
           i++;
         }
       }
-      FunctionPointerTracer fpt(G, aliases, CE);
+
+      llvm::DenseMap<const Decl *, llvm::SmallSet<const Decl *, 8>> someAliases;
+      for (const auto &p : aliases) {
+        someAliases.insert({p.first, p.second});
+      }
+      FunctionPointerTracer fpt(G, someAliases, CE);
       if (auto body = directCallee->getBody()) {
         fpt.Visit(body);
       }
       std::size_t i = 0;
       for (auto argIt = CE->arg_begin(); argIt != CE->arg_end(); ++argIt) {
         VarDecl *varDecl = nullptr;
-        // if an adress of operator is used in argument list
-        if (UnaryOperator *uo = dyn_cast<UnaryOperator>(*argIt)) {
-          if (uo->getOpcode() == UO_AddrOf) {
-            if (DeclRefExpr *dre = dyn_cast<DeclRefExpr>(uo->getSubExpr())) {
-              // if the adress in the argument list is taken of a function -> function pointer in argument list
-              if (FunctionDecl *fd = dyn_cast<FunctionDecl>(dre->getDecl())) {
-                // get the called function, which gets the function pointer
-                if (FunctionDecl *calleeDecl = CE->getDirectCallee()) {
-                  // assumption: callee calls the function which is given in argument list
-                  if (!calleeDecl->hasBody()) {
-                    addCalledDecl(calleeDecl, fd);
-                  }
-                  // std::cout << "method " << CalleeDecl->getNameAsString() << " calls " << FD->getNameAsString() << "
-                  // by function pointer" << std::endl;
+        Expr *expr = *argIt;
+        // Handles out parameters of callee.
+        DeclRefRetriever writableFuncPtrVarRetriever(
+            [&](DeclRefExpr *dre) {
+              const auto isAddrTakenFromVar = [](DeclRefExpr *dre) {
+                const auto decl = dre->getDecl();   // required for ASTContext
+                auto &ctx = decl->getASTContext();  // required for parent map
+                auto parents = ctx.getParents(*dre);
+                if (const auto unOp = dyn_cast<UnaryOperator>((*(parents.begin())).get<Stmt>())) {
+                  // Wew have found a unary operator
+                  const auto compRes = unOp->getOpcode() == UO_AddrOf;
+                  return compRes;
+                }
+                return false;
+              };
+              // This is used as filter -> filter if return true! We want to keep if addrIsTaken.
+              return !isAddrTakenFromVar(dre);
+            },
+            relevantSymbols, "WritableFuncPtrVarRetriever");
+        writableFuncPtrVarRetriever.Visit(expr);
+        //writableFuncPtrVarRetriever.printSymbols();
 
-                  // TODO what is done in handle indirects of the old cg? this is a poor implementation we dont want to
-                  // follow this here if (CalleeDecl && FD) {
-                  //  indirects.insert({CalleeDecl, FD});
-                  //}
-                }
-              } else {
-                varDecl = dyn_cast<VarDecl>(dre->getDecl());
-                if (varDecl && !varDecl->getType()->isFunctionPointerType()) {
-                  varDecl = nullptr;
-                }
-              }
-            }
-          }
-        } else {
-          if (ImplicitCastExpr *ice = llvm::dyn_cast<ImplicitCastExpr>(*argIt)) {
-            if (DeclRefExpr *dre = llvm::dyn_cast<DeclRefExpr>(ice->getSubExpr())) {
-              // if (auto var_decl = dyn_cast<VarDecl>(dre))
-              //{
-              //  if (var_decl->getType()->isFunctionPointerType())
-              //  {
-              //    var_decl = dyn_cast<VarDecl>(dre->getDecl());
-              //  }
-              //}
-              // else
-              if (FunctionDecl *fd = llvm::dyn_cast<FunctionDecl>(dre->getDecl())) {
-                if (FunctionDecl *cd = CE->getDirectCallee()) {
-                  if (!cd->hasBody()) {
-                    addCalledDecl(cd, fd);
-                  }
-                }
-              } else {
-                varDecl = dyn_cast<VarDecl>(dre->getDecl());
-              }
-            }
+        auto symbols = writableFuncPtrVarRetriever.getSymbols();
+        for (const auto sym : symbols) {
+          // iterate all referenced symbols
+          // If the symbol is a VarDecl of type FunctionPointerType and its address is taken
+          // -> Calculate and assign alias set for potential call targets
+          if (const auto varSym = dyn_cast<VarDecl>(sym)) {
+            varDecl = varSym;
           }
         }
+
+        DeclRefRetriever funcPtrSymRetriever(
+            [&](DeclRefExpr *dre) {
+              const auto isNonCallFuncSym = [](DeclRefExpr *dre) {
+                const auto decl = dre->getDecl();
+                auto &ctx = decl->getASTContext();
+                auto parents = ctx.getParents(*dre);
+                auto firstParent = parents.begin();
+                if (const auto implCastExpr = dyn_cast<ImplicitCastExpr>((*firstParent).get<Stmt>())) {
+                  auto potentialCallExpr = firstParent++;
+                  if (const auto callExpr = dyn_cast<CallExpr>((*potentialCallExpr).get<Stmt>())) {
+                    return false;
+                  }
+                }
+                // Keep all that do not match the pattern
+                return true;
+              };
+              // Filter semantics: keep if returns false
+              return !isNonCallFuncSym(dre);
+            },
+            relevantSymbols, "FuncPtrSymRetriever");
+
+        funcPtrSymRetriever.Visit(expr);
+        //funcPtrSymRetriever.printSymbols();
+        auto funcSymbols = funcPtrSymRetriever.getSymbols();
+        for (const auto sym : funcSymbols) {
+          // If the symbol is of type FunctionDecl and it is not within a CallExpr and we do not have a callee body
+          // -> Assume callee calls the symbol
+          if (const auto funSym = dyn_cast<FunctionDecl>(sym)) {
+            // Check if the immediate callee has no definition, and if so, add potential call edge
+            if (FunctionDecl *calleeDecl = CE->getDirectCallee()) {
+              // assumption: callee calls the function which is given in argument list
+              if (!calleeDecl->hasBody()) {
+                addCalledDecl(calleeDecl, funSym);
+              } else {
+                // Handle target function.
+              }
+            }
+          } else if (const auto vDecl = dyn_cast<VarDecl>(sym)) {
+            std::cout << "Currently processing symbol" << std::endl;
+          }
+        }
+
         if (varDecl) {
           // std::cout << "Found addressed-of VarDecl" << std::endl;
           if (directCallee->getBody()) {
@@ -563,8 +734,6 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       functionPointerTargets[fVar].insert(targetFuncSet.begin(), targetFuncSet.end());
       return;
     }
-
-    // std::cout << "Case in which multiple call-chain shit is going on." << std::endl;
   }
 
   void TraceFunctionPointer(CallExpr *CE) {
@@ -649,7 +818,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     VisitChildren(EWC);
   }
 
-  void VisitCallExpr(CallExpr *CE) {
+  void handleCallExprLike(CallExpr *CE) {
     Decl *D = nullptr;
     if ((D = getDeclFromCall(CE))) {
       addCalledDecl(D);
@@ -662,31 +831,82 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     if (D) {
       auto &ctx = D->getASTContext();
       auto qType = CE->getCallReturnType(ctx);
-      if (qType->isFunctionPointerType()) {
+      bool relevant = qType->isFunctionPointerType() || qType->isFunctionType() || qType->isMemberPointerType();
+      if (relevant) {
         handleFunctionPointerAsReturn(CE, ctx);
       }
+
+      // If we can determine the call target, we can check for unresolved symbols for that function.
+      if (auto func = dyn_cast<FunctionDecl>(D)) {
+        if (unresolvedSymbols.find(func) != unresolvedSymbols.end()) {
+          // Process unresolved symbols
+          const auto openSymbols = unresolvedSymbols[func];
+          for (const auto sym : openSymbols) {
+            std::list<const VarDecl *> worklist;
+            std::unordered_set<const VarDecl *> donelist;
+            worklist.push_back(sym);
+
+            while (!worklist.empty()) {
+              const auto curSym = worklist.front();
+              worklist.erase(worklist.begin());
+              donelist.insert(curSym);
+
+              for (auto alias : aliases[curSym]) {
+                if (const auto vd = dyn_cast<VarDecl>(alias)) {
+                  worklist.push_back(vd);
+                }
+                Decl *nonConstPtr = const_cast<Decl *>(alias);
+                addCalledDecl(func, nonConstPtr);
+              }
+            }
+          }
+          unresolvedSymbols.erase(unresolvedSymbols.find(func));
+        }
+      }
     }
-    if (ImplicitCastExpr *ice = dyn_cast<ImplicitCastExpr>(CE->getCallee())) {
-      // This may be what we want
-      Expr *cast = ice->getSubExpr();
-      if (DeclRefExpr *dre = dyn_cast<DeclRefExpr>(cast)) {
-        auto *decl = dre->getDecl();
-        // if (decl && decl == _currentFunctionPointerVar) {
-        if (decl) {
-          // std::cout << decl->getNameAsString() << "\n";
-          // std::cout << dre->getNameInfo().getAsString() << "\n";
-          auto iter = functionPointerTargets.find(reinterpret_cast<const VarDecl *>(decl));
-          if (iter != functionPointerTargets.end()) {
-            // std::cout << "Found call reference to function pointer" << std::endl;
-            for (auto func : iter->second) {
+    if (auto ice = CE->getCallee()) {
+      DeclRefRetriever drr([](DeclRefExpr *dre) { return false; }, relevantSymbols);
+      drr.Visit(ice);
+#if 0
+      std::cout << "CE->getCallee() => drr.Visit(ice)" << std::endl;
+      drr.printSymbols();
+#endif
+      const auto refSymbols = drr.getSymbols();
+      for (const auto rSymbol : refSymbols) {
+        if (const auto vSymbol = dyn_cast<VarDecl>(rSymbol)) {
+          llvm::SmallSet<const FunctionDecl *, 16> localSet;
+          for (const auto alias : aliases[vSymbol]) {
+            if (const auto funcAlias = dyn_cast<FunctionDecl>(alias)) {
+              localSet.insert(funcAlias);
+            }
+          }
+          if (aliases[vSymbol].size() == 0) {
+            auto curCallingFunc = dyn_cast<FunctionDecl>(callerNode->getDecl());
+            auto &openSymbols = unresolvedSymbols[curCallingFunc];
+            openSymbols.insert(vSymbol);
+          }
+          functionPointerTargets.insert(std::make_pair(vSymbol, localSet));
+
+          const auto targetIter = functionPointerTargets.find(vSymbol);
+          if (targetIter != functionPointerTargets.end()) {
+            for (const auto func : targetIter->second) {
               addCalledDecl(func);
             }
           }
+        } else if (const auto funcSym = dyn_cast<FunctionDecl>(rSymbol)) {
+          addCalledDecl(funcSym);
         }
       }
     }
 
     VisitChildren(CE);
+  }
+
+  void VisitCXXMemberCallExpr(CXXMemberCallExpr *mce) { handleCallExprLike(mce); }
+
+  void VisitCallExpr(CallExpr *CE) {
+    handleCallExprLike(CE);
+    return;
   }
 
   // Adds may-call edges for the ObjC message sends.
@@ -747,46 +967,89 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     if (bo->isAssignmentOp()) {
       auto lhs = bo->getLHS();
       auto rhs = bo->getRHS();
-      if (auto declRefExpr = dyn_cast<DeclRefExpr>(lhs)) {
-        if (auto *vDecl = getVarDecl(declRefExpr)) {
-          if (auto ice = dyn_cast<ImplicitCastExpr>(rhs)) {
-            insertFuncAlias(vDecl, ice);
-          } else if (auto ce = dyn_cast<CallExpr>(rhs)) {
-            // RecursiveLookUpCallExpr(ce);
-          } else {
-            // std::cout << "RHS is not an ImplicitCastExpr" << std::endl;
-          }
-        } else {
-          // std::cout << "LHS is not a VarDecl" << std::endl;
+
+      DeclRefRetriever lhsDRR([](DeclRefExpr *dre) { return false; }, relevantSymbols);
+      lhsDRR.Visit(lhs);
+      auto lhsSymbols = lhsDRR.getSymbols();
+#if 0
+      std::cout << "=== LHS ===" << std::endl;
+      for (const auto sym : lhsSymbols) {
+        if (const auto nd = dyn_cast<NamedDecl>(sym)) {
+          std::cout << "| " << nd->getNameAsString() << std::endl;
         }
-      } else if (auto unaryOp = dyn_cast<UnaryOperator>(lhs)) {
-        if (auto subExpr = unaryOp->getSubExpr()) {
-          if (auto implicitCastExpr = dyn_cast<ImplicitCastExpr>(subExpr)) {
-            if (auto subExpr = implicitCastExpr->getSubExpr()) {
-              if (auto declRefExpr = dyn_cast<DeclRefExpr>(subExpr)) {
-                if (auto vDecl = getVarDecl(declRefExpr)) {
-                  if (auto ice = dyn_cast<ImplicitCastExpr>(rhs)) {
-                    if (auto *se = ice->getSubExpr()) {
-                      if (auto *dre = dyn_cast<DeclRefExpr>(se)) {
-                        aliases[vDecl].insert(dre->getDecl());
-                      }
-                    }
-                  } else if (auto innerCe = dyn_cast<CallExpr>(rhs)) {
-                    // RecursiveLookUpCallExpr(inner_ce);
-                  } else {
-                    // std::cout << "RHS is not an ImplicitCastExpr" << std::endl;
-                  }
-                } else {
-                  // std::cout << "LHS is not a VarDecl" << std::endl;
-                }
-              }
-            }
+      }
+#endif
+
+      DeclRefRetriever rhsDRR([](DeclRefExpr *dre) { return false; }, relevantSymbols);
+      rhsDRR.Visit(rhs);
+      auto rhsSymbols = rhsDRR.getSymbols();
+#if 0
+      std::cout << "=== RHS ===" << std::endl;
+      for (const auto sym : rhsSymbols) {
+        if (const auto nd = dyn_cast<NamedDecl>(sym)) {
+          std::cout << "| " << nd->getNameAsString() << std::endl;
+        }
+      }
+#endif
+
+      /* Assume all RHS symbols can be reached from all symbols of the LHS */
+      for (const auto symLHS : lhsSymbols) {
+        // XXX do we need to check that LHS must be of type pointer to function or similar?
+        for (const auto symRHS : rhsSymbols) {
+          if (const auto vDecl = dyn_cast<VarDecl>(symLHS)) {
+            aliases[vDecl].insert(symRHS);
+            relevantSymbols.insert(vDecl);
+          } else {
+            std::cerr << "[Warning]: LHS symbol is not of type VarDecl" << std::endl;
           }
         }
       }
     }
+
     VisitChildren(bo);
   }
+
+  std::unordered_set<Expr *> resolveToDeclRefExpr(ParenExpr *parenExpr) {
+    auto subExpr = parenExpr->getSubExpr();
+    if (isa<DeclRefExpr>(*subExpr)) {
+      return {subExpr};
+    }
+    if (isa<ConditionalOperator>(*subExpr)) {
+      auto potDeclRefs = resolveToDeclRefExpr(dyn_cast<ConditionalOperator>(subExpr));
+      if (potDeclRefs.size() > 0) {
+        return potDeclRefs;
+      }
+    }
+    return {};
+  }
+  std::unordered_set<Expr *> resolveToDeclRefExpr(ConditionalOperator *co) {
+    auto trueExpr = co->getTrueExpr();
+    auto falseExpr = co->getFalseExpr();
+    std::unordered_set<Expr *> retSet;
+    if (isa<DeclRefExpr>(*trueExpr)) {
+      retSet.insert(trueExpr);
+    }
+    if (isa<DeclRefExpr>(*falseExpr)) {
+      retSet.insert(falseExpr);
+    }
+    return retSet;
+  }
+
+  std::unordered_set<Expr *> resolveToDeclRefExpr(CastExpr *castExpr) {
+    auto subExpr = castExpr->getSubExpr();
+    if (isa<DeclRefExpr>(*subExpr)) {
+      return {subExpr};
+    }
+    // If we try to resolve: check if non-null value is returned, otherwise return null.
+    if (dyn_cast<CastExpr>(subExpr)) {
+      auto potDeclRefs = resolveToDeclRefExpr(dyn_cast<CastExpr>(subExpr));
+      if (potDeclRefs.size() > 0) {
+        return potDeclRefs;
+      }
+    }
+    return {};
+  }
+
   void VisitDeclStmt(DeclStmt *ds) {
     /*
      * We check for declarations of function pointer variables that could then be used inside return statements.
@@ -862,9 +1125,11 @@ void CallGraph::addNodeForDecl(Decl *D, bool IsGlobal) {
   CallGraphNode *Node = getOrInsertNode(D);
 
   // Process all the calls by this function as well.
-  CGBuilder builder(this, Node, captureCtorsDtors);
+  CGBuilder builder(this, Node, captureCtorsDtors, unresolvedSymbols);
   if (Stmt *Body = D->getBody())
     builder.Visit(Body);
+  builder.printAliases();
+  unresolvedSymbols.insert(builder.getUnresolvedSymbols().begin(), builder.getUnresolvedSymbols().end());
 }
 
 CallGraphNode *CallGraph::getNode(const Decl *F) const {
@@ -897,6 +1162,7 @@ bool CallGraph::VisitFunctionDecl(clang::FunctionDecl *FD) {
   // We skip function template definitions, as their semantics is
   // only determined when they are instantiated.
   if (includeInGraph(FD) && FD->isThisDeclarationADefinition()) {
+    // std::cout << "\n<< Visiting " << FD->getNameAsString() << " >>" << std::endl;
     // Add all blocks declared inside this function to the graph.
     addNodesForBlocks(FD);
     // If this function has external linkage, anything could call it.

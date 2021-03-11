@@ -1,44 +1,60 @@
 {
-    "_Z3barv": {
+    "_Z5get_fb": {
         "callees": [],
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
-        "numStatements": 1,
+        "numStatements": 5,
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": [
-            "_Z3goov"
+            "main"
         ]
     },
-    "_Z3goov": {
+    "_ZN1A3barEv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "_ZN1A3bazEv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    },
+    "_ZN1A3fooEv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "main": {
         "callees": [
-            "_Z3barv"
+            "_ZN1A3fooEv",
+            "_Z5get_fb",
+            "_ZN1A3barEv"
         ],
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
-        "numStatements": 1,
-        "overriddenBy": [],
-        "overriddenFunctions": [],
-        "parents": []
-    },
-    "_Z3harv": {
-        "callees": [],
-        "doesOverride": false,
-        "hasBody": true,
-        "isVirtual": false,
-        "numStatements": 1,
-        "overriddenBy": [],
-        "overriddenFunctions": [],
-        "parents": []
-    },
-    "_Z3foov": {
-        "callees": [],
-        "doesOverride": false,
-        "hasBody": true,
-        "isVirtual": false,
-        "numStatements": 1,
+        "numStatements": 3,
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": []

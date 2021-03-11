@@ -1,20 +1,18 @@
 {
-    "_Z10callTargetiii": {
+    "_Z3foov": {
         "callees": [],
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
-        "numStatements": 2,
+        "numStatements": 0,
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": [
-            "_Z13pointerCallerPFviiiEiii"
+            "main"
         ]
     },
-    "_Z13pointerCallerPFviiiEiii": {
-        "callees": [
-            "_Z10callTargetiii"
-        ],
+    "_Z5get_fPFvvE": {
+        "callees": [],
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
@@ -27,12 +25,13 @@
     },
     "main": {
         "callees": [
-            "_Z13pointerCallerPFviiiEiii"
+            "_Z3foov",
+            "_Z5get_fPFvvE"
         ],
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
-        "numStatements": 4,
+        "numStatements": 2,
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": []

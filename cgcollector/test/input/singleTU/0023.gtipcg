@@ -1,1 +1,12 @@
-{"main":{"callees":[],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":3,"overriddenBy":[],"overriddenFunctions":[],"parents":[]}}
+{
+    "main": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 3,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    }
+}
