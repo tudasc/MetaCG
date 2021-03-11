@@ -1,1 +1,26 @@
-{"_Z3fooi":{"callees":[],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":2,"overriddenBy":[],"overriddenFunctions":[],"parents":["main"]},"main":{"callees":["_Z3fooi"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":9,"overriddenBy":[],"overriddenFunctions":[],"parents":[]}}
+{
+    "_Z3fooi": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 2,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "main": {
+        "callees": [
+            "_Z3fooi"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 9,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    }
+}

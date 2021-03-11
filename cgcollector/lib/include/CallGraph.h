@@ -26,6 +26,8 @@
 #include <llvm/ADT/SmallVector.h>
 
 #include <memory>
+#include <unordered_map>
+#include <unordered_set>
 
 class CallGraphNode;
 
@@ -47,9 +49,12 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
 
   bool captureCtorsDtors{false};
 
+  // We store unresolved symbols across function decl traverses
  public:
   CallGraph();
   ~CallGraph();
+
+  using UnresolvedMapTy = std::unordered_map<const clang::FunctionDecl *, std::unordered_set<const clang::VarDecl *>>;
 
   void setCaptureCtorsDtors(bool capture) { captureCtorsDtors = capture; }
 
@@ -119,6 +124,7 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
   bool shouldVisitTemplateInstantiations() const { return true; }
 
  private:
+  UnresolvedMapTy unresolvedSymbols;
   /// Add the given declaration to the call graph.
   void addNodeForDecl(clang::Decl *D, bool IsGlobal);
 

@@ -1,1 +1,66 @@
-{"_Z3geti":{"callees":[],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":3,"overriddenBy":[],"overriddenFunctions":[],"parents":["_Z4get2i"]},"_Z3onev":{"callees":[],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":1,"overriddenBy":[],"overriddenFunctions":[],"parents":["main"]},"_Z4dfltv":{"callees":[],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":1,"overriddenBy":[],"overriddenFunctions":[],"parents":["main"]},"_Z4get2i":{"callees":["_Z3geti"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":1,"overriddenBy":[],"overriddenFunctions":[],"parents":["main"]},"main":{"callees":["_Z4dfltv","_Z4get2i","_Z3onev"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":2,"overriddenBy":[],"overriddenFunctions":[],"parents":[]}}
+{
+    "_Z3geti": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 3,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z4get2i"
+        ]
+    },
+    "_Z3onev": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "_Z4dfltv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "_Z4get2i": {
+        "callees": [
+            "_Z3geti"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "main": {
+        "callees": [
+            "_Z4dfltv",
+            "_Z4get2i",
+            "_Z3onev"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 2,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    }
+}

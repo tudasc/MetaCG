@@ -3,8 +3,8 @@
 
 #include "nlohmann/json.hpp"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <unordered_set>
 
 using FunctionNames = std::unordered_set<std::string>;

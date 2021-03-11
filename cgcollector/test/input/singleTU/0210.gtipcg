@@ -1,20 +1,6 @@
 {
-    "_Z10callTargetiii": {
+    "_ZZ4mainENK3$_0cvPFvvEEv": {
         "callees": [],
-        "doesOverride": false,
-        "hasBody": true,
-        "isVirtual": false,
-        "numStatements": 2,
-        "overriddenBy": [],
-        "overriddenFunctions": [],
-        "parents": [
-            "_Z13pointerCallerPFviiiEiii"
-        ]
-    },
-    "_Z13pointerCallerPFviiiEiii": {
-        "callees": [
-            "_Z10callTargetiii"
-        ],
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
@@ -27,7 +13,7 @@
     },
     "main": {
         "callees": [
-            "_Z13pointerCallerPFviiiEiii"
+            "_ZZ4mainENK3$_0cvPFvvEEv"
         ],
         "doesOverride": false,
         "hasBody": true,

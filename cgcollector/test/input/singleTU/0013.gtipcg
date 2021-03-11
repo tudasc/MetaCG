@@ -1,1 +1,53 @@
-{"_Z6middlev":{"callees":["_Z9lastChildv"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":1,"overriddenBy":[],"overriddenFunctions":[],"parents":["main"]},"_Z7middle2v":{"callees":["_Z9lastChildv"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":1,"overriddenBy":[],"overriddenFunctions":[],"parents":[]},"_Z9lastChildv":{"callees":[],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":1,"overriddenBy":[],"overriddenFunctions":[],"parents":["_Z7middle2v","_Z6middlev"]},"main":{"callees":["_Z6middlev"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":2,"overriddenBy":[],"overriddenFunctions":[],"parents":[]}}
+{
+    "_Z6middlev": {
+        "callees": [
+            "_Z9lastChildv"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "_Z7middle2v": {
+        "callees": [
+            "_Z9lastChildv"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    },
+    "_Z9lastChildv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z7middle2v",
+            "_Z6middlev"
+        ]
+    },
+    "main": {
+        "callees": [
+            "_Z6middlev"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 2,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    }
+}
