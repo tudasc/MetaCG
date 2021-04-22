@@ -1,3 +1,8 @@
+/**
+ * File: Config.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #ifndef LI_CONFIG_H
 #define LI_CONFIG_H
 
@@ -42,37 +47,32 @@ struct Config {
   static Config generateFromJSON(std::string configPath);
 };
 
-  // Nlohmann-Json-macros for serialization
-  // ======================================
+// Nlohmann-Json-macros for serialization
+// ======================================
 
-  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Config, metricType,
-                                   imbalanceThreshold,
-                                   relevanceThreshold,
-                                   contextStrategy,
-                                   contextStepCount,
-                                   childRelevanceStrategy,
-                                   childConstantThreshold,
-                                   childFraction)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Config, metricType, imbalanceThreshold, relevanceThreshold, contextStrategy,
+                                   contextStepCount, childRelevanceStrategy, childConstantThreshold, childFraction)
 
-  NLOHMANN_JSON_SERIALIZE_ENUM( MetricType, {
-    {MetricType::Efficiency, "Efficiency"},
-    {MetricType::VariationCoeff, "VariationCoeff"},
-    {MetricType::ImbalancePercentage, "ImbalancePercentage"},
-  })
+NLOHMANN_JSON_SERIALIZE_ENUM(MetricType, {
+                                             {MetricType::Efficiency, "Efficiency"},
+                                             {MetricType::VariationCoeff, "VariationCoeff"},
+                                             {MetricType::ImbalancePercentage, "ImbalancePercentage"},
+                                         })
 
-  NLOHMANN_JSON_SERIALIZE_ENUM( ContextStrategy, {
-    {ContextStrategy::AllPathsToMain, "AllPathsToMain"},
-    {ContextStrategy::MajorPathsToMain, "MajorPathsToMain"},
-    {ContextStrategy::MajorParentSteps, "MajorParentSteps"},
-    {ContextStrategy::None, "None"},
-  })
+NLOHMANN_JSON_SERIALIZE_ENUM(ContextStrategy, {
+                                                  {ContextStrategy::AllPathsToMain, "AllPathsToMain"},
+                                                  {ContextStrategy::MajorPathsToMain, "MajorPathsToMain"},
+                                                  {ContextStrategy::MajorParentSteps, "MajorParentSteps"},
+                                                  {ContextStrategy::None, "None"},
+                                              })
 
-  NLOHMANN_JSON_SERIALIZE_ENUM( ChildRelevanceStrategy, {
-    {ChildRelevanceStrategy::ConstantThreshold, "ConstantThreshold"},
-    {ChildRelevanceStrategy::RelativeToMain, "RelativeToMain"},
-    {ChildRelevanceStrategy::RelativeToParent, "RelativeToParent"},
-    {ChildRelevanceStrategy::All, "All"},
-  })
+NLOHMANN_JSON_SERIALIZE_ENUM(ChildRelevanceStrategy,
+                             {
+                                 {ChildRelevanceStrategy::ConstantThreshold, "ConstantThreshold"},
+                                 {ChildRelevanceStrategy::RelativeToMain, "RelativeToMain"},
+                                 {ChildRelevanceStrategy::RelativeToParent, "RelativeToParent"},
+                                 {ChildRelevanceStrategy::All, "All"},
+                             })
 }  // namespace LoadImbalance
 
 #endif

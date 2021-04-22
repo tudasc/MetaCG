@@ -1,4 +1,4 @@
-// function pointer with hit
+// function pointer without hit
 
 int foo(float a) { return 0; }
 

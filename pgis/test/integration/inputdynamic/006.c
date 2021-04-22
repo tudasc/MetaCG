@@ -30,7 +30,6 @@ int fooChild() {
   return (a * b) / c;
 }
 
-
 int foo() {
   sleep(10);
   fooChild();

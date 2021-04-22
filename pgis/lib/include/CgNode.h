@@ -1,3 +1,8 @@
+/**
+ * File: CgNode.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #ifndef CG_NODE_H
 #define CG_NODE_H
 
@@ -213,7 +218,7 @@ struct CgEdge {
 };
 
 template <typename T, typename... Args>
-T *getOrCreateMD(CgNodePtr p, const Args &... args) {
+T *getOrCreateMD(CgNodePtr p, const Args &...args) {
   auto [has, md] = p->checkAndGet<T>();
   if (has) {
     return md;

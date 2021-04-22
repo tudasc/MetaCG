@@ -11,6 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CallGraph.h"
+#include "Utils.h"
 
 #include <clang/AST/Decl.h>
 #include <clang/AST/DeclBase.h>
@@ -61,13 +62,6 @@ auto Location(Decl *decl, Stmt *expr) {
   return expr->getSourceRange().getBegin().printToString(man);
 }
 
-const Type *resolveToUnderlyingType(const Type *ty) {
-  if (!ty->isPointerType()) {
-    return ty;
-    // std::cout << "resolveToUnderlyingType: isPointerType" << std::endl;
-  }
-  return resolveToUnderlyingType(ty->getPointeeType().getTypePtr());
-}
 /**
  * Helper to retrieve a set of symbols reference in a subtree.
  */
@@ -355,13 +349,16 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
           },
           relevantSymbols, "FunctionPointerTracer::ReturnStatements");
       drr.Visit(retExpr);
-      //drr.printSymbols();
+      // drr.printSymbols();
       llvm::SmallSet<const FunctionDecl *, 16> funcSymbols;
       for (const auto sym : drr.getSymbols()) {
         if (const auto fSym = dyn_cast<FunctionDecl>(sym)) {
           funcSymbols.insert(fSym);
         } else if (const auto vSym = dyn_cast<VarDecl>(sym)) {
           for (const auto alias : aliases[vSym]) {
+            if (!alias) {
+              continue;
+            }
             if (const auto fSym = dyn_cast<FunctionDecl>(alias)) {
               funcSymbols.insert(fSym);
             }
@@ -371,7 +368,11 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
       targetsReturn.insert(funcSymbols.begin(), funcSymbols.end());
 
       if (CallExpr *ce = dyn_cast<CallExpr>(retExpr)) {
-        if (auto decl = dyn_cast<FunctionDecl>(ce->getDirectCallee())) {
+        const auto dc = ce->getDirectCallee();
+        if (!dc) {
+          std::cerr << "[Warning] Unable to determine direct callee." << std::endl;
+        }else {
+        if (auto decl = dyn_cast<FunctionDecl>(dc)) {
           if (auto body = decl->getBody()) {
             {
               std::size_t i = 0;
@@ -392,7 +393,7 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
             // std::cout << "Detected more calls. Inserting " << tr.size() << " call targets" << std::endl;
           }
         }
-      }
+      }}
 
       for (const auto sym : drr.getSymbols()) {
         if (const auto vSym = dyn_cast<VarDecl>(sym)) {
@@ -572,7 +573,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
               const auto argExpr = *argIter;
               DeclRefRetriever drr([](DeclRefExpr *dre) { return false; }, relevantSymbols, "Argument Expr Retriever");
               drr.Visit(argExpr);
-              //drr.printSymbols();
+              // drr.printSymbols();
               for (const auto sym : drr.getSymbols()) {
                 aliases[vDecl].insert(sym);
               }
@@ -613,7 +614,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
             },
             relevantSymbols, "WritableFuncPtrVarRetriever");
         writableFuncPtrVarRetriever.Visit(expr);
-        //writableFuncPtrVarRetriever.printSymbols();
+        // writableFuncPtrVarRetriever.printSymbols();
 
         auto symbols = writableFuncPtrVarRetriever.getSymbols();
         for (const auto sym : symbols) {
@@ -647,7 +648,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
             relevantSymbols, "FuncPtrSymRetriever");
 
         funcPtrSymRetriever.Visit(expr);
-        //funcPtrSymRetriever.printSymbols();
+        // funcPtrSymRetriever.printSymbols();
         auto funcSymbols = funcPtrSymRetriever.getSymbols();
         for (const auto sym : funcSymbols) {
           // If the symbol is of type FunctionDecl and it is not within a CallExpr and we do not have a callee body
@@ -663,7 +664,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
               }
             }
           } else if (const auto vDecl = dyn_cast<VarDecl>(sym)) {
-            std::cout << "Currently processing symbol" << std::endl;
+            //std::cout << "Currently processing symbol" << std::endl;
           }
         }
 
@@ -1128,7 +1129,7 @@ void CallGraph::addNodeForDecl(Decl *D, bool IsGlobal) {
   CGBuilder builder(this, Node, captureCtorsDtors, unresolvedSymbols);
   if (Stmt *Body = D->getBody())
     builder.Visit(Body);
-  builder.printAliases();
+  //builder.printAliases();
   unresolvedSymbols.insert(builder.getUnresolvedSymbols().begin(), builder.getUnresolvedSymbols().end());
 }
 
@@ -1150,6 +1151,9 @@ CallGraphNode *CallGraph::getOrInsertNode(const Decl *F) {
   Node = std::make_unique<CallGraphNode>(F);
   // Make Root node a parent of all functions to make sure all are reachable.
   if (F) {
+    if (const auto FD = llvm::dyn_cast<FunctionDecl>(F)) {
+      inOrderDecls.push_back(FD);
+    }
     // std::cout << "Inserting: " << llvm::dyn_cast<NamedDecl>(F)->getNameAsString() << std::endl;
     Root->addCallee(Node.get());
   } else {

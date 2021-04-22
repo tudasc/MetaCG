@@ -65,7 +65,8 @@ test-cgc:
     - ls
     - ls build
     - ls build/test
-    - cd test && bash run_simple_test.sh
+    - cd test && bash run_format_one_test.sh
+    - bash run_format_two_test.sh
     - *lb-tear-down
 
 test-cgvalidate:
@@ -80,6 +81,7 @@ test-cgvalidate:
     - cd cgcollector
     - cd test/integration
     - ./runner.sh
+    - *lb-tear-down
 
 install-cgc:
   stage: install

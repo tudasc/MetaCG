@@ -78,6 +78,6 @@ git checkout 2_1 2>&1 > /dev/null
 echo "[PIRA] Getting json library"
 cd $extsourcedir
 if [ ! -d "$extsourcedir/json" ]; then
-    git clone https://github.com/nlohmann/json json 2>&1 > /dev/null
+    git clone --depth 1 --branch v3.9.1 https://github.com/nlohmann/json json 2>&1 > /dev/null
 fi
 

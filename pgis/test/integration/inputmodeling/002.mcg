@@ -1,0 +1,89 @@
+{
+"_CG": {
+  "bar": {
+    "callees": [
+      "sleep"
+    ],
+    "doesOverride": false,
+    "hasBody": true,
+    "isVirtual": false,
+    "overriddenBy": [],
+    "overrides": [],
+    "callers": [
+      "main"
+    ],
+    "meta": {
+    "numStatements": 2
+    }
+  },
+  "foo": {
+    "callees": [
+      "fooChild",
+      "sleep"
+    ],
+    "doesOverride": false,
+    "hasBody": true,
+    "isVirtual": false,
+    "overriddenBy": [],
+    "overrides": [],
+    "callers": [
+      "main"
+    ],
+    "meta": {
+    "numStatements": 3
+    }
+  },
+  "fooChild": {
+    "callees": [],
+    "doesOverride": false,
+    "hasBody": true,
+    "isVirtual": false,
+    "overriddenBy": [],
+    "overrides": [],
+    "callers": [
+      "foo"
+    ],
+    "meta": {
+    "numStatements": 1
+    }
+  },
+  "main": {
+    "callees": [
+      "bar",
+      "foo"
+    ],
+    "doesOverride": false,
+    "hasBody": true,
+    "isVirtual": false,
+    "overriddenBy": [],
+    "overrides": [],
+    "callers": [],
+    "meta": {
+    "numStatements": 3
+    }
+  },
+  "sleep": {
+    "callees": [],
+    "doesOverride": false,
+    "hasBody": false,
+    "isVirtual": false,
+    "overriddenBy": [],
+    "overrides": [],
+    "callers": [
+      "bar",
+      "foo"
+    ],
+    "meta": {
+    "numStatements": 0
+    }
+  }
+},
+  "_MetaCG": {
+    "generator": {
+      "name": "CGCollector",
+      "sha": "a12c2adc9482ef0062fd27f104ab4dfd679cb91f",
+      "version": "0.2"
+    },
+    "version": "2.0"
+  }
+}

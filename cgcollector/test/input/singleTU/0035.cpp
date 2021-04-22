@@ -9,6 +9,8 @@ int main(int argc, char **argv) {
   int i = foo(k);
 
   switch (k) {
+    case 1:
+    case 2:
     default:
       k = 11;
       break;

@@ -9,10 +9,7 @@
 #define Y 4
 #endif
 
-
-int fooChild() {
-  return 42;
-}
+int fooChild() { return 42; }
 
 int foo() {
   sleep(X);
@@ -25,7 +22,6 @@ int bar() {
 }
 
 int main(int argc, char **argv) {
-
   int a = foo();
   int b = bar();
 

@@ -1,3 +1,8 @@
+/**
+ * File: Callgraph.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #include "Callgraph.h"
 
 #include <chrono>  // easy time measurement
@@ -106,6 +111,6 @@ void Callgraph::erase(CgNodePtr node, bool rewireAfterDeletion, bool force) {
 Callgraph::ContainerT::const_iterator Callgraph::cbegin() const { return graph.cbegin(); }
 Callgraph::ContainerT::const_iterator Callgraph::cend() const { return graph.cend(); }
 
-size_t Callgraph::size() { return graph.size(); }
+size_t Callgraph::size() const { return graph.size(); }
 
 Callgraph::ContainerT &Callgraph::getGraph() { return graph; }

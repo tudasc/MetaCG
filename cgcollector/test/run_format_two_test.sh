@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 cgcollectorExe=cgcollector
-testerExe=cgsimpletester
+testerExe=mcgtester
 cgmergeExe=cgmerge
 
 mkdir -p log
@@ -10,12 +10,12 @@ mkdir -p log
 if [[ $(type -P $testerExe) ]]; then
   echo "The CGSimpleTester binary (cgsimpletester) could not be found in path, testing with relative path."
 fi
-stat ../build/test/cgsimpletester >>log/testrun.log 2>&1 
+stat ../build/test/mcgtester >>log/testrun.log 2>&1 
 if [ $? -eq 1 ]; then
   echo "The file seems also non-present in ../build/test. Aborting test. Failure! Please build the tester first."
   exit 1
 else
-  testerExe=../build/test/cgsimpletester
+  testerExe=../build/test/mcgtester
 fi
 
 if [[ $(type -P $cgcollectorExe) ]]; then
@@ -41,7 +41,7 @@ else
 fi
 
 # Single-file tests
-tests=(0001 0002 0003 0004 0005 0006 0007 0008 0009 0010 0011 0012 0013 0014 0015 0016 0017 0018 0019 0020 0021 0022 0023 0024 0025 0026 0027 0028 0029 0030 0031 0032 0033 0034 0035 0036 0037 0038 0039 0040 0041 0045 0046 0047 0048 0049 0051 0052 0100 0101 0102 0103 0201 0202 0203 0204 0205 0206 0207 0208 0209 0210 0211 0212 0214)
+tests=(0001 0002 0003 0004 0005 0006 0007 0008 0009 0010 0011 0012 0013 0014 0015 0016 0017 0018 0019 0020 0021 0022 0023 0024 0025 0026 0027 0028 0029 0030 0031 0032 0033 0034 0035 0036 0037 0038 0039 0040 0041 0045 0046 0047 0048 0049 0051 0052 0100 0101 0102 0103 0201 0202 0203 0204 0205 0206 0207 0208 0209 0210 0211 0212 0213 0214)
 
 # Multi-file tests
 multiTests=(0042 0043 0044 0050 0053)
@@ -49,14 +49,14 @@ multiTests=(0042 0043 0044 0050 0053)
 fails=0
 
 # Single File 
-echo " --- Running single file tests ---"
+echo " --- Running single file tests [file format version 2.0]---"
 for tc in ${tests[@]}; do
   echo "Running test ${tc}"
   tfile=$tc.cpp
   gfile=$tc.ipcg
-  tgt=$tc.gtipcg
+  tgt=$tc.gtmcg
 
-  $cgcollectorExe ./input/singleTU/$tfile -- >>log/testrun.log 2>&1
+  $cgcollectorExe --metacg-format-version=2 ./input/singleTU/$tfile -- >>log/testrun.log 2>&1
   cat ./input/singleTU/$gfile | python3 -m json.tool > ./input/singleTU/${gfile}_
   mv ./input/singleTU/${gfile}_ ./input/singleTU/${gfile}
   $testerExe ./input/singleTU/$tgt ./input/singleTU/$gfile >>log/testrun.log 2>&1 
@@ -72,14 +72,14 @@ done
   echo "Single file test failuers: $fails"
 
 # Single File and full Ctor/Dtor coverage
-echo " --- Running single file full ctor/dtor tests ---"
+echo " --- Running single file full ctor/dtor tests [file format version 2.0]---"
 for tc in ./input/allCtorDtor/*.cpp ; do
   echo "Running test ${tc}"
   tfile=$tc
   gfile="${tc/cpp/ipcg}"
-  tgt="${tc/cpp/gtipcg}"
+  tgt="${tc/cpp/gtmcg}"
 
-  $cgcollectorExe --capture-ctors-dtors $tfile -- >>log/testrun.log 2>&1 
+  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors $tfile -- >>log/testrun.log 2>&1 
   #$cgcollectorExe --capture-ctors-dtors $tfile -- 
   $testerExe $tgt $gfile >>log/testrun.log 2>&1 
 
@@ -95,7 +95,7 @@ done
 
 
 # Multi File
-echo " --- Running multi file tests ---"
+echo " --- Running multi file tests [file format version 2.0] ---"
 for tc in ${multiTests[@]}; do
   echo "Running test ${tc}"
   # Input files
@@ -107,13 +107,13 @@ for tc in ${multiTests[@]}; do
   ipcgTbFile="${tbFile/cpp/ipcg}"
 
   # Groundtruth files
-  gtaFile="${taFile/cpp/gtipcg}"
-  gtbFile="${tbFile/cpp/gtipcg}"
-  gtCombFile="${tc}_combined.gtipcg"
+  gtaFile="${taFile/cpp/gtmcg}"
+  gtbFile="${tbFile/cpp/gtmcg}"
+  gtCombFile="${tc}_combined.gtmcg"
 
   # Translation-unit-local
-  $cgcollectorExe ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
-  $cgcollectorExe ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
+  $cgcollectorExe  --metacg-format-version=2 ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
+  $cgcollectorExe  --metacg-format-version=2 ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
 
   $testerExe ./input/multiTU/${ipcgTaFile} ./input/multiTU/${gtaFile} >>log/testrun.log 2>&1
   aErr=$?

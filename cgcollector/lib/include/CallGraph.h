@@ -49,10 +49,14 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
 
   bool captureCtorsDtors{false};
 
+  std::vector<const clang::Decl *> inOrderDecls;
+
   // We store unresolved symbols across function decl traverses
  public:
   CallGraph();
   ~CallGraph();
+
+  const std::vector<const clang::Decl *> getInOrderDecls() const {return inOrderDecls;}
 
   using UnresolvedMapTy = std::unordered_map<const clang::FunctionDecl *, std::unordered_set<const clang::VarDecl *>>;
 

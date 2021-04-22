@@ -1,6 +1,8 @@
 # How to contribute
 
 Thanks for considering to contribute to MetaCG.
+We are currently developing in a non-public repository.
+In case you want to contribute, please reach out through the issues and we see how we progress.
 
 ## Issues
 
@@ -22,7 +24,7 @@ Preceed a branch either with `fix/` or with `feat/` to indicate it.
 ## Tests
 
 Every contribution must add reasonable tests.
-(We use a Gitlab internally for development, so he github CI / actions are currently being set up.)
+(We use a Gitlab internally for development, so the github CI / actions are not yet set up.)
 
 ## Commit messages
 

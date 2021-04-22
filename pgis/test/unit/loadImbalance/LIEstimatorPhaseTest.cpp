@@ -1,3 +1,8 @@
+/**
+ * File: LIEstimatorPhaseTest.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #include "gtest/gtest.h"
 
 #include "../LoggerUtil.h"
@@ -16,6 +21,9 @@ TEST_F(LIEstimatorPhaseTest, TrivialTest) { ASSERT_TRUE(true); }
  * Tests whether an empty CG gets recognized, from test/IPCGEstimatorPhaseTest.cpp
  */
 TEST_F(LIEstimatorPhaseTest, EmptyCG) {
+  // XXX this is not ideal, but required for the death assert
+  LOGGERUTIL_ENABLE_ERRORS_LOCAL
+
   Config cfg;
   auto &cm = CallgraphManager::get();
   cm.clear();
@@ -43,7 +51,7 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
   cm.clear();
   cm.setConfig(&cfg);
 
-  spdlog::set_level(spdlog::level::debug);
+  //spdlog::set_level(spdlog::level::debug);
   cm.setNoOutput();
 
   // setup graph
@@ -109,7 +117,7 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
 
-  std::cout << cm.getCallgraph(&cm).findMain()->getFunctionName() << std::endl;
+  //std::cout << cm.getCallgraph(&cm).findMain()->getFunctionName() << std::endl;
 
   // apply estimator phases
   LoadImbalance::Config liConfig = {LoadImbalance::MetricType::Efficiency,
@@ -230,7 +238,7 @@ TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
   grandchild->get<pira::BaseProfileData>()->addCallData(child2, 1, 10.0, 1.0, 0, 0);
   grandchild->get<pira::BaseProfileData>()->addCallData(child2, 1, 10.0, 100.0, 0, 1);
 
-  std::cout << grandchild->getParentNodes() << std::endl;
+  //std::cout << grandchild->getParentNodes() << std::endl;
 
   // apply estimator phases
   LoadImbalance::Config liConfig = {LoadImbalance::MetricType::Efficiency,
@@ -289,7 +297,7 @@ TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
   grandchild->get<pira::BaseProfileData>()->addCallData(child2, 1, 10.0, 1.0, 0, 0);
   grandchild->get<pira::BaseProfileData>()->addCallData(child2, 1, 10.0, 100.0, 0, 1);
 
-  std::cout << grandchild->getParentNodes() << std::endl;
+  //std::cout << grandchild->getParentNodes() << std::endl;
 
   // apply estimator phases
   LoadImbalance::Config liConfig = {LoadImbalance::MetricType::Efficiency,

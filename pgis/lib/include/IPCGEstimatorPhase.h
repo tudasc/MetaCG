@@ -1,3 +1,8 @@
+/**
+ * File: IPCGEstimatorPhase.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #ifndef IPCGESTIMATORPHASE_H_
 #define IPCGESTIMATORPHASE_H_
 
@@ -30,7 +35,7 @@ class StatisticsEstimatorPhase : public EstimatorPhase {
         numReachableFunctions(0),
         totalStmts(0),
         stmtsCoveredWithInstr(0),
-        stmtsActuallyCovered(0) {}
+        stmtsActuallyCovered(0), totalVarDecls(0) {}
 
   void modifyGraph(CgNodePtr mainMethod) override;
   void printReport() override;
@@ -46,6 +51,7 @@ class StatisticsEstimatorPhase : public EstimatorPhase {
   std::map<long int, long int> stmtInclHist;
   long int stmtsCoveredWithInstr;
   long int stmtsActuallyCovered;
+  long int totalVarDecls;
 };
 
 /**

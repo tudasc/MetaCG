@@ -48,6 +48,7 @@ function(add_collector_lib target)
   )
 endfunction()
 
+
 # Compile flags
 function(default_compile_options target)
   cmake_parse_arguments(ARG "" "" "PRIVATE_FLAGS;PUBLIC_FLAGS" ${ARGN})

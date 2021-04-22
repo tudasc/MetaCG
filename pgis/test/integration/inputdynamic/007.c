@@ -49,7 +49,6 @@ int fooChildOne() {
   return (a * b) / c;
 }
 
-
 int foo() {
   sleep(10);
   fooChildTwo();

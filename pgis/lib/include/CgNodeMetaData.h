@@ -1,3 +1,8 @@
+/**
+ * File: CgNodeMetaData.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #ifndef PIRA_CGNODE_METADATA_H
 #define PIRA_CGNODE_METADATA_H
 
@@ -65,18 +70,16 @@ class BaseProfileData : public MetaData {
   }
   unsigned long long getNumberOfCalls(CgNodePtr parentNode) { return callFrom[parentNode]; }
 
-  const std::vector<CgLocation>& getCgLocation() const { return cgLoc; }
+  const std::vector<CgLocation> &getCgLocation() const { return cgLoc; }
 
-  void pushCgLocation(CgLocation toPush) {
-    this->cgLoc.push_back(toPush);
-  }
+  void pushCgLocation(CgLocation toPush) { this->cgLoc.push_back(toPush); }
 
  private:
-  unsigned long long numCalls = 0;
-  double timeInSeconds = .0;
-  double inclTimeInSeconds = .0;
-  int threadId = 0;
-  int processId = 0;
+  unsigned long long numCalls{0};
+  double timeInSeconds{.0};
+  double inclTimeInSeconds{.0};
+  int threadId{0};
+  int processId{0};
   std::unordered_map<CgNodePtr, unsigned long long> callFrom;
   std::unordered_map<CgNodePtr, double> timeFrom;
   std::vector<CgLocation> cgLoc;
@@ -105,10 +108,10 @@ class PiraOneData : public MetaData {
   bool inPreviousProfile() const { return wasInPreviousProfile; }
 
  private:
-  bool wasInPreviousProfile = false;
-  bool dominantRuntime = false;
-  bool hasBody = false;
-  int numStmts = 0;
+  bool wasInPreviousProfile{false};
+  bool dominantRuntime {false};
+  bool hasBody {false};
+  int numStmts {0};
   std::string filename;
 };
 
@@ -152,6 +155,20 @@ class PiraTwoData : public MetaData {
   std::vector<std::pair<std::string, std::vector<int>>> params;
   std::vector<double> rtVec;
   int numReps;
+};
+
+class FilePropertiesMetaData : public MetaData {
+ public:
+  static constexpr const char *key() { return "FilePropertiesMetaData"; }
+  FilePropertiesMetaData() : origin("INVALID"), fromSystemInclude(false) {}
+  std::string origin;
+  bool fromSystemInclude;
+};
+
+class CodeStatisticsMetaData : public MetaData {
+  public:
+   static constexpr const char *key() { return "CodeStatisticsMetaData"; }
+   int numVars{0};
 };
 
 /**
