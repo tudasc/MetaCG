@@ -1,3 +1,8 @@
+/**
+ * File: LIEstimatorPhase.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #ifndef LI_ESTIMATORPHASE_H
 #define LI_ESTIMATORPHASE_H
 
@@ -34,8 +39,7 @@ class LIEstimatorPhase : public EstimatorPhase {
   /**
    * Instrument all children which have not been marked as irrelevant
    */
-  void instrumentRelevantChildren(CgNodePtr node, pira::Statements statementThreshold,
-                                  std::ostringstream &debugString);
+  void instrumentRelevantChildren(CgNodePtr node, pira::Statements statementThreshold, std::ostringstream &debugString);
 
   void contextHandling(CgNodePtr n, CgNodePtr mainNod, std::ostringstream &debugString);
 

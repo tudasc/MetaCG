@@ -6,6 +6,7 @@
 int main(int argc, char **argv) {
   if (argc != 3) {
     std::cerr << "Usage: " << argv[0] << " groundtruth.json collector-result.ipcg" << std::endl;
+    return -1;
   }
 
   std::cout << "Running test for " << argv[1] << " == " << argv[2] << std::endl;

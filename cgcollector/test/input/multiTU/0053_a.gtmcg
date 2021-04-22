@@ -1,0 +1,56 @@
+{
+    "_CG": {
+        "_ZN13MyClassDerive3fooEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": true,
+            "hasBody": true,
+            "isVirtual": true,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0053.h",
+                    "systemInclude": false
+                },
+                "mallocCollector": [],
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": [
+                "_ZN7MyClass3fooEv"
+            ]
+        },
+        "_ZN7MyClass3fooEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": true,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0053.h",
+                    "systemInclude": false
+                },
+                "mallocCollector": [],
+                "numStatements": 0
+            },
+            "overriddenBy": [
+                "_ZN13MyClassDerive3fooEv"
+            ],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "0d36c2c6619b53464d31d589be9bc2f9e11660f4",
+            "version": "0.2"
+        },
+        "version": "2.0"
+    }
+}

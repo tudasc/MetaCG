@@ -6,15 +6,23 @@ add_executable(cgsimpletester
 	CGSimpleTester.cpp
 )
 
+add_executable(mcgtester
+  MCGTester.cpp
+)
+
 register_to_clang_tidy(cgsimpletester)
+register_to_clang_tidy(mcgtester)
 
 add_json(cgsimpletester)
-
-
 default_compile_options(cgsimpletester)
 
+add_json(mcgtester)
+add_collector_include(mcgtester)
+add_collector_lib(mcgtester)
+default_compile_options(mcgtester)
+
 install(
-  TARGETS cgsimpletester
+  TARGETS cgsimpletester mcgtester
   EXPORT ${TARGETS_EXPORT_NAME}
 	RUNTIME DESTINATION bin
 )

@@ -1,3 +1,8 @@
+/**
+ * File: IPCGEstimatorPhase.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 
 #include "IPCGEstimatorPhase.h"
 #include "CgHelper.h"
@@ -380,9 +385,10 @@ void StatisticsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   for (auto node : *graph) {
     if (!node->isReachable()) {
       spdlog::get("console")->debug("Running on non-reachable function {}", node->getFunctionName());
-      numReachableFunctions++;
       continue;
     }
+
+    numReachableFunctions++;
     auto numStmts = node->get<PiraOneData>()->getNumberOfStatements();
     if (node->isInstrumentedWitness()) {
       stmtsCoveredWithInstr += numStmts;
@@ -395,6 +401,13 @@ void StatisticsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
     totalStmts += numStmts;
     auto &inclHistElem = stmtInclHist[sce.getNumStatements(node)];
     inclHistElem++;
+
+    if (node->has<CodeStatisticsMetaData>()) {
+      const auto csMD = node->get<CodeStatisticsMetaData>();
+      totalVarDecls += csMD->numVars;
+    } else {
+      spdlog::get("console")->warn("Node does not have CodeStatisticsMetaData");
+    }
   }
 }
 
@@ -434,9 +447,9 @@ void StatisticsEstimatorPhase::printReport() {
   spdlog::get("console")->info(
       " === Call graph statistics ===\nNo. of Functions:\t{}\nNo. of reach. Funcs:\t{}\nNo. of statements:\t{}\nMax No. Incl Stmt:\t{}\nMedian "
       "No. Incl Stmt:\t{}\nMin No. Incl Stmt:\t{}\nMax No. Stmt:\t\t{}\nMedian No. Stmt:\t{}\nMin No. "
-      "Stmt:\t\t{}\nCovered w/ Instr:\t{}\nStmt not Covered:\t{}\n === === === === ===",
+      "Stmt:\t\t{}\nCovered w/ Instr:\t{}\nStmt not Covered:\t{}\n\n-------\nTotal Var Decls\t{}\n\n === === === === ===",
       numFunctions, numReachableFunctions, totalStmts, maxNumStmts, medianNumStmts, minNumStmts, maxNumSingleStmts, medianNumSingleStmts,
-      minNumSingleStmts, stmtsCoveredWithInstr, stmtsActuallyCovered, (totalStmts - stmtsCoveredWithInstr));
+      minNumSingleStmts, stmtsCoveredWithInstr, stmtsActuallyCovered, (totalStmts - stmtsCoveredWithInstr), totalVarDecls);
 }
 
 long int StatisticsEstimatorPhase::getMedianNumInclStmts() {

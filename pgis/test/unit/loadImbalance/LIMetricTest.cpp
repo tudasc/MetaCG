@@ -1,3 +1,8 @@
+/**
+ * File: LIMetricTest.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #include "gtest/gtest.h"
 #include <loadImbalance/metric/EfficiencyMetric.h>
 #include <loadImbalance/metric/ImbalancePercentageMetric.h>

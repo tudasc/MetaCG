@@ -4,7 +4,7 @@ add_executable(basictests CgNodeTest.cpp
   CallgraphManagerTest.cpp
   IPCGEstimatorPhaseTest.cpp
   IPCGAnnotation.cpp
-  IPCGReaderTest.cpp
+  MCGReaderTest.cpp
 
   loadImbalance/LIMetricTest.cpp
   loadImbalance/LIEstimatorPhaseTest.cpp
@@ -17,6 +17,6 @@ add_pgoe_includes(basictests)
 add_pgoe_library(basictests)
 
 # add_library(ipcg)
-target_link_libraries(basictests ipcg)
+target_link_libraries(basictests mcg)
 
 add_test(NAME cgnode_test COMMAND basictests)

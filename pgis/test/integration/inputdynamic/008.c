@@ -1,13 +1,9 @@
 
 #include "unistd.h"
 
-int fooLeaf() {
-  return 4;
-}
+int fooLeaf() { return 4; }
 
-int fooChildTwo() {
-  return (fooLeaf() * 2) / fooLeaf();
-}
+int fooChildTwo() { return (fooLeaf() * 2) / fooLeaf(); }
 
 int fooChildOne() {
   int a = 0;
@@ -17,10 +13,7 @@ int fooChildOne() {
   return (a * b) / c;
 }
 
-int fooIntermediate() {
-  return fooChildOne() / fooChildTwo();
-}
-
+int fooIntermediate() { return fooChildOne() / fooChildTwo(); }
 
 int foo() {
   sleep(10);

@@ -18,6 +18,9 @@ static llvm::cl::OptionCategory cgc("CGCollector");
 static llvm::cl::opt<bool> captureCtorsDtors("capture-ctors-dtors",
                                              llvm::cl::desc("Capture calls to Constructors and Destructors"),
                                              llvm::cl::cat(cgc));
+static llvm::cl::opt<int> metacgFormatVersion("metacg-format-version",
+                                              llvm::cl::desc("MetaCG file version to output, values={1,2}, default=1"),
+                                              llvm::cl::cat(cgc));
 
 typedef std::vector<MetaCollector *> MetaCollectorVector;
 
@@ -33,7 +36,7 @@ class CallGraphCollectorConsumer : public clang::ASTConsumer {
       mc->calculateFor(callGraph);
     }
 
-    convertCallGraphToJSON(callGraph, _json);
+    convertCallGraphToJSON(callGraph, _json, metacgFormatVersion);
   }
 
  private:
@@ -65,6 +68,7 @@ int main(int argc, const char **argv) {
   if (argc < 2) {
     return -1;
   }
+  metacgFormatVersion.setInitialValue(1);  // Have the old file format as default
 
   std::cout << "Running MetaCG::CGCollector (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
             << ")\nGit revision: " << MetaCG_GIT_SHA << std::endl;
@@ -74,14 +78,22 @@ int main(int argc, const char **argv) {
 
   nlohmann::json j;
   auto noStmtsCollector = std::make_unique<NumberOfStatementsCollector>();
+  auto foCollector = std::make_unique<FilePropertyCollector>();
+  auto csCollector = std::make_unique<CodeStatisticsCollector>();
+  auto mcCollector = std::make_unique<MallocVariableCollector>();
+  //auto tyCollector = std::make_unique<UniqueTypeCollector>();
 
   MetaCollectorVector mcs{noStmtsCollector.get()};
+  mcs.push_back(foCollector.get());
+  mcs.push_back(csCollector.get());
+  mcs.push_back(mcCollector.get());
+  //mcs.push_back(tyCollector.get());
 
   CT.run(
       clang::tooling::newFrontendActionFactory<CallGraphCollectorFactory>(new CallGraphCollectorFactory(mcs, j)).get());
 
   for (const auto mc : mcs) {
-    addMetaInformationToJSON(j, mc->getName(), mc->getMetaInformation());
+    addMetaInformationToJSON(j, mc->getName(), mc->getMetaInformation(), metacgFormatVersion);
   }
 
   std::string filename(*OP.getSourcePathList().begin());

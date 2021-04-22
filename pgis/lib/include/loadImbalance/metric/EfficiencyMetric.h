@@ -1,10 +1,14 @@
+/**
+ * File: EfficiencyMetric.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #ifndef LI_EFFICIENCY_METRIC_H
 #define LI_EFFICIENCY_METRIC_H
 
 #include "AbstractMetric.h"
 
 namespace LoadImbalance {
-
 
 /**
  * Load imbalance metric "Efficiency"

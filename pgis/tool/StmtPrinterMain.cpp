@@ -1,10 +1,15 @@
+/**
+ * File: StmtPrinterMain.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/pira/LICENSE.txt
+ */
+
 #include <cstdlib>
 #include <fstream>
 #include <vector>
 
 #include "CubeReader.h"
 #include "DotReader.h"
-#include "IPCGReader.h"
+#include "MCGReader.h"
 
 #include "Callgraph.h"
 
@@ -110,7 +115,10 @@ int main(int argc, char **argv) {
 
   if (stringEndsWith(filePath_ipcg, ".ipcg")) {
     std::cout << "Reading from ipcg file " << filePath_ipcg << std::endl;
-    IPCGAnal::buildFromJSON(cg, filePath_ipcg, &c);
+    MetaCG::io::FileSource fs(filePath_ipcg);
+    MetaCG::io::VersionOneMetaCGReader mcgReader(fs);
+    mcgReader.read(cg);
+
     if (argc == 2) {
       registerEstimatorPhases(cg, &c, true, 0);
     }

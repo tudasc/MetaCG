@@ -1,0 +1,181 @@
+{
+    "_CG": {
+        "_ZN4BaseC1Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0002.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN4BaseC2Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0002.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN4BaseC5Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0002.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN4BaseCEv": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0002.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN4BaseD0Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0002.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN4BaseD1Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0002.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN4BaseD2Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0002.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN4BaseD5Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0002.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_ZN4BaseD5Ev",
+                "_ZN4BaseD0Ev",
+                "_ZN4BaseD1Ev",
+                "_ZN4BaseD2Ev",
+                "_ZN4BaseCEv",
+                "_ZN4BaseC2Ev",
+                "_ZN4BaseC5Ev",
+                "_ZN4BaseC1Ev"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0002.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "a12c2adc9482ef0062fd27f104ab4dfd679cb91f",
+            "version": "0.2"
+        },
+        "version": "2.0"
+    }
+}

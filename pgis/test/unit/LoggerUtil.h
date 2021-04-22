@@ -1,3 +1,8 @@
+/**
+ * File: LoggerUtil.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #ifndef PGIS_UNITTEST_LOGGERUTIL_H
 #define PGIS_UNITTEST_LOGGERUTIL_H
 
@@ -5,6 +10,28 @@
 #include "spdlog/spdlog.h"
 
 namespace loggerutil {
+/**
+  * Enables output of logged errors.
+  *
+  * Typically not needed to call explicitly, use the convenience macro instead.
+  */
+inline void enableErrors() {
+  spdlog::get("console")->set_level(spdlog::level::err);
+  spdlog::get("errconsole")->set_level(spdlog::level::err);
+}
+/** 
+ * Diables output of logged errors.
+ *
+ * Typically not needed to call explicitly, use the convenience macro instead.
+ */
+inline void disableErrors() {
+  spdlog::get("console")->set_level(spdlog::level::off);
+  spdlog::get("errconsole")->set_level(spdlog::level::off);
+}
+
+/**
+ * Returns initialized logger object with output disabled.
+ */
 inline void getLogger() {
   auto c = spdlog::get("console");
   if (!c) {
@@ -14,7 +41,29 @@ inline void getLogger() {
   if (!e) {
     e = spdlog::stderr_color_mt("errconsole");
   }
+  disableErrors();
 }
+
+/**
+ * Enables error outputs in logger.
+ * 
+ * This is needed by some of the death tests to succeed.
+ * Typically not needed to call explicitly, use the convenience macro instead.
+ */
+struct ErrorOutEnabler {
+  ErrorOutEnabler() {
+    enableErrors();
+  }
+  ~ErrorOutEnabler() {
+    disableErrors();
+  }
+};
+
 }  // namespace loggerutil
+
+/**
+ * Convenence macro to enable error output for a single scope.
+ */
+#define LOGGERUTIL_ENABLE_ERRORS_LOCAL loggerutil::ErrorOutEnabler __eoe;
 
 #endif

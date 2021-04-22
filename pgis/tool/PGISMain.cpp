@@ -1,8 +1,14 @@
+/**
+ * File: PGISMain.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/pira/LICENSE.txt
+ */
+
+
 #include "GlobalConfig.h"
 
 #include "CubeReader.h"
 #include "DotReader.h"
-#include "IPCGReader.h"
+#include "MCGReader.h"
 
 #include "Callgraph.h"
 
@@ -42,7 +48,7 @@ void registerEstimatorPhases(CallgraphManager &cg, Config *c, bool isIPCG, float
 
   // Actually do the selection
   if (!isIPCG) {
-    spdlog::get("console")->info("Why? New runtime threshold for profiling: {}", runtimeThreshold);
+    spdlog::get("console")->info("New runtime threshold for profiling: ${}$", runtimeThreshold);
     cg.registerEstimatorPhase(new RuntimeEstimatorPhase(runtimeThreshold));
   } else {
     const int nStmt = 2000;
@@ -115,7 +121,8 @@ int main(int argc, char **argv) {
     (debugLevel.cliName, "Whether debug messages should be printed", optType(debugLevel)->default_value("0"))
     (scorepOut.cliName, "Write instrumentation file with Score-P syntax", optType(scorepOut)->default_value("false"))
     (ipcgExport.cliName, "Export the profiling info into IPCG file", optType(ipcgExport)->default_value("false"))
-    (loadImbalanceConfig.cliName, "File path to configuration file for load imbalance detection", optType(loadImbalanceConfig)->default_value(""));
+    (loadImbalanceConfig.cliName, "File path to configuration file for load imbalance detection", optType(loadImbalanceConfig)->default_value(""))
+    (metacgFormat.cliName, "Selects the MetaCG format to expect", optType(metacgFormat)->default_value("1"));
   // clang-format on
 
   Config c;
@@ -159,6 +166,9 @@ int main(int argc, char **argv) {
   checkAndSet<std::string>(extrapConfig.cliName, result, disposable);
   checkAndSet<std::string>(loadImbalanceConfig.cliName, result, disposable);
 
+  int mcgVersion;
+  checkAndSet<int>(metacgFormat.cliName, result, mcgVersion);
+
   if (printDebug == 1) {
     spdlog::set_level(spdlog::level::debug);
   } else if (printDebug == 2) {
@@ -168,9 +178,9 @@ int main(int argc, char **argv) {
   }
 
   // for static instrumentation
-  std::string ipcgFullPath(argv[argc - 1]);
-  std::string ipcgFilename = ipcgFullPath.substr(ipcgFullPath.find_last_of('/') + 1);
-  c.appName = ipcgFilename.substr(0, ipcgFilename.find_last_of('.'));
+  std::string mcgFullPath(argv[argc - 1]);
+  std::string mcgFilename = mcgFullPath.substr(mcgFullPath.find_last_of('/') + 1);
+  c.appName = mcgFilename.substr(0, mcgFilename.find_last_of('.'));
 
   const auto parseExtrapArgs = [](auto argsRes) {
     if (argsRes.count("extrap")) {
@@ -194,8 +204,23 @@ int main(int argc, char **argv) {
     cg.setScorepOutputFormat();
   }
 
-  if (stringEndsWith(ipcgFullPath, ".ipcg") || stringEndsWith(ipcgFullPath, ".mcg")) {
-    IPCGAnal::buildFromJSON(cg, ipcgFullPath, &c);
+  if (stringEndsWith(mcgFullPath, ".ipcg") || stringEndsWith(mcgFullPath, ".mcg")) {
+    MetaCG::io::FileSource fs(mcgFullPath);
+    if (pgis::config::GlobalConfig::get().getAs<int>(metacgFormat.cliName) == 1) {
+      MetaCG::io::VersionOneMetaCGReader mcgReader(fs);
+      mcgReader.read(cg);
+    } else if (mcgVersion == 2) {
+      MetaCG::io::VersionTwoMetaCGReader mcgReader(fs);
+      // Example how to add MetaDataHandler
+      cg.addMetaHandler<MetaCG::io::retriever::PiraOneDataRetriever>();
+      cg.addMetaHandler<MetaCG::io::retriever::FilePropertyHandler>();
+      cg.addMetaHandler<MetaCG::io::retriever::CodeStatisticsHandler>();
+      cg.addMetaHandler<LoadImbalance::LoadImbalanceMetaDataHandler>();
+      mcgReader.read(cg);
+    }
+    
+    //MetaCG::io::buildFromJSON(cg, ipcgFullPath, &c);
+    
     if (applyStaticFilter) {
       // load imbalance detection
       // ========================
@@ -250,7 +275,7 @@ int main(int argc, char **argv) {
       // should be set for working load imbalance detection
       if (result.count("export")) {
         console->info("Exporting load imbalance data to IPCG file.");
-        IPCGAnal::annotateJSON(cg.getCallgraph(&CallgraphManager::get()), ipcgFullPath, LoadImbalance::LIRetriever());
+        MetaCG::io::annotateJSON(cg.getCallgraph(&CallgraphManager::get()), mcgFullPath, LoadImbalance::LIRetriever());
       } else {
         spdlog::get("console")->warn("--export-flag is highly recommended for load imbalance detection");
       }
@@ -280,7 +305,7 @@ int main(int argc, char **argv) {
     // running the estimator phase
     if (result.count("export")) {
       console->info("Exporting to IPCG file.");
-      IPCGAnal::annotateJSON(cg.getCallgraph(&CallgraphManager::get()), ipcgFullPath, IPCGAnal::retriever::PiraTwoDataRetriever());
+      MetaCG::io::annotateJSON(cg.getCallgraph(&CallgraphManager::get()), mcgFullPath, MetaCG::io::retriever::PiraTwoDataRetriever());
    }
   }
 

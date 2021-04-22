@@ -1,3 +1,8 @@
+/**
+ * File: AbstractMetric.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #ifndef LI_ABSTRACT_METRIC_H
 #define LI_ABSTRACT_METRIC_H
 
@@ -37,7 +42,6 @@ class AbstractMetric {
 
  private:
   void calcIndicators(std::ostringstream &debugString);
-  
 };
 }  // namespace LoadImbalance
 

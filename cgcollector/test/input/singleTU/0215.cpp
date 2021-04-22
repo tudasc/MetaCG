@@ -1,10 +1,14 @@
 
-struct A {
-  void foo() {}
-};
-void bar(A *a, void (A::*f)()) { (a->*f)(); }
-void bar2(A *a, void (A::*f)()) { bar(a, f); }
+int* k;
+
+void *malloc(int n) {
+  return (void *) n;
+}
+
 int main() {
-  A a;
-  bar2(&a, &A::foo);
+  int j =23;
+  int *i = (int *)malloc(8);
+  i = (int *)malloc(42);
+  k = new int[j];
+  return 0;
 }
