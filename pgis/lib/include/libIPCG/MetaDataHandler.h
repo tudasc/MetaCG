@@ -1,6 +1,7 @@
 /**
  * File: MetaDataHandler.h
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #ifndef METACG_LIBMCG_METADATA_HANDLER_H
@@ -37,8 +38,7 @@ struct MetaDataHandler {
   const std::string value(const CgNodePtr n) const { return "Should not have happened"; }
 
   /** Reads the meta data from the json file and attaches it to the graph nodes */
-  virtual void read([[maybe_unused]] const json &j,
-                    const std::string &functionName) = 0;
+  virtual void read([[maybe_unused]] const json &j, const std::string &functionName) = 0;
 
   /** Call back automatically invoked when adding to CallgraphManager */
   void registerCGManager(CallgraphManager *cgManager) { cgm = cgManager; }
@@ -54,8 +54,7 @@ struct TestMetaHandler : public MetaDataHandler {
   bool handles(const CgNodePtr n) const override { return false; }
   virtual const std::string toolName() const override { return "TestMetaHandler"; }
   int value(const CgNodePtr n) const { return 42; }
-  virtual void read([[maybe_unused]] const json &j, const std::string &functionName) override {
-  }
+  virtual void read([[maybe_unused]] const json &j, const std::string &functionName) override {}
 };
 
 /**

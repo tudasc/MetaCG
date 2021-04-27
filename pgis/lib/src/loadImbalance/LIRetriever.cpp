@@ -33,5 +33,6 @@ void LoadImbalanceMetaDataHandler::read(const nlohmann::json &j, const std::stri
     spdlog::get("console")->debug("Setting flag visited");
     md->flag(LoadImbalance::FlagType::Visited);
   }
+  md->setVirtual(node->isVirtual()); // TODO Unify
   node->addMetaData(md);
 }

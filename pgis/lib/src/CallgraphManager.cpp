@@ -5,6 +5,7 @@
 
 #include "CallgraphManager.h"
 #include "GlobalConfig.h"
+#include "Timing.h"
 
 #include "ExtrapConnection.h"
 
@@ -166,9 +167,9 @@ void CallgraphManager::applyRegisteredPhases() {
   while (!phases.empty()) {
     EstimatorPhase *phase = phases.front();
 
-#if BENCHMARK_PHASES
-    auto startTime = std::chrono::system_clock::now();
-#endif
+    { // RAII
+      const std::string curPhase = phase->getName();
+      MetaCG::RuntimeTimer rtt("Running curPhase");
     phase->modifyGraph(mainFunction);
     phase->generateReport();
 
@@ -185,12 +186,7 @@ void CallgraphManager::applyRegisteredPhases() {
 #if DUMP_UNWOUND_NAMES
     dumpUnwoundNames(report);
 #endif  // DUMP_UNWOUND_NAMES
-
-#if BENCHMARK_PHASES
-    auto endTime = std::chrono::system_clock::now();
-    double calculationTime = (endTime - startTime).count() / 1e6;
-    spdlog::get("console")->debug("Calculating phase {} took {} sec", phase->getName(), calculationTime);
-#endif
+    } // RAII
 
     phases.pop();
     // We don't know if estimator phases hold references / pointers to other EstimatorPhases
