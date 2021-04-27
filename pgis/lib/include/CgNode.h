@@ -1,6 +1,7 @@
 /**
  * File: CgNode.h
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #ifndef CG_NODE_H
@@ -98,6 +99,9 @@ class CgNode {
   bool isReachable() const { return this->reachable; }
   bool isSameFunction(CgNodePtr otherNode) const;
 
+  bool isVirtual() const { return isMarkedVirtual; }
+  void setIsVirtual(bool virtuality) { isMarkedVirtual = virtuality; }
+
   std::string getFunctionName() const;
   int getLineNumber() const { return line; }
   void setLineNumber(int line);
@@ -166,6 +170,7 @@ class CgNode {
   unsigned long long expectedNumberOfSamples;
 
   bool reachable;
+  bool isMarkedVirtual;
 
   CgNodePtrSet childNodes;
   CgNodePtrSet parentNodes;
@@ -218,7 +223,7 @@ struct CgEdge {
 };
 
 template <typename T, typename... Args>
-T *getOrCreateMD(CgNodePtr p, const Args &...args) {
+T *getOrCreateMD(CgNodePtr p, const Args &... args) {
   auto [has, md] = p->checkAndGet<T>();
   if (has) {
     return md;

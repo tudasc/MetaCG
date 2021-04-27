@@ -1,6 +1,7 @@
 /**
  * File: CgNodeMetaData.h
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #ifndef PIRA_CGNODE_METADATA_H
@@ -11,7 +12,8 @@
 #include "ExtrapConnection.h"
 #include "GlobalConfig.h"
 
-#include "CgNode.h"
+//#include "CgNode.h"
+#include "CgLocation.h"
 #include "nlohmann/json.hpp"
 
 namespace pira {
@@ -109,9 +111,9 @@ class PiraOneData : public MetaData {
 
  private:
   bool wasInPreviousProfile{false};
-  bool dominantRuntime {false};
-  bool hasBody {false};
-  int numStmts {0};
+  bool dominantRuntime{false};
+  bool hasBody{false};
+  int numStmts{0};
   std::string filename;
 };
 
@@ -166,9 +168,9 @@ class FilePropertiesMetaData : public MetaData {
 };
 
 class CodeStatisticsMetaData : public MetaData {
-  public:
-   static constexpr const char *key() { return "CodeStatisticsMetaData"; }
-   int numVars{0};
+ public:
+  static constexpr const char *key() { return "CodeStatisticsMetaData"; }
+  int numVars{0};
 };
 
 /**

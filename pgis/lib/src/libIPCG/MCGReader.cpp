@@ -1,5 +1,7 @@
 #include "MCGReader.h"
 
+#include "Timing.h"
+
 #include "spdlog/spdlog.h"
 
 #include <loadImbalance/LIMetaData.h>
@@ -38,9 +40,11 @@ void MetaCGReader::setIfNotNull(FieldTy &field, const JsonTy &jsonValue, const s
 }
 
 void MetaCGReader::buildGraph(CallgraphManager &cgManager, MetaCGReader::StrStrMap &potentialTargets) {
+  MetaCG::RuntimeTimer rtt("buildGraph");
   // Register nodes in the actual graph
   for (const auto [k, fi] : functions) {
     auto node = cgManager.findOrCreateNode(k); // node pointer currently unused
+    node->setIsVirtual(fi.isVirtual);
     for (const auto &c : fi.callees) {
       cgManager.putEdge(k, "", 0, c, 0, .0, 0, 0);  // regular call edges
       auto &potTargets = potentialTargets[c];
@@ -52,6 +56,7 @@ void MetaCGReader::buildGraph(CallgraphManager &cgManager, MetaCGReader::StrStrM
 }
 
 MetaCGReader::StrStrMap MetaCGReader::buildVirtualFunctionHierarchy(CallgraphManager &cgManager) {
+  MetaCG::RuntimeTimer rtt("buildVirtualFunctionHierarchy");
   // Now the functions map holds all the information
   std::unordered_map<std::string, std::unordered_set<std::string>> potentialTargets;
   for (const auto [k, funcInfo] : functions) {
@@ -112,6 +117,9 @@ MetaCGReader::StrStrMap MetaCGReader::buildVirtualFunctionHierarchy(CallgraphMan
  * Version one Reader
  */
 void VersionOneMetaCGReader::read(CallgraphManager &cgManager) {
+
+  MetaCG::RuntimeTimer rtt("Version One Reader");
+
   spdlog::get("console")->trace("Reading");
   auto j = source.get();
 
@@ -183,6 +191,9 @@ void VersionOneMetaCGReader::addNumStmts(CallgraphManager &cgm) {
  * Version two Reader
  */
 void VersionTwoMetaCGReader::read(CallgraphManager &cgManager) {
+
+  MetaCG::RuntimeTimer rtt("VersionTwoMetaCGReader::read");
+
   auto j = source.get();
 
   auto mcgInfo = j["_MetaCG"];
@@ -236,7 +247,12 @@ void VersionTwoMetaCGReader::read(CallgraphManager &cgManager) {
 
     /** Information relevant for analysis */
     setIfNotNull(fi.hasBody, it, "hasBody");
+  }
 
+  auto potentialTargets = buildVirtualFunctionHierarchy(cgManager);
+  buildGraph(cgManager, potentialTargets);
+
+  for (json::iterator it = jsonCG.begin(); it != jsonCG.end(); ++it) {
     /** 
      * Pass each attached meta reader the current json object, to see if it has meta data
      *  particular to that reader attached.
@@ -245,13 +261,11 @@ void VersionTwoMetaCGReader::read(CallgraphManager &cgManager) {
     if (!jsonElem.is_null()) {
       for (const auto metaHandler : cgManager.getMetaHandlers()) {
         if (jsonElem.contains(metaHandler->toolName())) {
-          metaHandler->read(jsonElem, fi.functionName);
+          metaHandler->read(jsonElem, it.key());
         }
       }
     }
   }
-  auto potentialTargets = buildVirtualFunctionHierarchy(cgManager);
-  buildGraph(cgManager, potentialTargets);
 }
 
 void retriever::to_json(json &j, const PlacementInfo &pi) {
