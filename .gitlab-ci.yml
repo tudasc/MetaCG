@@ -65,7 +65,8 @@ test-cgc:
     - ls
     - ls build
     - ls build/test
-    - cd test && bash run_simple_test.sh
+    - cd test && bash run_format_one_test.sh
+    - bash run_format_two_test.sh
     - *lb-tear-down
 
 test-cgvalidate:
@@ -80,6 +81,7 @@ test-cgvalidate:
     - cd cgcollector
     - cd test/integration
     - ./runner.sh
+    - *lb-tear-down
 
 install-cgc:
   stage: install
@@ -203,6 +205,20 @@ test-dynamic-pgis:
     - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
     - ./selectionTestRunner.sh dynamic
+    
+test-imbalance-pgis:
+  stage: integration-test
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd pgis
+    - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
+    - cd test/integration
+    - ./selectionTestRunner.sh imbalance
 
 install-pgis:
   stage: install

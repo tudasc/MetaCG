@@ -1,1 +1,36 @@
-{"_ZN13MyClassDerive3fooEv":{"callees":[],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":1,"overriddenBy":[],"overriddenFunctions":[],"parents":[]},"_ZN14MyClassDeriveD3fooEv":{"callees":[],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":1,"overriddenBy":[],"overriddenFunctions":[],"parents":["main"]},"main":{"callees":["_ZN14MyClassDeriveD3fooEv"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":3,"overriddenBy":[],"overriddenFunctions":[],"parents":[]}}
+{
+    "_ZN13MyClassDerive3fooEv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    },
+    "_ZN14MyClassDeriveD3fooEv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "main": {
+        "callees": [
+            "_ZN14MyClassDeriveD3fooEv"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 3,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    }
+}

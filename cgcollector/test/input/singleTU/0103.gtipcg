@@ -1,1 +1,49 @@
-{"_Z3foov":{"callees":[],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":0,"overriddenBy":[],"overriddenFunctions":[],"parents":["main"]},"_Z3hitv":{"callees":[],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":1,"overriddenBy":[],"overriddenFunctions":[],"parents":["_Z6callerPFivE"]},"_Z6callerPFivE":{"callees":["_Z3hitv"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":0,"overriddenBy":[],"overriddenFunctions":[],"parents":["main"]},"main":{"callees":["_Z3foov","_Z6callerPFivE"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":3,"overriddenBy":[],"overriddenFunctions":[],"parents":[]}}
+{
+    "_Z3foov": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "_Z3hitv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    },
+    "_Z6callerPFivE": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "main": {
+        "callees": [
+            "_Z3foov",
+            "_Z6callerPFivE"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 3,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    }
+}

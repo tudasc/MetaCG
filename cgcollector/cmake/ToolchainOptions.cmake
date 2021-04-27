@@ -48,6 +48,7 @@ function(add_collector_lib target)
   )
 endfunction()
 
+
 # Compile flags
 function(default_compile_options target)
   cmake_parse_arguments(ARG "" "" "PRIVATE_FLAGS;PUBLIC_FLAGS" ${ARGN})
@@ -80,10 +81,10 @@ find_program(CLANG_TIDY
 
 
 function(register_to_clang_tidy target)
-  set_target_properties(${target}
-    PROPERTIES
-      CXX_CLANG_TIDY ${CLANG_TIDY}
-  )
+  #  set_target_properties(${target}
+  #  PROPERTIES
+  #    CXX_CLANG_TIDY ${CLANG_TIDY}
+  #)
 endfunction()
 
 function(add_cube_includes target)

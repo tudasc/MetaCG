@@ -1,5 +1,11 @@
+/**
+ * File: CallgraphManager.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #include "CallgraphManager.h"
 #include "GlobalConfig.h"
+#include "Timing.h"
 
 #include "ExtrapConnection.h"
 
@@ -8,6 +14,7 @@
 #include "spdlog/spdlog.h"
 
 #include <iomanip>  //  std::setw()
+#include <loadImbalance/LIMetaData.h>
 
 using namespace pira;
 using namespace pgis::options;
@@ -21,8 +28,10 @@ CgNodePtr CallgraphManager::findOrCreateNode(std::string name, double timeInSeco
   } else {
     auto node = std::make_shared<CgNode>(name);
     auto bpd = new BaseProfileData();
+    auto lid = new LoadImbalance::LIMetaData();
     bpd->setRuntimeInSeconds(timeInSeconds);
     node->addMetaData(bpd);
+    node->addMetaData(lid);
 
     graph.insert(node);
     return node;
@@ -41,6 +50,7 @@ void CallgraphManager::putNumberOfStatements(std::string name, int numberOfState
     pod->setHasBody(hasBody);
     node->addMetaData(pod);
   }
+  spdlog::get("console")->debug("For {}, set number of smts to {}", name, node->get<PiraOneData>()->getNumberOfStatements());
 }
 
 void CallgraphManager::putNumberOfSamples(std::string name, unsigned long long numberOfSamples) {
@@ -74,6 +84,13 @@ void CallgraphManager::putEdge(std::string parentName, std::string childName) {
 void CallgraphManager::putEdge(const std::string &parentName, std::string parentFilename, int parentLine,
                                std::string childName, unsigned long long numberOfCalls, double timeInSeconds,
                                int threadId, int procId) {
+  putEdge(parentName, parentFilename, parentLine, childName, numberOfCalls, timeInSeconds, timeInSeconds, threadId,
+          procId);
+}
+
+void CallgraphManager::putEdge(const std::string &parentName, std::string parentFilename, int parentLine,
+                               std::string childName, unsigned long long numberOfCalls, double timeInSeconds,
+                               double inclusiveTimeInSeconds, int threadId, int procId) {
   putEdge(parentName, childName);
 
   auto parentNode = graph.findNode(parentName);
@@ -86,7 +103,7 @@ void CallgraphManager::putEdge(const std::string &parentName, std::string parent
   auto childNode = graph.findNode(childName);
   if (childNode) {
     auto bpd = new BaseProfileData();
-    bpd->addCallData(parentNode, numberOfCalls, timeInSeconds, threadId, procId);
+    bpd->addCallData(parentNode, numberOfCalls, timeInSeconds, inclusiveTimeInSeconds, threadId, procId);
     childNode->addMetaData(bpd);
   } else {
     spdlog::get("errconsole")->warn("No Child {} found in graph", childName);
@@ -115,6 +132,8 @@ void CallgraphManager::finalizeGraph(bool buildMarker) {
 
     // run reachability analysis -> mark reachable nodes
     CgHelper::reachableFromMainAnalysis(graph.findMain());
+
+    CgHelper::calculateInclusiveStatementCounts(mainNode);
   }
 
   // also update all node attributes
@@ -148,9 +167,9 @@ void CallgraphManager::applyRegisteredPhases() {
   while (!phases.empty()) {
     EstimatorPhase *phase = phases.front();
 
-#if BENCHMARK_PHASES
-    auto startTime = std::chrono::system_clock::now();
-#endif
+    { // RAII
+      const std::string curPhase = phase->getName();
+      MetaCG::RuntimeTimer rtt("Running curPhase");
     phase->modifyGraph(mainFunction);
     phase->generateReport();
 
@@ -167,12 +186,7 @@ void CallgraphManager::applyRegisteredPhases() {
 #if DUMP_UNWOUND_NAMES
     dumpUnwoundNames(report);
 #endif  // DUMP_UNWOUND_NAMES
-
-#if BENCHMARK_PHASES
-    auto endTime = std::chrono::system_clock::now();
-    double calculationTime = (endTime - startTime).count() / 1e6;
-    spdlog::get("console")->debug("Calculating phase {} took {} sec", phase->getName(), calculationTime);
-#endif
+    } // RAII
 
     phases.pop();
     // We don't know if estimator phases hold references / pointers to other EstimatorPhases
@@ -195,10 +209,10 @@ int CallgraphManager::getNumProcs() {
   int numProcs = 1;
   int prevNum = 0;
   for (auto node : graph) {
-    if (!node->getCgLocation().empty()) {
-      for (CgLocation cgLoc : node->getCgLocation()) {
-        if (cgLoc.get_procId() != prevNum) {
-          prevNum = cgLoc.get_procId();
+    if (!node->get<BaseProfileData>()->getCgLocation().empty()) {
+      for (CgLocation cgLoc : node->get<BaseProfileData>()->getCgLocation()) {
+        if (cgLoc.getProcId() != prevNum) {
+          prevNum = cgLoc.getProcId();
           numProcs++;
         }
       }
@@ -313,7 +327,7 @@ void CallgraphManager::printDOT(std::string prefix) {
         }
 #endif
 
-        if (!threadLabel.empty() || (i == numProcs && node->getCgLocation().empty())) {
+        if (!threadLabel.empty() || (i == numProcs && node->get<BaseProfileData>()->getCgLocation().empty())) {
           procGraph.insert(node);
           if (node->hasUniqueCallPath()) {
             attributes += "color=blue, ";

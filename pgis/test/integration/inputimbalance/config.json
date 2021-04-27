@@ -1,0 +1,10 @@
+{
+    "metricType": "ImbalancePercentage",
+    "imbalanceThreshold": 0.05,
+    "relevanceThreshold": 0.1,
+    "contextStrategy": "MajorPathsToMain",
+    "contextStepCount": 5,
+    "childRelevanceStrategy": "ConstantThreshold",
+    "childConstantThreshold": 1,
+    "childFraction": 0.5
+}

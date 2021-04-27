@@ -1,4 +1,4 @@
-set(PROJECT_NAME pgoelib)
+set(PROJECT_NAME pgislib)
 set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 
 set(PGOE_LIB_SOURCES
@@ -10,34 +10,46 @@ set(PGOE_LIB_SOURCES
   src/EstimatorPhase.cpp
   src/IPCGEstimatorPhase.cpp
   src/ExtrapConnection.cpp
-  src/ExtrapEstimatorPhase.cpp)
+  src/ExtrapEstimatorPhase.cpp
 
-add_library(pgoelib SHARED
+  src/loadImbalance/LIEstimatorPhase.cpp
+  src/loadImbalance/metric/AbstractMetric.cpp
+  src/loadImbalance/OnlyMainEstimatorPhase.cpp
+  include/loadImbalance/metric/ImbalancePercentageMetric.h
+  include/loadImbalance/metric/EfficiencyMetric.h
+  include/loadImbalance/metric/VariationCoeffMetric.h
+  src/loadImbalance/LIMetaData.cpp
+  src/loadImbalance/LIRetriever.cpp
+  src/loadImbalance/Config.cpp
+)
+
+add_library(pgis SHARED
   ${PGOE_LIB_SOURCES}
 )
 
-add_library(ipcg SHARED
-	src/libIPCG/IPCGReader.cpp
+add_library(mcg SHARED
+	src/libIPCG/MCGReader.cpp
+  src/libIPCG/MetaDataHandler.cpp
 )
 
-add_pgoe_includes(pgoelib)
-add_cube_includes(pgoelib)
-add_cube_libraries(pgoelib)
-add_extrap_includes(pgoelib)
-add_extrap_libraries(pgoelib)
-add_logger_libraries(pgoelib)
-add_json_parser(pgoelib)
-target_project_compile_options(pgoelib)
+add_pgoe_includes(pgis)
+add_cube_includes(pgis)
+add_cube_libraries(pgis)
+add_extrap_includes(pgis)
+add_extrap_libraries(pgis)
+add_logger_libraries(pgis)
+add_json_parser(pgis)
+target_project_compile_options(pgis)
 
-add_pgoe_includes(ipcg)
-add_json_parser(ipcg)
-add_ipcg_includes(ipcg)
-add_extrap_includes(ipcg)
-add_logger_libraries(ipcg)
+add_pgoe_includes(mcg)
+add_json_parser(mcg)
+add_mcg_includes(mcg)
+add_extrap_includes(mcg)
+add_logger_libraries(mcg)
 
 
 install(
-  TARGETS pgoelib ipcg
+  TARGETS pgis mcg
   EXPORT ${TARGETS_EXPORT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

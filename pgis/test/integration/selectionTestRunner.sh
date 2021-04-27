@@ -21,7 +21,7 @@ echo "Running $testSuite tests with build directory: $buildDir"
 fails=0
 
 for testNoInit in *.afl; do
-	echo -e "\n== AFL-based tests =="
+	echo -e "\n== AFL-based MetaCG v1.0 tests =="
 	if [ "$testNoInit" == "*.afl" ]; then
 		echo "No tests to run"
 #		exit $fails
@@ -31,6 +31,39 @@ for testNoInit in *.afl; do
 	thisFail=0
 
 	bash "${testSuite}_run.sh" $buildDir $outDir $testNo 2>&1 >> "$logFile"
+	#bash "${testSuite}_run.sh" $buildDir $outDir $testNo
+
+	if [ $? -ne 0 ]; then
+		fails=$(($fails+1))
+		thisFail=1
+	fi
+	
+	check_selection $testSuite $testNo $outDir
+
+	if [ $? -ne 0 ]; then
+		fails=$(($fails+1))
+		thisFail=1
+	fi
+	if [ $thisFail -eq 1 ]; then
+		failStr=' FAIL'
+	else
+		failStr=' PASS'
+	fi
+	echo -e "\n[ --------------------------------- ] \n" >> "$logFile"
+	echo "Running PGIS Integration Test $testNo : $testFile | $failStr"
+done
+
+for testNoInit in *.afl; do
+	echo -e "\n== AFL-based MetaCG v2.0 tests =="
+	if [ "$testNoInit" == "*.afl" ]; then
+		echo "No tests to run"
+#		exit $fails
+	fi
+	testNo="${testNoInit/afl/mcg}"
+	echo "Running $testNo"
+	thisFail=0
+
+	bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo 2>&1 >> "$logFile"
 	#bash "${testSuite}_run.sh" $buildDir $outDir $testNo
 
 	if [ $? -ne 0 ]; then

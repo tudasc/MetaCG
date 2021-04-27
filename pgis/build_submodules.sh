@@ -42,11 +42,11 @@ mkdir build && cd build
 # TODO This should be done just a little less fragile
 command -v locate "/Python.h"
 if [ $? -eq 1 ]; then
-	pythonheader=$(dirname $(which python))/../include/python3.7m
+	pythonheader=$(dirname $(which python3))/../include/python3.8
 else
 	pythonlocation=$(locate "/Python.h" | grep "python3.")
 	if [ -z $pythonlocation ]; then
-	  pythonheader=$(dirname $(which python))/../include/python3.7m
+	  pythonheader=$(dirname $(which python3))/../include/python3.8
 	else
     pythonheader=$(dirname $pythonlocation)
 	fi
@@ -78,6 +78,6 @@ git checkout 2_1 2>&1 > /dev/null
 echo "[PIRA] Getting json library"
 cd $extsourcedir
 if [ ! -d "$extsourcedir/json" ]; then
-    git clone https://github.com/nlohmann/json json 2>&1 > /dev/null
+    git clone --depth 1 --branch v3.9.1 https://github.com/nlohmann/json json 2>&1 > /dev/null
 fi
 

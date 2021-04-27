@@ -1,3 +1,9 @@
+/**
+ * File: GlobalConfig.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #ifndef PGIS_CONFIG_GLOBALCONFIG_H
 #define PGIS_CONFIG_GLOBALCONFIG_H
 
@@ -34,6 +40,10 @@ static const IntOpt debugLevel{"debug", "0"};
 
 static const StringOpt extrapConfig{"extrap", ""};
 static const StringOpt outDirectory{"out-file", "out"};
+
+static const StringOpt loadImbalanceConfig{"load-imbalance", ""};
+
+static const IntOpt metacgFormat{"metacg-format", "1"};
 
 template <typename OptObject>
 struct OptHelper {

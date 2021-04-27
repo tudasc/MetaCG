@@ -1,5 +1,11 @@
+/**
+ * File: CgHelper.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #include "CgHelper.h"
 #include "Callgraph.h"
+#include <loadImbalance/LIMetaData.h>
 
 int CgConfig::samplesPerSecond = 10000;
 
@@ -428,6 +434,44 @@ void reachableFromMainAnalysis(CgNodePtr mainNode) {
   }
 }
 
+Statements visitNodeForInclusiveStatements(CgNodePtr node, CgNodePtrSet *visitedNodes) {
+  if (visitedNodes->find(node) != visitedNodes->end()) {
+    return node->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements();
+  }
+  visitedNodes->insert(node);
+
+  CgNodePtrSet visistedChilds;
+
+  Statements inclusiveStatements = node->get<PiraOneData>()->getNumberOfStatements();
+  for (auto childNode : node->getChildNodes()) {
+    // prevent double processing
+    if (visistedChilds.find(childNode) != visistedChilds.end())
+      continue;
+    visistedChilds.insert(childNode);
+
+    // approximate statements of a abstract function with maximum of its children (potential call targets)
+    if (node->get<LoadImbalance::LIMetaData>()->isVirtual() &&
+        node->get<PiraOneData>()->getNumberOfStatements() == 0) {
+      inclusiveStatements = std::max(inclusiveStatements, visitNodeForInclusiveStatements(childNode, visitedNodes));
+    } else {
+      inclusiveStatements += visitNodeForInclusiveStatements(childNode, visitedNodes);
+    }
+  }
+
+  node->get<LoadImbalance::LIMetaData>()->setNumberOfInclusiveStatements(inclusiveStatements);
+
+  spdlog::get("console")->trace("Visiting node " + node->getFunctionName() +
+                                ". Result = " + std::to_string(inclusiveStatements));
+  return inclusiveStatements;
+}
+
+void calculateInclusiveStatementCounts(CgNodePtr mainNode) {
+  CgNodePtrSet visitedNodes;
+
+  spdlog::get("console")->trace("Starting inclusive statement counting. mainNode = " + mainNode->getFunctionName());
+
+  visitNodeForInclusiveStatements(mainNode, &visitedNodes);
+}
 
 // note: a function is reachable from itself
 bool reachableFrom(CgNodePtr parentNode, CgNodePtr childNode) {

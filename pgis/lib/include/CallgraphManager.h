@@ -1,3 +1,9 @@
+/**
+ * File: CallgraphManager.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #ifndef CALLGRAPHMANAGER_H
 #define CALLGRAPHMANAGER_H
 
@@ -5,6 +11,8 @@
 #include "CgNode.h"
 #include "EstimatorPhase.h"
 #include "ExtrapConnection.h"
+
+#include "libIPCG/MetaDataHandler.h"
 
 #include <map>
 #include <numeric>  // for std::accumulate
@@ -26,6 +34,23 @@ class CallgraphManager {
     graph.clear();
     removeAllEstimatorPhases();
     donePhases.clear();
+    metaHandlers.clear();
+  }
+
+  std::vector<MetaCG::io::retriever::MetaDataHandler *> getMetaHandlers() {
+    std::vector<MetaCG::io::retriever::MetaDataHandler *> handler;
+    for (const auto &mh : metaHandlers) {
+      handler.push_back(mh.get());
+    }
+    return handler;
+  }
+
+  // XXX Move to private once things work
+  std::vector<std::unique_ptr<MetaCG::io::retriever::MetaDataHandler>> metaHandlers;
+  template <typename T, typename... Args>
+  void addMetaHandler(Args... args) {
+    metaHandlers.emplace_back(std::make_unique<T>(args...));
+    metaHandlers.back()->registerCGManager(this);
   }
 
   void setConfig(Config *cfg) { config = cfg; }
@@ -49,10 +74,15 @@ class CallgraphManager {
  public:
   ~CallgraphManager() {}
 
+  // legacy version without inclusive time
   void putEdge(const std::string &parentName, std::string parentFilename, int parentLine, std::string childName,
                unsigned long long numberOfCalls, double timeInSeconds, int threadId, int procId);
 
-  void putNumberOfStatements(std::string name, int numberOfStatements, bool hasBody);
+  void putEdge(const std::string &parentName, std::string parentFilename, int parentLine, std::string childName,
+               unsigned long long numberOfCalls, double timeInSeconds, double inclusiveTimeInSeconds, int threadId,
+               int procId);
+
+  void putNumberOfStatements(std::string name, int numberOfStatements, bool hasBody = true);
   void putNumberOfSamples(std::string name, unsigned long long numberOfSamples);
   CgNodePtr findOrCreateNode(std::string name, double timeInSeconds = 0.0);
   void setNodeComesFromCube(std::string name);

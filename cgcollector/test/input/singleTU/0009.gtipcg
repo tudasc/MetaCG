@@ -1,1 +1,40 @@
-{"_ZN13MyClassDerive3fooEv":{"callees":[],"doesOverride":true,"hasBody":true,"isVirtual":true,"numStatements":0,"overriddenBy":[],"overriddenFunctions":["_ZN7MyClass3fooEv"],"parents":[]},"_ZN7MyClass3fooEv":{"callees":[],"doesOverride":false,"hasBody":true,"isVirtual":true,"numStatements":0,"overriddenBy":["_ZN13MyClassDerive3fooEv"],"overriddenFunctions":[],"parents":["main"]},"main":{"callees":["_ZN7MyClass3fooEv"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":4,"overriddenBy":[],"overriddenFunctions":[],"parents":[]}}
+{
+    "_ZN13MyClassDerive3fooEv": {
+        "callees": [],
+        "doesOverride": true,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [
+            "_ZN7MyClass3fooEv"
+        ],
+        "parents": []
+    },
+    "_ZN7MyClass3fooEv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [
+            "_ZN13MyClassDerive3fooEv"
+        ],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "main": {
+        "callees": [
+            "_ZN7MyClass3fooEv"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 4,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    }
+}

@@ -1,3 +1,8 @@
+/**
+ * File: CgHelper.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #ifndef CGNODEHELPER_H_
 #define CGNODEHELPER_H_
@@ -81,6 +86,11 @@ CgNodePtrSet getReachableConjunctions(CgNodePtrSet markerPositions);
  * Runs analysis on the call-graph and marks every node which is reachable from main
  */
 void reachableFromMainAnalysis(CgNodePtr mainNode);
+
+/**
+ * Calculates the inclusive statement count for every node which is reachable from mainNode and saves in the node field
+ */
+void calculateInclusiveStatementCounts(CgNodePtr mainNode);
 
 bool reachableFrom(CgNodePtr parentNode, CgNodePtr childNode);
 CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,

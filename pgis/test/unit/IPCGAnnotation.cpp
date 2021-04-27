@@ -1,6 +1,12 @@
-#include "gtest/gtest.h"
+/**
+ * File: IPCGAnnotation.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
-#include "libIPCG/IPCGReader.h"
+#include "gtest/gtest.h"
+#include <loadImbalance/LIRetriever.h>
+
+#include "libIPCG/MCGReader.h"
 
 using namespace pira;
 
@@ -22,7 +28,7 @@ TEST(IPCGAnnotation, EmptyCG) {
   Callgraph c;
   nlohmann::json j;
   DummyRetriever pr;
-  int annotCount = IPCGAnal::doAnnotate(c, pr, j);
+  int annotCount = MetaCG::io::doAnnotate(c, pr, j);
   ASSERT_EQ(0, annotCount);
 }
 
@@ -43,7 +49,7 @@ TEST(IPCGAnnotation, HandlesOneNode) {
       {"hasBody", true}
     };
   DummyRetriever pr;
-  int annotCount = IPCGAnal::doAnnotate(c, pr, j);
+  int annotCount = MetaCG::io::doAnnotate(c, pr, j);
   ASSERT_EQ(1, annotCount);
   nlohmann::json j2;
     j2["main"] = {
@@ -80,7 +86,7 @@ TEST(IPCGAnnotation, HandlesTwoNodes) {
     };
 
   DummyRetriever pr;
-  int annotCount = IPCGAnal::doAnnotate(c, pr, j);
+  int annotCount = MetaCG::io::doAnnotate(c, pr, j);
   ASSERT_EQ(2, annotCount);
   nlohmann::json j2;
     j2["main"] = {
@@ -119,8 +125,8 @@ TEST(IPCGAnnotation, AttachesRuntime) {
       {"hasBody", true}
     };
 
-  IPCGAnal::retriever::RuntimeRetriever pr;
-  int annotCount = IPCGAnal::doAnnotate(c, pr, j);
+    MetaCG::io::retriever::RuntimeRetriever pr;
+  int annotCount = MetaCG::io::doAnnotate(c, pr, j);
   ASSERT_EQ(1, annotCount);
   nlohmann::json j2;
     j2["main"] = {
@@ -149,8 +155,8 @@ TEST(IPCGAnnotation, PlacementOutput) {
       {"hasBody", true}
     };
   // we filter for attached model, thus do not annotate
-  IPCGAnal::retriever::PlacementInfoRetriever pr;
-  int annotCount = IPCGAnal::doAnnotate(c, pr, j);
+    MetaCG::io::retriever::PlacementInfoRetriever pr;
+  int annotCount = MetaCG::io::doAnnotate(c, pr, j);
   std::cout << j << std::endl;
   ASSERT_EQ(0, annotCount);
 }

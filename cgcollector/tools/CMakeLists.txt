@@ -16,6 +16,7 @@ default_compile_options(cgcollector)
 
 
 add_collector_include(cgmerge)
+add_collector_lib(cgmerge)
 add_config_include(cgmerge)
 add_json(cgmerge)
 

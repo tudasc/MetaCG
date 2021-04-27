@@ -1,3 +1,9 @@
+/**
+ * File: CgNodeMetaData.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #ifndef PIRA_CGNODE_METADATA_H
 #define PIRA_CGNODE_METADATA_H
 
@@ -6,9 +12,13 @@
 #include "ExtrapConnection.h"
 #include "GlobalConfig.h"
 
+//#include "CgNode.h"
+#include "CgLocation.h"
 #include "nlohmann/json.hpp"
 
 namespace pira {
+
+typedef unsigned long long Statements;
 
 /**
  * This is meant as common base class for the different meta data
@@ -27,12 +37,16 @@ class BaseProfileData : public MetaData {
   static constexpr const char *key() { return "BaseProfileData"; }
 
   // Regular profile data
-  void addCallData(CgNodePtr parentNode, unsigned long long calls, double timeInSeconds, int threadId, int procId) {
+  // Warning: This function is *not* used by the Cube reader
+  void addCallData(CgNodePtr parentNode, unsigned long long calls, double timeInSeconds, double inclusiveTimeInSeconds,
+                   int threadId, int procId) {
     callFrom[parentNode] += calls;
     timeFrom[parentNode] += timeInSeconds;
     this->timeInSeconds += timeInSeconds;
+    this->inclTimeInSeconds += inclusiveTimeInSeconds;
     this->threadId = threadId;
     this->processId = procId;
+    this->cgLoc.push_back(CgLocation(timeInSeconds, inclusiveTimeInSeconds, threadId, procId, calls));
   }
   unsigned long long getNumberOfCalls() const { return this->numCalls; }
   void setNumberOfCalls(unsigned long long nrCall) { this->numCalls = nrCall; }
@@ -48,6 +62,7 @@ class BaseProfileData : public MetaData {
   void setInclusiveRuntimeInSeconds(double newInclusiveTimeInSeconds) {
     this->inclTimeInSeconds = newInclusiveTimeInSeconds;
   }
+  double getInclusiveRuntimeInSeconds() { return this->inclTimeInSeconds; }
   unsigned long long getNumberOfCallsWithCurrentEdges() const {
     auto v = 0ull;
     for (const auto &p : callFrom) {
@@ -57,14 +72,19 @@ class BaseProfileData : public MetaData {
   }
   unsigned long long getNumberOfCalls(CgNodePtr parentNode) { return callFrom[parentNode]; }
 
+  const std::vector<CgLocation> &getCgLocation() const { return cgLoc; }
+
+  void pushCgLocation(CgLocation toPush) { this->cgLoc.push_back(toPush); }
+
  private:
-  unsigned long long numCalls = 0;
-  double timeInSeconds = .0;
-  double inclTimeInSeconds = .0;
-  int threadId = 0;
-  int processId = 0;
+  unsigned long long numCalls{0};
+  double timeInSeconds{.0};
+  double inclTimeInSeconds{.0};
+  int threadId{0};
+  int processId{0};
   std::unordered_map<CgNodePtr, unsigned long long> callFrom;
   std::unordered_map<CgNodePtr, double> timeFrom;
+  std::vector<CgLocation> cgLoc;
 };
 
 inline void to_json(nlohmann::json &j, const BaseProfileData &data) {
@@ -90,10 +110,10 @@ class PiraOneData : public MetaData {
   bool inPreviousProfile() const { return wasInPreviousProfile; }
 
  private:
-  bool wasInPreviousProfile = false;
-  bool dominantRuntime = false;
-  bool hasBody = false;
-  int numStmts = 0;
+  bool wasInPreviousProfile{false};
+  bool dominantRuntime{false};
+  bool hasBody{false};
+  int numStmts{0};
   std::string filename;
 };
 
@@ -137,6 +157,20 @@ class PiraTwoData : public MetaData {
   std::vector<std::pair<std::string, std::vector<int>>> params;
   std::vector<double> rtVec;
   int numReps;
+};
+
+class FilePropertiesMetaData : public MetaData {
+ public:
+  static constexpr const char *key() { return "FilePropertiesMetaData"; }
+  FilePropertiesMetaData() : origin("INVALID"), fromSystemInclude(false) {}
+  std::string origin;
+  bool fromSystemInclude;
+};
+
+class CodeStatisticsMetaData : public MetaData {
+ public:
+  static constexpr const char *key() { return "CodeStatisticsMetaData"; }
+  int numVars{0};
 };
 
 /**

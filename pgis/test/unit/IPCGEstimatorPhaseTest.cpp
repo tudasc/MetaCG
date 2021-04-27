@@ -1,3 +1,8 @@
+/**
+ * File: IPCGEstimatorPhaseTest.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #include "gtest/gtest.h"
 
 #include "LoggerUtil.h"
@@ -11,8 +16,10 @@ class IPCGEstimatorPhaseBasic : public ::testing::Test {
 };
 
 TEST_F(IPCGEstimatorPhaseBasic, EmptyCG) {
+  // XXX this is not ideal, but required for the death assert
+  LOGGERUTIL_ENABLE_ERRORS_LOCAL
+
   Config cfg;
-  //CallgraphManager cm(&cfg);
   auto &cm = CallgraphManager::get();
   cm.clear();
   cm.setConfig(&cfg);
@@ -24,7 +31,6 @@ TEST_F(IPCGEstimatorPhaseBasic, EmptyCG) {
 
 TEST_F(IPCGEstimatorPhaseBasic, OneNodeCG) {
   Config cfg;
-  //CallgraphManager cm(&cfg);
   auto &cm = CallgraphManager::get();
   cm.clear();
   cm.setConfig(&cfg);
@@ -41,7 +47,6 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCG) {
 
 TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCG) {
   Config cfg;
-  //CallgraphManager cm(&cfg);
   auto &cm = CallgraphManager::get();
   cm.clear();
   cm.setConfig(&cfg);
@@ -60,7 +65,6 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCG) {
 
 TEST_F(IPCGEstimatorPhaseBasic, OneNodeCGwStmt) {
   Config cfg;
-  //CallgraphManager cm(&cfg);
   auto &cm = CallgraphManager::get();
   cm.clear();
   cm.setConfig(&cfg);
@@ -78,7 +82,6 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCGwStmt) {
   Config cfg;
-  //CallgraphManager cm(&cfg);
   auto &cm = CallgraphManager::get();
   cm.clear();
   cm.setConfig(&cfg);
@@ -102,7 +105,6 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCGwStmt) {
   Config cfg;
-  //CallgraphManager cm(&cfg);
   auto &cm = CallgraphManager::get();
   cm.clear();
   cm.setConfig(&cfg);
@@ -133,7 +135,6 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCycleCGwStmt) {
   Config cfg;
-  //CallgraphManager cm(&cfg);
   auto &cm = CallgraphManager::get();
   cm.clear();
   cm.setConfig(&cfg);
@@ -165,7 +166,6 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCycleCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, FourNodeCGwStmt) {
   Config cfg;
-  //CallgraphManager cm(&cfg);
   auto &cm = CallgraphManager::get();
   cm.clear();
   cm.setConfig(&cfg);
@@ -202,7 +202,6 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, FourNodeDiamondCGwStmt) {
   Config cfg;
-  //CallgraphManager cm(&cfg);
   auto &cm = CallgraphManager::get();
   cm.clear();
   cm.setConfig(&cfg);
@@ -249,7 +248,6 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeDiamondCGwStmt) {
 */
 TEST_F(IPCGEstimatorPhaseBasic, FiveNodeDiamondCGwStmt) {
   Config cfg;
-  //CallgraphManager cm(&cfg);
   auto &cm = CallgraphManager::get();
   cm.clear();
   cm.setConfig(&cfg);

@@ -1,6 +1,7 @@
-//
-// Created by jp on 04.04.19.
-//
+/**
+ * File: ExtrapConnection.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #include "ExtrapConnection.h"
 #include "CubeReader.h"
@@ -175,7 +176,7 @@ void ExtrapModelProvider::buildModels() {
 
   printDbgInfos();
 
-  for (int i = 0; i < fns.size(); ++i) {
+  for (size_t i = 0; i < fns.size(); ++i) {
 //    if (i % config.repetitions == 0) {
       const auto attEpData = [&](auto &cube, auto cnode, auto n) {
         console->debug("Attaching Cube info from file {}", fns.at(i));

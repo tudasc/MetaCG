@@ -1,3 +1,9 @@
+/**
+ * File: CubeReader.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #ifndef CUBEREADER_H_
 #define CUBEREADER_H_
 
@@ -22,18 +28,18 @@ using PiraOneData = pira::PiraOneData;
 using PiraTwoData = pira::PiraTwoData;
 
 template <typename N, typename... Largs>
-void applyOne(cube::Cube &cu, cube::Cnode *cnode, N node, Largs... largs) {
+void applyOne(cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, N node, Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
     applyOne(cu, cnode, node, largs...);
   }
 }
 template <typename N, typename L, typename... Largs>
-void applyOne(cube::Cube &cu, cube::Cnode *cnode, N node, L lam, Largs... largs) {
+void applyOne(cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, N node, L lam, Largs... largs) {
   lam(cu, cnode, node);
   applyOne(cu, cnode, node, largs...);
 }
 template <typename... Largs>
-void apply(cube::Cube &cu, cube::Cnode *cnode, std::string &where, Largs... largs) {
+void apply(cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, std::string &where, Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
     auto target = CallgraphManager::get().findOrCreateNode(where);
     applyOne(cu, cnode, target, largs...);
@@ -65,16 +71,6 @@ const auto cMetric = [](std::string &&name, auto &&cube, auto cn) {
 };
 const auto time = [](auto &&cube, auto cn) { return cMetric(std::string("time"), cube, cn); };
 const auto visits = [](auto &&cube, auto cn) { return cMetric(std::string("visits"), cube, cn); };
-
-const auto cubeInclTime = [](auto &&cube, auto cn) {
-  double inclusiveTime = 0;
-  for (auto t : cube.get_thrdv()) {
-    inclusiveTime += cube.get_sev(cube.get_met("time"), cube::CUBE_CALCULATE_INCLUSIVE, cn,
-                                  cube::CUBE_CALCULATE_INCLUSIVE, t, cube::CUBE_CALCULATE_INCLUSIVE);
-  }
-  return inclusiveTime;
-};
-
 const auto getName = [](const bool mangled, const auto cn) {
   if (mangled) {
     return mangledName(cn);
@@ -106,9 +102,28 @@ const auto attNrCall = [](auto &cube, auto cnode, auto n) {
 
 const auto attInclRuntime = [](auto &cube, auto cnode, auto n) {
   if (has<BaseProfileData>(n)) {
-    get<BaseProfileData>(n)->setInclusiveRuntimeInSeconds(cubeInclTime(cube, cnode));
-  }
-  if (has<PiraOneData>(n)) {
+    // fill CgLocations and calculate inclusive runtime
+    double cumulatedTime = 0;
+    for (cube::Thread *thread : cube.get_thrdv()) {
+      int threadId = thread->get_id();
+      int procId = thread->get_parent()->get_id();
+
+      unsigned long long numberOfCalls = (unsigned long long)cube.get_sev(cube.get_met("visits"), cnode, thread);
+
+      double inclusiveTime = cube.get_sev(cube.get_met("time"), cube::CUBE_CALCULATE_INCLUSIVE, cnode,
+                                          cube::CUBE_CALCULATE_INCLUSIVE, thread, cube::CUBE_CALCULATE_INCLUSIVE);
+
+      double timeInSeconds = cube.get_sev(cube.get_met("time"), cnode, thread);
+
+      CgLocation cgLoc(timeInSeconds, inclusiveTime, threadId, procId, numberOfCalls);
+      get<BaseProfileData>(n)->pushCgLocation(cgLoc);
+
+      cumulatedTime += inclusiveTime;
+    }
+
+    get<BaseProfileData>(n)->setInclusiveRuntimeInSeconds(cumulatedTime);
+    spdlog::get("console")->info("Attaching inclusive runtime {} to node {}", cumulatedTime, n->getFunctionName());
+  } else if (has<PiraOneData>(n)) {
     get<PiraOneData>(n)->setComesFromCube();
   }
 };

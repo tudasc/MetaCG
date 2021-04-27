@@ -1,3 +1,9 @@
+/**
+ * File: Callgraph.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #ifndef CALLGRAPH_H
 #define CALLGRAPH_H
 
@@ -81,7 +87,7 @@ class Callgraph {
     return nullptr;
   }
 
-  size_t size();
+  size_t size() const;
   ContainerT &getGraph();
 
  private:

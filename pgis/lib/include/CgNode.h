@@ -1,3 +1,9 @@
+/**
+ * File: CgNode.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #ifndef CG_NODE_H
 #define CG_NODE_H
 
@@ -93,6 +99,9 @@ class CgNode {
   bool isReachable() const { return this->reachable; }
   bool isSameFunction(CgNodePtr otherNode) const;
 
+  bool isVirtual() const { return isMarkedVirtual; }
+  void setIsVirtual(bool virtuality) { isMarkedVirtual = virtuality; }
+
   std::string getFunctionName() const;
   int getLineNumber() const { return line; }
   void setLineNumber(int line);
@@ -101,9 +110,6 @@ class CgNode {
   std::string getFilename() { return filename; }
 
   const CgNodePtrSet &getSpantreeParents() const { return spantreeParents; }
-
-  // Load imbalance relevant data?
-  std::vector<CgLocation> getCgLocation() const;
 
   // PGOE stuff
   unsigned long long getExpectedNumberOfSamples() const;
@@ -162,9 +168,9 @@ class CgNode {
 
   // note that these metrics are based on a profile and might be pessimistic
   unsigned long long expectedNumberOfSamples;
-  std::vector<CgLocation> cgLoc;
 
   bool reachable;
+  bool isMarkedVirtual;
 
   CgNodePtrSet childNodes;
   CgNodePtrSet parentNodes;

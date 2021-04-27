@@ -1,0 +1,328 @@
+{
+  "_CG": {
+    "MPI_Barrier": {
+      "callees": [],
+      "doesOverride": false,
+      "hasBody": false,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 0,
+        "LIData": {
+          "irrelevant": true,
+          "visited": true
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": [
+        "main",
+        "print_mpi_info",
+        "test"
+      ]
+    },
+    "MPI_Comm_rank": {
+      "callees": [],
+      "doesOverride": false,
+      "hasBody": false,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 0,
+        "LIData": {
+          "irrelevant": true,
+          "visited": true
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": [
+        "main"
+      ]
+    },
+    "MPI_Comm_size": {
+      "callees": [],
+      "doesOverride": false,
+      "hasBody": false,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 0,
+        "LIData": {
+          "irrelevant": true,
+          "visited": true
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": [
+        "main"
+      ]
+    },
+    "MPI_Finalize": {
+      "callees": [],
+      "doesOverride": false,
+      "hasBody": false,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 0,
+        "LIData": {
+          "irrelevant": true,
+          "visited": true
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": [
+        "main"
+      ]
+    },
+    "MPI_Init": {
+      "callees": [],
+      "doesOverride": false,
+      "hasBody": false,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 0,
+        "LIData": {
+          "irrelevant": true,
+          "visited": true
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": [
+        "main"
+      ]
+    },
+    "balanced": {
+      "callees": [
+        "sleep"
+      ],
+      "doesOverride": false,
+      "hasBody": true,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 8,
+        "LIData": {
+          "irrelevant": false,
+          "visited": false
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": [
+        "test"
+      ]
+    },
+    "func1": {
+      "callees": [
+        "printf",
+        "sleep"
+      ],
+      "doesOverride": false,
+      "hasBody": true,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 2,
+        "LIData": {
+          "irrelevant": false,
+          "visited": false
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": []
+    },
+    "func2": {
+      "callees": [
+        "printf",
+        "sleep"
+      ],
+      "doesOverride": false,
+      "hasBody": true,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 2,
+        "LIData": {
+          "irrelevant": false,
+          "visited": false
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": []
+    },
+    "function_pointer_test": {
+      "callees": [
+        "get_func_ptr"
+      ],
+      "doesOverride": false,
+      "hasBody": true,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 3,
+        "LIData": {
+          "irrelevant": true,
+          "visited": true
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": [
+        "main"
+      ]
+    },
+    "get_func_ptr": {
+      "callees": [],
+      "doesOverride": false,
+      "hasBody": true,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 6,
+        "LIData": {
+          "irrelevant": false,
+          "visited": false
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": [
+        "function_pointer_test"
+      ]
+    },
+    "imbalanced": {
+      "callees": [
+        "sleep"
+      ],
+      "doesOverride": false,
+      "hasBody": true,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 10,
+        "LIData": {
+          "irrelevant": false,
+          "visited": false
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": [
+        "test"
+      ]
+    },
+    "main": {
+      "callees": [
+        "MPI_Finalize",
+        "MPI_Comm_rank",
+        "printf",
+        "function_pointer_test",
+        "MPI_Barrier",
+        "MPI_Init",
+        "test",
+        "MPI_Comm_size"
+      ],
+      "doesOverride": false,
+      "hasBody": true,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 10,
+        "LIData": {
+          "irrelevant": true,
+          "visited": true
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": []
+    },
+    "print_mpi_info": {
+      "callees": [
+        "MPI_Barrier",
+        "printf"
+      ],
+      "doesOverride": false,
+      "hasBody": true,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 4,
+        "LIData": {
+          "irrelevant": false,
+          "visited": false
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": []
+    },
+    "printf": {
+      "callees": [],
+      "doesOverride": false,
+      "hasBody": false,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 0,
+        "LIData": {
+          "irrelevant": false,
+          "visited": false
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": [
+        "func1",
+        "func2",
+        "main",
+        "print_mpi_info"
+      ]
+    },
+    "sleep": {
+      "callees": [],
+      "doesOverride": false,
+      "hasBody": false,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 0,
+        "LIData": {
+          "irrelevant": false,
+          "visited": false
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": [
+        "func1",
+        "func2",
+        "imbalanced",
+        "balanced"
+      ]
+    },
+    "test": {
+      "callees": [
+        "MPI_Barrier",
+        "balanced",
+        "imbalanced"
+      ],
+      "doesOverride": false,
+      "hasBody": true,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 4,
+        "LIData": {
+          "irrelevant": true,
+          "visited": true
+        }
+      },
+      "overriddenBy": [],
+      "overrides": [],
+      "callers": [
+        "main"
+      ]
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "CGCollector",
+      "sha": "a12c2adc9482ef0062fd27f104ab4dfd679cb91f",
+      "version": "0.2"
+    },
+    "version": "2.0"
+  }
+}
