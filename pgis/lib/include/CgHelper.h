@@ -111,8 +111,6 @@ void markReachableParStart(CgNodePtr start);
 
 double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef);
 
-double calcInclusiveRuntime(CgNode *node);
-
 inline CgNodePtrSet setIntersect(const CgNodePtrSet &a, const CgNodePtrSet &b) {
   CgNodePtrSet intersect;
 
