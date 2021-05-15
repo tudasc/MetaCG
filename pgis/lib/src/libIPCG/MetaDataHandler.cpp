@@ -13,7 +13,7 @@ void PiraOneDataRetriever::read([[maybe_unused]] const json &j, const std::strin
   spdlog::get("console")->trace("Running PiraOneMetaDataRetriever::read from json");
   auto jIt = j[toolname];
   if (jIt.is_null()) {
-    spdlog::get("console")->warn("Could not retrieve meta data for {}", toolname);
+    spdlog::get("console")->trace("Could not retrieve meta data for {}", toolname);
     return;
   }
   auto numStmts = jIt.get<long long int>();
@@ -47,7 +47,7 @@ void PiraTwoDataRetriever::read([[maybe_unused]] const json &j, const std::strin
 void FilePropertyHandler::read(const json &j, const std::string &functionName) {
   auto jIt = j[toolname];
   if (jIt.is_null()) {
-    spdlog::get("console")->warn("Could not retrieve meta data for {}", toolname);
+    spdlog::get("console")->trace("Could not retrieve meta data for {}", toolname);
   }
   std::string fileOrigin = jIt["origin"].get<std::string>();
   bool isFromSystemInclude = jIt["systemInclude"].get<bool>();
@@ -61,7 +61,7 @@ void FilePropertyHandler::read(const json &j, const std::string &functionName) {
 void CodeStatisticsHandler::read(const json &j, const std::string &functionName) {
   auto jIt = j[toolname];
   if (jIt.is_null()) {
-    spdlog::get("console")->warn("Could not retrieve meta data for {}", toolname);
+    spdlog::get("console")->trace("Could not retrieve meta data for {}", toolname);
   }
   int numVars = jIt["numVars"].get<int>();
   auto node = cgm->findOrCreateNode(functionName);

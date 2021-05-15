@@ -55,14 +55,10 @@ class BaseProfileData : public MetaData {
   void setRuntimeInSeconds(double newRuntimeInSeconds) { this->timeInSeconds = newRuntimeInSeconds; }
   double getRuntimeInSecondsForParent(CgNodePtr parent) { return this->timeFrom[parent]; }
 
-  [[deprecated("requires a call to CgHelper::calcInclusiveRuntime first")]] double getInclusiveRuntimeInSeconds()
-      const {
-    return this->inclTimeInSeconds;
-  }
   void setInclusiveRuntimeInSeconds(double newInclusiveTimeInSeconds) {
     this->inclTimeInSeconds = newInclusiveTimeInSeconds;
   }
-  double getInclusiveRuntimeInSeconds() { return this->inclTimeInSeconds; }
+  double getInclusiveRuntimeInSeconds() const { return this->inclTimeInSeconds; }
   unsigned long long getNumberOfCallsWithCurrentEdges() const {
     auto v = 0ull;
     for (const auto &p : callFrom) {

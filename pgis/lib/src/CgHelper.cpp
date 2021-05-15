@@ -7,6 +7,8 @@
 #include "Callgraph.h"
 #include <loadImbalance/LIMetaData.h>
 
+#include "spdlog/spdlog.h"
+
 int CgConfig::samplesPerSecond = 10000;
 
 namespace CgHelper {
@@ -124,8 +126,7 @@ bool isUniquelyInstrumented(CgNodePtr conjunctionNode, CgNodePtr unInstrumentedN
       visited.insert(node);
     } else {
       if (printErrors) {
-        std::cerr << "Error: the conjunction: " << *conjunctionNode << " is reached on multiple paths by: " << *node
-                  << std::endl;
+        spdlog::get("errconsole")->error("The conjunction {} is reached on multiple paths by {}", conjunctionNode->getFunctionName(), node->getFunctionName());
       }
       return false;
     }
@@ -643,67 +644,32 @@ double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef) {
   std::vector<double> rt;
   for (const auto &n : cg) {
     const auto &[hasBPD, bpd] = n->checkAndGet<BaseProfileData>();
-    const auto &[hasPOD, pod] = n->checkAndGet<PiraOneData>();
-    if (hasPOD && pod->comesFromCube()) {
-      if (hasBPD) {
+    if (hasBPD) {
+      spdlog::get("console")->trace("Found BaseProfileData for {}: Adding inclusive runtime of {} to RT vector.", n->getFunctionName(), bpd->getInclusiveRuntimeInSeconds());
+      if (bpd->getInclusiveRuntimeInSeconds() != 0) {
         rt.push_back(bpd->getInclusiveRuntimeInSeconds());
       }
-    } else {
-      auto incRT = CgHelper::calcInclusiveRuntime(n.get());
-      n->get<BaseProfileData>()->setInclusiveRuntimeInSeconds(incRT);
-      rt.push_back(incRT);
     }
   }
-  std::cout << "Basis for runtime threshold calculation: " << rt.size() << "\n";
+  spdlog::get("console")->info("The number of elements for runtime threshold calculation: {}", rt.size());
 
   std::sort(rt.begin(), rt.end());
+  { // raii
+  std::string runtimeStr;
   for (const auto r : rt) {
-    std::cout << r << " seconds\n";
+    runtimeStr += ' ' + std::to_string(r);
+  }
+  spdlog::get("console")->debug("Runtime vector [values are seconds]: {}", runtimeStr);
   }
 
   size_t lastIndex = rt.size() * .5;
   if (useLongAsRef) {
-    lastIndex = rt.size() - 2;  // use the function after main.
-    return rt[lastIndex] / 2;   // halve this value (first idea)
+    float runtimeFilterThresholdAlpha = 0.5f;
+    lastIndex = rt.size() - 1;
+    return rt[lastIndex] * runtimeFilterThresholdAlpha;   // runtime filtering threshold
   }
+  // Returns the median of the data
   return rt[lastIndex];
-}
-
-double calcInclusiveRuntime(CgNode *node) {
-  double runTime = 0.0;
-
-  std::queue<const CgNode *> workQueue;
-  workQueue.push(node);
-  std::unordered_set<const CgNode *> visitedNodes;
-
-  while (!workQueue.empty()) {
-    auto node = workQueue.front();
-    workQueue.pop();
-
-    visitedNodes.insert(node);
-
-    // Only count the runtime of nodes comming from the profile
-    const auto &[hasPOD, pod] = node->checkAndGet<PiraOneData>();
-    const auto &[hasBPD, bpd] = node->checkAndGet<BaseProfileData>();
-    // if (hasPOD && pod->comesFromCube()) {
-    if (hasBPD) {
-      runTime += bpd->getRuntimeInSeconds();
-    }
-    //}
-
-    for (auto childNode : node->getChildNodes()) {
-      // Only visit unseen, profiled nodes. Only those have actual timing info!
-      CgNode *cn = childNode.get();
-      const auto &[has, obj] = childNode->checkAndGet<PiraOneData>();
-      // if (visitedNodes.find(cn) == visitedNodes.end() && has && obj->comesFromCube()) {
-      if (visitedNodes.find(cn) == visitedNodes.end()) {
-        workQueue.push(cn);
-      }
-    }
-  }
-
-  // startNode->setInclusiveRuntimeInSeconds(runTime);
-  return runTime;
 }
 
 }  // namespace CgHelper

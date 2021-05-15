@@ -48,27 +48,25 @@ class CgNode {
 
   template <typename T>
   inline T *get() const {
-    assert(metaFields[T::key()] && "meta field with value " T::key() " exists");
+    assert(metaFields[T::key()] && "meta field for key exists");
     auto val = metaFields[T::key()];
     return reinterpret_cast<T *>(val);
   }
 
   template <typename T>
   inline std::pair<bool, T *> checkAndGet() const {
-    spdlog::get("console")->trace("checkAndGet() [{}]", this->getFunctionName());
     if (this->has<T>()) {
       auto bpd = this->get<T>();
-      assert(bpd && "Pira data attached");
+      assert(bpd && "meta data attached");
       return {true, bpd};
     }
-    spdlog::get("console")->trace("checkAndGet() return nullptr [{}]", this->getFunctionName());
     return {false, nullptr};
   }
 
   template <typename T>
   inline void addMetaData(T *md) {
     if (this->has<T>()) {
-      assert(false && "MetaData with key " T::key() " already attached");
+      assert(false && "MetaData with key already attached");
     }
     metaFields[T::key()] = md;
   }
