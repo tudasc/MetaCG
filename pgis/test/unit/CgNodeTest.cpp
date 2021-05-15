@@ -41,10 +41,10 @@ TEST_F(CgNodeBasics, CreateSingleNodeWithRuntime) {
   auto n = std::make_shared<CgNode>("foo");
   ASSERT_TRUE(n->get<BaseProfileData>());
   n->get<BaseProfileData>()->setRuntimeInSeconds(1.23);
+  n->get<BaseProfileData>()->setInclusiveRuntimeInSeconds(1.23);
   ASSERT_EQ(1.23, n->get<BaseProfileData>()->getRuntimeInSeconds());
   // This is true for nodes w/o children
-  //ASSERT_EQ(1.23, n->get<BaseProfileData>()->getInclusiveRuntimeInSeconds());
-  ASSERT_EQ(1.23, CgHelper::calcInclusiveRuntime(n.get()));
+  ASSERT_EQ(1.23, n->get<BaseProfileData>()->getInclusiveRuntimeInSeconds());
 }
 
 TEST_F(CgNodeBasics, CreateSingleNodeWithStatements) {
@@ -93,13 +93,15 @@ TEST_F(CgNodeBasics, CreateChildParentRuntime) {
   c->get<PiraOneData>()->setComesFromCube();
   n->get<PiraOneData>()->setComesFromCube();
   n->get<BaseProfileData>()->setRuntimeInSeconds(1.25);
+  n->get<BaseProfileData>()->setInclusiveRuntimeInSeconds(1.5);
   c->get<BaseProfileData>()->setRuntimeInSeconds(0.25);
+  c->get<BaseProfileData>()->setInclusiveRuntimeInSeconds(0.25);
   n->addChildNode(c);
   c->addParentNode(n);
   ASSERT_EQ(1.25, n->get<BaseProfileData>()->getRuntimeInSeconds());
   ASSERT_EQ(0.25, c->get<BaseProfileData>()->getRuntimeInSeconds());
-  //ASSERT_EQ(1.5, n->get<BaseProfileData>()->getInclusiveRuntimeInSeconds());
-  ASSERT_EQ(1.5, CgHelper::calcInclusiveRuntime(n.get()));
+  ASSERT_EQ(1.5, n->get<BaseProfileData>()->getInclusiveRuntimeInSeconds());
+  //ASSERT_EQ(1.5, CgHelper::calcInclusiveRuntime(n.get()));
   ASSERT_EQ(true, c->isLeafNode());
   ASSERT_EQ(true, n->isRootNode());
   ASSERT_EQ(false, n->isLeafNode());

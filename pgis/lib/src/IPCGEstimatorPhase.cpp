@@ -254,7 +254,7 @@ void RuntimeEstimatorPhase::estimateRuntime(CgNodePtr startNode) {
     }
 
     inclRunTime[startNode] = runTime;
-    startNode->get<BaseProfileData>()->setInclusiveRuntimeInSeconds(runTime);
+    inclRunTime[startNode] = startNode->get<BaseProfileData>()->getInclusiveRuntimeInSeconds();
   } else {
     // EXCLUSIVE
     runTime = startNode->get<BaseProfileData>()->getRuntimeInSeconds();
@@ -384,7 +384,7 @@ void StatisticsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
 
   for (auto node : *graph) {
     if (!node->isReachable()) {
-      spdlog::get("console")->debug("Running on non-reachable function {}", node->getFunctionName());
+      spdlog::get("console")->trace("Running on non-reachable function {}", node->getFunctionName());
       continue;
     }
 
