@@ -169,7 +169,7 @@ void CallgraphManager::applyRegisteredPhases() {
 
     { // RAII
       const std::string curPhase = phase->getName();
-      MetaCG::RuntimeTimer rtt("Running curPhase");
+      MetaCG::RuntimeTimer rtt("Running " + curPhase);
     phase->modifyGraph(mainFunction);
     phase->generateReport();
 
