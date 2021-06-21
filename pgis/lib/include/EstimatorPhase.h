@@ -35,7 +35,8 @@ struct CgReport {
         phaseName(std::string()),
         metaPhase(false),
         instrumentedNames(),
-        instrumentedNodes() {}
+        instrumentedNodes(),
+        instrumentedEdges() {}
 
   unsigned int instrumentedMethods;
   unsigned int overallMethods;
@@ -62,6 +63,7 @@ struct CgReport {
 
   std::unordered_set<std::string> instrumentedNames;
   std::unordered_map<std::string, CgNodePtr> instrumentedPaths;
+  std::unordered_map<CgNodePtr, CgNodePtr> instrumentedEdges;
   std::priority_queue<CgNodePtr, std::vector<CgNodePtr>, CalledMoreOften> instrumentedNodes;
 
   std::map<std::string, int> unwoundNames;

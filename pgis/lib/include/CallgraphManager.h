@@ -19,9 +19,9 @@
 #include <queue>
 #include <string>
 
-#define PRINT_DOT_AFTER_EVERY_PHASE true
+#define PRINT_DOT_AFTER_EVERY_PHASE false
 #define DUMP_INSTRUMENTED_NAMES true
-#define DUMP_UNWOUND_NAMES true
+#define DUMP_UNWOUND_NAMES false
 
 class CallgraphManager {
  public:

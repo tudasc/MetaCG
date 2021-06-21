@@ -472,6 +472,11 @@ void CallgraphManager::dumpInstrumentedNames(CgReport report) {
         ss << include << " " << parent->getFunctionName() << " " << arrow << " " << name << "\n";
       }
     }
+
+    // Edge instrumentation
+    for(const auto [parent, node] : report.instrumentedEdges) {
+      ss << include << " " << parent->getFunctionName() << " " << arrow << " " << node->getFunctionName() << "\n";
+    }
     ss << scorepEnd << "\n";
 
     outfile << ss.str();

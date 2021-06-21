@@ -37,6 +37,12 @@ void EstimatorPhase::generateReport() {
       report.instrumentedNames.insert(node->getFunctionName());
       report.instrumentedNodes.push(node);
     }
+
+    // Edge instrumentation
+    for (CgNodePtr parent : node->getInstrumentedParentEdges()) {
+      report.instrumentedEdges.insert({parent, node});
+    }
+
     if (node->isUnwound()) {
       unsigned long long unwindSamples = 0;
       if (node->isUnwoundInstr()) {
