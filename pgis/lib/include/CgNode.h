@@ -129,6 +129,14 @@ class CgNode {
   bool isUnwoundSample() const;
   bool isUnwoundInstr() const;
 
+  // Edge instrumentation
+  /**
+   * Mark for instrumentation: this -> parent
+   */
+  void instrumentFromParent(CgNodePtr parent);
+
+  std::unordered_set<CgNodePtr> getInstrumentedParentEdges();
+
   // spanning tree stuff
   void addSpantreeParent(CgNodePtr parentNode);
   bool isSpantreeParent(CgNodePtr);
@@ -161,6 +169,11 @@ class CgNode {
  private:
   std::string functionName;
   CgNodeState state;
+
+  /**
+   * additional instrumentation state for (callgraph-) edge instrumentation
+   */
+  std::unordered_set<CgNodePtr> instrumentedParentEdges;
 
   int numberOfUnwindSteps;
 

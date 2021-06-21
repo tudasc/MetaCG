@@ -247,6 +247,13 @@ CgNodeState CgNode::getStateRaw() const { return state; }
 bool CgNode::isInstrumented() const {
   return isInstrumentedWitness() || isInstrumentedConjunction() || isInstrumentedCallpath();
 }
+
+void CgNode::instrumentFromParent(CgNodePtr parent) {
+  this->instrumentedParentEdges.insert(parent);
+}
+
+std::unordered_set<CgNodePtr> CgNode::getInstrumentedParentEdges() { return this->instrumentedParentEdges; }
+
 bool CgNode::isInstrumentedWitness() const { return state == CgNodeState::INSTRUMENT_WITNESS; }
 bool CgNode::isInstrumentedConjunction() const { return state == CgNodeState::INSTRUMENT_CONJUNCTION; }
 bool CgNode::isInstrumentedCallpath() const { return state == CgNodeState::INSTRUMENT_PATH; }

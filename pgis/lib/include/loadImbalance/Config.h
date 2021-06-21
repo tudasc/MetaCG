@@ -20,7 +20,7 @@ enum class MetricType { Efficiency, VariationCoeff, ImbalancePercentage };
 /**
  * Available strategies to process the context of nodes, which have been detected as load imbalanced
  */
-enum class ContextStrategy { AllPathsToMain, MajorPathsToMain, MajorParentSteps, None };
+enum class ContextStrategy { AllPathsToMain, MajorPathsToMain, MajorParentSteps, None, FindSynchronizationPoints};
 
 /**
  * Available strategies for "iterative descent" in load imbalance detection
@@ -48,32 +48,38 @@ struct Config {
   static Config generateFromJSON(std::string configPath);
 };
 
-// Nlohmann-Json-macros for serialization
-// ======================================
+  // Nlohmann-Json-macros for serialization
+  // ======================================
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Config, metricType, imbalanceThreshold, relevanceThreshold, contextStrategy,
-                                   contextStepCount, childRelevanceStrategy, childConstantThreshold, childFraction)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Config, metricType,
+                                   imbalanceThreshold,
+                                   relevanceThreshold,
+                                   contextStrategy,
+                                   contextStepCount,
+                                   childRelevanceStrategy,
+                                   childConstantThreshold,
+                                   childFraction)
 
-NLOHMANN_JSON_SERIALIZE_ENUM(MetricType, {
-                                             {MetricType::Efficiency, "Efficiency"},
-                                             {MetricType::VariationCoeff, "VariationCoeff"},
-                                             {MetricType::ImbalancePercentage, "ImbalancePercentage"},
-                                         })
+  NLOHMANN_JSON_SERIALIZE_ENUM( MetricType, {
+    {MetricType::Efficiency, "Efficiency"},
+    {MetricType::VariationCoeff, "VariationCoeff"},
+    {MetricType::ImbalancePercentage, "ImbalancePercentage"},
+  })
 
-NLOHMANN_JSON_SERIALIZE_ENUM(ContextStrategy, {
-                                                  {ContextStrategy::AllPathsToMain, "AllPathsToMain"},
-                                                  {ContextStrategy::MajorPathsToMain, "MajorPathsToMain"},
-                                                  {ContextStrategy::MajorParentSteps, "MajorParentSteps"},
-                                                  {ContextStrategy::None, "None"},
-                                              })
+  NLOHMANN_JSON_SERIALIZE_ENUM( ContextStrategy, {
+    {ContextStrategy::AllPathsToMain, "AllPathsToMain"},
+    {ContextStrategy::MajorPathsToMain, "MajorPathsToMain"},
+    {ContextStrategy::MajorParentSteps, "MajorParentSteps"},
+    {ContextStrategy::None, "None"},
+    {ContextStrategy::FindSynchronizationPoints, "FindSynchronizationPoints"}
+  })
 
-NLOHMANN_JSON_SERIALIZE_ENUM(ChildRelevanceStrategy,
-                             {
-                                 {ChildRelevanceStrategy::ConstantThreshold, "ConstantThreshold"},
-                                 {ChildRelevanceStrategy::RelativeToMain, "RelativeToMain"},
-                                 {ChildRelevanceStrategy::RelativeToParent, "RelativeToParent"},
-                                 {ChildRelevanceStrategy::All, "All"},
-                             })
+  NLOHMANN_JSON_SERIALIZE_ENUM( ChildRelevanceStrategy, {
+    {ChildRelevanceStrategy::ConstantThreshold, "ConstantThreshold"},
+    {ChildRelevanceStrategy::RelativeToMain, "RelativeToMain"},
+    {ChildRelevanceStrategy::RelativeToParent, "RelativeToParent"},
+    {ChildRelevanceStrategy::All, "All"},
+  })
 }  // namespace LoadImbalance
 
 #endif

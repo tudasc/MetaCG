@@ -162,7 +162,7 @@ endif()
 
 
 
-# Download and unpack googletest at configure time
+# Download and unpack spdlog at configure time
 configure_file(cmake/spdlog.cmake.in spdlog-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
   RESULT_VARIABLE spdresult
@@ -181,8 +181,7 @@ endif()
 # settings on Windows
 set(spdlog_force_shared_crt ON CACHE BOOL "" FORCE)
 
-# Add googletest directly to our build. This defines
-# the gtest and gtest_main targets.
+# Add spdlog directly to our build.
 add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/spdlog-src
                  ${CMAKE_CURRENT_BINARY_DIR}/spdlog-build
                  EXCLUDE_FROM_ALL)
