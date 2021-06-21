@@ -122,7 +122,10 @@ int main(int argc, char **argv) {
     (scorepOut.cliName, "Write instrumentation file with Score-P syntax", optType(scorepOut)->default_value("false"))
     (ipcgExport.cliName, "Export the profiling info into IPCG file", optType(ipcgExport)->default_value("false"))
     (loadImbalanceConfig.cliName, "File path to configuration file for load imbalance detection", optType(loadImbalanceConfig)->default_value(""))
-    (metacgFormat.cliName, "Selects the MetaCG format to expect", optType(metacgFormat)->default_value("1"));
+    (metacgFormat.cliName, "Selects the MetaCG format to expect", optType(metacgFormat)->default_value("1"))
+    (dotExport.cliName, "Export call-graph as dot-file after every phase.", optType(dotExport)->default_value("false"))
+    (printUnwoundNames.cliName, "Dump unwound names", optType(dotExport)->default_value("false"));
+
   // clang-format on
 
   Config c;
@@ -131,6 +134,8 @@ int main(int argc, char **argv) {
   bool shouldExport {false};
   bool useScorepFormat {false};
   bool extrapRuntimeOnly {false};
+  bool enableDotExport {false};
+  bool enableDumpUnwoundNames {false};
   int printDebug{0};
 
   auto result = opts.parse(argc, argv);
@@ -162,6 +167,8 @@ int main(int argc, char **argv) {
   checkAndSet<int>(debugLevel.cliName, result, printDebug);
   checkAndSet<bool>(ipcgExport.cliName, result, shouldExport);
   checkAndSet<bool>(scorepOut.cliName, result, useScorepFormat);
+  checkAndSet<bool>(dotExport.cliName, result, enableDotExport);
+  checkAndSet<bool>(printUnwoundNames.cliName, result, enableDumpUnwoundNames);
   std::string disposable;
   checkAndSet<std::string>(extrapConfig.cliName, result, disposable);
   checkAndSet<std::string>(loadImbalanceConfig.cliName, result, disposable);

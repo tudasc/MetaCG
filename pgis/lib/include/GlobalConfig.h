@@ -35,6 +35,8 @@ static const BoolOpt staticSelection{"static", "false"};
 static const BoolOpt modelFilter{"model-filter", "false"};
 static const BoolOpt scorepOut{"scorep-out", "false"};
 static const BoolOpt ipcgExport{"export", "false"};
+static const BoolOpt dotExport{"dot-export", "false"};
+static const BoolOpt printUnwoundNames{"dump-unwound-names", "false"};
 
 static const IntOpt debugLevel{"debug", "0"};
 
