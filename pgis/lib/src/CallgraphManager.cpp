@@ -177,15 +177,20 @@ void CallgraphManager::applyRegisteredPhases() {
     phase->printReport();
 
     CgReport report = phase->getReport();
-#if PRINT_DOT_AFTER_EVERY_PHASE
-    printDOT(report.phaseName);
-#endif  // PRINT_DOT_AFTER_EVERY_PHASE
+    auto &gOpts = pgis::config::GlobalConfig::get();
+
+    if(gOpts.getAs<bool>(dotExport.cliName)) {
+      printDOT(report.phaseName);
+    }
+
 #if DUMP_INSTRUMENTED_NAMES
     dumpInstrumentedNames(report);
 #endif  // DUMP_INSTRUMENTED_NAMES
-#if DUMP_UNWOUND_NAMES
-    dumpUnwoundNames(report);
-#endif  // DUMP_UNWOUND_NAMES
+
+    if(gOpts.getAs<bool>(printUnwoundNames.cliName)) {
+      dumpUnwoundNames(report);
+    }
+
     } // RAII
 
     phases.pop();
