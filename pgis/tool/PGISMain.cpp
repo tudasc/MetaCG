@@ -298,7 +298,9 @@ int main(int argc, char **argv) {
 
   if (result["extrap"].count()) {
     cg.attachExtrapModels();
-    cg.printDOT("extrap");
+    if(enableDotExport) {
+      cg.printDOT("extrap");
+    }
 
     if (applyModelFilter) {
       console->info("Applying model filter");
