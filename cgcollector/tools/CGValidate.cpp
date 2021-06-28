@@ -7,6 +7,7 @@
 #include <cubelib/Cube.h>
 
 #include <iostream>
+#include <set>
 #include <string>
 
 #ifndef LOGLEVEL
@@ -75,6 +76,8 @@ void patchCallgraph(nlohmann::json &callgraph, const std::string &nodeName, cons
   }
 }
 
+std::set<std::pair<std::string, std::string>> edgesChecked;
+
 int main(int argc, char **argv) {
   std::string ipcg;
   std::string cubex;
@@ -125,6 +128,7 @@ int main(int argc, char **argv) {
     if (LOGLEVEL > 0) {
       std::cout << "[INFO] edge reached: " << parentName << " --> " << nodeName << std::endl;
     }
+    edgesChecked.insert(std::make_pair(parentName, nodeName));
 
     // get callgraph elements
     if (!getOrInsert(callgraph, parentName, insertNewNodes)) {
@@ -154,14 +158,16 @@ int main(int argc, char **argv) {
       const auto &overriddenFunction = callgraph[overriddenFunctionName];
       const auto &parents = overriddenFunction["parents"];
       overriddenFunctionParentFound = (std::find(parents.begin(), parents.end(), parentName) != parents.end());
-      if (overriddenFunctionParentFound)
+      if (overriddenFunctionParentFound) {
         break;
+      }
     }
     for (const std::string overriddenFunctionName : overriddenFunctions) {
       overriddenFunctionCalleeFound =
           (std::find(callees.begin(), callees.end(), overriddenFunctionName) != callees.end());
-      if (overriddenFunctionCalleeFound)
+      if (overriddenFunctionCalleeFound) {
         break;
+      }
     }
 
     if (useNoBodyDetection) {
@@ -201,6 +207,7 @@ int main(int argc, char **argv) {
   /*
    * finalize
    */
+  std::cout << "[Info] Checked " << edgesChecked.size() << " edges." << std::endl;
   if (!verified) {
     if (patch) {
       writeIPCG(output, callgraph);
