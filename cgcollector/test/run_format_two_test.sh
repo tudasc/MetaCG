@@ -50,7 +50,7 @@ fails=0
 
 # Single File 
 echo " --- Running single file tests [file format version 2.0]---"
-for tc in ${tests[@]}; do
+for tc in "${tests[@]}"; do
   echo "Running test ${tc}"
   tfile=$tc.cpp
   gfile=$tc.ipcg
@@ -96,7 +96,7 @@ done
 
 # Multi File
 echo " --- Running multi file tests [file format version 2.0] ---"
-for tc in ${multiTests[@]}; do
+for tc in "${multiTests[@]}"; do
   echo "Running test ${tc}"
   # Input files
   taFile=${tc}_a.cpp

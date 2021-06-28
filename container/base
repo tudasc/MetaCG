@@ -4,13 +4,13 @@ WORKDIR /opt/metacg
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update -y && apt-get upgrade -y && apt-get install -y gcc g++ cmake python3 apt-utils wget gnupg qt5-default git autoconf automake libtool zlib1g-dev zlib1g vim unzip python3-pip python3-pytest python3-pytest-cov openmpi-bin openmpi-common bison flex python2
+RUN apt-get update -y && apt-get upgrade -y && apt-get install -y gcc g++ gdb cmake python3 apt-utils wget gnupg qt5-default git autoconf automake libtool zlib1g-dev zlib1g vim unzip python3-pip python3-pytest python3-pytest-cov openmpi-bin openmpi-common bison flex python2
 
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key| apt-key add - && apt-get install -y libllvm-10-ocaml-dev libllvm10 llvm-10 llvm-10-dev llvm-10-doc llvm-10-examples llvm-10-runtime clang-10 clang-tools-10 clang-10-doc libclang-common-10-dev libclang-10-dev libclang1-10 clang-format-10 python3-clang-10 clangd-10 clang-tidy-10
 
 RUN ln -s /usr/bin/clang-10 /usr/bin/clang && ln -s /usr/bin/clang++-10 /usr/bin/clang++
 
-RUN mkdir metacg && mkdir -p deps/install && cd deps && wget http://apps.fz-juelich.de/scalasca/releases/cube/4.5/dist/cubelib-4.5.tar.gz && mkdir cubelib && cd cubelib && tar xzf ../cubelib-4.5.tar.gz && cd cubelib-4.5 && ./configure --prefix=/opt/metacg/deps/install/cubelib && make -j 4 && make install
+RUN mkdir metacg && mkdir -p deps/install && cd deps && wget http://apps.fz-juelich.de/scalasca/releases/cube/4.5/dist/cubelib-4.5.tar.gz && mkdir cubelib && cd cubelib && tar xzf ../cubelib-4.5.tar.gz && cd cubelib-4.5 && ./configure --prefix=/opt/metacg/deps/install/cubelib && make -j $(nproc) && make install
 COPY . /opt/metacg/metacg
 RUN cd metacg && cd cgcollector && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/metacg/cgcollector -DCUBE_INCLUDE=/opt/metacg/deps/install/cubelib/include -DCUBE_LIB=/opt/metacg/deps/install/cubelib/lib .. && make -j 8
 RUN cd metacg && cd pgis && PATH=/opt/metacg/deps/install/cubelib/bin:$PATH ./build_submodules.sh && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/metacg/pgis -DCXXOPTS_INCLUDE=../deps/src/cxxopts -DJSON_INCLUDE=../deps/src/json/single_include -DCUBE_LIB=/opt/metacg/deps/install/cubelib/lib -DCUBE_INCLUDE=/opt/metacg/deps/install/cubelib/include/cubelib -DEXTRAP_INCLUDE=../deps/src/extrap/extrap-3.0/include -DEXTRAP_LIB=../deps/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON .. && make -j 8

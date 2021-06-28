@@ -37,6 +37,7 @@
 #include <unordered_set>
 
 #include <iostream>
+#include <sstream>
 
 using namespace clang;
 
@@ -165,7 +166,9 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
     if (closedCes.find(ce) != closedCes.end()) {
       return;
     }
+    //    closedCes.insert(ce);
     if (auto directCallee = ce->getDirectCallee()) {
+      const auto fName = directCallee->getNameAsString();
       if (auto body = directCallee->getBody()) {
         {
           std::size_t i = 0;
@@ -368,32 +371,41 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
       targetsReturn.insert(funcSymbols.begin(), funcSymbols.end());
 
       if (CallExpr *ce = dyn_cast<CallExpr>(retExpr)) {
+        //        RecursiveLookUpCallExpr(ce);
+        //        VisitChildren(RS);
+        //        return;
+
+        if (closedCes.find(ce) != closedCes.end()) {
+          return;  // We already handled this one.
+        }
+        // XXX Intentionally dead code for now
         const auto dc = ce->getDirectCallee();
         if (!dc) {
           std::cerr << "[Warning] Unable to determine direct callee." << std::endl;
-        }else {
-        if (auto decl = dyn_cast<FunctionDecl>(dc)) {
-          if (auto body = decl->getBody()) {
-            {
-              std::size_t i = 0;
-              for (auto argIter = ce->arg_begin(); argIter != ce->arg_end(); argIter++) {
-                if (i < ce->getDirectCallee()->getNumParams()) {
-                  auto paramDecl = decl->getParamDecl(i);
-                  if (auto refDecl = (*argIter)->getReferencedDeclOfCallee()) {
-                    aliases[paramDecl].insert(refDecl);
+        } else {
+          if (auto decl = dyn_cast<FunctionDecl>(dc)) {
+            if (auto body = decl->getBody()) {
+              {
+                std::size_t i = 0;
+                for (auto argIter = ce->arg_begin(); argIter != ce->arg_end(); argIter++) {
+                  if (i < ce->getDirectCallee()->getNumParams()) {
+                    auto paramDecl = decl->getParamDecl(i);
+                    if (auto refDecl = (*argIter)->getReferencedDeclOfCallee()) {
+                      aliases[paramDecl].insert(refDecl);
+                    }
                   }
+                  i++;
                 }
-                i++;
               }
+              FunctionPointerTracer fpt(G, aliases, ce, closedCes);
+              fpt.Visit(body);
+              auto tr = fpt.getTargetsReturn();
+              targetsReturn.insert(tr.begin(), tr.end());
+              // std::cout << "Detected more calls. Inserting " << tr.size() << " call targets" << std::endl;
             }
-            FunctionPointerTracer fpt(G, aliases, ce, closedCes);
-            fpt.Visit(body);
-            auto tr = fpt.getTargetsReturn();
-            targetsReturn.insert(tr.begin(), tr.end());
-            // std::cout << "Detected more calls. Inserting " << tr.size() << " call targets" << std::endl;
           }
         }
-      }}
+      }
 
       for (const auto sym : drr.getSymbols()) {
         if (const auto vSym = dyn_cast<VarDecl>(sym)) {
@@ -664,7 +676,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
               }
             }
           } else if (const auto vDecl = dyn_cast<VarDecl>(sym)) {
-            //std::cout << "Currently processing symbol" << std::endl;
+            // std::cout << "Currently processing symbol" << std::endl;
           }
         }
 
@@ -837,8 +849,12 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
         handleFunctionPointerAsReturn(CE, ctx);
       }
 
+      std::stringstream ss;
       // If we can determine the call target, we can check for unresolved symbols for that function.
       if (auto func = dyn_cast<FunctionDecl>(D)) {
+        ss << "Unresolved before the loop: " << unresolvedSymbols.size() << "\n";
+        const int maxUnresolveSteps = 32000;  // XXX: Yes, magic number.
+        int numAttempts = 0;
         if (unresolvedSymbols.find(func) != unresolvedSymbols.end()) {
           // Process unresolved symbols
           const auto openSymbols = unresolvedSymbols[func];
@@ -848,6 +864,15 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
             worklist.push_back(sym);
 
             while (!worklist.empty()) {
+              //              std::cout << "worklist size " << worklist.size() << std::endl;
+              if (numAttempts > maxUnresolveSteps) {
+                ss << "Remaining in worklist: \n";
+                for (const auto sym : worklist) {
+                  ss << sym->getNameAsString() << "\n";
+                }
+                std::cout << ss.str() << std::endl;
+                break;
+              }
               const auto curSym = worklist.front();
               worklist.erase(worklist.begin());
               donelist.insert(curSym);
@@ -859,10 +884,13 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
                 Decl *nonConstPtr = const_cast<Decl *>(alias);
                 addCalledDecl(func, nonConstPtr);
               }
+              numAttempts++;
             }
           }
           unresolvedSymbols.erase(unresolvedSymbols.find(func));
+          ss << "Unresolved symbols after loop: " << unresolvedSymbols.size() << "\n";
         }
+        std::cout << ss.str() << std::endl;
       }
     }
     if (auto ice = CE->getCallee()) {
@@ -1129,7 +1157,7 @@ void CallGraph::addNodeForDecl(Decl *D, bool IsGlobal) {
   CGBuilder builder(this, Node, captureCtorsDtors, unresolvedSymbols);
   if (Stmt *Body = D->getBody())
     builder.Visit(Body);
-  //builder.printAliases();
+  // builder.printAliases();
   unresolvedSymbols.insert(builder.getUnresolvedSymbols().begin(), builder.getUnresolvedSymbols().end());
 }
 
@@ -1165,7 +1193,12 @@ CallGraphNode *CallGraph::getOrInsertNode(const Decl *F) {
 bool CallGraph::VisitFunctionDecl(clang::FunctionDecl *FD) {
   // We skip function template definitions, as their semantics is
   // only determined when they are instantiated.
+  static int count = 0;
   if (includeInGraph(FD) && FD->isThisDeclarationADefinition()) {
+    count++;
+    if (count % 100 == 0) {
+      std::cout << "Processing function nr " << count << std::endl;
+    }
     // std::cout << "\n<< Visiting " << FD->getNameAsString() << " >>" << std::endl;
     // Add all blocks declared inside this function to the graph.
     addNodesForBlocks(FD);
