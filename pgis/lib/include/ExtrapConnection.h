@@ -153,15 +153,15 @@ class ExtrapModelProvider {
     }
 
     // PGIS uses mangled names, Extra-P apparently demangled names.
+    // XXX This may have changed in libcube 4.5? Double Check!
     auto demangledName = demangle(functionName);
-    // std::cout << "Mangled: " << functionName << "\nDemangl: " << demangledName << std::endl;
 
     auto paramList = getParameterList();
 
-    auto m = models[demangledName];
+    auto m = models[functionName];
     spdlog::get("console")->debug(
-        "ModelProvider:getModelFor {}: {}", demangledName,
-        m.size() > 0 ? m.front()->getModelFunction()->getAsString(getParameterList()) : " NONE ");
+        "ModelProvider:getModelFor {}: {}\nUsing mangled name: {}", demangledName,
+        m.size() > 0 ? m.front()->getModelFunction()->getAsString(getParameterList()) : " NONE ", functionName);
     return ExtrapConnector(m, paramList);
   }
 

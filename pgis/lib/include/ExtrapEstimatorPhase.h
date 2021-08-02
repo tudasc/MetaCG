@@ -119,7 +119,7 @@ auto ExtrapLocalEstimatorPhaseBase::evalModelWValue(CgNodePtr n,
 
   auto console = spdlog::get("console");
   for (const auto &p : values) {
-    console->trace("Setting {} to {}", p.first, p.second);
+    console->debug("EvalModel: Setting {} to {}", p.first, p.second);
     evalOps.insert(std::make_pair(EXTRAP::Parameter(p.first), p.second));
   }
 

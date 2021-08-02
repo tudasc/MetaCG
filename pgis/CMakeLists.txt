@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(PGIS VERSION 0.2.5)
+project(PGIS VERSION 0.2.6)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_VERBOSE_MAKEFILE ON)
