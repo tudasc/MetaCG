@@ -81,7 +81,7 @@ const auto getName = [](const bool mangled, const auto cn) {
 
 const auto attRuntime = [](auto &cube, auto cnode, auto n) {
   if (has<BaseProfileData>(n)) {
-    spdlog::get("console")->info("Attaching runtime {} to node {}", impl::time(cube, cnode), n->getFunctionName());
+    spdlog::get("console")->debug("Attaching runtime {} to node {}", impl::time(cube, cnode), n->getFunctionName());
     get<BaseProfileData>(n)->setRuntimeInSeconds(impl::time(cube, cnode));
   } else {
     spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
@@ -93,7 +93,7 @@ const auto attRuntime = [](auto &cube, auto cnode, auto n) {
 
 const auto attNrCall = [](auto &cube, auto cnode, auto n) {
   if (has<BaseProfileData>(n)) {
-    spdlog::get("console")->info("Attaching visits {} to node {}", impl::visits(cube, cnode), n->getFunctionName());
+    spdlog::get("console")->debug("Attaching visits {} to node {}", impl::visits(cube, cnode), n->getFunctionName());
     get<BaseProfileData>(n)->setNumberOfCalls(impl::visits(cube, cnode));
   } else {
     spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
@@ -122,7 +122,7 @@ const auto attInclRuntime = [](auto &cube, auto cnode, auto n) {
     }
 
     get<BaseProfileData>(n)->setInclusiveRuntimeInSeconds(cumulatedTime);
-    spdlog::get("console")->info("Attaching inclusive runtime {} to node {}", cumulatedTime, n->getFunctionName());
+    spdlog::get("console")->debug("Attaching inclusive runtime {} to node {}", cumulatedTime, n->getFunctionName());
   } else if (has<PiraOneData>(n)) {
     get<PiraOneData>(n)->setComesFromCube();
   }

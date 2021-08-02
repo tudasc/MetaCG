@@ -18,23 +18,11 @@ std::basic_string<char> flagType2String(FlagType type) {
 }
 
 void LIMetaData::flag(FlagType type) {
-  switch (type) {
-    case FlagType::Visited:
-      this->visited = true;
-      break;
-    case FlagType::Irrelevant:
-      this->irrelevant = true;
-      break;
-  }
+  this->flags[type] = true;
 }
 
 bool LIMetaData::isFlagged(FlagType type) const {
-  switch (type) {
-    case FlagType::Visited:
-      return this->visited;
-    case FlagType::Irrelevant:
-      return this->irrelevant;
-  }
+  return this->flags.at(type);
 }
 
 void LIMetaData::setAssessment(double assessment) {
@@ -43,4 +31,11 @@ void LIMetaData::setAssessment(double assessment) {
 
 std::optional<double> LIMetaData::getAssessment() {
   return this->assessment;
+}
+
+void LoadImbalance::to_json(nlohmann::json& j, const LoadImbalance::LIMetaData& d) {
+  j = nlohmann::json {
+      {flagType2String(FlagType::Visited), d.isFlagged(FlagType::Visited)},
+      {flagType2String(FlagType::Irrelevant), d.isFlagged(FlagType::Irrelevant)},
+  };
 }

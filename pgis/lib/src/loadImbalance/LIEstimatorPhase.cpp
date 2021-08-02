@@ -92,11 +92,8 @@ void LIEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
         if (m >= c.imbalanceThreshold) {
           debugString << " => imbalanced";
           n->get<LoadImbalance::LIMetaData>()->setAssessment(m);
+          n->get<LoadImbalance::LIMetaData>()->flag(FlagType::Imbalanced);
           imbalancedNodeSet.push_back(n);
-
-          // Context handling "LI found -> what to do?"
-          // ================
-          contextHandling(n, mainMethod, debugString);
 
           instrument(n);  // make sure imbalanced functions stays instrumented
 
@@ -111,6 +108,14 @@ void LIEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
         n->get<LIMetaData>()->flag(FlagType::Irrelevant);
       }
       spdlog::get("console")->debug(debugString.str());
+    }
+  }
+
+  // after all nodes have been checked for imbalance and iterative descent has been performed:
+  // ContextHandling for imbalanced nodes:
+  for (const CgNodePtr n : *graph) {
+    if(n->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Imbalanced)) {
+      contextHandling(n, mainMethod);
     }
   }
 
@@ -167,9 +172,13 @@ void LIEstimatorPhase::instrumentRelevantChildren(CgNodePtr node, pira::Statemen
   }
 }
 
-void LoadImbalance::LIEstimatorPhase::contextHandling(CgNodePtr n, CgNodePtr mainNode,
-                                                       std::ostringstream &debugString) {
+void LoadImbalance::LIEstimatorPhase::contextHandling(CgNodePtr n, CgNodePtr mainNode) {
   if (c.contextStrategy == ContextStrategy::None) {
+    return;
+  }
+
+  if(c.contextStrategy == ContextStrategy::FindSynchronizationPoints) {
+    findSyncPoints(n);
     return;
   }
   
@@ -244,3 +253,47 @@ bool LIEstimatorPhase::reachableInNSteps(CgNodePtr start, CgNodePtr end, int ste
 }
 
 void LIEstimatorPhase::instrument(CgNodePtr node) { node->setState(CgNodeState::INSTRUMENT_WITNESS); }
+
+void LIEstimatorPhase::findSyncPoints(CgNodePtr node) {
+  std::ostringstream debugString;
+
+  debugString << "LI Detection: Find synchronization points for node " << node->getFunctionName() << "(";
+
+  // process all parents which are balanced + visisted
+  for(CgNodePtr parent : node->getParentNodes()) {
+    if(!parent->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Imbalanced)
+        && parent->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Visited)) {
+      // instrument all descendant synchronization routines
+      instrumentByPattern(parent, [](CgNodePtr nodeInQuestion) {
+        return nodeInQuestion->getFunctionName().rfind("MPI_", 0) == 0;
+      }, debugString);
+    }
+  }
+
+  spdlog::get("console")->debug(debugString.str());
+}
+
+void LIEstimatorPhase::instrumentByPattern(CgNodePtr startNode, std::function< bool(CgNodePtr) > pattern, std::ostringstream& debugString) {
+  std::queue<CgNodePtr> workQueue;
+  CgNodePtrSet alreadyVisited;
+
+  workQueue.push(startNode);
+
+  while (!workQueue.empty()) {
+    CgNodePtr node = workQueue.front();
+    workQueue.pop();
+
+    // do not process a node twice
+    if (alreadyVisited.find(node) == alreadyVisited.end()) {
+      alreadyVisited.insert(node);
+      for(CgNodePtr child : node->getChildNodes()) {
+        workQueue.push(child);
+        if(pattern(child)) {
+          // mark for call-site instrumentation
+          child->instrumentFromParent(node);
+          debugString << " " << node->getFunctionName() << "->" << child->getFunctionName();
+        }
+      }
+    }
+  }
+}

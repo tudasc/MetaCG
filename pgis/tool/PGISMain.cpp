@@ -122,7 +122,11 @@ int main(int argc, char **argv) {
     (scorepOut.cliName, "Write instrumentation file with Score-P syntax", optType(scorepOut)->default_value("false"))
     (ipcgExport.cliName, "Export the profiling info into IPCG file", optType(ipcgExport)->default_value("false"))
     (loadImbalanceConfig.cliName, "File path to configuration file for load imbalance detection", optType(loadImbalanceConfig)->default_value(""))
-    (metacgFormat.cliName, "Selects the MetaCG format to expect", optType(metacgFormat)->default_value("1"));
+    (metacgFormat.cliName, "Selects the MetaCG format to expect", optType(metacgFormat)->default_value("1"))
+    (dotExport.cliName, "Export call-graph as dot-file after every phase.", optType(dotExport)->default_value("false"))
+    (printUnwoundNames.cliName, "Dump unwound names", optType(dotExport)->default_value("false"))
+    (cubeShowOnly.cliName, "Print inclusive time for main", optType(cubeShowOnly)->default_value("false"))
+    (useCallSiteInstrumentation.cliName, "Enable experimental call-site instrumentation", optType(useCallSiteInstrumentation)->default_value("false"));
   // clang-format on
 
   Config c;
@@ -131,6 +135,8 @@ int main(int argc, char **argv) {
   bool shouldExport {false};
   bool useScorepFormat {false};
   bool extrapRuntimeOnly {false};
+  bool enableDotExport {false};
+  bool enableDumpUnwoundNames {false};
   int printDebug{0};
 
   auto result = opts.parse(argc, argv);
@@ -162,12 +168,17 @@ int main(int argc, char **argv) {
   checkAndSet<int>(debugLevel.cliName, result, printDebug);
   checkAndSet<bool>(ipcgExport.cliName, result, shouldExport);
   checkAndSet<bool>(scorepOut.cliName, result, useScorepFormat);
+  checkAndSet<bool>(dotExport.cliName, result, enableDotExport);
+  checkAndSet<bool>(printUnwoundNames.cliName, result, enableDumpUnwoundNames);
   std::string disposable;
   checkAndSet<std::string>(extrapConfig.cliName, result, disposable);
   checkAndSet<std::string>(loadImbalanceConfig.cliName, result, disposable);
 
   int mcgVersion;
   checkAndSet<int>(metacgFormat.cliName, result, mcgVersion);
+
+  bool bDisposable;
+  checkAndSet<bool>(useCallSiteInstrumentation.cliName, result, bDisposable);
 
   if (printDebug == 1) {
     spdlog::set_level(spdlog::level::debug);
@@ -198,6 +209,27 @@ int main(int argc, char **argv) {
   auto &cg = CallgraphManager::get();
   cg.setConfig(&c);
   cg.setExtrapConfig(parseExtrapArgs(result));
+  
+  /* To briefly inspect a CUBE profile for inclusive runtime of main */
+  if (result.count(cubeShowOnly.cliName)) {
+  if (result.count("cube")) {
+    // for dynamic instrumentation
+    std::string filePath(result["cube"].as<std::string>());
+
+    std::string fileName = filePath.substr(filePath.find_last_of('/') + 1);
+
+    if (stringEndsWith(filePath, ".cubex")) {
+      CubeCallgraphBuilder::buildFromCube(filePath, &c, cg);
+    } else if (stringEndsWith(filePath, ".dot")) {
+      DOTCallgraphBuilder::build(filePath, &c);
+    } else {
+      spdlog::get("errconsole")->error("Unknown file ending in {}", filePath);
+      exit(-1);
+    }
+  }
+      cg.printMainRuntime();
+      return EXIT_SUCCESS;
+  }
   
   if (result.count("scorep-out")) {
     spdlog::get("console")->info("Setting Score-P Output Format");
@@ -256,6 +288,7 @@ int main(int argc, char **argv) {
       exit(-1);
     }
 
+
     // load imbalance detection
     // ========================
     if(result.count(loadImbalanceConfig.cliName)) {
@@ -291,7 +324,9 @@ int main(int argc, char **argv) {
 
   if (result["extrap"].count()) {
     cg.attachExtrapModels();
-    cg.printDOT("extrap");
+    if(enableDotExport) {
+      cg.printDOT("extrap");
+    }
 
     if (applyModelFilter) {
       console->info("Applying model filter");

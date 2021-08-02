@@ -11,5 +11,5 @@ fi
 
 echo -e "Static Selection\nRunning $binary"
 echo "${binary} ${scorepOut} --out-file $outDir --static ${PWD}/$testNo"
-${binary} ${scorepOut} --out-file $outDir --static ${PWD}/$testNo
+${binary} ${scorepOut} --out-file $outDir --use-cs-instrumentation --static ${PWD}/$testNo
 

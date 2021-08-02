@@ -169,7 +169,7 @@ void CallgraphManager::applyRegisteredPhases() {
 
     { // RAII
       const std::string curPhase = phase->getName();
-      MetaCG::RuntimeTimer rtt("Running curPhase");
+      MetaCG::RuntimeTimer rtt("Running " + curPhase);
     phase->modifyGraph(mainFunction);
     phase->generateReport();
 
@@ -177,15 +177,20 @@ void CallgraphManager::applyRegisteredPhases() {
     phase->printReport();
 
     CgReport report = phase->getReport();
-#if PRINT_DOT_AFTER_EVERY_PHASE
-    printDOT(report.phaseName);
-#endif  // PRINT_DOT_AFTER_EVERY_PHASE
+    auto &gOpts = pgis::config::GlobalConfig::get();
+
+    if(gOpts.getAs<bool>(dotExport.cliName)) {
+      printDOT(report.phaseName);
+    }
+
 #if DUMP_INSTRUMENTED_NAMES
     dumpInstrumentedNames(report);
 #endif  // DUMP_INSTRUMENTED_NAMES
-#if DUMP_UNWOUND_NAMES
-    dumpUnwoundNames(report);
-#endif  // DUMP_UNWOUND_NAMES
+
+    if(gOpts.getAs<bool>(printUnwoundNames.cliName)) {
+      dumpUnwoundNames(report);
+    }
+
     } // RAII
 
     phases.pop();
@@ -471,6 +476,11 @@ void CallgraphManager::dumpInstrumentedNames(CgReport report) {
       for (const auto parent : node->getParentNodes()) {
         ss << include << " " << parent->getFunctionName() << " " << arrow << " " << name << "\n";
       }
+    }
+
+    // Edge instrumentation
+    for(const auto [parent, node] : report.instrumentedEdges) {
+      ss << include << " " << parent->getFunctionName() << " " << arrow << " " << node->getFunctionName() << "\n";
     }
     ss << scorepEnd << "\n";
 

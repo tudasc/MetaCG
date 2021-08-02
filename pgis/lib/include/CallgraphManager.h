@@ -19,9 +19,7 @@
 #include <queue>
 #include <string>
 
-#define PRINT_DOT_AFTER_EVERY_PHASE true
 #define DUMP_INSTRUMENTED_NAMES true
-#define DUMP_UNWOUND_NAMES true
 
 class CallgraphManager {
  public:
@@ -60,6 +58,12 @@ class CallgraphManager {
   }
 
   extrapconnection::ExtrapModelProvider &getModelProvider() { return epModelProvider; }
+
+  void printMainRuntime() {
+    const auto mainNode = graph.findMain();
+    const auto inclTime = mainNode->get<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds();
+    spdlog::get("console")->info("Runtime of main is: {}", inclTime);
+  }
 
  private:
   CallgraphManager() : config(nullptr), epModelProvider({}){};

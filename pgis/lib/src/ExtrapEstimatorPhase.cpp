@@ -5,6 +5,7 @@
 
 #include "ExtrapEstimatorPhase.h"
 #include "CgHelper.h"
+#include "GlobalConfig.h"
 
 #include "IPCGEstimatorPhase.h"
 
@@ -25,7 +26,8 @@ void ExtrapLocalEstimatorPhaseBase::modifyGraph(CgNodePtr mainNode) {
   for (const auto n : *graph) {
     auto [shouldInstr, funcRtVal] = shouldInstrument(n);
     if (shouldInstr) {
-      if (!n->get<PiraOneData>()->getHasBody()) {
+      auto useCSInstr = pgis::config::GlobalConfig::get().getAs<bool>(pgis::options::useCallSiteInstrumentation.cliName);
+      if (useCSInstr && !n->get<PiraOneData>()->getHasBody()) {
         // If no definition, use call-site instrumentation
         n->setState(CgNodeState::INSTRUMENT_PATH);
       } else {
@@ -64,7 +66,7 @@ std::pair<bool, double> ExtrapLocalEstimatorPhaseBase::shouldInstrument(CgNodePt
 }
 
 std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(CgNodePtr node) const {
-  spdlog::get("console")->debug("Running {}", __PRETTY_FUNCTION__);
+  spdlog::get("console")->trace("Running {}", __PRETTY_FUNCTION__);
   if (useRuntimeOnly) {
     auto pdII = node->get<PiraTwoData>();
     auto rtVec = pdII->getRuntimeVec();

@@ -8,7 +8,7 @@ echo -e "Modeling-based selection\nRunning $binary"
 echo -e "For now skipping MetaCG file format 2 test"
 extrapDef="${testNo/mcg/json}"
 #echo "${binary} -out-file $outDir -extrap ${PWD}/${extrapDef} ${PWD}/$testNo"
-${binary} --metacg-format 2 --debug 2 --out-file $outDir --extrap ${PWD}/${extrapDef} ${PWD}/$testNo
+${binary} --use-cs-instrumentation --metacg-format 2 --debug 2 --out-file $outDir --extrap ${PWD}/${extrapDef} ${PWD}/$testNo
 
 #echo -e "\n [ ------------- EXPORT FEATURE ----------------- ]\n"
 

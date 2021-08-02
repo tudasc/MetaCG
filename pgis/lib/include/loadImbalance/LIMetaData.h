@@ -16,8 +16,9 @@ namespace LoadImbalance {
 
 /**
  * Available flags which can be annotated to a node.
+ * Irrelevant and Visited will be carried over to the next iteration. Imbalanced is to be recalculated every time.
  */
-enum class FlagType { Irrelevant, Visited };
+enum class FlagType { Irrelevant, Visited, Imbalanced };
 
 /**
  * Class to hold data (for load imbalance detection) which can be annotated to a node
@@ -40,16 +41,17 @@ class LIMetaData : public pira::MetaData {
   void setAssessment(double assessment);
   std::optional<double> getAssessment();
 
-  NLOHMANN_DEFINE_TYPE_INTRUSIVE(LIMetaData, visited, irrelevant);
-
  private:
   pira::Statements inclusiveStatements{0};
   bool isVirtualFunction{false};
 
   // Flags
   // =====
-  bool visited{false};
-  bool irrelevant{false};
+  std::unordered_map<FlagType, bool> flags {
+      {FlagType::Visited, false},
+      {FlagType::Irrelevant, false},
+      {FlagType::Imbalanced, false}
+  };
 
   /**
    * to save the calculated metric value for later use
@@ -57,6 +59,7 @@ class LIMetaData : public pira::MetaData {
   std::optional<double> assessment{std::nullopt};
 };
 
+void to_json(nlohmann::json& j, const LoadImbalance::LIMetaData& d);
 }  // namespace LoadImbalance
 
 #endif
