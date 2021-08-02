@@ -37,6 +37,8 @@ static const BoolOpt scorepOut{"scorep-out", "false"};
 static const BoolOpt ipcgExport{"export", "false"};
 static const BoolOpt dotExport{"dot-export", "false"};
 static const BoolOpt printUnwoundNames{"dump-unwound-names", "false"};
+static const BoolOpt useCallSiteInstrumentation{"use-cs-instrumentation", "false"};
+static const BoolOpt cubeShowOnly{"cube-show-only", "false"};
 
 static const IntOpt debugLevel{"debug", "0"};
 

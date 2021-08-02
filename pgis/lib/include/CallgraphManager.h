@@ -59,6 +59,12 @@ class CallgraphManager {
 
   extrapconnection::ExtrapModelProvider &getModelProvider() { return epModelProvider; }
 
+  void printMainRuntime() {
+    const auto mainNode = graph.findMain();
+    const auto inclTime = mainNode->get<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds();
+    spdlog::get("console")->info("Runtime of main is: {}", inclTime);
+  }
+
  private:
   CallgraphManager() : config(nullptr), epModelProvider({}){};
   CallgraphManager(Config *config, extrapconnection::ExtrapConfig epCfg = {});

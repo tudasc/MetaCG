@@ -1,6 +1,7 @@
 /**
  * File: ExtrapConnection.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "ExtrapConnection.h"
@@ -22,18 +23,22 @@
 namespace extrapconnection {
 
 void printConfig(ExtrapConfig &cfg) {
-  std::cout << "ExtrapConfig\nBaseDir: " << cfg.directory << "\nRepetitions: " << cfg.repetitions
-            << "\nPrefix: " << cfg.prefix << "\nPostfix: " << cfg.postfix << "\nIterations: " << cfg.iteration
-            << "\nParams:\n";
+  auto console = spdlog::get("console");
+
+  std::string parameterStr;
   for (const auto &p : cfg.params) {
-    std::cout << "( " << p.first << ", [";
+    parameterStr += '(' + p.first + ", [";
     std::vector<int> pVals = p.second;
     for (const auto &v : pVals) {
-      std::cout << v << ", ";
+      parameterStr += std::to_string(v) + ", ";
     }
-    std::cout << "])\n";
+    parameterStr += "])\n";
   }
-  std::cout << " ---- " << std::endl;
+  console->info(
+      "---- Extra-P Config ----\nBaseDir: {}\nRepetitions: {}\nPrefix: {}\nPostfix: {}\nIterations: {}\nParams: "
+      "{}\n---- End Extra-P Config ----",
+      cfg.directory, cfg.repetitions, cfg.prefix, cfg.postfix, cfg.iteration, parameterStr);
+
 }
 
 ExtrapConfig getExtrapConfigFromJSON(std::string filePath) {
@@ -80,7 +85,7 @@ ExtrapConfig getExtrapConfigFromJSON(std::string filePath) {
         std::vector<int> paramValues;
         paramValues.reserve(paramStrs.size());
         std::transform(std::begin(paramStrs), std::end(paramStrs), std::back_inserter(paramValues), [](std::string &s) {
-          std::cout << "Transforming " << s << std::endl;
+          spdlog::get("console")->debug("Transforming {}", s);
           return std::stoi(s);
         });
         cfg.params.emplace_back(std::make_pair(paramName, paramValues));
@@ -90,7 +95,7 @@ ExtrapConfig getExtrapConfigFromJSON(std::string filePath) {
     }
     std::reverse(std::begin(cfg.params), std::end(cfg.params));
     for (auto &p : cfg.params) {
-      std::cout << "p.first: " << p.first << std::endl;
+      spdlog::get("console")->debug("{}", p.first);
     }
   }
 
@@ -140,10 +145,6 @@ void ExtrapModelProvider::buildModels() {
     paramValues.push_back(pv.second);
   }
 
-  for (auto pp : paramPrefixes) {
-    std::cout << pp << std::endl;
-  }
-
   // We always access the previous iteration.
   std::string finalDir = config.directory + '/' + 'i' + std::to_string(config.iteration - 1);
 
@@ -177,16 +178,16 @@ void ExtrapModelProvider::buildModels() {
   printDbgInfos();
 
   for (size_t i = 0; i < fns.size(); ++i) {
-//    if (i % config.repetitions == 0) {
-      const auto attEpData = [&](auto &cube, auto cnode, auto n) {
-        console->debug("Attaching Cube info from file {}", fns.at(i));
-        auto ptd = getOrCreateMD<pira::PiraTwoData>(n, ExtrapConnector({}, {}));
-        ptd->setExtrapParameters(config.params);
-        ptd->addToRuntimeVec(CubeCallgraphBuilder::impl::time(cube, cnode));
-      };
+    //    if (i % config.repetitions == 0) {
+    const auto attEpData = [&](auto &cube, auto cnode, auto n) {
+      console->debug("Attaching Cube info from file {}", fns.at(i));
+      auto ptd = getOrCreateMD<pira::PiraTwoData>(n, ExtrapConnector({}, {}));
+      ptd->setExtrapParameters(config.params);
+      ptd->addToRuntimeVec(CubeCallgraphBuilder::impl::time(cube, cnode));
+    };
 
-      CubeCallgraphBuilder::impl::build(std::string(fns.at(i)), attEpData);
- //   }
+    CubeCallgraphBuilder::impl::build(std::string(fns.at(i)), attEpData);
+    //   }
   }
 
   for (const auto n : CallgraphManager::get()) {
@@ -270,7 +271,7 @@ void ExtrapModelProvider::buildModels() {
             spdlog::get("errconsole")->warn("Function model is NULL");
           }
         }
-        std::cout << i->getModelFunction()->getAsString(extrapParams) << std::endl;
+        console->debug("{} >>>> {}", cp->getRegion()->getName(), i->getModelFunction()->getAsString(extrapParams));
       }
       auto &elem = models[cp->getRegion()->getName()];
       elem.insert(elem.end(), std::begin(functionModels), std::end(functionModels));

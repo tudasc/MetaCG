@@ -6,6 +6,7 @@
 
 #include "IPCGEstimatorPhase.h"
 #include "CgHelper.h"
+#include "GlobalConfig.h"
 
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
@@ -99,7 +100,8 @@ void StatementCountEstimatorPhase::estimateStatementCount(CgNodePtr startNode) {
   if (inclStmtCount >= numberOfStatementsThreshold) {
     startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
   }
-  if (!startNode->get<PiraOneData>()->getHasBody() && startNode->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
+  auto useCSInstr = pgis::config::GlobalConfig::get().getAs<bool>(pgis::options::useCallSiteInstrumentation.cliName);
+  if (useCSInstr && !startNode->get<PiraOneData>()->getHasBody() && startNode->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
     startNode->setState(CgNodeState::INSTRUMENT_PATH);
   }
 }
