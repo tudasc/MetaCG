@@ -1,11 +1,12 @@
 /**
  * File: ExtrapEstimatorPhase.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "ExtrapEstimatorPhase.h"
 #include "CgHelper.h"
-#include "GlobalConfig.h"
+#include "config/GlobalConfig.h"
 
 #include "IPCGEstimatorPhase.h"
 
@@ -15,8 +16,9 @@
 #include "spdlog/spdlog.h"
 
 #include <algorithm>
-#include <sstream>
 #include <cassert>
+#include <config/ParameterConfig.h>
+#include <sstream>
 
 namespace pira {
 
@@ -26,7 +28,8 @@ void ExtrapLocalEstimatorPhaseBase::modifyGraph(CgNodePtr mainNode) {
   for (const auto n : *graph) {
     auto [shouldInstr, funcRtVal] = shouldInstrument(n);
     if (shouldInstr) {
-      auto useCSInstr = pgis::config::GlobalConfig::get().getAs<bool>(pgis::options::useCallSiteInstrumentation.cliName);
+      auto useCSInstr =
+          pgis::config::GlobalConfig::get().getAs<bool>(pgis::options::useCallSiteInstrumentation.cliName);
       if (useCSInstr && !n->get<PiraOneData>()->getHasBody()) {
         // If no definition, use call-site instrumentation
         n->setState(CgNodeState::INSTRUMENT_PATH);
@@ -67,16 +70,20 @@ std::pair<bool, double> ExtrapLocalEstimatorPhaseBase::shouldInstrument(CgNodePt
 
 std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(CgNodePtr node) const {
   spdlog::get("console")->trace("Running {}", __PRETTY_FUNCTION__);
+
+  // get extrapolation threshold from parameter config
+  double extrapolationThreshold = pgis::config::ParameterConfig::get().getPiraIIConfig()->extrapolationThreshold;
+
   if (useRuntimeOnly) {
     auto pdII = node->get<PiraTwoData>();
     auto rtVec = pdII->getRuntimeVec();
 
-    const auto median = [&] (auto vec) { 
+    const auto median = [&](auto vec) {
       spdlog::get("console")->debug("Vec size {}", vec.size());
       if (vec.size() % 2 == 0) {
-        return vec[vec.size()/2];
+        return vec[vec.size() / 2];
       } else {
-        return vec[vec.size()/2 + 1];
+        return vec[vec.size() / 2 + 1];
       }
     };
 
@@ -85,10 +92,10 @@ std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstru
     }
 
     auto medianValue = median(rtVec);
-    const float someThreshold = 2.1f;
-    std::string funcName { __PRETTY_FUNCTION__ };
-    spdlog::get("console")->debug("{}: No. of RT values: {}, median RT value {}, threshold value {}", funcName, rtVec.size(), medianValue, someThreshold);
-    if (medianValue > someThreshold) {
+    std::string funcName{__PRETTY_FUNCTION__};
+    spdlog::get("console")->debug("{}: No. of RT values: {}, median RT value {}, threshold value {}", funcName,
+                                  rtVec.size(), medianValue, extrapolationThreshold);
+    if (medianValue > extrapolationThreshold) {
       return {true, medianValue};
     }
   }
@@ -102,13 +109,17 @@ std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstru
 
   auto fVal = evalModelWValue(node, modelValue);
 
-  spdlog::get("console")->debug("Model value for {} is calcuated as {}", node->getFunctionName(), fVal);
+  spdlog::get("console")->debug("Model value for function {} is calcuated at x = {} as {}", node->getFunctionName(),
+                                modelValue[0].second, fVal);
 
-  return {fVal > threshold, fVal};
+  return {fVal > extrapolationThreshold, fVal};
 }
 
 void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(CgNodePtr mainNode) {
   std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> pathsToMain;
+
+  // get statement threshold from parameter config
+  int statementThreshold = pgis::config::ParameterConfig::get().getPiraIIConfig()->statementThreshold;
 
   for (const auto n : *graph) {
     auto console = spdlog::get("console");
@@ -139,7 +150,7 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(CgNodePtr mainNod
       for (const auto c : n->getChildNodes()) {
         if (!c->get<PiraTwoData>()->getExtrapModelConnector().hasModels()) {
           // We use our heuristic to deepen the instrumentation
-          StatementCountEstimatorPhase scep(200);  // TODO we use some threshold value here?
+          StatementCountEstimatorPhase scep(statementThreshold);  // TODO we use some threshold value here?
           scep.estimateStatementCount(c);
           if (allNodesToMain) {
             if (pathsToMain.find(c) == pathsToMain.end()) {

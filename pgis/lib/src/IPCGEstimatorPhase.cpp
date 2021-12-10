@@ -6,7 +6,7 @@
 
 #include "IPCGEstimatorPhase.h"
 #include "CgHelper.h"
-#include "GlobalConfig.h"
+#include "config/GlobalConfig.h"
 
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"

@@ -1,6 +1,7 @@
 /**
  * File: LIEstimatorPhaseTest.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "gtest/gtest.h"
@@ -8,7 +9,9 @@
 #include "../LoggerUtil.h"
 #include "CallgraphManager.h"
 #include "loadImbalance/LIEstimatorPhase.h"
+
 #include "loadImbalance/LIMetaData.h"
+#include <memory>
 
 class LIEstimatorPhaseTest : public ::testing::Test {
  protected:
@@ -30,16 +33,10 @@ TEST_F(LIEstimatorPhaseTest, EmptyCG) {
   cm.setConfig(&cfg);
   cm.setNoOutput();
 
-  LoadImbalance::Config liConfig = {LoadImbalance::MetricType::Efficiency,
-                                     1.2,
-                                     0.1,
-                                    LoadImbalance::ContextStrategy::None,
-                                     0,
-                                    LoadImbalance::ChildRelevanceStrategy::ConstantThreshold,
-                                     5,
-                                     0.0};
-
-  LoadImbalance::LIEstimatorPhase lie(liConfig);
+  auto liConfig = std::make_unique<LoadImbalance::LIConfig>(
+      LoadImbalance::LIConfig{LoadImbalance::MetricType::Efficiency, 1.2, 0.1, LoadImbalance::ContextStrategy::None, 0,
+                              LoadImbalance::ChildRelevanceStrategy::ConstantThreshold, 5, 0.0});
+  LoadImbalance::LIEstimatorPhase lie(std::move(liConfig));
   cm.registerEstimatorPhase(&lie);
   ASSERT_DEATH(cm.applyRegisteredPhases(), "CallgraphManager: Cannot find main function.");
 }
@@ -51,7 +48,7 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
   cm.clear();
   cm.setConfig(&cfg);
 
-  //spdlog::set_level(spdlog::level::debug);
+  // spdlog::set_level(spdlog::level::debug);
   cm.setNoOutput();
 
   // setup graph
@@ -117,18 +114,13 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
 
-  //std::cout << cm.getCallgraph(&cm).findMain()->getFunctionName() << std::endl;
+  // std::cout << cm.getCallgraph(&cm).findMain()->getFunctionName() << std::endl;
 
   // apply estimator phases
-  LoadImbalance::Config liConfig = {LoadImbalance::MetricType::Efficiency,
-                                     1.2,
-                                     0.1,
-                                    LoadImbalance::ContextStrategy::None,
-                                     0,
-                                    LoadImbalance::ChildRelevanceStrategy::ConstantThreshold,
-                                     5,
-                                     0.0};
-  LoadImbalance::LIEstimatorPhase lie(liConfig);
+  auto liConfig = std::make_unique<LoadImbalance::LIConfig>(
+      LoadImbalance::LIConfig{LoadImbalance::MetricType::Efficiency, 1.2, 0.1, LoadImbalance::ContextStrategy::None, 0,
+                              LoadImbalance::ChildRelevanceStrategy::ConstantThreshold, 5, 0.0});
+  LoadImbalance::LIEstimatorPhase lie(std::move(liConfig));
   cm.registerEstimatorPhase(&lie);
   cm.applyRegisteredPhases();
 
@@ -181,15 +173,10 @@ TEST_F(LIEstimatorPhaseTest, Virtual) {
   }
 
   // apply estimator phases
-  LoadImbalance::Config liConfig = {LoadImbalance::MetricType::Efficiency,
-                                     1.2,
-                                     0.1,
-                                    LoadImbalance::ContextStrategy::None,
-                                     0,
-                                    LoadImbalance::ChildRelevanceStrategy::ConstantThreshold,
-                                     5,
-                                     0.0};
-  LoadImbalance::LIEstimatorPhase lie(liConfig);
+  auto liConfig = std::make_unique<LoadImbalance::LIConfig>(
+      LoadImbalance::LIConfig{LoadImbalance::MetricType::Efficiency, 1.2, 0.1, LoadImbalance::ContextStrategy::None, 0,
+                              LoadImbalance::ChildRelevanceStrategy::ConstantThreshold, 5, 0.0});
+  LoadImbalance::LIEstimatorPhase lie(std::move(liConfig));
   cm.registerEstimatorPhase(&lie);
   cm.applyRegisteredPhases();
 
@@ -238,18 +225,13 @@ TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
   grandchild->get<pira::BaseProfileData>()->addCallData(child2, 1, 10.0, 1.0, 0, 0);
   grandchild->get<pira::BaseProfileData>()->addCallData(child2, 1, 10.0, 100.0, 0, 1);
 
-  //std::cout << grandchild->getParentNodes() << std::endl;
+  // std::cout << grandchild->getParentNodes() << std::endl;
 
   // apply estimator phases
-  LoadImbalance::Config liConfig = {LoadImbalance::MetricType::Efficiency,
-                                    1.2,
-                                    0.1,
-                                    LoadImbalance::ContextStrategy::AllPathsToMain,
-                                    0,
-                                    LoadImbalance::ChildRelevanceStrategy::ConstantThreshold,
-                                    5,
-                                    0.0};
-  LoadImbalance::LIEstimatorPhase lie(liConfig);
+  auto liConfig = std::make_unique<LoadImbalance::LIConfig>(LoadImbalance::LIConfig{
+      LoadImbalance::MetricType::Efficiency, 1.2, 0.1, LoadImbalance::ContextStrategy::AllPathsToMain, 0,
+      LoadImbalance::ChildRelevanceStrategy::ConstantThreshold, 5, 0.0});
+  LoadImbalance::LIEstimatorPhase lie(std::move(liConfig));
   cm.registerEstimatorPhase(&lie);
   cm.applyRegisteredPhases();
 
@@ -297,18 +279,13 @@ TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
   grandchild->get<pira::BaseProfileData>()->addCallData(child2, 1, 10.0, 1.0, 0, 0);
   grandchild->get<pira::BaseProfileData>()->addCallData(child2, 1, 10.0, 100.0, 0, 1);
 
-  //std::cout << grandchild->getParentNodes() << std::endl;
+  // std::cout << grandchild->getParentNodes() << std::endl;
 
   // apply estimator phases
-  LoadImbalance::Config liConfig = {LoadImbalance::MetricType::Efficiency,
-                                    1.2,
-                                    0.1,
-                                    LoadImbalance::ContextStrategy::MajorPathsToMain,
-                                    0,
-                                    LoadImbalance::ChildRelevanceStrategy::ConstantThreshold,
-                                    5,
-                                    0.0};
-  LoadImbalance::LIEstimatorPhase lie(liConfig);
+  auto liConfig = std::make_unique<LoadImbalance::LIConfig>(
+      LoadImbalance::LIConfig{LoadImbalance::MetricType::Efficiency, 1.2, 0.1, LoadImbalance::ContextStrategy::None, 0,
+                              LoadImbalance::ChildRelevanceStrategy::ConstantThreshold, 5, 0.0});
+  LoadImbalance::LIEstimatorPhase lie(std::move(liConfig));
   cm.registerEstimatorPhase(&lie);
   cm.applyRegisteredPhases();
 
@@ -352,18 +329,11 @@ TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
   child3->get<pira::BaseProfileData>()->addCallData(mainNode, 1, 10.0, 1.0, 0, 0);
   child3->get<pira::BaseProfileData>()->addCallData(mainNode, 1, 10.0, 100.0, 0, 1);
 
-
-
   // apply estimator phases
-  LoadImbalance::Config liConfig = {LoadImbalance::MetricType::Efficiency,
-                                    1.2,
-                                    0.1,
-                                    LoadImbalance::ContextStrategy::MajorParentSteps,
-                                    1,
-                                    LoadImbalance::ChildRelevanceStrategy::ConstantThreshold,
-                                    5,
-                                    0.0};
-  LoadImbalance::LIEstimatorPhase lie(liConfig);
+  auto liConfig = std::make_unique<LoadImbalance::LIConfig>(LoadImbalance::LIConfig{
+      LoadImbalance::MetricType::Efficiency, 1.2, 0.1, LoadImbalance::ContextStrategy::MajorParentSteps, 1,
+      LoadImbalance::ChildRelevanceStrategy::ConstantThreshold, 5, 0.0});
+  LoadImbalance::LIEstimatorPhase lie(std::move(liConfig));
   cm.registerEstimatorPhase(&lie);
   cm.applyRegisteredPhases();
 

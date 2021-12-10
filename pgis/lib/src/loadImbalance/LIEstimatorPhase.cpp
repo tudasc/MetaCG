@@ -16,16 +16,14 @@
 
 using namespace LoadImbalance;
 
-LIEstimatorPhase::LIEstimatorPhase(Config config) : EstimatorPhase("LIEstimatorPhase") {
-  this->c = config;
+LIEstimatorPhase::LIEstimatorPhase(std::unique_ptr<LIConfig> &&config) : EstimatorPhase("LIEstimatorPhase") {
+  this->c = std::move(config);
 
-  if (c.metricType == MetricType::Efficiency) {
+  if (c->metricType == MetricType::Efficiency) {
     this->metric = new EfficiencyMetric();
-  }
-  else if (c.metricType == MetricType::VariationCoeff) {
+  } else if (c->metricType == MetricType::VariationCoeff) {
     this->metric = new VariationCoeffMetric();
-  }
-  else if (c.metricType == MetricType::ImbalancePercentage) {
+  } else if (c->metricType == MetricType::ImbalancePercentage) {
     this->metric = new ImbalancePercentageMetric();
   }
 }
@@ -61,24 +59,24 @@ void LIEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
                    << n->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << "): ";
 
       // check whether node is sufficiently important
-      if (runtime / totalRuntime >= c.relevanceThreshold) {
+      if (runtime / totalRuntime >= c->relevanceThreshold) {
         debugString << "important (" << runtime << " / " << totalRuntime << " = " << runtime / totalRuntime << ") (";
 
         pira::Statements statementThreshold = 0;
-        if (c.childRelevanceStrategy == ChildRelevanceStrategy::All) {
+        if (c->childRelevanceStrategy == ChildRelevanceStrategy::All) {
           statementThreshold = 0;
-        } else if (c.childRelevanceStrategy == ChildRelevanceStrategy::ConstantThreshold) {
-          statementThreshold = c.childConstantThreshold;
-        } else if (c.childRelevanceStrategy == ChildRelevanceStrategy::RelativeToParent) {
+        } else if (c->childRelevanceStrategy == ChildRelevanceStrategy::ConstantThreshold) {
+          statementThreshold = c->childConstantThreshold;
+        } else if (c->childRelevanceStrategy == ChildRelevanceStrategy::RelativeToParent) {
           statementThreshold =
               std::max((pira::Statements)(n->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() *
-                                          c.childFraction),
-                       c.childConstantThreshold);
-        } else if (c.childRelevanceStrategy == ChildRelevanceStrategy::RelativeToMain) {
+                                          c->childFraction),
+                       c->childConstantThreshold);
+        } else if (c->childRelevanceStrategy == ChildRelevanceStrategy::RelativeToMain) {
           statementThreshold = std::max(
               (pira::Statements)(mainMethod->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() *
-                                 c.childFraction),
-              c.childConstantThreshold);
+                                 c->childFraction),
+              c->childConstantThreshold);
         }
 
         instrumentRelevantChildren(n, statementThreshold, debugString);
@@ -89,7 +87,7 @@ void LIEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
         this->metric->setNode(n, debugString);
         double m = metric->calc();
         debugString << " -> " << m;
-        if (m >= c.imbalanceThreshold) {
+        if (m >= c->imbalanceThreshold) {
           debugString << " => imbalanced";
           n->get<LoadImbalance::LIMetaData>()->setAssessment(m);
           n->get<LoadImbalance::LIMetaData>()->flag(FlagType::Imbalanced);
@@ -173,15 +171,15 @@ void LIEstimatorPhase::instrumentRelevantChildren(CgNodePtr node, pira::Statemen
 }
 
 void LoadImbalance::LIEstimatorPhase::contextHandling(CgNodePtr n, CgNodePtr mainNode) {
-  if (c.contextStrategy == ContextStrategy::None) {
+  if (c->contextStrategy == ContextStrategy::None) {
     return;
   }
 
-  if(c.contextStrategy == ContextStrategy::FindSynchronizationPoints) {
+  if (c->contextStrategy == ContextStrategy::FindSynchronizationPoints) {
     findSyncPoints(n);
     return;
   }
-  
+
   CgNodePtrSet nodesOnPathToMain;
 
   auto nodesToMain = CgHelper::allNodesToMain(n, mainNode);
@@ -191,8 +189,8 @@ void LoadImbalance::LIEstimatorPhase::contextHandling(CgNodePtr n, CgNodePtr mai
 
   CgNodePtrSet relevantPaths = nodesOnPathToMain;
 
-  if (c.contextStrategy == ContextStrategy::MajorPathsToMain ||
-      c.contextStrategy == ContextStrategy::MajorParentSteps) {
+  if (c->contextStrategy == ContextStrategy::MajorPathsToMain ||
+      c->contextStrategy == ContextStrategy::MajorParentSteps) {
     for (CgNodePtr x : nodesOnPathToMain) {
       if (!x->get<LIMetaData>()->isFlagged(FlagType::Visited)) {
         relevantPaths.erase(x);
@@ -201,9 +199,9 @@ void LoadImbalance::LIEstimatorPhase::contextHandling(CgNodePtr n, CgNodePtr mai
   }
 
   CgNodePtrSet toInstrument = relevantPaths;
-  if (c.contextStrategy == ContextStrategy::MajorParentSteps) {
+  if (c->contextStrategy == ContextStrategy::MajorParentSteps) {
     for (CgNodePtr x : relevantPaths) {
-      if (!reachableInNSteps(x, n, c.contextStepCount)) {
+      if (!reachableInNSteps(x, n, c->contextStepCount)) {
         toInstrument.erase(x);
       }
     }

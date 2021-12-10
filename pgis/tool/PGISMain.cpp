@@ -3,8 +3,8 @@
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/pira/LICENSE.txt
  */
 
-
-#include "GlobalConfig.h"
+#include "config/GlobalConfig.h"
+#include "config/ParameterConfig.h"
 
 #include "CubeReader.h"
 #include "DotReader.h"
@@ -121,7 +121,8 @@ int main(int argc, char **argv) {
     (debugLevel.cliName, "Whether debug messages should be printed", optType(debugLevel)->default_value("0"))
     (scorepOut.cliName, "Write instrumentation file with Score-P syntax", optType(scorepOut)->default_value("false"))
     (ipcgExport.cliName, "Export the profiling info into IPCG file", optType(ipcgExport)->default_value("false"))
-    (loadImbalanceConfig.cliName, "File path to configuration file for load imbalance detection", optType(loadImbalanceConfig)->default_value(""))
+    (parameterFileConfig.cliName, "File path to configuration file containing analysis parameters", optType(parameterFileConfig)->default_value(""))
+    (lideEnabled.cliName, "Enable load imbalance detection (PIRA LIDe)", optType(lideEnabled)->default_value("false"))
     (metacgFormat.cliName, "Selects the MetaCG format to expect", optType(metacgFormat)->default_value("1"))
     (dotExport.cliName, "Export call-graph as dot-file after every phase.", optType(dotExport)->default_value("false"))
     (printUnwoundNames.cliName, "Dump unwound names", optType(dotExport)->default_value("false"))
@@ -137,6 +138,7 @@ int main(int argc, char **argv) {
   bool extrapRuntimeOnly {false};
   bool enableDotExport {false};
   bool enableDumpUnwoundNames {false};
+  bool enableLide{false};
   int printDebug{0};
 
   auto result = opts.parse(argc, argv);
@@ -172,7 +174,8 @@ int main(int argc, char **argv) {
   checkAndSet<bool>(printUnwoundNames.cliName, result, enableDumpUnwoundNames);
   std::string disposable;
   checkAndSet<std::string>(extrapConfig.cliName, result, disposable);
-  checkAndSet<std::string>(loadImbalanceConfig.cliName, result, disposable);
+  checkAndSet<bool>(lideEnabled.cliName, result, enableLide);
+  checkAndSet<std::string>(parameterFileConfig.cliName, result, disposable);
 
   int mcgVersion;
   checkAndSet<int>(metacgFormat.cliName, result, mcgVersion);
@@ -256,7 +259,7 @@ int main(int argc, char **argv) {
     if (applyStaticFilter) {
       // load imbalance detection
       // ========================
-      if(result.count(loadImbalanceConfig.cliName)) {
+      if (enableLide) {
         spdlog::get("console")->info("Using trivial static analysis for load imbalance detection (OnlyMainEstimatorPhase");
         // static instrumentation -> OnlyMainEstimatorPhase
         if (!result.count("cube")) {
@@ -291,17 +294,18 @@ int main(int argc, char **argv) {
 
     // load imbalance detection
     // ========================
-    if(result.count(loadImbalanceConfig.cliName)) {
+    if (enableLide) {
       spdlog::get("console")->info("Using load imbalance detection mode");
       auto &gConfig = pgis::config::GlobalConfig::get();
-      try {
-        LoadImbalance::Config liConfig =
-            LoadImbalance::Config::generateFromJSON(gConfig.getAs<std::string>(loadImbalanceConfig.cliName));
-        cg.registerEstimatorPhase(new LoadImbalance::LIEstimatorPhase(liConfig));
-      } catch(nlohmann::json::exception& e) {
-        spdlog::get("errconsole")->error("Unable to parse load imbalance configuration file: {}", e.what());
-        return EXIT_FAILURE;
+      auto &pConfig = pgis::config::ParameterConfig::get();
+
+      if (!pConfig.getLIConfig()) {
+        spdlog::get("errconsole")
+            ->error("Provide configuration for load imbalance detection. Refer to PIRA's README for further details.");
+        return (EXIT_FAILURE);
       }
+      cg.registerEstimatorPhase(
+          new LoadImbalance::LIEstimatorPhase(std::move(pConfig.getLIConfig())));  // attention: moves out liConfig!
 
       cg.applyRegisteredPhases();
 
@@ -310,7 +314,7 @@ int main(int argc, char **argv) {
         console->info("Exporting load imbalance data to IPCG file.");
         MetaCG::io::annotateJSON(cg.getCallgraph(&CallgraphManager::get()), mcgFullPath, LoadImbalance::LIRetriever());
       } else {
-        spdlog::get("console")->warn("--export-flag is highly recommended for load imbalance detection");
+        spdlog::get("console")->warn("--export flag is highly recommended for load imbalance detection");
       }
 
       return EXIT_SUCCESS;
@@ -323,6 +327,13 @@ int main(int argc, char **argv) {
   }
 
   if (result["extrap"].count()) {
+    // test whether PIRA II config is present
+    auto &pConfig = pgis::config::ParameterConfig::get();
+    if (!pConfig.getPiraIIConfig()) {
+      console->error("Provide PIRA II configuration in order to use Extra-P estimators.");
+      return (EXIT_FAILURE);
+    }
+
     cg.attachExtrapModels();
     if(enableDotExport) {
       cg.printDOT("extrap");
@@ -330,11 +341,11 @@ int main(int argc, char **argv) {
 
     if (applyModelFilter) {
       console->info("Applying model filter");
-      cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueFilter(1.0, true, extrapRuntimeOnly));
+      cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueFilter(true, extrapRuntimeOnly));
     } else {
       console->info("Applying model expander");
       cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(true, false));  // remove unrelated
-      cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(1.0, true, extrapRuntimeOnly));
+      cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(true, extrapRuntimeOnly));
     }
     // XXX Should this be done after filter / expander were run? Currently we do this after model creation, yet, *before*
     // running the estimator phase

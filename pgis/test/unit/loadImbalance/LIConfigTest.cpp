@@ -6,7 +6,7 @@
 #include "../LoggerUtil.h"
 #include "nlohmann/json.hpp"
 #include "gtest/gtest.h"
-#include <loadImbalance/Config.h>
+#include <loadImbalance/LIConfig.h>
 
 using namespace nlohmann;
 using namespace LoadImbalance;
@@ -28,7 +28,7 @@ TEST_F(LIConfigTest, SimpleTest) {
       {"childFraction", 0.5},
   };
 
-  LoadImbalance::Config c = j;
+  LoadImbalance::LIConfig c = j;
 
   ASSERT_EQ(c.metricType, MetricType::Efficiency);
   ASSERT_EQ(c.contextStrategy, ContextStrategy::AllPathsToMain);
@@ -43,7 +43,7 @@ TEST_F(LIConfigTest, SimpleTest) {
 TEST_F(LIConfigTest, Empty) {
   json j = {};
 
-  ASSERT_THROW(LoadImbalance::Config c = j, json::exception);
+  ASSERT_THROW(LoadImbalance::LIConfig c = j, json::exception);
 }
 
 TEST_F(LIConfigTest, Missing) {
@@ -58,5 +58,5 @@ TEST_F(LIConfigTest, Missing) {
       {"childFraction", 0.5},
   };
 
-  ASSERT_THROW(LoadImbalance::Config c = j, json::exception);
+  ASSERT_THROW(LoadImbalance::LIConfig c = j, json::exception);
 }

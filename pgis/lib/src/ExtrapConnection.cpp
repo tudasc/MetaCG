@@ -18,10 +18,10 @@
 #include "EXTRAP_SingleParameterModelGenerator.hpp"
 #include <EXTRAP_MultiParameterSimpleModelGenerator.hpp>
 #include <EXTRAP_SingleParameterSimpleModelGenerator.hpp>
+#include <config/PiraIIConfig.h>
 #pragma GCC diagnostic pop
 
 namespace extrapconnection {
-
 void printConfig(ExtrapConfig &cfg) {
   auto console = spdlog::get("console");
 
@@ -38,7 +38,6 @@ void printConfig(ExtrapConfig &cfg) {
       "---- Extra-P Config ----\nBaseDir: {}\nRepetitions: {}\nPrefix: {}\nPostfix: {}\nIterations: {}\nParams: "
       "{}\n---- End Extra-P Config ----",
       cfg.directory, cfg.repetitions, cfg.prefix, cfg.postfix, cfg.iteration, parameterStr);
-
 }
 
 ExtrapConfig getExtrapConfigFromJSON(std::string filePath) {
@@ -281,4 +280,15 @@ void ExtrapModelProvider::buildModels() {
   console->info("Finished model creation.");
 }
 
+void ExtrapConnector::modelAggregation(pgis::config::ModelAggregationStrategy modelAggregationStrategy) {
+  if (modelAggregationStrategy == pgis::config::ModelAggregationStrategy::Sum) {
+    epModelFunction = std::make_unique<SumFunction>(models);
+  } else if (modelAggregationStrategy == pgis::config::ModelAggregationStrategy::FirstModel) {
+    epModelFunction = std::make_unique<FirstModelFunction>(models);
+  } else if (modelAggregationStrategy == pgis::config::ModelAggregationStrategy::Average) {
+    epModelFunction = std::make_unique<AvgFunction>(models);
+  } else if (modelAggregationStrategy == pgis::config::ModelAggregationStrategy::Maximum) {
+    epModelFunction = std::make_unique<MaxFunction>(models);
+  }
+}
 }  // namespace extrapconnection

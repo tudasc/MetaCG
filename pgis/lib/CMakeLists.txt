@@ -12,6 +12,8 @@ set(PGOE_LIB_SOURCES
   src/ExtrapConnection.cpp
   src/ExtrapEstimatorPhase.cpp
 
+  src/config/ParameterConfig.cpp
+
   src/loadImbalance/LIEstimatorPhase.cpp
   src/loadImbalance/metric/AbstractMetric.cpp
   src/loadImbalance/OnlyMainEstimatorPhase.cpp
@@ -20,7 +22,6 @@ set(PGOE_LIB_SOURCES
   include/loadImbalance/metric/VariationCoeffMetric.h
   src/loadImbalance/LIMetaData.cpp
   src/loadImbalance/LIRetriever.cpp
-  src/loadImbalance/Config.cpp
 )
 
 add_library(pgis SHARED

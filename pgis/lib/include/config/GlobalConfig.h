@@ -45,7 +45,9 @@ static const IntOpt debugLevel{"debug", "0"};
 static const StringOpt extrapConfig{"extrap", ""};
 static const StringOpt outDirectory{"out-file", "out"};
 
-static const StringOpt loadImbalanceConfig{"load-imbalance", ""};
+static const BoolOpt lideEnabled{"lide", "false"};
+
+static const StringOpt parameterFileConfig{"parameter-file", ""};
 
 static const IntOpt metacgFormat{"metacg-format", "1"};
 
