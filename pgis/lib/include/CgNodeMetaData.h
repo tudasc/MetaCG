@@ -10,7 +10,7 @@
 #include "CgNodePtr.h"
 
 #include "ExtrapConnection.h"
-#include "GlobalConfig.h"
+#include "config/GlobalConfig.h"
 
 //#include "CgNode.h"
 #include "CgLocation.h"
@@ -142,7 +142,7 @@ class PiraTwoData : public MetaData {
   void addToRuntimeVec(double runtime) { this->rtVec.push_back(runtime); }
   auto &getRuntimeVec() const { return this->rtVec; }
 
-  auto getExtrapModel() const { return epCon.getEPModelFunction(); }
+  auto &getExtrapModel() const { return epCon.getEPModelFunction(); }
 
   bool hasExtrapModel() const { return epCon.hasModels(); }
 

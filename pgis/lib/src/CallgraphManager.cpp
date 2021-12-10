@@ -1,11 +1,12 @@
 /**
  * File: CallgraphManager.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "CallgraphManager.h"
-#include "GlobalConfig.h"
 #include "Timing.h"
+#include "config/GlobalConfig.h"
 
 #include "ExtrapConnection.h"
 
@@ -13,6 +14,7 @@
 
 #include "spdlog/spdlog.h"
 
+#include <config/ParameterConfig.h>
 #include <iomanip>  //  std::setw()
 #include <loadImbalance/LIMetaData.h>
 
@@ -50,7 +52,8 @@ void CallgraphManager::putNumberOfStatements(std::string name, int numberOfState
     pod->setHasBody(hasBody);
     node->addMetaData(pod);
   }
-  spdlog::get("console")->debug("For {}, set number of smts to {}", name, node->get<PiraOneData>()->getNumberOfStatements());
+  spdlog::get("console")->debug("For {}, set number of smts to {}", name,
+                                node->get<PiraOneData>()->getNumberOfStatements());
 }
 
 void CallgraphManager::putNumberOfSamples(std::string name, unsigned long long numberOfSamples) {
@@ -167,31 +170,31 @@ void CallgraphManager::applyRegisteredPhases() {
   while (!phases.empty()) {
     EstimatorPhase *phase = phases.front();
 
-    { // RAII
+    {  // RAII
       const std::string curPhase = phase->getName();
       MetaCG::RuntimeTimer rtt("Running " + curPhase);
-    phase->modifyGraph(mainFunction);
-    phase->generateReport();
+      phase->modifyGraph(mainFunction);
+      phase->generateReport();
 
-    spdlog::get("console")->info("Print phase report");
-    phase->printReport();
+      spdlog::get("console")->info("Print phase report");
+      phase->printReport();
 
-    CgReport report = phase->getReport();
-    auto &gOpts = pgis::config::GlobalConfig::get();
+      CgReport report = phase->getReport();
+      auto &gOpts = pgis::config::GlobalConfig::get();
 
-    if(gOpts.getAs<bool>(dotExport.cliName)) {
-      printDOT(report.phaseName);
-    }
+      if (gOpts.getAs<bool>(dotExport.cliName)) {
+        printDOT(report.phaseName);
+      }
 
 #if DUMP_INSTRUMENTED_NAMES
-    dumpInstrumentedNames(report);
+      dumpInstrumentedNames(report);
 #endif  // DUMP_INSTRUMENTED_NAMES
 
-    if(gOpts.getAs<bool>(printUnwoundNames.cliName)) {
-      dumpUnwoundNames(report);
-    }
+      if (gOpts.getAs<bool>(printUnwoundNames.cliName)) {
+        dumpUnwoundNames(report);
+      }
 
-    } // RAII
+    }  // RAII
 
     phases.pop();
     // We don't know if estimator phases hold references / pointers to other EstimatorPhases
@@ -374,9 +377,10 @@ void CallgraphManager::printDOT(std::string prefix) {
             auto conn = ptd->getExtrapModelConnector();
             if (conn.hasModels()) {
               if (!conn.isModelSet()) {
-                conn.useFirstModel();
+                auto &pConfig = pgis::config::ParameterConfig::get();
+                ptd->getExtrapModelConnector().modelAggregation(pConfig.getPiraIIConfig()->modelAggregationStrategy);
               }
-              auto theModel = conn.getEPModelFunction();
+              auto &theModel = conn.getEPModelFunction();
               additionalLabel += '\n' + std::string(theModel->getAsString(this->epModelProvider.getParameterList()));
             }
           }
@@ -479,7 +483,7 @@ void CallgraphManager::dumpInstrumentedNames(CgReport report) {
     }
 
     // Edge instrumentation
-    for(const auto [parent, node] : report.instrumentedEdges) {
+    for (const auto [parent, node] : report.instrumentedEdges) {
       ss << include << " " << parent->getFunctionName() << " " << arrow << " " << node->getFunctionName() << "\n";
     }
     ss << scorepEnd << "\n";
@@ -515,10 +519,20 @@ void CallgraphManager::attachExtrapModels() {
     ptd->getExtrapModelConnector().setEpolator(extrapconnection::ExtrapExtrapolator(epModelProvider.getConfigValues()));
 
     if (ptd->getExtrapModelConnector().hasModels()) {
-      spdlog::get("console")->trace("attachExtrapModels hasModels == true -> Use first attached model.");
-      ptd->getExtrapModelConnector().useFirstModel();
+      spdlog::get("console")->trace("attachExtrapModels for {} hasModels == true -> Use model aggregation strategy.",
+                                    n->getFunctionName());
+      auto &pConfig = pgis::config::ParameterConfig::get();
+      ptd->getExtrapModelConnector().modelAggregation(pConfig.getPiraIIConfig()->modelAggregationStrategy);
     }
-    spdlog::get("console")->debug("Model is set {}", n->get<PiraTwoData>()->getExtrapModelConnector().isModelSet());
+    spdlog::get("console")->debug("{}: No. of models: {}, model is set {}", n->getFunctionName(),
+                                  n->get<PiraTwoData>()->getExtrapModelConnector().modelCount(),
+                                  n->get<PiraTwoData>()->getExtrapModelConnector().isModelSet());
+    spdlog::get("console")->debug("{}: models: {}", n->getFunctionName(),
+                                  n->get<PiraTwoData>()->getExtrapModelConnector().getModelStrings());
+    if (n->get<PiraTwoData>()->getExtrapModelConnector().isModelSet()) {
+    }
+    spdlog::get("console")->debug("{}: aggregated/selected model: {}", n->getFunctionName(),
+                                  n->get<PiraTwoData>()->getExtrapModelConnector().getEPModelFunctionAsString());
   }
   spdlog::get("console")->info("Attaching Extra-P models done");
 }

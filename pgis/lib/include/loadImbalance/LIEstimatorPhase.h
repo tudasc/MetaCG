@@ -7,8 +7,8 @@
 #ifndef LI_ESTIMATORPHASE_H
 #define LI_ESTIMATORPHASE_H
 
-#include "Config.h"
 #include "EstimatorPhase.h"
+#include "LIConfig.h"
 #include "loadImbalance/metric/AbstractMetric.h"
 
 #include <map>
@@ -22,7 +22,7 @@ namespace LoadImbalance {
  */
 class LIEstimatorPhase : public EstimatorPhase {
  public:
-  LIEstimatorPhase(Config config);
+  explicit LIEstimatorPhase(std::unique_ptr<LIConfig> &&config);
   ~LIEstimatorPhase() override;
 
   void modifyGraph(CgNodePtr mainMethod) override;
@@ -31,9 +31,9 @@ class LIEstimatorPhase : public EstimatorPhase {
   AbstractMetric *metric;
 
   /**
-   * Config used for this run of load imbalance detection
+   * LIConfig used for this run of load imbalance detection
    */
-  Config c;
+  std::unique_ptr<LIConfig> c;
 
   // utility functions
   // =================
