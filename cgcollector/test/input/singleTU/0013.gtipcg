@@ -34,8 +34,8 @@
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": [
-            "_Z7middle2v",
-            "_Z6middlev"
+            "_Z6middlev",
+            "_Z7middle2v"
         ]
     },
     "main": {

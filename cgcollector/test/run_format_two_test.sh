@@ -41,10 +41,10 @@ else
 fi
 
 # Single-file tests
-tests=(0001 0002 0003 0004 0005 0006 0007 0008 0009 0010 0011 0012 0013 0014 0015 0016 0017 0018 0019 0020 0021 0022 0023 0024 0025 0026 0027 0028 0029 0030 0031 0032 0033 0034 0035 0036 0037 0038 0039 0040 0041 0045 0046 0047 0048 0049 0051 0052 0100 0101 0102 0103 0201 0202 0203 0204 0205 0206 0207 0208 0209 0210 0211 0212 0213 0214)
+tests=(0001 0002 0003 0004 0005 0006 0007 0008 0009 0010 0011 0012 0013 0014 0015 0016 0017 0018 0019 0020 0021 0022 0023 0024 0025 0026 0027 0028 0029 0030 0031 0032 0033 0034 0035 0036 0037 0038 0039 0040 0041 0045 0046 0047 0048 0049 0051 0052 0100 0101 0102 0103 0201 0202 0203 0204 0205 0206 0207 0208 0209 0210 0211 0212 0213 0214 0221 0222 0223 0224 0225 0226 0227)
 
 # Multi-file tests
-multiTests=(0042 0043 0044 0050 0053)
+multiTests=(0042 0043 0044 0050 0053 0060)
 
 fails=0
 
@@ -79,7 +79,9 @@ for tc in ./input/allCtorDtor/*.cpp ; do
   gfile="${tc/cpp/ipcg}"
   tgt="${tc/cpp/gtmcg}"
 
-  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors $tfile -- >>log/testrun.log 2>&1 
+  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors $tfile -- >>log/testrun.log 2>&1
+  cat $gfile | python3 -m json.tool >${gfile}_
+  mv ${gfile}_ ${gfile}
   #$cgcollectorExe --capture-ctors-dtors $tfile -- 
   $testerExe $tgt $gfile >>log/testrun.log 2>&1 
 
@@ -115,6 +117,11 @@ for tc in "${multiTests[@]}"; do
   $cgcollectorExe  --metacg-format-version=2 ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
   $cgcollectorExe  --metacg-format-version=2 ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
 
+  cat ./input/multiTU/${ipcgTaFile} | python3 -m json.tool >./input/multiTU/${ipcgTaFile}_
+  mv ./input/multiTU/${ipcgTaFile}_ ./input/multiTU/${ipcgTaFile}
+  cat ./input/multiTU/${ipcgTbFile} | python3 -m json.tool >./input/multiTU/${ipcgTbFile}_
+  mv ./input/multiTU/${ipcgTbFile}_ ./input/multiTU/${ipcgTbFile}
+
   $testerExe ./input/multiTU/${ipcgTaFile} ./input/multiTU/${gtaFile} >>log/testrun.log 2>&1
   aErr=$?
   $testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile} >>log/testrun.log 2>&1
@@ -125,6 +132,10 @@ for tc in "${multiTests[@]}"; do
 
   ${cgmergeExe} ./input/multiTU/${combFile} ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile} >>log/testrun.log 2>&1 
   mErr=$?
+
+  cat ./input/multiTU/${combFile} | python3 -m json.tool >./input/multiTU/${combFile}_
+  mv ./input/multiTU/${combFile}_ ./input/multiTU/${combFile}
+
   ${testerExe} ./input/multiTU/${combFile} ./input/multiTU/${gtCombFile} >>log/testrun.log 2>&1 
   cErr=$?
 

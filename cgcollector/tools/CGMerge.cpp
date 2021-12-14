@@ -1,8 +1,8 @@
 #include "config.h"
 
+#include "GlobalCallDepth.h"
 #include "JSONManager.h"
 
-#include <fstream>
 #include <queue>
 #include <set>
 
@@ -51,6 +51,7 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
   // "_CG": { /** Gets constructed in the for loop **/ }
   // }
   attachFormatTwoHeader(wholeCGFinal);
+  bool hasLoopInfo = false;
 
   std::cout << "Now starting merge of " << inputFiles.size() << " files." << std::endl;
   for (const auto &filename : inputFiles) {
@@ -82,16 +83,50 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
             }
             c["meta"]["numStatements"] = c["meta"]["numStatements"].get<int>() + v["meta"]["numStatements"].get<int>();
           }
+          //assert(c["meta"]["numConditionalBranches"].get<int>() == v["meta"]["numConditionalBranches"].get<int>());
+          //assert(c["meta"]["loopDepth"].get<int>() == v["meta"]["loopDepth"].get<int>());
         } else if (v["hasBody"].get<bool>()) {
           doMerge(c, v);
           c["meta"]["numStatements"] = v["meta"]["numStatements"];
           c["meta"]["fileProperties"] = v["meta"]["fileProperties"];
+          // TODO JR, find some better way to check if merge is needed
+          if( c["meta"].contains("loopDepth") ) {
+            hasLoopInfo = true;
+            c["meta"]["numConditionalBranches"] = v["meta"]["numConditionalBranches"];
+            c["meta"]["loopDepth"] = v["meta"]["loopDepth"];
+            c["meta"]["numOperations"] = v["meta"]["numOperations"];
+          }
         } else if (c["hasBody"].get<bool>()) {
           // callees, isVirtual, doesOverride and overriddenFunctions unchanged
           // hasBody unchanged
           // numStatements unchanged
         } else {
           // nothing special
+        }
+
+
+        // Merge the loop depths
+        if(hasLoopInfo) {
+          if (!c["meta"].contains("loopCallDepth") && v["meta"].contains("loopCallDepth")) {
+            c["meta"]["loopCallDepth"] = v["meta"]["loopCallDepth"];
+          } else if (c["meta"].contains("loopCallDepth") && v["meta"].contains("loopCallDepth")) {
+            const auto vd = v["meta"]["loopCallDepth"];
+            auto &vc = c["meta"]["loopCallDepth"];
+            for (auto &[calledFunction, callDepths] : vc.items()) {
+              const auto other = vd.find(calledFunction);
+              if (other != vd.end()) {
+                const int otherv = *other;
+                if (otherv > callDepths) {
+                  callDepths = otherv;
+                }
+              }
+            }
+            for (const auto &[calledFunction, callDepths] : vd.items()) {
+              if (!vc.contains(calledFunction)) {
+                vc[calledFunction] = callDepths;
+              }
+            }
+          }
         }
 
         // merge callers
@@ -115,10 +150,12 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
   }
 
   wholeCGFinal["_CG"] = wholeCG;
+  if( hasLoopInfo ) {
+    calculateGlobalCallDepth(wholeCGFinal, true);
+  }
 
   return wholeCGFinal;
 }
-
 
 nlohmann::json mergeFileFormatOne(std::string wholeCGFilename, std::vector<std::string> inputFiles) {
   const auto toSet = [&](auto &jsonObj, std::string id) {
@@ -232,16 +269,15 @@ int main(int argc, char **argv) {
     inputFiles.emplace_back(std::string(argv[i]));
   }
 
-    nlohmann::json j;
-    readIPCG(inputFiles.front(), j);
-    if (j.contains("_CG")) {
-      auto wholeCG = mergeFileFormatTwo(argv[1], inputFiles);
-      writeIPCG(argv[1], wholeCG);
-    }
-     else {
-  auto wholeCG = mergeFileFormatOne(argv[1], inputFiles);
-  writeIPCG(argv[1], wholeCG);
-     }
+  nlohmann::json j;
+  readIPCG(inputFiles.front(), j);
+  if (j.contains("_CG")) {
+    auto wholeCG = mergeFileFormatTwo(argv[1], inputFiles);
+    writeIPCG(argv[1], wholeCG);
+  } else {
+    auto wholeCG = mergeFileFormatOne(argv[1], inputFiles);
+    writeIPCG(argv[1], wholeCG);
+  }
 
   return 0;
 }

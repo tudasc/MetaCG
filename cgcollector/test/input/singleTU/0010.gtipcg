@@ -70,8 +70,8 @@
     "main": {
         "callees": [
             "_Z8callsBarR13MyClassDerive",
-            "_ZN7MyClass3fooEv",
-            "_ZN7MyClass3barEv"
+            "_ZN7MyClass3barEv",
+            "_ZN7MyClass3fooEv"
         ],
         "doesOverride": false,
         "hasBody": true,

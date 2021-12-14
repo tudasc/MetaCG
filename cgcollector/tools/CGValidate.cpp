@@ -14,6 +14,7 @@
 #define LOGLEVEL 0
 #endif
 
+// Parse options
 void handleOptions(int argc, char **argv, std::string &ipcg, std::string &cubex, bool &patch, std::string &output,
                    bool &useNoBodyDetection, bool &insertNewNodes) {
   cxxopts::Options options("cgvalidate", "Validation of ipcg files using cubex files");
@@ -48,7 +49,7 @@ void handleOptions(int argc, char **argv, std::string &ipcg, std::string &cubex,
 
 void readCube(const std::string &filename, cube::Cube &cube) { cube.openCubeReport(filename); }
 
-bool isMain(const std::string &mangledName) { return mangledName.compare("main") == 0; }
+bool isMain(const std::string &mangledName) { return mangledName == "main"; }
 
 bool getOrInsert(nlohmann::json &callgraph, const std::string &nodeName, const bool insertNewNodes) {
   if (callgraph.contains(nodeName)) {

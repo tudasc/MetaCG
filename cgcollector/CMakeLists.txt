@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(CGCollector VERSION 0.2.1)
+project(CGCollector VERSION 0.2.2)
 
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -20,6 +20,9 @@ include(CMakePackageConfigHelpers)
 include(GetGitRevisionDescription)
 
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+if (NOT DEFINED GIT_SHA1)
+    SET(GIT_SHA1 "NO_GIT_ROOT")
+endif ()
 message(${GIT_SHA1})
 
 configure_file(Config.h.in config.h)

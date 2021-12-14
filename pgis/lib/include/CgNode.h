@@ -65,9 +65,9 @@ class CgNode {
 
   template <typename T>
   inline void addMetaData(T *md) {
-    if (this->has<T>()) {
-      assert(false && "MetaData with key already attached");
-    }
+    //    if (this->has<T>()) {
+    //      assert(false && "MetaData with key already attached");
+    //    }
     metaFields[T::key()] = md;
   }
   // XXX Meta package

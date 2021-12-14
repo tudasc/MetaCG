@@ -8,10 +8,16 @@
 
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <unordered_set>
 
-using FunctionNames = std::unordered_set<std::string>;
+using FunctionNames = std::set<std::string>;
 
+/** Parses the file 'filename' into the json object 'callgraph'
+ *
+ * @param filename
+ * @param callgraph
+ */
 inline void readIPCG(const std::string &filename, nlohmann::json &callgraph) {
   std::ifstream file(filename);
   if (!file.is_open()) {

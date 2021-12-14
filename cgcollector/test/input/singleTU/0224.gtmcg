@@ -1,0 +1,68 @@
+{
+    "_CG": {
+        "_Z4testv": {
+            "callees": [
+                "_Z5test2v"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0224.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 2
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z5test2v": {
+            "callees": [],
+            "callers": [
+                "_Z4testv"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0224.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z4testv"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0224.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 9
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "278803e7a348ac944fc70175b96ff707f6faf03b",
+            "version": "0.2"
+        },
+        "version": "2.0"
+    }
+}

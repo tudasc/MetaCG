@@ -27,28 +27,29 @@ add_cube_libraries(cgvalidate)
 add_config_include(cgvalidate)
 add_json(cgvalidate)
 add_cxxopts(cgvalidate)
-if(LOGLEVEL)
-  target_compile_definitions(cgvalidate PRIVATE LOGLEVEL=${LOGLEVEL})
-endif()
+add_clang(cgvalidate)
+if (LOGLEVEL)
+    target_compile_definitions(cgvalidate PRIVATE LOGLEVEL=${LOGLEVEL})
+endif ()
 
 install(
-  TARGETS cgcollector cgmerge cgvalidate
-  EXPORT ${TARGETS_EXPORT_NAME}
-	RUNTIME DESTINATION bin
+        TARGETS cgcollector cgmerge cgvalidate
+        EXPORT ${TARGETS_EXPORT_NAME}
+        RUNTIME DESTINATION bin
 )
 
 configure_package_config_file(
-  ${PROJECT_SOURCE_DIR}/cmake/Config.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-  INSTALL_DESTINATION lib/cmake
+        ${PROJECT_SOURCE_DIR}/cmake/Config.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+        INSTALL_DESTINATION lib/cmake
 )
 
 install(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-  DESTINATION lib/cmake
-)
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+        DESTINATION lib/cmake
+        )
 
 install(PROGRAMS
-	${CMAKE_CURRENT_SOURCE_DIR}/cgc
-	DESTINATION bin
-)
+        ${CMAKE_CURRENT_SOURCE_DIR}/cgc
+        DESTINATION bin
+        )

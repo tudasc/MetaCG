@@ -1,8 +1,8 @@
 /**
  * File: IPCGEstimatorPhase.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
-
 
 #include "IPCGEstimatorPhase.h"
 #include "CgHelper.h"
@@ -48,8 +48,9 @@ StatementCountEstimatorPhase::~StatementCountEstimatorPhase() {}
 
 void StatementCountEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   if (pSEP) {
-    numberOfStatementsThreshold = pSEP->getMaxNumInclStmts() * .5;
-    numberOfStatementsThreshold = pSEP->getMedianNumInclStmts();
+    numberOfStatementsThreshold = pSEP->getCuttoffNumInclStmts();
+    // numberOfStatementsThreshold = pSEP->getMaxNumInclStmts() * .5;
+    // numberOfStatementsThreshold = pSEP->getMedianNumInclStmts();
     spdlog::get("console")->debug("Changed count: now using {} as threshold", numberOfStatementsThreshold);
   }
 
@@ -101,7 +102,8 @@ void StatementCountEstimatorPhase::estimateStatementCount(CgNodePtr startNode) {
     startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
   }
   auto useCSInstr = pgis::config::GlobalConfig::get().getAs<bool>(pgis::options::useCallSiteInstrumentation.cliName);
-  if (useCSInstr && !startNode->get<PiraOneData>()->getHasBody() && startNode->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
+  if (useCSInstr && !startNode->get<PiraOneData>()->getHasBody() &&
+      startNode->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
     startNode->setState(CgNodeState::INSTRUMENT_PATH);
   }
 }
@@ -255,7 +257,7 @@ void RuntimeEstimatorPhase::estimateRuntime(CgNodePtr startNode) {
       }
     }
 
-    inclRunTime[startNode] = runTime;
+    // inclRunTime[startNode] = runTime;
     inclRunTime[startNode] = startNode->get<BaseProfileData>()->getInclusiveRuntimeInSeconds();
   } else {
     // EXCLUSIVE
@@ -382,9 +384,41 @@ void StatisticsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   StatementCountEstimatorPhase sce(999999999);
   sce.setGraph(graph);
   sce.modifyGraph(mainMethod);
+
+  const auto heuristicMode = pgis::config::getSelectedHeuristic();
+  switch (heuristicMode) {
+    case pgis::options::HeuristicSelection::HeuristicSelectionEnum::STATEMENTS:
+      // Statements get always collected
+      break;
+    case pgis::options::HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES: {
+      ConditionalBranchesEstimatorPhase cbe(ConditionalBranchesEstimatorPhase::limitThreshold);
+      cbe.setGraph(graph);
+      cbe.modifyGraph(mainMethod);
+    } break;
+    case pgis::options::HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES_REVERSE: {
+      ConditionalBranchesReverseEstimatorPhase cbre(ConditionalBranchesReverseEstimatorPhase::limitThreshold);
+      cbre.setGraph(graph);
+      cbre.modifyGraph(mainMethod);
+    } break;
+    case pgis::options::HeuristicSelection::HeuristicSelectionEnum::FP_MEM_OPS: {
+      FPAndMemOpsEstimatorPhase re(FPAndMemOpsEstimatorPhase::limitThreshold);
+      re.setGraph(graph);
+      re.modifyGraph(mainMethod);
+    } break;
+    case pgis::options::HeuristicSelection::HeuristicSelectionEnum::LOOPDEPTH: {
+      LoopDepthEstimatorPhase lde(LoopDepthEstimatorPhase::limitThreshold);
+      lde.setGraph(graph);
+      lde.modifyGraph(mainMethod);
+    } break;
+    case pgis::options::HeuristicSelection::HeuristicSelectionEnum::GlOBAL_LOOPDEPTH: {
+      GlobalLoopDepthEstimatorPhase glde(GlobalLoopDepthEstimatorPhase::limitThreshold);
+      glde.setGraph(graph);
+      glde.modifyGraph(mainMethod);
+    } break;
+  }
   spdlog::get("console")->info("Running StatisticsEstimatorPhase::modifyGraph");
 
-  for (auto node : *graph) {
+  for (const auto &node : *graph) {
     if (!node->isReachable()) {
       spdlog::get("console")->trace("Running on non-reachable function {}", node->getFunctionName());
       continue;
@@ -447,40 +481,130 @@ void StatisticsEstimatorPhase::printReport() {
   const long int minNumStmts = (*(minMaxIncl.first)).first;
 
   spdlog::get("console")->info(
-      " === Call graph statistics ===\nNo. of Functions:\t{}\nNo. of reach. Funcs:\t{}\nNo. of statements:\t{}\nMax No. Incl Stmt:\t{}\nMedian "
-      "No. Incl Stmt:\t{}\nMin No. Incl Stmt:\t{}\nMax No. Stmt:\t\t{}\nMedian No. Stmt:\t{}\nMin No. "
-      "Stmt:\t\t{}\nCovered w/ Instr:\t{}\nStmt not Covered:\t{}\n\n-------\nTotal Var Decls\t{}\n\n === === === === ===",
-      numFunctions, numReachableFunctions, totalStmts, maxNumStmts, medianNumStmts, minNumStmts, maxNumSingleStmts, medianNumSingleStmts,
-      minNumSingleStmts, stmtsCoveredWithInstr, stmtsActuallyCovered, (totalStmts - stmtsCoveredWithInstr), totalVarDecls);
+      " === Call graph statistics ===\n"
+      "No. of Functions:\t{}\n"
+      "No. of reach. Funcs:\t{}\n"
+      "No. of statements:\t{}\n"
+      "Max No. Incl Stmt:\t{}\n"
+      "Median No. Incl Stmt:\t{}\n"
+      "Min No. Incl Stmt:\t{}\n"
+      "Max No. Stmt:\t{}\n"
+      "Median No. Stmt:\t{}\n"
+      "Min No. Stmt:\t{}\n"
+      "Covered w/ Instr:\t{}\n"
+      "Stmt not Covered:\t{}\n"
+      "Median No. ConditionalBranches:\t{}\n"
+      "Median Roofline:\t{}\n"
+      "Median No. LoopDepth:\t{}\n"
+      "Median No. GlobalLoopDepth:\t{}\n"
+      "\n-------\n"
+      "Total Var Decls\t{}\n"
+      "\n"
+      " === === === === ===",
+      numFunctions, numReachableFunctions, totalStmts, maxNumStmts, medianNumStmts, minNumStmts, maxNumSingleStmts,
+      medianNumSingleStmts, minNumSingleStmts, stmtsCoveredWithInstr, stmtsActuallyCovered,
+      (totalStmts - stmtsCoveredWithInstr), getCuttoffConditionalBranches(), getCuttoffRoofline(),
+      getCuttoffLoopDepth(), getCuttoffGlobalLoopDepth(), totalVarDecls);
+  spdlog::get("console")->info(printHist(stmtInclHist, "statements"));
+  spdlog::get("console")->info(printHist(conditionalBranchesInclHist, "conditionalBranches"));
+  spdlog::get("console")->info(printHist(reverseConditionalBranchesInclHist, "reverseConditionalBranches"));
+  spdlog::get("console")->info(printHist(rooflineInclHist, "roofline"));
+  spdlog::get("console")->info(printHist(loopDepthInclHist, "loopDepth"));
+  spdlog::get("console")->info(printHist(globalLoopDepthInclHist, "globalLoopDepth"));
 }
 
-long int StatisticsEstimatorPhase::getMedianNumInclStmts() {
-  const auto toRandAccContainer = [&](decltype(stmtHist) &inCont) {
-    std::vector<std::remove_reference<decltype(inCont)>::type::key_type> keys;
+std::string StatisticsEstimatorPhase::printHist(const MapT &hist, const std::string &name) {
+  std::string out;
+  out += "Histogram for " + name + ":\n";
+  for (const auto &entry : hist) {
+    out += std::to_string(entry.first) + +" : " + std::to_string(entry.second) + "\n";
+  }
+  if (hist.empty()) {
+    return out;  // Fast exit for empty histogram
+  }
+  out += "Metric: Max: " + std::to_string(getHalfMaxFromHist(hist)) + "\n";
+  out += "Metric: Median: " + std::to_string(getMedianFromHist(hist)) + "\n";
+  out += "Metric: Unique Median: " + std::to_string(getUniqueMedianFromHist(hist)) + "\n";
+  return out;
+}
+
+long int StatisticsEstimatorPhase::getCuttoffNumInclStmts() { return getCuttoffValue(stmtInclHist); }
+
+long int StatisticsEstimatorPhase::getCuttoffValue(const MapT &hist) const {
+  if (hist.empty()) {
+    return 0;  // Fast exit if the map is empty. Required to prevent errors when printing an empty histogram
+  }
+  const auto &gConfig = pgis::config::GlobalConfig::get();
+  const auto cuttoffMode = gConfig.getAs<pgis::options::CuttoffSelection>(pgis::options::cuttoffSelection.cliName).mode;
+  switch (cuttoffMode) {
+    case pgis::options::CuttoffSelection::CuttoffSelectionEnum::MAX:
+      return getHalfMaxFromHist(hist);
+    case pgis::options::CuttoffSelection::CuttoffSelectionEnum::MEDIAN:
+      return getMedianFromHist(hist);
+    case pgis::options::CuttoffSelection::CuttoffSelectionEnum::UNIQUE_MEDIAN:
+      return getUniqueMedianFromHist(hist);
+    default:
+      // Should never happen
+      exit(-1);
+  }
+}
+long int StatisticsEstimatorPhase::getUniqueMedianFromHist(const MapT &hist) const {
+  const auto toRandAccContainer = [&](const MapT &inCont) {
+    std::vector<MapT::key_type> keys;
     for (const auto &n : inCont) {
       keys.push_back(n.first);
     }
     return keys;
   };
 
-  auto inclStmts = toRandAccContainer(stmtInclHist);
+  auto inclStmts = toRandAccContainer(hist);
   std::nth_element(inclStmts.begin(), inclStmts.begin() + inclStmts.size() / 2, inclStmts.end());
 
-  long int medianNumStmts = inclStmts[inclStmts.size() / 2];
+  const long int medianNumStmts = inclStmts[inclStmts.size() / 2];
   return medianNumStmts;
 }
 
-long int StatisticsEstimatorPhase::getMaxNumInclStmts() {
-  const auto toRandAccContainer = [&](decltype(stmtHist) &inCont) {
-    std::vector<std::remove_reference<decltype(inCont)>::type::key_type> keys;
+long int StatisticsEstimatorPhase::getMedianFromHist(const MapT &hist) const {
+  const auto toRandAccContainer = [&](const MapT &inCont) {
+    std::vector<MapT::key_type> keys;
     for (const auto &n : inCont) {
-      keys.push_back(n.first);
+      for (int i = 0; i < n.second; i++) {
+        keys.push_back(n.first);
+      }
     }
     return keys;
   };
+  auto inclStmts = toRandAccContainer(hist);
+  std::nth_element(inclStmts.begin(), inclStmts.begin() + inclStmts.size() / 2, inclStmts.end());
 
-  auto inclStmts = toRandAccContainer(stmtInclHist);
-  return *std::max_element(inclStmts.begin(), inclStmts.end());
+  const long int medianNumStmts = inclStmts[inclStmts.size() / 2];
+  return medianNumStmts;
+}
+
+long int StatisticsEstimatorPhase::getHalfMaxFromHist(const MapT &hist) const {
+  const auto toRandAccContainer = [&](const MapT &inCont) {
+    std::vector<MapT::key_type> keys;
+    for (const auto &n : inCont) {
+      for (int i = 0; i < n.second; i++) {
+        keys.push_back(n.first);
+      }
+    }
+    return keys;
+  };
+  auto inclStmts = toRandAccContainer(hist);
+  return (*std::max_element(inclStmts.begin(), inclStmts.end())) * 0.5;
+}
+
+long int StatisticsEstimatorPhase::getCuttoffConditionalBranches() const {
+  return getCuttoffValue(conditionalBranchesInclHist);
+}
+long int StatisticsEstimatorPhase::getCuttoffLoopDepth() const { return getCuttoffValue(loopDepthInclHist); }
+long int StatisticsEstimatorPhase::getCuttoffGlobalLoopDepth() const {
+  return getCuttoffValue(globalLoopDepthInclHist);
+}
+long int StatisticsEstimatorPhase::getCuttoffRoofline() const { return getCuttoffValue(rooflineInclHist); }
+long int StatisticsEstimatorPhase::getCuttoffReversesConditionalBranches() const {
+  return getCuttoffValue(reverseConditionalBranchesInclHist);
 }
 
 // WL CALLPATH DIFFERENTIATION ESTIMATOR PHASE
@@ -510,9 +634,9 @@ void WLCallpathDifferentiationEstimatorPhase::modifyGraph(CgNodePtr mainMethod) 
   }
   file.close();
 
-  for (auto node : *graph) {
+  for (const auto &node : *graph) {
     if (CgHelper::isConjunction(node) && (whitelist.find(node) != whitelist.end())) {
-      for (auto parentNode : node->getParentNodes()) {
+      for (const auto &parentNode : node->getParentNodes()) {
         parentNode->setState(CgNodeState::INSTRUMENT_WITNESS);
       }
     }
@@ -523,8 +647,154 @@ void WLCallpathDifferentiationEstimatorPhase::addNodeAndParentsToWhitelist(CgNod
   if (whitelist.find(node) == whitelist.end()) {
     whitelist.insert(node);
 
-    for (auto parentNode : node->getParentNodes()) {
+    for (const auto &parentNode : node->getParentNodes()) {
       addNodeAndParentsToWhitelist(parentNode);
     }
+  }
+}
+
+SummingCountPhaseBase::~SummingCountPhaseBase() = default;
+
+void SummingCountPhaseBase::modifyGraph(CgNodePtr mainMethod) {
+  if (pSEP) {
+    threshold = getPreviousThreshold();
+    spdlog::get("console")->debug("Changed count: now using {} as threshold", threshold);
+  }
+  runInitialization();
+  for (const auto &node : *graph) {
+    spdlog::get("console")->trace("Processing node: {}", node->getFunctionName());
+    if (!node->isReachable()) {
+      spdlog::get("console")->trace("\tskipping.");
+      continue;
+    }
+    spdlog::get("console")->trace("\testimating.");
+    estimateCount(node);
+  }
+}
+void SummingCountPhaseBase::estimateCount(const std::shared_ptr<CgNode> &startNode) {
+  long int count = 0;
+  // INCLUSIVE
+  if (inclusive) {
+    std::queue<CgNodePtr> workQueue;
+    workQueue.push(startNode);
+    std::set<CgNodePtr> visitedNodes;
+
+    while (!workQueue.empty()) {
+      auto node = workQueue.front();
+      workQueue.pop();
+
+      visitedNodes.insert(node);
+
+      count += getTargetCount(node.get());
+
+      for (const auto &childNode : node->getChildNodes()) {
+        if (visitedNodes.find(childNode) == visitedNodes.end()) {
+          if (childNode->isReachable()) {
+            workQueue.push(childNode);
+          }
+        }
+      }
+    }
+  } else {
+    count += getTargetCount(startNode.get());
+  }
+  counts[startNode] = count;
+
+  spdlog::get("console")->trace("Function: {} >> InclStatementCount: {}", startNode->getFunctionName(), count);
+  if (count >= threshold) {
+    startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
+  }
+  if (!startNode->get<PiraOneData>()->getHasBody() && startNode->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
+    startNode->setState(CgNodeState::INSTRUMENT_PATH);
+  }
+}
+SummingCountPhaseBase::SummingCountPhaseBase(long int threshold, const std::string &name,
+                                             StatisticsEstimatorPhase *prevStatEP, bool inclusive)
+    : EstimatorPhase((inclusive ? "Incl-" : "Excl-") + name + "-" + std::to_string(threshold)),
+      threshold(threshold),
+      pSEP(prevStatEP),
+      inclusive(inclusive) {}
+long int SummingCountPhaseBase::getCounted(const CgNodePtr &node) { return counts[node]; }
+void SummingCountPhaseBase::runInitialization() {}
+
+long int ConditionalBranchesEstimatorPhase::getPreviousThreshold() const {
+  return pSEP->getCuttoffConditionalBranches();
+}
+long int ConditionalBranchesEstimatorPhase::getTargetCount(const CgNode *node) const {
+  if (node->has<NumConditionalBranchMetaData>()) {
+    const auto md = node->get<NumConditionalBranchMetaData>();
+    return md->numConditionalBranches;
+  } else {
+    spdlog::get("console")->warn("Node does not have NumConditionalBranchMetaData");
+    return 0;
+  }
+}
+ConditionalBranchesEstimatorPhase::ConditionalBranchesEstimatorPhase(long int threshold,
+                                                                     StatisticsEstimatorPhase *prevStatEP)
+    : SummingCountPhaseBase(threshold, "ConditionalBranches", prevStatEP) {}
+
+ConditionalBranchesReverseEstimatorPhase::ConditionalBranchesReverseEstimatorPhase(long int threshold,
+                                                                                   StatisticsEstimatorPhase *prevStatEP)
+    : SummingCountPhaseBase(threshold, "ConditionalBranchesReverse", prevStatEP) {}
+long int ConditionalBranchesReverseEstimatorPhase::getPreviousThreshold() const {
+  return pSEP->getCuttoffReversesConditionalBranches();
+}
+long int ConditionalBranchesReverseEstimatorPhase::getTargetCount(const CgNode *node) const {
+  if (node->has<NumConditionalBranchMetaData>()) {
+    const auto md = node->get<NumConditionalBranchMetaData>();
+    return maxBranches - md->numConditionalBranches;
+  } else {
+    spdlog::get("console")->warn("Node does not have NumConditionalBranchMetaData");
+    return maxBranches;
+  }
+}
+void ConditionalBranchesReverseEstimatorPhase::runInitialization() {
+  maxBranches = 0;
+  for (const auto &node : *graph) {
+    if (node->has<NumConditionalBranchMetaData>()) {
+      const auto md = node->get<NumConditionalBranchMetaData>();
+      maxBranches = std::max(maxBranches, static_cast<long int>(md->numConditionalBranches));
+    } else {
+      spdlog::get("console")->warn("Node does not have NumConditionalBranchMetaData");
+    }
+  }
+}
+
+FPAndMemOpsEstimatorPhase::FPAndMemOpsEstimatorPhase(long int threshold, StatisticsEstimatorPhase *prevStatEP)
+    : SummingCountPhaseBase(threshold, "IntMemoryAccesses", prevStatEP) {}
+long int FPAndMemOpsEstimatorPhase::getPreviousThreshold() const { return pSEP->getCuttoffRoofline(); }
+long int FPAndMemOpsEstimatorPhase::getTargetCount(const CgNode *node) const {
+  if (node->has<NumOperationsMetaData>()) {
+    const auto md = node->get<NumOperationsMetaData>();
+    return md->numberOfFloatOps + md->numberOfMemoryAccesses;
+  } else {
+    spdlog::get("console")->warn("Node does not have NumOperationsMetaData");
+    return 0;
+  }
+}
+
+LoopDepthEstimatorPhase::LoopDepthEstimatorPhase(long int threshold, StatisticsEstimatorPhase *prevStatEP)
+    : SummingCountPhaseBase(threshold, "LoopDepth", prevStatEP, false) {}
+long int LoopDepthEstimatorPhase::getPreviousThreshold() const { return pSEP->getCuttoffLoopDepth(); }
+long int LoopDepthEstimatorPhase::getTargetCount(const CgNode *node) const {
+  if (node->has<LoopDepthMetaData>()) {
+    const auto md = node->get<LoopDepthMetaData>();
+    return md->loopDepth;
+  } else {
+    spdlog::get("console")->warn("Node does not have LoopDepthMetaData");
+    return 0;
+  }
+}
+
+GlobalLoopDepthEstimatorPhase::GlobalLoopDepthEstimatorPhase(long int threshold, StatisticsEstimatorPhase *prevStatEP)
+    : SummingCountPhaseBase(threshold, "GlobalLoopDepth", prevStatEP, false) {}
+long int GlobalLoopDepthEstimatorPhase::getPreviousThreshold() const { return pSEP->getCuttoffGlobalLoopDepth(); }
+long int GlobalLoopDepthEstimatorPhase::getTargetCount(const CgNode *node) const {
+  if (node->has<GlobalLoopDepthMetaData>()) {
+    const auto md = node->get<GlobalLoopDepthMetaData>();
+    return md->globalLoopDepth;
+  } else {
+    spdlog::get("console")->warn("Node does not have GlobalLoopDepthMetaData");
+    return 0;
   }
 }

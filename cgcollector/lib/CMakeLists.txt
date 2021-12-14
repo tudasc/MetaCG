@@ -2,12 +2,13 @@ set(PROJECT_NAME collectorlib)
 set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 
 set(COLLECTORLIB_SOURCES
-  src/helper/ASTHelper.cpp
-  src/helper/common.cpp
-  src/JSONManager.cpp
-  src/CallgraphToJSON.cpp
-  src/CallGraph.cpp
-)
+        src/helper/ASTHelper.cpp
+        src/helper/common.cpp
+        src/JSONManager.cpp
+        src/CallgraphToJSON.cpp
+        src/CallGraph.cpp
+        src/GlobalCallDepth.cpp
+        )
 
 add_library(collectorlib SHARED
   ${COLLECTORLIB_SOURCES}

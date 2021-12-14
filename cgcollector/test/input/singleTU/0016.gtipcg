@@ -7,8 +7,8 @@
         "numStatements": 0,
         "overriddenBy": [],
         "overriddenFunctions": [
-            "_ZN8MyClass23fooEv",
-            "_ZN7MyClass3fooEv"
+            "_ZN7MyClass3fooEv",
+            "_ZN8MyClass23fooEv"
         ],
         "parents": []
     },

@@ -25,8 +25,8 @@
     },
     "main": {
         "callees": [
-            "_Z5get_fRK1A",
-            "_Z3foov"
+            "_Z3foov",
+            "_Z5get_fRK1A"
         ],
         "doesOverride": false,
         "hasBody": true,

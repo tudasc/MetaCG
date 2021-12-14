@@ -169,16 +169,44 @@ class CodeStatisticsMetaData : public MetaData {
   int numVars{0};
 };
 
+class NumConditionalBranchMetaData : public MetaData {
+ public:
+  static constexpr const char *key() { return "NumConditionalBranchMetaData"; }
+  int numConditionalBranches{0};
+};
+
+class NumOperationsMetaData : public MetaData {
+ public:
+  static constexpr const char *key() { return "NumOperationsMetaData"; }
+  int numberOfIntOps{0};
+  int numberOfFloatOps{0};
+  int numberOfControlFlowOps{0};
+  int numberOfMemoryAccesses{0};
+};
+
+class LoopDepthMetaData : public MetaData {
+ public:
+  static constexpr const char *key() { return "LoopDepthMetaData"; }
+  int loopDepth{0};
+};
+
+class GlobalLoopDepthMetaData : public MetaData {
+ public:
+  static constexpr const char *key() { return "GlobalLoopDepthMetaData"; }
+  int globalLoopDepth{0};
+};
+
 /**
  * TODO This works for only a single parameter for now!
  */
 template <typename C1, typename C2>
 auto valTup(C1 co, C2 ct, int numReps) {
-  assert(co.size() == ct.size() && "Can only value-tuple evenly sized containers");
+  // TODO This assert seems wrong
+  // assert(co.size() == ct.size() && "Can only value-tuple evenly sized containers");
   std::vector<
       std::pair<typename C1::value_type, std::pair<std::string, typename C2::value_type::second_type::value_type>>>
       res;
-  if (ct.size() < 1) {
+  if (ct.empty()) {
     return res;
   }
   assert(ct.size() == 1 && "Current limitation, only single parameter possible");

@@ -81,13 +81,23 @@ int main(int argc, const char **argv) {
   auto foCollector = std::make_unique<FilePropertyCollector>();
   auto csCollector = std::make_unique<CodeStatisticsCollector>();
   auto mcCollector = std::make_unique<MallocVariableCollector>();
-  //auto tyCollector = std::make_unique<UniqueTypeCollector>();
+  // auto tyCollector = std::make_unique<UniqueTypeCollector>();
+  auto noConditionalBranchesCollector = std::make_unique<NumConditionalBranchCollector>();
+  auto noOperationsCollector = std::make_unique<NumOperationsCollector>();
+  auto loopDepthCollector = std::make_unique<LoopDepthCollector>();
+  auto globalLoopDepthCollector = std::make_unique<GlobalLoopDepthCollector>();
 
   MetaCollectorVector mcs{noStmtsCollector.get()};
   mcs.push_back(foCollector.get());
   mcs.push_back(csCollector.get());
   mcs.push_back(mcCollector.get());
-  //mcs.push_back(tyCollector.get());
+  // mcs.push_back(tyCollector.get());
+  if (metacgFormatVersion > 1) {
+    mcs.push_back(noConditionalBranchesCollector.get());
+    mcs.push_back(noOperationsCollector.get());
+    mcs.push_back(loopDepthCollector.get());
+    mcs.push_back(globalLoopDepthCollector.get());
+  }
 
   CT.run(
       clang::tooling::newFrontendActionFactory<CallGraphCollectorFactory>(new CallGraphCollectorFactory(mcs, j)).get());
@@ -96,8 +106,12 @@ int main(int argc, const char **argv) {
     addMetaInformationToJSON(j, mc->getName(), mc->getMetaInformation(), metacgFormatVersion);
   }
 
+  for (const auto mc : mcs) {
+    mc->addMetaInformationToCompleteJson(j, metacgFormatVersion);
+  }
+
   std::string filename(*OP.getSourcePathList().begin());
-  filename = filename.substr(0, filename.find_last_of(".")) + ".ipcg";
+  filename = filename.substr(0, filename.find_last_of('.')) + ".ipcg";
 
   std::ofstream file(filename);
   file << j << std::endl;
