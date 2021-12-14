@@ -61,11 +61,11 @@
     },
     "main": {
         "callees": [
-            "_Z4dfltv",
-            "_Z3twov",
-            "_Z5threev",
             "_Z3geti",
-            "_Z3onev"
+            "_Z3onev",
+            "_Z3twov",
+            "_Z4dfltv",
+            "_Z5threev"
         ],
         "doesOverride": false,
         "hasBody": true,

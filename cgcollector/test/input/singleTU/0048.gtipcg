@@ -51,9 +51,9 @@
     },
     "main": {
         "callees": [
+            "_Z3onev",
             "_Z4dfltv",
-            "_Z4get2i",
-            "_Z3onev"
+            "_Z4get2i"
         ],
         "doesOverride": false,
         "hasBody": true,

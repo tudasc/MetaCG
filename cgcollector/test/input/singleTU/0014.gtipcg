@@ -36,14 +36,14 @@
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": [
-            "main",
-            "_Z7middle2v"
+            "_Z7middle2v",
+            "main"
         ]
     },
     "main": {
         "callees": [
-            "_Z9lastChildv",
-            "_Z6middlev"
+            "_Z6middlev",
+            "_Z9lastChildv"
         ],
         "doesOverride": false,
         "hasBody": true,

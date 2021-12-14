@@ -70,6 +70,57 @@ void CodeStatisticsHandler::read(const json &j, const std::string &functionName)
   node->addMetaData(md);
 }
 
+void NumOperationsHandler::read(const json &j, const std::string &functionName) {
+  auto jIt = j[toolname];
+  if (jIt.is_null()) {
+    spdlog::get("console")->trace("Could not retrieve meta data for {}", toolname);
+  }
+  int numberOfIntOps = jIt["numberOfIntOps"].get<int>();
+  int numberOfFloatOps = jIt["numberOfFloatOps"].get<int>();
+  int numberOfControlFlowOps = jIt["numberOfControlFlowOps"].get<int>();
+  int numberOfMemoryAccesses = jIt["numberOfMemoryAccesses"].get<int>();
+  auto node = cgm->findOrCreateNode(functionName);
+  auto md = new pira::NumOperationsMetaData();
+  md->numberOfIntOps = numberOfIntOps;
+  md->numberOfFloatOps = numberOfFloatOps;
+  md->numberOfControlFlowOps = numberOfControlFlowOps;
+  md->numberOfMemoryAccesses = numberOfMemoryAccesses;
+  node->addMetaData(md);
+}
+void NumConditionalBranchHandler::read(const json &j, const std::string &functionName) {
+  auto jIt = j[toolname];
+  if (jIt.is_null()) {
+    spdlog::get("console")->trace("Could not retrieve meta data for {}", toolname);
+  }
+  int numberOfConditionalBranches = jIt.get<int>();
+  auto node = cgm->findOrCreateNode(functionName);
+  auto md = new pira::NumConditionalBranchMetaData();
+  md->numConditionalBranches = numberOfConditionalBranches;
+  node->addMetaData(md);
+}
+
+void LoopDepthHandler::read(const json &j, const std::string &functionName) {
+  auto jIt = j[toolname];
+  if (jIt.is_null()) {
+    spdlog::get("console")->trace("Could not retrieve meta data for {}", toolname);
+  }
+  int loopDepth = jIt.get<int>();
+  auto node = cgm->findOrCreateNode(functionName);
+  auto md = new pira::LoopDepthMetaData();
+  md->loopDepth = loopDepth;
+  node->addMetaData(md);
+}
+void GlobalLoopDepthHandler::read(const json &j, const std::string &functionName) {
+  auto jIt = j[toolname];
+  if (jIt.is_null()) {
+    spdlog::get("console")->trace("Could not retrieve meta data for {}", toolname);
+  }
+  int globalLoopDepth = jIt.get<int>();
+  auto node = cgm->findOrCreateNode(functionName);
+  auto md = new pira::GlobalLoopDepthMetaData();
+  md->globalLoopDepth = globalLoopDepth;
+  node->addMetaData(md);
+}
 }  // namespace retriever
 }  // namespace io
 }  // namespace MetaCG

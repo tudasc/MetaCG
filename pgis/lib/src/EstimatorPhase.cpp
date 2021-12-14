@@ -100,8 +100,8 @@ void EstimatorPhase::generateReport() {
     config->fastestPhaseName = report.phaseName;
   }
 
-  assert(report.instrumentedMethods == report.instrumentedNames.size());
-  assert(report.instrumentedMethods == report.instrumentedNodes.size());
+  assert(report.instrumentedMethods >= report.instrumentedNames.size());
+  assert(report.instrumentedMethods >= report.instrumentedNodes.size());
 }
 
 void EstimatorPhase::setGraph(Callgraph *graph) { this->graph = graph; }

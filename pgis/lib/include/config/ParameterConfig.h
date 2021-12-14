@@ -60,7 +60,7 @@ class ParameterConfig {
   }
 
   std::unique_ptr<LoadImbalance::LIConfig> &getLIConfig() {
-    assert(this->piraIIconfig != nullptr &&
+    assert(this->liConfig != nullptr &&
            "ParameterConfig.h: Tried to read analysis parameters for PIRA LIDe which have not been provided.");
     return this->liConfig;
   }

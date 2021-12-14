@@ -95,6 +95,35 @@ struct CodeStatisticsHandler : public MetaDataHandler {
   const std::string toolName() const override { return toolname; }
   void read(const json &j, const std::string &functionName) override;
 };
+
+struct NumConditionalBranchHandler : public MetaDataHandler {
+  const std::string toolname{"numConditionalBranches"};
+  void read(const json &j, const std::string &functionName) override;
+  bool handles(const CgNodePtr n) const override { return false; }
+  const std::string toolName() const override { return toolname; }
+};
+
+struct NumOperationsHandler : public MetaDataHandler {
+  const std::string toolname{"numOperations"};
+  void read(const json &j, const std::string &functionName) override;
+  bool handles(const CgNodePtr n) const override { return false; }
+  const std::string toolName() const override { return toolname; }
+};
+
+struct LoopDepthHandler : public MetaDataHandler {
+  const std::string toolname{"loopDepth"};
+  void read(const json &j, const std::string &functionName) override;
+  bool handles(const CgNodePtr n) const override { return false; }
+  const std::string toolName() const override { return toolname; }
+};
+
+struct GlobalLoopDepthHandler : public MetaDataHandler {
+  const std::string toolname{"globalLoopDepth"};
+  void read(const json &j, const std::string &functionName) override;
+  bool handles(const CgNodePtr n) const override { return false; }
+  const std::string toolName() const override { return toolname; }
+};
+
 }  // namespace retriever
 }  // namespace io
 }  // namespace MetaCG

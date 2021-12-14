@@ -8,8 +8,8 @@
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": [
-            "main",
-            "_Z9get_func2PPFvvES0_"
+            "_Z9get_func2PPFvvES0_",
+            "main"
         ]
     },
     "_Z8get_funcPFvvE": {

@@ -18,8 +18,8 @@
                 "numStatements": 0
             },
             "overriddenBy": [
-                "_ZN9DeriveTwo3fooEv",
-                "_ZN6Derive3fooEv"
+                "_ZN6Derive3fooEv",
+                "_ZN9DeriveTwo3fooEv"
             ],
             "overrides": []
         },

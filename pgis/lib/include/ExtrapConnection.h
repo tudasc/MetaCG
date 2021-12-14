@@ -209,7 +209,7 @@ class ExtrapModelProvider {
     std::vector<double> vals;
     vals.reserve(config.params.size());
     // FIXME for now we assume only a single parameter!!
-    for (const auto p : config.params) {
+    for (const auto &p : config.params) {
       if (key == p.first) {
         for (const auto v : p.second) {
           vals.emplace_back(v);

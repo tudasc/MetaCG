@@ -119,7 +119,7 @@ std::vector<EXTRAP::Parameter> ExtrapModelProvider::getParameterList() {
   std::vector<EXTRAP::Parameter> params;
   params.reserve(config.params.size());
 
-  for (const auto p : getKeys(config.params)) {
+  for (const auto &p : getKeys(config.params)) {
     params.emplace_back(EXTRAP::Parameter(p));
   }
 
@@ -140,7 +140,7 @@ void ExtrapModelProvider::buildModels() {
   // Actual parameter values: Inner vector is values for the parameter, outer vector corresponds to paramPrefixes
   std::vector<std::vector<int>> paramValues;
 
-  for (const auto pv : config.params) {
+  for (const auto &pv : config.params) {
     paramValues.push_back(pv.second);
   }
 
@@ -168,7 +168,7 @@ void ExtrapModelProvider::buildModels() {
       }
     }
     std::string dbgOut("Reading cube files:\n");
-    for (const auto f : cubeFiles) {
+    for (const auto &f : cubeFiles) {
       dbgOut += "- " + f + "\n";
     }
     console->debug(dbgOut);
@@ -189,7 +189,7 @@ void ExtrapModelProvider::buildModels() {
     //   }
   }
 
-  for (const auto n : CallgraphManager::get()) {
+  for (const auto &n : CallgraphManager::get()) {
     console->trace("No PiraTwoData meta data");
     if (n->has<pira::PiraTwoData>()) {
       auto ptd = CubeCallgraphBuilder::impl::get<pira::PiraTwoData>(n);

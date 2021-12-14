@@ -7,16 +7,17 @@
 #include "CallgraphManager.h"
 #include "Timing.h"
 #include "config/GlobalConfig.h"
+#include "config/ParameterConfig.h"
 
 #include "ExtrapConnection.h"
 
 #include "EXTRAP_Model.hpp"
 
+#include "loadImbalance/LIMetaData.h"
+
 #include "spdlog/spdlog.h"
 
-#include <config/ParameterConfig.h>
 #include <iomanip>  //  std::setw()
-#include <loadImbalance/LIMetaData.h>
 
 using namespace pira;
 using namespace pgis::options;
@@ -473,17 +474,17 @@ void CallgraphManager::dumpInstrumentedNames(CgReport report) {
 
     std::stringstream ss;
     ss << scorepBegin << "\n";
-    for (const auto name : report.instrumentedNames) {
+    for (const auto &name : report.instrumentedNames) {
       ss << include << " " << name << "\n";
     }
-    for (const auto [name, node] : report.instrumentedPaths) {
-      for (const auto parent : node->getParentNodes()) {
+    for (const auto &[name, node] : report.instrumentedPaths) {
+      for (const auto &parent : node->getParentNodes()) {
         ss << include << " " << parent->getFunctionName() << " " << arrow << " " << name << "\n";
       }
     }
 
     // Edge instrumentation
-    for (const auto [parent, node] : report.instrumentedEdges) {
+    for (const auto &[parent, node] : report.instrumentedEdges) {
       ss << include << " " << parent->getFunctionName() << " " << arrow << " " << node->getFunctionName() << "\n";
     }
     ss << scorepEnd << "\n";
@@ -508,7 +509,7 @@ Callgraph &CallgraphManager::getCallgraph(CallgraphManager *cg) { return cg->gra
 
 void CallgraphManager::attachExtrapModels() {
   epModelProvider.buildModels();
-  for (const auto n : graph) {
+  for (const auto &n : graph) {
     spdlog::get("console")->debug("Attaching models for {}", n->getFunctionName());
     auto ptd = getOrCreateMD<PiraTwoData>(n, epModelProvider.getModelFor(n->getFunctionName()));
     if (!ptd->getExtrapModelConnector().hasModels()) {

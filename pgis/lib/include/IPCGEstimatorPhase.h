@@ -41,19 +41,34 @@ class StatisticsEstimatorPhase : public EstimatorPhase {
 
   void modifyGraph(CgNodePtr mainMethod) override;
   void printReport() override;
-  long int getMedianNumInclStmts();
-  long int getMaxNumInclStmts();
+  long int getCuttoffNumInclStmts();
+  long int getCuttoffReversesConditionalBranches() const;
+  long int getCuttoffConditionalBranches() const;
+  long int getCuttoffRoofline() const;
+  long int getCuttoffLoopDepth() const;
+  long int getCuttoffGlobalLoopDepth() const;
 
  private:
+  using MapT = std::map<long int, long int>;
+  long int getCuttoffValue(const MapT &hist) const;
+  long int getUniqueMedianFromHist(const MapT &hist) const;
+  long int getMedianFromHist(const MapT &hist) const;
+  long int getHalfMaxFromHist(const MapT &hist) const;
+  std::string printHist(const MapT &hist, const std::string &name);
   bool shouldPrintReport;
   long int numFunctions;
   long int numReachableFunctions;
   long int totalStmts;
-  std::map<long int, long int> stmtHist;
-  std::map<long int, long int> stmtInclHist;
+  MapT stmtHist;
+  MapT stmtInclHist;
   long int stmtsCoveredWithInstr;
   long int stmtsActuallyCovered;
   long int totalVarDecls;
+  MapT conditionalBranchesInclHist;
+  MapT reverseConditionalBranchesInclHist;
+  MapT rooflineInclHist;
+  MapT loopDepthInclHist;
+  MapT globalLoopDepthInclHist;
 };
 
 /**
@@ -153,6 +168,80 @@ class WLCallpathDifferentiationEstimatorPhase : public EstimatorPhase {
   std::string whitelistName;
 
   void addNodeAndParentsToWhitelist(CgNodePtr node);
+};
+
+class SummingCountPhaseBase : public EstimatorPhase {
+ public:
+  SummingCountPhaseBase(long int threshold, const std::string &name, StatisticsEstimatorPhase *prevStatEP,
+                        bool inclusive = true);
+  ~SummingCountPhaseBase() override;
+  void modifyGraph(CgNodePtr mainMethod) override;
+  static const long int limitThreshold = std::numeric_limits<long int>::max();
+  long int getCounted(const CgNodePtr &node);
+
+ protected:
+  void estimateCount(const std::shared_ptr<CgNode> &startNode);
+  virtual long int getPreviousThreshold() const = 0;
+  virtual long int getTargetCount(const CgNode *data) const = 0;
+  long int threshold;
+  std::map<CgNodePtr, long int> counts;
+  StatisticsEstimatorPhase *pSEP;
+  virtual void runInitialization();
+  const bool inclusive;
+};
+
+// Inclusive count
+class ConditionalBranchesEstimatorPhase : public SummingCountPhaseBase {
+ public:
+  explicit ConditionalBranchesEstimatorPhase(long int threshold, StatisticsEstimatorPhase *prevStatEP = nullptr);
+
+ protected:
+  long int getPreviousThreshold() const override;
+  long int getTargetCount(const CgNode *data) const override;
+};
+
+// Calculates the target count by subtracting the conditional branches from the max amount of conditional branches
+// Inclusive count
+class ConditionalBranchesReverseEstimatorPhase : public SummingCountPhaseBase {
+ public:
+  explicit ConditionalBranchesReverseEstimatorPhase(long int threshold, StatisticsEstimatorPhase *prevStatEP = nullptr);
+
+ protected:
+  long int maxBranches;
+  long int getPreviousThreshold() const override;
+  long int getTargetCount(const CgNode *data) const override;
+  void runInitialization() override;
+};
+
+// Uses the combined Number of Floating-Point Operations and memory accesses
+// Inclusive count
+class FPAndMemOpsEstimatorPhase : public SummingCountPhaseBase {
+ public:
+  explicit FPAndMemOpsEstimatorPhase(long int threshold, StatisticsEstimatorPhase *prevStatEP = nullptr);
+
+ protected:
+  long int getPreviousThreshold() const override;
+  long int getTargetCount(const CgNode *data) const override;
+};
+
+// Exclusive count
+class LoopDepthEstimatorPhase : public SummingCountPhaseBase {
+ public:
+  explicit LoopDepthEstimatorPhase(long int threshold, StatisticsEstimatorPhase *prevStatEP = nullptr);
+
+ protected:
+  long int getPreviousThreshold() const override;
+  long int getTargetCount(const CgNode *data) const override;
+};
+
+// Exclusive count
+class GlobalLoopDepthEstimatorPhase : public SummingCountPhaseBase {
+ public:
+  explicit GlobalLoopDepthEstimatorPhase(long int threshold, StatisticsEstimatorPhase *prevStatEP = nullptr);
+
+ protected:
+  long int getPreviousThreshold() const override;
+  long int getTargetCount(const CgNode *data) const override;
 };
 
 #endif

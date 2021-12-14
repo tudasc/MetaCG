@@ -1,0 +1,22 @@
+{
+    "_Z3boo1A": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    },
+    "_Z3fooPii": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 1,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    }
+}

@@ -69,7 +69,7 @@ void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j, const int ve
 }
 
 void addMetaInformationToJSON(nlohmann::json &j, const std::string &metaInformationName,
-                              const std::unordered_map<std::string, std::unique_ptr<MetaInformation>> &meta,
+                              const std::map<std::string, std::unique_ptr<MetaInformation>> &meta,
                               int mcgFormatVersion) {
   for (auto &m : meta) {
     auto &functionJSON = (mcgFormatVersion == 1) ? j[m.first] : j["_CG"][m.first];

@@ -665,8 +665,8 @@ double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef) {
   size_t lastIndex = rt.size() * .5;
   if (useLongAsRef) {
     float runtimeFilterThresholdAlpha = 0.5f;
-    lastIndex = rt.size() - 1;
-    return rt[lastIndex] * runtimeFilterThresholdAlpha;   // runtime filtering threshold
+    lastIndex = rt.size() - 1;                           // TODO: Make this adjustable
+    return rt[lastIndex] * runtimeFilterThresholdAlpha;  // runtime filtering threshold
   }
   // Returns the median of the data
   return rt[lastIndex];

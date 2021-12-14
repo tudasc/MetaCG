@@ -34,7 +34,7 @@ void LIEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   double totalRuntime = mainMethod->get<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds();
 
   // make sure no node is marked for instrumentation yet
-  for (const CgNodePtr n : *graph) {
+  for (const CgNodePtr &n : *graph) {
     n->setState(CgNodeState::NONE);
   }
 
@@ -43,7 +43,7 @@ void LIEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   // take notes about imbalanced nodes (for output)
   std::vector<CgNodePtr> imbalancedNodeSet;
 
-  for (const CgNodePtr n : *graph) {
+  for (const CgNodePtr &n : *graph) {
     // only visit nodes with profiling information which have not yet been marked as irrelevant
     if (n->get<pira::PiraOneData>()->comesFromCube() && !n->get<LIMetaData>()->isFlagged(FlagType::Irrelevant)) {
       spdlog::get("console")->debug("LIEstimatorPhase: Processing node " + n->getFunctionName());
@@ -111,15 +111,15 @@ void LIEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
 
   // after all nodes have been checked for imbalance and iterative descent has been performed:
   // ContextHandling for imbalanced nodes:
-  for (const CgNodePtr n : *graph) {
-    if(n->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Imbalanced)) {
+  for (const CgNodePtr &n : *graph) {
+    if (n->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Imbalanced)) {
       contextHandling(n, mainMethod);
     }
   }
 
   // print summary of detected functions
   std::ostringstream imbalancedNames;
-  for (auto i : imbalancedNodeSet) {
+  for (const auto &i : imbalancedNodeSet) {
     imbalancedNames << i->getFunctionName();
     imbalancedNames << " load imbalance assessment: " << i->get<LoadImbalance::LIMetaData>()->getAssessment().value();
     imbalancedNames << " incl. runtime: " << i->get<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds() << " sec.";

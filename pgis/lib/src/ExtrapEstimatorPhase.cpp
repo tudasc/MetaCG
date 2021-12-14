@@ -7,6 +7,7 @@
 #include "ExtrapEstimatorPhase.h"
 #include "CgHelper.h"
 #include "config/GlobalConfig.h"
+#include "config/ParameterConfig.h"
 
 #include "IPCGEstimatorPhase.h"
 
@@ -16,8 +17,8 @@
 #include "spdlog/spdlog.h"
 
 #include <algorithm>
+#include <sstream>
 #include <cassert>
-#include <config/ParameterConfig.h>
 #include <sstream>
 
 namespace pira {
@@ -25,7 +26,7 @@ namespace pira {
 void ExtrapLocalEstimatorPhaseBase::modifyGraph(CgNodePtr mainNode) {
   auto console = spdlog::get("console");
   console->trace("Running ExtrapLocalEstimatorPhaseBase::modifyGraph");
-  for (const auto n : *graph) {
+  for (const auto& n : *graph) {
     auto [shouldInstr, funcRtVal] = shouldInstrument(n);
     if (shouldInstr) {
       auto useCSInstr =
@@ -36,12 +37,12 @@ void ExtrapLocalEstimatorPhaseBase::modifyGraph(CgNodePtr mainNode) {
       } else {
         n->setState(CgNodeState::INSTRUMENT_WITNESS);
       }
-      kernels.push_back({funcRtVal, n});
+      kernels.emplace_back(funcRtVal, n);
 
       if (allNodesToMain) {
         auto nodesToMain = CgHelper::allNodesToMain(n, mainNode);
         console->trace("Node {} has {} nodes on paths to main.", n->getFunctionName(), nodesToMain.size());
-        for (const auto ntm : nodesToMain) {
+        for (const auto &ntm : nodesToMain) {
           ntm->setState(CgNodeState::INSTRUMENT_WITNESS);
         }
       }
@@ -121,7 +122,7 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(CgNodePtr mainNod
   // get statement threshold from parameter config
   int statementThreshold = pgis::config::ParameterConfig::get().getPiraIIConfig()->statementThreshold;
 
-  for (const auto n : *graph) {
+  for (const auto &n : *graph) {
     auto console = spdlog::get("console");
     console->trace("Running ExtrapLocalEstimatorPhaseExpander::modifyGraph on {}", n->getFunctionName());
     auto [shouldInstr, funcRtVal] = shouldInstrument(n);
@@ -132,7 +133,7 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(CgNodePtr mainNod
       } else {
         n->setState(CgNodeState::INSTRUMENT_WITNESS);
       }
-      kernels.push_back({funcRtVal, n});
+      kernels.emplace_back(funcRtVal, n);
 
       if (allNodesToMain) {
         if (pathsToMain.find(n) == pathsToMain.end()) {
@@ -141,13 +142,13 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(CgNodePtr mainNod
         }
         auto nodesToMain = pathsToMain[n];
         spdlog::get("console")->trace("Found {} nodes to main.", nodesToMain.size());
-        for (const auto ntm : nodesToMain) {
+        for (const auto &ntm : nodesToMain) {
           ntm->setState(CgNodeState::INSTRUMENT_WITNESS);
         }
       }
 
       std::unordered_set<CgNodePtr> totalToMain;
-      for (const auto c : n->getChildNodes()) {
+      for (const auto &c : n->getChildNodes()) {
         if (!c->get<PiraTwoData>()->getExtrapModelConnector().hasModels()) {
           // We use our heuristic to deepen the instrumentation
           StatementCountEstimatorPhase scep(statementThreshold);  // TODO we use some threshold value here?
