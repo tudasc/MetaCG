@@ -14,14 +14,14 @@ stages:
 .lb-setup: &lb-setup
   - eval $(ssh-agent -s)
   - ssh-add ~/.ssh/gitlab_rsa
-  - module load gcc/8 git llvm/10.0.0 cmake python/3.7.4 libcube/4.5
+  - module load gcc/8.3 git llvm/10.0.0 cmake python/3.7.4 libcube/4.5
 
 .lb-tear-down: &lb-tear-down
   - echo $SSH_AUTH_SOCK
   - rm -rf $(dirname $(echo $SSH_AUTH_SOCK))
   - ssh-agent -k
 
-mgc-dowload:
+mcg-download:
   stage: download
   tags:
     - general
@@ -62,9 +62,6 @@ test-cgc:
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - cd cgcollector
-    - ls
-    - ls build
-    - ls build/test
     - cd test && bash run_format_one_test.sh
     - bash run_format_two_test.sh
     - *lb-tear-down
@@ -146,10 +143,6 @@ test-pgis:
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - cd pgis
-    - echo $PWD
-    - ls
-    - ls build
-    - ls build/test
     - cd build/test/unit && ./basictests
     - *lb-tear-down
 
