@@ -2,7 +2,7 @@
 
 # python2cg
 
-This tool converts a CG in phasar output format to a CG in MetaCG output format.
+This tool converts a CG in phasar output format to a CG in metacg output format.
 
 
 ## Example Usage

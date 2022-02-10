@@ -1,6 +1,6 @@
 /**
  * File: LIEstimatorPhase.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "loadImbalance/LIEstimatorPhase.h"
@@ -13,7 +13,9 @@
 #include <spdlog/spdlog.h>
 #include <sstream>
 #include <unordered_map>
+#include <queue>
 
+using namespace metacg;
 using namespace LoadImbalance;
 
 LIEstimatorPhase::LIEstimatorPhase(std::unique_ptr<LIConfig> &&config) : EstimatorPhase("LIEstimatorPhase") {

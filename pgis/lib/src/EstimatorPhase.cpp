@@ -1,6 +1,6 @@
 /**
  * File: EstimatorPhase.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 
@@ -9,13 +9,13 @@
 #include <iomanip>  //  std::setw()
 #include <iostream>
 
+using namespace metacg;
 using namespace pira;
 
 #define NO_DEBUG
 
 EstimatorPhase::EstimatorPhase(std::string name, bool isMetaPhase)
     :
-
       graph(nullptr),  // just so eclipse does not nag
       report(),        // initializes all members of report
       name(name),
@@ -26,19 +26,23 @@ void EstimatorPhase::generateReport() {
   for (auto node : (*graph)) {
     const auto bpd = node->get<BaseProfileData>();
     if (node->isInstrumented()) {
-      report.instrumentedMethods += 1;
-      report.instrumentedCalls += bpd->getNumberOfCalls();
 
+      /* Note: Instrumented call-paths do not count towards instrumented functions. */
       if (node->isInstrumentedCallpath()) {
         spdlog::get("console")->debug("Adding {} to the list of call path instrumentations", node->getFunctionName());
         report.instrumentedPaths.insert({node->getFunctionName(), node});
         continue;
       }
+
+      report.instrumentedMethods += 1;
+      report.instrumentedCalls += bpd->getNumberOfCalls();
+
       report.instrumentedNames.insert(node->getFunctionName());
-      report.instrumentedNodes.push(node);
+      report.instrumentedNodes.insert(node);
     }
 
     // Edge instrumentation
+    // XXX Is this still valid / required?
     for (CgNodePtr parent : node->getInstrumentedParentEdges()) {
       report.instrumentedEdges.insert({parent, node});
     }
@@ -47,12 +51,10 @@ void EstimatorPhase::generateReport() {
       unsigned long long unwindSamples = 0;
       if (node->isUnwoundInstr()) {
         unwindSamples = bpd->getNumberOfCalls();
-      } else if (node->isUnwoundSample()) {
-        unwindSamples = node->getExpectedNumberOfSamples();
       } else {
-        std::cerr << "Error in generateRepor." << std::endl;
+        std::cerr << "Error in generateReport." << std::endl;
       }
-      unsigned long long unwindSteps = node->getNumberOfUnwindSteps();
+      unsigned long long unwindSteps = 0;
 
       unsigned long long unwindCostsNanos =
           unwindSamples * (CgConfig::nanosPerUnwindSample + unwindSteps * CgConfig::nanosPerUnwindStep);
@@ -173,7 +175,7 @@ void RemoveUnrelatedNodesEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
 
   // FIXME: Is this actually problematic?
   return;
-
+#if false
   for (auto node : (*graph)) {
     if (node == nullptr) {
       std::cout << "[DETECTED] Nullptr detected" << std::endl;
@@ -257,6 +259,7 @@ void RemoveUnrelatedNodesEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
       }
     }
   }
+#endif
 }
 
 void RemoveUnrelatedNodesEstimatorPhase::checkLeafNodeForRemoval(CgNodePtr potentialLeaf) {

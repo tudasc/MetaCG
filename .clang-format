@@ -2,17 +2,16 @@ Language:        Cpp
 # BasedOnStyle:  Google
 AccessModifierOffset: -1
 AlignAfterOpenBracket: true
-AlignEscapedNewlinesLeft: true
 AlignOperands:   true
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: true
-AllowShortBlocksOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: All
-AlwaysBreakAfterDefinitionReturnType: false
-AlwaysBreakTemplateDeclarations: true
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakTemplateDeclarations: Yes
 AlwaysBreakBeforeMultilineStrings: true
 BreakBeforeBinaryOperators: None
 BreakBeforeTernaryOperators: true
@@ -26,7 +25,6 @@ DerivePointerAlignment: false
 ExperimentalAutoDetectBinPacking: false
 IndentCaseLabels: true
 IndentWrappedFunctionNames: false
-IndentFunctionDeclarationAfterType: false
 MaxEmptyLinesToKeep: 1
 KeepEmptyLinesAtTheStartOfBlocks: false
 NamespaceIndentation: None

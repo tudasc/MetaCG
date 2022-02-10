@@ -1,6 +1,6 @@
 /**
  * File: Timing.h
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
@@ -11,14 +11,14 @@
 
 #include <chrono>
 
-namespace MetaCG {
+namespace metacg {
 class RuntimeTimer {
  public:
   using clock = std::chrono::high_resolution_clock;
   using tp = clock::time_point;
   using duration = clock::duration;
 
-  RuntimeTimer(const std::string regionName, bool printOnDestruction = true)
+  explicit RuntimeTimer(const std::string regionName, bool printOnDestruction = true)
       : region(regionName), printOnDestruct(printOnDestruction), start(clock::now()) {}
   ~RuntimeTimer() {
     if (printOnDestruct) {
@@ -42,6 +42,6 @@ class RuntimeTimer {
   const tp start;
   tp end;
 };
-}  // namespace MetaCG
+}  // namespace metacg
 
 #endif

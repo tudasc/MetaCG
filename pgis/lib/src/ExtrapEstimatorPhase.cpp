@@ -21,6 +21,8 @@
 #include <cassert>
 #include <sstream>
 
+using namespace metacg;
+
 namespace pira {
 
 void ExtrapLocalEstimatorPhaseBase::modifyGraph(CgNodePtr mainNode) {
@@ -72,7 +74,7 @@ std::pair<bool, double> ExtrapLocalEstimatorPhaseBase::shouldInstrument(CgNodePt
 std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(CgNodePtr node) const {
   spdlog::get("console")->trace("Running {}", __PRETTY_FUNCTION__);
 
-  // get extrapolation threshold from parameter config
+  // get extrapolation threshold from parameter configPtr
   double extrapolationThreshold = pgis::config::ParameterConfig::get().getPiraIIConfig()->extrapolationThreshold;
 
   if (useRuntimeOnly) {
@@ -119,7 +121,7 @@ std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstru
 void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(CgNodePtr mainNode) {
   std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> pathsToMain;
 
-  // get statement threshold from parameter config
+  // get statement threshold from parameter configPtr
   int statementThreshold = pgis::config::ParameterConfig::get().getPiraIIConfig()->statementThreshold;
 
   for (const auto &n : *graph) {

@@ -1,6 +1,6 @@
 /**
  * File: IPCGEstimatorPhase.h
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
@@ -180,9 +180,9 @@ class SummingCountPhaseBase : public EstimatorPhase {
   long int getCounted(const CgNodePtr &node);
 
  protected:
-  void estimateCount(const std::shared_ptr<CgNode> &startNode);
+  void estimateCount(const std::shared_ptr<metacg::CgNode> &startNode);
   virtual long int getPreviousThreshold() const = 0;
-  virtual long int getTargetCount(const CgNode *data) const = 0;
+  virtual long int getTargetCount(const metacg::CgNode *data) const = 0;
   long int threshold;
   std::map<CgNodePtr, long int> counts;
   StatisticsEstimatorPhase *pSEP;
@@ -197,7 +197,7 @@ class ConditionalBranchesEstimatorPhase : public SummingCountPhaseBase {
 
  protected:
   long int getPreviousThreshold() const override;
-  long int getTargetCount(const CgNode *data) const override;
+  long int getTargetCount(const metacg::CgNode *data) const override;
 };
 
 // Calculates the target count by subtracting the conditional branches from the max amount of conditional branches
@@ -209,7 +209,7 @@ class ConditionalBranchesReverseEstimatorPhase : public SummingCountPhaseBase {
  protected:
   long int maxBranches;
   long int getPreviousThreshold() const override;
-  long int getTargetCount(const CgNode *data) const override;
+  long int getTargetCount(const metacg::CgNode *data) const override;
   void runInitialization() override;
 };
 
@@ -221,7 +221,7 @@ class FPAndMemOpsEstimatorPhase : public SummingCountPhaseBase {
 
  protected:
   long int getPreviousThreshold() const override;
-  long int getTargetCount(const CgNode *data) const override;
+  long int getTargetCount(const metacg::CgNode *data) const override;
 };
 
 // Exclusive count
@@ -231,7 +231,7 @@ class LoopDepthEstimatorPhase : public SummingCountPhaseBase {
 
  protected:
   long int getPreviousThreshold() const override;
-  long int getTargetCount(const CgNode *data) const override;
+  long int getTargetCount(const metacg::CgNode *data) const override;
 };
 
 // Exclusive count
@@ -241,7 +241,7 @@ class GlobalLoopDepthEstimatorPhase : public SummingCountPhaseBase {
 
  protected:
   long int getPreviousThreshold() const override;
-  long int getTargetCount(const CgNode *data) const override;
+  long int getTargetCount(const metacg::CgNode *data) const override;
 };
 
 #endif

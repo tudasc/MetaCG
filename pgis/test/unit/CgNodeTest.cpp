@@ -1,9 +1,9 @@
 /**
  * File: CgNodeTest.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "CgNode.h"
+#include "../../../graph/include/CgNode.h"
 #include "CgHelper.h"
 
 #include "LoggerUtil.h"
@@ -11,6 +11,7 @@
 #include "gtest/gtest.h"
 
 using namespace pira;
+using namespace metacg;
 
 namespace {
 class CgNodeBasics : public ::testing::Test {

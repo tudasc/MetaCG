@@ -1,6 +1,6 @@
 /**
  * File: LoggerUtil.h
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #ifndef PGIS_UNITTEST_LOGGERUTIL_H
@@ -62,7 +62,7 @@ struct ErrorOutEnabler {
 }  // namespace loggerutil
 
 /**
- * Convenence macro to enable error output for a single scope.
+ * Convenience macro to enable error output for a single scope.
  */
 #define LOGGERUTIL_ENABLE_ERRORS_LOCAL loggerutil::ErrorOutEnabler __eoe;
 

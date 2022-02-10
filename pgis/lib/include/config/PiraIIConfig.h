@@ -32,7 +32,7 @@ struct PiraIIConfig {
   int statementThreshold;
   ModelAggregationStrategy modelAggregationStrategy;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PiraIIConfig, extrapolationThreshold, statementThreshold, modelAggregationStrategy);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PiraIIConfig, extrapolationThreshold, statementThreshold, modelAggregationStrategy)
 
 NLOHMANN_JSON_SERIALIZE_ENUM(ModelAggregationStrategy, {
                                                            {ModelAggregationStrategy::FirstModel, "FirstModel"},

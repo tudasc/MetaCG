@@ -1,6 +1,6 @@
 /**
- * File: CallgraphManager.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * File: PiraMCGProcessor.cpp
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
@@ -19,104 +19,16 @@
 
 #include <iomanip>  //  std::setw()
 
+using namespace metacg;
 using namespace pira;
-using namespace pgis::options;
+using namespace ::pgis::options;
 
-CallgraphManager::CallgraphManager(Config *config, extrapconnection::ExtrapConfig epCfg)
-    : config(config), epModelProvider(epCfg) {}
+metacg::pgis::PiraMCGProcessor::PiraMCGProcessor(Config *config, extrapconnection::ExtrapConfig epCfg)
+    : graph(getEmptyGraph()), configPtr(config), epModelProvider(epCfg) {}
 
-CgNodePtr CallgraphManager::findOrCreateNode(std::string name, double timeInSeconds) {
-  if (graph.hasNode(name)) {
-    return graph.getLastSearched();
-  } else {
-    auto node = std::make_shared<CgNode>(name);
-    auto bpd = new BaseProfileData();
-    auto lid = new LoadImbalance::LIMetaData();
-    bpd->setRuntimeInSeconds(timeInSeconds);
-    node->addMetaData(bpd);
-    node->addMetaData(lid);
-
-    graph.insert(node);
-    return node;
-  }
-}
-
-void CallgraphManager::putNumberOfStatements(std::string name, int numberOfStatements, bool hasBody) {
-  CgNodePtr node = findOrCreateNode(name);
-  auto [has, obj] = node->checkAndGet<PiraOneData>();
-  if (has) {
-    obj->setNumberOfStatements(numberOfStatements);
-    obj->setHasBody(hasBody);
-  } else {
-    auto *pod = new PiraOneData();
-    pod->setNumberOfStatements(numberOfStatements);
-    pod->setHasBody(hasBody);
-    node->addMetaData(pod);
-  }
-  spdlog::get("console")->debug("For {}, set number of smts to {}", name,
-                                node->get<PiraOneData>()->getNumberOfStatements());
-}
-
-void CallgraphManager::putNumberOfSamples(std::string name, unsigned long long numberOfSamples) {
-  if (graph.hasNode(name)) {
-    graph.getLastSearched()->setExpectedNumberOfSamples(numberOfSamples);
-  }
-}
-
-void CallgraphManager::setNodeComesFromCube(std::string name) {
-  auto node = findOrCreateNode(name);
-  auto [has, obj] = node->checkAndGet<PiraOneData>();
-  if (has) {
-    obj->setComesFromCube();
-  } else {
-    assert(false && "Node has no PiraOneData");
-  }
-}
-
-void CallgraphManager::putEdge(std::string parentName, std::string childName) {
-  CgNodePtr parentNode = findOrCreateNode(parentName);
-  CgNodePtr childNode = findOrCreateNode(childName);
-
-  if (parentNode == nullptr || childNode == nullptr) {
-    spdlog::get("errconsole")->warn("One of the edge nodes is a nullptr");
-  }
-
-  parentNode->addChildNode(childNode);
-  childNode->addParentNode(parentNode);
-}
-
-void CallgraphManager::putEdge(const std::string &parentName, std::string parentFilename, int parentLine,
-                               std::string childName, unsigned long long numberOfCalls, double timeInSeconds,
-                               int threadId, int procId) {
-  putEdge(parentName, parentFilename, parentLine, childName, numberOfCalls, timeInSeconds, timeInSeconds, threadId,
-          procId);
-}
-
-void CallgraphManager::putEdge(const std::string &parentName, std::string parentFilename, int parentLine,
-                               std::string childName, unsigned long long numberOfCalls, double timeInSeconds,
-                               double inclusiveTimeInSeconds, int threadId, int procId) {
-  putEdge(parentName, childName);
-
-  auto parentNode = graph.findNode(parentName);
-  if (parentNode == nullptr) {
-    spdlog::get("errconsole")->warn("Problem in looking up node");
-  }
-  parentNode->setFilename(parentFilename);
-  parentNode->setLineNumber(parentLine);
-
-  auto childNode = graph.findNode(childName);
-  if (childNode) {
-    auto bpd = new BaseProfileData();
-    bpd->addCallData(parentNode, numberOfCalls, timeInSeconds, inclusiveTimeInSeconds, threadId, procId);
-    childNode->addMetaData(bpd);
-  } else {
-    spdlog::get("errconsole")->warn("No Child {} found in graph", childName);
-  }
-}
-
-void CallgraphManager::registerEstimatorPhase(EstimatorPhase *phase, bool noReport) {
+void metacg::pgis::PiraMCGProcessor::registerEstimatorPhase(EstimatorPhase *phase, bool noReport) {
   phases.push(phase);
-  phase->injectConfig(config);
+  phase->injectConfig(configPtr);
   phase->setGraph(&graph);
 
   if (noReport) {
@@ -124,12 +36,17 @@ void CallgraphManager::registerEstimatorPhase(EstimatorPhase *phase, bool noRepo
   }
 }
 
-void CallgraphManager::finalizeGraph(bool buildMarker) {
+void metacg::pgis::PiraMCGProcessor::finalizeGraph(bool buildMarker) {
+  if (graph.isEmpty()) {
+    spdlog::get("errconsole")->error("Running the processor on empty graph. Need to construct graph.");
+    exit(1);
+  }
+
   if (graph.size() > 0) {
     // We assume that 'main' is always reachable.
     auto mainNode = graph.findMain();
     if (mainNode == nullptr) {
-      spdlog::get("errconsole")->error("CallgraphManager: Cannot find main function");
+      spdlog::get("errconsole")->error("PiraMCGProcessor: Cannot find main function");
       exit(1);
     }
     mainNode->setReachable();
@@ -137,43 +54,42 @@ void CallgraphManager::finalizeGraph(bool buildMarker) {
     // run reachability analysis -> mark reachable nodes
     CgHelper::reachableFromMainAnalysis(graph.findMain());
 
-    CgHelper::calculateInclusiveStatementCounts(mainNode);
+    // XXX This is a prerequisite for certain EstimatorPhases and should be demanded by them
+    // CgHelper::calculateInclusiveStatementCounts(mainNode);
   }
 
   // also update all node attributes
   for (auto node : graph) {
-    if (config->samplesFile.empty()) {
+    if (configPtr->samplesFile.empty()) {
       node->updateNodeAttributes();
     } else {
       node->updateNodeAttributes(false);
     }
-
-    if (buildMarker) {
-      CgNodePtrSet markerPositions = CgHelper::getPotentialMarkerPositions(node);
-      node->getMarkerPositions().insert(markerPositions.begin(), markerPositions.end());
-
-      std::for_each(markerPositions.begin(), markerPositions.end(), [&node](const CgNodePtr &markerPosition) {
-        markerPosition->getDependentConjunctions().insert(node);
-      });
-    }
   }
 }
 
-void CallgraphManager::applyRegisteredPhases() {
+void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
   finalizeGraph();
   auto mainFunction = graph.findMain();
 
   if (mainFunction == nullptr) {
-    spdlog::get("errconsole")->error("CallgraphManager: Cannot find main function.");
+    spdlog::get("errconsole")->error("PiraMCGProcessor: Cannot find main function.");
     exit(1);
   }
+  // CgHelper::calculateInclusiveStatementCounts(mainFunction);
 
   while (!phases.empty()) {
     EstimatorPhase *phase = phases.front();
 
     {  // RAII
       const std::string curPhase = phase->getName();
-      MetaCG::RuntimeTimer rtt("Running " + curPhase);
+      metacg::RuntimeTimer rtt("Running " + curPhase);
+      phase->doPrerequisites();
+    }
+
+    {  // RAII
+      const std::string curPhase = phase->getName();
+      metacg::RuntimeTimer rtt("Running " + curPhase);
       phase->modifyGraph(mainFunction);
       phase->generateReport();
 
@@ -181,15 +97,13 @@ void CallgraphManager::applyRegisteredPhases() {
       phase->printReport();
 
       CgReport report = phase->getReport();
-      auto &gOpts = pgis::config::GlobalConfig::get();
+      auto &gOpts = ::pgis::config::GlobalConfig::get();
 
       if (gOpts.getAs<bool>(dotExport.cliName)) {
         printDOT(report.phaseName);
       }
 
-#if DUMP_INSTRUMENTED_NAMES
-      dumpInstrumentedNames(report);
-#endif  // DUMP_INSTRUMENTED_NAMES
+      dumpInstrumentedNames(report); // outputs the instrumentation
 
       if (gOpts.getAs<bool>(printUnwoundNames.cliName)) {
         dumpUnwoundNames(report);
@@ -205,8 +119,8 @@ void CallgraphManager::applyRegisteredPhases() {
   if (!noOutputRequired) {
     // XXX Change to spdlog
     std::cout << " ---- "
-              << "Fastest Phase: " << std::setw(8) << config->fastestPhaseOvPercent << " % with "
-              << config->fastestPhaseName << std::endl;
+              << "Fastest Phase: " << std::setw(8) << configPtr->fastestPhaseOvPercent << " % with "
+              << configPtr->fastestPhaseName << std::endl;
   }
 
 #if PRINT_FINAL_DOT
@@ -214,7 +128,7 @@ void CallgraphManager::applyRegisteredPhases() {
 #endif
 }
 
-int CallgraphManager::getNumProcs() {
+int metacg::pgis::PiraMCGProcessor::getNumProcs() {
   int numProcs = 1;
   int prevNum = 0;
   for (auto node : graph) {
@@ -233,20 +147,20 @@ int CallgraphManager::getNumProcs() {
   return numProcs;
 }
 
-void CallgraphManager::printDOT(std::string prefix) {
-  std::string filename = "out/callgraph-" + config->appName + "-" + prefix + ".dot";
+void metacg::pgis::PiraMCGProcessor::printDOT(std::string prefix) {
+  std::string filename = "out/callgraph-" + configPtr->appName + "-" + prefix + ".dot";
   std::ofstream outfile(filename, std::ofstream::out);
 
   outfile << "digraph callgraph {\n";
 
   unsigned long long callsForThreePercentOfOverhead =
-      config->fastestPhaseOvSeconds * 10e9 * 0.03 / (double)CgConfig::nanosPerInstrumentedCall;
+      configPtr->fastestPhaseOvSeconds * 10e9 * 0.03 / (double)CgConfig::nanosPerInstrumentedCall;
 
   int numProcs = getNumProcs();
 
   std::vector<std::string> whiteNodes;
   bool validList = false;
-  bool wlEmpty = config->whitelist.empty();
+  bool wlEmpty = configPtr->whitelist.empty();
   if (!wlEmpty) {
     validList = readWhitelist(whiteNodes);
   }
@@ -266,8 +180,8 @@ void CallgraphManager::printDOT(std::string prefix) {
         std::string threadLabel;
         std::string additionalThreads;
         std::string nodeTime;
-        double nodeTimeSum = 0;
-        int activeThreads = 0;
+//        double nodeTimeSum = 0;
+//        int activeThreads = 0;
         unsigned long long numCalls = 0;
 
         const auto &[hasBPD, bpd] = node->checkAndGet<BaseProfileData>();
@@ -302,39 +216,6 @@ void CallgraphManager::printDOT(std::string prefix) {
             return false;
           }
         };
-#if 0
-        for (CgLocation cgLoc : node->getCgLocation()) {
-          std::ostringstream threadTime;
-          if (cgLoc.get_procId() == i) {
-            threadTime << cgLoc.get_time();
-            nodeTimeSum += cgLoc.get_time();
-            numCalls += cgLoc.get_numCalls();
-
-            if (config->showAllThreads) {
-              threadLabel += "Thread " + std::to_string(cgLoc.get_threadId()) + ":\\n" + threadTime.str() + "s|";
-            } else {
-              if (activeThreads > 0) {
-                additionalThreads +=
-                    "Thread " + std::to_string(cgLoc.get_threadId()) + ":\\n" + threadTime.str() + "s|";
-              } else {
-                threadLabel += "Thread " + std::to_string(cgLoc.get_threadId()) + ":\\n" + threadTime.str() + "s|";
-              }
-              if (cgLoc.get_time() > 0) {
-                activeThreads++;
-              }
-            }
-          }
-        }
-
-        procTime += nodeTimeSum;
-
-        if ((!config->showAllThreads && activeThreads > 1) || config->showAllThreads) {
-          threadLabel += additionalThreads;
-          std::ostringstream sumTime;
-          sumTime << nodeTimeSum;
-          nodeTime = "|{ Threads Total: " + sumTime.str() + "s}";
-        }
-#endif
 
         if (!threadLabel.empty() || (i == numProcs && node->get<BaseProfileData>()->getCgLocation().empty())) {
           procGraph.insert(node);
@@ -357,13 +238,6 @@ void CallgraphManager::printDOT(std::string prefix) {
             attributes += "style=filled, ";
             attributes += "fillcolor=palegreen, ";
           }
-          if (node->isUnwound()) {
-            // attributes += "shape=doubleoctagon, ";
-            additionalLabel += std::string("\\n unwindSteps: ");
-            additionalLabel += std::to_string(node->getNumberOfUnwindSteps());
-          } else if (node->isLeafNode()) {
-            // attributes += "shape=octagon, ";
-          }
 
           additionalLabel += std::string("\\n #calls Total: ");
           additionalLabel += std::to_string(getCalls(bpd));
@@ -378,7 +252,7 @@ void CallgraphManager::printDOT(std::string prefix) {
             auto conn = ptd->getExtrapModelConnector();
             if (conn.hasModels()) {
               if (!conn.isModelSet()) {
-                auto &pConfig = pgis::config::ParameterConfig::get();
+                auto &pConfig = ::pgis::config::ParameterConfig::get();
                 ptd->getExtrapModelConnector().modelAggregation(pConfig.getPiraIIConfig()->modelAggregationStrategy);
               }
               auto &theModel = conn.getEPModelFunction();
@@ -387,10 +261,11 @@ void CallgraphManager::printDOT(std::string prefix) {
           }
 
           // runtime & expectedSamples in node label
+          std::string expectedSamples;
           outfile << "\"" << functionName << i << "\"[" << attributes << "label=\"{" << functionName << "\\n"
                   << "Total Time: " << getRT(bpd) << "s"
                   << "\\n"
-                  << "|{ #samples: " << node->getExpectedNumberOfSamples() << additionalLabel << "}" << nodeTime << "|{"
+                  << "|{ #samples: " << expectedSamples << additionalLabel << "}" << nodeTime << "|{"
                   << threadLabel.substr(0, threadLabel.size() - 1) << "}}\"]" << std::endl;
         }
       }
@@ -408,15 +283,13 @@ void CallgraphManager::printDOT(std::string prefix) {
   }
   outfile << "\n}" << std::endl;
   outfile.close();
-
-  // std::cout << "DOT file dumped (" << filename << ")." << std::endl;
 }
 
-bool CallgraphManager::readWhitelist(std::vector<std::string> &whiteNodes) {
-  std::ifstream in(config->whitelist.c_str());
+bool metacg::pgis::PiraMCGProcessor::readWhitelist(std::vector<std::string> &whiteNodes) {
+  std::ifstream in(configPtr->whitelist.c_str());
 
   if (!in) {
-    spdlog::get("errconsole")->error("Cannot open file {}", config->whitelist);
+    spdlog::get("errconsole")->error("Cannot open file {}", configPtr->whitelist);
     return false;
   }
 
@@ -430,7 +303,7 @@ bool CallgraphManager::readWhitelist(std::vector<std::string> &whiteNodes) {
   return true;
 }
 
-bool CallgraphManager::isNodeListed(std::vector<std::string> whiteNodes, std::string node) {
+bool metacg::pgis::PiraMCGProcessor::isNodeListed(std::vector<std::string> whiteNodes, std::string node) {
   for (auto wNode : whiteNodes) {
     if (node == wNode) {
       return true;
@@ -439,22 +312,23 @@ bool CallgraphManager::isNodeListed(std::vector<std::string> whiteNodes, std::st
   return false;
 }
 
-void CallgraphManager::dumpInstrumentedNames(CgReport report) {
+void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(CgReport report) {
   if (noOutputRequired) {
     return;
   }
 
-  std::string filename = config->outputFile + "/instrumented-" + config->appName + "-" + report.phaseName + ".txt";
-  std::size_t found = filename.find(config->outputFile + "/instrumented-" + config->appName + "-" + "Incl");
+  std::string filename =
+      configPtr->outputFile + "/instrumented-" + configPtr->appName + "-" + report.phaseName + ".txt";
+  std::size_t found = filename.find(configPtr->outputFile + "/instrumented-" + configPtr->appName + "-" + "Incl");
   if (found != std::string::npos) {
-    filename = config->outputFile + "/instrumented-" + config->appName + ".txt";
+    filename = configPtr->outputFile + "/instrumented-" + configPtr->appName + ".txt";
   }
-  filename = config->outputFile + "/instrumented-" + config->appName + ".txt";
+  filename = configPtr->outputFile + "/instrumented-" + configPtr->appName + ".txt";
   spdlog::get("console")->info("Writing to {}", filename);
   std::ofstream outfile(filename, std::ofstream::out);
 
   // The simple whitelist used so far in PIRA
-  bool scorepOutput = pgis::config::GlobalConfig::get().getAs<bool>("scorep-out");
+  bool scorepOutput = ::pgis::config::GlobalConfig::get().getAs<bool>("scorep-out");
   if (!scorepOutput) {
     spdlog::get("console")->debug("Using plain whitelist format");
     if (report.instrumentedNodes.empty()) {
@@ -484,17 +358,18 @@ void CallgraphManager::dumpInstrumentedNames(CgReport report) {
     }
 
     // Edge instrumentation
-    for (const auto &[parent, node] : report.instrumentedEdges) {
-      ss << include << " " << parent->getFunctionName() << " " << arrow << " " << node->getFunctionName() << "\n";
-    }
+    // XXX why?
+    //    for (const auto &[parent, node] : report.instrumentedEdges) {
+    //      ss << include << " " << parent->getFunctionName() << " " << arrow << " " << node->getFunctionName() << "\n";
+    //    }
     ss << scorepEnd << "\n";
 
     outfile << ss.str();
   }
 }
 
-void CallgraphManager::dumpUnwoundNames(CgReport report) {
-  std::string filename = "out/unw-" + config->appName + "-" + report.phaseName + ".txt";
+void metacg::pgis::PiraMCGProcessor::dumpUnwoundNames(CgReport report) {
+  std::string filename = "out/unw-" + configPtr->appName + "-" + report.phaseName + ".txt";
   std::ofstream outfile(filename, std::ofstream::out);
 
   for (auto pair : report.unwoundNames) {
@@ -505,9 +380,9 @@ void CallgraphManager::dumpUnwoundNames(CgReport report) {
   }
 }
 
-Callgraph &CallgraphManager::getCallgraph(CallgraphManager *cg) { return cg->graph; }
+Callgraph &metacg::pgis::PiraMCGProcessor::getCallgraph(PiraMCGProcessor *cg) { return cg->graph; }
 
-void CallgraphManager::attachExtrapModels() {
+void metacg::pgis::PiraMCGProcessor::attachExtrapModels() {
   epModelProvider.buildModels();
   for (const auto &n : graph) {
     spdlog::get("console")->debug("Attaching models for {}", n->getFunctionName());
@@ -522,7 +397,7 @@ void CallgraphManager::attachExtrapModels() {
     if (ptd->getExtrapModelConnector().hasModels()) {
       spdlog::get("console")->trace("attachExtrapModels for {} hasModels == true -> Use model aggregation strategy.",
                                     n->getFunctionName());
-      auto &pConfig = pgis::config::ParameterConfig::get();
+      auto &pConfig = ::pgis::config::ParameterConfig::get();
       ptd->getExtrapModelConnector().modelAggregation(pConfig.getPiraIIConfig()->modelAggregationStrategy);
     }
     spdlog::get("console")->debug("{}: No. of models: {}, model is set {}", n->getFunctionName(),

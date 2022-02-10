@@ -3,18 +3,24 @@
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
+#ifndef METACG_GRAPH_CGNODE_H
+#define METACG_GRAPH_CGNODE_H
 
-#ifndef CG_NODE_H
-#define CG_NODE_H
-
-#include "CgLocation.h"
-#include "CgNodeMetaData.h"
+// clang-format off
+// Graph library
+#include "MetaData.h"
 #include "CgNodePtr.h"
 
+// PGIS library
+#include "CgLocation.h"
+#include "CgNodeMetaData.h"
+
+// System library
 #include <map>
 #include <queue>
 #include <string>
 #include <vector>
+// clang-format on
 
 // iterate priority_queue as of: http://stackoverflow.com/a/1385520
 template <class T, class S, class C>
@@ -25,27 +31,43 @@ S &Container(std::priority_queue<T, S, C> &q) {
   return HackedQueue::Container(q);
 }
 
+namespace metacg {
+
 enum CgNodeState {
-  NONE,
-  INSTRUMENT_WITNESS,
-  UNWIND_SAMPLE,
-  INSTRUMENT_CONJUNCTION,
-  UNWIND_INSTR,
-  INSTRUMENT_CUBE,
-  INSTRUMENT_PATH
+  NONE, // used
+  INSTRUMENT_WITNESS, // used
+  UNWIND_SAMPLE, // unused
+  INSTRUMENT_CONJUNCTION, // unclear
+  UNWIND_INSTR, // unused
+  INSTRUMENT_CUBE, // unused
+  INSTRUMENT_PATH // used
 };
 
+/**
+ * Node in the call graph with potentially attached metadata.
+ */
 class CgNode {
-  using MetaData = pira::MetaData;
-  // XXX Meta package
+  /* MetaData storage */
+  using MetaData = metacg::MetaData;
   mutable std::unordered_map<std::string, MetaData *> metaFields;
+  /* End MetaData storage */
 
  public:
+  /**
+   * Checks if metadata of type #T is attached
+   * @tparam T
+   * @return
+   */
   template <typename T>
   inline bool has() const {
     return metaFields.find(T::key()) != metaFields.end();
   }
 
+  /**
+   * Returns pointer to attached metadata of type #T
+   * @tparam T
+   * @return
+   */
   template <typename T>
   inline T *get() const {
     assert(metaFields[T::key()] && "meta field for key exists");
@@ -53,6 +75,11 @@ class CgNode {
     return reinterpret_cast<T *>(val);
   }
 
+  /**
+   * Checks for attached metadata of type #T
+   * @tparam T
+   * @return tuple: (wasFound, pointerToMetaData)
+   */
   template <typename T>
   inline std::pair<bool, T *> checkAndGet() const {
     if (this->has<T>()) {
@@ -63,6 +90,11 @@ class CgNode {
     return {false, nullptr};
   }
 
+  /**
+   * Adds a *new* metadata entry for #T if none exists
+   * @tparam T
+   * @param md
+   */
   template <typename T>
   inline void addMetaData(T *md) {
     //    if (this->has<T>()) {
@@ -70,9 +102,8 @@ class CgNode {
     //    }
     metaFields[T::key()] = md;
   }
-  // XXX Meta package
 
-  CgNode(std::string function);
+  explicit CgNode(std::string function);
   ~CgNode() {
     for (auto md : metaFields) {
       delete md.second;
@@ -93,34 +124,33 @@ class CgNode {
   const CgNodePtrSet &getChildNodes() const;
   const CgNodePtrSet &getParentNodes() const;
 
-  void setReachable(bool reachable = true) { this->reachable = reachable; }
-  bool isReachable() const { return this->reachable; }
+  /**
+  * Compares the function names for equality.
+  * @param otherNode
+  * @return
+  */
   bool isSameFunction(CgNodePtr otherNode) const;
+
+  // Reachable from main
+  void setReachable(bool reachable = true) { this->reachable = reachable; }
+  // Reachable from main
+  bool isReachable() const { return this->reachable; }
 
   bool isVirtual() const { return isMarkedVirtual; }
   void setIsVirtual(bool virtuality) { isMarkedVirtual = virtuality; }
 
+  bool getHasBody() const { return hasBody; }
+  void setHasBody(bool hasBody) { this->hasBody = hasBody; }
+
   std::string getFunctionName() const;
   int getLineNumber() const { return line; }
   void setLineNumber(int line);
-  int getLineNumber() { return line; }
   void setFilename(std::string filename);
   std::string getFilename() { return filename; }
 
-  const CgNodePtrSet &getSpantreeParents() const { return spantreeParents; }
-
-  // PGOE stuff
-  unsigned long long getExpectedNumberOfSamples() const;
-  int getNumberOfUnwindSteps() const;
-  // marker pos & dependent conjunction stuff
-  CgNodePtrSet &getMarkerPositions();
-  CgNodePtrSet &getDependentConjunctions();
-  const CgNodePtrSet &getMarkerPositionsConst() const;
-  const CgNodePtrSet &getDependentConjunctionsConst() const;
-
-  // Node states
+  // Node states (they are specific to PGIS)
+  // TODO: Move to some PGIS MetaData
   void setState(CgNodeState state, int numberOfUnwindSteps = 0);
-  CgNodeState getStateRaw() const;
   bool isInstrumented() const;
   bool isInstrumentedWitness() const;
   bool isInstrumentedConjunction() const;
@@ -129,39 +159,28 @@ class CgNode {
   bool isUnwoundSample() const;
   bool isUnwoundInstr() const;
 
-  // Edge instrumentation
   /**
    * Mark for instrumentation: this -> parent
    */
   void instrumentFromParent(CgNodePtr parent);
+  std::unordered_set<CgNodePtr> getInstrumentedParentEdges() { return this->instrumentedParentEdges; }
 
-  std::unordered_set<CgNodePtr> getInstrumentedParentEdges();
-
-  // spanning tree stuff
-  void addSpantreeParent(CgNodePtr parentNode);
+  // spanning tree stuff (still relevant?)
   bool isSpantreeParent(CgNodePtr);
+  const CgNodePtrSet &getSpantreeParents() const { return spantreeParents; }
   void reset();
 
+  // XXX Still used?
   void updateNodeAttributes(bool updateNumberOfSamples = true);
-  void updateExpectedNumberOfSamples();
-  void setExpectedNumberOfSamples(unsigned long long samples);
+
 
   bool hasUniqueCallPath() const;
   bool isLeafNode() const;
   bool isRootNode() const;
 
-  bool hasUniqueParent() const;
-  bool hasUniqueChild() const;
-  CgNodePtr getUniqueParent() const;
-  CgNodePtr getUniqueChild() const;
-
   void dumpToDot(std::ofstream &outputStream, int procNum);
 
   void print();
-  void printMinimal();
-
-  void setDominance(CgNodePtr child, double dominance);
-  double getDominance(CgNodePtr child);
 
   friend std::ostream &operator<<(std::ostream &stream, const CgNode &n);
   friend std::ostream &operator<<(std::ostream &stream, const CgNodePtrSet &s);
@@ -170,24 +189,17 @@ class CgNode {
   std::string functionName;
   CgNodeState state;
 
-  /**
-   * additional instrumentation state for (callgraph-) edge instrumentation
-   */
-  std::unordered_set<CgNodePtr> instrumentedParentEdges;
-
-  int numberOfUnwindSteps;
-
   // note that these metrics are based on a profile and might be pessimistic
   unsigned long long expectedNumberOfSamples;
 
   bool reachable;
   bool isMarkedVirtual;
+  bool hasBody;
 
   CgNodePtrSet childNodes;
   CgNodePtrSet parentNodes;
 
-  //
-  std::map<CgNodePtr, double> dominanceMap;
+  std::unordered_set<CgNodePtr> instrumentedParentEdges;
 
   // if the node is a conjunction, these are the potentially instrumented nodes
   CgNodePtrSet potentialMarkerPositions;
@@ -205,15 +217,7 @@ class CgNode {
   int line;
 };
 
-struct CalledMoreOften {
-  inline bool operator()(const CgNodePtr &lhs, const CgNodePtr &rhs) {
-    const auto &[hasLHS, objLHS] = lhs->checkAndGet<pira::BaseProfileData>();
-    const auto &[hasRHS, objRHS] = rhs->checkAndGet<pira::BaseProfileData>();
-    assert(hasLHS && hasRHS && "For CalledMoreOften struct, both nodes need meta data");
-    return objLHS->getNumberOfCalls() < objRHS->getNumberOfCalls();
-  }
-};
-typedef std::priority_queue<CgNodePtr, std::vector<CgNodePtr>, CalledMoreOften> CgNodePtrQueueMostCalls;
+}
 
 struct CgEdge {
   CgNodePtr from;
@@ -235,12 +239,12 @@ struct CgEdge {
 
 template <typename T, typename... Args>
 T *getOrCreateMD(CgNodePtr p, const Args &... args) {
-  auto [has, md] = p->checkAndGet<T>();
+  auto [has, md] = p->template checkAndGet<T>();
   if (has) {
     return md;
   } else {
     auto nmd = new T(args...);
-    p->addMetaData(nmd);
+    p->template addMetaData(nmd);
     return nmd;
   }
 }

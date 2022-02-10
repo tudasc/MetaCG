@@ -3,14 +3,10 @@
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
+#ifndef METACG_GRAPH_MCGREADER_H
+#define METACG_GRAPH_MCGREADER_H
 
-#ifndef CUBECALLGRAPHTOOL_IPCG_READER_H
-#define CUBECALLGRAPHTOOL_IPCG_READER_H
-
-#include "CallgraphManager.h"
-#include "Utility.h"
-
-#include "MetaDataHandler.h"
+#include "MCGManager.h"
 
 #include "nlohmann/json.hpp"
 
@@ -20,9 +16,7 @@
 #include <unordered_set>
 #include <utility>
 
-namespace MetaCG {
-
-namespace io {
+namespace metacg::io {
 
 using json = nlohmann::json;
 
@@ -42,13 +36,13 @@ struct ReaderSource {
  * If the file does not exists, prints error and exits the program.
  */
 struct FileSource : ReaderSource {
-  FileSource(const std::string filename) : filename(filename) {}
+  explicit FileSource(std::string filename) : filename(std::move(filename)) {}
   /**
    * Reads the json file with filename (provided at object construction)
    * and returns the json object.
    */
   virtual nlohmann::json get() const override {
-    spdlog::get("console")->info("Reading MetaCG file from: {}", filename);
+    spdlog::get("console")->info("Reading metacg file from: {}", filename);
     nlohmann::json j;
     {
       std::ifstream in(filename);
@@ -69,20 +63,20 @@ struct FileSource : ReaderSource {
  * Currently only used in unit tests.
  */
 struct JsonSource : ReaderSource {
-  JsonSource(nlohmann::json j) : json(j) {}
+  explicit JsonSource(nlohmann::json j) : json(j) {}
   virtual nlohmann::json get() const override { return json; }
   nlohmann::json json;
 };
 
 /**
- * Base class to read MetaCG files.
+ * Base class to read metacg files.
  *
- * Previously known as IPCG files, the MetaCG files are the serialized versions of the call graph.
+ * Previously known as IPCG files, the metacg files are the serialized versions of the call graph.
  * This class implements basic functionality and is meant to be subclassed for different file versions.
  */
 class MetaCGReader {
   /**
-   * Internal data structure to create the MetaCG structure
+   * Internal data structure to create the metacg structure
    */
   struct FunctionInfo {
     FunctionInfo()
@@ -109,11 +103,11 @@ class MetaCGReader {
   /**
    * filename path to file
    */
-  MetaCGReader(ReaderSource &src) : source(src) {}
+  explicit MetaCGReader(ReaderSource &src) : source(src) {}
   /**
-   * CallgraphManager object to be filled with the CG
+   * PiraMCGProcessor object to be filled with the CG
    */
-  virtual void read(CallgraphManager &cgManager) = 0;
+  virtual void read(metacg::graph::MCGManager &cgManager) = 0;
 
  protected:
   /**
@@ -125,20 +119,20 @@ class MetaCGReader {
    * Checks if the jsonValue contains a value for key and sets field accordingly
    */
   template <typename FieldTy, typename JsonTy>
-  void setIfNotNull(FieldTy &field, const JsonTy &jsonValue, const std::string key);
+  void setIfNotNull(FieldTy &field, const JsonTy &jsonValue, const std::string &key);
 
   /**
    * Build the virtual function hierarchy in PGIS using the functions map
    */
-  StrStrMap buildVirtualFunctionHierarchy(CallgraphManager &cgManager);
+  StrStrMap buildVirtualFunctionHierarchy(metacg::graph::MCGManager &cgManager);
 
   /**
    * Inserts all nodes in the function map into the final call-graph.
    * Uses potentialTargets to include all potential virtual call targets for virtual functions.
    */
-  void buildGraph(CallgraphManager &cgManager, StrStrMap &potentialTargets);
+  void buildGraph(metacg::graph::MCGManager &cgManager, StrStrMap &potentialTargets);
 
-  /* Functions LUT: needed for construction of MetaCG */
+  /* Functions LUT: needed for construction of metacg */
   FuncMapT functions;
 
   /**
@@ -147,31 +141,31 @@ class MetaCGReader {
   const ReaderSource &source;
 
  private:
-  // filename of the MetaCG this instance parses
+  // filename of the metacg this instance parses
   const std::string filename;
 };
 
 /**
- * Class to read MetaCG files in file format v1.0.
+ * Class to read metacg files in file format v1.0.
  * The file format is also typically referred to as IPCG files.
  */
 class VersionOneMetaCGReader : public MetaCGReader {
  public:
-  VersionOneMetaCGReader(ReaderSource &source) : MetaCGReader(source) {}
-  void read(CallgraphManager &cgManager) override;
+  explicit VersionOneMetaCGReader(ReaderSource &source) : MetaCGReader(source) {}
+  void read(metacg::graph::MCGManager &cgManager) override;
 
  private:
-  void addNumStmts(CallgraphManager &cgm);
+  void addNumStmts(metacg::graph::MCGManager &cgm);
 };
 
 /**
- * Class to read MetaCG files in file format v2.0.
+ * Class to read metacg files in file format v2.0.
  * The format contains the 'meta' field for tools to export information.
  */
 class VersionTwoMetaCGReader : public MetaCGReader {
  public:
-  VersionTwoMetaCGReader(ReaderSource &source) : MetaCGReader(source) {}
-  void read(CallgraphManager &cgManager) override;
+  explicit VersionTwoMetaCGReader(ReaderSource &source) : MetaCGReader(source) {}
+  void read(metacg::graph::MCGManager &cgManager) override;
 };
 
 /*
@@ -181,7 +175,7 @@ class VersionTwoMetaCGReader : public MetaCGReader {
  */
 
 template <typename PropRetriever>
-int doAnnotate(Callgraph &cg, PropRetriever retriever, json &j) {
+int doAnnotate(metacg::Callgraph &cg, PropRetriever retriever, json &j) {
   const auto functionElement = [](json &container, auto name) {
     for (json::iterator it = container.begin(); it != container.end(); ++it) {
       if (it.key() == name) {
@@ -209,14 +203,14 @@ int doAnnotate(Callgraph &cg, PropRetriever retriever, json &j) {
 }
 
 template <typename PropRetriever>
-void annotateJSON(Callgraph &cg, std::string filename, PropRetriever retriever) {
+void annotateJSON(metacg::Callgraph &cg, const std::string &filename, PropRetriever retriever) {
   json j;
   {
     std::ifstream in(filename);
     in >> j;
   }
 
-  int annotated = MetaCG::io::doAnnotate(cg, retriever, j);
+  int annotated = metacg::io::doAnnotate(cg, retriever, j);
   spdlog::get("console")->trace("Annotated {} json nodes", annotated);
 
   {
@@ -225,88 +219,8 @@ void annotateJSON(Callgraph &cg, std::string filename, PropRetriever retriever) 
   }
 }
 
-namespace retriever {
 
-/**
- * FIXME: Not sure if these are useful (or even used) to any extent!
- */
-struct RuntimeRetriever {
-  bool handles(const CgNodePtr n) {
-    const auto &[hasLHS, objLHS] = n->checkAndGet<pira::BaseProfileData>();
-    if (hasLHS) {
-      return objLHS->getRuntimeInSeconds() > .0;
-    }
-    return false;
-  }
 
-  double value(const CgNodePtr n) {
-    const auto &[hasLHS, objLHS] = n->checkAndGet<pira::BaseProfileData>();
-    if (hasLHS) {
-      return objLHS->getRuntimeInSeconds();
-    }
-    return .0;
-  }
-
-  std::string toolName() { return "test"; }
-};
-
-struct PlacementInfo {
-  // Env section
-  std::string platformId;
-  // Experiments section
-  std::vector<std::pair<std::string, std::vector<int>>> params;
-  std::map<std::string, double> runtimeInSecondsPerProcess;
-  // Model section
-  std::string modelString;
-};
-
-struct ExperimentParamData {
-  std::vector<std::pair<std::string, int>> params;
-  std::map<std::string, double> runtimes;
-};
-
-void to_json(json &j, const PlacementInfo &pi);
-
-struct PlacementInfoRetriever {
-  bool handles(const CgNodePtr n) {
-    const auto &[has, obj] = n->checkAndGet<pira::PiraTwoData>();
-    if (has) {
-      return obj->getExtrapModelConnector().hasModels();
-    }
-    return false;
-  }
-
-  PlacementInfo value(const CgNodePtr n) {
-    const auto runtimePerProcess = [](CgNodePtr n) {
-      auto locations = n->get<pira::BaseProfileData>()->getCgLocation();
-      std::map<std::string, double> rtPerProc;
-      for (auto loc : locations) {
-        std::string k("P" + std::to_string(loc.getProcId()));
-        auto &t = rtPerProc[k];
-        t += loc.getTime();
-      }
-      return rtPerProc;
-    };
-
-    PlacementInfo pi;
-    pi.platformId = getHostname();
-    pi.params = CallgraphManager::get().getModelProvider().getConfigValues();
-    pi.runtimeInSecondsPerProcess = runtimePerProcess(n);
-    for (const auto &p : pi.runtimeInSecondsPerProcess) {
-      std::cout << p.first << " <> " << p.second << '\n';
-    }
-    pi.modelString = "x^2";
-    return pi;
-  }
-
-  std::string toolName() { return "plcmt_profiling"; }
-};
-/* XXX End of FIXME */
-
-}  // namespace retriever
-
-}  // namespace io
-
-}  // namespace MetaCG
+}  // namespace metacg::io
 
 #endif

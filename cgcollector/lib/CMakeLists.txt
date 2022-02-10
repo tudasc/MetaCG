@@ -10,28 +10,28 @@ set(COLLECTORLIB_SOURCES
         src/GlobalCallDepth.cpp
         )
 
-add_library(collectorlib SHARED
+add_library(collector SHARED
   ${COLLECTORLIB_SOURCES}
 )
 
-add_collector_include(collectorlib)
-register_to_clang_tidy(collectorlib)
+add_collector_include(collector)
+#register_to_clang_tidy(collectorlib)
 
-add_clang(collectorlib)
-add_json(collectorlib)
-add_config_include(collectorlib)
+add_clang(collector)
+add_json(collector)
+add_config_include(collector)
 
-default_compile_options(collectorlib)
+default_compile_options(collector)
 
 install(
-  TARGETS collectorlib
+  TARGETS collector
   EXPORT ${TARGETS_EXPORT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )
 
 configure_package_config_file(
-  ${PROJECT_SOURCE_DIR}/cmake/Config.cmake.in
+  ${METACG_Directory}/cmake/Config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
   INSTALL_DESTINATION lib/cmake
 )

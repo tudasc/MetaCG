@@ -2,7 +2,7 @@
 
 # CGCollector
 
-Clang-based call-graph generation tool of the MetaCG tool.
+Clang-based call-graph generation tool of the metacg tool.
 
 ## Build CGCollector
 
@@ -11,7 +11,7 @@ The software requires the **nlohmann/json** library (here)[github.com/nlohmann/j
 
 ```{.sh}
 $> mkdir build && cd build
-$> cmake -DCUBE_INCLUDE=$(cubelib-config --include) -DJSON_LIBRARY=/path/to/json-library/single_include -DCMAKE_INSTALL_PREFIX=/where/it/should/live ..
+$> cmake -DCUBE_INCLUDE=$(cubelib-configPtr --include) -DJSON_LIBRARY=/path/to/json-library/single_include -DCMAKE_INSTALL_PREFIX=/where/it/should/live ..
 $> make
 $> make install
 ```

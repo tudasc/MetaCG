@@ -1,22 +1,52 @@
-cmake_minimum_required(VERSION 3.5)
+set(PROJECT_NAME CGCollector)
+set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 
-project(CGCollector VERSION 0.2.2)
+function(add_config_include target)
+    target_include_directories(${target}
+            PUBLIC
+            "${PROJECT_BINARY_DIR}"
+            )
+endfunction()
+
+# include directories
+function(add_collector_include target)
+    target_include_directories(${target}
+            PUBLIC
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/cgcollector/lib/include>
+            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/cgcollector>
+            )
+endfunction()
+
+function(add_collector_lib target)
+    target_link_libraries(${target}
+            collector
+            )
+endfunction()
+
+# Compile flags
+function(default_compile_options target)
+    cmake_parse_arguments(ARG "" "" "PRIVATE_FLAGS;PUBLIC_FLAGS" ${ARGN})
+
+    target_compile_options(${target} PRIVATE
+            -Wall -Wextra -pedantic -Wunreachable-code -Wwrite-strings
+            -Wpointer-arith -Wcast-align -Wcast-qual
+            -fno-rtti
+            )
+
+    if (ARG_PRIVATE_FLAGS)
+        target_compile_options(${target} PRIVATE
+                "${ARG_PRIVATE_FLAGS}"
+                )
+    endif ()
+
+    if (ARG_PUBLIC_FLAGS)
+        target_compile_options(${target} PUBLIC
+                "${ARG_PUBLIC_FLAGS}"
+                )
+    endif ()
+endfunction()
 
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-list(APPEND CMAKE_MODULE_PATH
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules
-)
-
-include(ToolchainOptions)
-include(CMakePackageConfigHelpers)
 include(GetGitRevisionDescription)
 
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)

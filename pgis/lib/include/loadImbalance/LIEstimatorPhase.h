@@ -1,6 +1,6 @@
 /**
  * File: LIEstimatorPhase.h
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
@@ -26,6 +26,10 @@ class LIEstimatorPhase : public EstimatorPhase {
   ~LIEstimatorPhase() override;
 
   void modifyGraph(CgNodePtr mainMethod) override;
+
+  void doPrerequisites() override {
+    CgHelper::calculateInclusiveStatementCounts(graph->findMain());
+  }
 
  private:
   AbstractMetric *metric;

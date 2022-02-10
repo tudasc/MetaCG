@@ -10,8 +10,8 @@ add_executable(mcgtester
   MCGTester.cpp
 )
 
-register_to_clang_tidy(cgsimpletester)
-register_to_clang_tidy(mcgtester)
+#register_to_clang_tidy(cgsimpletester)
+#register_to_clang_tidy(mcgtester)
 
 add_json(cgsimpletester)
 default_compile_options(cgsimpletester)
@@ -28,7 +28,7 @@ install(
 )
 
 configure_package_config_file(
-  ${PROJECT_SOURCE_DIR}/cmake/Config.cmake.in
+  ${METACG_Directory}/cmake/Config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
   INSTALL_DESTINATION lib/cmake
 )
