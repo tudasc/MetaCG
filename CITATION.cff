@@ -15,4 +15,4 @@ authors:
     orcid: https://orcid.org/0000-0003-2711-3032
 title: "MetaCG: annotated call-graphs to facilitate whole-program analysis"
 doi: 10.1145/3427764.3428320
-version: 0.4.0
+version: 0.3.0
