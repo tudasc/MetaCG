@@ -42,7 +42,7 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
   std::cout << "Reading " << wholeCGFilename << " as wholeCG file\n";
   readIPCG(wholeCGFilename, wholeCGFinal);
   if (!wholeCGFinal.is_null()) {
-    std::cerr << "Expecting empty json file to write Whole Program MetaCG to." << std::endl;
+    std::cerr << "Expecting empty json file to write Whole Program metacg to." << std::endl;
     exit(-1);
   }
 
@@ -260,7 +260,7 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  std::cout << "Running MetaCG::CGMerge (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
+  std::cout << "Running metacg::CGMerge (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
             << ")\nGit revision: " << MetaCG_GIT_SHA << std::endl;
 
   std::vector<std::string> inputFiles;

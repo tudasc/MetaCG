@@ -7,7 +7,7 @@ testNo=0
 logDir=$PWD/logging
 logFile=$logDir/cgvalidate.log
 inputDir=$PWD/input
-buildDir=$PWD/../../../build/tools/
+buildDir=$PWD/../../../../build/cgcollector/tools/
 executable=$buildDir/cgvalidate
 
 #cleanup

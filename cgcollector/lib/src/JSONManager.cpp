@@ -121,6 +121,8 @@ nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename)
 nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filename) {
   using json = nlohmann::json;
 
+  std::cout << "Reading " << filename << std::endl;
+
   const auto readNumStmts = [] (auto &jsonElem, auto &funcItem) {
     auto metaInfo = jsonElem["meta"]["numStatements"];
       funcItem.numStatements = metaInfo;
@@ -221,7 +223,7 @@ nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filenam
     funcInfo.overriddenBy.insert(potentialTargets[k].begin(), potentialTargets[k].end());
     funcInfo.overriddenFunctions.insert(overrides[k].begin(), overrides[k].end());
   }
-  std::cout << "Filename: " << filename << "\n" << j << std::endl;
+//  std::cout << "Filename: " << filename << "\n" << j << std::endl;
   return j;
 }
 

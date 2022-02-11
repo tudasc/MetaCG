@@ -2,11 +2,11 @@
 
 # MetaCG
 
-The goal of MetaCG is to provide a common whole-program call-graph representation to exchange information between different tools built on top of LLVM/Clang.
+MetaCG provides a common whole-program call-graph representation to exchange information between different tools built on top of LLVM/Clang.
 It uses the json file format and separates structure from information, i.e., caller/callee relation and *meta* information.
 
-The package contains an experimental Clang-based tool for its construction, and a converter for the output files of [Phasar](https://github.com/secure-software-engineering/phasar).
-Also, the package contains the PGIS analysis tool, which is used as the backend in [PIRA](https://github.com/tudasc/pira).
+The package contains an experimental Clang-based tool for call-graph construction, and a converter for the output files of [Phasar](https://github.com/secure-software-engineering/phasar).
+Also, the package contains the PGIS analysis tool, which is used as the analysis backend in [PIRA](https://github.com/tudasc/pira).
 
 Once constructed, the graph can be serialized into a JSON format, which contains the following information:
 
@@ -46,9 +46,20 @@ Once constructed, the graph can be serialized into a JSON format, which contains
   - *meta*: A special field into which a tool can export its (intermediate) results.
 
 This allows, e.g., the PIRA profiler to export various additional information about the program's functions into the MetaCG file.
-Examples are empirically determined perfomance models, runtime measurements, or loop nesting depth per function.
+Examples are empirically determined performance models, runtime measurements, or loop nesting depth per function.
 
+## Software organization
 
+MetaCG consists of the graph library, a CG construction tool, and an example analysis tool.
+
+### Graph Library
+Provides the basic data structure and its means to read and write the data structure with the metadata to a JSON file.
+
+### CGCollector
+Provides a Clang-based CG construction tool that relies on the graph library to store the constructed CG.
+
+### PGIS (The PIRA Analyzer)
+An example analysis tool that uses the MetaCG for a heuristic instrumentation placement analysis.
 
 
 ## Repository Organization

@@ -15,6 +15,7 @@
 #pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic ignored "-Wsign-compare"
+#include "CallgraphManager.h"
 #include "EXTRAP_SingleParameterModelGenerator.hpp"
 #include <EXTRAP_MultiParameterSimpleModelGenerator.hpp>
 #include <EXTRAP_SingleParameterSimpleModelGenerator.hpp>
@@ -177,7 +178,7 @@ void ExtrapModelProvider::buildModels() {
   printDbgInfos();
 
   for (size_t i = 0; i < fns.size(); ++i) {
-    //    if (i % config.repetitions == 0) {
+    //    if (i % configPtr.repetitions == 0) {
     const auto attEpData = [&](auto &cube, auto cnode, auto n) {
       console->debug("Attaching Cube info from file {}", fns.at(i));
       auto ptd = getOrCreateMD<pira::PiraTwoData>(n, ExtrapConnector({}, {}));
@@ -185,11 +186,12 @@ void ExtrapModelProvider::buildModels() {
       ptd->addToRuntimeVec(CubeCallgraphBuilder::impl::time(cube, cnode));
     };
 
-    CubeCallgraphBuilder::impl::build(std::string(fns.at(i)), attEpData);
-    //   }
+      auto &mcgManager = metacg::graph::MCGManager::get();
+      CubeCallgraphBuilder::impl::build(std::string(fns.at(i)), mcgManager, attEpData);
+ //   }
   }
 
-  for (const auto &n : CallgraphManager::get()) {
+  for (const auto &n : metacg::pgis::PiraMCGProcessor::get()) {
     console->trace("No PiraTwoData meta data");
     if (n->has<pira::PiraTwoData>()) {
       auto ptd = CubeCallgraphBuilder::impl::get<pira::PiraTwoData>(n);

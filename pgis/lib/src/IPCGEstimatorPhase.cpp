@@ -13,6 +13,7 @@
 
 #include <unordered_map>
 
+using namespace metacg;
 using namespace pira;
 
 FirstNLevelsEstimatorPhase::FirstNLevelsEstimatorPhase(int levels)
@@ -97,13 +98,16 @@ void StatementCountEstimatorPhase::estimateStatementCount(CgNodePtr startNode) {
     inclStmtCount = snPOD->getNumberOfStatements();
   }
 
-  spdlog::get("console")->trace("Function: {} >> InclStatementCount: {}", startNode->getFunctionName(), inclStmtCount);
+  auto console = spdlog::get("console");
+  console->trace("Function: {} >> InclStatementCount: {}", startNode->getFunctionName(), inclStmtCount);
   if (inclStmtCount >= numberOfStatementsThreshold) {
+    console->trace("Function {} added to instrumentation list", startNode->getFunctionName());
     startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
   }
   auto useCSInstr = pgis::config::GlobalConfig::get().getAs<bool>(pgis::options::useCallSiteInstrumentation.cliName);
-  if (useCSInstr && !startNode->get<PiraOneData>()->getHasBody() &&
+  if (useCSInstr && /*!startNode->get<PiraOneData>()->getHasBody()*/ !startNode->getHasBody() &&
       startNode->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
+    console->trace("Function {} added to instrumentation path", startNode->getFunctionName());
     startNode->setState(CgNodeState::INSTRUMENT_PATH);
   }
 }
@@ -704,7 +708,7 @@ void SummingCountPhaseBase::estimateCount(const std::shared_ptr<CgNode> &startNo
   if (count >= threshold) {
     startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
   }
-  if (!startNode->get<PiraOneData>()->getHasBody() && startNode->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
+  if (/*!startNode->get<PiraOneData>()->getHasBody()*/ !startNode->getHasBody() && startNode->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
     startNode->setState(CgNodeState::INSTRUMENT_PATH);
   }
 }

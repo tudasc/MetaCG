@@ -1,3 +1,7 @@
+/**
+ * File: MCGReader.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ */
 #include "MCGReader.h"
 
 #include "Timing.h"
@@ -5,17 +9,15 @@
 #include "spdlog/spdlog.h"
 
 #include <loadImbalance/LIMetaData.h>
-#include <queue>
 
 using namespace pira;
 
-namespace MetaCG {
+namespace metacg {
 namespace io {
 
 /**
  * Base class
  */
-
 MetaCGReader::FuncMapT::mapped_type &MetaCGReader::getOrInsert(const std::string &key) {
   if (functions.find(key) != functions.end()) {
     auto &fi = functions[key];
@@ -30,7 +32,7 @@ MetaCGReader::FuncMapT::mapped_type &MetaCGReader::getOrInsert(const std::string
 }
 
 template <typename FieldTy, typename JsonTy>
-void MetaCGReader::setIfNotNull(FieldTy &field, const JsonTy &jsonValue, const std::string key) {
+void MetaCGReader::setIfNotNull(FieldTy &field, const JsonTy &jsonValue, const std::string &key) {
   auto jsonField = jsonValue.value()[key];
   if (!jsonField.is_null()) {
     field = jsonField.template get<typename std::remove_reference<FieldTy>::type>();
@@ -39,27 +41,30 @@ void MetaCGReader::setIfNotNull(FieldTy &field, const JsonTy &jsonValue, const s
   }
 }
 
-void MetaCGReader::buildGraph(CallgraphManager &cgManager, MetaCGReader::StrStrMap &potentialTargets) {
-  MetaCG::RuntimeTimer rtt("buildGraph");
+void MetaCGReader::buildGraph(metacg::graph::MCGManager &cgManager, MetaCGReader::StrStrMap &potentialTargets) {
+  metacg::RuntimeTimer rtt("buildGraph");
+  auto console = spdlog::get("console");
   // Register nodes in the actual graph
-  for (const auto [k, fi] : functions) {
+  for (const auto &[k, fi] : functions) {
+    console->trace("Inserting MetaCG node for function {}", k);
     auto node = cgManager.findOrCreateNode(k); // node pointer currently unused
     node->setIsVirtual(fi.isVirtual);
+    node->setHasBody(fi.hasBody);
     for (const auto &c : fi.callees) {
-      cgManager.putEdge(k, "", 0, c, 0, .0, 0, 0);  // regular call edges
+      cgManager.addEdge(k, c);
       auto &potTargets = potentialTargets[c];
       for (const auto &pt : potTargets) {
-        cgManager.putEdge(k, "", 0, pt, 0, .0, 0, 0);  // potential edges through virtual calls
+        cgManager.addEdge(k, pt);
       }
     }
   }
 }
 
-MetaCGReader::StrStrMap MetaCGReader::buildVirtualFunctionHierarchy(CallgraphManager &cgManager) {
-  MetaCG::RuntimeTimer rtt("buildVirtualFunctionHierarchy");
+MetaCGReader::StrStrMap MetaCGReader::buildVirtualFunctionHierarchy(metacg::graph::MCGManager &cgManager) {
+  metacg::RuntimeTimer rtt("buildVirtualFunctionHierarchy");
   // Now the functions map holds all the information
   std::unordered_map<std::string, std::unordered_set<std::string>> potentialTargets;
-  for (const auto [k, funcInfo] : functions) {
+  for (const auto &[k, funcInfo] : functions) {
     if (!funcInfo.isVirtual) {
       // No virtual function, continue
       continue;
@@ -73,7 +78,7 @@ MetaCGReader::StrStrMap MetaCGReader::buildVirtualFunctionHierarchy(CallgraphMan
      *
      */
     if (funcInfo.doesOverride) {
-      for (const auto overriddenFunction : funcInfo.overriddenFunctions) {
+      for (const auto &overriddenFunction : funcInfo.overriddenFunctions) {
         // Adds this function as potential target to all overridden functions
         potentialTargets[overriddenFunction].insert(k);
 
@@ -91,7 +96,7 @@ MetaCGReader::StrStrMap MetaCGReader::buildVirtualFunctionHierarchy(CallgraphMan
           spdlog::get("console")->debug("In while: working on {}", next);
 
           potentialTargets[next].insert(k);
-          for (const auto om : fi.overriddenFunctions) {
+          for (const auto &om : fi.overriddenFunctions) {
             if (visited.find(om) == visited.end()) {
               spdlog::get("console")->debug("Adding {} to the list to process", om);
               workQ.push(om);
@@ -102,7 +107,7 @@ MetaCGReader::StrStrMap MetaCGReader::buildVirtualFunctionHierarchy(CallgraphMan
     }
   }
 
-  for (const auto [k, s] : potentialTargets) {
+  for (const auto &[k, s] : potentialTargets) {
     std::string targets;
     for (const auto t : s) {
       targets += t + ", ";
@@ -116,9 +121,8 @@ MetaCGReader::StrStrMap MetaCGReader::buildVirtualFunctionHierarchy(CallgraphMan
 /**
  * Version one Reader
  */
-void VersionOneMetaCGReader::read(CallgraphManager &cgManager) {
-
-  MetaCG::RuntimeTimer rtt("Version One Reader");
+void VersionOneMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
+  metacg::RuntimeTimer rtt("Version One Reader");
 
   spdlog::get("console")->trace("Reading");
   auto j = source.get();
@@ -165,7 +169,7 @@ void VersionOneMetaCGReader::read(CallgraphManager &cgManager) {
 
   // set load imbalance flags in CgNode
   for (const auto pfi : functions) {
-    std::optional<CgNodePtr> opt_f = cgManager.getCallgraph(&cgManager).findNode(pfi.first);
+    std::optional<CgNodePtr> opt_f = cgManager.getCallgraph().findNode(pfi.first);
     if (opt_f.has_value()) {
       CgNodePtr node = opt_f.value();
       node->get<LoadImbalance::LIMetaData>()->setVirtual(pfi.second.isVirtual);
@@ -181,30 +185,38 @@ void VersionOneMetaCGReader::read(CallgraphManager &cgManager) {
   }
 }
 
-void VersionOneMetaCGReader::addNumStmts(CallgraphManager &cgm) {
-  for (const auto [k, fi] : functions) {
-    cgm.putNumberOfStatements(fi.functionName, fi.numStatements, fi.hasBody);
+void VersionOneMetaCGReader::addNumStmts(metacg::graph::MCGManager &cgm) {
+  for (const auto &[k, fi] : functions) {
+    auto g = cgm.getCallgraph();
+    auto node = g.findNode(fi.functionName);
+    assert(node != nullptr && "Nodes with #statements attached should be available");
+    if (node->has<pira::PiraOneData>()){
+      auto pod = node->get<pira::PiraOneData>();
+      pod->setNumberOfStatements(fi.numStatements);
+      pod->setHasBody(fi.hasBody);
+    } else {
+      assert(false && "pira::PiraOneData metadata should be default-constructed atm.");
+    }
   }
 }
 
 /**
  * Version two Reader
  */
-void VersionTwoMetaCGReader::read(CallgraphManager &cgManager) {
-
-  MetaCG::RuntimeTimer rtt("VersionTwoMetaCGReader::read");
+void VersionTwoMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
+  metacg::RuntimeTimer rtt("VersionTwoMetaCGReader::read");
 
   auto j = source.get();
 
   auto mcgInfo = j["_MetaCG"];
   if (mcgInfo.is_null()) {
-    spdlog::get("console")->error("Could not read version info from MetaCG file.");
-    throw std::runtime_error("Could not read version info from MetaCG file");
+    spdlog::get("console")->error("Could not read version info from metacg file.");
+    throw std::runtime_error("Could not read version info from metacg file");
   }
   auto mcgVersion = mcgInfo["version"].get<std::string>();
   auto generatorName = mcgInfo["generator"]["name"].get<std::string>();
   auto generatorVersion = mcgInfo["generator"]["version"].get<std::string>();
-  spdlog::get("console")->info("The MetaCG (version {}) file was generated with {} (version: {})", mcgVersion,
+  spdlog::get("console")->info("The metacg (version {}) file was generated with {} (version: {})", mcgVersion,
                                generatorName, generatorVersion);
   { // raii
   std::string metaReadersStr;
@@ -218,8 +230,8 @@ void VersionTwoMetaCGReader::read(CallgraphManager &cgManager) {
 
   auto jsonCG = j["_CG"];
   if (jsonCG.is_null()) {
-    spdlog::get("console")->error("The call graph in the MetaCG file was null.");
-    throw std::runtime_error("CG in MetaCG file was null.");
+    spdlog::get("console")->error("The call graph in the metacg file was null.");
+    throw std::runtime_error("CG in metacg file was null.");
   }
 
   for (json::iterator it = jsonCG.begin(); it != jsonCG.end(); ++it) {
@@ -267,14 +279,5 @@ void VersionTwoMetaCGReader::read(CallgraphManager &cgManager) {
     }
   }
 }
-
-void retriever::to_json(json &j, const PlacementInfo &pi) {
-  spdlog::get("console")->trace("to_json from PlacementInfo called");
-  j["env"]["id"] = pi.platformId;
-  j["experiments"] = json::array({{"params", pi.params}, {"runtimes", pi.runtimeInSecondsPerProcess}});
-  j["model"] = json{"text", pi.modelString};
-}
-
 }  // namespace io
-
-}  // namespace MetaCG
+}  // namespace metacg

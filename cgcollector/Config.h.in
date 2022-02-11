@@ -1,3 +1,3 @@
-#define CGCollector_VERSION_MAJOR @CGCollector_VERSION_MAJOR@
-#define CGCollector_VERSION_MINOR @CGCollector_VERSION_MINOR@
+#define CGCollector_VERSION_MAJOR @MetaCG_VERSION_MAJOR@
+#define CGCollector_VERSION_MINOR @MetaCG_VERSION_MINOR@
 #define MetaCG_GIT_SHA "@GIT_SHA1@"

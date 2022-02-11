@@ -1,10 +1,11 @@
 /**
  * File: AbstractMetric.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "loadImbalance/metric/AbstractMetric.h"
 
+#include <limits>
 #include <cmath>
 #include <map>
 #include <utility>
@@ -12,7 +13,7 @@
 #define DEBUG 1
 
 LoadImbalance::AbstractMetric::AbstractMetric()
-    : node(nullptr), count(0.), max(0.), min(INFINITY), mean(0), stdev(0) {}
+    : node(nullptr), max(.0), min(std::numeric_limits<double>::max()), mean(.0), stdev(.0), count(.0) {}
 
 /**
  * Calculates the standard deviation of a non-empty vector

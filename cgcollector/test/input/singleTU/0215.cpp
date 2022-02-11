@@ -1,14 +1,14 @@
 
 int* k;
 
-void *malloc(int n) {
-  return (void *) n;
+int foo(int k) {
+  if (k == 42) {
+    return 0;
+  }
+  return foo(k);
 }
 
 int main() {
-  int j =23;
-  int *i = (int *)malloc(8);
-  i = (int *)malloc(42);
-  k = new int[j];
+  foo(42);
   return 0;
 }

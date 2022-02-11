@@ -1,13 +1,15 @@
 /**
  * File: CallgraphTest.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "gtest/gtest.h"
 
 #include "LoggerUtil.h"
 
-#include "Callgraph.h"
+#include "../../../graph/include/Callgraph.h"
+
+using namespace metacg;
 
 class CallgraphTest : public ::testing::Test {
  protected:
@@ -16,20 +18,36 @@ class CallgraphTest : public ::testing::Test {
 
 TEST_F(CallgraphTest, EmptyCG) {
   Callgraph c;
+  ASSERT_TRUE(c.isEmpty());
   ASSERT_EQ(nullptr, c.findMain());
   ASSERT_EQ(0, c.size());
 }
 
 TEST_F(CallgraphTest, OnlyMainCG) {
   Callgraph c;
+  ASSERT_TRUE(c.isEmpty());
   ASSERT_EQ(nullptr, c.findMain());
   auto n = std::make_shared<CgNode>("main");
   c.insert(n);
+  ASSERT_FALSE(c.isEmpty());
   ASSERT_EQ(n, c.findMain());
   ASSERT_EQ(n, c.findNode("main"));
   ASSERT_EQ(n, *(c.begin()));
   ASSERT_EQ(true, c.hasNode("main"));
   ASSERT_EQ(1, c.size());
+}
+
+TEST_F(CallgraphTest, ClearEmptiesGraph) {
+  Callgraph c;
+  ASSERT_TRUE(c.isEmpty());
+  auto n = std::make_shared<CgNode>("main");
+  c.insert(n);
+  ASSERT_FALSE(c.isEmpty());
+  ASSERT_TRUE(c.hasNode("main")); // sets lastSearched field
+  c.clear();
+  ASSERT_TRUE(c.isEmpty());
+  ASSERT_EQ(nullptr, c.findMain());
+  ASSERT_EQ(nullptr, c.getLastSearched());
 }
 
 TEST_F(CallgraphTest, TwoNodeConnectedCG) {

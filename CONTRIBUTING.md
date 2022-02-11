@@ -1,12 +1,12 @@
 # How to contribute
 
-Thanks for considering to contribute to MetaCG.
+Thanks for considering to contribute to metacg.
 We are currently developing in a non-public repository.
 In case you want to contribute, please reach out through the issues and we see how we progress.
 
 ## Issues
 
-We are aware that MetaCG has open issues, i.e., a correct handling of function pointers, etc.
+We are aware that metacg has open issues, i.e., a correct handling of function pointers, etc.
 If you find a new issue that is not already reported in github, please feel free to open an issue.
 The issue should state clearly what is the problem, and what you did to get there.
 

@@ -11,8 +11,6 @@
 #include "DotReader.h"
 #include "MCGReader.h"
 
-#include "Callgraph.h"
-
 #include "ExtrapEstimatorPhase.h"
 #include "IPCGEstimatorPhase.h"
 #include <loadImbalance/LIEstimatorPhase.h>
@@ -22,11 +20,10 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
 
+#include "CallgraphManager.h"
 #include "cxxopts.hpp"
 
-#include <fstream>
 #include <nlohmann/json.hpp>
-#include <vector>
 
 namespace pgis::options {
 
@@ -37,10 +34,9 @@ auto optType(T &obj) {
 }  // namespace pgis::options
 
 using namespace pira;
-using namespace pgis::options;
+using namespace ::pgis::options;
 
-void registerEstimatorPhases(CallgraphManager &cg, Config *c, bool isIPCG, float runtimeThreshold,
-                             bool keepNotReachable) {
+void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &cg, Config *c, bool isIPCG, float runtimeThreshold, bool keepNotReachable) {
   auto statEstimator = new StatisticsEstimatorPhase(false);
   if (!keepNotReachable) {
     cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(true, false));  // remove unrelated
@@ -175,7 +171,7 @@ int main(int argc, char **argv) {
     return 0;
   }
 
-  /* Options - populated into global config */
+  /* Options - populated into global configPtr */
   /* XXX These are currently only here for reference, while refactoring the options part of PGIS. */
   // checkAndSet<std::string>("other", result, c.otherPath);
   // checkAndSet<int>("samples", result, CgConfig::samplesPerSecond);
@@ -242,7 +238,9 @@ int main(int argc, char **argv) {
   };
 
   float runTimeThreshold = .0f;
-  auto &cg = CallgraphManager::get();
+  auto &cg = metacg::pgis::PiraMCGProcessor::get();
+  auto &mcgm = metacg::graph::MCGManager::get();
+
   cg.setConfig(&c);
   cg.setExtrapConfig(parseExtrapArgs(result));
 
@@ -255,7 +253,7 @@ int main(int argc, char **argv) {
       std::string fileName = filePath.substr(filePath.find_last_of('/') + 1);
 
       if (stringEndsWith(filePath, ".cubex")) {
-        CubeCallgraphBuilder::buildFromCube(filePath, &c, cg);
+        CubeCallgraphBuilder::buildFromCube(filePath, &c, mcgm);
       } else if (stringEndsWith(filePath, ".dot")) {
         DOTCallgraphBuilder::build(filePath, &c);
       } else {
@@ -269,41 +267,41 @@ int main(int argc, char **argv) {
 
   if (result.count("scorep-out")) {
     spdlog::get("console")->info("Setting Score-P Output Format");
-    cg.setScorepOutputFormat();
   }
 
   if (stringEndsWith(mcgFullPath, ".ipcg") || stringEndsWith(mcgFullPath, ".mcg")) {
-    MetaCG::io::FileSource fs(mcgFullPath);
-    if (pgis::config::GlobalConfig::get().getAs<int>(metacgFormat.cliName) == 1) {
-      MetaCG::io::VersionOneMetaCGReader mcgReader(fs);
-      mcgReader.read(cg);
+    metacg::io::FileSource fs(mcgFullPath);
+    if (::pgis::config::GlobalConfig::get().getAs<int>(metacgFormat.cliName) == 1) {
+      metacg::io::VersionOneMetaCGReader mcgReader(fs);
+      mcgReader.read(mcgm);
     } else if (mcgVersion == 2) {
-      MetaCG::io::VersionTwoMetaCGReader mcgReader(fs);
+      metacg::io::VersionTwoMetaCGReader mcgReader(fs);
       // Example how to add MetaDataHandler
-      cg.addMetaHandler<MetaCG::io::retriever::PiraOneDataRetriever>();
-      cg.addMetaHandler<MetaCG::io::retriever::FilePropertyHandler>();
-      cg.addMetaHandler<MetaCG::io::retriever::CodeStatisticsHandler>();
-      cg.addMetaHandler<LoadImbalance::LoadImbalanceMetaDataHandler>();
-      const auto heuristicMode = pgis::config::getSelectedHeuristic();
+      mcgm.addMetaHandler<metacg::io::retriever::PiraOneDataRetriever>();
+      mcgm.addMetaHandler<metacg::io::retriever::FilePropertyHandler>();
+      mcgm.addMetaHandler<metacg::io::retriever::CodeStatisticsHandler>();
+      mcgm.addMetaHandler<LoadImbalance::LoadImbalanceMetaDataHandler>();
+      const auto heuristicMode = ::pgis::config::getSelectedHeuristic();
       switch (heuristicMode) {
         case HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES:
         case HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES_REVERSE:
-          cg.addMetaHandler<MetaCG::io::retriever::NumConditionalBranchHandler>();
+          mcgm.addMetaHandler<metacg::io::retriever::NumConditionalBranchHandler>();
           break;
         case HeuristicSelection::HeuristicSelectionEnum::FP_MEM_OPS:
-          cg.addMetaHandler<MetaCG::io::retriever::NumOperationsHandler>();
+          mcgm.addMetaHandler<metacg::io::retriever::NumOperationsHandler>();
           break;
         case HeuristicSelection::HeuristicSelectionEnum::LOOPDEPTH:
-          cg.addMetaHandler<MetaCG::io::retriever::LoopDepthHandler>();
+          mcgm.addMetaHandler<metacg::io::retriever::LoopDepthHandler>();
           break;
         case HeuristicSelection::HeuristicSelectionEnum::GlOBAL_LOOPDEPTH:
-          cg.addMetaHandler<MetaCG::io::retriever::GlobalLoopDepthHandler>();
+          mcgm.addMetaHandler<metacg::io::retriever::GlobalLoopDepthHandler>();
           break;
       }
-      mcgReader.read(cg);
+      mcgReader.read(mcgm);
     }
 
-    // MetaCG::io::buildFromJSON(cg, ipcgFullPath, &c);
+    spdlog::get("console")->info("Read MetaCG with {} nodes.", mcgm.getCallgraph().size());
+    cg.setCG(mcgm.getCallgraph());
 
     if (applyStaticFilter) {
       // load imbalance detection
@@ -333,7 +331,7 @@ int main(int argc, char **argv) {
     std::string fileName = filePath.substr(filePath.find_last_of('/') + 1);
 
     if (stringEndsWith(filePath, ".cubex")) {
-      CubeCallgraphBuilder::buildFromCube(filePath, &c, cg);
+      CubeCallgraphBuilder::buildFromCube(filePath, &c, mcgm);
     } else if (stringEndsWith(filePath, ".dot")) {
       DOTCallgraphBuilder::build(filePath, &c);
     } else {
@@ -361,7 +359,7 @@ int main(int argc, char **argv) {
       // should be set for working load imbalance detection
       if (result.count("export")) {
         console->info("Exporting load imbalance data to IPCG file.");
-        MetaCG::io::annotateJSON(cg.getCallgraph(&CallgraphManager::get()), mcgFullPath, LoadImbalance::LIRetriever());
+        metacg::io::annotateJSON(cg.getCallgraph(&metacg::pgis::PiraMCGProcessor::get()), mcgFullPath, LoadImbalance::LIRetriever());
       } else {
         spdlog::get("console")->warn("--export flag is highly recommended for load imbalance detection");
       }
@@ -376,7 +374,7 @@ int main(int argc, char **argv) {
   }
 
   if (result["extrap"].count()) {
-    // test whether PIRA II config is present
+    // test whether PIRA II configPtr is present
     auto &pConfig = pgis::config::ParameterConfig::get();
     if (!pConfig.getPiraIIConfig()) {
       console->error("Provide PIRA II configuration in order to use Extra-P estimators.");
@@ -402,9 +400,9 @@ int main(int argc, char **argv) {
     // *before* running the estimator phase
     if (result.count("export")) {
       console->info("Exporting to IPCG file.");
-      MetaCG::io::annotateJSON(cg.getCallgraph(&CallgraphManager::get()), mcgFullPath,
-                               MetaCG::io::retriever::PiraTwoDataRetriever());
-    }
+      metacg::io::annotateJSON(cg.getCallgraph(&metacg::pgis::PiraMCGProcessor::get()), mcgFullPath,
+                               metacg::io::retriever::PiraTwoDataRetriever());
+   }
   }
 
   if (cg.hasPassesRegistered()) {

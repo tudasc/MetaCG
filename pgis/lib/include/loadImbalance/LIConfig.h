@@ -7,7 +7,7 @@
 #ifndef LI_CONFIG_H
 #define LI_CONFIG_H
 
-#include "CgNode.h"
+#include "../../../../graph/include/CgNode.h"
 #include "nlohmann/json.hpp"
 
 namespace LoadImbalance {
@@ -30,7 +30,7 @@ enum class ChildRelevanceStrategy { ConstantThreshold, RelativeToMain, RelativeT
 /**
  * Set of configuration options for load imbalance detection.
  *
- * Is read from load imbalance config file
+ * Is read from load imbalance configPtr file
  */
 struct LIConfig {
   MetricType metricType;      // which metric to use to quantify load imbalance

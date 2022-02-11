@@ -22,8 +22,7 @@ add_json(cgmerge)
 
 
 add_collector_include(cgvalidate)
-add_cube_includes(cgvalidate)
-add_cube_libraries(cgvalidate)
+add_cube(cgvalidate)
 add_config_include(cgvalidate)
 add_json(cgvalidate)
 add_cxxopts(cgvalidate)
@@ -33,15 +32,15 @@ if (LOGLEVEL)
 endif ()
 
 install(
-        TARGETS cgcollector cgmerge cgvalidate
-        EXPORT ${TARGETS_EXPORT_NAME}
-        RUNTIME DESTINATION bin
+  TARGETS cgcollector cgmerge cgvalidate
+  EXPORT ${TARGETS_EXPORT_NAME}
+  RUNTIME DESTINATION bin
 )
 
 configure_package_config_file(
-        ${PROJECT_SOURCE_DIR}/cmake/Config.cmake.in
-        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-        INSTALL_DESTINATION lib/cmake
+  ${METACG_Directory}/cmake/Config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+  INSTALL_DESTINATION lib/cmake
 )
 
 install(FILES
