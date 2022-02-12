@@ -1,16 +1,18 @@
 # Now simply link against gtest or gtest_main as needed. Eg
-add_executable(basictests CgNodeTest.cpp
+add_executable(
+  basictests
   CallgraphTest.cpp
-#  CallgraphManagerTest.cpp
-  IPCGEstimatorPhaseTest.cpp
+  # CallgraphManagerTest.cpp
+  CgNodeTest.cpp
   IPCGAnnotation.cpp
-  MCGReaderTest.cpp
-
-  loadImbalance/LIMetricTest.cpp
+  IPCGEstimatorPhaseTest.cpp
+  loadImbalance/LIConfigTest.cpp
   loadImbalance/LIEstimatorPhaseTest.cpp
   loadImbalance/LIMetaDataTest.cpp
-  loadImbalance/LIConfigTest.cpp
-        MCGManagerTest.cpp)
+  loadImbalance/LIMetricTest.cpp
+  MCGManagerTest.cpp
+  MCGReaderTest.cpp
+)
 
 target_link_libraries(basictests gtest_main)
 add_pgis(basictests)
