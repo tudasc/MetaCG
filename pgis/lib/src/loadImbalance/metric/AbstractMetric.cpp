@@ -1,18 +1,20 @@
 /**
  * File: AbstractMetric.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "loadImbalance/metric/AbstractMetric.h"
 
 #include <cmath>
+#include <limits>
 #include <map>
 #include <utility>
 
 #define DEBUG 1
 
 LoadImbalance::AbstractMetric::AbstractMetric()
-    : node(nullptr), count(0.), max(0.), min(INFINITY), mean(0), stdev(0) {}
+    : node(nullptr), max(.0), min(std::numeric_limits<double>::max()), mean(.0), stdev(.0), count(.0) {}
 
 /**
  * Calculates the standard deviation of a non-empty vector
@@ -20,7 +22,8 @@ LoadImbalance::AbstractMetric::AbstractMetric()
  *  - https://stackoverflow.com/a/7616783/3473012
  */
 double calcStddev(std::vector<double> &v) {
-  assert(v.size() > 0 && "AbstractMetric.cpp: calcStddev: Can only calculate the standard deviation of a non-empty vector.");
+  assert(v.size() > 0 &&
+         "AbstractMetric.cpp: calcStddev: Can only calculate the standard deviation of a non-empty vector.");
 
   double sum = std::accumulate(v.begin(), v.end(), 0.0);
   double mean = sum / v.size();

@@ -20,8 +20,8 @@
         "numStatements": 0,
         "overriddenBy": [
             "_ZN12DeriveDerive3fooEv",
-            "_ZN9DeriveTwo3fooEv",
-            "_ZN6Derive3fooEv"
+            "_ZN6Derive3fooEv",
+            "_ZN9DeriveTwo3fooEv"
         ],
         "overriddenFunctions": [],
         "parents": []

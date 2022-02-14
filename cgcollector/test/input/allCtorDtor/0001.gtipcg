@@ -89,10 +89,10 @@
     },
     "main": {
         "callees": [
-            "_ZN7MyClassCEv",
-            "_ZN7MyClassC5Ev",
+            "_ZN7MyClassC1Ev",
             "_ZN7MyClassC2Ev",
-            "_ZN7MyClassC1Ev"
+            "_ZN7MyClassC5Ev",
+            "_ZN7MyClassCEv"
         ],
         "doesOverride": false,
         "hasBody": true,

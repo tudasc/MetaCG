@@ -47,9 +47,9 @@
     },
     "main": {
         "callees": [
-            "_ZN1A3fooEv",
             "_Z5get_fb",
-            "_ZN1A3barEv"
+            "_ZN1A3barEv",
+            "_ZN1A3fooEv"
         ],
         "doesOverride": false,
         "hasBody": true,

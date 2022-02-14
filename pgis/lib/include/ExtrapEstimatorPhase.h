@@ -1,6 +1,6 @@
 /**
  * File: ExtrapEstimatorPhase.h
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
@@ -42,16 +42,16 @@ inline bool isConstant(EXTRAP::MultiParameterFunction *func) { return func->getM
 inline bool isConstant(EXTRAP::SingleParameterFunction *func) { return func->getCompoundTerms().size() == 0; }
 
 template <typename T>
-inline bool isConstant(T paramCont, EXTRAP::Function *func) {
+inline bool isConstant(T paramCont, const std::unique_ptr<EXTRAP::Function> &func) {
   if (paramCont.size() < 1) {
     spdlog::get("errconsole")->error("{}: Less than one parameter found.", __FUNCTION__);
     assert(paramCont.size() > 0 && "There should be at least one parameter stored per function");
   }
 
   if (paramCont.size() == 1) {
-    return isConstant(static_cast<EXTRAP::SingleParameterFunction *>(func));
+    return isConstant(static_cast<EXTRAP::SingleParameterFunction *>(func.get()));
   } else {
-    return isConstant(static_cast<EXTRAP::MultiParameterFunction *>(func));
+    return isConstant(static_cast<EXTRAP::MultiParameterFunction *>(func.get()));
   }
 }
 
@@ -113,7 +113,7 @@ ExtrapLocalEstimatorPhaseBase::value_type ExtrapLocalEstimatorPhaseBase::evalMod
 
 auto ExtrapLocalEstimatorPhaseBase::evalModelWValue(CgNodePtr n,
                                                     std::vector<std::pair<std::string, double>> values) const {
-  auto fModel = n->get<PiraTwoData>()->getExtrapModelConnector().getEPModelFunction();
+  auto &fModel = n->get<PiraTwoData>()->getExtrapModelConnector().getEPModelFunction();
 
   std::map<EXTRAP::Parameter, double> evalOps;
 
@@ -134,20 +134,15 @@ auto ExtrapLocalEstimatorPhaseBase::evalModelWValue(CgNodePtr n,
 
 class ExtrapLocalEstimatorPhaseSingleValueFilter : public ExtrapLocalEstimatorPhaseBase {
  public:
-  ExtrapLocalEstimatorPhaseSingleValueFilter(double threshold = 1.0, bool allNodesToMain = false,
-                                             bool useRuntimeOnly = false)
-      : ExtrapLocalEstimatorPhaseBase(allNodesToMain, useRuntimeOnly), threshold(threshold) {}
+  ExtrapLocalEstimatorPhaseSingleValueFilter(bool allNodesToMain = false, bool useRuntimeOnly = false)
+      : ExtrapLocalEstimatorPhaseBase(allNodesToMain, useRuntimeOnly) {}
   virtual std::pair<bool, double> shouldInstrument(CgNodePtr node) const override;
-
- private:
-  double threshold;
 };
 
 class ExtrapLocalEstimatorPhaseSingleValueExpander : public ExtrapLocalEstimatorPhaseSingleValueFilter {
  public:
-  ExtrapLocalEstimatorPhaseSingleValueExpander(double threshold = 1.0, bool allNodesToMain = true,
-                                               bool useRuntimeOnly = false)
-      : ExtrapLocalEstimatorPhaseSingleValueFilter(threshold, allNodesToMain, useRuntimeOnly) {}
+  ExtrapLocalEstimatorPhaseSingleValueExpander(bool allNodesToMain = true, bool useRuntimeOnly = false)
+      : ExtrapLocalEstimatorPhaseSingleValueFilter(allNodesToMain, useRuntimeOnly) {}
 
   virtual void modifyGraph(CgNodePtr mainNode) override;
 };

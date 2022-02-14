@@ -1,0 +1,113 @@
+{
+    "_Z1xv": {
+        "callees": [
+            "_Z4leafv",
+            "_Z4loopv"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 2,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z4leftv",
+            "_Z5rightv"
+        ]
+    },
+    "_Z4leafv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 2,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z1xv"
+        ]
+    },
+    "_Z4leftv": {
+        "callees": [
+            "_Z1xv"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 3,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z5entryv",
+            "_Z5splitv"
+        ]
+    },
+    "_Z4loopv": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": false,
+        "isVirtual": false,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z1xv"
+        ]
+    },
+    "_Z5entryv": {
+        "callees": [
+            "_Z4leftv",
+            "_Z5entryv"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 6,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z5entryv"
+        ]
+    },
+    "_Z5rightv": {
+        "callees": [
+            "_Z1xv"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 5,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z5splitv"
+        ]
+    },
+    "_Z5splitv": {
+        "callees": [
+            "_Z4leftv",
+            "_Z5rightv"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 2,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "main": {
+        "callees": [
+            "_Z5splitv"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 2,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    }
+}

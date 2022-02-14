@@ -68,7 +68,7 @@ nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename)
      *
      */
     if (funcInfo.doesOverride) {
-      for (const auto overriddenFunction : funcInfo.overriddenFunctions) {
+      for (const auto &overriddenFunction : funcInfo.overriddenFunctions) {
         // Adds this function as potential target to all overridden functions
         potentialTargets[overriddenFunction].insert(k);
 
@@ -86,7 +86,7 @@ nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename)
           visited.insert(next);
 
           potentialTargets[next].insert(k);
-          for (const auto om : fi.overriddenFunctions) {
+          for (const auto &om : fi.overriddenFunctions) {
             if (visited.find(om) == visited.end()) {
               workQ.push(om);
             }
@@ -120,6 +120,8 @@ nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename)
 
 nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filename) {
   using json = nlohmann::json;
+
+  std::cout << "Reading " << filename << std::endl;
 
   const auto readNumStmts = [] (auto &jsonElem, auto &funcItem) {
     auto metaInfo = jsonElem["meta"]["numStatements"];
@@ -189,7 +191,7 @@ nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filenam
      *
      */
     if (funcInfo.doesOverride) {
-      for (const auto overriddenFunction : funcInfo.overriddenFunctions) {
+      for (const auto &overriddenFunction : funcInfo.overriddenFunctions) {
         // Adds this function as potential target to all overridden functions
         potentialTargets[overriddenFunction].insert(k);
 
@@ -207,7 +209,7 @@ nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filenam
           visited.insert(next);
 
           potentialTargets[next].insert(k);
-          for (const auto om : fi.overriddenFunctions) {
+          for (const auto &om : fi.overriddenFunctions) {
             if (visited.find(om) == visited.end()) {
               workQ.push(om);
             }
@@ -221,7 +223,7 @@ nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filenam
     funcInfo.overriddenBy.insert(potentialTargets[k].begin(), potentialTargets[k].end());
     funcInfo.overriddenFunctions.insert(overrides[k].begin(), overrides[k].end());
   }
-  std::cout << "Filename: " << filename << "\n" << j << std::endl;
+//  std::cout << "Filename: " << filename << "\n" << j << std::endl;
   return j;
 }
 

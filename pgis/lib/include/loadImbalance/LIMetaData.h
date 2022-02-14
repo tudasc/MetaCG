@@ -1,6 +1,6 @@
 /**
  * File: LIMetaData.h
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
@@ -10,6 +10,7 @@
 #include <optional>
 
 #include "CgNodeMetaData.h"
+#include "MetaData.h"
 #include "nlohmann/json.hpp"
 
 namespace LoadImbalance {
@@ -23,7 +24,7 @@ enum class FlagType { Irrelevant, Visited, Imbalanced };
 /**
  * Class to hold data (for load imbalance detection) which can be annotated to a node
  */
-class LIMetaData : public pira::MetaData {
+class LIMetaData : public metacg::MetaData {
  public:
   static constexpr const char *key() { return "LIMetaData"; }
 
@@ -47,11 +48,8 @@ class LIMetaData : public pira::MetaData {
 
   // Flags
   // =====
-  std::unordered_map<FlagType, bool> flags {
-      {FlagType::Visited, false},
-      {FlagType::Irrelevant, false},
-      {FlagType::Imbalanced, false}
-  };
+  std::unordered_map<FlagType, bool> flags{
+      {FlagType::Visited, false}, {FlagType::Irrelevant, false}, {FlagType::Imbalanced, false}};
 
   /**
    * to save the calculated metric value for later use
@@ -59,7 +57,7 @@ class LIMetaData : public pira::MetaData {
   std::optional<double> assessment{std::nullopt};
 };
 
-void to_json(nlohmann::json& j, const LoadImbalance::LIMetaData& d);
+void to_json(nlohmann::json &j, const LoadImbalance::LIMetaData &d);
 }  // namespace LoadImbalance
 
 #endif

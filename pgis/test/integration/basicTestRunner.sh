@@ -5,7 +5,7 @@
 fails=0
 
 buildDirParam=$1
-buildDir="${buildDirParam:-$PWD/../../build}"
+buildDir="${buildDirParam:-$PWD/../../../build/pgis}"
 testExec=${buildDir}/tool/pgis_pira
 testSuite='basic'
 logDir=$PWD/logging

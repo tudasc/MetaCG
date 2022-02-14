@@ -1,10 +1,11 @@
 /**
  * File: DotReader.h
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "Callgraph.h"
+#include "../../../graph/include/Callgraph.h"
+#include "MCGManager.h"
 
 #include <fstream>
 #include <string>
@@ -27,8 +28,8 @@ std::string extractBetween(const std::string &s, const std::string &pattern, siz
 }
 
 void build(std::string filePath, Config *c) {
-  // CallgraphManager *cg = new CallgraphManager(c);
-  auto &cg = CallgraphManager::get();
+  // PiraMCGProcessor *cg = new PiraMCGProcessor(c);
+  auto &cg = metacg::graph::MCGManager::get();
 
   std::ifstream file(filePath);
   std::string line;
@@ -54,7 +55,8 @@ void build(std::string filePath, Config *c) {
       unsigned long numCalls = stoul(line.substr(numCallsStart));
 
       // filename & line unknown; time already added with node
-      cg.putEdge(parent, "", -1, child, numCalls, 0.0, 0, 0);
+      //      cg.putEdge(parent, "", -1, child, numCalls, 0.0, 0, 0);
+      cg.addEdge(parent, child);
 
     } else {
       // node
@@ -62,7 +64,7 @@ void build(std::string filePath, Config *c) {
       std::string name = extractBetween(line, "\"", start);
       double time = stod(extractBetween(line, "\\n", start));
 
-      cg.findOrCreateNode(name, time);
+      cg.findOrCreateNode(name);
     }
   }
   file.close();

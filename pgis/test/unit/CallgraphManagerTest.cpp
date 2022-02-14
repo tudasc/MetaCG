@@ -1,6 +1,7 @@
 /**
  * File: CallgraphManagerTest.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "gtest/gtest.h"
@@ -18,8 +19,8 @@ class CallgraphManagerTest : public ::testing::Test {
 
 TEST_F(CallgraphManagerTest, EmptyCG) {
   Config cfg;
-  // CallgraphManager cm(&cfg);
-  auto &cm = CallgraphManager::get();
+  // PiraMCGProcessor cm(&cfg);
+  auto &cm = metacg::pgis::PiraMCGProcessor::get();
   cm.setConfig(&cfg);
   ASSERT_EQ(0, cm.size());
   auto graph = cm.getCallgraph(&cm);
@@ -30,8 +31,9 @@ TEST_F(CallgraphManagerTest, EmptyCG) {
 
 TEST_F(CallgraphManagerTest, OneNodeCG) {
   Config cfg;
-  //CallgraphManager cm(&cfg);
-  auto &cm = CallgraphManager::get();
+  // PiraMCGProcessor cm(&cfg);
+  auto &cm = metacg::pgis::PiraMCGProcessor::get();
+  cm.clear();
   cm.setConfig(&cfg);
   cm.findOrCreateNode("main");
   cm.setNodeComesFromCube("main");
@@ -48,8 +50,8 @@ TEST_F(CallgraphManagerTest, OneNodeCG) {
 
 TEST_F(CallgraphManagerTest, TwoNodeCG) {
   Config cfg;
-  //CallgraphManager cm(&cfg);
-  auto &cm = CallgraphManager::get();
+  // PiraMCGProcessor cm(&cfg);
+  auto &cm = metacg::pgis::PiraMCGProcessor::get();
   cm.setConfig(&cfg);
   int mainLineNumber = 1;
   auto mainNode = cm.findOrCreateNode("main");
@@ -66,8 +68,8 @@ TEST_F(CallgraphManagerTest, TwoNodeCG) {
 
 TEST_F(CallgraphManagerTest, ThreeNodeCG) {
   Config cfg;
-  //CallgraphManager cm(&cfg);
-  auto &cm = CallgraphManager::get();
+  // PiraMCGProcessor cm(&cfg);
+  auto &cm = metacg::pgis::PiraMCGProcessor::get();
   cm.setConfig(&cfg);
   int mainLineNumber = 1;
   auto mainNode = cm.findOrCreateNode("main");

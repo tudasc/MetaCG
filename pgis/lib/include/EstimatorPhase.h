@@ -1,13 +1,13 @@
 /**
  * File: EstimatorPhase.h
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #ifndef ESTIMATORPHASE_H_
 #define ESTIMATORPHASE_H_
 
-#include "Callgraph.h"
+#include "../../../graph/include/Callgraph.h"
 #include "CgHelper.h"
 #include "CgNode.h"
 
@@ -62,9 +62,10 @@ struct CgReport {
   bool metaPhase;
 
   std::unordered_set<std::string> instrumentedNames;
+  std::unordered_set<CgNodePtr> instrumentedNodes;
   std::unordered_map<std::string, CgNodePtr> instrumentedPaths;
   std::unordered_map<CgNodePtr, CgNodePtr> instrumentedEdges;
-  std::priority_queue<CgNodePtr, std::vector<CgNodePtr>, CalledMoreOften> instrumentedNodes;
+  //  std::priority_queue<CgNodePtr, std::vector<CgNodePtr>, CalledMoreOften> instrumentedNodes;
 
   std::map<std::string, int> unwoundNames;
 };
@@ -74,11 +75,12 @@ class EstimatorPhase {
   EstimatorPhase(std::string name, bool isMetaPhase = false);
   virtual ~EstimatorPhase() {}
 
+  virtual void doPrerequisites() {}
   virtual void modifyGraph(CgNodePtr mainMethod) = 0;
 
   void generateReport();
 
-  void setGraph(Callgraph *graph);
+  void setGraph(metacg::Callgraph *graph);
   void injectConfig(Config *config) { this->config = config; }
 
   struct CgReport getReport();
@@ -89,7 +91,7 @@ class EstimatorPhase {
   std::string getName() { return name; }
 
  protected:
-  Callgraph *graph;
+  metacg::Callgraph *graph;
 
   CgReport report;
   std::string name;

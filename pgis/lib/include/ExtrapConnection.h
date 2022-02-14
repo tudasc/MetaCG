@@ -1,6 +1,6 @@
 /**
  * File: ExtrapConnection.h
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
@@ -28,7 +28,11 @@
 #include <numeric>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
+
+#include "ExtrapAggregatedFunctions.h"
+#include "config/PiraIIConfig.h"
 
 namespace cube {
 class Cnode;
@@ -50,14 +54,15 @@ struct ExtrapConfig {
 
 class ExtrapExtrapolator {
  public:
-  ExtrapExtrapolator(std::vector<std::pair<std::string, std::vector<int>>> values) : values(values) {}
+  explicit ExtrapExtrapolator(std::vector<std::pair<std::string, std::vector<int>>> values)
+      : values(std::move(values)) {}
 
   auto getValues() { return values; }
 
   auto getExtrapolationValue(double alpha = 1.0) {
     std::vector<std::pair<std::string, double>> result;
     // We need to compute extrapolation values for all params
-    for (const auto param_pair : values) {
+    for (const auto &param_pair : values) {
       std::vector<double> steps;
       auto it1 = param_pair.second.begin();
       auto it2 = param_pair.second.begin();
@@ -105,37 +110,71 @@ class ExtrapConnector {
     spdlog::get("console")->trace("ExtrapConnector: explicit ctor: models {}", models.size());
   }
 
+  ~ExtrapConnector() = default;
+
   ExtrapConnector(const ExtrapConnector &other)
-      : epModel(other.epModel), models(other.models), paramList(other.paramList), epolator(other.epolator) {
+      : epModelFunction(std::make_unique<EXTRAP::Function>(*other.epModelFunction)),
+        models(other.models),
+        paramList(other.paramList),
+        epolator(other.epolator) {
     spdlog::get("console")->trace("ExtrapConnector: copy ctor\nother.models: {}\nthis.models: {}", other.models.size(),
                                   this->models.size());
   }
 
+  ExtrapConnector &operator=(const ExtrapConnector &other) {
+    this->epModelFunction = std::make_unique<EXTRAP::Function>(*other.epModelFunction);
+    this->models = other.models;
+    this->paramList = other.paramList;
+    this->epolator = other.epolator;
+    spdlog::get("console")->trace("ExtrapConnector: copy assignment operator\nother.models: {}\nthis.models: {}",
+                                  other.models.size(), this->models.size());
+    return *this;
+  }
+
   /* Test whether models were generated and set */
   bool hasModels() const { return models.size() > 0; }
+  /* Return number of associated models */
+  std::size_t modelCount() const { return models.size(); }
   /* Check whether specific model hast been set */
-  bool isModelSet() const { return epModel != nullptr; }
+  bool isModelSet() const { return epModelFunction != nullptr; }
+  std::string getModelStrings() const {
+    std::stringstream ss;
+    for (auto f : models) {
+      ss << f->getModelFunction()->getAsString(paramList) << "; ";
+    }
+    std::string s = ss.str();
+    if (!s.empty()) {
+      s.pop_back();
+      s.pop_back();
+    }
+    return s;
+  }
 
   /* Get the specific model set */
-  auto getEPModelFunction() const { return epModel->getModelFunction(); }
+  auto &getEPModelFunction() const { return epModelFunction; }
+  std::string getEPModelFunctionAsString() const {
+    if (isModelSet()) {
+      return epModelFunction->getAsString(paramList);
+    } else {
+      return "not set!";
+    }
+  }
   auto getParamList() const { return this->paramList; }
   auto getEpolator() const { return epolator; }
 
   /* Set the specific model */
-  void setEPMetric(EXTRAP::Model *m) { epModel = m; }
   void setEpolator(ExtrapExtrapolator e) { epolator = e; }
 
-  void useFirstModel() { epModel = models.front(); }
-
-  inline void printModels(std::ostream &os = std::cout) const {
-    os << epModel->getModelFunction() << " : ";
-    for (auto f : models) {
-      os << f->getModelFunction() << std::endl;
-    }
-  }
+  /**
+   * Aggregates (or selects) a single model (function) from the set of available models.
+   * Call only once!
+   * @param modelAggregationStrategy Aggregration/Selection strategy
+   */
+  void modelAggregation(pgis::config::ModelAggregationStrategy modelAggregationStrategy);
 
  private:
-  EXTRAP::Model *epModel = nullptr;
+  std::unique_ptr<EXTRAP::Function> epModelFunction = nullptr;
+
   std::vector<EXTRAP::Model *> models;
   EXTRAP::ParameterList paramList;
 
@@ -171,7 +210,7 @@ class ExtrapModelProvider {
     std::vector<double> vals;
     vals.reserve(config.params.size());
     // FIXME for now we assume only a single parameter!!
-    for (const auto p : config.params) {
+    for (const auto &p : config.params) {
       if (key == p.first) {
         for (const auto v : p.second) {
           vals.emplace_back(v);

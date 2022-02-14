@@ -1,6 +1,6 @@
 /**
  * File: CubeReader.h
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
@@ -13,6 +13,7 @@
 #include <Cube.h>
 #include <CubeMetric.h>
 
+#include <MCGManager.h>
 #include <string>
 
 /**
@@ -39,9 +40,10 @@ void applyOne(cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, N node, L lam
   applyOne(cu, cnode, node, largs...);
 }
 template <typename... Largs>
-void apply(cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, std::string &where, Largs... largs) {
+void apply(metacg::graph::MCGManager &mcgm, cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, std::string &where,
+           Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
-    auto target = CallgraphManager::get().findOrCreateNode(where);
+    auto target = mcgm.findOrCreateNode(where);
     applyOne(cu, cnode, target, largs...);
   }
 }
@@ -129,8 +131,8 @@ const auto attInclRuntime = [](auto &cube, auto cnode, auto n) {
 };
 
 template <typename... Largs>
-void build(std::string filePath, Largs... largs) {
-  auto &cg = CallgraphManager::get();
+void build(std::string filePath, metacg::graph::MCGManager &mcgm, Largs... largs) {
+  //  auto &cg = metacg::pgis::PiraMCGProcessor::get();
   bool useMangledNames = true;
 
   auto console = spdlog::get("console");
@@ -146,7 +148,7 @@ void build(std::string filePath, Largs... largs) {
     console->trace("Cube contains: {} nodes", cnodes.size());
     for (const auto cnode : cnodes) {
       if (!cnode->get_parent()) {
-        cg.findOrCreateNode(getName(useMangledNames, cnode), time(cube, cnode));
+        mcgm.findOrCreateNode(getName(useMangledNames, cnode));
         continue;
       }
 
@@ -156,9 +158,9 @@ void build(std::string filePath, Largs... largs) {
       auto cName = getName(useMangledNames, cNode);
 
       // Insert edge
-      cg.putEdge(pName, cName);
+      mcgm.addEdge(pName, cName);
       // Leave what to capture and attach to the user
-      apply(cube, cnode, cName, largs...);
+      apply(mcgm, cube, cnode, cName, largs...);
     }
 
   } catch (std::exception &e) {
@@ -169,8 +171,8 @@ void build(std::string filePath, Largs... largs) {
 void build(std::string filepath);
 }  // namespace impl
 
-void build(std::string filePath, Config *c);
-void buildFromCube(std::string filePath, Config *c, CallgraphManager &cg);
+void build(std::string filePath, Config *c, metacg::graph::MCGManager &mcgm);
+void buildFromCube(std::string filePath, Config *c, metacg::graph::MCGManager &mcgm);
 }  // namespace CubeCallgraphBuilder
 
 #endif

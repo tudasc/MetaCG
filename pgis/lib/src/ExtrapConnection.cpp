@@ -15,13 +15,14 @@
 #pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic ignored "-Wsign-compare"
+#include "CallgraphManager.h"
 #include "EXTRAP_SingleParameterModelGenerator.hpp"
 #include <EXTRAP_MultiParameterSimpleModelGenerator.hpp>
 #include <EXTRAP_SingleParameterSimpleModelGenerator.hpp>
+#include <config/PiraIIConfig.h>
 #pragma GCC diagnostic pop
 
 namespace extrapconnection {
-
 void printConfig(ExtrapConfig &cfg) {
   auto console = spdlog::get("console");
 
@@ -38,7 +39,6 @@ void printConfig(ExtrapConfig &cfg) {
       "---- Extra-P Config ----\nBaseDir: {}\nRepetitions: {}\nPrefix: {}\nPostfix: {}\nIterations: {}\nParams: "
       "{}\n---- End Extra-P Config ----",
       cfg.directory, cfg.repetitions, cfg.prefix, cfg.postfix, cfg.iteration, parameterStr);
-
 }
 
 ExtrapConfig getExtrapConfigFromJSON(std::string filePath) {
@@ -120,7 +120,7 @@ std::vector<EXTRAP::Parameter> ExtrapModelProvider::getParameterList() {
   std::vector<EXTRAP::Parameter> params;
   params.reserve(config.params.size());
 
-  for (const auto p : getKeys(config.params)) {
+  for (const auto &p : getKeys(config.params)) {
     params.emplace_back(EXTRAP::Parameter(p));
   }
 
@@ -141,7 +141,7 @@ void ExtrapModelProvider::buildModels() {
   // Actual parameter values: Inner vector is values for the parameter, outer vector corresponds to paramPrefixes
   std::vector<std::vector<int>> paramValues;
 
-  for (const auto pv : config.params) {
+  for (const auto &pv : config.params) {
     paramValues.push_back(pv.second);
   }
 
@@ -169,7 +169,7 @@ void ExtrapModelProvider::buildModels() {
       }
     }
     std::string dbgOut("Reading cube files:\n");
-    for (const auto f : cubeFiles) {
+    for (const auto &f : cubeFiles) {
       dbgOut += "- " + f + "\n";
     }
     console->debug(dbgOut);
@@ -178,7 +178,7 @@ void ExtrapModelProvider::buildModels() {
   printDbgInfos();
 
   for (size_t i = 0; i < fns.size(); ++i) {
-    //    if (i % config.repetitions == 0) {
+    //    if (i % configPtr.repetitions == 0) {
     const auto attEpData = [&](auto &cube, auto cnode, auto n) {
       console->debug("Attaching Cube info from file {}", fns.at(i));
       auto ptd = getOrCreateMD<pira::PiraTwoData>(n, ExtrapConnector({}, {}));
@@ -186,11 +186,12 @@ void ExtrapModelProvider::buildModels() {
       ptd->addToRuntimeVec(CubeCallgraphBuilder::impl::time(cube, cnode));
     };
 
-    CubeCallgraphBuilder::impl::build(std::string(fns.at(i)), attEpData);
+    auto &mcgManager = metacg::graph::MCGManager::get();
+    CubeCallgraphBuilder::impl::build(std::string(fns.at(i)), mcgManager, attEpData);
     //   }
   }
 
-  for (const auto n : CallgraphManager::get()) {
+  for (const auto &n : metacg::pgis::PiraMCGProcessor::get()) {
     console->trace("No PiraTwoData meta data");
     if (n->has<pira::PiraTwoData>()) {
       auto ptd = CubeCallgraphBuilder::impl::get<pira::PiraTwoData>(n);
@@ -281,4 +282,15 @@ void ExtrapModelProvider::buildModels() {
   console->info("Finished model creation.");
 }
 
+void ExtrapConnector::modelAggregation(pgis::config::ModelAggregationStrategy modelAggregationStrategy) {
+  if (modelAggregationStrategy == pgis::config::ModelAggregationStrategy::Sum) {
+    epModelFunction = std::make_unique<SumFunction>(models);
+  } else if (modelAggregationStrategy == pgis::config::ModelAggregationStrategy::FirstModel) {
+    epModelFunction = std::make_unique<FirstModelFunction>(models);
+  } else if (modelAggregationStrategy == pgis::config::ModelAggregationStrategy::Average) {
+    epModelFunction = std::make_unique<AvgFunction>(models);
+  } else if (modelAggregationStrategy == pgis::config::ModelAggregationStrategy::Maximum) {
+    epModelFunction = std::make_unique<MaxFunction>(models);
+  }
+}
 }  // namespace extrapconnection

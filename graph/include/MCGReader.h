@@ -1,0 +1,226 @@
+/**
+ * File: MCGReader.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+#ifndef METACG_GRAPH_MCGREADER_H
+#define METACG_GRAPH_MCGREADER_H
+
+#include "MCGManager.h"
+
+#include "nlohmann/json.hpp"
+
+#include <loadImbalance/LIMetaData.h>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+
+namespace metacg::io {
+
+using json = nlohmann::json;
+
+/**
+ * Abstraction for the source of the JSON to read-in
+ * Meant to be subclassed.
+ */
+struct ReaderSource {
+  /**
+   * Returns a json object of the call graph.
+   */
+  virtual nlohmann::json get() const = 0;
+};
+
+/**
+ * Wraps a file as the source of the JSON.
+ * If the file does not exists, prints error and exits the program.
+ */
+struct FileSource : ReaderSource {
+  explicit FileSource(std::string filename) : filename(std::move(filename)) {}
+  /**
+   * Reads the json file with filename (provided at object construction)
+   * and returns the json object.
+   */
+  virtual nlohmann::json get() const override {
+    spdlog::get("console")->info("Reading metacg file from: {}", filename);
+    nlohmann::json j;
+    {
+      std::ifstream in(filename);
+      if (!in.is_open()) {
+        spdlog::get("errconsole")->error("Opening file {} failed.", filename);
+        throw std::runtime_error("Opening file failed");
+      }
+      in >> j;
+    }
+
+    return j;
+  };
+  const std::string filename;
+};
+
+/**
+ * Wraps existing JSON object as source.
+ * Currently only used in unit tests.
+ */
+struct JsonSource : ReaderSource {
+  explicit JsonSource(nlohmann::json j) : json(j) {}
+  virtual nlohmann::json get() const override { return json; }
+  nlohmann::json json;
+};
+
+/**
+ * Base class to read metacg files.
+ *
+ * Previously known as IPCG files, the metacg files are the serialized versions of the call graph.
+ * This class implements basic functionality and is meant to be subclassed for different file versions.
+ */
+class MetaCGReader {
+  /**
+   * Internal data structure to create the metacg structure
+   */
+  struct FunctionInfo {
+    FunctionInfo()
+        : functionName("_UNDEF_"), isVirtual(false), doesOverride(false), numStatements(-1), hasBody(false) {}
+    std::string functionName;
+    bool isVirtual;
+    bool doesOverride;
+    int numStatements;
+    bool hasBody;
+    std::unordered_set<std::string> callees;
+    std::unordered_set<std::string> parents;
+    std::unordered_set<std::string> overriddenFunctions;
+    std::unordered_set<std::string> overriddenBy;
+
+    // load imbalance detection data
+    bool visited = false;
+    bool irrelevant = false;
+  };
+
+ public:
+  typedef std::unordered_map<std::string, FunctionInfo> FuncMapT;
+  typedef std::unordered_map<std::string, std::unordered_set<std::string>> StrStrMap;
+  // using json = nlohmann::json;
+  /**
+   * filename path to file
+   */
+  explicit MetaCGReader(ReaderSource &src) : source(src) {}
+  /**
+   * PiraMCGProcessor object to be filled with the CG
+   */
+  virtual void read(metacg::graph::MCGManager &cgManager) = 0;
+
+ protected:
+  /**
+   * Gets or inserts new node into the functions LUT
+   */
+  FuncMapT::mapped_type &getOrInsert(const std::string &key);
+
+  /**
+   * Checks if the jsonValue contains a value for key and sets field accordingly
+   */
+  template <typename FieldTy, typename JsonTy>
+  void setIfNotNull(FieldTy &field, const JsonTy &jsonValue, const std::string &key);
+
+  /**
+   * Build the virtual function hierarchy in PGIS using the functions map
+   */
+  StrStrMap buildVirtualFunctionHierarchy(metacg::graph::MCGManager &cgManager);
+
+  /**
+   * Inserts all nodes in the function map into the final call-graph.
+   * Uses potentialTargets to include all potential virtual call targets for virtual functions.
+   */
+  void buildGraph(metacg::graph::MCGManager &cgManager, StrStrMap &potentialTargets);
+
+  /* Functions LUT: needed for construction of metacg */
+  FuncMapT functions;
+
+  /**
+   * Abstraction from where to read-in the JSON.
+   */
+  const ReaderSource &source;
+
+ private:
+  // filename of the metacg this instance parses
+  const std::string filename;
+};
+
+/**
+ * Class to read metacg files in file format v1.0.
+ * The file format is also typically referred to as IPCG files.
+ */
+class VersionOneMetaCGReader : public MetaCGReader {
+ public:
+  explicit VersionOneMetaCGReader(ReaderSource &source) : MetaCGReader(source) {}
+  void read(metacg::graph::MCGManager &cgManager) override;
+
+ private:
+  void addNumStmts(metacg::graph::MCGManager &cgm);
+};
+
+/**
+ * Class to read metacg files in file format v2.0.
+ * The format contains the 'meta' field for tools to export information.
+ */
+class VersionTwoMetaCGReader : public MetaCGReader {
+ public:
+  explicit VersionTwoMetaCGReader(ReaderSource &source) : MetaCGReader(source) {}
+  void read(metacg::graph::MCGManager &cgManager) override;
+};
+
+/*
+ *
+ * (Old?) Annotation mechanism
+ *
+ */
+
+template <typename PropRetriever>
+int doAnnotate(metacg::Callgraph &cg, PropRetriever retriever, json &j) {
+  const auto functionElement = [](json &container, auto name) {
+    for (json::iterator it = container.begin(); it != container.end(); ++it) {
+      if (it.key() == name) {
+        return it;
+      }
+    }
+    return container.end();
+  };
+
+  const auto holdsValue = [](auto jsonIt, auto jsonEnd) { return jsonIt != jsonEnd; };
+
+  int annots = 0;
+  for (const auto &node : cg) {
+    if (retriever.handles(node)) {
+      auto funcElem = functionElement(j, node->getFunctionName());
+
+      if (holdsValue(funcElem, j.end())) {
+        auto &nodeMeta = (*funcElem)["meta"];
+        nodeMeta[retriever.toolName()] = retriever.value(node);
+        annots++;
+      }
+    }
+  }
+  return annots;
+}
+
+template <typename PropRetriever>
+void annotateJSON(metacg::Callgraph &cg, const std::string &filename, PropRetriever retriever) {
+  json j;
+  {
+    std::ifstream in(filename);
+    in >> j;
+  }
+
+  int annotated = metacg::io::doAnnotate(cg, retriever, j);
+  spdlog::get("console")->trace("Annotated {} json nodes", annotated);
+
+  {
+    std::ofstream out(filename);
+    out << j << std::endl;
+  }
+}
+
+
+
+}  // namespace metacg::io
+
+#endif

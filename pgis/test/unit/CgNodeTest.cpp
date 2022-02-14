@@ -1,9 +1,10 @@
 /**
  * File: CgNodeTest.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "CgNode.h"
+#include "../../../graph/include/CgNode.h"
 #include "CgHelper.h"
 
 #include "LoggerUtil.h"
@@ -11,6 +12,7 @@
 #include "gtest/gtest.h"
 
 using namespace pira;
+using namespace metacg;
 
 namespace {
 class CgNodeBasics : public ::testing::Test {
@@ -101,7 +103,7 @@ TEST_F(CgNodeBasics, CreateChildParentRuntime) {
   ASSERT_EQ(1.25, n->get<BaseProfileData>()->getRuntimeInSeconds());
   ASSERT_EQ(0.25, c->get<BaseProfileData>()->getRuntimeInSeconds());
   ASSERT_EQ(1.5, n->get<BaseProfileData>()->getInclusiveRuntimeInSeconds());
-  //ASSERT_EQ(1.5, CgHelper::calcInclusiveRuntime(n.get()));
+  // ASSERT_EQ(1.5, CgHelper::calcInclusiveRuntime(n.get()));
   ASSERT_EQ(true, c->isLeafNode());
   ASSERT_EQ(true, n->isRootNode());
   ASSERT_EQ(false, n->isLeafNode());

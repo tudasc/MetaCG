@@ -1,13 +1,16 @@
 /**
  * File: CgHelper.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "CgHelper.h"
-#include "Callgraph.h"
+#include "../../../graph/include/Callgraph.h"
 #include <loadImbalance/LIMetaData.h>
 
 #include "spdlog/spdlog.h"
+
+using namespace metacg;
 
 int CgConfig::samplesPerSecond = 10000;
 
@@ -17,45 +20,6 @@ using namespace pira;
 
 /** returns true for nodes with two or more parents */
 bool isConjunction(CgNodePtr node) { return (node->getParentNodes().size() > 1); }
-
-/** returns overhead of all the instrumented nodes of the call path. (node
- * based) */
-unsigned long long getInstrumentationOverheadOfPath(CgNodePtr node) {
-  unsigned long long costInNanos = 0ULL;
-
-  CgNodePtrSet instrumentationPaths = getInstrumentationPath(node);
-  for (auto potentiallyMarked : instrumentationPaths) {
-    // RN: the main function can be instrumented as this is part of the
-    // heuristic
-    if (potentiallyMarked->isInstrumentedWitness()) {
-      const auto &[has, bpd] = potentiallyMarked->checkAndGet<BaseProfileData>();
-      if (has) {
-        costInNanos += bpd->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall;
-      } else {
-      }
-      // costInNanos += potentiallyMarked->getNumberOfCalls() * CgConfig::nanosPerInstrumentedCall;
-    }
-  }
-
-  return costInNanos;
-}
-
-/** returns a pointer to the node that is instrumented up that call path */
-// TODO: check because of new nodeBased Conventions
-CgNodePtr getInstrumentedNodeOnPath(CgNodePtr node) {
-  // XXX RN: this method has slowly grown up to a real mess
-  if (node->isInstrumentedWitness() || node->isRootNode()) {
-    return node;
-  }
-
-  if (isConjunction(node)) {
-    return nullptr;
-  }
-  // single parent
-  auto parentNode = node->getUniqueParent();
-
-  return getInstrumentedNodeOnPath(parentNode);
-}
 
 /** Returns a set of all nodes from the starting node up to the instrumented
  * nodes.
@@ -86,96 +50,6 @@ CgNodePtrSet getInstrumentationPath(CgNodePtr start) {
   return CgNodePtrSet(path.begin(), path.end());
 }
 
-bool deleteInstrumentationIfRedundant(CgNodePtr instrumentedNode) {
-  auto childNodes = instrumentedNode->getChildNodes();
-  if (childNodes.find(instrumentedNode) != childNodes.end()) {
-    return false;
-  }
-
-  for (auto childOfParentNode : childNodes) {
-    if (CgHelper::isConjunction(childOfParentNode) &&
-        !(childOfParentNode->isUnwound() || childOfParentNode->isInstrumentedConjunction())) {
-      return false;
-    }
-  }
-
-  if (instrumentedNode->isInstrumented()) {
-    instrumentedNode->setState(CgNodeState::NONE);
-  }
-  return true;
-}
-
-bool isUniquelyInstrumented(CgNodePtr conjunctionNode, CgNodePtr unInstrumentedNode, bool printErrors) {
-  if ((conjunctionNode->isInstrumentedConjunction() && conjunctionNode != unInstrumentedNode) ||
-      conjunctionNode->isUnwound()) {
-    return true;
-  }
-
-  CgNodePtrSet visited;  // visited nodes
-
-  std::queue<CgNodePtr> workQueue;
-  for (auto parentNode : conjunctionNode->getParentNodes()) {
-    workQueue.push(parentNode);
-  }
-
-  while (!workQueue.empty()) {
-    auto node = workQueue.front();
-    workQueue.pop();
-
-    if (visited.find(node) == visited.end()) {
-      visited.insert(node);
-    } else {
-      if (printErrors) {
-        spdlog::get("errconsole")->error("The conjunction {} is reached on multiple paths by {}", conjunctionNode->getFunctionName(), node->getFunctionName());
-      }
-      return false;
-    }
-
-    if ((node != unInstrumentedNode && node->isInstrumented()) || node->isRootNode()) {
-      continue;
-    }
-
-    for (auto parentNode : node->getParentNodes()) {
-      workQueue.push(parentNode);
-    }
-  }
-  return true;
-}
-
-/**
- * Checks the instrumentation paths (node based!) above a conjunction node for
- * intersection. Returns the Number Of Errors ! */
-int uniquelyInstrumentedConjunctionTest(CgNodePtr conjunctionNode, bool printErrors) {
-  int numberOfErrors = 0;
-
-  auto parents = conjunctionNode->getParentNodes();
-  std::map<CgNodePtr, CgNodePtrSet> paths;
-
-  for (auto parentNode : parents) {
-    CgNodePtrSet path = getInstrumentationPath(parentNode);
-    paths[parentNode] = path;
-  }
-
-  for (auto pair : paths) {
-    for (auto otherPair : paths) {
-      if (pair == otherPair) {
-        continue;
-      }
-
-      if (intersects(pair.second, otherPair.second)) {
-        if (printErrors) {
-          std::cout << "ERROR in conjunction: " << *conjunctionNode << std::endl;
-          std::cout << "    "
-                    << "Paths of " << *(pair.first) << " and " << *(otherPair.first) << " intersect!" << std::endl;
-        }
-        numberOfErrors++;
-      }
-    }
-  }
-
-  return numberOfErrors;
-}
-
 /** returns the overhead caused by a call path */
 // TODO this will only work with direct parents instrumented
 unsigned long long getInstrumentationOverheadOfConjunction(CgNodePtr conjunctionNode) {
@@ -199,151 +73,6 @@ unsigned long long getInstrumentationOverheadOfConjunction(CgNodePtr conjunction
                            }
                            return acc;
                          });
-}
-
-/** returns the overhead caused by a call path */
-// TODO this will only work with direct parents instrumented
-unsigned long long getInstrumentationOverheadOfConjunction(CgNodePtrSet conjunctionNodes) {
-  CgNodePtrSet allParents;
-  for (auto n : conjunctionNodes) {
-    CgNodePtrSet parents = n->getParentNodes();
-    allParents.insert(parents.begin(), parents.end());
-  }
-
-  CgNodePtrSet potentiallyInstrumented;
-
-  for (auto parentNode : allParents) {
-    auto tmpSet = getInstrumentationPath(parentNode);
-    potentiallyInstrumented.insert(tmpSet.begin(), tmpSet.end());
-  }
-
-  // add costs if node is instrumented
-  return std::accumulate(potentiallyInstrumented.begin(), potentiallyInstrumented.end(), 0ULL,
-                         [](unsigned long long acc, CgNodePtr node) {
-                           if (node->isInstrumentedWitness()) {
-                             auto nrCalls = 0ull;
-                             if (node->has<BaseProfileData>()) {
-                               nrCalls = node->get<BaseProfileData>()->getNumberOfCalls();
-                             }
-                             return acc + (nrCalls * CgConfig::nanosPerInstrumentedCall);
-                           }
-                           return acc;
-                         });
-}
-
-unsigned long long getInstrumentationOverheadServingOnlyThisConjunction(CgNodePtr conjunctionNode) {
-  auto parents = conjunctionNode->getParentNodes();
-
-  CgNodePtrSet potentiallyInstrumented;
-  for (auto parentNode : parents) {
-    auto tmpSet = getInstrumentationPath(parentNode);
-    potentiallyInstrumented.insert(tmpSet.begin(), tmpSet.end());
-  }
-
-  // add costs if node is instrumented
-  return std::accumulate(potentiallyInstrumented.begin(), potentiallyInstrumented.end(), 0ULL,
-                         [](unsigned long long acc, CgNodePtr node) {
-                           bool onlyOneDependendConjunction = node->getDependentConjunctionsConst().size() == 1;
-                           if (node->isInstrumentedWitness() && onlyOneDependendConjunction) {
-                             auto nrCalls = 0ull;
-                             if (node->has<BaseProfileData>()) {
-                               nrCalls = node->get<BaseProfileData>()->getNumberOfCalls();
-                             }
-                             return acc + (nrCalls * CgConfig::nanosPerInstrumentedCall);
-                           }
-                           return acc;
-                         });
-}
-
-unsigned long long getInstrumentationOverheadServingOnlyThisConjunction(CgNodePtrSet conjunctionNodes) {
-  CgNodePtrSet allParents;
-  for (auto n : conjunctionNodes) {
-    CgNodePtrSet parents = n->getParentNodes();
-    allParents.insert(parents.begin(), parents.end());
-  }
-
-  CgNodePtrSet potentiallyInstrumented;
-  for (auto parentNode : allParents) {
-    auto tmpSet = getInstrumentationPath(parentNode);
-    potentiallyInstrumented.insert(tmpSet.begin(), tmpSet.end());
-  }
-
-  // add costs if node is instrumented
-  return std::accumulate(potentiallyInstrumented.begin(), potentiallyInstrumented.end(), 0ULL,
-                         [](unsigned long long acc, CgNodePtr node) {
-                           bool onlyOneDependendConjunction = true;
-                           for (auto dependentConj : node->getDependentConjunctionsConst()) {
-                             if (dependentConj != node && dependentConj->isUnwound()) {
-                               onlyOneDependendConjunction = false;
-                             }
-                           }
-
-                           if (node->isInstrumentedWitness() && onlyOneDependendConjunction) {
-                             auto nrCalls = 0ull;
-                             if (node->has<BaseProfileData>()) {
-                               nrCalls = node->get<BaseProfileData>()->getNumberOfCalls();
-                             }
-                             return acc + (nrCalls * CgConfig::nanosPerInstrumentedCall);
-                           }
-                           return acc;
-                         });
-}
-
-/** removes the instrumentation of a call path.
- * 	returns false if no instrumentation found */
-// TODO: check because of new nodeBased Conventions
-bool removeInstrumentationOnPath(CgNodePtr node) {
-  if (node->isInstrumentedWitness()) {
-    node->setState(CgNodeState::NONE);
-    return true;
-  }
-  if (isConjunction(node) || node->isRootNode()) {
-    return false;
-  }
-
-  // there can not be instrumentation up here if the parent has multiple
-  // children
-  auto uniqueParent = node->getUniqueParent();
-  if (uniqueParent->getChildNodes().size() > 1) {
-    return false;
-  }
-
-  return removeInstrumentationOnPath(node->getUniqueParent());
-}
-
-// Graph Stats
-CgNodePtrSet getPotentialMarkerPositions(CgNodePtr conjunction) {
-  CgNodePtrSet potentialMarkerPositions;
-
-  if (!CgHelper::isConjunction(conjunction)) {
-    return potentialMarkerPositions;
-  }
-
-  CgNodePtrSet visitedNodes;
-  std::queue<CgNodePtr> workQueue;
-  workQueue.push(conjunction);
-
-  while (!workQueue.empty()) {
-    auto node = workQueue.front();
-    workQueue.pop();
-
-    for (auto &parentNode : node->getParentNodes()) {
-      if (visitedNodes.find(parentNode) != visitedNodes.end()) {
-        continue;
-      } else {
-        visitedNodes.insert(parentNode);
-      }
-
-      if (isValidMarkerPosition(parentNode, conjunction)) {
-        potentialMarkerPositions.insert(parentNode);
-        workQueue.push(parentNode);
-      }
-    }
-  }
-
-  assert(potentialMarkerPositions.size() >= (conjunction->getParentNodes().size() - 1));
-
-  return potentialMarkerPositions;
 }
 
 bool isValidMarkerPosition(CgNodePtr markerPosition, CgNodePtr conjunction) {
@@ -380,36 +109,6 @@ bool isOnCycle(CgNodePtr node) {
     }
   }
   return false;
-}
-
-CgNodePtrSet getReachableConjunctions(CgNodePtrSet markerPositions) {
-  CgNodePtrSet reachableConjunctions;
-
-  CgNodePtrSet visitedNodes;
-  std::queue<CgNodePtr> workQueue;
-  for (auto markerPos : markerPositions) {
-    workQueue.push(markerPos);
-  }
-
-  while (!workQueue.empty()) {
-    auto node = workQueue.front();
-    workQueue.pop();
-
-    for (auto child : node->getChildNodes()) {
-      if (visitedNodes.find(child) != visitedNodes.end()) {
-        continue;
-      } else {
-        visitedNodes.insert(child);
-      }
-
-      workQueue.push(child);
-
-      if (CgHelper::isConjunction(child)) {
-        reachableConjunctions.insert(child);
-      }
-    }
-  }
-  return reachableConjunctions;
 }
 
 void reachableFromMainAnalysis(CgNodePtr mainNode) {
@@ -451,8 +150,7 @@ Statements visitNodeForInclusiveStatements(CgNodePtr node, CgNodePtrSet *visited
     visistedChilds.insert(childNode);
 
     // approximate statements of a abstract function with maximum of its children (potential call targets)
-    if (node->get<LoadImbalance::LIMetaData>()->isVirtual() &&
-        node->get<PiraOneData>()->getNumberOfStatements() == 0) {
+    if (node->get<LoadImbalance::LIMetaData>()->isVirtual() && node->get<PiraOneData>()->getNumberOfStatements() == 0) {
       inclusiveStatements = std::max(inclusiveStatements, visitNodeForInclusiveStatements(childNode, visitedNodes));
     } else {
       inclusiveStatements += visitNodeForInclusiveStatements(childNode, visitedNodes);
@@ -552,50 +250,6 @@ CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode) {
   return allNodesToMain(startNode, mainNode, {});
 }
 
-/** true if the two nodes are connected via spanning tree edges */
-// XXX RN: this method is ugly and has horrible complexity
-// XXX RN: deprecated!
-bool isConnectedOnSpantree(CgNodePtr n1, CgNodePtr n2) {
-  CgNodePtrSet reachableNodes = {n1};
-  size_t size = 0;
-
-  while (size != reachableNodes.size()) {
-    size = reachableNodes.size();
-
-    // RN:	note that elements are inserted during iteration
-    // 		bad things may happen if an unordered container is used here
-    for (auto node : reachableNodes) {
-      for (auto parentNode : node->getParentNodes()) {
-        if (node->isSpantreeParent(parentNode)) {
-          reachableNodes.insert(parentNode);
-        }
-      }
-      for (auto childNode : node->getChildNodes()) {
-        if (childNode->isSpantreeParent(node)) {
-          reachableNodes.insert(childNode);
-        }
-      }
-    }
-  }
-  return reachableNodes.find(n2) != reachableNodes.end();
-}
-
-/** Returns true if the unique call path property for edges is violated
- *  once this edge is added */
-bool canReachSameConjunction(CgNodePtr below, CgNodePtr above) {
-  CgNodePtrSet belowReachableDescendants = getDescendants(below);
-
-  CgNodePtrSet aboveReachableDescendants;
-  for (auto ancestor : getAncestors(above)) {
-    CgNodePtrSet descendants = getDescendants(ancestor);
-    aboveReachableDescendants.insert(descendants.begin(), descendants.end());
-  }
-
-  CgNodePtrSet intersect = setIntersect(belowReachableDescendants, aboveReachableDescendants);
-
-  return !intersect.empty();
-}
-
 /** Returns a set of all descendants including the starting node */
 CgNodePtrSet getDescendants(CgNodePtr startingNode) {
   // CgNodePtrUnorderedSet childs;
@@ -645,7 +299,8 @@ double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef) {
   for (const auto &n : cg) {
     const auto &[hasBPD, bpd] = n->checkAndGet<BaseProfileData>();
     if (hasBPD) {
-      spdlog::get("console")->trace("Found BaseProfileData for {}: Adding inclusive runtime of {} to RT vector.", n->getFunctionName(), bpd->getInclusiveRuntimeInSeconds());
+      spdlog::get("console")->trace("Found BaseProfileData for {}: Adding inclusive runtime of {} to RT vector.",
+                                    n->getFunctionName(), bpd->getInclusiveRuntimeInSeconds());
       if (bpd->getInclusiveRuntimeInSeconds() != 0) {
         rt.push_back(bpd->getInclusiveRuntimeInSeconds());
       }
@@ -654,19 +309,19 @@ double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef) {
   spdlog::get("console")->info("The number of elements for runtime threshold calculation: {}", rt.size());
 
   std::sort(rt.begin(), rt.end());
-  { // raii
-  std::string runtimeStr;
-  for (const auto r : rt) {
-    runtimeStr += ' ' + std::to_string(r);
-  }
-  spdlog::get("console")->debug("Runtime vector [values are seconds]: {}", runtimeStr);
+  {  // raii
+    std::string runtimeStr;
+    for (const auto r : rt) {
+      runtimeStr += ' ' + std::to_string(r);
+    }
+    spdlog::get("console")->debug("Runtime vector [values are seconds]: {}", runtimeStr);
   }
 
   size_t lastIndex = rt.size() * .5;
   if (useLongAsRef) {
     float runtimeFilterThresholdAlpha = 0.5f;
-    lastIndex = rt.size() - 1;
-    return rt[lastIndex] * runtimeFilterThresholdAlpha;   // runtime filtering threshold
+    lastIndex = rt.size() - 1;                           // TODO: Make this adjustable
+    return rt[lastIndex] * runtimeFilterThresholdAlpha;  // runtime filtering threshold
   }
   // Returns the median of the data
   return rt[lastIndex];

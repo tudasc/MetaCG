@@ -1,34 +1,30 @@
 /**
  * File: IPCGAnnotation.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "gtest/gtest.h"
 #include <loadImbalance/LIRetriever.h>
 
-#include "libIPCG/MCGReader.h"
+#include "MCGReader.h"
 
 using namespace pira;
+using namespace metacg;
 
-  struct DummyRetriever {
-    bool handles(const CgNodePtr n) {
-      return true;
-    }
+struct DummyRetriever {
+  bool handles(const CgNodePtr n) { return true; }
 
-    int value(const CgNodePtr n) {
-      return 42;
-    }
+  int value(const CgNodePtr n) { return 42; }
 
-    std::string toolName() {
-      return "test";
-    }
-  };
+  std::string toolName() { return "test"; }
+};
 
 TEST(IPCGAnnotation, EmptyCG) {
   Callgraph c;
   nlohmann::json j;
   DummyRetriever pr;
-  int annotCount = MetaCG::io::doAnnotate(c, pr, j);
+  int annotCount = metacg::io::doAnnotate(c, pr, j);
   ASSERT_EQ(0, annotCount);
 }
 
@@ -37,32 +33,19 @@ TEST(IPCGAnnotation, HandlesOneNode) {
   auto n = std::make_shared<CgNode>("main");
   c.insert(n);
   nlohmann::json j;
-    j["main"] = {
-      {"numStatements", 42},
-      {"doesOverride", false},
-      {"hasBody", true},
-      {"meta", {}}
-    };
-    j["foo"] = {
-      {"numStatements", 42},
-      {"doesOverride", false},
-      {"hasBody", true}
-    };
+  j["main"] = {{"numStatements", 42}, {"doesOverride", false}, {"hasBody", true}, {"meta", {}}};
+  j["foo"] = {{"numStatements", 42}, {"doesOverride", false}, {"hasBody", true}};
   DummyRetriever pr;
-  int annotCount = MetaCG::io::doAnnotate(c, pr, j);
+  int annotCount = metacg::io::doAnnotate(c, pr, j);
   ASSERT_EQ(1, annotCount);
   nlohmann::json j2;
-    j2["main"] = {
+  j2["main"] = {
       {"numStatements", 42},
       {"doesOverride", false},
       {"hasBody", true},
-    };
-    j2["main"]["meta"]["test"] = 42;
-    j2["foo"] = {
-      {"numStatements", 42},
-      {"doesOverride", false},
-      {"hasBody", true}
-    };
+  };
+  j2["main"]["meta"]["test"] = 42;
+  j2["foo"] = {{"numStatements", 42}, {"doesOverride", false}, {"hasBody", true}};
   ASSERT_TRUE(j == j2);
 }
 
@@ -73,90 +56,20 @@ TEST(IPCGAnnotation, HandlesTwoNodes) {
   n = std::make_shared<CgNode>("foo");
   c.insert(n);
   nlohmann::json j;
-    j["main"] = {
-      {"numStatements", 42},
-      {"doesOverride", false},
-      {"hasBody", true},
-      {"meta", {}}
-    };
-    j["foo"] = {
-      {"numStatements", 42},
-      {"doesOverride", false},
-      {"hasBody", true}
-    };
+  j["main"] = {{"numStatements", 42}, {"doesOverride", false}, {"hasBody", true}, {"meta", {}}};
+  j["foo"] = {{"numStatements", 42}, {"doesOverride", false}, {"hasBody", true}};
 
   DummyRetriever pr;
-  int annotCount = MetaCG::io::doAnnotate(c, pr, j);
+  int annotCount = metacg::io::doAnnotate(c, pr, j);
   ASSERT_EQ(2, annotCount);
   nlohmann::json j2;
-    j2["main"] = {
+  j2["main"] = {
       {"numStatements", 42},
       {"doesOverride", false},
       {"hasBody", true},
-    };
-    j2["main"]["meta"]["test"] = 42;
-    j2["foo"] = {
-      {"numStatements", 42},
-      {"doesOverride", false},
-      {"hasBody", true}
-    };
-    j2["foo"]["meta"]["test"] = 42;
+  };
+  j2["main"]["meta"]["test"] = 42;
+  j2["foo"] = {{"numStatements", 42}, {"doesOverride", false}, {"hasBody", true}};
+  j2["foo"]["meta"]["test"] = 42;
   ASSERT_TRUE(j == j2);
-}
-
-TEST(IPCGAnnotation, AttachesRuntime) {
-  Callgraph c;
-  auto n = std::make_shared<CgNode>("main");
-  n->get<BaseProfileData>()->setRuntimeInSeconds(1.2);
-  c.insert(n);
-  n = std::make_shared<CgNode>("foo");
-  n->get<BaseProfileData>()->setRuntimeInSeconds(0.0);
-  c.insert(n);
-  nlohmann::json j;
-    j["main"] = {
-      {"numStatements", 42},
-      {"doesOverride", false},
-      {"hasBody", true},
-      {"meta", {}}
-    };
-    j["foo"] = {
-      {"numStatements", 42},
-      {"doesOverride", false},
-      {"hasBody", true}
-    };
-
-    MetaCG::io::retriever::RuntimeRetriever pr;
-  int annotCount = MetaCG::io::doAnnotate(c, pr, j);
-  ASSERT_EQ(1, annotCount);
-  nlohmann::json j2;
-    j2["main"] = {
-      {"numStatements", 42},
-      {"doesOverride", false},
-      {"hasBody", true},
-    };
-    j2["main"]["meta"]["test"] = 1.2;
-    j2["foo"] = {
-      {"numStatements", 42},
-      {"doesOverride", false},
-      {"hasBody", true}
-    };
-  ASSERT_TRUE(j == j2);
-}
-
-TEST(IPCGAnnotation, PlacementOutput) {
-  Callgraph c;
-  auto n = std::make_shared<CgNode>("main");
-  n->get<BaseProfileData>()->setRuntimeInSeconds(1.2);
-  c.insert(n);
-  nlohmann::json j;
-    j["main"] = {
-      {"numStatements", 42},
-      {"doesOverride", false},
-      {"hasBody", true}
-    };
-  // we filter for attached model, thus do not annotate
-    MetaCG::io::retriever::PlacementInfoRetriever pr;
-  int annotCount = MetaCG::io::doAnnotate(c, pr, j);
-  std::cout << j << std::endl;
-  ASSERT_EQ(0, annotCount);
 }

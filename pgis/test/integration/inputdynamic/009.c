@@ -34,3 +34,5 @@ int main(int argc, char **argv) {
   int b = bar();
   return 0;
 }
+
+/tmp/tmp.oI85fyq8lo/cmake-build-remote-debug

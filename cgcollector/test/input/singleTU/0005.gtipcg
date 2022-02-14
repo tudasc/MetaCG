@@ -25,8 +25,8 @@
     },
     "main": {
         "callees": [
-            "_Z8childTwov",
-            "_Z8childOnev"
+            "_Z8childOnev",
+            "_Z8childTwov"
         ],
         "doesOverride": false,
         "hasBody": true,

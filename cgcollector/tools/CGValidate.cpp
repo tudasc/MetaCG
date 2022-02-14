@@ -4,7 +4,7 @@
 
 #include "cxxopts.hpp"
 
-#include <cubelib/Cube.h>
+#include <Cube.h>
 
 #include <iostream>
 #include <set>
@@ -14,8 +14,10 @@
 #define LOGLEVEL 0
 #endif
 
+// Parse options
 void handleOptions(int argc, char **argv, std::string &ipcg, std::string &cubex, bool &patch, std::string &output,
                    bool &useNoBodyDetection, bool &insertNewNodes) {
+  // clang-format off
   cxxopts::Options options("cgvalidate", "Validation of ipcg files using cubex files");
   options.add_options()("i,ipcg", "ipcg file name", cxxopts::value<std::string>())(
       "c,cubex", "cubex file name", cxxopts::value<std::string>())("b,useNoBodyDetection",
@@ -25,6 +27,7 @@ void handleOptions(int argc, char **argv, std::string &ipcg, std::string &cubex,
       "o,output", "output file for patched ipcg", cxxopts::value<std::string>()->default_value(""))(
       "n,noNewNodes", "disable adding of new nodes by patch", cxxopts::value<bool>()->default_value("false"))(
       "h,help", "Print help");
+  // clang-format on
   cxxopts::ParseResult result = options.parse(argc, argv);
 
   if (result.count("help")) {
@@ -48,7 +51,7 @@ void handleOptions(int argc, char **argv, std::string &ipcg, std::string &cubex,
 
 void readCube(const std::string &filename, cube::Cube &cube) { cube.openCubeReport(filename); }
 
-bool isMain(const std::string &mangledName) { return mangledName.compare("main") == 0; }
+bool isMain(const std::string &mangledName) { return mangledName == "main"; }
 
 bool getOrInsert(nlohmann::json &callgraph, const std::string &nodeName, const bool insertNewNodes) {
   if (callgraph.contains(nodeName)) {
@@ -91,7 +94,7 @@ int main(int argc, char **argv) {
 
   handleOptions(argc, argv, ipcg, cubex, patch, output, useNoBodyDetection, insertNewNodes);
 
-  std::cout << "Running MetaCG::CGValidate (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
+  std::cout << "Running metacg::CGValidate (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
             << ")\nGit revision: " << MetaCG_GIT_SHA << std::endl;
 
   nlohmann::json callgraph;

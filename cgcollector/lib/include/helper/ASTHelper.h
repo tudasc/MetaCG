@@ -16,4 +16,19 @@ int getNumStmtsInCatchStmt(clang::CXXCatchStmt *catchst);
 int getNumStmtsInSwitchCase(clang::SwitchStmt *scStmt);
 int getNumStmtsInCaseStmt(clang::CaseStmt *cStmt);
 
+int getNumConditionalBranchesInStmt(clang::Stmt *s);
+
+struct NumOperations {
+  int numberOfIntOps = 0;
+  int numberOfFloatOps = 0;
+  int numberOfControlFlowOps = 0;
+  int numberOfMemoryAccesses = 0;
+};
+
+NumOperations getNumOperationsInStmt(clang::Stmt *s);
+
+int getLoopDepthInStmt(clang::Stmt *s);
+
+llvm::SmallDenseMap<const clang::CallExpr *, int, 16> getCallDepthsInStmt(clang::Stmt *s);
+
 #endif

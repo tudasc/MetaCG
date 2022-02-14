@@ -5,7 +5,7 @@
 
 testSuite=$1
 buildDirParam=$2
-buildDir="${buildDirParam:-$PWD/../../build}"
+buildDir="${buildDirParam:-$PWD/../../../build/pgis}"
 outDir=$PWD/out$testSuite
 logDir=$PWD/logging
 logFile=${logDir}/${testSuite}.log
@@ -63,8 +63,8 @@ for testNoInit in *.afl; do
 	echo "Running $testNo"
 	thisFail=0
 
-	bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo 2>&1 >> "$logFile"
-	#bash "${testSuite}_run.sh" $buildDir $outDir $testNo
+	#bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo >> "$logFile" 2>&1
+	bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo
 
 	if [ $? -ne 0 ]; then
 		fails=$(($fails+1))

@@ -151,8 +151,8 @@
     },
     "main": {
         "callees": [
-            "_Z3foov",
-            "_Z2f9PFvvE"
+            "_Z2f9PFvvE",
+            "_Z3foov"
         ],
         "doesOverride": false,
         "hasBody": true,

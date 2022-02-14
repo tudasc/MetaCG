@@ -1,6 +1,7 @@
 /**
  * File: StmtPrinterMain.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/pira/LICENSE.txt
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include <cstdlib>
@@ -11,11 +12,12 @@
 #include "DotReader.h"
 #include "MCGReader.h"
 
-#include "Callgraph.h"
+#include "../../graph/include/Callgraph.h"
 
+#include "CallgraphManager.h"
 #include "IPCGEstimatorPhase.h"
 
-void registerEstimatorPhases(CallgraphManager &cg, Config *c, bool isIPCG, float runtimeThreshold) {
+void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &cg, Config *c, bool isIPCG, float runtimeThreshold) {
   auto statEstimator = new StatisticsEstimatorPhase(false);  // used to compute values for other phases
   cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(true, false));  // remove unrelated
   cg.registerEstimatorPhase(new ResetEstimatorPhase());
@@ -109,15 +111,20 @@ int main(int argc, char **argv) {
   c.appName = ipcg_fileName.substr(0, ipcg_fileName.find_last_of('.'));
 
   float runTimeThreshold{.0f};
-  //CallgraphManager cg(&c);
-  auto &cg = CallgraphManager::get();
+  // PiraMCGProcessor cg(&c);
+  auto &cg = metacg::pgis::PiraMCGProcessor::get();
+  auto &mcgm = metacg::graph::MCGManager::get();
   cg.setConfig(&c);
 
   if (stringEndsWith(filePath_ipcg, ".ipcg")) {
     std::cout << "Reading from ipcg file " << filePath_ipcg << std::endl;
-    MetaCG::io::FileSource fs(filePath_ipcg);
-    MetaCG::io::VersionOneMetaCGReader mcgReader(fs);
-    mcgReader.read(cg);
+    metacg::io::FileSource fs(filePath_ipcg);
+    metacg::io::VersionOneMetaCGReader mcgReader(fs);
+    mcgReader.read(mcgm);
+
+    // XXX Removable after refactoring
+    cg.setCG(mcgm.getCallgraph());
+    // XXX
 
     if (argc == 2) {
       registerEstimatorPhases(cg, &c, true, 0);
@@ -137,7 +144,7 @@ int main(int argc, char **argv) {
     }
 
     if (stringEndsWith(filePath, ".cubex")) {
-      CubeCallgraphBuilder::buildFromCube(filePath, &c, cg);
+      CubeCallgraphBuilder::buildFromCube(filePath, &c, mcgm);
       // smRTT = CubeCallgraphBuilder::CalculateRuntimeThreshold(&cg);
     } else if (stringEndsWith(filePath, ".dot")) {
       DOTCallgraphBuilder::build(filePath, &c);
@@ -150,6 +157,10 @@ int main(int argc, char **argv) {
     /* This runtime threshold currently unused */
     registerEstimatorPhases(cg, &c, false, runTimeThreshold);
     std::cout << "Registered estimator phases.\n";
+
+    // XXX Removable after refactoring
+    cg.setCG(mcgm.getCallgraph());
+    // XXX
     cg.applyRegisteredPhases();
   }
 

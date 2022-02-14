@@ -21,8 +21,8 @@
         "numStatements": 1,
         "overriddenBy": [],
         "overriddenFunctions": [
-            "_ZN7MyClass3fooEv",
-            "_ZN13MyClassDerive3fooEv"
+            "_ZN13MyClassDerive3fooEv",
+            "_ZN7MyClass3fooEv"
         ],
         "parents": []
     },
@@ -33,8 +33,8 @@
         "isVirtual": true,
         "numStatements": 0,
         "overriddenBy": [
-            "_ZN14MyClassDeriveD3fooEv",
-            "_ZN13MyClassDerive3fooEv"
+            "_ZN13MyClassDerive3fooEv",
+            "_ZN14MyClassDeriveD3fooEv"
         ],
         "overriddenFunctions": [],
         "parents": [

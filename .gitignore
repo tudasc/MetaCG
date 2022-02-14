@@ -2,3 +2,7 @@
 .idea/
 
 cmake-build-debug-metacg-container/
+
+cmake-build-debug-metacg-container-debug/
+
+cmake-build-debug-metacg-container-release/
