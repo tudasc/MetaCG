@@ -65,5 +65,5 @@ class ParameterConfig {
     return this->liConfig;
   }
 };
-}  // namespace pgis::configPtr
+}  // namespace pgis::config
 #endif  // PGIS_PARAMETERCONFIG_H

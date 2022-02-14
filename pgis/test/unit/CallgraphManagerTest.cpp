@@ -1,6 +1,7 @@
 /**
  * File: CallgraphManagerTest.cpp
- * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "gtest/gtest.h"
@@ -30,7 +31,7 @@ TEST_F(CallgraphManagerTest, EmptyCG) {
 
 TEST_F(CallgraphManagerTest, OneNodeCG) {
   Config cfg;
-  //PiraMCGProcessor cm(&cfg);
+  // PiraMCGProcessor cm(&cfg);
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   cm.clear();
   cm.setConfig(&cfg);
@@ -49,7 +50,7 @@ TEST_F(CallgraphManagerTest, OneNodeCG) {
 
 TEST_F(CallgraphManagerTest, TwoNodeCG) {
   Config cfg;
-  //PiraMCGProcessor cm(&cfg);
+  // PiraMCGProcessor cm(&cfg);
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   cm.setConfig(&cfg);
   int mainLineNumber = 1;
@@ -67,7 +68,7 @@ TEST_F(CallgraphManagerTest, TwoNodeCG) {
 
 TEST_F(CallgraphManagerTest, ThreeNodeCG) {
   Config cfg;
-  //PiraMCGProcessor cm(&cfg);
+  // PiraMCGProcessor cm(&cfg);
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   cm.setConfig(&cfg);
   int mainLineNumber = 1;

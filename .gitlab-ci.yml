@@ -41,22 +41,6 @@ mcg-cmake-lint:
     - for f in $(find . -name "CMakeLists.txt"); do cmake-format --check $f || exit 1; done
     - for f in $(find ./cmake -type f); do cmake-format --check $f || exit 1; done
 
-mcg-container:
-  stage: deploy
-  tags:
-    - podman
-  only:
-    - master
-    - devel
-    - merge_requests
-  variables:
-    GIT_STRATEGY: clone
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
-  script:
-    - podman login ${CI_REGISTRY} -u ${CI_CONTAINER_REG_USER} -p ${CONTAINER_REGISTRY_READ_TOKEN}
-    - podman build -t registry.git.rwth-aachen.de/tuda-sc/projects/metacg/metacg:$CI_COMMIT_SHA -f container/metacg .
-    - podman image rm metacg:$CI_COMMIT_SHA
-
 build-dependencies:
   stage: build-deps
   tags:
@@ -66,8 +50,20 @@ build-dependencies:
     GIT_STRATEGY: none
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - cd pgis
     - ./build_submodules.sh
+
+mcg-container:
+  stage: build-deps
+  tags:
+    - podman
+  variables:
+    GIT_STRATEGY: clone
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - podman login ${CI_REGISTRY} -u ${CI_CONTAINER_REG_USER} -p ${CONTAINER_REGISTRY_READ_TOKEN}
+    - podman build -t registry.git.rwth-aachen.de/tuda-sc/projects/metacg/metacg:$CI_COMMIT_SHA -f container/metacg .
+    - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/pgis/test/unit/basictests
+    - podman image rm metacg:$CI_COMMIT_SHA
 
 build-mcg:
   stage: build
@@ -78,8 +74,8 @@ build-mcg:
     GIT_STRATEGY: none
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - mkdir build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tmp/metacg -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=../pgis/deps/src/extrap/extrap-3.0/include -DEXTRAP_LIB=../pgis/deps/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .. && make -j $(nproc)
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tmp/metacg -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=./extern/src/extrap/extrap-3.0/include -DEXTRAP_LIB=./extern/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+    - cmake --build build --parallel
 
 test-cgc:
   stage: test
@@ -107,7 +103,7 @@ test-cgvalidate:
     - cd cgcollector/test/integration
     - ./runner.sh
 
-install-cgc:
+install-mcg:
   stage: install
   tags:
     - general
@@ -116,8 +112,7 @@ install-cgc:
     GIT_STRATEGY: none
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - cd build
-    - make install
+    - cmake --install build
     - stat /tmp/metacg/bin/cgcollector
     - stat /tmp/metacg/bin/cgmerge
     - export LD_LIBRARY_PATH=/tmp/metacg/lib:$LD_LIBRARY_PATH
@@ -146,7 +141,7 @@ test-static-pgis:
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - cd pgis
-    - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
+    - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
     - ./selectionTestRunner.sh static
 
@@ -160,7 +155,7 @@ test-basic-pgis:
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - cd pgis
-    - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
+    - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
     - ./basicTestRunner.sh
 
@@ -174,7 +169,7 @@ test-modeling-pgis:
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - cd pgis
-    - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
+    - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
     - ./selectionTestRunner.sh modeling
 
@@ -188,7 +183,7 @@ test-dynamic-pgis:
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - cd pgis
-    - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
+    - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
     - ./selectionTestRunner.sh dynamic
     
@@ -202,7 +197,7 @@ test-imbalance-pgis:
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - cd pgis
-    - export LD_LIBRARY_PATH=$PWD/deps/install/extrap/lib:$LD_LIBRARY_PATH
+    - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
     - ./selectionTestRunner.sh imbalance
 
@@ -215,9 +210,8 @@ install-pgis:
     GIT_STRATEGY: none
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - export LD_LIBRARY_PATH=$PWD/pgis/deps/install/extrap/lib:$LD_LIBRARY_PATH
-    - cd build
-    - make install
+    - export LD_LIBRARY_PATH=$PWD/extern/install/extrap/lib:$LD_LIBRARY_PATH
+    - cmake --install build
     - stat /tmp/metacg/bin/pgis_pira
     - export LD_LIBRARY_PATH=/tmp/metacg/lib:$LD_LIBRARY_PATH
     - /tmp/metacg/bin/pgis_pira --help

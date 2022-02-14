@@ -1,6 +1,7 @@
 /**
  * File: StmtPrinterMain.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include <cstdlib>
@@ -110,7 +111,7 @@ int main(int argc, char **argv) {
   c.appName = ipcg_fileName.substr(0, ipcg_fileName.find_last_of('.'));
 
   float runTimeThreshold{.0f};
-  //PiraMCGProcessor cg(&c);
+  // PiraMCGProcessor cg(&c);
   auto &cg = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
   cg.setConfig(&c);

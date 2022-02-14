@@ -103,7 +103,7 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
         printDOT(report.phaseName);
       }
 
-      dumpInstrumentedNames(report); // outputs the instrumentation
+      dumpInstrumentedNames(report);  // outputs the instrumentation
 
       if (gOpts.getAs<bool>(printUnwoundNames.cliName)) {
         dumpUnwoundNames(report);
@@ -180,8 +180,8 @@ void metacg::pgis::PiraMCGProcessor::printDOT(std::string prefix) {
         std::string threadLabel;
         std::string additionalThreads;
         std::string nodeTime;
-//        double nodeTimeSum = 0;
-//        int activeThreads = 0;
+        //        double nodeTimeSum = 0;
+        //        int activeThreads = 0;
         unsigned long long numCalls = 0;
 
         const auto &[hasBPD, bpd] = node->checkAndGet<BaseProfileData>();

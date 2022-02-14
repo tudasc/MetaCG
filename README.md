@@ -78,11 +78,10 @@ No guarantees that the script works on your machine.
 Thereafter, the package can be configured and built from the top-level CMake.
 
 ```{.sh}
-?> mkdir build && build
-?> cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tmp/metacg -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=../pgis/deps/src/extrap/extrap-3.0/include -DEXTRAP_LIB=../pgis/deps/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..
-?> make 
+?> cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tmp/metacg -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=./extern/src/extrap/extrap-3.0/include -DEXTRAP_LIB=./extern/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+?> cmake --build build --parallel
 # Installation installs CGCollector, CGMerge, CGValidate, PGIS
-?> make install
+?> cmake --install build
 ```
 
 ## Usage

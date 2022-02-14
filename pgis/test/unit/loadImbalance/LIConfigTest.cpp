@@ -1,6 +1,7 @@
 /**
  * File: LIConfigTest.cpp
- * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "../LoggerUtil.h"
@@ -18,14 +19,10 @@ class LIConfigTest : public ::testing::Test {
 
 TEST_F(LIConfigTest, SimpleTest) {
   json j = {
-      {"metricType", "Efficiency"},
-      {"imbalanceThreshold", 1.0},
-      {"relevanceThreshold", 1.0},
-      {"contextStrategy", "AllPathsToMain"},
-      {"contextStepCount", 5},
-      {"childRelevanceStrategy", "ConstantThreshold"},
-      {"childConstantThreshold", 5},
-      {"childFraction", 0.5},
+      {"metricType", "Efficiency"},  {"imbalanceThreshold", 1.0},
+      {"relevanceThreshold", 1.0},   {"contextStrategy", "AllPathsToMain"},
+      {"contextStepCount", 5},       {"childRelevanceStrategy", "ConstantThreshold"},
+      {"childConstantThreshold", 5}, {"childFraction", 0.5},
   };
 
   LoadImbalance::LIConfig c = j;

@@ -1,6 +1,7 @@
 /**
  * File: LIMetaData.cpp
- * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "loadImbalance/LIMetaData.h"
@@ -17,24 +18,16 @@ std::basic_string<char> flagType2String(FlagType type) {
   return "";
 }
 
-void LIMetaData::flag(FlagType type) {
-  this->flags[type] = true;
-}
+void LIMetaData::flag(FlagType type) { this->flags[type] = true; }
 
-bool LIMetaData::isFlagged(FlagType type) const {
-  return this->flags.at(type);
-}
+bool LIMetaData::isFlagged(FlagType type) const { return this->flags.at(type); }
 
-void LIMetaData::setAssessment(double assessment) {
-  this->assessment = std::optional<double>(assessment);
-}
+void LIMetaData::setAssessment(double assessment) { this->assessment = std::optional<double>(assessment); }
 
-std::optional<double> LIMetaData::getAssessment() {
-  return this->assessment;
-}
+std::optional<double> LIMetaData::getAssessment() { return this->assessment; }
 
-void LoadImbalance::to_json(nlohmann::json& j, const LoadImbalance::LIMetaData& d) {
-  j = nlohmann::json {
+void LoadImbalance::to_json(nlohmann::json &j, const LoadImbalance::LIMetaData &d) {
+  j = nlohmann::json{
       {flagType2String(FlagType::Visited), d.isFlagged(FlagType::Visited)},
       {flagType2String(FlagType::Irrelevant), d.isFlagged(FlagType::Irrelevant)},
   };

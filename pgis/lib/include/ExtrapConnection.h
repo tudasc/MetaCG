@@ -54,14 +54,15 @@ struct ExtrapConfig {
 
 class ExtrapExtrapolator {
  public:
-  explicit ExtrapExtrapolator(std::vector<std::pair<std::string, std::vector<int>>> values) : values(std::move(values)) {}
+  explicit ExtrapExtrapolator(std::vector<std::pair<std::string, std::vector<int>>> values)
+      : values(std::move(values)) {}
 
   auto getValues() { return values; }
 
   auto getExtrapolationValue(double alpha = 1.0) {
     std::vector<std::pair<std::string, double>> result;
     // We need to compute extrapolation values for all params
-    for (const auto& param_pair : values) {
+    for (const auto &param_pair : values) {
       std::vector<double> steps;
       auto it1 = param_pair.second.begin();
       auto it2 = param_pair.second.begin();

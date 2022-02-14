@@ -16,7 +16,7 @@
 #include <cassert>
 
 namespace metacg {
-  class Callgraph;
+class Callgraph;
 }
 
 // XXX These numbers probably go away.
@@ -84,17 +84,17 @@ CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,
                                      const std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> &init);
 CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode);
 
-//bool removeInstrumentationOnPath(CgNodePtr node);
+// bool removeInstrumentationOnPath(CgNodePtr node);
 //
-//bool isConnectedOnSpantree(CgNodePtr n1, CgNodePtr n2);
-//bool canReachSameConjunction(CgNodePtr n1, CgNodePtr n2);
+// bool isConnectedOnSpantree(CgNodePtr n1, CgNodePtr n2);
+// bool canReachSameConjunction(CgNodePtr n1, CgNodePtr n2);
 
 CgNodePtrSet getDescendants(CgNodePtr child);
 CgNodePtrSet getAncestors(CgNodePtr child);
 //
-//void markReachablePar(CgNodePtr start, CgNodePtrUnorderedSet &seen);
+// void markReachablePar(CgNodePtr start, CgNodePtrUnorderedSet &seen);
 //
-//void markReachableParStart(CgNodePtr start);
+// void markReachableParStart(CgNodePtr start);
 
 double calcRuntimeThreshold(const metacg::Callgraph &cg, bool useLongAsRef);
 

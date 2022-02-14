@@ -1,9 +1,10 @@
 /**
  * File: LIRetriever.cpp
- * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
-#include "MCGManager.h"
 #include "loadImbalance/LIRetriever.h"
+#include "MCGManager.h"
 
 using namespace LoadImbalance;
 
@@ -12,7 +13,6 @@ bool LIRetriever::handles(const CgNodePtr n) { return n->has<LoadImbalance::LIMe
 LoadImbalance::LIMetaData LIRetriever::value(const CgNodePtr n) { return *(n->get<LoadImbalance::LIMetaData>()); }
 
 std::string LIRetriever::toolName() { return "LIData"; }
-
 
 void LoadImbalanceMetaDataHandler::read(const nlohmann::json &j, const std::string &functionName) {
   auto jIt = j[toolname];
@@ -35,7 +35,7 @@ void LoadImbalanceMetaDataHandler::read(const nlohmann::json &j, const std::stri
       spdlog::get("console")->debug("Setting flag visited");
       md->flag(LoadImbalance::FlagType::Visited);
     }
-    md->setVirtual(node->isVirtual()); // TODO Unify
+    md->setVirtual(node->isVirtual());  // TODO Unify
   } else {
     spdlog::get("errconsole")->warn("Did not find a load-imbalance metadata. This is fishy!");
     auto md = new LoadImbalance::LIMetaData();

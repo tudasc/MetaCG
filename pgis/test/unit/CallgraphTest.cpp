@@ -1,6 +1,7 @@
 /**
  * File: CallgraphTest.cpp
- * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "gtest/gtest.h"
@@ -43,7 +44,7 @@ TEST_F(CallgraphTest, ClearEmptiesGraph) {
   auto n = std::make_shared<CgNode>("main");
   c.insert(n);
   ASSERT_FALSE(c.isEmpty());
-  ASSERT_TRUE(c.hasNode("main")); // sets lastSearched field
+  ASSERT_TRUE(c.hasNode("main"));  // sets lastSearched field
   c.clear();
   ASSERT_TRUE(c.isEmpty());
   ASSERT_EQ(nullptr, c.findMain());

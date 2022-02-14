@@ -27,9 +27,7 @@ class LIEstimatorPhase : public EstimatorPhase {
 
   void modifyGraph(CgNodePtr mainMethod) override;
 
-  void doPrerequisites() override {
-    CgHelper::calculateInclusiveStatementCounts(graph->findMain());
-  }
+  void doPrerequisites() override { CgHelper::calculateInclusiveStatementCounts(graph->findMain()); }
 
  private:
   AbstractMetric *metric;
@@ -63,7 +61,8 @@ class LIEstimatorPhase : public EstimatorPhase {
   /**
    * Instrument all descendants of start node if they correspond the a pattern
    */
-  void instrumentByPattern(CgNodePtr startNode, std::function< bool(CgNodePtr) > pattern, std::ostringstream& debugString);
+  void instrumentByPattern(CgNodePtr startNode, std::function<bool(CgNodePtr)> pattern,
+                           std::ostringstream &debugString);
 };
 }  // namespace LoadImbalance
 

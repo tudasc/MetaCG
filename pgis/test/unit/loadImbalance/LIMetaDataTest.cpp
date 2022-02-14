@@ -1,6 +1,7 @@
 /**
  * File: LIMetaDataTest.cpp
- * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "../../../../graph/include/Callgraph.h"
@@ -31,7 +32,7 @@ TEST(LIMetaDataTest, SimpleAnnotation) {
   LoadImbalance::LIRetriever pr;
   int annotCount = metacg::io::doAnnotate(c, pr, j);
 
-  //std::cout << j << std::endl;
+  // std::cout << j << std::endl;
 
   ASSERT_EQ(1, annotCount);
   ASSERT_TRUE(j["main"]["meta"]["LIData"]["visited"] == true);
@@ -60,7 +61,7 @@ TEST(LIMetaDataTest, ComplexAnnotation) {
   LoadImbalance::LIRetriever pr;
   int annotCount = metacg::io::doAnnotate(c, pr, j);
 
-  //std::cout << j << std::endl;
+  // std::cout << j << std::endl;
 
   ASSERT_EQ(2, annotCount);
   ASSERT_TRUE(j["main"]["meta"]["LIData"]["visited"] == true);

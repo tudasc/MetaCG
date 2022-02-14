@@ -335,7 +335,7 @@ TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
 
   auto child2 = mcgm.findOrCreateNode("child2");
   child2->get<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Visited);
-  child1->addChildNode(child2); // TODO: Necessary? Remove me!
+  child1->addChildNode(child2);  // TODO: Necessary? Remove me!
   mcgm.addEdge(child1, child2);
 
   auto child3 = mcgm.findOrCreateNode("child3");

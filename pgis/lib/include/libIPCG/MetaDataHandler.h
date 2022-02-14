@@ -110,7 +110,7 @@ struct GlobalLoopDepthHandler : public MetaDataHandler {
   const std::string toolName() const override { return toolname; }
 };
 
-  // namespace retriever
-}  // namespace io
+// namespace retriever
+}  // namespace io::retriever
 }  // namespace metacg
 #endif

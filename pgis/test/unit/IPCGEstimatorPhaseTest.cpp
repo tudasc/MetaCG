@@ -1,6 +1,7 @@
 /**
  * File: IPCGEstimatorPhaseTest.cpp
- * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "gtest/gtest.h"
@@ -8,8 +9,8 @@
 #include "LoggerUtil.h"
 
 #include "CallgraphManager.h"
-#include "MCGManager.h"
 #include "IPCGEstimatorPhase.h"
+#include "MCGManager.h"
 
 class IPCGEstimatorPhaseBasic : public ::testing::Test {
  protected:
@@ -40,7 +41,7 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCG) {
   Config cfg;
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
-//  mcgm.reset();
+  //  mcgm.reset();
   cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = mcgm.findOrCreateNode("main");
@@ -66,7 +67,7 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCG) {
   auto mainNode = mcgm.findOrCreateNode("main");
   auto childNode = mcgm.findOrCreateNode("child1");
   mcgm.addEdge(mainNode, childNode);
-//  cm.putEdge("main", "main.c", 1, "child1", 100, 1.2, 0, 0);
+  //  cm.putEdge("main", "main.c", 1, "child1", 100, 1.2, 0, 0);
   cm.setCG(mcgm.getCallgraph());
   StatementCountEstimatorPhase sce(10);
   sce.setNoReport();
@@ -90,10 +91,10 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCGwStmt) {
     data->setNumberOfStatements(12);
     data->setHasBody();
   } else {
-    assert (false && "Nodes should have PIRA I data attached.");
+    assert(false && "Nodes should have PIRA I data attached.");
   }
   cm.setCG(mcgm.getCallgraph());
-//  cm.putNumberOfStatements("main", 12, true);
+  //  cm.putNumberOfStatements("main", 12, true);
   StatementCountEstimatorPhase sce(10);
   sce.setNoReport();
   cm.registerEstimatorPhase(&sce);
@@ -167,7 +168,6 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCGwStmt) {
   cm.removeAllEstimatorPhases();
 }
 
-
 TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCycleCGwStmt) {
   Config cfg;
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
@@ -176,10 +176,10 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCycleCGwStmt) {
   cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = mcgm.findOrCreateNode("main");
-  pira::setPiraOneData(mainNode, 12 ,true);
+  pira::setPiraOneData(mainNode, 12, true);
 
   auto childNode = mcgm.findOrCreateNode("child1");
-  pira::setPiraOneData(childNode, 7 ,true);
+  pira::setPiraOneData(childNode, 7, true);
   mcgm.addEdge(mainNode, childNode);
   childNode->setReachable();
 
@@ -215,7 +215,7 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeCGwStmt) {
   pira::setPiraOneData(mainNode, 12, true);
 
   auto childNode = mcgm.findOrCreateNode("child1");
-  pira::setPiraOneData(childNode, 7 , true);
+  pira::setPiraOneData(childNode, 7, true);
   mcgm.addEdge(mainNode, childNode);
   childNode->setReachable();
 
@@ -243,7 +243,6 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeCGwStmt) {
   ASSERT_EQ(22, sce.getNumStatements(childNode3));
   cm.removeAllEstimatorPhases();
 }
-
 
 TEST_F(IPCGEstimatorPhaseBasic, FourNodeDiamondCGwStmt) {
   Config cfg;
@@ -286,7 +285,6 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeDiamondCGwStmt) {
   cm.removeAllEstimatorPhases();
 }
 
-
 /*
    o
   / \
@@ -304,7 +302,7 @@ TEST_F(IPCGEstimatorPhaseBasic, FiveNodeDiamondCGwStmt) {
   cm.setConfig(&cfg);
   cm.setNoOutput();
   auto mainNode = mcgm.findOrCreateNode("main");
-  pira::setPiraOneData(mainNode, 12, true );
+  pira::setPiraOneData(mainNode, 12, true);
 
   auto childNode = mcgm.findOrCreateNode("child1");
   pira::setPiraOneData(childNode, 7, true);
@@ -342,7 +340,6 @@ TEST_F(IPCGEstimatorPhaseBasic, FiveNodeDiamondCGwStmt) {
   ASSERT_EQ(4, sce.getNumStatements(childNode4));
   cm.removeAllEstimatorPhases();
 }
-
 
 class IPCGEstimatorPhaseTest : public ::testing::Test {
  protected:
@@ -402,7 +399,6 @@ TEST_F(IPCGEstimatorPhaseTest, ValidateBasics) {
   cm.removeAllEstimatorPhases();
 }
 
-
 // TODO: This seems more like a test for PiraMCGProcessor?
 TEST_F(IPCGEstimatorPhaseTest, InitiallyNoneReachable) {
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
@@ -416,7 +412,6 @@ TEST_F(IPCGEstimatorPhaseTest, InitiallyNoneReachable) {
   EXPECT_EQ(count, cm.size());
   cm.removeAllEstimatorPhases();
 }
-
 
 TEST_F(IPCGEstimatorPhaseTest, ApplyPhaseFinalizesGraph) {
   auto &cm = metacg::pgis::PiraMCGProcessor::get();

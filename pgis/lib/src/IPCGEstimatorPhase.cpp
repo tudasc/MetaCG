@@ -708,7 +708,8 @@ void SummingCountPhaseBase::estimateCount(const std::shared_ptr<CgNode> &startNo
   if (count >= threshold) {
     startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
   }
-  if (/*!startNode->get<PiraOneData>()->getHasBody()*/ !startNode->getHasBody() && startNode->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
+  if (/*!startNode->get<PiraOneData>()->getHasBody()*/ !startNode->getHasBody() &&
+      startNode->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
     startNode->setState(CgNodeState::INSTRUMENT_PATH);
   }
 }
