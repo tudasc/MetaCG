@@ -17,7 +17,6 @@
 #include "spdlog/spdlog.h"
 
 #include <algorithm>
-#include <sstream>
 #include <cassert>
 #include <sstream>
 
@@ -28,7 +27,7 @@ namespace pira {
 void ExtrapLocalEstimatorPhaseBase::modifyGraph(CgNodePtr mainNode) {
   auto console = spdlog::get("console");
   console->trace("Running ExtrapLocalEstimatorPhaseBase::modifyGraph");
-  for (const auto& n : *graph) {
+  for (const auto &n : *graph) {
     auto [shouldInstr, funcRtVal] = shouldInstrument(n);
     if (shouldInstr) {
       auto useCSInstr =

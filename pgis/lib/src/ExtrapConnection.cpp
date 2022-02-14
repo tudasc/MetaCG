@@ -186,9 +186,9 @@ void ExtrapModelProvider::buildModels() {
       ptd->addToRuntimeVec(CubeCallgraphBuilder::impl::time(cube, cnode));
     };
 
-      auto &mcgManager = metacg::graph::MCGManager::get();
-      CubeCallgraphBuilder::impl::build(std::string(fns.at(i)), mcgManager, attEpData);
- //   }
+    auto &mcgManager = metacg::graph::MCGManager::get();
+    CubeCallgraphBuilder::impl::build(std::string(fns.at(i)), mcgManager, attEpData);
+    //   }
   }
 
   for (const auto &n : metacg::pgis::PiraMCGProcessor::get()) {

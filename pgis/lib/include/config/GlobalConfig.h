@@ -208,7 +208,7 @@ inline options::HeuristicSelection::HeuristicSelectionEnum getSelectedHeuristic(
   return heuristicMode;
 }
 
-}  // namespace configPtr
+}  // namespace config
 
 }  // namespace pgis
 

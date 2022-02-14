@@ -24,9 +24,7 @@
 
 namespace pira {
 
-inline void assert_pira_one_data() {
-  assert(false && "PIRA I data should be available in node");
-}
+inline void assert_pira_one_data() { assert(false && "PIRA I data should be available in node"); }
 
 typedef unsigned long long Statements;
 
@@ -98,12 +96,12 @@ class PiraOneData : public metacg::MetaData {
 
   void setNumberOfStatements(int numStmts) { this->numStmts = numStmts; }
   int getNumberOfStatements() const { return this->numStmts; }
-  void setHasBody(bool hasBody=true) { this->hasBody = hasBody; }
+  void setHasBody(bool hasBody = true) { this->hasBody = hasBody; }
   bool getHasBody() const { return this->hasBody; }
   void setDominantRuntime(bool dominantRuntime = true) { this->dominantRuntime = dominantRuntime; }
   bool isDominantRuntime() const { return this->dominantRuntime; }
   void setComesFromCube(bool fromCube = true) { this->wasInPreviousProfile = fromCube; }
-  bool comesFromCube() const { return this->wasInPreviousProfile;}
+  bool comesFromCube() const { return this->wasInPreviousProfile; }
   bool inPreviousProfile() const { return wasInPreviousProfile; }
 
  private:
@@ -113,8 +111,9 @@ class PiraOneData : public metacg::MetaData {
   int numStmts{0};
 };
 
-template<typename T>
-inline void setPiraOneData(T node, int numStmts = 0, bool hasBody = false, bool dominantRuntime = false, bool inPrevProfile = false) {
+template <typename T>
+inline void setPiraOneData(T node, int numStmts = 0, bool hasBody = false, bool dominantRuntime = false,
+                           bool inPrevProfile = false) {
   const auto &[has, data] = node->template checkAndGet<PiraOneData>();
   if (has) {
     data->setNumberOfStatements(numStmts);

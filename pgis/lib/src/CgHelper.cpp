@@ -1,6 +1,7 @@
 /**
  * File: CgHelper.cpp
- * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "CgHelper.h"
@@ -149,8 +150,7 @@ Statements visitNodeForInclusiveStatements(CgNodePtr node, CgNodePtrSet *visited
     visistedChilds.insert(childNode);
 
     // approximate statements of a abstract function with maximum of its children (potential call targets)
-    if (node->get<LoadImbalance::LIMetaData>()->isVirtual() &&
-        node->get<PiraOneData>()->getNumberOfStatements() == 0) {
+    if (node->get<LoadImbalance::LIMetaData>()->isVirtual() && node->get<PiraOneData>()->getNumberOfStatements() == 0) {
       inclusiveStatements = std::max(inclusiveStatements, visitNodeForInclusiveStatements(childNode, visitedNodes));
     } else {
       inclusiveStatements += visitNodeForInclusiveStatements(childNode, visitedNodes);
@@ -299,7 +299,8 @@ double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef) {
   for (const auto &n : cg) {
     const auto &[hasBPD, bpd] = n->checkAndGet<BaseProfileData>();
     if (hasBPD) {
-      spdlog::get("console")->trace("Found BaseProfileData for {}: Adding inclusive runtime of {} to RT vector.", n->getFunctionName(), bpd->getInclusiveRuntimeInSeconds());
+      spdlog::get("console")->trace("Found BaseProfileData for {}: Adding inclusive runtime of {} to RT vector.",
+                                    n->getFunctionName(), bpd->getInclusiveRuntimeInSeconds());
       if (bpd->getInclusiveRuntimeInSeconds() != 0) {
         rt.push_back(bpd->getInclusiveRuntimeInSeconds());
       }
@@ -308,12 +309,12 @@ double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef) {
   spdlog::get("console")->info("The number of elements for runtime threshold calculation: {}", rt.size());
 
   std::sort(rt.begin(), rt.end());
-  { // raii
-  std::string runtimeStr;
-  for (const auto r : rt) {
-    runtimeStr += ' ' + std::to_string(r);
-  }
-  spdlog::get("console")->debug("Runtime vector [values are seconds]: {}", runtimeStr);
+  {  // raii
+    std::string runtimeStr;
+    for (const auto r : rt) {
+      runtimeStr += ' ' + std::to_string(r);
+    }
+    spdlog::get("console")->debug("Runtime vector [values are seconds]: {}", runtimeStr);
   }
 
   size_t lastIndex = rt.size() * .5;

@@ -1,6 +1,7 @@
 /**
  * File: LIEstimatorPhase.cpp
- * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "loadImbalance/LIEstimatorPhase.h"
@@ -10,10 +11,10 @@
 #include <loadImbalance/metric/EfficiencyMetric.h>
 #include <loadImbalance/metric/ImbalancePercentageMetric.h>
 #include <loadImbalance/metric/VariationCoeffMetric.h>
+#include <queue>
 #include <spdlog/spdlog.h>
 #include <sstream>
 #include <unordered_map>
-#include <queue>
 
 using namespace metacg;
 using namespace LoadImbalance;
@@ -58,7 +59,7 @@ void LIEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
       std::ostringstream debugString;
 
       debugString << "Visiting node " << n->getFunctionName() << " ("
-                   << n->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << "): ";
+                  << n->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << "): ";
 
       // check whether node is sufficiently important
       if (runtime / totalRuntime >= c->relevanceThreshold) {
@@ -160,14 +161,14 @@ void LIEstimatorPhase::instrumentRelevantChildren(CgNodePtr node, pira::Statemen
       if (!child->get<LIMetaData>()->isFlagged(FlagType::Irrelevant)) {
         instrument(child);
         debugString << child->getFunctionName() << " ("
-                     << child->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << ") ";
+                    << child->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << ") ";
       } else {
         debugString << "-" << child->getFunctionName() << "- ("
-                     << child->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << ") ";
+                    << child->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << ") ";
       }
     } else {
       debugString << "/" << child->getFunctionName() << "\\ ("
-                   << child->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << ") ";
+                  << child->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << ") ";
     }
   }
 }
@@ -260,20 +261,21 @@ void LIEstimatorPhase::findSyncPoints(CgNodePtr node) {
   debugString << "LI Detection: Find synchronization points for node " << node->getFunctionName() << "(";
 
   // process all parents which are balanced + visisted
-  for(CgNodePtr parent : node->getParentNodes()) {
-    if(!parent->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Imbalanced)
-        && parent->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Visited)) {
+  for (CgNodePtr parent : node->getParentNodes()) {
+    if (!parent->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Imbalanced) &&
+        parent->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Visited)) {
       // instrument all descendant synchronization routines
-      instrumentByPattern(parent, [](CgNodePtr nodeInQuestion) {
-        return nodeInQuestion->getFunctionName().rfind("MPI_", 0) == 0;
-      }, debugString);
+      instrumentByPattern(
+          parent, [](CgNodePtr nodeInQuestion) { return nodeInQuestion->getFunctionName().rfind("MPI_", 0) == 0; },
+          debugString);
     }
   }
 
   spdlog::get("console")->debug(debugString.str());
 }
 
-void LIEstimatorPhase::instrumentByPattern(CgNodePtr startNode, std::function< bool(CgNodePtr) > pattern, std::ostringstream& debugString) {
+void LIEstimatorPhase::instrumentByPattern(CgNodePtr startNode, std::function<bool(CgNodePtr)> pattern,
+                                           std::ostringstream &debugString) {
   std::queue<CgNodePtr> workQueue;
   CgNodePtrSet alreadyVisited;
 
@@ -286,9 +288,9 @@ void LIEstimatorPhase::instrumentByPattern(CgNodePtr startNode, std::function< b
     // do not process a node twice
     if (alreadyVisited.find(node) == alreadyVisited.end()) {
       alreadyVisited.insert(node);
-      for(CgNodePtr child : node->getChildNodes()) {
+      for (CgNodePtr child : node->getChildNodes()) {
         workQueue.push(child);
-        if(pattern(child)) {
+        if (pattern(child)) {
           // mark for call-site instrumentation
           child->instrumentFromParent(node);
           debugString << " " << node->getFunctionName() << "->" << child->getFunctionName();

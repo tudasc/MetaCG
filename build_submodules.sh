@@ -9,10 +9,10 @@ scriptdir="$(
   cd "$(dirname "$0")"
   pwd -P
 )"
-mkdir -p $scriptdir/deps/src
-mkdir -p $scriptdir/deps/install
-extsourcedir=$scriptdir/deps/src
-extinstalldir=$scriptdir/deps/install
+mkdir -p $scriptdir/extern/src
+mkdir -p $scriptdir/extern/install
+extsourcedir=$scriptdir/extern/src
+extinstalldir=$scriptdir/extern/install
 
 # TODO Make this actually working better!
 # Allow configure options (here for Score-P, bc I want to build it w/o MPI)
@@ -66,11 +66,11 @@ make install 2>&1 >/dev/null
 echo "[PIRA] Getting cxxopts library"
 cd $extsourcedir
 if [ ! -d "$extsourcedir/cxxopts" ]; then
-  git clone https://github.com/jarro2783/cxxopts cxxopts 2>&1 >/dev/null
+  git clone --branch 2_1 --depth 1 https://github.com/jarro2783/cxxopts cxxopts 2>&1 >/dev/null
 fi
-cd cxxopts
-echo "[PIRA] Select release branch 2_1 for cxxopts."
-git checkout 2_1 2>&1 >/dev/null
+#cd cxxopts
+#echo "[PIRA] Select release branch 2_1 for cxxopts."
+#git checkout 2_1 2>&1 >/dev/null
 
 # JSON library
 echo "[PIRA] Getting json library"

@@ -48,11 +48,8 @@ class LIMetaData : public metacg::MetaData {
 
   // Flags
   // =====
-  std::unordered_map<FlagType, bool> flags {
-      {FlagType::Visited, false},
-      {FlagType::Irrelevant, false},
-      {FlagType::Imbalanced, false}
-  };
+  std::unordered_map<FlagType, bool> flags{
+      {FlagType::Visited, false}, {FlagType::Irrelevant, false}, {FlagType::Imbalanced, false}};
 
   /**
    * to save the calculated metric value for later use
@@ -60,7 +57,7 @@ class LIMetaData : public metacg::MetaData {
   std::optional<double> assessment{std::nullopt};
 };
 
-void to_json(nlohmann::json& j, const LoadImbalance::LIMetaData& d);
+void to_json(nlohmann::json &j, const LoadImbalance::LIMetaData &d);
 }  // namespace LoadImbalance
 
 #endif

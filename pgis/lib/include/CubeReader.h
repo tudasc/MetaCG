@@ -40,7 +40,8 @@ void applyOne(cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, N node, L lam
   applyOne(cu, cnode, node, largs...);
 }
 template <typename... Largs>
-void apply(metacg::graph::MCGManager &mcgm, cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, std::string &where, Largs... largs) {
+void apply(metacg::graph::MCGManager &mcgm, cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, std::string &where,
+           Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
     auto target = mcgm.findOrCreateNode(where);
     applyOne(cu, cnode, target, largs...);
@@ -131,7 +132,7 @@ const auto attInclRuntime = [](auto &cube, auto cnode, auto n) {
 
 template <typename... Largs>
 void build(std::string filePath, metacg::graph::MCGManager &mcgm, Largs... largs) {
-//  auto &cg = metacg::pgis::PiraMCGProcessor::get();
+  //  auto &cg = metacg::pgis::PiraMCGProcessor::get();
   bool useMangledNames = true;
 
   auto console = spdlog::get("console");

@@ -36,7 +36,8 @@ auto optType(T &obj) {
 using namespace pira;
 using namespace ::pgis::options;
 
-void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &cg, Config *c, bool isIPCG, float runtimeThreshold, bool keepNotReachable) {
+void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &cg, Config *c, bool isIPCG, float runtimeThreshold,
+                             bool keepNotReachable) {
   auto statEstimator = new StatisticsEstimatorPhase(false);
   if (!keepNotReachable) {
     cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(true, false));  // remove unrelated
@@ -359,7 +360,8 @@ int main(int argc, char **argv) {
       // should be set for working load imbalance detection
       if (result.count("export")) {
         console->info("Exporting load imbalance data to IPCG file.");
-        metacg::io::annotateJSON(cg.getCallgraph(&metacg::pgis::PiraMCGProcessor::get()), mcgFullPath, LoadImbalance::LIRetriever());
+        metacg::io::annotateJSON(cg.getCallgraph(&metacg::pgis::PiraMCGProcessor::get()), mcgFullPath,
+                                 LoadImbalance::LIRetriever());
       } else {
         spdlog::get("console")->warn("--export flag is highly recommended for load imbalance detection");
       }
@@ -402,7 +404,7 @@ int main(int argc, char **argv) {
       console->info("Exporting to IPCG file.");
       metacg::io::annotateJSON(cg.getCallgraph(&metacg::pgis::PiraMCGProcessor::get()), mcgFullPath,
                                metacg::io::retriever::PiraTwoDataRetriever());
-   }
+    }
   }
 
   if (cg.hasPassesRegistered()) {

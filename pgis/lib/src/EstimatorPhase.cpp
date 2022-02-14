@@ -1,8 +1,8 @@
 /**
  * File: EstimatorPhase.cpp
- * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
-
 
 #include "EstimatorPhase.h"
 #include <fstream>
@@ -15,8 +15,7 @@ using namespace pira;
 #define NO_DEBUG
 
 EstimatorPhase::EstimatorPhase(std::string name, bool isMetaPhase)
-    :
-      graph(nullptr),  // just so eclipse does not nag
+    : graph(nullptr),  // just so eclipse does not nag
       report(),        // initializes all members of report
       name(name),
       config(nullptr),
@@ -26,7 +25,6 @@ void EstimatorPhase::generateReport() {
   for (auto node : (*graph)) {
     const auto bpd = node->get<BaseProfileData>();
     if (node->isInstrumented()) {
-
       /* Note: Instrumented call-paths do not count towards instrumented functions. */
       if (node->isInstrumentedCallpath()) {
         spdlog::get("console")->debug("Adding {} to the list of call path instrumentations", node->getFunctionName());

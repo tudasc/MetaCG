@@ -94,20 +94,18 @@ class PiraMCGProcessor {
   Callgraph &getCallgraph(PiraMCGProcessor *);
   void setNoOutput() { noOutputRequired = true; }
 
-//  void setScorepOutputFormat(bool val = true) { scorepOutput_ = val; }
+  //  void setScorepOutputFormat(bool val = true) { scorepOutput_ = val; }
 
   void attachExtrapModels();
 
-  void setCG(Callgraph &newGraph) {
-    graph = newGraph;
-  }
+  void setCG(Callgraph &newGraph) { graph = newGraph; }
 
  private:
   // this set represents the call graph during the actual computation
   Callgraph &graph;
   Config *configPtr;
-  bool noOutputRequired {false};
-//  bool scorepOutput_ = false;
+  bool noOutputRequired{false};
+  //  bool scorepOutput_ = false;
 
   // Extrap interaction
   extrapconnection::ExtrapModelProvider epModelProvider;
