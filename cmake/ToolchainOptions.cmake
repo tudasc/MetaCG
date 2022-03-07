@@ -29,7 +29,16 @@ function(add_clang target)
   # clang specified as system lib to suppress all warnings from clang headers
   target_include_directories(${target} SYSTEM PUBLIC ${CLANG_INCLUDE_DIRS})
 
-  target_link_libraries(${target} clangTooling)
+  target_link_libraries(
+    ${target}
+    clangTooling
+    clangFrontend
+    clangSerialization
+    clangAST
+    clangBasic
+    clangIndex
+    LLVMSupport
+  )
 endfunction()
 
 function(add_extrap target)
