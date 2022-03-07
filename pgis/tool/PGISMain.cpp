@@ -210,6 +210,13 @@ int main(int argc, char **argv) {
   checkAndSet<bool>(keepUnreachable.cliName, result, keepNotReachable);
   HeuristicSelection dispose_heuristic;
   checkAndSet<HeuristicSelection>(heuristicSelection.cliName, result, dispose_heuristic);
+
+  if (mcgVersion < 2 &&
+      pgis::config::getSelectedHeuristic() != HeuristicSelection::HeuristicSelectionEnum::STATEMENTS) {
+    std::cout << "Heuristics other than 'statements' are not supported with metacg format 1" << std::endl;
+    exit(1);
+  }
+
   CuttoffSelection dispose_cuttoff;
   checkAndSet<CuttoffSelection>(cuttoffSelection.cliName, result, dispose_cuttoff);
 
