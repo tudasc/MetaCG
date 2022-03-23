@@ -15,24 +15,30 @@ namespace metacg {
  */
 class Callgraph {
  public:
-
   Callgraph() : graph(), mainNode(nullptr), lastSearched(nullptr) {}
 
   // TODO: Can this be a hash set?
   typedef CgNodePtrSet ContainerT;
 
   /**
-   * @brief findMain
+   * @brief getMain
    * @return main function CgNodePtr
    */
-  CgNodePtr findMain();
+  CgNodePtr getMain();
 
   /**
-   * @brief findNode
-   * @param functionName
-   * @return the corresponding CgNodePtr or nullptr
+   * Inserts an edge from parentName to childName
+   * @param parentName function name of calling function
+   * @param childName function name of called function
    */
-  CgNodePtr findNode(std::string functionName) const;
+  void addEdge(const std::string &parentName, const std::string &childName);
+
+  /**
+   * Inserts an edge from parentNode to childNode
+   * @param parentNode function node of calling function
+   * @param childNode function node of called function
+   */
+  void addEdge(CgNodePtr parentNode, CgNodePtr childNode);
 
   /**
    * Inserts a new node and sets it as the 'main' function if its name is main or _Z4main or _ZSt4mainiPPc
@@ -41,20 +47,17 @@ class Callgraph {
   void insert(CgNodePtr node);
 
   /**
+   * Returns the node with the given name\n
+   * If no node exists yet, it creates a new one.
+   * @param name to identify the node by
+   * @return CgNodePtr to the identified node
+   */
+  CgNodePtr getOrInsertNode(const std::string &name);
+
+  /**
    * Clears the graph to an empty graph with no main node and no lastSearched node.
    */
-  void clear() {
-    graph.clear();
-    lastSearched = nullptr;
-    mainNode = nullptr;
-  }
-
-  ContainerT::iterator begin() const { return graph.begin(); }
-  ContainerT::iterator end() const { return graph.end(); }
-  ContainerT::const_iterator cbegin() const;
-  ContainerT::const_iterator cend() const;
-
-  bool hasNode(CgNodePtr n) { return graph.find(n) != graph.end(); }
+  void clear();
 
   /**
    * @brief hasNode checks whether a node for #name exists in the graph mapping
@@ -64,10 +67,17 @@ class Callgraph {
   bool hasNode(std::string name);
 
   /**
-   * @brief getLastSearched - only call after hasNode returned True
+   * @brief hasNode checks whether a node exists in the graph mapping
+   * @param node
+   * @return true iff exists, false otherwise
+   */
+  bool hasNode(CgNodePtr n);
+
+  /**
+   * @brief getLastSearchedNode - only call after hasNode returned True
    * @return node found by #hasNode - nullptr otherwise
    */
-  CgNodePtr getLastSearched() { return lastSearched; }
+  CgNodePtr getLastSearchedNode();
 
   /**
    * @brief getNode searches the node in the graph and returns it
@@ -77,11 +87,15 @@ class Callgraph {
   CgNodePtr getNode(std::string name);
 
   size_t size() const;
+
   ContainerT &getGraph();
 
-  bool isEmpty() {
-    return graph.size() == 0;
-  }
+  bool isEmpty();
+  ContainerT::iterator begin() const;
+  ContainerT::iterator end() const;
+
+  ContainerT::const_iterator cbegin() const;
+  ContainerT::const_iterator cend() const;
 
  private:
   // this set represents the call graph during the actual computation
@@ -90,7 +104,7 @@ class Callgraph {
   // Dedicated node pointer to main function
   CgNodePtr mainNode;
 
-  // Temporary storage for hasNode/getLastSearched combination
+  // Temporary storage for hasNode/getLastSearchedNode combination
   CgNodePtr lastSearched;
 };
 

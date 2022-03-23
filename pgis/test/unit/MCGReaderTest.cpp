@@ -215,7 +215,7 @@ TEST(VersionTwoMetaCGReaderTest, OneNodeNoMetaDataHandler) {
   auto graph = mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 1);
 
-  const auto mainNode = graph.findMain();
+  const auto mainNode = graph.getMain();
   EXPECT_EQ(mainNode->getFunctionName(), "main");
   EXPECT_EQ(mainNode->getChildNodes().size(), 0);
   EXPECT_EQ(mainNode->getParentNodes().size(), 0);
@@ -259,7 +259,7 @@ TEST(VersionTwoMetaCGReaderTest, TwoNodesNoMetaDataHandler) {
   auto graph = mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 2);
 
-  const auto mainNode = graph.findMain();
+  const auto mainNode = graph.getMain();
   EXPECT_EQ(mainNode->getFunctionName(), "main");
   EXPECT_EQ(mainNode->getChildNodes().size(), 1);
   EXPECT_EQ(mainNode->getParentNodes().size(), 0);
@@ -304,7 +304,7 @@ TEST(VersionTwoMetaCGReaderTest, TwoNodesOneMetaDataHandler) {
   auto graph = mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 2);
 
-  const auto mainNode = graph.findMain();
+  const auto mainNode = graph.getMain();
   EXPECT_EQ(mainNode->getFunctionName(), "main");
   EXPECT_EQ(mainNode->getChildNodes().size(), 1);
   EXPECT_EQ(mainNode->getParentNodes().size(), 0);
@@ -365,7 +365,7 @@ TEST(VersionTwoMetaCGReaderTest, TwoNodesTwoMetaDataHandler) {
   auto graph = mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 2);
 
-  const auto mainNode = graph.findMain();
+  const auto mainNode = graph.getMain();
   EXPECT_EQ(mainNode->getFunctionName(), "main");
   EXPECT_EQ(mainNode->getChildNodes().size(), 1);
   EXPECT_EQ(mainNode->getParentNodes().size(), 0);

@@ -132,20 +132,20 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
 
   auto graph = cm.getCallgraph(&cm);
 
-  ASSERT_EQ(graph.findMain(), mainNode);
+  ASSERT_EQ(graph.getMain(), mainNode);
 
-  ASSERT_EQ(graph.findMain()->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child1")->isInstrumented(), false);
-  ASSERT_EQ(graph.findNode("child2")->isInstrumented(), false);
-  ASSERT_EQ(graph.findNode("child3")->isInstrumented(), false);
-  ASSERT_EQ(graph.findNode("child4")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child5")->isInstrumented(), false);
+  ASSERT_EQ(graph.getMain()->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child1")->isInstrumented(), false);
+  ASSERT_EQ(graph.getNode("child2")->isInstrumented(), false);
+  ASSERT_EQ(graph.getNode("child3")->isInstrumented(), false);
+  ASSERT_EQ(graph.getNode("child4")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child5")->isInstrumented(), false);
 
-  ASSERT_EQ(graph.findNode("gc1")->isInstrumented(), false);
-  ASSERT_EQ(graph.findNode("gc2")->isInstrumented(), false);
-  ASSERT_EQ(graph.findNode("gc3")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("gc4")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("gc5")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("gc1")->isInstrumented(), false);
+  ASSERT_EQ(graph.getNode("gc2")->isInstrumented(), false);
+  ASSERT_EQ(graph.getNode("gc3")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("gc4")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("gc5")->isInstrumented(), true);
 }
 
 TEST_F(LIEstimatorPhaseTest, Virtual) {
@@ -193,11 +193,11 @@ TEST_F(LIEstimatorPhaseTest, Virtual) {
 
   auto graph = cm.getCallgraph(&cm);
 
-  ASSERT_EQ(graph.findMain(), mainNode);
-  ASSERT_EQ(graph.findNode("main")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("grandchild")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("grandgrandchild")->isInstrumented(), false);
+  ASSERT_EQ(graph.getMain(), mainNode);
+  ASSERT_EQ(graph.getNode("main")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("grandchild")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("grandgrandchild")->isInstrumented(), false);
 }
 
 TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
@@ -250,11 +250,11 @@ TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
 
   auto graph = cm.getCallgraph(&cm);
 
-  ASSERT_EQ(graph.findMain(), mainNode);
-  ASSERT_EQ(graph.findNode("main")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child1")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child2")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("grandchild")->isInstrumented(), true);
+  ASSERT_EQ(graph.getMain(), mainNode);
+  ASSERT_EQ(graph.getNode("main")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child1")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child2")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("grandchild")->isInstrumented(), true);
 }
 
 TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
@@ -306,11 +306,11 @@ TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
 
   auto graph = cm.getCallgraph(&cm);
 
-  ASSERT_EQ(graph.findMain(), mainNode);
-  ASSERT_EQ(graph.findNode("main")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child1")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child2")->isInstrumented(), false);
-  ASSERT_EQ(graph.findNode("grandchild")->isInstrumented(), true);
+  ASSERT_EQ(graph.getMain(), mainNode);
+  ASSERT_EQ(graph.getNode("main")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child1")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child2")->isInstrumented(), false);
+  ASSERT_EQ(graph.getNode("grandchild")->isInstrumented(), true);
 }
 
 TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
@@ -357,9 +357,9 @@ TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
 
   auto graph = cm.getCallgraph(&cm);
 
-  ASSERT_EQ(graph.findMain(), mainNode);
-  ASSERT_EQ(graph.findNode("main")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child1")->isInstrumented(), false);
-  ASSERT_EQ(graph.findNode("child2")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child3")->isInstrumented(), true);
+  ASSERT_EQ(graph.getMain(), mainNode);
+  ASSERT_EQ(graph.getNode("main")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child1")->isInstrumented(), false);
+  ASSERT_EQ(graph.getNode("child2")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child3")->isInstrumented(), true);
 }
