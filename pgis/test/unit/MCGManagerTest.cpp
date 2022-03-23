@@ -28,7 +28,7 @@ TEST_F(MCGManagerTest, EmptyCG) {
   auto graph = mcgm.getCallgraph();
   ASSERT_TRUE(graph.isEmpty());
   ASSERT_EQ(false, graph.hasNode("main"));
-  ASSERT_EQ(nullptr, graph.findMain());
+  ASSERT_EQ(nullptr, graph.getMain());
   ASSERT_EQ(0, graph.size());
 }
 
@@ -38,8 +38,8 @@ TEST_F(MCGManagerTest, OneNodeCG) {
   auto nPtr = mcgm.findOrCreateNode("main");
   auto graph = mcgm.getCallgraph();
   ASSERT_FALSE(graph.isEmpty());
-  ASSERT_NE(nullptr, graph.findMain());
-  ASSERT_EQ(nPtr, graph.findMain());
+  ASSERT_NE(nullptr, graph.getMain());
+  ASSERT_EQ(nPtr, graph.getMain());
 }
 
 TEST_F(MCGManagerTest, TwoNodeCG) {
@@ -50,8 +50,8 @@ TEST_F(MCGManagerTest, TwoNodeCG) {
   ASSERT_EQ(mainNode, mcgm.findOrCreateNode("main"));
   ASSERT_EQ(childNode, mcgm.findOrCreateNode("child1"));
   auto graph = mcgm.getCallgraph();
-  ASSERT_EQ(mainNode, graph.findMain());
-  ASSERT_EQ(childNode, graph.findNode("child1"));
+  ASSERT_EQ(mainNode, graph.getMain());
+  ASSERT_EQ(childNode, graph.getNode("child1"));
 }
 
 TEST_F(MCGManagerTest, ThreeNodeCG) {

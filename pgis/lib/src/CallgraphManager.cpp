@@ -44,7 +44,7 @@ void metacg::pgis::PiraMCGProcessor::finalizeGraph(bool buildMarker) {
 
   if (graph.size() > 0) {
     // We assume that 'main' is always reachable.
-    auto mainNode = graph.findMain();
+    auto mainNode = graph.getMain();
     if (mainNode == nullptr) {
       spdlog::get("errconsole")->error("PiraMCGProcessor: Cannot find main function");
       exit(1);
@@ -52,7 +52,7 @@ void metacg::pgis::PiraMCGProcessor::finalizeGraph(bool buildMarker) {
     mainNode->setReachable();
 
     // run reachability analysis -> mark reachable nodes
-    CgHelper::reachableFromMainAnalysis(graph.findMain());
+    CgHelper::reachableFromMainAnalysis(graph.getMain());
 
     // XXX This is a prerequisite for certain EstimatorPhases and should be demanded by them
     // CgHelper::calculateInclusiveStatementCounts(mainNode);
@@ -70,7 +70,7 @@ void metacg::pgis::PiraMCGProcessor::finalizeGraph(bool buildMarker) {
 
 void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
   finalizeGraph();
-  auto mainFunction = graph.findMain();
+  auto mainFunction = graph.getMain();
 
   if (mainFunction == nullptr) {
     spdlog::get("errconsole")->error("PiraMCGProcessor: Cannot find main function.");

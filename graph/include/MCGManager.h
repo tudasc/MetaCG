@@ -59,12 +59,10 @@ class MCGManager {
    * @param parentName function name of calling function
    * @param childName function name of called function
    */
+  //Note: this is kept for compatibility reasons
+  // remove this once transition is complete
   void addEdge(const std::string &parentName, const std::string &childName) {
-    auto pNode = findOrCreateNode(parentName);
-    auto cNode = findOrCreateNode(childName);
-    assert(pNode != nullptr && "Parent node should be in the graph");
-    assert(cNode != nullptr && "Child node should be in the graph");
-    addEdge(pNode, cNode);
+    graph.addEdge(parentName, childName);
   };
 
   /**
@@ -72,24 +70,20 @@ class MCGManager {
    * @param parentNode function node of calling function
    * @param childNode function node of called function
    */
+  //Note: this is kept for compatibility reasons
+  // remove this once transition is complete
   void addEdge(CgNodePtr parentNode, CgNodePtr childNode) {
-    parentNode->addChildNode(childNode);
-    childNode->addParentNode(parentNode);
+    graph.addEdge(parentNode, childNode);
   }
 
   /**
    * Returns the node for @param name
    * If no node exists yet, it creates a new one.
    */
+   //Note: this is kept for compatibility reasons
+   // remove this once transition is complete
   CgNodePtr findOrCreateNode(const std::string &name) {
-    auto nodePtr = graph.findNode(name);
-    if (nodePtr != nullptr) {
-      return nodePtr;
-    }
-    nodePtr = std::make_shared<CgNode>(name);
-    assert(nodePtr != nullptr && "Creating a new CgNode should work");
-    graph.insert(nodePtr);
-    return nodePtr;
+    return graph.getOrInsertNode(name);
   }
 
   // Delegates to the underlying graph

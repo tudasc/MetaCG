@@ -53,7 +53,7 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCG) {
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = mcgm.getCallgraph();
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(0, sce.getNumStatements(mainNode));
   cm.removeAllEstimatorPhases();
 }
@@ -74,7 +74,7 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCG) {
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(0, sce.getNumStatements(mainNode));
   cm.removeAllEstimatorPhases();
 }
@@ -100,7 +100,7 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCGwStmt) {
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(12, sce.getNumStatements(mainNode));
   cm.removeAllEstimatorPhases();
 }
@@ -127,7 +127,7 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCGwStmt) {
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(19, sce.getNumStatements(mainNode));
   ASSERT_EQ(7, sce.getNumStatements(childNode));
   cm.removeAllEstimatorPhases();
@@ -161,7 +161,7 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCGwStmt) {
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(61, sce.getNumStatements(mainNode));
   ASSERT_EQ(7, sce.getNumStatements(childNode));
   ASSERT_EQ(42, sce.getNumStatements(childNode2));
@@ -196,7 +196,7 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCycleCGwStmt) {
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(61, sce.getNumStatements(mainNode));
   ASSERT_EQ(49, sce.getNumStatements(childNode));
   ASSERT_EQ(49, sce.getNumStatements(childNode2));
@@ -236,7 +236,7 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeCGwStmt) {
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(83, sce.getNumStatements(mainNode));
   ASSERT_EQ(29, sce.getNumStatements(childNode));
   ASSERT_EQ(42, sce.getNumStatements(childNode2));
@@ -277,7 +277,7 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeDiamondCGwStmt) {
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(105, sce.getNumStatements(mainNode));
   ASSERT_EQ(29, sce.getNumStatements(childNode));
   ASSERT_EQ(64, sce.getNumStatements(childNode2));
@@ -332,7 +332,7 @@ TEST_F(IPCGEstimatorPhaseBasic, FiveNodeDiamondCGwStmt) {
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(113, sce.getNumStatements(mainNode));
   ASSERT_EQ(33, sce.getNumStatements(childNode));
   ASSERT_EQ(68, sce.getNumStatements(childNode2));
@@ -387,9 +387,9 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
 TEST_F(IPCGEstimatorPhaseTest, ValidateBasics) {
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_NE(nullptr, graph.findMain());
+  ASSERT_NE(nullptr, graph.getMain());
 
-  auto mainNode = graph.findMain();
+  auto mainNode = graph.getMain();
   EXPECT_EQ(3, mainNode->getChildNodes().size());
   auto childNodes = mainNode->getChildNodes();
   auto nodeIter = childNodes.begin();

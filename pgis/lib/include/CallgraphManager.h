@@ -49,7 +49,7 @@ class PiraMCGProcessor {
   extrapconnection::ExtrapModelProvider &getModelProvider() { return epModelProvider; }
 
   void printMainRuntime() {
-    const auto mainNode = graph.findMain();
+    const auto mainNode = graph.getMain();
     const auto inclTime = mainNode->get<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds();
     spdlog::get("console")->info("Runtime of main is: {}", inclTime);
   }
