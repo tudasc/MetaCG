@@ -70,7 +70,7 @@ class CgNode {
    */
   template <typename T>
   inline T *get() const {
-    assert(metaFields[T::key()] && "meta field for key exists");
+    assert(metaFields[T::key()] && "meta field for key must exist");
     auto val = metaFields[T::key()];
     return reinterpret_cast<T *>(val);
   }

@@ -82,9 +82,6 @@ class BaseProfileData : public metacg::MetaData {
   std::vector<CgLocation> cgLoc;
 };
 
-inline void to_json(nlohmann::json &j, const BaseProfileData &data) {
-  j = nlohmann::json{{"numCalls", data.getNumberOfCalls()}, {"timeInSeconds", data.getRuntimeInSeconds()}};
-}
 
 /**
  * This class holds data relevant to the PIRA I analyses.
@@ -208,57 +205,8 @@ class GlobalLoopDepthMetaData : public metacg::MetaData {
   int globalLoopDepth{0};
 };
 
-/**
- * TODO This works for only a single parameter for now!
- */
-template <typename C1, typename C2>
-auto valTup(C1 co, C2 ct, int numReps) {
-  // TODO This assert seems wrong
-  // assert(co.size() == ct.size() && "Can only value-tuple evenly sized containers");
-  std::vector<
-      std::pair<typename C1::value_type, std::pair<std::string, typename C2::value_type::second_type::value_type>>>
-      res;
-  if (ct.empty()) {
-    return res;
-  }
-  assert(ct.size() == 1 && "Current limitation, only single parameter possible");
-  auto coIt = std::begin(co);
-  // Compute the median per numReps from co first.
-  const auto median = [&](auto startIt, auto numElems) {
-    if (numElems % 2 == 0) {
-      return startIt[(numElems / 2) + 1];
-    }
-    return startIt[numElems / 2];
-  };
-  auto innerC = ct[0].second;
-  auto ctIt = std::begin(innerC);
-  res.reserve(co.size());
-  for (; coIt != co.end() && ctIt != innerC.end(); std::advance(coIt, numReps), ++ctIt) {
-    res.push_back(std::make_pair(median(coIt, numReps), std::make_pair(ct[0].first, *ctIt)));
-  }
-  return res;
-}
 
-inline void to_json(nlohmann::json &j, const PiraTwoData &data) {
-  auto &gOpts = pgis::config::GlobalConfig::get();
-  auto rtOnly = gOpts.getAs<bool>("runtime-only");
 
-  auto rtAndParams = valTup(data.getRuntimeVec(), data.getExtrapParameters(), data.getNumReps());
-  nlohmann::json experiments;
-  for (auto elem : rtAndParams) {
-    nlohmann::json exp{};
-    exp["runtime"] = elem.first;
-    exp[elem.second.first] = elem.second.second;
-    experiments += exp;
-  }
-  if (!rtOnly) {
-    j = nlohmann::json{{"experiments", experiments},
-                       {"model", data.getExtrapModel()->getAsString(data.getExtrapModelConnector().getParamList())}};
-  } else {
-    j = nlohmann::json{{"experiments", experiments}};
-  }
-  spdlog::get("console")->debug("PiraTwoData to_json:\n{}", j.dump());
-}
 
 }  // namespace pira
 

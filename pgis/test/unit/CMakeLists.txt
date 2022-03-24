@@ -12,6 +12,7 @@ add_executable(
   loadImbalance/LIMetricTest.cpp
   MCGManagerTest.cpp
   MCGReaderTest.cpp
+  MCGWriterTest.cpp
 )
 
 target_link_libraries(basictests gtest_main)

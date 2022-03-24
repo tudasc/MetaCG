@@ -7,7 +7,7 @@
 #include "gtest/gtest.h"
 #include <loadImbalance/LIRetriever.h>
 
-#include "MCGReader.h"
+#include "MCGWriter.h"
 
 using namespace pira;
 using namespace metacg;

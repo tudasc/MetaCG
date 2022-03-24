@@ -81,8 +81,15 @@ function(add_mcg target)
   add_mcg_library(${target})
 endfunction()
 
+function(add_config_include target)
+  target_include_directories(${target} PUBLIC "${PROJECT_BINARY_DIR}")
+endfunction()
+
 function(add_pgis_includes target)
-  target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/pgis/lib/include>)
+  target_include_directories(
+    ${target} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/pgis/lib/include>
+                     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/pgis/lib/include/config>
+  )
 endfunction()
 
 function(add_graph_includes target)
