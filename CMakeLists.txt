@@ -48,6 +48,21 @@ include(CMakePackageConfigHelpers)
 # Making printing / debugging easier
 include(CMakePrintHelpers)
 
+# Obtain ghe git revision of this MetaCG repository
+include(GetGitRevisionDescription)
+
+# Stream the verison info in the project's config.h
+get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+if(NOT
+   DEFINED
+   GIT_SHA1
+)
+  set(GIT_SHA1 "NO_GIT_ROOT")
+endif()
+message(${GIT_SHA1})
+
+configure_file(Config.h.in config.h)
+
 # Component options MetaCG graph library will always be built. The actual graph implementation
 add_subdirectory(graph)
 

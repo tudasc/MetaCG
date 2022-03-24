@@ -10,6 +10,7 @@
 #include "CubeReader.h"
 #include "DotReader.h"
 #include "MCGReader.h"
+#include "MCGWriter.h"
 
 #include "ExtrapEstimatorPhase.h"
 #include "IPCGEstimatorPhase.h"
@@ -357,7 +358,7 @@ int main(int argc, char **argv) {
       if (!pConfig.getLIConfig()) {
         spdlog::get("errconsole")
             ->error("Provide configuration for load imbalance detection. Refer to PIRA's README for further details.");
-        return (EXIT_FAILURE);
+        return EXIT_FAILURE;
       }
       cg.registerEstimatorPhase(
           new LoadImbalance::LIEstimatorPhase(std::move(pConfig.getLIConfig())));  // attention: moves out liConfig!
@@ -387,7 +388,7 @@ int main(int argc, char **argv) {
     auto &pConfig = pgis::config::ParameterConfig::get();
     if (!pConfig.getPiraIIConfig()) {
       console->error("Provide PIRA II configuration in order to use Extra-P estimators.");
-      return (EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
 
     cg.attachExtrapModels();
@@ -417,6 +418,15 @@ int main(int argc, char **argv) {
   if (cg.hasPassesRegistered()) {
     spdlog::get("console")->info("Running registered estimator phases");
     cg.applyRegisteredPhases();
+  }
+
+  // Example use of MetaCG writer
+  {
+    metacg::io::JsonSink jsSink;
+    metacg::io::MCGWriter mcgw(mcgm);
+    mcgw.write(jsSink);
+    std::ofstream ofile("filename");
+    jsSink.output(ofile);
   }
 
   return EXIT_SUCCESS;

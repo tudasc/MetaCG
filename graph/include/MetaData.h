@@ -43,7 +43,7 @@ struct MetaDataHandler {
   [[nodiscard]] virtual const std::string toolName() const = 0;
 
   /** Creates or returns the object to attach as meta information */
-  const std::string value(const CgNodePtr n) const { return "Should not have happened"; }
+  virtual json value(const CgNodePtr n) const { return "Should not have happened"; }
 
   /** Reads the meta data from the json file and attaches it to the graph nodes */
   virtual void read([[maybe_unused]] const json &j, const std::string &functionName) = 0;

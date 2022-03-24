@@ -46,7 +46,7 @@ class MCGManager {
    * Returns list of non-owned pointers to MetaDataHandler.
    * @return
    */
-  std::vector<metacg::io::retriever::MetaDataHandler *> getMetaHandlers() {
+  std::vector<metacg::io::retriever::MetaDataHandler *> getMetaHandlers() const {
     std::vector<metacg::io::retriever::MetaDataHandler *> handler;
     for (const auto &mh : metaHandlers) {
       handler.push_back(mh.get());

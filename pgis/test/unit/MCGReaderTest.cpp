@@ -22,7 +22,7 @@ struct TestHandler : public metacg::io::retriever::MetaDataHandler {
   const std::string toolName() const override { return "TestMetaHandler"; }
   void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
   bool handles(const CgNodePtr n) const override { return false; }
-  int value(const CgNodePtr n) const { return i; }
+  json value(const CgNodePtr n) const { json j; return j << i; }
 };
 
 TEST(VersionOneMCGReaderTest, EmptyJSON) {
@@ -350,7 +350,7 @@ TEST(VersionTwoMetaCGReaderTest, TwoNodesTwoMetaDataHandler) {
     const std::string toolName() const override { return "TestMetaHandlerOne"; }
     void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
     bool handles(const CgNodePtr n) const override { return false; }
-    int value(const CgNodePtr n) const { return i; }
+    json value(const CgNodePtr n) const { json j; return j << i; }
   };
 
   auto &mcgm = metacg::graph::MCGManager::get();

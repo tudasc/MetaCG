@@ -168,56 +168,6 @@ class VersionTwoMetaCGReader : public MetaCGReader {
   void read(metacg::graph::MCGManager &cgManager) override;
 };
 
-/*
- *
- * (Old?) Annotation mechanism
- *
- */
-
-template <typename PropRetriever>
-int doAnnotate(metacg::Callgraph &cg, PropRetriever retriever, json &j) {
-  const auto functionElement = [](json &container, auto name) {
-    for (json::iterator it = container.begin(); it != container.end(); ++it) {
-      if (it.key() == name) {
-        return it;
-      }
-    }
-    return container.end();
-  };
-
-  const auto holdsValue = [](auto jsonIt, auto jsonEnd) { return jsonIt != jsonEnd; };
-
-  int annots = 0;
-  for (const auto &node : cg) {
-    if (retriever.handles(node)) {
-      auto funcElem = functionElement(j, node->getFunctionName());
-
-      if (holdsValue(funcElem, j.end())) {
-        auto &nodeMeta = (*funcElem)["meta"];
-        nodeMeta[retriever.toolName()] = retriever.value(node);
-        annots++;
-      }
-    }
-  }
-  return annots;
-}
-
-template <typename PropRetriever>
-void annotateJSON(metacg::Callgraph &cg, const std::string &filename, PropRetriever retriever) {
-  json j;
-  {
-    std::ifstream in(filename);
-    in >> j;
-  }
-
-  int annotated = metacg::io::doAnnotate(cg, retriever, j);
-  spdlog::get("console")->trace("Annotated {} json nodes", annotated);
-
-  {
-    std::ofstream out(filename);
-    out << j << std::endl;
-  }
-}
 
 
 
