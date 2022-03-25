@@ -43,7 +43,8 @@ struct TestHandler : public MetaDataHandler {
   bool handles(const CgNodePtr n) const override { return false; }
   json value(const CgNodePtr n) const override {
     json j;
-    return j << i;
+    j = i;
+    return j;
   }
 };
 
