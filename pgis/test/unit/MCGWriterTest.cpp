@@ -25,7 +25,8 @@ struct TestHandler : public metacg::io::retriever::MetaDataHandler {
   bool handles(const CgNodePtr n) const override { return false; }
   json value(const CgNodePtr n) const {
     json j;
-    return j << i;
+    j = i;
+    return j;
   }
 };
 
