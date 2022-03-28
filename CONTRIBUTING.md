@@ -6,25 +6,24 @@ In case you want to contribute, please reach out through the issues and we see h
 
 ## Issues
 
-We are aware that metacg has open issues, i.e., a correct handling of function pointers, etc.
+We are aware that MetaCG has open issues, i.e., a correct handling of function pointers, etc.
 If you find a new issue that is not already reported in github, please feel free to open an issue.
 The issue should state clearly what is the problem, and what you did to get there.
 
-If you can, please provide a MWE in the issue, and the tool output.
-Please also share, what you have the tool expected to do.
+If you can, please provide a minimal working example in the issue, and the tool output.
+Please also share, what you expected the tool to do.
 
 ## Workflow
 
-Please contribute only via pull requests and (a) keep your commit history clean, or (b) it will be squashed during merge.
+We currently accept changes via merge requests in our non-public repository.
+All history will be squashed in the merge.
 
-**Internal**: Please branch from `master` for fixes and from `devel` for researchy new stuff.
-`master` is automatically mirrored to github, so, please, only merge to `master`, if the CI builds succeed.
-Preceed a branch either with `fix/` or with `feat/` to indicate it.
+**Internal**: Please always branch from `devel`, and only in very particular bugfix cases (really critical ones) ask in our slack what to do.
+Preceed a branch either with `fix/` or with `feat/` to indicate what it is meant to do, followed by the issue number.
 
 ## Tests
 
 Every contribution must add reasonable tests.
-(We use a Gitlab internally for development, so the github CI / actions are not yet set up.)
 
 ## Commit messages
 
