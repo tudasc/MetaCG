@@ -18,14 +18,18 @@ class MCGManagerTest : public ::testing::Test {
   void SetUp() override {
     loggerutil::getLogger();
     auto &mcgm = metacg::graph::MCGManager::get();
-    mcgm.reset();
+    mcgm.resetManager();
+    mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   }
 };
 
 TEST_F(MCGManagerTest, EmptyCG) {
+
   auto &mcgm = metacg::graph::MCGManager::get();
   ASSERT_EQ(0, mcgm.size());
-  auto graph = mcgm.getCallgraph();
+
+  auto graph = *mcgm.getCallgraph();
+
   ASSERT_TRUE(graph.isEmpty());
   ASSERT_EQ(false, graph.hasNode("main"));
   ASSERT_EQ(nullptr, graph.getMain());
@@ -36,7 +40,7 @@ TEST_F(MCGManagerTest, OneNodeCG) {
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.findOrCreateNode("main");
   auto nPtr = mcgm.findOrCreateNode("main");
-  auto graph = mcgm.getCallgraph();
+  auto graph = *mcgm.getCallgraph();
   ASSERT_FALSE(graph.isEmpty());
   ASSERT_NE(nullptr, graph.getMain());
   ASSERT_EQ(nPtr, graph.getMain());
@@ -49,7 +53,7 @@ TEST_F(MCGManagerTest, TwoNodeCG) {
   mcgm.addEdge("main", "child1");
   ASSERT_EQ(mainNode, mcgm.findOrCreateNode("main"));
   ASSERT_EQ(childNode, mcgm.findOrCreateNode("child1"));
-  auto graph = mcgm.getCallgraph();
+  auto graph = *mcgm.getCallgraph();
   ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(childNode, graph.getNode("child1"));
 }

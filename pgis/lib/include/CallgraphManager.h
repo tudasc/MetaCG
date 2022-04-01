@@ -98,7 +98,7 @@ class PiraMCGProcessor {
 
   void attachExtrapModels();
 
-  void setCG(Callgraph &newGraph) { graph = newGraph; }
+  void setCG(Callgraph& newGraph) {graph = newGraph; }
 
  private:
   // this set represents the call graph during the actual computation

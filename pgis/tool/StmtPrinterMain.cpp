@@ -114,6 +114,7 @@ int main(int argc, char **argv) {
   // PiraMCGProcessor cg(&c);
   auto &cg = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   cg.setConfig(&c);
 
   if (stringEndsWith(filePath_ipcg, ".ipcg")) {
@@ -123,7 +124,7 @@ int main(int argc, char **argv) {
     mcgReader.read(mcgm);
 
     // XXX Removable after refactoring
-    cg.setCG(mcgm.getCallgraph());
+    cg.setCG(*mcgm.getCallgraph());
     // XXX
 
     if (argc == 2) {
@@ -159,7 +160,7 @@ int main(int argc, char **argv) {
     std::cout << "Registered estimator phases.\n";
 
     // XXX Removable after refactoring
-    cg.setCG(mcgm.getCallgraph());
+    cg.setCG(*mcgm.getCallgraph());
     // XXX
     cg.applyRegisteredPhases();
   }

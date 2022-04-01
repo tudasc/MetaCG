@@ -249,7 +249,7 @@ int main(int argc, char **argv) {
   float runTimeThreshold = .0f;
   auto &cg = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
-
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   cg.setConfig(&c);
   cg.setExtrapConfig(parseExtrapArgs(result));
 
@@ -309,8 +309,8 @@ int main(int argc, char **argv) {
       mcgReader.read(mcgm);
     }
 
-    spdlog::get("console")->info("Read MetaCG with {} nodes.", mcgm.getCallgraph().size());
-    cg.setCG(mcgm.getCallgraph());
+    spdlog::get("console")->info("Read MetaCG with {} nodes.", mcgm.getCallgraph()->size());
+    cg.setCG(*mcgm.getCallgraph());
 
     if (applyStaticFilter) {
       // load imbalance detection
