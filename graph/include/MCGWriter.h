@@ -1,14 +1,15 @@
 /**
-* File: MCGWriter.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: MCGWriter.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #ifndef METACG_MCGWRITER_H
 #define METACG_MCGWRITER_H
 
-#include "config.h"
 #include "Callgraph.h"
+#include "MCGBaseInfo.h"
+#include "config.h"
 
 #include "nlohmann/json.hpp"
 
@@ -19,15 +20,9 @@ namespace metacg::io {
  */
 class JsonSink {
  public:
-  explicit JsonSink() {}
+  void setJson(nlohmann::json jsonIn) { j = jsonIn; }
 
-  void setJson(nlohmann::json jsonIn) {
-    j = jsonIn;
-  }
-
-  [[nodiscard]] const nlohmann::json & getJson() const {
-    return j;
-  }
+  [[nodiscard]] const nlohmann::json &getJson() const { return j; }
 
   /**
    * Outputs the Json stored in this sink into os and flushes.
@@ -39,7 +34,7 @@ class JsonSink {
   }
 
  private:
-  nlohmann::json j;
+  nlohmann::json j{};
 };
 
 /**
@@ -47,7 +42,9 @@ class JsonSink {
  */
 class MCGWriter {
  public:
-  explicit MCGWriter(graph::MCGManager &mcgm) : mcgManager(mcgm) {}
+  explicit MCGWriter(graph::MCGManager &mcgm,
+                     MCGFileInfo fileInfo = getVersionTwoFileInfo(getCGCollectorGeneratorInfo()))
+      : mcgManager(mcgm), fileInfo(std::move(fileInfo)) {}
 
   void write(JsonSink &js);
 
@@ -56,13 +53,15 @@ class MCGWriter {
    * Adds the CG version data to the MetaCG in json Format.
    * @param j
    */
-  inline void attachFormatTwoHeader(nlohmann::json &j) {
-    std::string cgcMajorVersion = std::to_string(CGCollector_VERSION_MAJOR);
-    std::string cgcMinorVersion = std::to_string(CGCollector_VERSION_MINOR);
-    std::string cgcVersion{cgcMajorVersion + '.' + cgcMinorVersion};
-    j = {{"_MetaCG", {}}, {"_CG", {}}};
-    j["_MetaCG"] = {{"version", "2.0"},
-                    {"generator", {{"name", "CGCollector"}, {"version", cgcVersion}, {"sha", MetaCG_GIT_SHA}}}};
+  inline void attachMCGFormatHeader(nlohmann::json &j) {
+    const auto formatInfo = fileInfo.formatInfo;
+    const auto generatorInfo = fileInfo.generatorInfo;
+    j = {{formatInfo.metaInfoFieldName, {}}, {formatInfo.cgFieldName, {}}};
+    j[formatInfo.metaInfoFieldName] = {{formatInfo.version.getJsonIdentifier(), formatInfo.version.getVersionStr()},
+                                       {generatorInfo.getJsonIdentifier(),
+                                        {{generatorInfo.getJsonNameIdentifier(), generatorInfo.name},
+                                         {generatorInfo.getJsonVersionIdentifier(), generatorInfo.getVersionStr()},
+                                         {generatorInfo.getJsonShaIdentifier(), generatorInfo.sha}}}};
   }
 
   /**
@@ -79,6 +78,7 @@ class MCGWriter {
   void createAndAddMetaData(CgNodePtr node, const graph::MCGManager &mcgm, nlohmann::json &j);
 
   graph::MCGManager &mcgManager;
+  MCGFileInfo fileInfo;
 };
 
 /*
@@ -130,5 +130,5 @@ void annotateJSON(metacg::Callgraph &cg, const std::string &filename, PropRetrie
   }
 }
 
-} // namespace metacg::io
+}  // namespace metacg::io
 #endif  // METACG_MCGWRITER_H

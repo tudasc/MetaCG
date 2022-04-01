@@ -6,7 +6,7 @@
 
 #include "gtest/gtest.h"
 
-#include "LoggerUtil.h"
+#include "../../../pgis/test/unit/LoggerUtil.h"
 
 #include "MCGManager.h"
 #include "MetaDataHandler.h"

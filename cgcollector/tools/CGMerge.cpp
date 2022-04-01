@@ -47,7 +47,7 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
   }
 
   // {
-  // "_Meta": {...}, <-- Gets attached by "attachFormatTwoHeader"
+  // "_Meta": {...}, <-- Gets attached by "attachMCGFormatHeader"
   // "_CG": { /** Gets constructed in the for loop **/ }
   // }
   attachFormatTwoHeader(wholeCGFinal);

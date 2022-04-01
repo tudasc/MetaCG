@@ -15,6 +15,7 @@ set(MetacgGraphLibSources
     include/MCGWriter.h
     src/MCGWriter.cpp
     include/Util.h
+    include/MCGBaseInfo.h
 )
 
 add_library(metacg SHARED ${MetacgGraphLibSources})
@@ -44,3 +45,6 @@ configure_package_config_file(
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATION lib/cmake)
+
+# Add the directory containing unit tests
+add_subdirectory(test/unit)

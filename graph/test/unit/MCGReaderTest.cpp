@@ -6,10 +6,11 @@
 
 #include "gtest/gtest.h"
 
-#include "LoggerUtil.h"
+#include "../../../pgis/test/unit/LoggerUtil.h"
 #include "MCGManager.h"
 #include "MCGReader.h"
 #include "nlohmann/json.hpp"
+
 
 using namespace metacg;
 using json = nlohmann::json;
@@ -176,6 +177,7 @@ TEST(VersionTwoMetaCGReaderTest, EmptyCG) {
   mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   metacg::io::JsonSource js(j);
   metacg::io::VersionTwoMetaCGReader mcgReader(js);
+  // "The call graph in the metacg file was null"
   ASSERT_THROW(mcgReader.read(mcgm), std::runtime_error);
 }
 

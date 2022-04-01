@@ -5,7 +5,7 @@
  */
 #include "gtest/gtest.h"
 
-#include "LoggerUtil.h"
+#include "../../../pgis/test/unit/LoggerUtil.h"
 #include "MCGManager.h"
 #include "MCGWriter.h"
 #include "MetaDataHandler.h"
@@ -39,7 +39,6 @@ static const std::string lid{"LIData"};
 }  // namespace JsonFieldNames
 
 TEST(MCGWriterTest, EmptyGraph) {
-  json j;
   loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();
@@ -52,11 +51,11 @@ TEST(MCGWriterTest, EmptyGraph) {
   metacg::io::MCGWriter mcgw(mcgm);
   mcgw.write(jsSink);
 
+  auto j = jsSink.getJson();
   ASSERT_TRUE(j[JsonFieldNames::cg].is_null());
 }
 
 TEST(MCGWriterTest, OneNodeGraphNoHandlerAttached) {
-  json j;
   loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();
@@ -79,7 +78,6 @@ TEST(MCGWriterTest, OneNodeGraphNoHandlerAttached) {
 }
 
 TEST(MCGWriterTest, OneNodeGraph) {
-  json j;
   loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();
@@ -120,7 +118,6 @@ TEST(MCGWriterTest, OneNodeGraph) {
 }
 
 TEST(MCGWriterTest, OneNodeGraphWithData) {
-  json j;
   loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();
@@ -170,7 +167,6 @@ TEST(MCGWriterTest, OneNodeGraphWithData) {
 }
 
 TEST(MCGWriterTest, OneNodeGraphNoDataForHandler) {
-  json j;
   loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();

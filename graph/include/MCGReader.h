@@ -168,9 +168,6 @@ class VersionTwoMetaCGReader : public MetaCGReader {
   void read(metacg::graph::MCGManager &cgManager) override;
 };
 
-
-
-
 }  // namespace metacg::io
 
 #endif
