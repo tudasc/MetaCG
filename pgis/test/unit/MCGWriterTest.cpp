@@ -43,7 +43,7 @@ TEST(MCGWriterTest, EmptyGraph) {
   loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetActiveGraph();
   mcgm.addMetaHandler<metacg::io::retriever::BaseProfileDataHandler>();
   mcgm.addMetaHandler<metacg::io::retriever::PiraOneDataRetriever>();
   mcgm.addMetaHandler<LoadImbalance::LoadImbalanceMetaDataHandler>();
@@ -60,7 +60,7 @@ TEST(MCGWriterTest, OneNodeGraphNoHandlerAttached) {
   loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetActiveGraph();
   auto mainNode = mcgm.findOrCreateNode("main");
 
   metacg::io::JsonSink jsSink;
@@ -83,7 +83,7 @@ TEST(MCGWriterTest, OneNodeGraph) {
   loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetActiveGraph();
   auto mainNode = mcgm.findOrCreateNode("main");
   mcgm.addMetaHandler<metacg::io::retriever::BaseProfileDataHandler>();
   mcgm.addMetaHandler<metacg::io::retriever::PiraOneDataRetriever>();
@@ -124,7 +124,7 @@ TEST(MCGWriterTest, OneNodeGraphWithData) {
   loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetActiveGraph();
   auto mainNode = mcgm.findOrCreateNode("main");
   mcgm.addMetaHandler<metacg::io::retriever::BaseProfileDataHandler>();
   mcgm.addMetaHandler<metacg::io::retriever::PiraOneDataRetriever>();
@@ -174,7 +174,7 @@ TEST(MCGWriterTest, OneNodeGraphNoDataForHandler) {
   loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetActiveGraph();
   auto mainNode = mcgm.findOrCreateNode("main");
   mcgm.addMetaHandler<metacg::io::retriever::GlobalLoopDepthHandler>();
 

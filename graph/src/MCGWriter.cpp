@@ -37,7 +37,7 @@ void metacg::io::MCGWriter::write(JsonSink &js) {
   nlohmann::json j;
   attachFormatTwoHeader(j);
 
-  for (const auto &n : mcgManager.getCallgraph()) {
+  for (const auto &n : *mcgManager.getCallgraph()) {
     createNodeData(n, j);  // general node data?
     createAndAddMetaData(n, mcgManager, j);
   }

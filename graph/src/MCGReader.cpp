@@ -169,8 +169,7 @@ void VersionOneMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
 
   // set load imbalance flags in CgNode
   for (const auto pfi : functions) {
-    std::optional<CgNodePtr> opt_f = cgManager.getCallgraph().getNode(pfi.first);
-
+    std::optional<CgNodePtr> opt_f = cgManager.getCallgraph()->getNode(pfi.first);
     if (opt_f.has_value()) {
       CgNodePtr node = opt_f.value();
       node->get<LoadImbalance::LIMetaData>()->setVirtual(pfi.second.isVirtual);
@@ -189,7 +188,7 @@ void VersionOneMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
 void VersionOneMetaCGReader::addNumStmts(metacg::graph::MCGManager &cgm) {
   for (const auto &[k, fi] : functions) {
     auto g = cgm.getCallgraph();
-    auto node = g.getNode(fi.functionName);
+    auto node = g->getNode(fi.functionName);
     assert(node != nullptr && "Nodes with #statements attached should be available");
     if (node->has<pira::PiraOneData>()){
       auto pod = node->get<pira::PiraOneData>();
