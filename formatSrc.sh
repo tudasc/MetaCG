@@ -8,3 +8,7 @@ find ./cgcollector/lib -iname ".cpp" -exec clang-format -i {} \;
 find ./cgcollector/lib -iname ".h" -exec clang-format -i {} \;
 find ./cgcollector/tools -iname ".cpp" -exec clang-format -i {} \;
 find ./cgcollector/tools -iname ".h" -exec clang-format -i {} \;
+
+# Apply CMake formatting
+find . -name "CMakeLists.txt" -exec cmake-format -i {} \;
+find ./cmake -name "*.cmake" -type f -exec cmake-format -i {} \;

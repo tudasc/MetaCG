@@ -10,32 +10,18 @@
 
 using FunctionNames = std::set<std::string>;
 
-//inline void insertNode(nlohmann::json &callgraph, const std::string &nodeName, const FunctionNames &callees,
-//                       const FunctionNames &callers, const FunctionNames &overriddenBy,
-//                       const FunctionNames &overriddenFunctions, const bool isVirtual, const bool doesOverride,
-//                       const bool hasBody, int version) {
-//  if (version == 1) {
-//    callgraph[nodeName] = {{"callees", callees},
-//                           {"isVirtual", isVirtual},
-//                           {"doesOverride", doesOverride},
-//                           {"overriddenFunctions", overriddenFunctions},
-//                           {"overriddenBy", overriddenBy},
-//                           {"parents", callers},
-//                           {"hasBody", hasBody}};
-//  } else if (version == 2) {
-//    callgraph["_CG"][nodeName] = {{"callees", callees},
-//                                  {"isVirtual", isVirtual},
-//                                  {"doesOverride", doesOverride},
-//                                  {"overrides", overriddenFunctions},
-//                                  {"overriddenBy", overriddenBy},
-//                                  {"callers", callers},
-//                                  {"hasBody", hasBody}};
-//  }
-//}
+metacg::MCGFileInfo metacg::getVersionTwoFileInfo(metacg::MCGGeneratorVersionInfo mcgGenInfo) {
+  return {MCGFileFormatInfo(2, 0), mcgGenInfo};
+}
+
+metacg::MCGGeneratorVersionInfo metacg::getCGCollectorGeneratorInfo() {
+  std::string cgcCollName("CGCollector");
+  return {cgcCollName, CGCollector_VERSION_MAJOR, CGCollector_VERSION_MINOR, MetaCG_GIT_SHA};
+}
 
 void metacg::io::MCGWriter::write(JsonSink &js) {
   nlohmann::json j;
-  attachFormatTwoHeader(j);
+  attachMCGFormatHeader(j);
 
   for (const auto &n : *mcgManager.getCallgraph()) {
     createNodeData(n, j);  // general node data?
@@ -57,22 +43,24 @@ void metacg::io::MCGWriter::createNodeData(const CgNodePtr node, nlohmann::json 
   //  const auto overrides = node->getOverrides();
   //  const auto overriddenBy = node->getOverriddenBy();
   //  const auto doesOverride = node->getDoesOverride();
-  const bool doesOverride {false};
+  const bool doesOverride{false};
   const std::set<std::string> overrides;
   const std::set<std::string> overriddenBy;
-//  insertNode(j, funcName, callees, callers, overriddenBy, overrides, isVirtual, doesOverride, hasBody, 2);
+  //  insertNode(j, funcName, callees, callers, overriddenBy, overrides, isVirtual, doesOverride, hasBody, 2);
 
-  j["_CG"][funcName] = {{"callees", metacg::util::to_string(callees)},
-                        {"isVirtual", isVirtual},
-                        {"doesOverride", doesOverride},
-                        {"overrides", overrides},
-                        {"overriddenBy", overriddenBy},
-                        {"callers", metacg::util::to_string(callers)},
-                        {"hasBody", hasBody},
-                        {"meta", nullptr}};
+  const auto nodeInfo = fileInfo.nodeInfo;
+  j[fileInfo.formatInfo.cgFieldName][funcName] = {{nodeInfo.calleesStr, metacg::util::to_string(callees)},
+                                                  {nodeInfo.isVirtualStr, isVirtual},
+                                                  {nodeInfo.doesOverrideStr, doesOverride},
+                                                  {nodeInfo.overridesStr, overrides},
+                                                  {nodeInfo.overriddenByStr, overriddenBy},
+                                                  {nodeInfo.callersStr, metacg::util::to_string(callers)},
+                                                  {nodeInfo.hasBodyStr, hasBody},
+                                                  {nodeInfo.metaStr, nullptr}};
 }
 
-void metacg::io::MCGWriter::createAndAddMetaData(CgNodePtr node, const metacg::graph::MCGManager &mcgm, nlohmann::json &j) {
+void metacg::io::MCGWriter::createAndAddMetaData(CgNodePtr node, const metacg::graph::MCGManager &mcgm,
+                                                 nlohmann::json &j) {
   const auto funcName = node->getFunctionName();
   const auto mdHandlers = mcgm.getMetaHandlers();
   for (const auto mdh : mdHandlers) {
@@ -80,6 +68,6 @@ void metacg::io::MCGWriter::createAndAddMetaData(CgNodePtr node, const metacg::g
       continue;
     }
     const auto mdJson = mdh->value(node);
-    j["_CG"][funcName]["meta"][mdh->toolName()] = mdJson;
+    j[fileInfo.formatInfo.cgFieldName][funcName][fileInfo.nodeInfo.metaStr][mdh->toolName()] = mdJson;
   }
 }
