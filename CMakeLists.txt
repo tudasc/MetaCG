@@ -85,3 +85,17 @@ option(
 if(WITH_PGIS)
   add_subdirectory(pgis)
 endif()
+
+# If set to on, CMake looks for installed nlohmann::json
+option(
+  METACG_USE_EXTERNAL_JSON
+  "On or off"
+  OFF
+)
+
+# if set to on, CMake looks for installed spdlog
+option(
+  METACG_USE_EXTERNAL_SPDLOG
+  "On or off"
+  OFF
+)
