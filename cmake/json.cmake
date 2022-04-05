@@ -1,31 +1,23 @@
-include(ExternalProject)
+include(FetchContent)
 
-if(DEFINED JSON_INCLUDE)
-  message("JSON_INCLUDE predefined: ${JSON_INCLUDE}")
+if(METACG_USE_EXTERNAL_JSON)
+  message("Using externally found json library")
+  # Taken from https://cmake.org/cmake/help/v3.16/command/find_package.html#version-selection Should enable to use the
+  # highest available version number, should the package provide sorting
+  set(CMAKE_FIND_PACKAGE_SORT_ORDER NATURAL)
+  set(CMAKE_FIND_PACKAGE_SORT_DIRECTION DEC)
+  find_package(
+    nlohmann_json
+    3.10
+    REQUIRED
+  )
 else()
-  find_path(JSON_LIBRARY NAMES json)
-  if(JSON_LIBRARY)
-    set(JSON_INCLUDE ${JSON_LIBRARY}/json/single_include)
-    message("JSON found in ${JSON_INCLUDE}")
-  else()
-    message("JSON library not found, download into extern during make")
-    ExternalProject_Add(
-      json
-      SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern/json
-      GIT_REPOSITORY "https://github.com/nlohmann/json.git"
-      GIT_TAG master
-      CONFIGURE_COMMAND ""
-      BUILD_COMMAND ""
-      INSTALL_COMMAND ""
-      TEST_COMMAND ""
-      GIT_SHALLOW true
-    )
-    set(JSON_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/extern/json/single_include)
-  endif()
+  message("Using fetched release version of json library")
+
+  FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.10.5/json.tar.xz)
+  FetchContent_MakeAvailable(json)
 endif()
 
 function(add_json target)
-  add_dependencies(${target} json)
-
-  target_include_directories(${target} SYSTEM PUBLIC ${JSON_INCLUDE})
+  target_link_libraries(${target} nlohmann_json::nlohmann_json)
 endfunction()

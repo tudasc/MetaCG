@@ -52,3 +52,9 @@ void LoadImbalanceMetaDataHandler::read(const nlohmann::json &j, const std::stri
     node->addMetaData(md);
   }
 }
+
+nlohmann::json LoadImbalanceMetaDataHandler::value(const CgNodePtr n) const {
+  nlohmann::json j;
+  to_json(j, *(n->get<LoadImbalance::LIMetaData>()));
+  return j;
+}

@@ -6,7 +6,7 @@
 
 #include "../../../../graph/include/Callgraph.h"
 #include "gtest/gtest.h"
-#include <MCGReader.h>
+#include <MCGWriter.h>
 #include <loadImbalance/LIRetriever.h>
 
 using namespace metacg;

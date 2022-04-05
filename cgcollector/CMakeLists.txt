@@ -1,10 +1,6 @@
 set(PROJECT_NAME CGCollector)
 set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 
-function(add_config_include target)
-  target_include_directories(${target} PUBLIC "${PROJECT_BINARY_DIR}")
-endfunction()
-
 # include directories
 function(add_collector_include target)
   target_include_directories(
@@ -48,19 +44,6 @@ function(default_compile_options target)
     target_compile_options(${target} PUBLIC "${ARG_PUBLIC_FLAGS}")
   endif()
 endfunction()
-
-include(GetGitRevisionDescription)
-
-get_git_head_revision(GIT_REFSPEC GIT_SHA1)
-if(NOT
-   DEFINED
-   GIT_SHA1
-)
-  set(GIT_SHA1 "NO_GIT_ROOT")
-endif()
-message(${GIT_SHA1})
-
-configure_file(Config.h.in config.h)
 
 add_subdirectory(lib)
 add_subdirectory(tools)

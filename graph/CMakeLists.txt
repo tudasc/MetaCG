@@ -12,6 +12,10 @@ set(MetacgGraphLibSources
     include/CgNodePtr.h
     include/MetaData.h
     include/MCGManager.h
+    include/MCGWriter.h
+    src/MCGWriter.cpp
+    include/Util.h
+    include/MCGBaseInfo.h
 )
 
 add_library(metacg SHARED ${MetacgGraphLibSources})
@@ -21,6 +25,8 @@ message("Source dir for MetaCG lib: " ${PROJECT_SOURCE_DIR})
 target_include_directories(metacg PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/graph/include>)
 
 target_include_directories(metacg PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/pgis/lib/include>)
+
+add_config_include(metacg)
 
 add_json(metacg)
 add_spdlog_libraries(metacg)
@@ -39,3 +45,6 @@ configure_package_config_file(
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATION lib/cmake)
+
+# Add the directory containing unit tests
+add_subdirectory(test/unit)

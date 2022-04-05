@@ -31,18 +31,19 @@ TEST_F(LIEstimatorPhaseTest, EmptyCG) {
   Config cfg;
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
   cm.setConfig(&cfg);
   cm.setNoOutput();
-  cm.setCG(mcgm.getCallgraph());
+  cm.setCG(*mcgm.getCallgraph());
 
   auto liConfig = std::make_unique<LoadImbalance::LIConfig>(
       LoadImbalance::LIConfig{LoadImbalance::MetricType::Efficiency, 1.2, 0.1, LoadImbalance::ContextStrategy::None, 0,
                               LoadImbalance::ChildRelevanceStrategy::ConstantThreshold, 5, 0.0});
   LoadImbalance::LIEstimatorPhase lie(std::move(liConfig));
   cm.registerEstimatorPhase(&lie);
-  ASSERT_TRUE(mcgm.getCallgraph().isEmpty());
+  ASSERT_TRUE(mcgm.getCallgraph()->isEmpty());
   ASSERT_TRUE(cm.getCallgraph(&cm).isEmpty());
   ASSERT_DEATH(cm.applyRegisteredPhases(), "Running the processor on empty graph. Need to construct graph.");
 }
@@ -52,7 +53,8 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
 
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -116,11 +118,11 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
   childNode4->get<pira::PiraOneData>()->setComesFromCube();
   childNode5->get<pira::PiraOneData>()->setComesFromCube();
 
-  for (CgNodePtr n : mcgm.getCallgraph()) {
+  for (CgNodePtr n : *mcgm.getCallgraph()) {
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
 
-  cm.setCG(mcgm.getCallgraph());
+  cm.setCG(*mcgm.getCallgraph());
 
   // apply estimator phases
   auto liConfig = std::make_unique<LoadImbalance::LIConfig>(
@@ -132,29 +134,30 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
 
   auto graph = cm.getCallgraph(&cm);
 
-  ASSERT_EQ(graph.findMain(), mainNode);
+  ASSERT_EQ(graph.getMain(), mainNode);
 
-  ASSERT_EQ(graph.findMain()->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child1")->isInstrumented(), false);
-  ASSERT_EQ(graph.findNode("child2")->isInstrumented(), false);
-  ASSERT_EQ(graph.findNode("child3")->isInstrumented(), false);
-  ASSERT_EQ(graph.findNode("child4")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child5")->isInstrumented(), false);
+  ASSERT_EQ(graph.getMain()->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child1")->isInstrumented(), false);
+  ASSERT_EQ(graph.getNode("child2")->isInstrumented(), false);
+  ASSERT_EQ(graph.getNode("child3")->isInstrumented(), false);
+  ASSERT_EQ(graph.getNode("child4")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child5")->isInstrumented(), false);
 
-  ASSERT_EQ(graph.findNode("gc1")->isInstrumented(), false);
-  ASSERT_EQ(graph.findNode("gc2")->isInstrumented(), false);
-  ASSERT_EQ(graph.findNode("gc3")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("gc4")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("gc5")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("gc1")->isInstrumented(), false);
+  ASSERT_EQ(graph.getNode("gc2")->isInstrumented(), false);
+  ASSERT_EQ(graph.getNode("gc3")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("gc4")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("gc5")->isInstrumented(), true);
 }
 
 TEST_F(LIEstimatorPhaseTest, Virtual) {
   Config cfg;
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
-  ASSERT_TRUE(mcgm.getCallgraph().isEmpty());
+  ASSERT_TRUE(mcgm.getCallgraph()->isEmpty());
   cm.setConfig(&cfg);
   cm.setNoOutput();
 
@@ -177,11 +180,11 @@ TEST_F(LIEstimatorPhaseTest, Virtual) {
   child->addChildNode(grandchild);
   grandchild->addChildNode(grandgrandchild);
 
-  for (CgNodePtr n : mcgm.getCallgraph()) {
+  for (CgNodePtr n : *mcgm.getCallgraph()) {
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
 
-  cm.setCG(mcgm.getCallgraph());
+  cm.setCG(*mcgm.getCallgraph());
 
   // apply estimator phases
   auto liConfig = std::make_unique<LoadImbalance::LIConfig>(
@@ -193,18 +196,19 @@ TEST_F(LIEstimatorPhaseTest, Virtual) {
 
   auto graph = cm.getCallgraph(&cm);
 
-  ASSERT_EQ(graph.findMain(), mainNode);
-  ASSERT_EQ(graph.findNode("main")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("grandchild")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("grandgrandchild")->isInstrumented(), false);
+  ASSERT_EQ(graph.getMain(), mainNode);
+  ASSERT_EQ(graph.getNode("main")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("grandchild")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("grandgrandchild")->isInstrumented(), false);
 }
 
 TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
   Config cfg;
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -228,7 +232,7 @@ TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
   mcgm.addEdge(child1, grandchild);
   mcgm.addEdge(child2, grandchild);
 
-  for (CgNodePtr n : mcgm.getCallgraph()) {
+  for (CgNodePtr n : *mcgm.getCallgraph()) {
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
 
@@ -238,7 +242,7 @@ TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
   grandchild->get<pira::BaseProfileData>()->setCallData(child2, 1, 10.0, 1.0, 0, 0);
   grandchild->get<pira::BaseProfileData>()->setCallData(child2, 1, 10.0, 100.0, 0, 1);
 
-  cm.setCG(mcgm.getCallgraph());
+  cm.setCG(*mcgm.getCallgraph());
 
   // apply estimator phases
   auto liConfig = std::make_unique<LoadImbalance::LIConfig>(LoadImbalance::LIConfig{
@@ -250,18 +254,19 @@ TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
 
   auto graph = cm.getCallgraph(&cm);
 
-  ASSERT_EQ(graph.findMain(), mainNode);
-  ASSERT_EQ(graph.findNode("main")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child1")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child2")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("grandchild")->isInstrumented(), true);
+  ASSERT_EQ(graph.getMain(), mainNode);
+  ASSERT_EQ(graph.getNode("main")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child1")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child2")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("grandchild")->isInstrumented(), true);
 }
 
 TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
   Config cfg;
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -284,7 +289,7 @@ TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
   mcgm.addEdge(child1, grandchild);
   mcgm.addEdge(child2, grandchild);
 
-  for (CgNodePtr n : mcgm.getCallgraph()) {
+  for (CgNodePtr n : *mcgm.getCallgraph()) {
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
 
@@ -294,7 +299,7 @@ TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
   grandchild->get<pira::BaseProfileData>()->setCallData(child2, 1, 10.0, 1.0, 0, 0);
   grandchild->get<pira::BaseProfileData>()->setCallData(child2, 1, 10.0, 100.0, 0, 1);
 
-  cm.setCG(mcgm.getCallgraph());
+  cm.setCG(*mcgm.getCallgraph());
 
   // apply estimator phases
   auto liConfig = std::make_unique<LoadImbalance::LIConfig>(
@@ -306,18 +311,19 @@ TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
 
   auto graph = cm.getCallgraph(&cm);
 
-  ASSERT_EQ(graph.findMain(), mainNode);
-  ASSERT_EQ(graph.findNode("main")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child1")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child2")->isInstrumented(), false);
-  ASSERT_EQ(graph.findNode("grandchild")->isInstrumented(), true);
+  ASSERT_EQ(graph.getMain(), mainNode);
+  ASSERT_EQ(graph.getNode("main")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child1")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child2")->isInstrumented(), false);
+  ASSERT_EQ(graph.getNode("grandchild")->isInstrumented(), true);
 }
 
 TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
   Config cfg;
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -346,7 +352,7 @@ TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
   child3->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 10.0, 1.0, 0, 0);
   child3->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 10.0, 100.0, 0, 1);
 
-  cm.setCG(mcgm.getCallgraph());
+  cm.setCG(*mcgm.getCallgraph());
   // apply estimator phases
   auto liConfig = std::make_unique<LoadImbalance::LIConfig>(LoadImbalance::LIConfig{
       LoadImbalance::MetricType::Efficiency, 1.2, 0.1, LoadImbalance::ContextStrategy::MajorParentSteps, 1,
@@ -357,9 +363,9 @@ TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
 
   auto graph = cm.getCallgraph(&cm);
 
-  ASSERT_EQ(graph.findMain(), mainNode);
-  ASSERT_EQ(graph.findNode("main")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child1")->isInstrumented(), false);
-  ASSERT_EQ(graph.findNode("child2")->isInstrumented(), true);
-  ASSERT_EQ(graph.findNode("child3")->isInstrumented(), true);
+  ASSERT_EQ(graph.getMain(), mainNode);
+  ASSERT_EQ(graph.getNode("main")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child1")->isInstrumented(), false);
+  ASSERT_EQ(graph.getNode("child2")->isInstrumented(), true);
+  ASSERT_EQ(graph.getNode("child3")->isInstrumented(), true);
 }

@@ -20,19 +20,19 @@ class CallgraphTest : public ::testing::Test {
 TEST_F(CallgraphTest, EmptyCG) {
   Callgraph c;
   ASSERT_TRUE(c.isEmpty());
-  ASSERT_EQ(nullptr, c.findMain());
+  ASSERT_EQ(nullptr, c.getMain());
   ASSERT_EQ(0, c.size());
 }
 
 TEST_F(CallgraphTest, OnlyMainCG) {
   Callgraph c;
   ASSERT_TRUE(c.isEmpty());
-  ASSERT_EQ(nullptr, c.findMain());
+  ASSERT_EQ(nullptr, c.getMain());
   auto n = std::make_shared<CgNode>("main");
   c.insert(n);
   ASSERT_FALSE(c.isEmpty());
-  ASSERT_EQ(n, c.findMain());
-  ASSERT_EQ(n, c.findNode("main"));
+  ASSERT_EQ(n, c.getMain());
+  ASSERT_EQ(n, c.getNode("main"));
   ASSERT_EQ(n, *(c.begin()));
   ASSERT_EQ(true, c.hasNode("main"));
   ASSERT_EQ(1, c.size());
@@ -47,8 +47,8 @@ TEST_F(CallgraphTest, ClearEmptiesGraph) {
   ASSERT_TRUE(c.hasNode("main"));  // sets lastSearched field
   c.clear();
   ASSERT_TRUE(c.isEmpty());
-  ASSERT_EQ(nullptr, c.findMain());
-  ASSERT_EQ(nullptr, c.getLastSearched());
+  ASSERT_EQ(nullptr, c.getMain());
+  ASSERT_EQ(nullptr, c.getLastSearchedNode());
 }
 
 TEST_F(CallgraphTest, TwoNodeConnectedCG) {
@@ -62,8 +62,8 @@ TEST_F(CallgraphTest, TwoNodeConnectedCG) {
   ASSERT_EQ(2, c.size());
   ASSERT_EQ(true, c.hasNode("main"));
   ASSERT_EQ(true, c.hasNode("child"));
-  ASSERT_EQ(main, c.findMain());
-  auto founMain = c.findMain();
+  ASSERT_EQ(main, c.getMain());
+  auto founMain = c.getMain();
   ASSERT_EQ(child, (*founMain->getChildNodes().begin()));
 }
 
@@ -71,9 +71,9 @@ TEST_F(CallgraphTest, HasNodeGetLastSearchedTest) {
   Callgraph c;
   auto main = std::make_shared<CgNode>("child");
   c.insert(main);
-  ASSERT_EQ(nullptr, c.getLastSearched());
+  ASSERT_EQ(nullptr, c.getLastSearchedNode());
   c.hasNode("child");
-  ASSERT_EQ(main, c.getLastSearched());
+  ASSERT_EQ(main, c.getLastSearchedNode());
 }
 
 TEST_F(CallgraphTest, InsertTwiceTest) {
@@ -93,8 +93,8 @@ TEST_F(CallgraphTest, SearchNodes) {
   node2->addChildNode(node);
   node->addParentNode(node2);
   c.insert(node2);
-  ASSERT_EQ(nullptr, c.findMain());
+  ASSERT_EQ(nullptr, c.getMain());
   ASSERT_EQ(false, c.hasNode("main"));
   ASSERT_EQ(false, c.hasNode("nodeee"));
-  ASSERT_EQ(nullptr, c.getLastSearched());
+  ASSERT_EQ(nullptr, c.getLastSearchedNode());
 }

@@ -16,6 +16,7 @@
 #include "Utility.h"
 #include "CallgraphManager.h"
 #include "nlohmann/json.hpp"
+#include "GlobalConfig.h"
 
 // System library
 #include <string>
@@ -40,7 +41,19 @@ struct TestHandler : public MetaDataHandler {
   const std::string toolName() const override { return "TestMetaHandler"; }
   void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
   bool handles(const CgNodePtr n) const override { return false; }
-  int value(const CgNodePtr n) const { return i; }
+  json value(const CgNodePtr n) const override {
+    json j;
+    j = i;
+    return j;
+  }
+};
+
+struct BaseProfileDataHandler : public MetaDataHandler {
+  const std::string toolname{"baseProfileData"};
+  bool handles(const CgNodePtr n) const override { return n->has<pira::BaseProfileData>(); }
+  const std::string toolName() const override { return toolname; }
+  json value(const CgNodePtr n) const override;
+  void read([[maybe_unused]] const json &j, const std::string &functionName) override;
 };
 
 /**
@@ -48,9 +61,13 @@ struct TestHandler : public MetaDataHandler {
  */
 struct PiraOneDataRetriever : public MetaDataHandler {
   const std::string toolname{"numStatements"};
-  bool handles(const CgNodePtr n) const override { return false; }
+  bool handles(const CgNodePtr n) const override { return n->has<pira::PiraOneData>(); }
   const std::string toolName() const override { return toolname; }
-  int value(const CgNodePtr n) const { return 42; }
+  json value(const CgNodePtr n) const override {
+    json j;
+    j["numStatements"] = n->get<pira::PiraOneData>()->getNumberOfStatements();
+    return j;
+  }
   void read([[maybe_unused]] const json &j, const std::string &functionName) override;
 };
 
@@ -60,7 +77,7 @@ struct PiraOneDataRetriever : public MetaDataHandler {
 struct PiraTwoDataRetriever : public MetaDataHandler {
   const std::string toolname{"PiraIIData"};
   bool handles(const CgNodePtr n) const override;
-  pira::PiraTwoData value(const CgNodePtr n) const;
+  json value(const CgNodePtr n) const override;
   const std::string toolName() const override { return toolname; }
   void read([[maybe_unused]] const json &j, const std::string &functionName) override;
 };
@@ -70,44 +87,50 @@ struct PiraTwoDataRetriever : public MetaDataHandler {
  */
 struct FilePropertyHandler : public MetaDataHandler {
   const std::string toolname{"fileProperties"};
-  bool handles(const CgNodePtr n) const override { return true; }
+  bool handles(const CgNodePtr n) const override { return n->has<pira::FilePropertiesMetaData>(); }
   const std::string toolName() const override { return toolname; }
   void read(const json &j, const std::string &functionName) override;
+  json value(const CgNodePtr n) const override;
 };
 
 struct CodeStatisticsHandler : public MetaDataHandler {
   const std::string toolname{"codeStatistics"};
-  bool handles(const CgNodePtr n) const override { return false; }
+  bool handles(const CgNodePtr n) const override { return n->has<pira::CodeStatisticsMetaData>(); }
   const std::string toolName() const override { return toolname; }
   void read(const json &j, const std::string &functionName) override;
+  json value(const CgNodePtr n) const override;
 };
 
 struct NumConditionalBranchHandler : public MetaDataHandler {
   const std::string toolname{"numConditionalBranches"};
   void read(const json &j, const std::string &functionName) override;
-  bool handles(const CgNodePtr n) const override { return false; }
+  bool handles(const CgNodePtr n) const override { return n->has<pira::NumConditionalBranchMetaData>(); }
   const std::string toolName() const override { return toolname; }
+  json value(const CgNodePtr n) const override;
 };
 
 struct NumOperationsHandler : public MetaDataHandler {
   const std::string toolname{"numOperations"};
   void read(const json &j, const std::string &functionName) override;
-  bool handles(const CgNodePtr n) const override { return false; }
+  bool handles(const CgNodePtr n) const override { return n->has<pira::NumOperationsMetaData>(); }
   const std::string toolName() const override { return toolname; }
+  json value(const CgNodePtr n) const override;
 };
 
 struct LoopDepthHandler : public MetaDataHandler {
   const std::string toolname{"loopDepth"};
   void read(const json &j, const std::string &functionName) override;
-  bool handles(const CgNodePtr n) const override { return false; }
+  bool handles(const CgNodePtr n) const override { return n->has<pira::LoopDepthMetaData>(); }
   const std::string toolName() const override { return toolname; }
+  json value(const CgNodePtr n) const override;
 };
 
 struct GlobalLoopDepthHandler : public MetaDataHandler {
   const std::string toolname{"globalLoopDepth"};
   void read(const json &j, const std::string &functionName) override;
-  bool handles(const CgNodePtr n) const override { return false; }
+  bool handles(const CgNodePtr n) const override { return n->has<pira::GlobalLoopDepthMetaData>(); }
   const std::string toolName() const override { return toolname; }
+  json value(const CgNodePtr n) const override;
 };
 
 // namespace retriever

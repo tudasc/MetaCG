@@ -10,6 +10,7 @@
 #include "CubeReader.h"
 #include "DotReader.h"
 #include "MCGReader.h"
+#include "MCGWriter.h"
 
 #include "ExtrapEstimatorPhase.h"
 #include "IPCGEstimatorPhase.h"
@@ -210,6 +211,13 @@ int main(int argc, char **argv) {
   checkAndSet<bool>(keepUnreachable.cliName, result, keepNotReachable);
   HeuristicSelection dispose_heuristic;
   checkAndSet<HeuristicSelection>(heuristicSelection.cliName, result, dispose_heuristic);
+
+  if (mcgVersion < 2 &&
+      pgis::config::getSelectedHeuristic() != HeuristicSelection::HeuristicSelectionEnum::STATEMENTS) {
+    std::cout << "Heuristics other than 'statements' are not supported with metacg format 1" << std::endl;
+    exit(1);
+  }
+
   CuttoffSelection dispose_cuttoff;
   checkAndSet<CuttoffSelection>(cuttoffSelection.cliName, result, dispose_cuttoff);
 
@@ -241,7 +249,7 @@ int main(int argc, char **argv) {
   float runTimeThreshold = .0f;
   auto &cg = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
-
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   cg.setConfig(&c);
   cg.setExtrapConfig(parseExtrapArgs(result));
 
@@ -301,8 +309,8 @@ int main(int argc, char **argv) {
       mcgReader.read(mcgm);
     }
 
-    spdlog::get("console")->info("Read MetaCG with {} nodes.", mcgm.getCallgraph().size());
-    cg.setCG(mcgm.getCallgraph());
+    spdlog::get("console")->info("Read MetaCG with {} nodes.", mcgm.getCallgraph()->size());
+    cg.setCG(*mcgm.getCallgraph());
 
     if (applyStaticFilter) {
       // load imbalance detection
@@ -350,7 +358,7 @@ int main(int argc, char **argv) {
       if (!pConfig.getLIConfig()) {
         spdlog::get("errconsole")
             ->error("Provide configuration for load imbalance detection. Refer to PIRA's README for further details.");
-        return (EXIT_FAILURE);
+        return EXIT_FAILURE;
       }
       cg.registerEstimatorPhase(
           new LoadImbalance::LIEstimatorPhase(std::move(pConfig.getLIConfig())));  // attention: moves out liConfig!
@@ -380,7 +388,7 @@ int main(int argc, char **argv) {
     auto &pConfig = pgis::config::ParameterConfig::get();
     if (!pConfig.getPiraIIConfig()) {
       console->error("Provide PIRA II configuration in order to use Extra-P estimators.");
-      return (EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
 
     cg.attachExtrapModels();
@@ -410,6 +418,15 @@ int main(int argc, char **argv) {
   if (cg.hasPassesRegistered()) {
     spdlog::get("console")->info("Running registered estimator phases");
     cg.applyRegisteredPhases();
+  }
+
+  // Example use of MetaCG writer
+  {
+    metacg::io::JsonSink jsSink;
+    metacg::io::MCGWriter mcgw(mcgm);
+    mcgw.write(jsSink);
+    std::ofstream ofile("filename");
+    jsSink.output(ofile);
   }
 
   return EXIT_SUCCESS;

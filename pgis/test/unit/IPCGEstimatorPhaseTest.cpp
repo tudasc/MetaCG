@@ -17,18 +17,20 @@ class IPCGEstimatorPhaseBasic : public ::testing::Test {
   void SetUp() override {
     loggerutil::getLogger();
     auto &mcgm = metacg::graph::MCGManager::get();
-    mcgm.reset();
+    mcgm.resetManager();
+    mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   }
 };
 
 TEST_F(IPCGEstimatorPhaseBasic, EmptyCG) {
+
   // XXX this is not ideal, but required for the death assert
   LOGGERUTIL_ENABLE_ERRORS_LOCAL
-
   Config cfg;
   auto &mcgm = metacg::graph::MCGManager::get();
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  cm.setCG(mcgm.getCallgraph());
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+  cm.setCG(*mcgm.getCallgraph());
   cm.setConfig(&cfg);
   cm.setNoOutput();
   StatementCountEstimatorPhase sce(10);
@@ -41,19 +43,20 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCG) {
   Config cfg;
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
-  //  mcgm.reset();
+  mcgm.resetManager();
   cm.setConfig(&cfg);
   cm.setNoOutput();
+  mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
   ASSERT_NE(mainNode, nullptr);
-  cm.setCG(mcgm.getCallgraph());
-  ASSERT_FALSE(mcgm.getCallgraph().isEmpty());
+  cm.setCG(*mcgm.getCallgraph());
+  ASSERT_FALSE(mcgm.getCallgraph()->isEmpty());
   StatementCountEstimatorPhase sce(10);
   sce.setNoReport();
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
-  auto graph = mcgm.getCallgraph();
-  ASSERT_EQ(mainNode, graph.findMain());
+  auto graph = *mcgm.getCallgraph();
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(0, sce.getNumStatements(mainNode));
   cm.removeAllEstimatorPhases();
 }
@@ -64,17 +67,18 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCG) {
   auto &mcgm = metacg::graph::MCGManager::get();
   cm.setConfig(&cfg);
   cm.setNoOutput();
+  mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
   auto childNode = mcgm.findOrCreateNode("child1");
   mcgm.addEdge(mainNode, childNode);
   //  cm.putEdge("main", "main.c", 1, "child1", 100, 1.2, 0, 0);
-  cm.setCG(mcgm.getCallgraph());
+  cm.setCG(*mcgm.getCallgraph());
   StatementCountEstimatorPhase sce(10);
   sce.setNoReport();
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(0, sce.getNumStatements(mainNode));
   cm.removeAllEstimatorPhases();
 }
@@ -85,6 +89,7 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCGwStmt) {
   auto &mcgm = metacg::graph::MCGManager::get();
   cm.setConfig(&cfg);
   cm.setNoOutput();
+  mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
   const auto &[has, data] = mainNode->checkAndGet<pira::PiraOneData>();
   if (has) {
@@ -93,14 +98,14 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCGwStmt) {
   } else {
     assert(false && "Nodes should have PIRA I data attached.");
   }
-  cm.setCG(mcgm.getCallgraph());
+  cm.setCG(*mcgm.getCallgraph());
   //  cm.putNumberOfStatements("main", 12, true);
   StatementCountEstimatorPhase sce(10);
   sce.setNoReport();
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(12, sce.getNumStatements(mainNode));
   cm.removeAllEstimatorPhases();
 }
@@ -112,6 +117,7 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCGwStmt) {
   cm.setConfig(&cfg);
   cm.setNoOutput();
 
+  mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
   pira::setPiraOneData(mainNode, 12, true);
 
@@ -120,14 +126,14 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCGwStmt) {
 
   childNode->setReachable();
   mcgm.addEdge(mainNode, childNode);
-  cm.setCG(mcgm.getCallgraph());
+  cm.setCG(*mcgm.getCallgraph());
 
   StatementCountEstimatorPhase sce(10);
   sce.setNoReport();
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(19, sce.getNumStatements(mainNode));
   ASSERT_EQ(7, sce.getNumStatements(childNode));
   cm.removeAllEstimatorPhases();
@@ -141,6 +147,7 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCGwStmt) {
   cm.setConfig(&cfg);
   cm.setNoOutput();
 
+  mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
   pira::setPiraOneData(mainNode, 12, true);
 
@@ -154,14 +161,14 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCGwStmt) {
   mcgm.addEdge(mainNode, childNode2);
   childNode2->setReachable();
 
-  cm.setCG(mcgm.getCallgraph());
+  cm.setCG(*mcgm.getCallgraph());
 
   StatementCountEstimatorPhase sce(10);
   sce.setNoReport();
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(61, sce.getNumStatements(mainNode));
   ASSERT_EQ(7, sce.getNumStatements(childNode));
   ASSERT_EQ(42, sce.getNumStatements(childNode2));
@@ -175,6 +182,7 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCycleCGwStmt) {
 
   cm.setConfig(&cfg);
   cm.setNoOutput();
+  mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
   pira::setPiraOneData(mainNode, 12, true);
 
@@ -189,14 +197,14 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCycleCGwStmt) {
   mcgm.addEdge(childNode2, childNode);
   childNode2->setReachable();
 
-  cm.setCG(mcgm.getCallgraph());
+  cm.setCG(*mcgm.getCallgraph());
 
   StatementCountEstimatorPhase sce(10);
   sce.setNoReport();
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(61, sce.getNumStatements(mainNode));
   ASSERT_EQ(49, sce.getNumStatements(childNode));
   ASSERT_EQ(49, sce.getNumStatements(childNode2));
@@ -211,6 +219,7 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeCGwStmt) {
   cm.setConfig(&cfg);
   cm.setNoOutput();
 
+  mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
   pira::setPiraOneData(mainNode, 12, true);
 
@@ -229,14 +238,14 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeCGwStmt) {
   mcgm.addEdge(childNode, childNode3);
   childNode3->setReachable();
 
-  cm.setCG(mcgm.getCallgraph());
+  cm.setCG(*mcgm.getCallgraph());
 
   StatementCountEstimatorPhase sce(10);
   sce.setNoReport();
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(83, sce.getNumStatements(mainNode));
   ASSERT_EQ(29, sce.getNumStatements(childNode));
   ASSERT_EQ(42, sce.getNumStatements(childNode2));
@@ -251,6 +260,7 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeDiamondCGwStmt) {
 
   cm.setConfig(&cfg);
   cm.setNoOutput();
+  mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
   pira::setPiraOneData(mainNode, 12, true);
 
@@ -270,14 +280,14 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeDiamondCGwStmt) {
   mcgm.addEdge(childNode2, childNode3);
   childNode3->setReachable();
 
-  cm.setCG(mcgm.getCallgraph());
+  cm.setCG(*mcgm.getCallgraph());
 
   StatementCountEstimatorPhase sce(10);
   sce.setNoReport();
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(105, sce.getNumStatements(mainNode));
   ASSERT_EQ(29, sce.getNumStatements(childNode));
   ASSERT_EQ(64, sce.getNumStatements(childNode2));
@@ -301,6 +311,7 @@ TEST_F(IPCGEstimatorPhaseBasic, FiveNodeDiamondCGwStmt) {
 
   cm.setConfig(&cfg);
   cm.setNoOutput();
+  mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
   pira::setPiraOneData(mainNode, 12, true);
 
@@ -325,14 +336,14 @@ TEST_F(IPCGEstimatorPhaseBasic, FiveNodeDiamondCGwStmt) {
   mcgm.addEdge(childNode3, childNode4);
   childNode4->setReachable();
 
-  cm.setCG(mcgm.getCallgraph());
+  cm.setCG(*mcgm.getCallgraph());
 
   StatementCountEstimatorPhase sce(10);
   sce.setNoReport();
   cm.registerEstimatorPhase(&sce);
   cm.applyRegisteredPhases();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_EQ(mainNode, graph.findMain());
+  ASSERT_EQ(mainNode, graph.getMain());
   ASSERT_EQ(113, sce.getNumStatements(mainNode));
   ASSERT_EQ(33, sce.getNumStatements(childNode));
   ASSERT_EQ(68, sce.getNumStatements(childNode2));
@@ -365,7 +376,9 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
     loggerutil::getLogger();
     auto &cm = metacg::pgis::PiraMCGProcessor::get();
     auto &mcgm = metacg::graph::MCGManager::get();
-    mcgm.reset();
+    mcgm.resetManager();
+    mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+
     cm.setConfig(new Config());
     cm.setNoOutput();
     auto mainNode = mcgm.findOrCreateNode("main");
@@ -380,16 +393,16 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
     createCalleeNode("child6", "child5", 2, 0.8, 1000);
     createCalleeNode("child7", "child6", 1, 20.2, 1002);
 
-    cm.setCG(mcgm.getCallgraph());
+    cm.setCG(*mcgm.getCallgraph());
   }
 };
 
 TEST_F(IPCGEstimatorPhaseTest, ValidateBasics) {
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto graph = cm.getCallgraph(&cm);
-  ASSERT_NE(nullptr, graph.findMain());
+  ASSERT_NE(nullptr, graph.getMain());
 
-  auto mainNode = graph.findMain();
+  auto mainNode = graph.getMain();
   EXPECT_EQ(3, mainNode->getChildNodes().size());
   auto childNodes = mainNode->getChildNodes();
   auto nodeIter = childNodes.begin();

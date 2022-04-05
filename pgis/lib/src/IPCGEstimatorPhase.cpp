@@ -630,7 +630,7 @@ void WLCallpathDifferentiationEstimatorPhase::modifyGraph(CgNodePtr mainMethod) 
     if (line.empty()) {
       continue;
     }
-    CgNodePtr node = graph->findNode(line);
+    CgNodePtr node = graph->getNode(line);
     if (node == nullptr) {
       continue;
     }

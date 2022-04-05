@@ -1,8 +1,11 @@
 /**
  * File: MCGReader.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #include "MCGReader.h"
+#include "MCGBaseInfo.h"
+#include "Util.h"
 
 #include "Timing.h"
 
@@ -47,7 +50,7 @@ void MetaCGReader::buildGraph(metacg::graph::MCGManager &cgManager, MetaCGReader
   // Register nodes in the actual graph
   for (const auto &[k, fi] : functions) {
     console->trace("Inserting MetaCG node for function {}", k);
-    auto node = cgManager.findOrCreateNode(k); // node pointer currently unused
+    auto node = cgManager.findOrCreateNode(k);  // node pointer currently unused
     node->setIsVirtual(fi.isVirtual);
     node->setHasBody(fi.hasBody);
     for (const auto &c : fi.callees) {
@@ -169,7 +172,7 @@ void VersionOneMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
 
   // set load imbalance flags in CgNode
   for (const auto pfi : functions) {
-    std::optional<CgNodePtr> opt_f = cgManager.getCallgraph().findNode(pfi.first);
+    std::optional<CgNodePtr> opt_f = cgManager.getCallgraph()->getNode(pfi.first);
     if (opt_f.has_value()) {
       CgNodePtr node = opt_f.value();
       node->get<LoadImbalance::LIMetaData>()->setVirtual(pfi.second.isVirtual);
@@ -188,9 +191,9 @@ void VersionOneMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
 void VersionOneMetaCGReader::addNumStmts(metacg::graph::MCGManager &cgm) {
   for (const auto &[k, fi] : functions) {
     auto g = cgm.getCallgraph();
-    auto node = g.findNode(fi.functionName);
+    auto node = g->getNode(fi.functionName);
     assert(node != nullptr && "Nodes with #statements attached should be available");
-    if (node->has<pira::PiraOneData>()){
+    if (node->has<pira::PiraOneData>()) {
       auto pod = node->get<pira::PiraOneData>();
       pod->setNumberOfStatements(fi.numStatements);
       pod->setHasBody(fi.hasBody);
@@ -205,30 +208,35 @@ void VersionOneMetaCGReader::addNumStmts(metacg::graph::MCGManager &cgm) {
  */
 void VersionTwoMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
   metacg::RuntimeTimer rtt("VersionTwoMetaCGReader::read");
+  MCGFileFormatInfo ffInfo{2, 0};
 
   auto j = source.get();
 
-  auto mcgInfo = j["_MetaCG"];
+  auto mcgInfo = j[ffInfo.metaInfoFieldName];
   if (mcgInfo.is_null()) {
     spdlog::get("console")->error("Could not read version info from metacg file.");
     throw std::runtime_error("Could not read version info from metacg file");
   }
+  /// XXX How to make that we can use the MCGGeneratorVersionInfo to access the identifiers
   auto mcgVersion = mcgInfo["version"].get<std::string>();
   auto generatorName = mcgInfo["generator"]["name"].get<std::string>();
   auto generatorVersion = mcgInfo["generator"]["version"].get<std::string>();
+  MCGGeneratorVersionInfo genVersionInfo{generatorName, metacg::util::getMajorVersionFromString(generatorVersion),
+                                         metacg::util::getMinorVersionFromString(generatorVersion), ""};
   spdlog::get("console")->info("The metacg (version {}) file was generated with {} (version: {})", mcgVersion,
                                generatorName, generatorVersion);
-  { // raii
-  std::string metaReadersStr;
-  int i = 1;
-  for (const auto mh : cgManager.getMetaHandlers()) {
-    metaReadersStr += std::to_string(i) + ") " + mh->toolName() + "  ";
-    ++i;
-  }
-  spdlog::get("console")->info("Executing the meta readers: {}", metaReadersStr);
+  {  // raii
+    std::string metaReadersStr;
+    int i = 1;
+    for (const auto mh : cgManager.getMetaHandlers()) {
+      metaReadersStr += std::to_string(i) + ") " + mh->toolName() + "  ";
+      ++i;
+    }
+    spdlog::get("console")->info("Executing the meta readers: {}", metaReadersStr);
   }
 
-  auto jsonCG = j["_CG"];
+  MCGFileInfo fileInfo{ffInfo, genVersionInfo};
+  auto jsonCG = j[ffInfo.cgFieldName];
   if (jsonCG.is_null()) {
     spdlog::get("console")->error("The call graph in the metacg file was null.");
     throw std::runtime_error("CG in metacg file was null.");
@@ -241,35 +249,35 @@ void VersionTwoMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
 
     /** Bi-directional graph information */
     std::unordered_set<std::string> callees;
-    setIfNotNull(callees, it, "callees");
+    setIfNotNull(callees, it, fileInfo.nodeInfo.calleesStr);
     fi.callees = callees;
     std::unordered_set<std::string> parents;
-    setIfNotNull(parents, it, "callers");  // Different name compared to version 1.0
+    setIfNotNull(parents, it, fileInfo.nodeInfo.callersStr);  // Different name compared to version 1.0
     fi.parents = parents;
 
     /** Overriding information */
-    setIfNotNull(fi.isVirtual, it, "isVirtual");
-    setIfNotNull(fi.doesOverride, it, "doesOverride");
+    setIfNotNull(fi.isVirtual, it, fileInfo.nodeInfo.isVirtualStr);
+    setIfNotNull(fi.doesOverride, it, fileInfo.nodeInfo.doesOverrideStr);
     std::unordered_set<std::string> overriddenFunctions;
-    setIfNotNull(overriddenFunctions, it, "overrides");
+    setIfNotNull(overriddenFunctions, it, fileInfo.nodeInfo.overridesStr);
     fi.overriddenFunctions.insert(overriddenFunctions.begin(), overriddenFunctions.end());
     std::unordered_set<std::string> overriddenBy;
-    setIfNotNull(overriddenBy, it, "overriddenBy");
+    setIfNotNull(overriddenBy, it, fileInfo.nodeInfo.overriddenByStr);
     fi.overriddenBy.insert(overriddenBy.begin(), overriddenBy.end());
 
     /** Information relevant for analysis */
-    setIfNotNull(fi.hasBody, it, "hasBody");
+    setIfNotNull(fi.hasBody, it, fileInfo.nodeInfo.hasBodyStr);
   }
 
   auto potentialTargets = buildVirtualFunctionHierarchy(cgManager);
   buildGraph(cgManager, potentialTargets);
 
   for (json::iterator it = jsonCG.begin(); it != jsonCG.end(); ++it) {
-    /** 
+    /**
      * Pass each attached meta reader the current json object, to see if it has meta data
      *  particular to that reader attached.
      */
-    auto &jsonElem = it.value()["meta"];
+    auto &jsonElem = it.value()[fileInfo.nodeInfo.metaStr];
     if (!jsonElem.is_null()) {
       for (const auto metaHandler : cgManager.getMetaHandlers()) {
         if (jsonElem.contains(metaHandler->toolName())) {

@@ -23,13 +23,23 @@ find_path(EXTRAP_INCLUDE extrap)
 
 include(json)
 include(cxxopts)
+include(spdlog)
 
 # External dependencies
 function(add_clang target)
   # clang specified as system lib to suppress all warnings from clang headers
   target_include_directories(${target} SYSTEM PUBLIC ${CLANG_INCLUDE_DIRS})
 
-  target_link_libraries(${target} clangTooling)
+  target_link_libraries(
+    ${target}
+    clangTooling
+    clangFrontend
+    clangSerialization
+    clangAST
+    clangBasic
+    clangIndex
+    LLVMSupport
+  )
 endfunction()
 
 function(add_extrap target)
@@ -40,10 +50,6 @@ function(add_extrap target)
     ${EXTRAP_LIB}
   )
   target_link_libraries(${target} extrap)
-endfunction()
-
-function(add_spdlog_libraries target)
-  target_link_libraries(${target} spdlog::spdlog)
 endfunction()
 
 function(add_cube target)
@@ -72,8 +78,15 @@ function(add_mcg target)
   add_mcg_library(${target})
 endfunction()
 
+function(add_config_include target)
+  target_include_directories(${target} PUBLIC "${PROJECT_BINARY_DIR}")
+endfunction()
+
 function(add_pgis_includes target)
-  target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/pgis/lib/include>)
+  target_include_directories(
+    ${target} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/pgis/lib/include>
+                     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/pgis/lib/include/config>
+  )
 endfunction()
 
 function(add_graph_includes target)
@@ -193,39 +206,18 @@ if(CMAKE_VERSION
 )
   include_directories("${gtest_SOURCE_DIR}/include")
 endif()
-
-# Download and unpack spdlog at configure time
-configure_file(cmake/spdlog.cmake.in spdlog-download/CMakeLists.txt)
-execute_process(
-  COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-  RESULT_VARIABLE spdresult
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/spdlog-download
-)
-if(spdresult)
-  message(FATAL_ERROR "CMake step for spdlog failed: ${spdresult}")
-endif()
-execute_process(
-  COMMAND ${CMAKE_COMMAND} --build .
-  RESULT_VARIABLE spdresult
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/spdlog-download
-)
-if(spdresult)
-  message(FATAL_ERROR "Build step for spdlog failed: ${spdresult}")
-endif()
-
-# Prevent overriding the parent project's compiler/linker settings on Windows
-set(spdlog_force_shared_crt
-    ON
-    CACHE BOOL
-          ""
-          FORCE
-)
-
-# Add spdlog directly to our build.
-add_subdirectory(
-  ${CMAKE_CURRENT_BINARY_DIR}/spdlog-src
-  ${CMAKE_CURRENT_BINARY_DIR}/spdlog-build
-  EXCLUDE_FROM_ALL
-)
-
-install(TARGETS spdlog DESTINATION lib)
+#
+# Download and unpack spdlog at configure time configure_file(cmake/spdlog.cmake spdlog-download/CMakeLists.txt)
+# execute_process( COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" . RESULT_VARIABLE spdresult WORKING_DIRECTORY
+# ${CMAKE_CURRENT_BINARY_DIR}/spdlog-download ) if(spdresult) message(FATAL_ERROR "CMake step for spdlog failed:
+# ${spdresult}") endif() execute_process( COMMAND ${CMAKE_COMMAND} --build . RESULT_VARIABLE spdresult WORKING_DIRECTORY
+# ${CMAKE_CURRENT_BINARY_DIR}/spdlog-download ) if(spdresult) message(FATAL_ERROR "Build step for spdlog failed:
+# ${spdresult}") endif()
+#
+# Prevent overriding the parent project's compiler/linker settings on Windows set(spdlog_force_shared_crt ON CACHE BOOL
+# "" FORCE )
+#
+# Add spdlog directly to our build. add_subdirectory( ${CMAKE_CURRENT_BINARY_DIR}/spdlog-src
+# ${CMAKE_CURRENT_BINARY_DIR}/spdlog-build EXCLUDE_FROM_ALL )
+#
+# install(TARGETS spdlog DESTINATION lib)

@@ -27,7 +27,7 @@ class LIEstimatorPhase : public EstimatorPhase {
 
   void modifyGraph(CgNodePtr mainMethod) override;
 
-  void doPrerequisites() override { CgHelper::calculateInclusiveStatementCounts(graph->findMain()); }
+  void doPrerequisites() override { CgHelper::calculateInclusiveStatementCounts(graph->getMain()); }
 
  private:
   AbstractMetric *metric;

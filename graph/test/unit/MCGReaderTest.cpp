@@ -6,10 +6,11 @@
 
 #include "gtest/gtest.h"
 
-#include "LoggerUtil.h"
+#include "../../../pgis/test/unit/LoggerUtil.h"
 #include "MCGManager.h"
 #include "MCGReader.h"
 #include "nlohmann/json.hpp"
+
 
 using namespace metacg;
 using json = nlohmann::json;
@@ -22,7 +23,11 @@ struct TestHandler : public metacg::io::retriever::MetaDataHandler {
   const std::string toolName() const override { return "TestMetaHandler"; }
   void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
   bool handles(const CgNodePtr n) const override { return false; }
-  int value(const CgNodePtr n) const { return i; }
+  json value(const CgNodePtr n) const {
+    json j;
+    j = i;
+    return j;
+  }
 };
 
 TEST(VersionOneMCGReaderTest, EmptyJSON) {
@@ -34,12 +39,13 @@ TEST(VersionOneMCGReaderTest, EmptyJSON) {
   //  Config c;
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   metacg::io::JsonSource js(j);
   metacg::io::VersionOneMetaCGReader mcgReader(js);
   mcgReader.read(mcgm);
 
-  const Callgraph &graph = mcgm.getCallgraph();
+  const Callgraph &graph = *mcgm.getCallgraph();
   ASSERT_EQ(graph.size(), 0);
 }
 
@@ -58,12 +64,13 @@ TEST(VersionOneMCGReaderTest, SimpleJSON) {
   //  Config c;
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   metacg::io::JsonSource js(j);
   metacg::io::VersionOneMetaCGReader mcgReader(js);
   mcgReader.read(mcgm);
 
-  Callgraph &graph = mcgm.getCallgraph();
+  Callgraph &graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 1);
 
   CgNodePtr mainNode = graph.getNode("main");
@@ -100,12 +107,13 @@ TEST(VersionOneMCGReaderTest, MultiNodeJSON) {
   //  Config c;
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   metacg::io::JsonSource js(j);
   metacg::io::VersionOneMetaCGReader mcgReader(js);
   mcgReader.read(mcgm);
 
-  Callgraph &graph = mcgm.getCallgraph();
+  Callgraph &graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 2);
 
   CgNodePtr mainNode = graph.getNode("main");
@@ -145,7 +153,8 @@ TEST(VersionTwoMetaCGReaderTest, EmptyJSON) {
 
   // No MetaData Reader added to CGManager
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   metacg::io::JsonSource js(j);
   metacg::io::VersionTwoMetaCGReader mcgReader(js);
   ASSERT_THROW(mcgReader.read(mcgm), std::runtime_error);
@@ -164,9 +173,11 @@ TEST(VersionTwoMetaCGReaderTest, EmptyCG) {
 
   // No MetaData Reader added to CGManager
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   metacg::io::JsonSource js(j);
   metacg::io::VersionTwoMetaCGReader mcgReader(js);
+  // "The call graph in the metacg file was null"
   ASSERT_THROW(mcgReader.read(mcgm), std::runtime_error);
 }
 
@@ -179,7 +190,8 @@ TEST(VersionTwoMetaCGReaderTest, SingleMetaDataHandlerEmptyJSON) {
   //
   //  Config c;
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   mcgm.addMetaHandler<TestHandler>();
 
   metacg::io::JsonSource js(j);
@@ -207,15 +219,16 @@ TEST(VersionTwoMetaCGReaderTest, OneNodeNoMetaDataHandler) {
 
   // No MetaData Reader added to CGManager
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   metacg::io::JsonSource js(j);
   metacg::io::VersionTwoMetaCGReader mcgReader(js);
   mcgReader.read(mcgm);
 
-  auto graph = mcgm.getCallgraph();
+  auto graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 1);
 
-  const auto mainNode = graph.findMain();
+  const auto mainNode = graph.getMain();
   EXPECT_EQ(mainNode->getFunctionName(), "main");
   EXPECT_EQ(mainNode->getChildNodes().size(), 0);
   EXPECT_EQ(mainNode->getParentNodes().size(), 0);
@@ -251,15 +264,16 @@ TEST(VersionTwoMetaCGReaderTest, TwoNodesNoMetaDataHandler) {
 
   // No MetaData Reader added to CGManager
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   metacg::io::JsonSource js(j);
   metacg::io::VersionTwoMetaCGReader mcgReader(js);
   mcgReader.read(mcgm);
 
-  auto graph = mcgm.getCallgraph();
+  auto graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 2);
 
-  const auto mainNode = graph.findMain();
+  const auto mainNode = graph.getMain();
   EXPECT_EQ(mainNode->getFunctionName(), "main");
   EXPECT_EQ(mainNode->getChildNodes().size(), 1);
   EXPECT_EQ(mainNode->getParentNodes().size(), 0);
@@ -294,17 +308,18 @@ TEST(VersionTwoMetaCGReaderTest, TwoNodesOneMetaDataHandler) {
   //  Config c;
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   mcgm.addMetaHandler<TestHandler>();
 
   metacg::io::JsonSource js(j);
   metacg::io::VersionTwoMetaCGReader mcgReader(js);
   mcgReader.read(mcgm);
 
-  auto graph = mcgm.getCallgraph();
+  auto graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 2);
 
-  const auto mainNode = graph.findMain();
+  const auto mainNode = graph.getMain();
   EXPECT_EQ(mainNode->getFunctionName(), "main");
   EXPECT_EQ(mainNode->getChildNodes().size(), 1);
   EXPECT_EQ(mainNode->getParentNodes().size(), 0);
@@ -350,11 +365,16 @@ TEST(VersionTwoMetaCGReaderTest, TwoNodesTwoMetaDataHandler) {
     const std::string toolName() const override { return "TestMetaHandlerOne"; }
     void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
     bool handles(const CgNodePtr n) const override { return false; }
-    int value(const CgNodePtr n) const { return i; }
+    json value(const CgNodePtr n) const {
+      json j;
+      j = 1;
+      return j;
+    }
   };
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.reset();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   mcgm.addMetaHandler<TestHandler>();
   mcgm.addMetaHandler<TestHandlerOne>();
 
@@ -362,10 +382,10 @@ TEST(VersionTwoMetaCGReaderTest, TwoNodesTwoMetaDataHandler) {
   metacg::io::VersionTwoMetaCGReader mcgReader(js);
   mcgReader.read(mcgm);
 
-  auto graph = mcgm.getCallgraph();
+  auto graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 2);
 
-  const auto mainNode = graph.findMain();
+  const auto mainNode = graph.getMain();
   EXPECT_EQ(mainNode->getFunctionName(), "main");
   EXPECT_EQ(mainNode->getChildNodes().size(), 1);
   EXPECT_EQ(mainNode->getParentNodes().size(), 0);

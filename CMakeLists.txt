@@ -19,7 +19,7 @@ endif()
 # End of require out-of-source builds
 
 # Project information
-set(METACG_VERSION 0.3.0)
+set(METACG_VERSION 0.4.0)
 project(
   MetaCG
   VERSION ${METACG_VERSION}
@@ -29,7 +29,7 @@ project(
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -47,6 +47,21 @@ include(ToolchainOptions)
 include(CMakePackageConfigHelpers)
 # Making printing / debugging easier
 include(CMakePrintHelpers)
+
+# Obtain ghe git revision of this MetaCG repository
+include(GetGitRevisionDescription)
+
+# Stream the verison info in the project's config.h
+get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+if(NOT
+   DEFINED
+   GIT_SHA1
+)
+  set(GIT_SHA1 "NO_GIT_ROOT")
+endif()
+message(${GIT_SHA1})
+
+configure_file(Config.h.in config.h)
 
 # Component options MetaCG graph library will always be built. The actual graph implementation
 add_subdirectory(graph)
@@ -70,3 +85,17 @@ option(
 if(WITH_PGIS)
   add_subdirectory(pgis)
 endif()
+
+# If set to on, CMake looks for installed nlohmann::json
+option(
+  METACG_USE_EXTERNAL_JSON
+  "On or off"
+  OFF
+)
+
+# if set to on, CMake looks for installed spdlog
+option(
+  METACG_USE_EXTERNAL_SPDLOG
+  "On or off"
+  OFF
+)

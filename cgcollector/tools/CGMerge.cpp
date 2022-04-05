@@ -47,7 +47,7 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
   }
 
   // {
-  // "_Meta": {...}, <-- Gets attached by "attachFormatTwoHeader"
+  // "_Meta": {...}, <-- Gets attached by "attachMCGFormatHeader"
   // "_CG": { /** Gets constructed in the for loop **/ }
   // }
   attachFormatTwoHeader(wholeCGFinal);
@@ -270,8 +270,26 @@ int main(int argc, char **argv) {
   }
 
   nlohmann::json j;
-  readIPCG(inputFiles.front(), j);
-  if (j.contains("_CG")) {
+  bool foundValidFile{false};
+  bool useFileFormatTwo{false};
+
+  for (auto &inFile : inputFiles) {
+    readIPCG(inFile, j);
+    if (!j.is_null()) {
+      foundValidFile = true;
+      if (j.contains("_CG")) {
+        useFileFormatTwo = true;
+      }
+      break;
+    }
+  }
+
+  if (!foundValidFile) {
+    std::cerr << "[Error] All input files are NULL" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  if (useFileFormatTwo) {
     auto wholeCG = mergeFileFormatTwo(argv[1], inputFiles);
     writeIPCG(argv[1], wholeCG);
   } else {

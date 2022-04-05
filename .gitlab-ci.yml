@@ -62,7 +62,8 @@ mcg-container:
   script:
     - podman login ${CI_REGISTRY} -u ${CI_CONTAINER_REG_USER} -p ${CONTAINER_REGISTRY_READ_TOKEN}
     - podman build -t registry.git.rwth-aachen.de/tuda-sc/projects/metacg/metacg:$CI_COMMIT_SHA -f container/metacg .
-    - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/pgis/test/unit/basictests
+    - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/pgis/test/unit/pgistests
+    - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/graph/test/unit/libtests
     - podman image rm metacg:$CI_COMMIT_SHA
 
 build-mcg:
@@ -74,7 +75,7 @@ build-mcg:
     GIT_STRATEGY: none
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tmp/metacg -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=./extern/src/extrap/extrap-3.0/include -DEXTRAP_LIB=./extern/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tmp/metacg -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=./extern/install/extrap/include -DEXTRAP_LIB=./extern/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
     - cmake --build build --parallel
 
 test-cgc:
@@ -119,6 +120,16 @@ install-mcg:
     - /tmp/metacg/bin/cgcollector --help
     - rm -r /tmp/metacg
 
+test-graphlib:
+  stage: test
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd build/graph/test/unit && ./libtests
 
 test-pgis:
   stage: test
@@ -129,7 +140,7 @@ test-pgis:
     GIT_STRATEGY: none
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - cd build/pgis/test/unit && ./basictests
+    - cd build/pgis/test/unit && ./pgistests
 
 test-static-pgis:
   stage: integration-test
