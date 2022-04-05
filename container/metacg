@@ -8,5 +8,5 @@ COPY . /opt/metacg/metacg
 
 RUN cd metacg && \
     PATH=/opt/metacg/extern/install/cubelib/bin:$PATH ./build_submodules.sh $(nproc) && \
-    cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tmp/metacg -DCUBE_LIB=/opt/metacg/extern/install/cubelib/lib -DCUBE_INCLUDE=/opt/metacg/extern/install/cubelib/include/cubelib -DEXTRAP_INCLUDE=./extern/src/extrap/extrap-3.0/include -DEXTRAP_LIB=./extern/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON && \
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tmp/metacg -DCUBE_LIB=/opt/metacg/extern/install/cubelib/lib -DCUBE_INCLUDE=/opt/metacg/extern/install/cubelib/include/cubelib -DEXTRAP_INCLUDE=./extern/install/extrap/include -DEXTRAP_LIB=./extern/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON && \
     cmake --build build --parallel
