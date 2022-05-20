@@ -12,6 +12,21 @@ find_package(
   CONFIG
 )
 
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+message(STATUS "Using ClangConfig.cmake in: ${Clang_DIR}")
+
+if(NOT
+   ((${LLVM_VERSION_MAJOR}
+     VERSION_EQUAL
+     "10")
+    OR (${LLVM_VERSION_MAJOR}
+        VERSION_EQUAL
+        "14"))
+)
+  message(SEND_ERROR "Only LLVM/Clang version 10 and 14 are supported")
+endif()
+
 # Cube library installation
 find_library(CUBE_LIB cube4)
 find_path(CUBE_INCLUDE cube)

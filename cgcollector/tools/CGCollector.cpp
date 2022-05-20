@@ -71,9 +71,18 @@ int main(int argc, const char **argv) {
   metacgFormatVersion.setInitialValue(1);  // Have the old file format as default
 
   std::cout << "Running metacg::CGCollector (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
-            << ")\nGit revision: " << MetaCG_GIT_SHA << std::endl;
+            << ")\nGit revision: " << MetaCG_GIT_SHA << " LLVM/Clang version: " << LLVM_VERSION_STRING << std::endl;
 
+#if LLVM_VERSION_MAJOR == 10
   clang::tooling::CommonOptionsParser OP(argc, argv, cgc);
+#else
+  auto ParseResult = clang::tooling::CommonOptionsParser::create(argc, argv, cgc);
+  if (!ParseResult) {
+    std::cerr << toString(ParseResult.takeError()) << "\n";
+    return -1;
+  }
+  clang::tooling::CommonOptionsParser &OP = ParseResult.get();
+#endif
   clang::tooling::ClangTool CT(OP.getCompilations(), OP.getSourcePathList());
 
   nlohmann::json j;

@@ -3,41 +3,62 @@
 cgcollectorExe=cgcollector
 testerExe=cgsimpletester
 cgmergeExe=cgmerge
+build_dir=build # may be changed with opt 'b'
 
 mkdir -p log
+
+while getopts ":b:h" opt; do
+  case $opt in
+    b)
+      if [ -z $OPTARG ]; then
+        echo "no build directory given, assuming \"build\""
+      fi
+      build_dir=$OPTARG
+      ;;
+    h)
+      echo "use -b to provide a build directory NAME"
+      echo "use -h to print this help"
+      exit 0
+      ;;
+    \?)
+      echo "Invalid option -$OPTARG"
+      exit 1
+      ;;
+  esac
+done
 
 #if [ command -v $testerExe ]; then
 if [[ $(type -P $testerExe) ]]; then
   echo "The CGSimpleTester binary (cgsimpletester) could not be found in path, testing with relative path."
 fi
-stat ../../build/cgcollector/test/cgsimpletester >>log/testrun.log 2>&1
+stat ../../${build_dir}/cgcollector/test/cgsimpletester >>log/testrun.log 2>&1
 if [ $? -eq 1 ]; then
-  echo "The file seems also non-present in ../build/test. Aborting test. Failure! Please build the tester first."
+  echo "The file seems also non-present in ../${build_dir}/test. Aborting test. Failure! Please build the tester first."
   exit 1
 else
-  testerExe=../../build/cgcollector/test/cgsimpletester
+  testerExe=../../${build_dir}/cgcollector/test/cgsimpletester
 fi
 
 if [[ $(type -P $cgcollectorExe) ]]; then
-  echo "No cgcollector in PATH. Trying relative path ../build/tools"
+  echo "No cgcollector in PATH. Trying relative path ../${build_dir}/tools"
 fi
-stat ../../build/cgcollector/tools/cgcollector >>log/testrun.log 2>&1
+stat ../../${build_dir}/cgcollector/tools/cgcollector >>log/testrun.log 2>&1
 if [ $? -eq 1 ]; then
-  echo "The file seems also non-present in ../build/tools. Aborting test. Failure! Please build the collector first."
+  echo "The file seems also non-present in ../${build_dir}/tools. Aborting test. Failure! Please build the collector first."
   exit 1
 else
-  cgcollectorExe=../../build/cgcollector/tools/cgcollector
+  cgcollectorExe=../../${build_dir}/cgcollector/tools/cgcollector
 fi
 
 if [[ $(type -P $cgmergeExe) ]]; then
-  echo "No cgcollector in PATH. Trying relative path ../build/tools"
+  echo "No cgcollector in PATH. Trying relative path ../${build_dir}/tools"
 fi
-stat ../../build/cgcollector/tools/cgmerge >>log/testrun.log 2>&1
+stat ../../${build_dir}/cgcollector/tools/cgmerge >>log/testrun.log 2>&1
 if [ $? -eq 1 ]; then
-  echo "The file seems also non-present in ../build/tools. Aborting test. Failure! Please build the collector first."
+  echo "The file seems also non-present in ../${build_dir}/tools. Aborting test. Failure! Please build the collector first."
   exit 1
 else
-  cgmergeExe=../../build/cgcollector/tools/cgmerge
+  cgmergeExe=../../${build_dir}/cgcollector/tools/cgmerge
 fi
 
 # Single-file tests
