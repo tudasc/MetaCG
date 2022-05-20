@@ -11,14 +11,24 @@ std::vector<std::string> mangleCtorDtor(const clang::FunctionDecl *const nd, cla
     const auto mangleCXXCtorAs = [&](clang::CXXCtorType type, const clang::CXXConstructorDecl *nd) {
       std::string functionName;
       llvm::raw_string_ostream out(functionName);
+#if LLVM_VERSION_MAJOR == 10
       mc->mangleCXXCtor(nd, type, out);
+#else
+    const clang::GlobalDecl GD(nd, type);
+    mc->mangleName(GD, out);
+#endif
       return out.str();
     };
 
     const auto mangleCXXDtorAs = [&](clang::CXXDtorType type, const clang::CXXDestructorDecl *nd) {
       std::string functionName;
       llvm::raw_string_ostream out(functionName);
+#if LLVM_VERSION_MAJOR == 10
       mc->mangleCXXDtor(nd, type, out);
+#else
+      const clang::GlobalDecl GD(nd, type);
+      mc->mangleName(GD, out);
+#endif
       return out.str();
     };
 

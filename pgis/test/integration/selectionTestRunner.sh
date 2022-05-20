@@ -3,12 +3,43 @@
 # include basic functions
 . base.sh
 
-testSuite=$1
-buildDirParam=$2
-buildDir="${buildDirParam:-$PWD/../../../build/pgis}"
+buildDirParam=build # Can be changed via -b
+
+while getopts ":t:b:h" opt; do
+  case $opt in
+    b)
+      echo "$OPTARG"
+      if [ -z $OPTARG ]; then
+        echo "no build directory given, assuming \"build\""
+      else
+        echo "Using ${OPTARG} as build dir"
+        buildDirParam="${OPTARG}"
+      fi
+      ;;
+    t)
+      echo "Running testsuite ${OPTARG}"
+      testSuite=${OPTARG}
+      ;;
+    h)
+      echo "use -b to provide a build directory NAME"
+      echo "use -t to provide a test suite name <static|dynamic|modeling|imbalance>"
+      echo "use -h to print this help"
+      exit 0
+      ;;
+    \?)
+      echo "Invalid option -$opt"
+      exit 1
+      ;;
+  esac
+done
+
+buildDir="../../../../${buildDirParam}/pgis"
+
 outDir=$PWD/out$testSuite
 logDir=$PWD/logging
 logFile=${logDir}/${testSuite}.log
+
+echo "Running Tests with build directory: ${buildDir}"
 
 
 rm -rf $outDir && mkdir $outDir

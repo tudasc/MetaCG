@@ -13,9 +13,18 @@ stages:
   - install
   - deploy
 
+variables:
+  LLVM_10_BUILD: "build-10"
+  LLVM_14_BUILD: "build-14"
+
 .lb-setup: &lb-setup
   - module load gcc/8.3
   - module load git llvm/10.0.0 cmake python/3.7.4
+  - module load libcube/4.5
+
+.lb-setup-llvm-14: &lb-setup-llvm-14
+  - module load gcc/9.2
+  - module load git clang/14.0.0 cmake python/3.7.4
   - module load libcube/4.5
 
 mcg-download:
@@ -60,23 +69,46 @@ mcg-container:
     GIT_STRATEGY: clone
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
+    - exit 0
     - podman login ${CI_REGISTRY} -u ${CI_CONTAINER_REG_USER} -p ${CONTAINER_REGISTRY_READ_TOKEN}
     - podman build -t registry.git.rwth-aachen.de/tuda-sc/projects/metacg/metacg:$CI_COMMIT_SHA -f container/metacg .
     - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/pgis/test/unit/pgistests
     - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/graph/test/unit/libtests
     - podman image rm metacg:$CI_COMMIT_SHA
 
-build-mcg:
+build-mcg-llvm-10:
   stage: build
   tags:
     - general
-  before_script: *lb-setup
+  before_script: 
+    - module purge 
+    - *lb-setup
   variables:
     GIT_STRATEGY: none
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tmp/metacg -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=./extern/install/extrap/include -DEXTRAP_LIB=./extern/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-    - cmake --build build --parallel
+    - module list
+    - echo $CXX " " $LLVM_ROOT " " $CLANG_ROOT
+    - cmake -S . -B $LLVM_10_BUILD -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tmp/metacg -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=./extern/install/extrap/include -DEXTRAP_LIB=./extern/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+    - cmake --build $LLVM_10_BUILD --parallel
+    - module purge
+
+build-mcg-llvm-14:
+  stage: build
+  tags:
+    - general
+  before_script: 
+    - module purge
+    - *lb-setup-llvm-14
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - module list
+    - echo $CXX " " $LLVM_ROOT " " $CLANG_ROOT
+    - cmake -S . -B $LLVM_14_BUILD -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tmp/metacg -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=./extern/install/extrap/include -DEXTRAP_LIB=./extern/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+    - cmake --build $LLVM_14_BUILD --parallel
+    - module purge
 
 test-cgc:
   stage: test
@@ -88,9 +120,25 @@ test-cgc:
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - cd cgcollector/test
-    - mkdir log
-    - bash run_format_one_test.sh
-    - bash run_format_two_test.sh
+    - mkdir -p log
+    - bash run_format_one_test.sh -b $LLVM_10_BUILD
+    - bash run_format_two_test.sh -b $LLVM_10_BUILD
+
+test-cgc-14:
+  stage: test
+  tags:
+    - general
+  before_script:
+    - module purge
+    - *lb-setup-llvm-14
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd cgcollector/test
+    - mkdir -p log
+    - bash run_format_one_test.sh -b $LLVM_14_BUILD
+    - bash run_format_two_test.sh -b $LLVM_14_BUILD
 
 test-cgvalidate:
   stage: integration-test
@@ -102,7 +150,7 @@ test-cgvalidate:
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - cd cgcollector/test/integration
-    - ./runner.sh
+    - ./runner.sh "$LLVM_10_BUILD"
 
 install-mcg:
   stage: install
@@ -113,14 +161,14 @@ install-mcg:
     GIT_STRATEGY: none
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - cmake --install build
+    - cmake --install $LLVM_10_BUILD
     - stat /tmp/metacg/bin/cgcollector
     - stat /tmp/metacg/bin/cgmerge
     - export LD_LIBRARY_PATH=/tmp/metacg/lib:$LD_LIBRARY_PATH
     - /tmp/metacg/bin/cgcollector --help
     - rm -r /tmp/metacg
 
-test-graphlib:
+test-graphlib-10:
   stage: test
   tags:
     - general
@@ -129,9 +177,22 @@ test-graphlib:
     GIT_STRATEGY: none
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - cd build/graph/test/unit && ./libtests
+    - cd $LLVM_10_BUILD/graph/test/unit && ./libtests
 
-test-pgis:
+test-graphlib-14:
+  stage: test
+  tags:
+    - general
+  before_script: 
+    - module purge
+    - *lb-setup-llvm-14
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd $LLVM_14_BUILD/graph/test/unit && ./libtests
+
+test-pgis-10:
   stage: test
   tags:
     - general
@@ -140,21 +201,20 @@ test-pgis:
     GIT_STRATEGY: none
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - cd build/pgis/test/unit && ./pgistests
+    - cd $LLVM_10_BUILD/pgis/test/unit && ./pgistests
 
-test-static-pgis:
-  stage: integration-test
+test-pgis-14:
+  stage: test
   tags:
     - general
-  before_script: *lb-setup
+  before_script:
+    - module purge 
+    - *lb-setup-llvm-14
   variables:
     GIT_STRATEGY: none
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - cd pgis
-    - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
-    - cd test/integration
-    - ./selectionTestRunner.sh static
+    - cd $LLVM_14_BUILD/pgis/test/unit && ./pgistests
 
 test-basic-pgis:
   stage: integration-test
@@ -168,7 +228,21 @@ test-basic-pgis:
     - cd pgis
     - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
-    - ./basicTestRunner.sh
+    - ./basicTestRunner.sh -b $LLVM_10_BUILD
+
+test-static-pgis:
+  stage: integration-test
+  tags:
+    - general
+  before_script: *lb-setup
+  variables:
+    GIT_STRATEGY: none
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - cd pgis
+    - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
+    - cd test/integration
+    - ./selectionTestRunner.sh -t static -b $LLVM_10_BUILD
 
 test-modeling-pgis:
   stage: integration-test
@@ -182,7 +256,7 @@ test-modeling-pgis:
     - cd pgis
     - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
-    - ./selectionTestRunner.sh modeling
+    - ./selectionTestRunner.sh -t modeling -b $LLVM_10_BUILD
 
 test-dynamic-pgis:
   stage: integration-test
@@ -196,7 +270,7 @@ test-dynamic-pgis:
     - cd pgis
     - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
-    - ./selectionTestRunner.sh dynamic
+    - ./selectionTestRunner.sh -t dynamic -b $LLVM_10_BUILD
     
 test-imbalance-pgis:
   stage: integration-test
@@ -210,7 +284,7 @@ test-imbalance-pgis:
     - cd pgis
     - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
-    - ./selectionTestRunner.sh imbalance
+    - ./selectionTestRunner.sh -t imbalance -b $LLVM_10_BUILD
 
 install-pgis:
   stage: install
@@ -222,7 +296,7 @@ install-pgis:
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - export LD_LIBRARY_PATH=$PWD/extern/install/extrap/lib:$LD_LIBRARY_PATH
-    - cmake --install build
+    - cmake --install $LLVM_10_BUILD
     - stat /tmp/metacg/bin/pgis_pira
     - export LD_LIBRARY_PATH=/tmp/metacg/lib:$LD_LIBRARY_PATH
     - /tmp/metacg/bin/pgis_pira --help

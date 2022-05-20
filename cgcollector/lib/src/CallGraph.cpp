@@ -31,6 +31,10 @@
 #include <llvm/Support/GraphWriter.h>
 #include <llvm/Support/raw_ostream.h>
 
+#if LLVM_VERSION_MAJOR > 10
+#include <clang/AST/ParentMapContext.h>
+#endif
+
 #include <cassert>
 #include <memory>
 #include <string>
@@ -166,7 +170,7 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
     if (closedCes.find(ce) != closedCes.end()) {
       return;
     }
-//    closedCes.insert(ce);
+    //    closedCes.insert(ce);
     if (auto directCallee = ce->getDirectCallee()) {
       const auto fName = directCallee->getNameAsString();
       if (auto body = directCallee->getBody()) {
@@ -265,7 +269,7 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
       auto lhs = bo->getLHS();
       auto rhs = bo->getRHS();
 
-      DeclRefRetriever lhsDRR([]( [[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
+      DeclRefRetriever lhsDRR([]([[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
       lhsDRR.Visit(lhs);
       auto lhsSymbols = lhsDRR.getSymbols();
 #if 0
@@ -277,7 +281,7 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
       }
 #endif
 
-      DeclRefRetriever rhsDRR([]( [[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
+      DeclRefRetriever rhsDRR([]([[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
       rhsDRR.Visit(rhs);
       auto rhsSymbols = rhsDRR.getSymbols();
 #if 0
@@ -586,7 +590,8 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
             if (const auto vDecl = dyn_cast<VarDecl>(paramDecl)) {
               // *argIter can be any expression
               const auto argExpr = *argIter;
-              DeclRefRetriever drr([]( [[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols, "Argument Expr Retriever");
+              DeclRefRetriever drr([]([[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols,
+                                   "Argument Expr Retriever");
               drr.Visit(argExpr);
               // drr.printSymbols();
               for (const auto sym : drr.getSymbols()) {
@@ -902,7 +907,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       }
     }
     if (auto ice = CE->getCallee()) {
-      DeclRefRetriever drr([]( [[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
+      DeclRefRetriever drr([]([[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
       drr.Visit(ice);
 #if 0
       std::cout << "CE->getCallee() => drr.Visit(ice)" << std::endl;
@@ -1005,7 +1010,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       auto lhs = bo->getLHS();
       auto rhs = bo->getRHS();
 
-      DeclRefRetriever lhsDRR([]( [[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
+      DeclRefRetriever lhsDRR([]([[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
       lhsDRR.Visit(lhs);
       auto lhsSymbols = lhsDRR.getSymbols();
 #if 0
@@ -1017,7 +1022,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       }
 #endif
 
-      DeclRefRetriever rhsDRR([]( [[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
+      DeclRefRetriever rhsDRR([]([[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
       rhsDRR.Visit(rhs);
       auto rhsSymbols = rhsDRR.getSymbols();
 #if 0
@@ -1104,7 +1109,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
               insertFuncAlias(vDecl, ice);
             } else if (auto innerCe = dyn_cast<CallExpr>(initializer)) {
               // RecursiveLookUpCallExpr(innerCe);
-              (void) innerCe;
+              (void)innerCe;
             }
           }
         }
