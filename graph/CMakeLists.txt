@@ -16,6 +16,7 @@ set(MetacgGraphLibSources
     src/MCGWriter.cpp
     include/Util.h
     include/MCGBaseInfo.h
+    include/LoggerUtil.h
 )
 
 add_library(metacg SHARED ${MetacgGraphLibSources})

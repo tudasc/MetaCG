@@ -7,6 +7,7 @@
 #define METACG_GRAPH_MCGREADER_H
 
 #include "MCGManager.h"
+#include "LoggerUtil.h"
 
 #include "nlohmann/json.hpp"
 
@@ -42,12 +43,12 @@ struct FileSource : ReaderSource {
    * and returns the json object.
    */
   virtual nlohmann::json get() const override {
-    spdlog::get("console")->info("Reading metacg file from: {}", filename);
+    metacg::MCGLogger::instance().getConsole()->info("Reading metacg file from: {}", filename);
     nlohmann::json j;
     {
       std::ifstream in(filename);
       if (!in.is_open()) {
-        spdlog::get("errconsole")->error("Opening file {} failed.", filename);
+        metacg::MCGLogger::instance().getErrConsole()->error("Opening file {} failed.", filename);
         throw std::runtime_error("Opening file failed");
       }
       in >> j;

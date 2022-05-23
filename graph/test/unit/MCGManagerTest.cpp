@@ -6,7 +6,7 @@
 
 #include "gtest/gtest.h"
 
-#include "../../../pgis/test/unit/LoggerUtil.h"
+#include "LoggerUtil.h"
 
 #include "MCGManager.h"
 #include "MetaDataHandler.h"
@@ -16,7 +16,7 @@ using namespace pira;
 class MCGManagerTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    loggerutil::getLogger();
+    metacg::loggerutil::getLogger();
     auto &mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
     mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());

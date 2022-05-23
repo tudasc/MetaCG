@@ -6,7 +6,7 @@
 
 #include "gtest/gtest.h"
 
-#include "../../../pgis/test/unit/LoggerUtil.h"
+#include "LoggerUtil.h"
 #include "MCGManager.h"
 #include "MCGReader.h"
 #include "nlohmann/json.hpp"
@@ -32,7 +32,7 @@ struct TestHandler : public metacg::io::retriever::MetaDataHandler {
 
 TEST(VersionOneMCGReaderTest, EmptyJSON) {
   json j;
-  loggerutil::getLogger();
+  metacg::loggerutil::getLogger();
 
   //  auto &cgm = metacg::graph::MCGManager::get();
   //  cgm.clear();
@@ -145,7 +145,7 @@ TEST(VersionOneMCGReaderTest, MultiNodeJSON) {
 
 TEST(VersionTwoMetaCGReaderTest, EmptyJSON) {
   json j;
-  loggerutil::getLogger();
+  metacg::loggerutil::getLogger();
 
   //  auto &cgm = PiraMCGProcessor::get();
   //  cgm.clear();
@@ -161,7 +161,7 @@ TEST(VersionTwoMetaCGReaderTest, EmptyJSON) {
 }
 
 TEST(VersionTwoMetaCGReaderTest, EmptyCG) {
-  loggerutil::getLogger();
+  metacg::loggerutil::getLogger();
 
   json j;
   j["_MetaCG"] = {{"version", "1.0"}, {"generator", {{"name", "testGen"}, {"version", "1.0"}}}};
@@ -183,7 +183,7 @@ TEST(VersionTwoMetaCGReaderTest, EmptyCG) {
 
 TEST(VersionTwoMetaCGReaderTest, SingleMetaDataHandlerEmptyJSON) {
   json j;
-  loggerutil::getLogger();
+  metacg::loggerutil::getLogger();
   //
   //  auto &cgm = PiraMCGProcessor::get();
   //  cgm.clear();
@@ -200,7 +200,7 @@ TEST(VersionTwoMetaCGReaderTest, SingleMetaDataHandlerEmptyJSON) {
 }
 
 TEST(VersionTwoMetaCGReaderTest, OneNodeNoMetaDataHandler) {
-  loggerutil::getLogger();
+  metacg::loggerutil::getLogger();
 
   json j;
   j["_MetaCG"] = {{"version", "1.0"}, {"generator", {{"name", "testGen"}, {"version", "1.0"}}}};
@@ -235,7 +235,7 @@ TEST(VersionTwoMetaCGReaderTest, OneNodeNoMetaDataHandler) {
 }
 
 TEST(VersionTwoMetaCGReaderTest, TwoNodesNoMetaDataHandler) {
-  loggerutil::getLogger();
+  metacg::loggerutil::getLogger();
 
   json j;
   j["_MetaCG"] = {{"version", "1.0"}, {"generator", {{"name", "testGen"}, {"version", "1.0"}}}};
@@ -280,7 +280,7 @@ TEST(VersionTwoMetaCGReaderTest, TwoNodesNoMetaDataHandler) {
 }
 
 TEST(VersionTwoMetaCGReaderTest, TwoNodesOneMetaDataHandler) {
-  loggerutil::getLogger();
+  metacg::loggerutil::getLogger();
 
   json j;
   j["_MetaCG"] = {{"version", "1.0"}, {"generator", {{"name", "testGen"}, {"version", "1.0"}}}};
@@ -332,7 +332,7 @@ TEST(VersionTwoMetaCGReaderTest, TwoNodesOneMetaDataHandler) {
 }
 
 TEST(VersionTwoMetaCGReaderTest, TwoNodesTwoMetaDataHandler) {
-  loggerutil::getLogger();
+  metacg::loggerutil::getLogger();
 
   json j;
   j["_MetaCG"] = {{"version", "1.0"}, {"generator", {{"name", "testGen"}, {"version", "1.0"}}}};

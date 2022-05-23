@@ -8,6 +8,7 @@
 
 #include "Callgraph.h"
 #include "MCGReader.h"
+#include "LoggerUtil.h"
 
 namespace metacg {
 // This is part of the core graph library
@@ -50,11 +51,12 @@ class MCGManager {
       }
       return true;
     } else {
-      std::cerr << "Graph manager could not reset active Graph, no active graph exists\n";
-      assert(false&&"Graph manager could not reset active Graph, no active graph exists");
+      metacg::MCGLogger::instance().getErrConsole()->error("Graph manager could not reset active Graph, no active graph exists.");
+      assert(false && "Graph manager could not reset active Graph, no active graph exists");
       return false;
     }
   }
+
   /**
    * Registers the MetaDataHandler and takes ownership of the object.
    * @tparam T
@@ -68,9 +70,8 @@ class MCGManager {
       metaHandlers[activeGraph].back()->registerMCGManager(this);
       return true;
     } else {
-      auto errconsole = spdlog::get("errconsole");
-      errconsole->error("Graph manager could not add metadata handler, no active graph exists");
-      assert(false&&"Graph manager could not add metadata handler, no active graph exists");
+      metacg::MCGLogger::instance().getErrConsole()->error("Graph manager could not add metadata handler, no active graph exists");
+      assert(false && "Graph manager could not add metadata handler, no active graph exists");
       return false;
     }
   }
@@ -103,9 +104,8 @@ class MCGManager {
       activeGraph->addEdge(parentName, childName);
       return true;
     } else {
-      auto errconsole = spdlog::get("errconsole");
-      errconsole->error("Graph manager could not create edge between %s and %s, no active graph exists",parentName,childName );
-      assert(false&&"Graph manager could not create edge between given nodes, no active graph exists");
+      metacg::MCGLogger::instance().getErrConsole()->error("Graph manager could not create edge between %s and %s, no active graph exists", parentName, childName );
+      assert(false && "Graph manager could not create edge between given nodes, no active graph exists");
       return false;
     }
   }
@@ -122,9 +122,8 @@ class MCGManager {
       activeGraph->addEdge(parentNode, childNode);
       return true;
     } else {
-      auto errconsole = spdlog::get("errconsole");
-      errconsole->error("Graph manager could not create edge, no active graph exists\n");
-      assert(false&&"Graph manager could not create edge, no active graph exists");
+      metacg::MCGLogger::instance().getErrConsole()->error("Graph manager could not create edge, no active graph exists\n");
+      assert(false && "Graph manager could not create edge, no active graph exists");
       return false;
     }
   }
@@ -181,9 +180,8 @@ class MCGManager {
     try {
       activeGraph = managedGraphs.at(callgraph).get();
     } catch (const std::out_of_range &ex) {
-      auto errconsole = spdlog::get("errconsole");
-      errconsole->error("Could not set graph %s to active, graph does not exist",callgraph);
-      assert(false&&"Could not set graph to active, graph does not exist");
+      metacg::MCGLogger::instance().getErrConsole()->error("Could not set graph %s to active, graph does not exist",callgraph);
+      assert(false && "Could not set graph to active, graph does not exist");
       return false;
     }
     return true;
@@ -199,9 +197,8 @@ class MCGManager {
     try {
       return managedGraphs.at(callgraph).get() == activeGraph;
     } catch (const std::out_of_range &ex) {
-      auto errconsole = spdlog::get("errconsole");
-      errconsole->error("Graph: %s is not part of managed graphs",callgraph);
-      assert(false&&"Graph is not part of managed graphs");
+      metacg::MCGLogger::instance().getErrConsole()->error("Graph: %s is not part of managed graphs",callgraph);
+      assert(false && "Graph is not part of managed graphs");
       return false;
     }
   }
@@ -214,7 +211,7 @@ class MCGManager {
    **/
   // Todo: write a test for this
   bool addToManagedGraphs(std::string name, std::unique_ptr<metacg::Callgraph> callgraph, bool setActive = true) {
-    assert(callgraph.get()!= nullptr&&"Could not add to managed graphs, given graph was null");
+    assert(callgraph.get() != nullptr && "Could not add to managed graphs, given graph was null");
     managedGraphs[name] = std::move(callgraph);
     if (setActive) {
       activeGraph = managedGraphs[name].get();

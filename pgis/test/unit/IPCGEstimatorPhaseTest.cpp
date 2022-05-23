@@ -5,8 +5,9 @@
  */
 
 #include "gtest/gtest.h"
+#include "../../../graph/include/LoggerUtil.h"
 
-#include "LoggerUtil.h"
+//#include "LoggerUtil.h"
 
 #include "CallgraphManager.h"
 #include "IPCGEstimatorPhase.h"
@@ -15,7 +16,7 @@
 class IPCGEstimatorPhaseBasic : public ::testing::Test {
  protected:
   void SetUp() override {
-    loggerutil::getLogger();
+    metacg::loggerutil::getLogger();
     auto &mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
     mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
@@ -373,7 +374,7 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
   }
 
   void SetUp() override {
-    loggerutil::getLogger();
+    metacg::loggerutil::getLogger();
     auto &cm = metacg::pgis::PiraMCGProcessor::get();
     auto &mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();

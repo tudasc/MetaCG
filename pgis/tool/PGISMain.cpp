@@ -9,6 +9,7 @@
 
 #include "CubeReader.h"
 #include "DotReader.h"
+#include "LoggerUtil.h"
 #include "MCGReader.h"
 #include "MCGWriter.h"
 
@@ -49,14 +50,14 @@ void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &cg, Config *c, bool
 
   // Actually do the selection
   if (!isIPCG) {
-    spdlog::get("console")->info("New runtime threshold for profiling: ${}$", runtimeThreshold);
+    metacg::MCGLogger::instance().getConsole()->info("New runtime threshold for profiling: ${}$", runtimeThreshold);
     cg.registerEstimatorPhase(new RuntimeEstimatorPhase(runtimeThreshold));
   } else {
     HeuristicSelection::HeuristicSelectionEnum heuristicMode = pgis::config::getSelectedHeuristic();
     switch (heuristicMode) {
       case HeuristicSelection::HeuristicSelectionEnum::STATEMENTS: {
         const int nStmt = 2000;
-        spdlog::get("console")->info("New statement threshold for profiling: ${}$", nStmt);
+        metacg::MCGLogger::instance().getConsole()->info("New runtime threshold for profiling: ${}$", nStmt);
         cg.registerEstimatorPhase(new StatementCountEstimatorPhase(nStmt, true, statEstimator));
       } break;
       case HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES:
@@ -97,11 +98,11 @@ void checkAndSet(const std::string id, const OptsT &opts, ConfigT &cfg) {
 }
 
 int main(int argc, char **argv) {
-  auto console = spdlog::stdout_color_mt("console");
-  auto errconsole = spdlog::stderr_color_mt("errconsole");
+  auto console = metacg::MCGLogger::instance().getConsole();
+  auto errconsole = metacg::MCGLogger::instance().getErrConsole();
 
   if (argc == 1) {
-    spdlog::get("errconsole")->error("Too few arguments. Use --help to show help.");
+    errconsole->error("Too few arguments. Use --help to show help.");
     exit(-1);
   }
 
@@ -249,7 +250,7 @@ int main(int argc, char **argv) {
   float runTimeThreshold = .0f;
   auto &cg = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   cg.setConfig(&c);
   cg.setExtrapConfig(parseExtrapArgs(result));
 
@@ -266,7 +267,7 @@ int main(int argc, char **argv) {
       } else if (stringEndsWith(filePath, ".dot")) {
         DOTCallgraphBuilder::build(filePath, &c);
       } else {
-        spdlog::get("errconsole")->error("Unknown file ending in {}", filePath);
+        errconsole->error("Unknown file ending in {}", filePath);
         exit(-1);
       }
     }
@@ -275,7 +276,7 @@ int main(int argc, char **argv) {
   }
 
   if (result.count("scorep-out")) {
-    spdlog::get("console")->info("Setting Score-P Output Format");
+    console->info("Setting Score-P Output Format");
   }
 
   if (stringEndsWith(mcgFullPath, ".ipcg") || stringEndsWith(mcgFullPath, ".mcg")) {
@@ -309,15 +310,14 @@ int main(int argc, char **argv) {
       mcgReader.read(mcgm);
     }
 
-    spdlog::get("console")->info("Read MetaCG with {} nodes.", mcgm.getCallgraph()->size());
+    console->info("Read MetaCG with {} nodes.", mcgm.getCallgraph()->size());
     cg.setCG(*mcgm.getCallgraph());
 
     if (applyStaticFilter) {
       // load imbalance detection
       // ========================
       if (enableLide) {
-        spdlog::get("console")->info(
-            "Using trivial static analysis for load imbalance detection (OnlyMainEstimatorPhase");
+        console->info("Using trivial static analysis for load imbalance detection (OnlyMainEstimatorPhase");
         // static instrumentation -> OnlyMainEstimatorPhase
         if (!result.count("cube")) {
           cg.registerEstimatorPhase(new LoadImbalance::OnlyMainEstimatorPhase());
@@ -344,20 +344,20 @@ int main(int argc, char **argv) {
     } else if (stringEndsWith(filePath, ".dot")) {
       DOTCallgraphBuilder::build(filePath, &c);
     } else {
-      spdlog::get("errconsole")->error("Unknown file ending in {}", filePath);
+      errconsole->error("Unknown file ending in {}", filePath);
       exit(-1);
     }
 
     // load imbalance detection
     // ========================
     if (enableLide) {
-      spdlog::get("console")->info("Using load imbalance detection mode");
+      console->info("Using load imbalance detection mode");
       auto &gConfig = pgis::config::GlobalConfig::get();
       auto &pConfig = pgis::config::ParameterConfig::get();
 
       if (!pConfig.getLIConfig()) {
-        spdlog::get("errconsole")
-            ->error("Provide configuration for load imbalance detection. Refer to PIRA's README for further details.");
+        errconsole->error(
+            "Provide configuration for load imbalance detection. Refer to PIRA's README for further details.");
         return EXIT_FAILURE;
       }
       cg.registerEstimatorPhase(
@@ -371,7 +371,7 @@ int main(int argc, char **argv) {
         metacg::io::annotateJSON(cg.getCallgraph(&metacg::pgis::PiraMCGProcessor::get()), mcgFullPath,
                                  LoadImbalance::LIRetriever());
       } else {
-        spdlog::get("console")->warn("--export flag is highly recommended for load imbalance detection");
+        console->warn("--export flag is highly recommended for load imbalance detection");
       }
 
       return EXIT_SUCCESS;
@@ -416,7 +416,7 @@ int main(int argc, char **argv) {
   }
 
   if (cg.hasPassesRegistered()) {
-    spdlog::get("console")->info("Running registered estimator phases");
+    console->info("Running registered estimator phases");
     cg.applyRegisteredPhases();
   }
 

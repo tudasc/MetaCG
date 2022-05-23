@@ -5,9 +5,10 @@
  */
 
 #include "../../../graph/include/CgNode.h"
+#include "../../../graph/include/LoggerUtil.h"
 #include "CgHelper.h"
 
-#include "LoggerUtil.h"
+//#include "LoggerUtil.h"
 
 #include "gtest/gtest.h"
 
