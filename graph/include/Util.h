@@ -8,6 +8,7 @@
 #define METACG_UTIL_H
 
 #include "CgNode.h"
+#include "LoggerUtil.h"
 #include <set>
 #include <string>
 #include <cstdlib>
@@ -46,7 +47,7 @@ inline std::vector<std::string> string_split(const std::string &in, const char c
 inline int getVersionNoAtPosition(const std::string &versionStr, int index) {
   auto numOccurrences = std::count(versionStr.begin(), versionStr.end(), '.');
   if (numOccurrences < 1) {
-    spdlog::get("errconsole")->error("Could not interpret version string");
+    metacg::MCGLogger::instance().getErrConsole()->error("Could not interpret version string");
     exit(-1);
   }
   auto versionParts = string_split(versionStr);

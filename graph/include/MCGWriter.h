@@ -10,6 +10,7 @@
 #include "Callgraph.h"
 #include "MCGBaseInfo.h"
 #include "config.h"
+#include "LoggerUtil.h"
 
 #include "nlohmann/json.hpp"
 
@@ -68,7 +69,7 @@ class MCGWriter {
    * General construction of node data, e.g., function name.
    * @param node
    */
-  void createNodeData(const CgNodePtr node, nlohmann::json &j);
+  void createNodeData(const CgNodePtr node, nlohmann::json &j) const;
 
   /**
    * Using the stored MetaDataHandler in MCGM to walk MCG and extract all meta data.
@@ -122,7 +123,7 @@ void annotateJSON(metacg::Callgraph &cg, const std::string &filename, PropRetrie
   }
 
   int annotated = metacg::io::doAnnotate(cg, retriever, j);
-  spdlog::get("console")->trace("Annotated {} json nodes", annotated);
+  metacg::MCGLogger::instance().getConsole()->trace("Annotated {} json nodes", annotated);
 
   {
     std::ofstream out(filename);

@@ -32,6 +32,8 @@ testSuite='basic'
 logDir=$PWD/logging
 logFile=${logDir}/${testSuite}.log
 
+rm -rf $logDir && mkdir ${logDir}
+
 echo "Running Tests with build directory: ${buildDir}"
 
 for testFile in ./ipcgread/*.ipcg; do

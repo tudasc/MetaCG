@@ -31,7 +31,9 @@ void metacg::io::MCGWriter::write(JsonSink &js) {
   js.setJson(j);
 }
 
-void metacg::io::MCGWriter::createNodeData(const CgNodePtr node, nlohmann::json &j) {
+void metacg::io::MCGWriter::createNodeData(const CgNodePtr node, nlohmann::json &j) const {
+  auto console = metacg::MCGLogger::instance().getConsole();
+  console->trace("Creating Node data for {}", node->getFunctionName());
   // Currently correctly stored in CgNode
   const auto funcName = node->getFunctionName();
   const auto isVirtual = node->isVirtual();
