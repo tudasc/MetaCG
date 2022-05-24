@@ -183,8 +183,15 @@ class ExtrapConnector {
 
 class ExtrapModelProvider {
  public:
-  explicit ExtrapModelProvider(ExtrapConfig config) : config(config) {}
-
+  explicit ExtrapModelProvider(ExtrapConfig config) : config(std::move(config)), experiment(nullptr) {}
+  ~ExtrapModelProvider() {
+    if (experiment) {
+      auto generators = experiment->getModelGenerators();
+      for (const auto &gen : generators) {
+        delete gen;  // clean up what we allocated
+      }
+    }
+  }
   // Needs to be defined in header, so deduction works correctly in usages.
   auto getModelFor(std::string functionName) {
     if (models.empty()) {
@@ -220,7 +227,7 @@ class ExtrapModelProvider {
     return vals;
   }
 
-  auto getConfigValues() { return config.params; }
+  auto getConfigValues() const { return config.params; }
 
   void buildModels();
 
