@@ -23,42 +23,6 @@
             "main"
         ]
     },
-    "_ZN4BaseC5Ev": {
-        "callees": [],
-        "doesOverride": false,
-        "hasBody": false,
-        "isVirtual": false,
-        "numStatements": 0,
-        "overriddenBy": [],
-        "overriddenFunctions": [],
-        "parents": [
-            "main"
-        ]
-    },
-    "_ZN4BaseCEv": {
-        "callees": [],
-        "doesOverride": false,
-        "hasBody": false,
-        "isVirtual": false,
-        "numStatements": 0,
-        "overriddenBy": [],
-        "overriddenFunctions": [],
-        "parents": [
-            "main"
-        ]
-    },
-    "_ZN4BaseD0Ev": {
-        "callees": [],
-        "doesOverride": false,
-        "hasBody": false,
-        "isVirtual": false,
-        "numStatements": 0,
-        "overriddenBy": [],
-        "overriddenFunctions": [],
-        "parents": [
-            "main"
-        ]
-    },
     "_ZN4BaseD1Ev": {
         "callees": [],
         "doesOverride": false,
@@ -83,28 +47,12 @@
             "main"
         ]
     },
-    "_ZN4BaseD5Ev": {
-        "callees": [],
-        "doesOverride": false,
-        "hasBody": false,
-        "isVirtual": false,
-        "numStatements": 0,
-        "overriddenBy": [],
-        "overriddenFunctions": [],
-        "parents": [
-            "main"
-        ]
-    },
     "main": {
         "callees": [
             "_ZN4BaseC1Ev",
             "_ZN4BaseC2Ev",
-            "_ZN4BaseC5Ev",
-            "_ZN4BaseCEv",
-            "_ZN4BaseD0Ev",
             "_ZN4BaseD1Ev",
-            "_ZN4BaseD2Ev",
-            "_ZN4BaseD5Ev"
+            "_ZN4BaseD2Ev"
         ],
         "doesOverride": false,
         "hasBody": true,

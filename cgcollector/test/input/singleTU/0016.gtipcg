@@ -19,7 +19,8 @@
         "isVirtual": true,
         "numStatements": 0,
         "overriddenBy": [
-            "_ZN13MyClassDerive3fooEv"
+            "_ZN13MyClassDerive3fooEv",
+            "_ZThn8_N13MyClassDerive3fooEv"
         ],
         "overriddenFunctions": [],
         "parents": [
@@ -33,9 +34,23 @@
         "isVirtual": true,
         "numStatements": 0,
         "overriddenBy": [
-            "_ZN13MyClassDerive3fooEv"
+            "_ZN13MyClassDerive3fooEv",
+            "_ZThn8_N13MyClassDerive3fooEv"
         ],
         "overriddenFunctions": [],
+        "parents": []
+    },
+    "_ZThn8_N13MyClassDerive3fooEv": {
+        "callees": [],
+        "doesOverride": true,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [
+            "_ZN7MyClass3fooEv",
+            "_ZN8MyClass23fooEv"
+        ],
         "parents": []
     },
     "main": {
