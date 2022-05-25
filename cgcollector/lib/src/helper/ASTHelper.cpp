@@ -1,7 +1,3 @@
-/*
- * currently this is a copy of the ASTHelper of clangOfflineCGCollector
- */
-
 #include "helper/ASTHelper.h"
 #include <algorithm>
 #include <clang/AST/RecursiveASTVisitor.h>

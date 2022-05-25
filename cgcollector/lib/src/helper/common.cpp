@@ -1,6 +1,7 @@
 #include "helper/common.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/Mangle.h"
+#include <clang/AST/DeclCXX.h>
+#include <clang/AST/DeclObjC.h>
+#include <clang/AST/Mangle.h>
 
 #include <iostream>
 
@@ -53,27 +54,16 @@ std::vector<std::string> mangleCtorDtor(const clang::FunctionDecl *const nd, cla
 }
 
 std::vector<std::string> getMangledName(clang::NamedDecl const *const nd) {
-  std::unique_ptr<clang::MangleContext> mc(nd->getASTContext().createMangleContext());
-  if (!nd || !mc) {
+  if (!nd) {
     std::cerr << "NamedDecl was nullptr" << std::endl;
-    assert(nd && mc && "NamedDecl and MangleContext must not be nullptr");
+    assert(nd && "NamedDecl and MangleContext must not be nullptr");
     return {"__NO_NAME__"};
   }
+  clang::ASTNameGenerator NG(nd->getASTContext());
 
-  if (llvm::isa<clang::CXXConstructorDecl>(nd) || llvm::isa<clang::CXXDestructorDecl>(nd)) {
-    return mangleCtorDtor(llvm::dyn_cast<clang::FunctionDecl>(nd), mc.get());
+  if (llvm::isa<clang::CXXRecordDecl>(nd) || llvm::isa<clang::CXXMethodDecl>(nd) ||
+      llvm::isa<clang::ObjCInterfaceDecl>(nd) || llvm::isa<clang::ObjCImplementationDecl>(nd)) {
+    return NG.getAllManglings(nd);
   }
-
-  if (const clang::FunctionDecl *dc = llvm::dyn_cast<clang::FunctionDecl>(nd)) {
-    if (dc->isExternC()) {
-      return {dc->getNameAsString()};
-    }
-    if (dc->isMain()) {
-      return {"main"};
-    }
-  }
-  std::string functionName;
-  llvm::raw_string_ostream llvmName(functionName);
-  mc->mangleName(nd, llvmName);
-  return {llvmName.str()};
+  return {NG.getName(nd)};
 }
