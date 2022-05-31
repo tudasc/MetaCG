@@ -22,9 +22,9 @@ void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j, const int ve
       for (auto &it : *(it->getSecond())) {
         if (auto calleeDecl = llvm::dyn_cast<clang::FunctionDecl>(it->getDecl())) {
           auto calleeNames = getMangledName(calleeDecl);
-//          for (const auto &n : calleeNames) {
-            // std::cout << mNames.front() << " -- " << n << std::endl;
- //         }
+          //          for (const auto &n : calleeNames) {
+          // std::cout << mNames.front() << " -- " << n << std::endl;
+          //         }
           callees.insert(std::begin(calleeNames), std::end(calleeNames));
         }
       }

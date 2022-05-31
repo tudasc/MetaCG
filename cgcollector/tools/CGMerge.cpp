@@ -297,5 +297,7 @@ int main(int argc, char **argv) {
     writeIPCG(argv[1], wholeCG);
   }
 
+  std::cout <<"Done merging" << std::endl;
+
   return 0;
 }

@@ -12,6 +12,9 @@
 #include <clang/AST/Decl.h>
 #include <clang/AST/StmtVisitor.h>
 #include <clang/Basic/SourceManager.h>
+#if LLVM_VERSION_MAJOR == 11
+  #include <clang/Basic/FileManager.h>
+#endif
 
 #include <map>
 #include <memory>
