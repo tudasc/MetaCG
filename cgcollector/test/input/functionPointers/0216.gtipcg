@@ -1,0 +1,54 @@
+{
+  "_ZZ4mainEN3$_08__invokeEv": {
+    "callees": [
+      "_ZZ4mainENK3$_0clEv"
+    ],
+    "doesOverride": false,
+    "hasBody": true,
+    "isVirtual": false,
+    "numStatements": 0,
+    "overriddenBy": [],
+    "overriddenFunctions": [],
+    "parents": [
+      "_ZZ4mainENK3$_0cvPFvvEEv"
+    ]
+  },
+  "_ZZ4mainENK3$_0clEv": {
+    "callees": [],
+    "doesOverride": false,
+    "hasBody": true,
+    "isVirtual": false,
+    "numStatements": 0,
+    "overriddenBy": [],
+    "overriddenFunctions": [],
+    "parents": [
+      "_ZZ4mainEN3$_08__invokeEv"
+    ]
+  },
+  "_ZZ4mainENK3$_0cvPFvvEEv": {
+    "callees": [
+      "_ZZ4mainEN3$_08__invokeEv"
+    ],
+    "doesOverride": false,
+    "hasBody": true,
+    "isVirtual": false,
+    "numStatements": 1,
+    "overriddenBy": [],
+    "overriddenFunctions": [],
+    "parents": [
+      "main"
+    ]
+  },
+  "main": {
+    "callees": [
+      "_ZZ4mainENK3$_0cvPFvvEEv"
+    ],
+    "doesOverride": false,
+    "hasBody": true,
+    "isVirtual": false,
+    "numStatements": 4,
+    "overriddenBy": [],
+    "overriddenFunctions": [],
+    "parents": []
+  }
+}

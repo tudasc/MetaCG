@@ -15,8 +15,8 @@ std::vector<std::string> mangleCtorDtor(const clang::FunctionDecl *const nd, cla
 #if LLVM_VERSION_MAJOR == 10
       mc->mangleCXXCtor(nd, type, out);
 #else
-    const clang::GlobalDecl GD(nd, type);
-    mc->mangleName(GD, out);
+      const clang::GlobalDecl GD(nd, type);
+      mc->mangleName(GD, out);
 #endif
       return out.str();
     };

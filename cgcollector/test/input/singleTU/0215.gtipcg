@@ -1,1 +1,0 @@
-{"_Z3fooi":{"callees":["_Z3fooi"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":3,"overriddenBy":[],"overriddenFunctions":[],"parents":["main","_Z3fooi"]},"main":{"callees":["_Z3fooi"],"doesOverride":false,"hasBody":true,"isVirtual":false,"numStatements":2,"overriddenBy":[],"overriddenFunctions":[],"parents":[]}}

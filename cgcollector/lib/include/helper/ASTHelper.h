@@ -4,7 +4,7 @@
 #include "clang/AST/Stmt.h"
 #include "clang/AST/StmtCXX.h"
 
-int getNumStmtsInStmt(clang::Stmt *d);
+int getNumStmtsInStmt(clang::Stmt *stmt);
 int getNumStmtsInCompoundStmt(clang::CompoundStmt *cpst);
 int getNumStmtsInIfStmt(clang::IfStmt *is);
 int getNumStmtsInForStmt(clang::ForStmt *fs);

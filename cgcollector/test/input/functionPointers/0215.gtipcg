@@ -1,24 +1,27 @@
 {
-    "_ZZ4mainENK3$_0cvPFvvEEv": {
-        "callees": [],
+    "_Z3fooi": {
+        "callees": [
+            "_Z3fooi"
+        ],
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
-        "numStatements": 1,
+        "numStatements": 3,
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": [
+            "_Z3fooi",
             "main"
         ]
     },
     "main": {
         "callees": [
-            "_ZZ4mainENK3$_0cvPFvvEEv"
+            "_Z3fooi"
         ],
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
-        "numStatements": 4,
+        "numStatements": 2,
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": []

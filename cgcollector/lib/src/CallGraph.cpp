@@ -35,6 +35,8 @@
 #include <clang/AST/ParentMapContext.h>
 #endif
 
+#include "helper/common.h"
+
 #include <cassert>
 #include <memory>
 #include <string>
@@ -847,6 +849,10 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
   void handleCallExprLike(CallExpr *CE) {
     Decl *D = nullptr;
     if ((D = getDeclFromCall(CE))) {
+      //      if (const auto ND = llvm::dyn_cast_or_null<NamedDecl>(D)) {
+      //        auto DStr = getMangledName(ND);
+      //        std::cout << DStr.front() << std::endl;
+      //      }
       addCalledDecl(D, CE);
     }
 
@@ -944,11 +950,26 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     VisitChildren(CE);
   }
 
-  void VisitCXXMemberCallExpr(CXXMemberCallExpr *mce) { handleCallExprLike(mce); }
+  void VisitCXXMemberCallExpr(CXXMemberCallExpr *mce) {
+    //    std::cout << "Visiting CXXMemberCallExpr: " << std::endl;
+    handleCallExprLike(mce);
+  }
 
-  void VisitCallExpr(CallExpr *CE) {
-    handleCallExprLike(CE);
-    return;
+  void VisitCallExpr(CallExpr *CE) { handleCallExprLike(CE); }
+
+  void VisitLambdaExpr(LambdaExpr *LE) {
+    auto LEstr = getMangledName(LE->getCallOperator());
+    //    std::cout << "Visiting the lambda expression: " << LEstr.front() << " @ " << LE->getCallOperator() <<
+    //    std::endl;
+    auto lambdaStaticInvoker = LE->getLambdaClass()->getLambdaStaticInvoker();
+    addCalledDecl(lambdaStaticInvoker, LE->getCallOperator(), nullptr);
+    for (auto conversionIt = LE->getLambdaClass()->conversion_begin();
+         conversionIt != LE->getLambdaClass()->conversion_end(); ++conversionIt) {
+      if (auto conv = *conversionIt) {
+        addCalledDecl(conv, lambdaStaticInvoker, nullptr);
+      }
+    }
+    VisitChildren(LE);
   }
 
   // Adds may-call edges for the ObjC message sends.

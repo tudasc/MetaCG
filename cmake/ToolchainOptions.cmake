@@ -22,6 +22,15 @@ if(NOT
      "10")
     OR (${LLVM_VERSION_MAJOR}
         VERSION_EQUAL
+        "11")
+    OR (${LLVM_VERSION_MAJOR}
+        VERSION_EQUAL
+        "12")
+    OR (${LLVM_VERSION_MAJOR}
+        VERSION_EQUAL
+        "13")
+    OR (${LLVM_VERSION_MAJOR}
+        VERSION_EQUAL
         "14"))
 )
   message(SEND_ERROR "Only LLVM/Clang version 10 and 14 are supported")

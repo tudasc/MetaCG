@@ -73,7 +73,7 @@ int main(int argc, const char **argv) {
   std::cout << "Running metacg::CGCollector (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
             << ")\nGit revision: " << MetaCG_GIT_SHA << " LLVM/Clang version: " << LLVM_VERSION_STRING << std::endl;
 
-#if LLVM_VERSION_MAJOR == 10
+#if (LLVM_VERSION_MAJOR >= 10) && (LLVM_VERSION_MAJOR <= 12)
   clang::tooling::CommonOptionsParser OP(argc, argv, cgc);
 #else
   auto ParseResult = clang::tooling::CommonOptionsParser::create(argc, argv, cgc);
