@@ -50,7 +50,7 @@ function applyFileFormatTwoToSingleTU {
   # - Tehe groundtruth data for reconciling the CG constructed by MetaCG
   tfile=$testCaseFile
   gfile=${testCaseFile/cpp/ipcg}
-  tgt=${testCaseFile/cpp/gtipcg}
+  tgt=${testCaseFile/cpp/gtmcg}
 
  echo "Running tester on ${tfile}"
   $cgcollectorExe --metacg-format-version=2 ${addFlags} $tfile -- >>log/testrun.log 2>&1
