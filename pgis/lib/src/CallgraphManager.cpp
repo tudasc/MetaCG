@@ -76,7 +76,6 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
     spdlog::get("errconsole")->error("PiraMCGProcessor: Cannot find main function.");
     exit(1);
   }
-  // CgHelper::calculateInclusiveStatementCounts(mainFunction);
 
   while (!phases.empty()) {
     EstimatorPhase *phase = phases.front();
@@ -99,7 +98,7 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
       CgReport report = phase->getReport();
       auto &gOpts = ::pgis::config::GlobalConfig::get();
 
-      if (gOpts.getAs<bool>(dotExport.cliName)) {
+      if (outputDotBetweenPhases) {
         printDOT(report.phaseName);
       }
 
@@ -115,17 +114,6 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
     // We don't know if estimator phases hold references / pointers to other EstimatorPhases
     // donePhases.push_back(std::shared_ptr<EstimatorPhase>{phase});
   }
-
-  if (!noOutputRequired) {
-    // XXX Change to spdlog
-    std::cout << " ---- "
-              << "Fastest Phase: " << std::setw(8) << configPtr->fastestPhaseOvPercent << " % with "
-              << configPtr->fastestPhaseName << std::endl;
-  }
-
-#if PRINT_FINAL_DOT
-  printDOT("final");
-#endif
 }
 
 int metacg::pgis::PiraMCGProcessor::getNumProcs() {

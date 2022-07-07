@@ -7,6 +7,7 @@
 #ifndef PGIS_CONFIG_GLOBALCONFIG_H
 #define PGIS_CONFIG_GLOBALCONFIG_H
 
+#include "LoggerUtil.h"
 #include "spdlog/spdlog.h"
 
 #include <any>
@@ -53,12 +54,12 @@ class HeuristicSelection {
     } else if (name == "global_loopdepth") {
       out.mode = HeuristicSelectionEnum::GlOBAL_LOOPDEPTH;
     } else {
-      spdlog::get("errconsole")
-          ->error(
-              "Invalid input for heuristic selection\n"
-              "Valid values: statements, conditionalbranches, conditionalbranches_reverse, fp_and_mem_ops, loopdepth, "
-              "global_loopdepth\n"
-              "Default: statements");
+      auto errconsole = metacg::MCGLogger::instance().getErrConsole();
+      errconsole->error(
+          "Invalid input for heuristic selection\n"
+          "Valid values: statements, conditionalbranches, conditionalbranches_reverse, fp_and_mem_ops, loopdepth, "
+          "global_loopdepth\n"
+          "Default: statements");
       // is.setstate(is.rdstate() | std::ios::failbit);
       exit(-1);
       return is;
@@ -94,11 +95,12 @@ class CuttoffSelection {
     } else if (name == "unique_median") {
       out.mode = CuttoffSelectionEnum::UNIQUE_MEDIAN;
     } else {
-      spdlog::get("errconsole")
-          ->error(
-              "Invalid input for cuttof selection\n"
-              "Valid values: max, median, unique_median\n"
-              "Default: unique_median");
+      auto console = metacg::MCGLogger::instance().getConsole();
+      auto errconsole = metacg::MCGLogger::instance().getErrConsole();
+      errconsole->error(
+          "Invalid input for cuttof selection\n"
+          "Valid values: max, median, unique_median\n"
+          "Default: unique_median");
       // is.setstate(is.rdstate() | std::ios::failbit);
       exit(-1);
       return is;
@@ -115,12 +117,38 @@ class CuttoffSelection {
 };
 using CuttoffSelectionOpt = Opt<CuttoffSelection>;
 
+class DotExportSelection {
+ public:
+  friend std::istream &operator>>(std::istream &is, DotExportSelection &out) {
+    std::string inVal;
+    is >> inVal;
+    if (inVal.empty()) {
+      return is;
+    }
+    std::transform(inVal.begin(), inVal.end(), inVal.begin(), ::tolower);
+    if (inVal == "none") {
+    } else if (inVal == "begin") {
+      out.mode = DotExportEnum::BEGIN;
+    } else if (inVal == "end") {
+      out.mode = DotExportEnum::END;
+    } else if (inVal == "all") {
+      out.mode = DotExportEnum::ALL;
+    }
+    return is;
+  }
+
+  enum class DotExportEnum { NONE, BEGIN, END, ALL };
+  DotExportEnum mode = DotExportEnum::NONE;
+};
+using DotExportSelectionOpt = Opt<DotExportSelection>;
+
 static const BoolOpt runtimeOnly{"runtime-only", "false"};
 static const BoolOpt staticSelection{"static", "false"};
 static const BoolOpt modelFilter{"model-filter", "false"};
 static const BoolOpt scorepOut{"scorep-out", "false"};
 static const BoolOpt ipcgExport{"export", "false"};
-static const BoolOpt dotExport{"dot-export", "false"};
+// static const BoolOpt dotExport{"dot-export", "false"};
+static const DotExportSelectionOpt dotExport{"dot-export", "none"};
 static const BoolOpt printUnwoundNames{"dump-unwound-names", "false"};
 static const BoolOpt useCallSiteInstrumentation{"use-cs-instrumentation", "false"};
 static const BoolOpt cubeShowOnly{"cube-show-only", "false"};
@@ -174,7 +202,8 @@ class GlobalConfig {
       auto opt = configOptions.at(optionName);
       return opt;
     } catch (std::out_of_range &exc) {
-      spdlog::get("errconsole")->warn("No option named {}", optionName);
+      auto errconsole = metacg::MCGLogger::instance().getErrConsole();
+      errconsole->warn("No option named {}", optionName);
       return std::any();
     }
   }
@@ -183,7 +212,8 @@ class GlobalConfig {
   bool putOption(const std::string &optionName, ValType &value) {
     auto exists = (configOptions.find(optionName) != configOptions.end());
     if (exists) {
-      spdlog::get("errconsole")->warn("Option named {} already exists.", optionName);
+      auto errconsole = metacg::MCGLogger::instance().getErrConsole();
+      errconsole->warn("Option named {} already exists.", optionName);
     }
 
     configOptions.try_emplace(optionName, value);

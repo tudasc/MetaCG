@@ -1,18 +1,18 @@
 /**
-* File: Util.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: Util.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #ifndef METACG_UTIL_H
 #define METACG_UTIL_H
 
 #include "CgNode.h"
 #include "LoggerUtil.h"
+#include <algorithm>
+#include <cstdlib>
 #include <set>
 #include <string>
-#include <cstdlib>
-#include <algorithm>
 
 namespace metacg::util {
 
@@ -25,7 +25,7 @@ inline std::set<std::string> to_string(const std::set<CgNodePtr> &nodes) {
 }
 
 inline std::vector<std::string> string_split(const std::string &in, const char c = '.') {
-  std::vector<std::string::size_type > positions;
+  std::vector<std::string::size_type> positions;
   positions.emplace_back(0);
   while (auto pos = in.find(c, positions.back() + 1)) {
     if (pos == std::string::npos) {
@@ -44,6 +44,14 @@ inline std::vector<std::string> string_split(const std::string &in, const char c
   return vec;
 }
 
+inline std::string extract_between(const std::string &s, const std::string &pattern, size_t &start) {
+  size_t first = s.find(pattern, start) + pattern.size();
+  size_t second = s.find(pattern, first);
+
+  start = second + pattern.size();
+  return s.substr(first, second - first);
+}
+
 inline int getVersionNoAtPosition(const std::string &versionStr, int index) {
   auto numOccurrences = std::count(versionStr.begin(), versionStr.end(), '.');
   if (numOccurrences < 1) {
@@ -55,14 +63,10 @@ inline int getVersionNoAtPosition(const std::string &versionStr, int index) {
   return version;
 }
 
-inline int getMajorVersionFromString(const std::string &versionStr) {
-  return getVersionNoAtPosition(versionStr, 0);
-}
+inline int getMajorVersionFromString(const std::string &versionStr) { return getVersionNoAtPosition(versionStr, 0); }
 
-inline int getMinorVersionFromString(const std::string &versionStr) {
-  return getVersionNoAtPosition(versionStr, 1);
-}
+inline int getMinorVersionFromString(const std::string &versionStr) { return getVersionNoAtPosition(versionStr, 1); }
 
-}
+}  // namespace metacg::util
 
 #endif  // METACG_UTIL_H

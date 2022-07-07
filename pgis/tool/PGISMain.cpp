@@ -23,6 +23,7 @@
 #include "spdlog/spdlog.h"
 
 #include "CallgraphManager.h"
+#include "DotIO.h"
 #include "cxxopts.hpp"
 
 #include <nlohmann/json.hpp>
@@ -111,24 +112,7 @@ int main(int argc, char **argv) {
   /* The marked options should go away for the PGIS release */
   // clang-format off
   opts.add_options()
-    // not sure
-    ("other", "", cxxopts::value<std::string>()->default_value(""))
-    // remove
-    ("s,samples", "Samples per second", cxxopts::value<long>()->default_value("0"))
-    // remove
-    ("r,ref", "??", cxxopts::value<double>()->default_value("0"))
-    // not sure
     ("m,mangled", "Use mangled names", cxxopts::value<bool>()->default_value("false"))
-    // remove
-    ("half", "??", cxxopts::value<long>()->default_value("0"))
-    // not sure
-    ("t,tiny", "Print tiny report", cxxopts::value<bool>()->default_value("false"))
-    // remove
-    ("i,ignore-sampling", "Ignore sampling", cxxopts::value<bool>()->default_value("false"))
-    // remove
-    ("f,samples-file", "Input file for sampling points", cxxopts::value<std::string>())
-    // remove
-    ("g,greedy-unwind", "Use greedy unwind", cxxopts::value<bool>()->default_value("false"))
     // not sure
     (outDirectory.cliName, "Output file name", optType(outDirectory)->default_value("out"))
     // from here: keep all
@@ -146,8 +130,8 @@ int main(int argc, char **argv) {
     (parameterFileConfig.cliName, "File path to configuration file containing analysis parameters", optType(parameterFileConfig)->default_value(""))
     (lideEnabled.cliName, "Enable load imbalance detection (PIRA LIDe)", optType(lideEnabled)->default_value("false"))
     (metacgFormat.cliName, "Selects the MetaCG format to expect", optType(metacgFormat)->default_value("1"))
-    (dotExport.cliName, "Export call-graph as dot-file after every phase.", optType(dotExport)->default_value("false"))
-    (printUnwoundNames.cliName, "Dump unwound names", optType(dotExport)->default_value("false"))
+    (dotExport.cliName, "Export call-graph as dot-file after every phase.", optType(dotExport)->default_value(dotExport.defaultValue))
+    (printUnwoundNames.cliName, "Dump unwound names", optType(printUnwoundNames)->default_value("false"))
     (cubeShowOnly.cliName, "Print inclusive time for main", optType(cubeShowOnly)->default_value("false"))
     (useCallSiteInstrumentation.cliName, "Enable experimental call-site instrumentation", optType(useCallSiteInstrumentation)->default_value("false"))
     (heuristicSelection.cliName, "Select the heuristic to use for node selection", optType(heuristicSelection)->default_value(heuristicSelection.defaultValue))
@@ -161,11 +145,11 @@ int main(int argc, char **argv) {
   bool shouldExport{false};
   bool useScorepFormat{false};
   bool extrapRuntimeOnly{false};
-  bool enableDotExport{false};
   bool enableDumpUnwoundNames{false};
   bool enableLide{false};
   bool keepNotReachable{false};
   int printDebug{0};
+  DotExportSelection enableDotExport;
 
   auto result = opts.parse(argc, argv);
 
@@ -196,7 +180,7 @@ int main(int argc, char **argv) {
   checkAndSet<int>(debugLevel.cliName, result, printDebug);
   checkAndSet<bool>(ipcgExport.cliName, result, shouldExport);
   checkAndSet<bool>(scorepOut.cliName, result, useScorepFormat);
-  checkAndSet<bool>(dotExport.cliName, result, enableDotExport);
+  checkAndSet<DotExportSelection>(dotExport.cliName, result, enableDotExport);
   checkAndSet<bool>(printUnwoundNames.cliName, result, enableDumpUnwoundNames);
   std::string disposable;
   checkAndSet<std::string>(extrapConfig.cliName, result, disposable);
@@ -215,7 +199,7 @@ int main(int argc, char **argv) {
 
   if (mcgVersion < 2 &&
       pgis::config::getSelectedHeuristic() != HeuristicSelection::HeuristicSelectionEnum::STATEMENTS) {
-    std::cout << "Heuristics other than 'statements' are not supported with metacg format 1" << std::endl;
+    errconsole->error("Heuristics other than 'statements' are not supported with metacg format 1");
     exit(1);
   }
 
@@ -392,9 +376,6 @@ int main(int argc, char **argv) {
     }
 
     cg.attachExtrapModels();
-    if (enableDotExport) {
-      cg.printDOT("extrap");
-    }
 
     if (applyModelFilter) {
       console->info("Applying model filter");
@@ -415,9 +396,22 @@ int main(int argc, char **argv) {
     }
   }
 
+  if (enableDotExport.mode == DotExportSelection::DotExportEnum::BEGIN ||
+      enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
+    metacg::io::dot::DotGenerator dotGenerator(&cg.getCallgraph(&cg));
+    dotGenerator.generate();
+    cg.printDOT("begin");
+  }
   if (cg.hasPassesRegistered()) {
+    if (enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
+      cg.setOutputDotBetweenPhases();
+    }
     console->info("Running registered estimator phases");
     cg.applyRegisteredPhases();
+  }
+  if (enableDotExport.mode == DotExportSelection::DotExportEnum::END ||
+      enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
+    cg.printDOT("end");
   }
 
   // Example use of MetaCG writer

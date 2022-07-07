@@ -1,6 +1,7 @@
-# Now simply link against gtest or gtest_main as needed. Eg
+# Now simply link against gtest or gtest_main as needed.Eg
 add_executable(
   libtests
+  DotIOTest.cpp
   MCGManagerTest.cpp
   MCGReaderTest.cpp
   MCGWriterTest.cpp
