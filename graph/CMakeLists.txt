@@ -17,6 +17,8 @@ set(MetacgGraphLibSources
     include/Util.h
     include/MCGBaseInfo.h
     include/LoggerUtil.h
+    include/DotIO.h
+    src/DotIO.cpp
 )
 
 add_library(metacg SHARED ${MetacgGraphLibSources})

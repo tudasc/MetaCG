@@ -93,6 +93,10 @@ class PiraMCGProcessor {
   bool isNodeListed(std::vector<std::string> whiteNodes, std::string node);
   Callgraph &getCallgraph(PiraMCGProcessor *);
   void setNoOutput() { noOutputRequired = true; }
+  void setOutputDotBetweenPhases(bool val = true) {outputDotBetweenPhases = val;}
+  bool getOutputDotBetweenPhases(){
+    return outputDotBetweenPhases;
+  }
 
   //  void setScorepOutputFormat(bool val = true) { scorepOutput_ = val; }
 
@@ -105,6 +109,7 @@ class PiraMCGProcessor {
   Callgraph &graph;
   Config *configPtr;
   bool noOutputRequired{false};
+  bool outputDotBetweenPhases {false};
   //  bool scorepOutput_ = false;
 
   // Extrap interaction
