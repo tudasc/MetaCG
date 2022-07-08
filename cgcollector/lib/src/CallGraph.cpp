@@ -1164,7 +1164,8 @@ CallGraph::~CallGraph() = default;
 
 bool CallGraph::includeInGraph(const Decl *D) {
   assert(D);
-
+  // NOTE: It could make sense to check here that only FunctionDecls are included. Right now this function also returns
+  // true for VarDecls/ParmVarDecls that are called because they contain a function pointer
   if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
     // We skip function template definitions, as their semantics is
     // only determined when they are instantiated.
@@ -1249,7 +1250,7 @@ bool CallGraph::VisitFunctionDecl(clang::FunctionDecl *FD) {
 }
 
 bool CallGraph::VisitCXXMethodDecl(clang::CXXMethodDecl *MD) {
-  if (!MD->isVirtual()) {
+  if (!MD->isVirtual() || !includeInGraph(MD)) {
     // std::cout << "Method " << MD->getNameAsString() << " not known to be virtual" << std::endl;
     return true;
   }

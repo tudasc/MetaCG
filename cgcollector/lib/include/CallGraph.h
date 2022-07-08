@@ -128,6 +128,14 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
   // We are only collecting the declarations, so do not step into the bodies.
   bool TraverseStmt([[maybe_unused]] clang::Stmt *S) { return true; }
 
+  // We should not do anything in uninstantiated template classes, so skip them completely.
+  bool TraverseCXXRecordDecl(clang::CXXRecordDecl *RD) {
+    if (RD->isDependentContext()) {
+      return true;
+    }
+    return RecursiveASTVisitor::TraverseCXXRecordDecl(RD);
+  }
+
   bool shouldWalkTypesOfTypeLocs() const { return false; }
   bool shouldVisitTemplateInstantiations() const { return true; }
 
