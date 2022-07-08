@@ -93,7 +93,7 @@ build-mcg-stripped-pgis:
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DWITH_PGIS=OFF
       -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-    - cmake --build $MCG_BUILD --parallel
+    - cmake --build $MCG_BUILD-no-pgis --parallel
     - module purge
 
 build-mcg-stripped-cgcollector:
@@ -109,7 +109,7 @@ build-mcg-stripped-cgcollector:
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DWITH_CGCOLLECTOR=OFF
       -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-    - cmake --build $MCG_BUILD --parallel
+    - cmake --build $MCG_BUILD-no-cgcollector --parallel
     - module purge
 
 build-mcg-stripped-all:
@@ -126,7 +126,7 @@ build-mcg-stripped-all:
       -DWITH_PGIS=OFF
       -DWITH_CGCOLLECTOR=OFF
       -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-    - cmake --build $MCG_BUILD --parallel
+    - cmake --build $MCG_BUILD-no-all --parallel
     - module purge
 
 
