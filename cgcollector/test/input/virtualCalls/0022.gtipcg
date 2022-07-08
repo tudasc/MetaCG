@@ -1,0 +1,39 @@
+{
+    "_ZN8BaseUsedIiE5good1Ev": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "_ZN9ChildUsedIiE5good2Ev": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": true,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "main"
+        ]
+    },
+    "main": {
+        "callees": [
+            "_ZN8BaseUsedIiE5good1Ev",
+            "_ZN9ChildUsedIiE5good2Ev"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 4,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    }
+}
