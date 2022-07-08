@@ -108,7 +108,7 @@ class Callgraph {
   CgNodePtr lastSearched;
 };
 
-static Callgraph &getEmptyGraph() {
+[[maybe_unused]] static Callgraph &getEmptyGraph() {
   static Callgraph graph;
   return graph;
 }

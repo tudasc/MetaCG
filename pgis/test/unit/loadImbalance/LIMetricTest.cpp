@@ -5,6 +5,7 @@
  */
 
 #include "gtest/gtest.h"
+#include "CgNodeMetaData.h"
 #include <loadImbalance/metric/EfficiencyMetric.h>
 #include <loadImbalance/metric/ImbalancePercentageMetric.h>
 #include <loadImbalance/metric/VariationCoeffMetric.h>
@@ -20,11 +21,13 @@ TEST(LIMetricTest, EfficiencyMetric) {
             main = std::make_shared<CgNode>("main");
 
   {
+    getOrCreateMD<pira::BaseProfileData>(func1);
     // func1: no profiling data
     metric.setNode(func1);
     ASSERT_EQ(metric.calc(), 0.0);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func2);
     // func2: single call
 
     func2->get<pira::BaseProfileData>()->setCallData(main, 1, 1.0, 1.0, 1, 1);
@@ -32,6 +35,7 @@ TEST(LIMetricTest, EfficiencyMetric) {
     ASSERT_EQ(metric.calc(), 1.0);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func3);
     // func3: 2 identical calls
 
     func3->get<pira::BaseProfileData>()->setCallData(main, 1, 1.0, 1.0, 1, 1);
@@ -40,6 +44,7 @@ TEST(LIMetricTest, EfficiencyMetric) {
     ASSERT_EQ(metric.calc(), 1.0);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func4);
     // func4: moderate speedup
     func4->get<pira::BaseProfileData>()->setCallData(main, 1, 4.0, 4.0, 1, 1);
     func4->get<pira::BaseProfileData>()->setCallData(main, 1, 6.0, 6.0, 1, 2);
@@ -47,6 +52,7 @@ TEST(LIMetricTest, EfficiencyMetric) {
     ASSERT_EQ(metric.calc(), 1.2);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func5);
     // func5: extreme speedup
     func5->get<pira::BaseProfileData>()->setCallData(main, 1, 2.0, 2.0, 1, 1);
     func5->get<pira::BaseProfileData>()->setCallData(main, 1, 2.0, 2.0, 1, 2);
@@ -58,6 +64,7 @@ TEST(LIMetricTest, EfficiencyMetric) {
     EXPECT_NEAR(metric.calc(), 4.909090909090909, 0.001);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func6);
     // func6: "empty" calls (to be ignored)
     func6->get<pira::BaseProfileData>()->setCallData(main, 1, 10.0, 10.0, 1, 1);
     func6->get<pira::BaseProfileData>()->setCallData(main, 1, 10.0, 10.0, 1, 2);
@@ -76,11 +83,13 @@ TEST(LIMetricTest, VariationCoeffMetric) {
             main = std::make_shared<CgNode>("main");
 
   {
+    getOrCreateMD<pira::BaseProfileData>(func1);
     // func1: no profiling data
     metric.setNode(func1);
     ASSERT_EQ(metric.calc(), 0.0);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func2);
     // func2: single call
 
     func2->get<pira::BaseProfileData>()->setCallData(main, 1, 1.0, 1.0, 1, 1);
@@ -88,6 +97,7 @@ TEST(LIMetricTest, VariationCoeffMetric) {
     ASSERT_EQ(metric.calc(), 0.0);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func3);
     // func3: 2 identical calls
 
     func3->get<pira::BaseProfileData>()->setCallData(main, 1, 1.0, 1.0, 1, 1);
@@ -96,6 +106,7 @@ TEST(LIMetricTest, VariationCoeffMetric) {
     ASSERT_EQ(metric.calc(), 0.0);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func4);
     // func4: moderate speedup
     func4->get<pira::BaseProfileData>()->setCallData(main, 1, 4.0, 4.0, 1, 1);
     func4->get<pira::BaseProfileData>()->setCallData(main, 1, 6.0, 6.0, 1, 2);
@@ -103,6 +114,7 @@ TEST(LIMetricTest, VariationCoeffMetric) {
     EXPECT_NEAR(metric.calc(), 0.2, 0.001);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func5);
     // func5: extreme speedup
     func5->get<pira::BaseProfileData>()->setCallData(main, 1, 2.0, 2.0, 1, 1);
     func5->get<pira::BaseProfileData>()->setCallData(main, 1, 2.0, 2.0, 1, 2);
@@ -115,6 +127,7 @@ TEST(LIMetricTest, VariationCoeffMetric) {
     // ASSERT_TRUE(false);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func6);
     // func6: "empty" calls (to be ignored)
     func6->get<pira::BaseProfileData>()->setCallData(main, 1, 10.0, 10.0, 1, 1);
     func6->get<pira::BaseProfileData>()->setCallData(main, 1, 10.0, 10.0, 1, 2);
@@ -133,11 +146,13 @@ TEST(LIMetricTest, ImbalancePercentageMetric) {
             main = std::make_shared<CgNode>("main");
 
   {
+    getOrCreateMD<pira::BaseProfileData>(func1);
     // func1: no profiling data
     metric.setNode(func1);
     ASSERT_EQ(metric.calc(), 0.0);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func2);
     // func2: single call
 
     func2->get<pira::BaseProfileData>()->setCallData(main, 1, 1.0, 1.0, 1, 1);
@@ -145,6 +160,7 @@ TEST(LIMetricTest, ImbalancePercentageMetric) {
     ASSERT_EQ(metric.calc(), 0.0);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func3);
     // func3: 2 identical calls
 
     func3->get<pira::BaseProfileData>()->setCallData(main, 1, 1.0, 1.0, 1, 1);
@@ -153,6 +169,7 @@ TEST(LIMetricTest, ImbalancePercentageMetric) {
     ASSERT_EQ(metric.calc(), 0.0);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func4);
     // func4: moderate speedup
     func4->get<pira::BaseProfileData>()->setCallData(main, 1, 4.0, 4.0, 1, 1);
     func4->get<pira::BaseProfileData>()->setCallData(main, 1, 6.0, 6.0, 1, 2);
@@ -160,6 +177,7 @@ TEST(LIMetricTest, ImbalancePercentageMetric) {
     EXPECT_NEAR(metric.calc(), 0.33333, 0.001);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func5);
     // func5: extreme speedup
     func5->get<pira::BaseProfileData>()->setCallData(main, 1, 2.0, 2.0, 1, 1);
     func5->get<pira::BaseProfileData>()->setCallData(main, 1, 2.0, 2.0, 1, 2);
@@ -172,6 +190,7 @@ TEST(LIMetricTest, ImbalancePercentageMetric) {
     // ASSERT_TRUE(false);
   }
   {
+    getOrCreateMD<pira::BaseProfileData>(func6);
     // func6: "empty" calls (to be ignored)
     func6->get<pira::BaseProfileData>()->setCallData(main, 1, 10.0, 10.0, 1, 1);
     func6->get<pira::BaseProfileData>()->setCallData(main, 1, 10.0, 10.0, 1, 2);

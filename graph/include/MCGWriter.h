@@ -14,6 +14,8 @@
 
 #include "nlohmann/json.hpp"
 
+#include <fstream>
+
 namespace metacg::io {
 
 /**

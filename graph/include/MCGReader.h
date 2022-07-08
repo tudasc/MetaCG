@@ -11,13 +11,16 @@
 
 #include "nlohmann/json.hpp"
 
-#include <loadImbalance/LIMetaData.h>
+//#include <loadImbalance/LIMetaData.h>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <fstream>
 
 namespace metacg::io {
+
+
 
 using json = nlohmann::json;
 
@@ -120,7 +123,14 @@ class MetaCGReader {
    * Checks if the jsonValue contains a value for key and sets field accordingly
    */
   template <typename FieldTy, typename JsonTy>
-  void setIfNotNull(FieldTy &field, const JsonTy &jsonValue, const std::string &key);
+  void setIfNotNull(FieldTy &field, const JsonTy &jsonValue, const std::string &key) {
+    auto jsonField = jsonValue.value()[key];
+    if (!jsonField.is_null()) {
+      field = jsonField.template get<typename std::remove_reference<FieldTy>::type>();
+    } else {
+      metacg::MCGLogger::instance().getErrConsole()->warn("Tried to read non-existing field {} for node.", key);
+    }
+  }
 
   /**
    * Build the virtual function hierarchy in PGIS using the functions map
@@ -144,19 +154,6 @@ class MetaCGReader {
  private:
   // filename of the metacg this instance parses
   const std::string filename;
-};
-
-/**
- * Class to read metacg files in file format v1.0.
- * The file format is also typically referred to as IPCG files.
- */
-class VersionOneMetaCGReader : public MetaCGReader {
- public:
-  explicit VersionOneMetaCGReader(ReaderSource &source) : MetaCGReader(source) {}
-  void read(metacg::graph::MCGManager &cgManager) override;
-
- private:
-  void addNumStmts(metacg::graph::MCGManager &cgm);
 };
 
 /**

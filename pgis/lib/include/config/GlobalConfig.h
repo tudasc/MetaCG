@@ -54,12 +54,12 @@ class HeuristicSelection {
     } else if (name == "global_loopdepth") {
       out.mode = HeuristicSelectionEnum::GlOBAL_LOOPDEPTH;
     } else {
-      auto errconsole = metacg::MCGLogger::instance().getErrConsole();
-      errconsole->error(
-          "Invalid input for heuristic selection\n"
-          "Valid values: statements, conditionalbranches, conditionalbranches_reverse, fp_and_mem_ops, loopdepth, "
-          "global_loopdepth\n"
-          "Default: statements");
+     metacg::MCGLogger::instance().getErrConsole()
+          ->error(
+              "Invalid input for heuristic selection\n"
+              "Valid values: statements, conditionalbranches, conditionalbranches_reverse, fp_and_mem_ops, loopdepth, "
+              "global_loopdepth\n"
+              "Default: statements");
       // is.setstate(is.rdstate() | std::ios::failbit);
       exit(-1);
       return is;
@@ -95,12 +95,11 @@ class CuttoffSelection {
     } else if (name == "unique_median") {
       out.mode = CuttoffSelectionEnum::UNIQUE_MEDIAN;
     } else {
-      auto console = metacg::MCGLogger::instance().getConsole();
-      auto errconsole = metacg::MCGLogger::instance().getErrConsole();
-      errconsole->error(
-          "Invalid input for cuttof selection\n"
-          "Valid values: max, median, unique_median\n"
-          "Default: unique_median");
+      metacg::MCGLogger::instance().getErrConsole()
+          ->error(
+              "Invalid input for cuttof selection\n"
+              "Valid values: max, median, unique_median\n"
+              "Default: unique_median");
       // is.setstate(is.rdstate() | std::ios::failbit);
       exit(-1);
       return is;
@@ -202,8 +201,7 @@ class GlobalConfig {
       auto opt = configOptions.at(optionName);
       return opt;
     } catch (std::out_of_range &exc) {
-      auto errconsole = metacg::MCGLogger::instance().getErrConsole();
-      errconsole->warn("No option named {}", optionName);
+      metacg::MCGLogger::instance().getErrConsole()->warn("No option named {}", optionName);
       return std::any();
     }
   }
@@ -212,8 +210,7 @@ class GlobalConfig {
   bool putOption(const std::string &optionName, ValType &value) {
     auto exists = (configOptions.find(optionName) != configOptions.end());
     if (exists) {
-      auto errconsole = metacg::MCGLogger::instance().getErrConsole();
-      errconsole->warn("Option named {} already exists.", optionName);
+      metacg::MCGLogger::instance().getErrConsole()->warn("Option named {} already exists.", optionName);
     }
 
     configOptions.try_emplace(optionName, value);

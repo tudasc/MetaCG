@@ -6,7 +6,7 @@
 
 #include "gtest/gtest.h"
 
-#include "../LoggerUtil.h"
+#include "LoggerUtil.h"
 #include "CallgraphManager.h"
 #include "MCGManager.h"
 #include "loadImbalance/LIEstimatorPhase.h"
@@ -16,7 +16,14 @@
 
 class LIEstimatorPhaseTest : public ::testing::Test {
  protected:
-  void SetUp() override { loggerutil::getLogger(); }
+  void SetUp() override { metacg::loggerutil::getLogger(); }
+
+  static void attachAllMetaDataToGraph(metacg::Callgraph *cg) {
+    pgis::attachMetaDataToGraph<pira::BaseProfileData>(cg);
+    pgis::attachMetaDataToGraph<pira::PiraOneData>(cg);
+    pgis::attachMetaDataToGraph<pira::PiraTwoData>(cg);
+    pgis::attachMetaDataToGraph<LoadImbalance::LIMetaData>(cg);
+  }
 };
 
 TEST_F(LIEstimatorPhaseTest, TrivialTest) { ASSERT_TRUE(true); }
@@ -64,10 +71,12 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
 
   // main node
   auto mainNode = mcgm.findOrCreateNode("main");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   mainNode->get<pira::BaseProfileData>()->setInclusiveRuntimeInSeconds(10.0);
 
   // irrelevant and balanced
   auto childNode1 = mcgm.findOrCreateNode("child1");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   childNode1->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 0.2, 0.2, 0, 0);
   childNode1->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 0.2, 0.2, 1, 0);
   childNode1->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 0.2, 0.2, 2, 0);
@@ -76,7 +85,8 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
   childNode1->addChildNode(gc1);
 
   // irrelevant and imbalanced
-  auto childNode2 = mcgm.findOrCreateNode("child2");
+  auto childNode2 = mcgm.findOrCreateNode("child2");\
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   childNode2->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 0.0001, 0.001, 0, 0);
   childNode2->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 0.2, 0.2, 1, 0);
   childNode2->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 0.5, 0.5, 2, 0);
@@ -86,6 +96,7 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
 
   // relevant and balanced
   auto childNode3 = mcgm.findOrCreateNode("child3");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   childNode3->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 5.0, 5.0, 0, 0);
   childNode3->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 5.0, 5.0, 1, 0);
   childNode3->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 5.0, 5.0, 2, 0);
@@ -95,6 +106,7 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
 
   // relevant and imbalanced
   auto childNode4 = mcgm.findOrCreateNode("child4");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   childNode4->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 1.0, 1.0, 0, 0);
   childNode4->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 5.0, 5.0, 1, 0);
   childNode4->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 10.0, 10.0, 2, 0);
@@ -107,6 +119,7 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
 
   auto childNode5 = mcgm.findOrCreateNode("child5");
   // no profiling data for child5
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
 
   mainNode->addChildNode(childNode1);
   mainNode->addChildNode(childNode2);
@@ -166,10 +179,12 @@ TEST_F(LIEstimatorPhaseTest, Virtual) {
 
   // main node
   auto mainNode = mcgm.findOrCreateNode("main");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   mainNode->get<pira::PiraOneData>()->setComesFromCube();
   mainNode->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 10.0, 10.0, 0, 0);
 
   auto child = mcgm.findOrCreateNode("child");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   child->get<LoadImbalance::LIMetaData>()->setVirtual(true);
 
   auto grandchild = mcgm.findOrCreateNode("grandchild");
@@ -179,7 +194,7 @@ TEST_F(LIEstimatorPhaseTest, Virtual) {
   mainNode->addChildNode(child);
   child->addChildNode(grandchild);
   grandchild->addChildNode(grandgrandchild);
-
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   for (CgNodePtr n : *mcgm.getCallgraph()) {
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
@@ -217,14 +232,17 @@ TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
   // ===========
   // main node
   auto mainNode = mcgm.findOrCreateNode("main");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   mainNode->get<pira::PiraOneData>()->setComesFromCube();
   mainNode->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 10.0, 10.0, 0, 0);
 
   auto child1 = mcgm.findOrCreateNode("child1");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   child1->get<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Irrelevant);
   mcgm.addEdge(mainNode, child1);
 
   auto child2 = mcgm.findOrCreateNode("child2");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   child2->get<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Irrelevant);
   mcgm.addEdge(mainNode, child2);
 
@@ -232,6 +250,7 @@ TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
   mcgm.addEdge(child1, grandchild);
   mcgm.addEdge(child2, grandchild);
 
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   for (CgNodePtr n : *mcgm.getCallgraph()) {
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
@@ -275,6 +294,7 @@ TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
   // ===========
   // main node
   auto mainNode = mcgm.findOrCreateNode("main");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   mainNode->get<pira::PiraOneData>()->setComesFromCube();
   mainNode->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 10.0, 10.0, 0, 0);
 
@@ -282,13 +302,14 @@ TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
   mcgm.addEdge(mainNode, child1);
 
   auto child2 = mcgm.findOrCreateNode("child2");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   child2->get<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Irrelevant);
   mcgm.addEdge(mainNode, child2);
 
   auto grandchild = mcgm.findOrCreateNode("grandchild");
   mcgm.addEdge(child1, grandchild);
   mcgm.addEdge(child2, grandchild);
-
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   for (CgNodePtr n : *mcgm.getCallgraph()) {
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
@@ -332,19 +353,23 @@ TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
   // ===========
   // main node
   auto mainNode = mcgm.findOrCreateNode("main");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   mainNode->get<pira::PiraOneData>()->setComesFromCube();
   mainNode->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 10.0, 10.0, 0, 0);
 
   auto child1 = mcgm.findOrCreateNode("child1");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   child1->get<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Visited);
   mcgm.addEdge(mainNode, child1);
 
   auto child2 = mcgm.findOrCreateNode("child2");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   child2->get<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Visited);
   child1->addChildNode(child2);  // TODO: Necessary? Remove me!
   mcgm.addEdge(child1, child2);
 
   auto child3 = mcgm.findOrCreateNode("child3");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   child3->get<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Visited);
   mcgm.addEdge(child2, child3);
 

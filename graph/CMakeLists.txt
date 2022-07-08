@@ -19,6 +19,7 @@ set(MetacgGraphLibSources
     include/LoggerUtil.h
     include/DotIO.h
     src/DotIO.cpp
+    include/Timing.h
 )
 
 add_library(metacg SHARED ${MetacgGraphLibSources})
@@ -27,13 +28,11 @@ message("Source dir for MetaCG lib: " ${PROJECT_SOURCE_DIR})
 
 target_include_directories(metacg PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/graph/include>)
 
-target_include_directories(metacg PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/pgis/lib/include>)
-
 add_config_include(metacg)
 
 add_json(metacg)
 add_spdlog_libraries(metacg)
-add_extrap(metacg)
+# add_extrap(metacg)
 
 install(
   TARGETS metacg

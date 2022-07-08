@@ -4,12 +4,12 @@
  */
 
 #include "CgNode.h"
-#include <loadImbalance/LIMetaData.h>
+//#include <loadImbalance/LIMetaData.h>
 
 #define RENDER_DEPS 0
 
 namespace metacg {
-using namespace pira;
+//using namespace pira;
 
 CgNode::CgNode(std::string function)
     : functionName(function),
@@ -22,6 +22,7 @@ CgNode::CgNode(std::string function)
       childNodes(),
       spantreeParents() {
   /* Attach meta data container */
+#if 0
   auto bpd = new BaseProfileData();
   bpd->setRuntimeInSeconds(.0);
   bpd->setInclusiveRuntimeInSeconds(.0);
@@ -38,6 +39,7 @@ CgNode::CgNode(std::string function)
   lid->setVirtual(false);
   this->isMarkedVirtual = false;
   this->addMetaData(lid);
+#endif
 }
 
 void CgNode::addChildNode(CgNodePtr childNode) { childNodes.insert(childNode); }
@@ -58,8 +60,8 @@ void CgNode::reset() {
 }
 
 void CgNode::updateNodeAttributes(bool updateNumberOfSamples) {
-  auto bpd = this->get<BaseProfileData>();
-  bpd->setNumberOfCalls(bpd->getNumberOfCallsWithCurrentEdges());
+  //auto bpd = this->get<BaseProfileData>();
+  //bpd->setNumberOfCalls(bpd->getNumberOfCallsWithCurrentEdges());
 }
 bool CgNode::hasUniqueCallPath() const { return uniqueCallPath; }
 
@@ -76,6 +78,7 @@ bool CgNode::isSameFunction(CgNodePtr cgNodeToCompareTo) const {
 std::string CgNode::getFunctionName() const { return this->functionName; }
 
 void CgNode::dumpToDot(std::ofstream &outStream, int procNum) {
+#if 0
   std::shared_ptr<CgNode> thisNode;
   if (parentNodes.empty()) {
     for (auto childNode : childNodes) {
@@ -118,6 +121,7 @@ void CgNode::dumpToDot(std::ofstream &outStream, int procNum) {
       }
     }
   }
+#endif
 }
 
 const CgNodePtrSet &CgNode::getChildNodes() const { return childNodes; }
@@ -149,10 +153,12 @@ bool CgNode::isUnwoundSample() const { return state == CgNodeState::UNWIND_SAMPL
 bool CgNode::isUnwoundInstr() const { return state == CgNodeState::UNWIND_INSTR; }
 
 void CgNode::print() {
+#if 0
   std::cout << this->functionName << std::endl;
   for (auto n : childNodes) {
     std::cout << "--" << *n << std::endl;
   }
+#endif
 }
 
 void CgNode::setFilename(std::string filename) { this->filename = filename; }

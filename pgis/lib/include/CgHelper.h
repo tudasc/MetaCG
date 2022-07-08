@@ -8,6 +8,7 @@
 #define CGNODEHELPER_H_
 
 #include "../../../graph/include/CgNode.h"
+#include "Callgraph.h"
 
 #include <algorithm>  // std::set_intersection
 #include <memory>
@@ -121,4 +122,19 @@ inline bool isSubsetOf(const CgNodePtrSet &smallSet, const CgNodePtrSet &largeSe
 inline bool intersects(const CgNodePtrSet &a, const CgNodePtrSet &b) { return !setIntersect(a, b).empty(); }
 }  // namespace CgHelper
 
+
+
+namespace pgis {
+
+using Callgraph = metacg::Callgraph;
+
+template <typename MD, typename... Args>
+void attachMetaDataToGraph(Callgraph *cg, const Args &... args) {
+  for (auto n : *cg) {
+    if (!getOrCreateMD<MD>(n, args...)) {
+      assert(false && MD::key() != "" && "Could not create MetaData with key");
+    }
+  }
+}
+} // namespace pgis
 #endif

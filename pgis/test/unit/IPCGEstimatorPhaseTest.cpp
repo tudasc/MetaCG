@@ -5,9 +5,8 @@
  */
 
 #include "gtest/gtest.h"
-#include "../../../graph/include/LoggerUtil.h"
-
-//#include "LoggerUtil.h"
+#include "LoggerUtil.h"
+#include "CgHelper.h"
 
 #include "CallgraphManager.h"
 #include "IPCGEstimatorPhase.h"
@@ -21,6 +20,12 @@ class IPCGEstimatorPhaseBasic : public ::testing::Test {
     mcgm.resetManager();
     mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
   }
+
+  static void attachAllMetaDataToGraph(metacg::Callgraph *cg) {
+    pgis::attachMetaDataToGraph<pira::BaseProfileData>(cg);
+    pgis::attachMetaDataToGraph<pira::PiraOneData>(cg);
+    pgis::attachMetaDataToGraph<pira::PiraTwoData>(cg);
+  }
 };
 
 TEST_F(IPCGEstimatorPhaseBasic, EmptyCG) {
@@ -31,6 +36,7 @@ TEST_F(IPCGEstimatorPhaseBasic, EmptyCG) {
   auto &mcgm = metacg::graph::MCGManager::get();
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   cm.setCG(*mcgm.getCallgraph());
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -50,6 +56,7 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCG) {
   mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
   ASSERT_NE(mainNode, nullptr);
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   cm.setCG(*mcgm.getCallgraph());
   ASSERT_FALSE(mcgm.getCallgraph()->isEmpty());
   StatementCountEstimatorPhase sce(10);
@@ -73,6 +80,7 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCG) {
   auto childNode = mcgm.findOrCreateNode("child1");
   mcgm.addEdge(mainNode, childNode);
   //  cm.putEdge("main", "main.c", 1, "child1", 100, 1.2, 0, 0);
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   cm.setCG(*mcgm.getCallgraph());
   StatementCountEstimatorPhase sce(10);
   sce.setNoReport();
@@ -92,6 +100,7 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCGwStmt) {
   cm.setNoOutput();
   mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   const auto &[has, data] = mainNode->checkAndGet<pira::PiraOneData>();
   if (has) {
     data->setNumberOfStatements(12);
@@ -120,9 +129,11 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCGwStmt) {
 
   mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(mainNode, 12, true);
 
   auto childNode = mcgm.findOrCreateNode("child1");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode, 7, true);
 
   childNode->setReachable();
@@ -150,14 +161,17 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCGwStmt) {
 
   mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(mainNode, 12, true);
 
   auto childNode = mcgm.findOrCreateNode("child1");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode, 7, true);
   mcgm.addEdge(mainNode, childNode);
   childNode->setReachable();
 
   auto childNode2 = mcgm.findOrCreateNode("child2");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode2, 42, true);
   mcgm.addEdge(mainNode, childNode2);
   childNode2->setReachable();
@@ -185,14 +199,17 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCycleCGwStmt) {
   cm.setNoOutput();
   mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(mainNode, 12, true);
 
   auto childNode = mcgm.findOrCreateNode("child1");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode, 7, true);
   mcgm.addEdge(mainNode, childNode);
   childNode->setReachable();
 
   auto childNode2 = mcgm.findOrCreateNode("child2");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode2, 42, true);
   mcgm.addEdge(childNode, childNode2);
   mcgm.addEdge(childNode2, childNode);
@@ -222,19 +239,23 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeCGwStmt) {
 
   mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(mainNode, 12, true);
 
   auto childNode = mcgm.findOrCreateNode("child1");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode, 7, true);
   mcgm.addEdge(mainNode, childNode);
   childNode->setReachable();
 
   auto childNode2 = mcgm.findOrCreateNode("child2");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode2, 42, true);
   mcgm.addEdge(mainNode, childNode2);
   childNode2->setReachable();
 
   auto childNode3 = mcgm.findOrCreateNode("child3");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode3, 22, true);
   mcgm.addEdge(childNode, childNode3);
   childNode3->setReachable();
@@ -263,19 +284,23 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeDiamondCGwStmt) {
   cm.setNoOutput();
   mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(mainNode, 12, true);
 
   auto childNode = mcgm.findOrCreateNode("child1");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode, 7, true);
   mcgm.addEdge(mainNode, childNode);
   childNode->setReachable();
 
   auto childNode2 = mcgm.findOrCreateNode("child2");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode2, 42, true);
   mcgm.addEdge(mainNode, childNode2);
   childNode2->setReachable();
 
   auto childNode3 = mcgm.findOrCreateNode("child3");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode3, 22, true);
   mcgm.addEdge(childNode, childNode3);
   mcgm.addEdge(childNode2, childNode3);
@@ -314,25 +339,30 @@ TEST_F(IPCGEstimatorPhaseBasic, FiveNodeDiamondCGwStmt) {
   cm.setNoOutput();
   mcgm.addToManagedGraphs("graph",std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.findOrCreateNode("main");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(mainNode, 12, true);
 
   auto childNode = mcgm.findOrCreateNode("child1");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode, 7, true);
   mcgm.addEdge(mainNode, childNode);
   childNode->setReachable();
 
   auto childNode2 = mcgm.findOrCreateNode("child2");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode2, 42, true);
   mcgm.addEdge(mainNode, childNode2);
   childNode2->setReachable();
 
   auto childNode3 = mcgm.findOrCreateNode("child3");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode3, 22, true);
   mcgm.addEdge(childNode, childNode3);
   mcgm.addEdge(childNode2, childNode3);
   childNode3->setReachable();
 
   auto childNode4 = mcgm.findOrCreateNode("child4");
+  attachAllMetaDataToGraph(mcgm.getCallgraph());
   pira::setPiraOneData(childNode4, 4, true);
   mcgm.addEdge(childNode3, childNode4);
   childNode4->setReachable();
@@ -369,8 +399,15 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
     auto &mcgm = metacg::graph::MCGManager::get();
     auto nodeCaller = mcgm.findOrCreateNode(caller);
     auto nodeCallee = mcgm.findOrCreateNode(name);
+    attachAllMetaDataToGraph(mcgm.getCallgraph());
     pira::setPiraOneData(nodeCallee, numStatements, true);
     mcgm.addEdge(nodeCaller, nodeCallee);
+  }
+
+  static void attachAllMetaDataToGraph(metacg::Callgraph *cg) {
+    pgis::attachMetaDataToGraph<pira::BaseProfileData>(cg);
+    pgis::attachMetaDataToGraph<pira::PiraOneData>(cg);
+    pgis::attachMetaDataToGraph<pira::PiraTwoData>(cg);
   }
 
   void SetUp() override {
@@ -383,6 +420,7 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
     cm.setConfig(new Config());
     cm.setNoOutput();
     auto mainNode = mcgm.findOrCreateNode("main");
+    attachAllMetaDataToGraph(mcgm.getCallgraph());
     pira::setPiraOneData(mainNode, 12, true);
 
     createCalleeNode("child1", "main", 7, 2.0, 100);
