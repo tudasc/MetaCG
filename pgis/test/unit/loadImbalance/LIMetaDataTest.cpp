@@ -24,6 +24,8 @@ TEST(LIMetaDataTest, SimpleAnnotation) {
   j["main"] = {{"numStatements", 42}, {"doesOverride", false}, {"hasBody", true}};
 
   auto n = std::make_shared<CgNode>("main");
+  getOrCreateMD<LoadImbalance::LIMetaData>(n);
+  getOrCreateMD<pira::PiraOneData>(n);
   n->get<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Visited);
 
   Callgraph c;
@@ -46,9 +48,13 @@ TEST(LIMetaDataTest, ComplexAnnotation) {
   j["node2"] = {{"numStatements", 34}, {"doesOverride", false}, {"hasBody", true}};
 
   auto n = std::make_shared<CgNode>("main");
+  getOrCreateMD<LoadImbalance::LIMetaData>(n);
+  getOrCreateMD<pira::PiraOneData>(n);
   n->get<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Visited);
 
   auto n2 = std::make_shared<CgNode>("node2");
+  getOrCreateMD<LoadImbalance::LIMetaData>(n2);
+  getOrCreateMD<pira::PiraOneData>(n2);
   n2->get<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Irrelevant);
   n2->get<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Visited);
   n2->get<LoadImbalance::LIMetaData>()->setNumberOfInclusiveStatements(100);

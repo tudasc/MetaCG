@@ -13,6 +13,7 @@
 #include "MCGReader.h"
 #include "MCGWriter.h"
 
+#include "LegacyMCGReader.h"
 #include "ExtrapEstimatorPhase.h"
 #include "IPCGEstimatorPhase.h"
 #include <loadImbalance/LIEstimatorPhase.h>
@@ -41,6 +42,7 @@ using namespace ::pgis::options;
 
 void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &cg, Config *c, bool isIPCG, float runtimeThreshold,
                              bool keepNotReachable) {
+
   auto statEstimator = new StatisticsEstimatorPhase(false);
   if (!keepNotReachable) {
     cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(true, false));  // remove unrelated
@@ -292,6 +294,11 @@ int main(int argc, char **argv) {
           break;
       }
       mcgReader.read(mcgm);
+      // XXX Find better way to do this: both conceptually and complexity-wise
+      pgis::attachMetaDataToGraph<pira::PiraOneData>(mcgm.getCallgraph());
+      pgis::attachMetaDataToGraph<pira::BaseProfileData>(mcgm.getCallgraph());
+      pgis::attachMetaDataToGraph<LoadImbalance::LIMetaData>(mcgm.getCallgraph());
+      pgis::attachMetaDataToGraph<pira::PiraTwoData>(mcgm.getCallgraph());
     }
 
     console->info("Read MetaCG with {} nodes.", mcgm.getCallgraph()->size());

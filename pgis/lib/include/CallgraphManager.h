@@ -15,7 +15,7 @@
 // From PGIS library
 #include "EstimatorPhase.h"
 #include "ExtrapConnection.h"
-#include "libIPCG/MetaDataHandler.h"
+#include "MetaDataHandler.h"
 
 // System library
 #include <map>
@@ -27,7 +27,7 @@
 namespace metacg::pgis {
 /**
  * PIRA's analyzer implemented as a MetaCG Processor.
- * A processor receives the Callgraph and processes it an a suitable way.
+ * A processor receives the Callgraph and processes it in a suitable way.
  */
 class PiraMCGProcessor {
  public:
@@ -91,7 +91,7 @@ class PiraMCGProcessor {
   void printDOT(std::string prefix);
   bool readWhitelist(std::vector<std::string> &whiteNodes);
   bool isNodeListed(std::vector<std::string> whiteNodes, std::string node);
-  Callgraph &getCallgraph(PiraMCGProcessor *);
+  Callgraph &getCallgraph(PiraMCGProcessor *cg = nullptr);
   void setNoOutput() { noOutputRequired = true; }
   void setOutputDotBetweenPhases(bool val = true) {outputDotBetweenPhases = val;}
   bool getOutputDotBetweenPhases(){

@@ -73,6 +73,8 @@ option(
   ON
 )
 if(WITH_CGCOLLECTOR)
+  include(ClangLLVM)
+  include(CubeLib)
   add_subdirectory(cgcollector)
 endif()
 
@@ -83,6 +85,8 @@ option(
   ON
 )
 if(WITH_PGIS)
+  include(ExtraP)
+  include(CubeLib)
   add_subdirectory(pgis)
 endif()
 

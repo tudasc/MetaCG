@@ -11,10 +11,6 @@
 #include "MetaData.h"
 #include "CgNodePtr.h"
 
-// PGIS library
-#include "CgLocation.h"
-#include "CgNodeMetaData.h"
-
 // System library
 #include <map>
 #include <queue>
@@ -97,9 +93,9 @@ class CgNode {
    */
   template <typename T>
   inline void addMetaData(T *md) {
-    //    if (this->has<T>()) {
-    //      assert(false && "MetaData with key already attached");
-    //    }
+        if (this->has<T>()) {
+          assert(false && "MetaData with key already attached");
+        }
     metaFields[T::key()] = md;
   }
 
@@ -237,6 +233,14 @@ struct CgEdge {
   }
 };
 
+/**
+ * Convenience function to get the existing meta data node, or attach a new meta data node.
+ * @tparam T
+ * @tparam Args
+ * @param p
+ * @param args Arguments to construct MetaData  T, ignored when MetaData already exists.
+ * @return
+ */
 template <typename T, typename... Args>
 T *getOrCreateMD(CgNodePtr p, const Args &... args) {
   auto [has, md] = p->template checkAndGet<T>();

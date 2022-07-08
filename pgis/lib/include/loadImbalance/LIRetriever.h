@@ -7,8 +7,8 @@
 #ifndef LI_RETRIEVER_H
 #define LI_RETRIEVER_H
 
-#include "../../../../graph/include/CgNodePtr.h"
-#include "libIPCG/MetaDataHandler.h"
+#include "CgNodePtr.h"
+#include "MetaDataHandler.h"
 #include "loadImbalance/LIMetaData.h"
 
 #include "nlohmann/json.hpp"

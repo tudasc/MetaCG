@@ -8,7 +8,6 @@
 
 #include "CgNodePtr.h"
 
-//#include "CallgraphManager.h"
 #include "nlohmann/json.hpp"
 
 namespace metacg {

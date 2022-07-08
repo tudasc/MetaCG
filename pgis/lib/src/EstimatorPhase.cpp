@@ -5,6 +5,7 @@
  */
 
 #include "EstimatorPhase.h"
+#include "CgNodeMetaData.h"
 #include <fstream>
 #include <iomanip>  //  std::setw()
 #include <iostream>

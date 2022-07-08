@@ -4,7 +4,7 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "../LoggerUtil.h"
+#include "LoggerUtil.h"
 #include "nlohmann/json.hpp"
 #include "gtest/gtest.h"
 #include <loadImbalance/LIConfig.h>
@@ -14,7 +14,7 @@ using namespace LoadImbalance;
 
 class LIConfigTest : public ::testing::Test {
  protected:
-  void SetUp() override { loggerutil::getLogger(); }
+  void SetUp() override { metacg::loggerutil::getLogger(); }
 };
 
 TEST_F(LIConfigTest, SimpleTest) {

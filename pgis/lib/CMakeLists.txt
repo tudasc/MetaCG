@@ -20,14 +20,15 @@ set(PGIS_LIB_SOURCES
     include/config/ParameterConfig.h
     include/config/GlobalConfig.h
     include/config/PiraIIConfig.h
+    include/LegacyMCGReader.h
     src/loadImbalance/LIMetaData.cpp
     src/loadImbalance/LIRetriever.cpp
+    src/LegacyMCGReader.cpp
+    include/MetaDataHandler.h
+    src/MetaDataHandler.cpp
 )
 
 add_library(pgis SHARED ${PGIS_LIB_SOURCES})
-
-add_library(mcg SHARED src/libIPCG/MetaDataHandler.cpp)
-target_compile_features(mcg PUBLIC cxx_std_17)
 
 add_pgis_includes(pgis)
 add_metacg_library(pgis)
@@ -37,15 +38,8 @@ add_spdlog_libraries(pgis)
 add_json(pgis)
 target_project_compile_options(pgis)
 
-add_pgis_includes(mcg)
-add_json(mcg)
-add_mcg_includes(mcg)
-add_metacg(mcg)
-add_extrap(mcg)
-add_spdlog_libraries(mcg)
-
 install(
-  TARGETS pgis mcg
+  TARGETS pgis
   EXPORT ${TARGETS_EXPORT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

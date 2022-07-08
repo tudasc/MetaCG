@@ -205,9 +205,6 @@ class GlobalLoopDepthMetaData : public metacg::MetaData {
   int globalLoopDepth{0};
 };
 
-
-
-
 }  // namespace pira
 
 #endif

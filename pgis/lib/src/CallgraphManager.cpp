@@ -368,7 +368,7 @@ void metacg::pgis::PiraMCGProcessor::dumpUnwoundNames(CgReport report) {
   }
 }
 
-Callgraph &metacg::pgis::PiraMCGProcessor::getCallgraph(PiraMCGProcessor *cg) { return cg->graph; }
+Callgraph &metacg::pgis::PiraMCGProcessor::getCallgraph(PiraMCGProcessor *cg) { if (cg) { return cg->graph; } return graph; }
 
 void metacg::pgis::PiraMCGProcessor::attachExtrapModels() {
   epModelProvider.buildModels();

@@ -18,7 +18,7 @@ class RuntimeTimer {
   using tp = clock::time_point;
   using duration = clock::duration;
 
-  explicit RuntimeTimer(const std::string regionName, bool printOnDestruction = true)
+  explicit RuntimeTimer(const std::string &regionName, bool printOnDestruction = true)
       : region(regionName), printOnDestruct(printOnDestruction), start(clock::now()) {}
   ~RuntimeTimer() {
     if (printOnDestruct) {

@@ -5,6 +5,7 @@
  */
 
 #include "loadImbalance/metric/AbstractMetric.h"
+#include "CgNodeMetaData.h"
 
 #include <cmath>
 #include <limits>

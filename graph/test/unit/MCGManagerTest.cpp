@@ -9,9 +9,24 @@
 #include "LoggerUtil.h"
 
 #include "MCGManager.h"
-#include "MetaDataHandler.h"
+#include "MetaData.h"
 
-using namespace pira;
+using json = nlohmann::json;
+
+/**
+ * This is to test, if it can actually work as imagined
+ */
+struct TestHandler : public metacg::io::retriever::MetaDataHandler {
+  int i{0};
+  const std::string toolName() const override { return "TestMetaHandler"; }
+  void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
+  bool handles(const CgNodePtr n) const override { return false; }
+  json value(const CgNodePtr n) const override {
+    json j;
+    j = i;
+    return j;
+  }
+};
 
 class MCGManagerTest : public ::testing::Test {
  protected:
@@ -74,7 +89,7 @@ TEST_F(MCGManagerTest, ThreeNodeCG) {
 
 TEST_F(MCGManagerTest, OneMetaDataAttached) {
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.addMetaHandler<metacg::io::retriever::TestHandler>();
+  mcgm.addMetaHandler<TestHandler>();
   const auto &handlers = mcgm.getMetaHandlers();
   ASSERT_EQ(handlers.size(), 1);
 }

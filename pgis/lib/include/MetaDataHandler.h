@@ -33,21 +33,6 @@ namespace io::retriever {
 
 using json = nlohmann::json;
 
-/**
- * This is to test, if it can actually work as imagined
- */
-struct TestHandler : public MetaDataHandler {
-  int i{0};
-  const std::string toolName() const override { return "TestMetaHandler"; }
-  void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
-  bool handles(const CgNodePtr n) const override { return false; }
-  json value(const CgNodePtr n) const override {
-    json j;
-    j = i;
-    return j;
-  }
-};
-
 struct BaseProfileDataHandler : public MetaDataHandler {
   const std::string toolname{"baseProfileData"};
   bool handles(const CgNodePtr n) const override { return n->has<pira::BaseProfileData>(); }

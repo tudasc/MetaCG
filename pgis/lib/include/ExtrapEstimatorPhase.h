@@ -12,6 +12,7 @@
 #define PGOE_EXTRAPESTIMATORPHASE_H
 
 #include "EstimatorPhase.h"
+#include "CgNodeMetaData.h"
 
 #include "spdlog/spdlog.h"
 
