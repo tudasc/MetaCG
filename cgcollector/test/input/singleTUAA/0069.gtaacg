@@ -1,0 +1,166 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {},
+        "CallInfoMap": {},
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@F@var_func#I#I#I.#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0069.cpp@225@F@main#@argd"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0069.cpp@136@F@var_func#I#I#I.#@a",
+                    "c:0069.cpp@177@F@main#@arga"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@var_func#I#I#I.#@UNNAMED_PARAM@1",
+                    "c:0069.cpp@193@F@main#@argb"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0069.cpp@148@F@var_func#I#I#I.#@b",
+                    "c:0069.cpp@209@F@main#@argc"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#@CALL_EXPR@@241-272",
+                    "c:@F@var_func#I#I#I.#@SRETURN"
+                ],
+                "Prefixes": []
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@main#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "main"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@main#@SRETURN"
+                ]
+            },
+            "c:@F@var_func#I#I#I.#": {
+                "IsVariadic": true,
+                "MangledNames": [
+                    "_Z8var_funciiiz"
+                ],
+                "Parameters": [
+                    "c:0069.cpp@136@F@var_func#I#I#I.#@a",
+                    "c:@F@var_func#I#I#I.#@UNNAMED_PARAM@1",
+                    "c:0069.cpp@148@F@var_func#I#I#I.#@b"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@var_func#I#I#I.#@SRETURN"
+                ]
+            }
+        },
+        "FunctionMap": {
+            "c:@F@main#": "c:@F@main#",
+            "c:@F@var_func#I#I#I.#": "c:@F@var_func#I#I#I.#"
+        }
+    },
+    "_CG": {
+        "_Z8var_funciiiz": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0069.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z8var_funciiiz"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 4
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0069.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "_Z8var_funciiiz": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 4,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 6
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

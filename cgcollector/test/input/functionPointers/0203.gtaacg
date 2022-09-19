@@ -1,0 +1,291 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {
+            "c:@F@get_func2#**Fv()#S1_#@CALL_EXPR@@85-88": "c:@F@get_func2#**Fv()#S1_#",
+            "c:@F@main#@CALL_EXPR@@228-230": "c:@F@main#"
+        },
+        "CallInfoMap": {
+            "c:@F@get_func2#**Fv()#S1_#@CALL_EXPR@@85-88": {
+                "Arguments": [],
+                "CalledObjects": [
+                    "c:0203.cpp@57@F@get_func2#**Fv()#S1_#@in"
+                ]
+            },
+            "c:@F@main#@CALL_EXPR@@228-230": {
+                "Arguments": [],
+                "CalledObjects": [
+                    "c:0203.cpp@202@F@main#@f"
+                ]
+            }
+        },
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@F@main#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@get_func2#**Fv()#S1_#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@get_func#*Fv()#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0203.cpp@44@F@get_func2#**Fv()#S1_#@out",
+                    "&c:0203.cpp@123@F@get_func#*Fv()#@res"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "*c:0203.cpp@44@F@get_func2#**Fv()#S1_#@out"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@F@get_func#*Fv()#@CALL_EXPR@@137-154",
+                    "c:@F@get_func2#**Fv()#S1_#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0203.cpp@202@F@main#@f",
+                    "c:@F@main#@CALL_EXPR@@211-223",
+                    "c:0203.cpp@123@F@get_func#*Fv()#@res",
+                    "*c:0203.cpp@44@F@get_func2#**Fv()#S1_#@out",
+                    "c:@F@get_func#*Fv()#@SRETURN",
+                    "c:0203.cpp@57@F@get_func2#**Fv()#S1_#@in",
+                    "c:0203.cpp@109@F@get_func#*Fv()#@f",
+                    "c:@F@foo#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#@CALL_EXPR@@228-230",
+                    "c:@F@get_func2#**Fv()#S1_#@CALL_EXPR@@85-88",
+                    "c:@F@foo#@SRETURN"
+                ],
+                "Prefixes": []
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@foo#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z3foov"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@foo#@SRETURN"
+                ]
+            },
+            "c:@F@get_func#*Fv()#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z8get_funcPFvvE"
+                ],
+                "Parameters": [
+                    "c:0203.cpp@109@F@get_func#*Fv()#@f"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:0203.cpp@123@F@get_func#*Fv()#@res",
+                    "c:@F@get_func#*Fv()#@SRETURN"
+                ]
+            },
+            "c:@F@get_func2#**Fv()#S1_#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z9get_func2PPFvvES0_"
+                ],
+                "Parameters": [
+                    "c:0203.cpp@44@F@get_func2#**Fv()#S1_#@out",
+                    "c:0203.cpp@57@F@get_func2#**Fv()#S1_#@in"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@get_func2#**Fv()#S1_#@SRETURN"
+                ]
+            },
+            "c:@F@main#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "main"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@main#@SRETURN"
+                ]
+            }
+        },
+        "FunctionMap": {
+            "c:@F@foo#": "c:@F@foo#",
+            "c:@F@get_func#*Fv()#": "c:@F@get_func#*Fv()#",
+            "c:@F@get_func2#**Fv()#S1_#": "c:@F@get_func2#**Fv()#S1_#",
+            "c:@F@main#": "c:@F@main#"
+        }
+    },
+    "_CG": {
+        "_Z3foov": {
+            "callees": [],
+            "callers": [
+                "_Z9get_func2PPFvvES0_",
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/functionPointers/0203.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z8get_funcPFvvE": {
+            "callees": [
+                "_Z9get_func2PPFvvES0_"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 2
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/functionPointers/0203.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "_Z9get_func2PPFvvES0_": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z9get_func2PPFvvES0_": {
+            "callees": [
+                "_Z3foov"
+            ],
+            "callers": [
+                "_Z8get_funcPFvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 2
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/functionPointers/0203.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 2,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 2
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z3foov",
+                "_Z8get_funcPFvvE"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 1
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/functionPointers/0203.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "_Z3foov": 0,
+                    "_Z8get_funcPFvvE": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 2
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

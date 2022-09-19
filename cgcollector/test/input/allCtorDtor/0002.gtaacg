@@ -1,0 +1,506 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {},
+        "CallInfoMap": {},
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@S@Base@F@~Base#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Base@F@~Base#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Base@F@Base#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Base@F@Base#&1$@S@Base#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Base@F@Base#&1$@S@Base#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Base@F@Base#&1$@S@Base#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Base@F@Base#&1$@S@Base#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Base@F@Base#&&$@S@Base#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Base@F@Base#&&$@S@Base#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Base@F@Base#&&$@S@Base#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Base@F@Base#&&$@S@Base#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Base@F@Base#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new[]#l#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new[]#l#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new[]#l#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new#l#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new#l#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new#l#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete[]#*v#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete[]#*v#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete[]#*v#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete#*v#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete#*v#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete#*v#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#I#**C#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#I#**C#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0002.cpp@36@F@main#I#**C#@argv"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0002.cpp@26@F@main#I#**C#@argc"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0002.cpp@53@F@main#I#**C#@bp",
+                    "&c:@F@main#I#**C#@NEW@64-73"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "c:@F@main#I#**C#@NEW@64-73"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@F@main#I#**C#@NEW@64-73",
+                    "c:@F@main#I#**C#@CALL_EXPR@@68-73"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Base@F@Base#@THIS",
+                    "&c:@F@main#I#**C#@CALL_EXPR@@68-73"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "c:@F@main#I#**C#@CALL_EXPR@@68-73"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@S@Base@F@~Base#@THIS",
+                    "&c:0002.cpp@53@F@main#I#**C#@bp"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "c:0002.cpp@53@F@main#I#**C#@bp"
+                    }
+                ]
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@main#I#**C#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "main"
+                ],
+                "Parameters": [
+                    "c:0002.cpp@26@F@main#I#**C#@argc",
+                    "c:0002.cpp@36@F@main#I#**C#@argv"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@main#I#**C#@SRETURN"
+                ]
+            },
+            "c:@F@operator delete#*v#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZdlPv"
+                ],
+                "Parameters": [
+                    "c:@F@operator delete#*v#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@operator delete#*v#@SRETURN"
+                ]
+            },
+            "c:@F@operator delete[]#*v#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZdaPv"
+                ],
+                "Parameters": [
+                    "c:@F@operator delete[]#*v#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@operator delete[]#*v#@SRETURN"
+                ]
+            },
+            "c:@F@operator new#l#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Znwm"
+                ],
+                "Parameters": [
+                    "c:@F@operator new#l#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@operator new#l#@SRETURN"
+                ]
+            },
+            "c:@F@operator new[]#l#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Znam"
+                ],
+                "Parameters": [
+                    "c:@F@operator new[]#l#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@operator new[]#l#@SRETURN"
+                ]
+            },
+            "c:@S@Base@F@Base#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN4BaseC2Ev",
+                    "_ZN4BaseC1Ev"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@Base@F@Base#&&$@S@Base#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN4BaseC2EOS_",
+                    "_ZN4BaseC1EOS_"
+                ],
+                "Parameters": [
+                    "c:@S@Base@F@Base#&&$@S@Base#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@Base@F@Base#&1$@S@Base#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN4BaseC2ERKS_",
+                    "_ZN4BaseC1ERKS_"
+                ],
+                "Parameters": [
+                    "c:@S@Base@F@Base#&1$@S@Base#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@Base@F@~Base#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN4BaseD2Ev",
+                    "_ZN4BaseD1Ev"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": []
+            }
+        },
+        "FunctionMap": {
+            "c:@F@main#I#**C#": "c:@F@main#I#**C#",
+            "c:@F@operator delete#*v#": "c:@F@operator delete#*v#",
+            "c:@F@operator delete[]#*v#": "c:@F@operator delete[]#*v#",
+            "c:@F@operator new#l#": "c:@F@operator new#l#",
+            "c:@F@operator new[]#l#": "c:@F@operator new[]#l#",
+            "c:@S@Base@F@Base#": "c:@S@Base@F@Base#",
+            "c:@S@Base@F@Base#&&$@S@Base#": "c:@S@Base@F@Base#&&$@S@Base#",
+            "c:@S@Base@F@Base#&1$@S@Base#": "c:@S@Base@F@Base#&1$@S@Base#",
+            "c:@S@Base@F@~Base#": "c:@S@Base@F@~Base#"
+        }
+    },
+    "_CG": {
+        "_ZN4BaseC1Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0002.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN4BaseC2Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0002.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN4BaseD1Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0002.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN4BaseD2Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0002.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_ZN4BaseC1Ev",
+                "_ZN4BaseC2Ev",
+                "_ZN4BaseD1Ev",
+                "_ZN4BaseD2Ev"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 3
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0002.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 6,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

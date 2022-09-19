@@ -1189,6 +1189,7 @@ void CallGraph::addNodeForDecl(Decl *D, bool IsGlobal) {
   // Allocate a new node, mark it as root, and process it's calls.
   CallGraphNode *Node = getOrInsertNode(D);
 
+#ifndef DEBUG_TEST_AA
   // Process all the calls by this function as well.
   if (Stmt *Body = D->getBody()) {
     CGBuilder builder(this, Node, captureCtorsDtors, unresolvedSymbols);
@@ -1196,6 +1197,7 @@ void CallGraph::addNodeForDecl(Decl *D, bool IsGlobal) {
     // builder.printAliases();
     unresolvedSymbols.insert(builder.getUnresolvedSymbols().begin(), builder.getUnresolvedSymbols().end());
   }
+#endif
 }
 
 CallGraphNode *CallGraph::getNode(const Decl *F) const {

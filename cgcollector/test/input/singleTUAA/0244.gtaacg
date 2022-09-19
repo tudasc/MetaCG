@@ -1,0 +1,636 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {},
+        "CallInfoMap": {},
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@FI@reg_save_area"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@FI@overflow_arg_area"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@FI@gp_offset"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@FI@fp_offset"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@F@~__va_list_tag#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@F@~__va_list_tag#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@F@__va_list_tag#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@F@__va_list_tag#&1$@S@__va_list_tag#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@F@__va_list_tag#&1$@S@__va_list_tag#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@F@__va_list_tag#&1$@S@__va_list_tag#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@F@__va_list_tag#&1$@S@__va_list_tag#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@F@__va_list_tag#&&$@S@__va_list_tag#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@F@__va_list_tag#&&$@S@__va_list_tag#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@F@__va_list_tag#&&$@S@__va_list_tag#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@F@__va_list_tag#&&$@S@__va_list_tag#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@F@__va_list_tag#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__NSConstantString_tag@FI@str"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__NSConstantString_tag@FI@length"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__NSConstantString_tag@FI@isa"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__NSConstantString_tag@FI@flags"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@foo#*1C.#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@__builtin_va_start"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@__builtin_va_end"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "(c:0244.cpp@149@F@foo#*1C.#@args).c:@S@__va_list_tag@FI@reg_save_area"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "(c:0244.cpp@149@F@foo#*1C.#@args).c:@S@__va_list_tag@FI@overflow_arg_area"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "(c:0244.cpp@149@F@foo#*1C.#@args).c:@S@__va_list_tag@FI@gp_offset"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "(c:0244.cpp@149@F@foo#*1C.#@args).c:@S@__va_list_tag@FI@fp_offset"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@foo#*1C.#@CALL_EXPR@@175-203",
+                    "c:@F@__builtin_va_start@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@foo#*1C.#@CALL_EXPR@@208-229",
+                    "c:@F@__builtin_va_end@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0244.cpp@123@F@foo#*1C.#@fmt",
+                    "c:0244.cpp@250@F@main#@fmt"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#@CALL_EXPR@@279-286",
+                    "c:@F@foo#*1C.#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@__builtin_va_end@UNNAMED_PARAM@0",
+                    "c:@F@__builtin_va_start@UNNAMED_PARAM@0",
+                    "c:0244.cpp@149@F@foo#*1C.#@args",
+                    "c:@F@foo#*1C.#@CALL_EXPR@@167-167"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "c:@S@__va_list_tag@FI@fp_offset",
+                        "Object": "(c:0244.cpp@149@F@foo#*1C.#@args).c:@S@__va_list_tag@FI@fp_offset"
+                    },
+                    {
+                        "Member": "c:@S@__va_list_tag@FI@gp_offset",
+                        "Object": "(c:0244.cpp@149@F@foo#*1C.#@args).c:@S@__va_list_tag@FI@gp_offset"
+                    },
+                    {
+                        "Member": "c:@S@__va_list_tag@FI@overflow_arg_area",
+                        "Object": "(c:0244.cpp@149@F@foo#*1C.#@args).c:@S@__va_list_tag@FI@overflow_arg_area"
+                    },
+                    {
+                        "Member": "c:@S@__va_list_tag@FI@reg_save_area",
+                        "Object": "(c:0244.cpp@149@F@foo#*1C.#@args).c:@S@__va_list_tag@FI@reg_save_area"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@F@~__va_list_tag#@THIS",
+                    "&c:0244.cpp@149@F@foo#*1C.#@args"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "c:0244.cpp@149@F@foo#*1C.#@args"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@F@__va_list_tag#@THIS",
+                    "&c:@F@foo#*1C.#@CALL_EXPR@@167-167"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "c:@F@foo#*1C.#@CALL_EXPR@@167-167"
+                    }
+                ]
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@__builtin_va_end": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "__builtin_va_end"
+                ],
+                "Parameters": [
+                    "c:@F@__builtin_va_end@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@__builtin_va_end@SRETURN"
+                ]
+            },
+            "c:@F@__builtin_va_start": {
+                "IsVariadic": true,
+                "MangledNames": [
+                    "__builtin_va_start"
+                ],
+                "Parameters": [
+                    "c:@F@__builtin_va_start@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@__builtin_va_start@SRETURN"
+                ]
+            },
+            "c:@F@foo#*1C.#": {
+                "IsVariadic": true,
+                "MangledNames": [
+                    "_Z3fooPKcz"
+                ],
+                "Parameters": [
+                    "c:0244.cpp@123@F@foo#*1C.#@fmt"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@foo#*1C.#@SRETURN"
+                ]
+            },
+            "c:@F@main#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "main"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@main#@SRETURN"
+                ]
+            },
+            "c:@S@__va_list_tag@F@__va_list_tag#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN13__va_list_tagC2Ev",
+                    "_ZN13__va_list_tagC1Ev"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@__va_list_tag@F@__va_list_tag#&&$@S@__va_list_tag#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN13__va_list_tagC2EOS_",
+                    "_ZN13__va_list_tagC1EOS_"
+                ],
+                "Parameters": [
+                    "c:@S@__va_list_tag@F@__va_list_tag#&&$@S@__va_list_tag#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@__va_list_tag@F@__va_list_tag#&1$@S@__va_list_tag#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN13__va_list_tagC2ERKS_",
+                    "_ZN13__va_list_tagC1ERKS_"
+                ],
+                "Parameters": [
+                    "c:@S@__va_list_tag@F@__va_list_tag#&1$@S@__va_list_tag#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@__va_list_tag@F@~__va_list_tag#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN13__va_list_tagD2Ev",
+                    "_ZN13__va_list_tagD1Ev"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": []
+            }
+        },
+        "FunctionMap": {
+            "c:@F@__builtin_va_end": "c:@F@__builtin_va_end",
+            "c:@F@__builtin_va_start": "c:@F@__builtin_va_start",
+            "c:@F@foo#*1C.#": "c:@F@foo#*1C.#",
+            "c:@F@main#": "c:@F@main#",
+            "c:@S@__va_list_tag@F@__va_list_tag#": "c:@S@__va_list_tag@F@__va_list_tag#",
+            "c:@S@__va_list_tag@F@__va_list_tag#&&$@S@__va_list_tag#": "c:@S@__va_list_tag@F@__va_list_tag#&&$@S@__va_list_tag#",
+            "c:@S@__va_list_tag@F@__va_list_tag#&1$@S@__va_list_tag#": "c:@S@__va_list_tag@F@__va_list_tag#&1$@S@__va_list_tag#",
+            "c:@S@__va_list_tag@F@~__va_list_tag#": "c:@S@__va_list_tag@F@~__va_list_tag#"
+        }
+    },
+    "_CG": {
+        "_Z3fooPKcz": {
+            "callees": [
+                "_ZN13__va_list_tagC1Ev",
+                "_ZN13__va_list_tagC2Ev",
+                "_ZN13__va_list_tagD1Ev",
+                "_ZN13__va_list_tagD2Ev",
+                "__builtin_va_end",
+                "__builtin_va_start"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 2
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0244.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "__builtin_va_end": 0,
+                    "__builtin_va_start": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 4,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN13__va_list_tagC1Ev": {
+            "callees": [],
+            "callers": [
+                "_Z3fooPKcz"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN13__va_list_tagC2Ev": {
+            "callees": [],
+            "callers": [
+                "_Z3fooPKcz"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN13__va_list_tagD1Ev": {
+            "callees": [],
+            "callers": [
+                "_Z3fooPKcz"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN13__va_list_tagD2Ev": {
+            "callees": [],
+            "callers": [
+                "_Z3fooPKcz"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "__builtin_va_end": {
+            "callees": [],
+            "callers": [
+                "_Z3fooPKcz"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0244.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "__builtin_va_start": {
+            "callees": [],
+            "callers": [
+                "_Z3fooPKcz"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0244.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z3fooPKcz"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 1
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0244.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "_Z3fooPKcz": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "a0dd63d76375c5e62dbdfa7e97f73305ae1750b6",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

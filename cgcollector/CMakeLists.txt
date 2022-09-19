@@ -45,6 +45,15 @@ function(default_compile_options target)
   endif()
 endfunction()
 
+option(
+  DEBUG_TEST_AA
+  "Developer option for testing the new Alias Analysis"
+  OFF
+)
+if(DEBUG_TEST_AA)
+  add_compile_definitions(DEBUG_TEST_AA)
+endif()
+
 add_subdirectory(lib)
 add_subdirectory(tools)
 add_subdirectory(test)

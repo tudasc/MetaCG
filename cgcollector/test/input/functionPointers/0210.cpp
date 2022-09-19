@@ -1,4 +1,4 @@
-
+// Test fpr a lambda that is casted to a function pointer
 using func_t = void (*)();
 
 int main() {

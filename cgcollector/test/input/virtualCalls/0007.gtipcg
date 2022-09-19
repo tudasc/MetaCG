@@ -1,20 +1,20 @@
 {
-    "_ZN7MyClassC1Ev": {
+    "_ZN7MyClassC1Ei": {
         "callees": [],
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
-        "numStatements": 0,
+        "numStatements": 1,
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": []
     },
-    "_ZN7MyClassC2Ev": {
+    "_ZN7MyClassC2Ei": {
         "callees": [],
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
-        "numStatements": 0,
+        "numStatements": 1,
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": []
@@ -54,7 +54,7 @@
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
-        "numStatements": 2,
+        "numStatements": 3,
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": []

@@ -3,6 +3,9 @@ set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 
 set(COLLECTORLIB_SOURCES
     # cmake-format: sortable
+    src/AAReferenceVisitor.cpp
+    src/AAUSR.cpp
+    src/AliasAnalysis.cpp
     src/CallGraph.cpp
     src/CallgraphToJSON.cpp
     src/GlobalCallDepth.cpp

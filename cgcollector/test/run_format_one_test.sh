@@ -65,7 +65,7 @@ for tc in ${testGlob}; do
 done
 echo "Single file test failures: $fails"
 
-# Single File and full Ctor/Dtor coverage
+# Single File functionPointers
 echo -e "\n --- Running single file functionPointers tests ---"
 testGlob="./input/functionPointers/*.cpp"
 for tc in ${testGlob}; do
@@ -76,7 +76,7 @@ for tc in ${testGlob}; do
 done
 echo "Single file test failures: $fails"
 
-# Single File and full Ctor/Dtor coverage
+# Single File metaCollectors
 echo -e "\n --- Running single file metaCollectors tests ---"
 testGlob="./input/metaCollectors/numStatements/*.cpp"
 for tc in ${testGlob}; do
@@ -87,7 +87,7 @@ for tc in ${testGlob}; do
 done
 echo "Single file test failures: $fails"
 
-# Single File and full Ctor/Dtor coverage
+# Single File virtual calls
 echo -e "\n --- Running single file virtualCalls tests ---"
 testGlob="./input/virtualCalls/*.cpp"
 for tc in ${testGlob}; do

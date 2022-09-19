@@ -1,4 +1,3 @@
-
 int main(int argc, char **argv){
   const auto l = [](int a, int b){
     float alpha = a / (1.0 * b);
