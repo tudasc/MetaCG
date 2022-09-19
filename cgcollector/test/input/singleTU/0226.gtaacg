@@ -1,0 +1,181 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {},
+        "CallInfoMap": {},
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@S@A@FI@a"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@foo#*I#I#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@foo#*I#I#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@boo#$@S@A#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@boo#$@S@A#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0226.cpp@97@F@boo#$@S@A#@a"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "c:@S@A@FI@a",
+                        "Object": "(c:0226.cpp@97@F@boo#$@S@A#@a).c:@S@A@FI@a"
+                    },
+                    {
+                        "Member": "c:@S@A@FI@b",
+                        "Object": "(c:0226.cpp@97@F@boo#$@S@A#@a).c:@S@A@FI@b"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:0226.cpp@8@F@foo#*I#I#@arg"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0226.cpp@19@F@foo#*I#I#@offset"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "(c:0226.cpp@97@F@boo#$@S@A#@a).c:@S@A@FI@a"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "(c:0226.cpp@97@F@boo#$@S@A#@a).c:@S@A@FI@b",
+                    "c:@S@A@FI@b"
+                ],
+                "Prefixes": []
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@boo#$@S@A#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z3boo1A"
+                ],
+                "Parameters": [
+                    "c:0226.cpp@97@F@boo#$@S@A#@a"
+                ],
+                "ReferencedInReturnStmts": [
+                    "(c:0226.cpp@97@F@boo#$@S@A#@a).c:@S@A@FI@b",
+                    "c:@F@boo#$@S@A#@SRETURN"
+                ]
+            },
+            "c:@F@foo#*I#I#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z3fooPii"
+                ],
+                "Parameters": [
+                    "c:0226.cpp@8@F@foo#*I#I#@arg",
+                    "c:0226.cpp@19@F@foo#*I#I#@offset"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:0226.cpp@8@F@foo#*I#I#@arg",
+                    "c:@F@foo#*I#I#@SRETURN"
+                ]
+            }
+        },
+        "FunctionMap": {
+            "c:@F@boo#$@S@A#": "c:@F@boo#$@S@A#",
+            "c:@F@foo#*I#I#": "c:@F@foo#*I#I#"
+        }
+    },
+    "_CG": {
+        "_Z3boo1A": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 1
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0226.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 3
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z3fooPii": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 2
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0226.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 1
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

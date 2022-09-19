@@ -1,0 +1,291 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {},
+        "CallInfoMap": {},
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@S@error_code@F@category#1@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@FI@reg_save_area"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@FI@overflow_arg_area"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@FI@gp_offset"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__va_list_tag@FI@fp_offset"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__NSConstantString_tag@FI@str"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__NSConstantString_tag@FI@length"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__NSConstantString_tag@FI@isa"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@__NSConstantString_tag@FI@flags"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@foo#&1$@S@error_code#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "&c:@F@foo#&1$@S@error_code#@CALL_EXPR@@326-339"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "c:@F@foo#&1$@S@error_code#@CALL_EXPR@@326-339"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@F@foo#&1$@S@error_code#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0245.cpp@291@F@foo#&1$@S@error_code#@__e"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "c:@S@error_code@F@category#1",
+                        "Object": "(c:0245.cpp@291@F@foo#&1$@S@error_code#@__e).c:@S@error_code@F@category#1"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "&c:0245.cpp@291@F@foo#&1$@S@error_code#@__e"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "c:0245.cpp@291@F@foo#&1$@S@error_code#@__e"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "(c:0245.cpp@291@F@foo#&1$@S@error_code#@__e).c:@S@error_code@F@category#1"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@foo#&1$@S@error_code#@CALL_EXPR@@326-339",
+                    "c:@a",
+                    "c:@S@error_code@F@category#1@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "&(c:0245.cpp@291@F@foo#&1$@S@error_code#@__e).c:@S@error_code@F@category#1",
+                    "c:@S@error_code@F@category#1"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "(c:0245.cpp@291@F@foo#&1$@S@error_code#@__e).c:@S@error_code@F@category#1"
+                    }
+                ]
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@foo#&1$@S@error_code#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z3fooRK10error_code"
+                ],
+                "Parameters": [
+                    "c:0245.cpp@291@F@foo#&1$@S@error_code#@__e"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@foo#&1$@S@error_code#@SRETURN"
+                ]
+            },
+            "c:@F@main#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "main"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@main#@SRETURN"
+                ]
+            },
+            "c:@S@error_code@F@category#1": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZNK10error_code8categoryEv"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@a",
+                    "c:@S@error_code@F@category#1@SRETURN"
+                ]
+            }
+        },
+        "FunctionMap": {
+            "c:@F@foo#&1$@S@error_code#": "c:@F@foo#&1$@S@error_code#",
+            "c:@F@main#": "c:@F@main#",
+            "c:@S@error_code@F@category#1": "c:@S@error_code@F@category#1"
+        }
+    },
+    "_CG": {
+        "_Z3fooRK10error_code": {
+            "callees": [
+                "_ZNK10error_code8categoryEv"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 1
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0245.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "_ZNK10error_code8categoryEv": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 2
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNK10error_code8categoryEv": {
+            "callees": [],
+            "callers": [
+                "_Z3fooRK10error_code"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0245.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 1
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0245.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "e995ab5ae2d3174304cd71b9e49272f949e40e3e",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

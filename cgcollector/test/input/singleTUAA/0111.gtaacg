@@ -1,0 +1,400 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {
+            "c:@F@main#I#**C#@CALL_EXPR@@633-649": "c:@F@main#I#**C#"
+        },
+        "CallInfoMap": {
+            "c:@F@main#I#**C#@CALL_EXPR@@633-649": {
+                "Arguments": [],
+                "CalledObjects": [
+                    "*c:0111.cpp@587@F@main#I#**C#@parse_func"
+                ]
+            }
+        },
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@table"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "c:@S@parse_table@FI@func",
+                        "Object": "(c:@table).c:@S@parse_table@FI@func"
+                    },
+                    {
+                        "Member": "c:@S@parse_table@FI@name",
+                        "Object": "(c:@table).c:@S@parse_table@FI@name"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@S@parse_table@F@~parse_table#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@parse_table@F@~parse_table#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@parse_table@F@~parse_table#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@strcmp#*1C#S0_#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#I#**C#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#I#**C#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@find_p_func#*C#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0111.cpp@559@F@main#I#**C#@argc"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0111.cpp@446@F@find_p_func#*C#@i"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@find_p_func#*C#@CALL_EXPR@@477-500",
+                    "c:@F@strcmp#*1C#S0_#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@strcmp#*1C#S0_#@UNNAMED_PARAM@1",
+                    "c:0111.cpp@428@F@find_p_func#*C#@s",
+                    "c:0111.cpp@569@F@main#I#**C#@argv"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@strcmp#*1C#S0_#@UNNAMED_PARAM@0",
+                    "(c:@table).c:@S@parse_table@FI@name",
+                    "c:@S@parse_table@FI@name"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0111.cpp@587@F@main#I#**C#@parse_func",
+                    "c:@F@main#I#**C#@CALL_EXPR@@609-628",
+                    "(c:@table).c:@S@parse_table@FI@func",
+                    "c:@F@find_p_func#*C#@SRETURN",
+                    "c:@S@parse_table@FI@func",
+                    "&c:@F@func1#",
+                    "&c:@F@func2#"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "*c:0111.cpp@587@F@main#I#**C#@parse_func"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@F@func2#",
+                    "c:@F@func1#",
+                    "*c:0111.cpp@587@F@main#I#**C#@parse_func"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#I#**C#@CALL_EXPR@@633-649",
+                    "c:@F@func2#@SRETURN",
+                    "c:@F@func1#@SRETURN"
+                ],
+                "Prefixes": []
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@find_p_func#*C#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z11find_p_funcPc"
+                ],
+                "Parameters": [
+                    "c:0111.cpp@428@F@find_p_func#*C#@s"
+                ],
+                "ReferencedInReturnStmts": [
+                    "(c:@table).c:@S@parse_table@FI@func",
+                    "c:@F@find_p_func#*C#@SRETURN"
+                ]
+            },
+            "c:@F@func1#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z5func1v"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@func1#@SRETURN"
+                ]
+            },
+            "c:@F@func2#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z5func2v"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@func2#@SRETURN"
+                ]
+            },
+            "c:@F@main#I#**C#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "main"
+                ],
+                "Parameters": [
+                    "c:0111.cpp@559@F@main#I#**C#@argc",
+                    "c:0111.cpp@569@F@main#I#**C#@argv"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@main#I#**C#@SRETURN"
+                ]
+            },
+            "c:@F@strcmp#*1C#S0_#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z6strcmpPKcS0_"
+                ],
+                "Parameters": [
+                    "c:@F@strcmp#*1C#S0_#@UNNAMED_PARAM@0",
+                    "c:@F@strcmp#*1C#S0_#@UNNAMED_PARAM@1"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@strcmp#*1C#S0_#@SRETURN"
+                ]
+            },
+            "c:@S@parse_table@F@~parse_table#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN11parse_tableD2Ev",
+                    "_ZN11parse_tableD1Ev"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": []
+            }
+        },
+        "FunctionMap": {
+            "&c:@F@func1#": "c:@F@func1#",
+            "&c:@F@func2#": "c:@F@func2#",
+            "c:@F@find_p_func#*C#": "c:@F@find_p_func#*C#",
+            "c:@F@func1#": "c:@F@func1#",
+            "c:@F@func2#": "c:@F@func2#",
+            "c:@F@main#I#**C#": "c:@F@main#I#**C#",
+            "c:@F@strcmp#*1C#S0_#": "c:@F@strcmp#*1C#S0_#",
+            "c:@S@parse_table@F@~parse_table#": "c:@S@parse_table@F@~parse_table#"
+        }
+    },
+    "_CG": {
+        "_Z11find_p_funcPc": {
+            "callees": [
+                "_Z6strcmpPKcS0_"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 2
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0111.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 1,
+                "loopCallDepth": {
+                    "_Z6strcmpPKcS0_": 1
+                },
+                "loopDepth": 1,
+                "mallocCollector": [],
+                "numConditionalBranches": 2,
+                "numOperations": {
+                    "numberOfControlFlowOps": 6,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 8,
+                    "numberOfMemoryAccesses": 8
+                },
+                "numStatements": 4
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z5func1v": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0111.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z5func2v": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0111.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z6strcmpPKcS0_": {
+            "callees": [],
+            "callers": [
+                "_Z11find_p_funcPc"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0111.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z11find_p_funcPc",
+                "_Z5func1v",
+                "_Z5func2v"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 3
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0111.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 1,
+                "loopCallDepth": {
+                    "_Z11find_p_funcPc": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 3,
+                    "numberOfMemoryAccesses": 1
+                },
+                "numStatements": 2
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

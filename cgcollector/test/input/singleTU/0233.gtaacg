@@ -1,0 +1,220 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {},
+        "CallInfoMap": {},
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@F@operator new[]#l#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new[]#l#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new[]#l#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new#l#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new#l#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new#l#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete[]#*v#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete[]#*v#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete[]#*v#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete#*v#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete#*v#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete#*v#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0233.cpp@75@F@main#@bp",
+                    "&c:@F@main#@NEW@85-94"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "*c:0233.cpp@75@F@main#@bp"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:0233.cpp@99@F@main#@c",
+                    "c:@F@main#@NEW@85-94",
+                    "*c:0233.cpp@75@F@main#@bp",
+                    "c:0233.cpp@62@F@main#@a"
+                ],
+                "Prefixes": []
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@main#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "main"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@main#@SRETURN"
+                ]
+            },
+            "c:@F@operator delete#*v#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZdlPv"
+                ],
+                "Parameters": [
+                    "c:@F@operator delete#*v#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@operator delete#*v#@SRETURN"
+                ]
+            },
+            "c:@F@operator delete[]#*v#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZdaPv"
+                ],
+                "Parameters": [
+                    "c:@F@operator delete[]#*v#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@operator delete[]#*v#@SRETURN"
+                ]
+            },
+            "c:@F@operator new#l#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Znwm"
+                ],
+                "Parameters": [
+                    "c:@F@operator new#l#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@operator new#l#@SRETURN"
+                ]
+            },
+            "c:@F@operator new[]#l#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Znam"
+                ],
+                "Parameters": [
+                    "c:@F@operator new[]#l#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@operator new[]#l#@SRETURN"
+                ]
+            }
+        },
+        "FunctionMap": {
+            "c:@F@main#": "c:@F@main#",
+            "c:@F@operator delete#*v#": "c:@F@operator delete#*v#",
+            "c:@F@operator delete[]#*v#": "c:@F@operator delete[]#*v#",
+            "c:@F@operator new#l#": "c:@F@operator new#l#",
+            "c:@F@operator new[]#l#": "c:@F@operator new[]#l#"
+        }
+    },
+    "_CG": {
+        "main": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 3
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0233.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 4,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

@@ -1,0 +1,59 @@
+{
+    "_CG": {
+        "_Z3fooi": {
+            "callees": [
+                "_Z3fooi"
+            ],
+            "callers": [
+                "main",
+                "_Z3fooi"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 1
+                },
+                "fileProperties": {
+                    "origin": "/home/j_lehr/all_repos/gl-sc-metacg/cgcollector/test/input/singleTU/0215.cpp",
+                    "systemInclude": false
+                },
+                "mallocCollector": [],
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z3fooi"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/home/j_lehr/all_repos/gl-sc-metacg/cgcollector/test/input/singleTU/0215.cpp",
+                    "systemInclude": false
+                },
+                "mallocCollector": [],
+                "numStatements": 2
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "3f6097119927b7bf04c0507f0bd75c65ae9f5088",
+            "version": "0.2"
+        },
+        "version": "2.0"
+    }
+}

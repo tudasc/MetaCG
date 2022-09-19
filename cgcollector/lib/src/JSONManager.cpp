@@ -116,7 +116,7 @@ nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename)
   return j;
 }
 
-nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filename) {
+nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filename, nlohmann::json *CompleteJsonOut) {
   using json = nlohmann::json;
 
   std::cout << "Reading " << filename << std::endl;
@@ -140,6 +140,9 @@ nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filenam
   readIPCG(filename, jj);
 
   json j = jj["_CG"];
+  if (CompleteJsonOut) {
+    *CompleteJsonOut = jj;
+  }
 
   if (j.is_null()) {
     std::cerr << "Encountered null element as top level CG" << std::endl;
@@ -221,6 +224,6 @@ nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filenam
     funcInfo.overriddenBy.insert(potentialTargets[k].begin(), potentialTargets[k].end());
     funcInfo.overriddenFunctions.insert(overrides[k].begin(), overrides[k].end());
   }
-  //  std::cout << "Filename: " << filename << "\n" << j << std::endl;
+  // std::cout << "Filename: " << filename << "\n" << j << std::endl;
   return j;
 }

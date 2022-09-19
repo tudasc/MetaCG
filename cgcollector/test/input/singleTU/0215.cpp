@@ -1,5 +1,5 @@
 
-int* k;
+int *k;
 
 int foo(int k) {
   if (k == 42) {

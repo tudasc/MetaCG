@@ -1,27 +1,24 @@
 {
-    "_Z3fooi": {
-        "callees": [
-            "_Z3fooi"
-        ],
+    "_Z3foov": {
+        "callees": [],
         "doesOverride": false,
-        "hasBody": true,
+        "hasBody": false,
         "isVirtual": false,
-        "numStatements": 3,
+        "numStatements": 0,
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": [
-            "_Z3fooi",
             "main"
         ]
     },
     "main": {
         "callees": [
-            "_Z3fooi"
+            "_Z3foov"
         ],
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
-        "numStatements": 2,
+        "numStatements": 4,
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": []

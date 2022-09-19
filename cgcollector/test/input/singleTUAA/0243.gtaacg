@@ -1,0 +1,175 @@
+{
+  "PointerEquivalenceData": {
+    "CallExprParentMap": {},
+    "CallInfoMap": {},
+    "EquivClasses": [
+      {
+        "Objects": [
+          "c:@N@test_cxx@F@uselocale2@UNNAMED_PARAM@0"
+        ],
+        "Prefixes": []
+      },
+      {
+        "Objects": [
+          "c:@N@test_cxx@F@uselocale2@SRETURN"
+        ],
+        "Prefixes": []
+      },
+      {
+        "Objects": [
+          "c:@N@test_cxx@F@uselocale2"
+        ],
+        "Prefixes": []
+      },
+      {
+        "Objects": [
+          "c:@N@test_cxx@F@__uselocale2"
+        ],
+        "Prefixes": []
+      },
+      {
+        "Objects": [
+          "c:@F@main#@SRETURN"
+        ],
+        "Prefixes": []
+      },
+      {
+        "Objects": [
+          "c:@F@main#"
+        ],
+        "Prefixes": []
+      },
+      {
+        "Objects": [
+          "c:@N@test_cxx@F@__uselocale2@UNNAMED_PARAM@0",
+          "c:0243.cpp@308@F@main#@i"
+        ],
+        "Prefixes": []
+      },
+      {
+        "Objects": [
+          "c:@F@main#@CALL_EXPR@@326-350",
+          "c:@N@test_cxx@F@__uselocale2@SRETURN"
+        ],
+        "Prefixes": []
+      }
+    ],
+    "FunctionInfoMap": {
+      "c:@F@main#": {
+        "IsVariadic": false,
+        "MangledNames": [
+          "main"
+        ],
+        "Parameters": [],
+        "ReferencedInReturnStmts": [
+          "c:@F@main#@SRETURN"
+        ]
+      },
+      "c:@N@test_cxx@F@__uselocale2": {
+        "IsVariadic": false,
+        "MangledNames": [
+          "__uselocale2"
+        ],
+        "Parameters": [
+          "c:@N@test_cxx@F@__uselocale2@UNNAMED_PARAM@0"
+        ],
+        "ReferencedInReturnStmts": [
+          "c:@N@test_cxx@F@__uselocale2@SRETURN"
+        ]
+      },
+      "c:@N@test_cxx@F@uselocale2": {
+        "IsVariadic": false,
+        "MangledNames": [
+          "uselocale2"
+        ],
+        "Parameters": [
+          "c:@N@test_cxx@F@uselocale2@UNNAMED_PARAM@0"
+        ],
+        "ReferencedInReturnStmts": [
+          "c:@N@test_cxx@F@uselocale2@SRETURN"
+        ]
+      }
+    },
+    "FunctionMap": {
+      "c:@F@main#": "c:@F@main#",
+      "c:@N@test_cxx@F@__uselocale2": "c:@N@test_cxx@F@__uselocale2",
+      "c:@N@test_cxx@F@uselocale2": "c:@N@test_cxx@F@uselocale2"
+    }
+  },
+  "_CG": {
+    "__uselocale2": {
+      "callees": [],
+      "callers": [
+        "main"
+      ],
+      "doesOverride": false,
+      "hasBody": false,
+      "isVirtual": false,
+      "meta": {
+        "codeStatistics": {
+          "numVars": 0
+        },
+        "fileProperties": {
+          "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0243.cpp",
+          "systemInclude": false
+        },
+        "globalLoopDepth": 0,
+        "loopCallDepth": {},
+        "loopDepth": 0,
+        "mallocCollector": [],
+        "numConditionalBranches": 0,
+        "numOperations": {
+          "numberOfControlFlowOps": 0,
+          "numberOfFloatOps": 0,
+          "numberOfIntOps": 0,
+          "numberOfMemoryAccesses": 0
+        },
+        "numStatements": 0
+      },
+      "overriddenBy": [],
+      "overrides": []
+    },
+    "main": {
+      "callees": [
+        "__uselocale2"
+      ],
+      "callers": [],
+      "doesOverride": false,
+      "hasBody": true,
+      "isVirtual": false,
+      "meta": {
+        "codeStatistics": {
+          "numVars": 1
+        },
+        "fileProperties": {
+          "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0243.cpp",
+          "systemInclude": false
+        },
+        "globalLoopDepth": 0,
+        "loopCallDepth": {
+          "__uselocale2": 0
+        },
+        "loopDepth": 0,
+        "mallocCollector": [],
+        "numConditionalBranches": 0,
+        "numOperations": {
+          "numberOfControlFlowOps": 2,
+          "numberOfFloatOps": 0,
+          "numberOfIntOps": 1,
+          "numberOfMemoryAccesses": 0
+        },
+        "numStatements": 3
+      },
+      "overriddenBy": [],
+      "overrides": []
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "CGCollector",
+      "sha": "fd50ee9d8579f026432fbb132cc7546298a5067f",
+      "version": "0.4"
+    },
+    "version": "2.0"
+  }
+}

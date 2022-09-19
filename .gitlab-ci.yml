@@ -140,6 +140,7 @@ test-cgc:
     - mkdir -p log
     - bash run_format_one_test.sh -b $MCG_BUILD
     - bash run_format_two_test.sh -b $MCG_BUILD
+    - bash run_aa_test.sh -b $MCG_BUILD
 
 test-graphlib:
   <<: *job-setup

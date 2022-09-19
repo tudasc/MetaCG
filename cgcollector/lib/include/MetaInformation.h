@@ -33,19 +33,19 @@ struct NumberOfStatementsResult final : public MetaInformation {
 struct FilePropertyResult final : public MetaInformation {
   std::string fileOrigin;
   bool isFromSystemInclude;
-  void applyOnJSON(nlohmann::json &json, [[maybe_unused]] const std::string &functionName, const std::string &metaFieldName,
-                   int mcgFormatVersion) override {
+  void applyOnJSON(nlohmann::json &json, [[maybe_unused]] const std::string &functionName,
+                   const std::string &metaFieldName, int mcgFormatVersion) override {
     if (mcgFormatVersion > 1) {
       json["meta"][metaFieldName] = {{"origin", fileOrigin}, {"systemInclude", isFromSystemInclude}};
     }
   }
 
   bool equals(MetaInformation *other) override {
-    const auto fpr = static_cast<FilePropertyResult*>(other);
+    const auto fpr = static_cast<FilePropertyResult *>(other);
     const auto getFilename = [](auto filepath) {
       auto slashPos = filepath.rfind('/');
       if (slashPos != std::string::npos) {
-        auto filename = filepath.substr(slashPos+1);
+        auto filename = filepath.substr(slashPos + 1);
         return filename;
       }
       return std::string();
@@ -62,22 +62,24 @@ struct FilePropertyResult final : public MetaInformation {
 
 struct CodeStatisticsMetaInformation : public MetaInformation {
   int numVars;
-  
-  void applyOnJSON(nlohmann::json &json, [[maybe_unused]] const std::string &functionName, const std::string &metaFieldName, int mcgFormatVersion) override {
+
+  void applyOnJSON(nlohmann::json &json, [[maybe_unused]] const std::string &functionName,
+                   const std::string &metaFieldName, int mcgFormatVersion) override {
     if (mcgFormatVersion > 1) {
       json["meta"][metaFieldName] = {{"numVars", numVars}};
     }
   }
 
   bool equals(MetaInformation *other) override {
-    const auto csmi = static_cast<CodeStatisticsMetaInformation*>(other);
+    const auto csmi = static_cast<CodeStatisticsMetaInformation *>(other);
     return numVars == csmi->numVars;
   }
 };
 
 struct MallocVariableInformation : public MetaInformation {
   std::map<std::string, std::string> allocs;
-  void applyOnJSON(nlohmann::json &json, [[maybe_unused]] const std::string &functionName, const std::string &metaFieldName, int mcgFormatVersion) override {
+  void applyOnJSON(nlohmann::json &json, [[maybe_unused]] const std::string &functionName,
+                   const std::string &metaFieldName, int mcgFormatVersion) override {
     if (mcgFormatVersion > 1) {
       std::vector<nlohmann::json> jArray;
       jArray.reserve(allocs.size());
@@ -89,7 +91,7 @@ struct MallocVariableInformation : public MetaInformation {
   }
 
   bool equals(MetaInformation *other) override {
-    const auto o = static_cast<MallocVariableInformation*>(other);
+    const auto o = static_cast<MallocVariableInformation *>(other);
     return allocs == o->allocs;
   }
 };

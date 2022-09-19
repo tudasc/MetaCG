@@ -124,8 +124,7 @@ class MallocVariableCollector : public MetaCollector {
       std::map<std::string, std::string> &allocs;
 
      public:
-      MallocFinder(clang::ASTContext &ctx, std::map<std::string, std::string> &allocs)
-          : ctx(ctx), allocs(allocs){};
+      MallocFinder(clang::ASTContext &ctx, std::map<std::string, std::string> &allocs) : ctx(ctx), allocs(allocs){};
       ~MallocFinder() = default;
 
       void VisitStmt(clang::Stmt *stmt) {
@@ -138,11 +137,13 @@ class MallocVariableCollector : public MetaCollector {
 
       bool handleFuncCallForVar(const clang::CallExpr *ce, const clang::VarDecl *vd) {
         if (ce->getCalleeDecl()) {
-        if (const auto funSym = llvm::dyn_cast<clang::FunctionDecl>(ce->getCalleeDecl())) {
-          if (!vd->isLocalVarDecl()) {
-            std::cout << "Found " << funSym->getNameAsString() << " call in assignment to " << vd->getNameAsString() << "\n";
-            return true;
-          }}
+          if (const auto funSym = llvm::dyn_cast<clang::FunctionDecl>(ce->getCalleeDecl())) {
+            if (!vd->isLocalVarDecl()) {
+              std::cout << "Found " << funSym->getNameAsString() << " call in assignment to " << vd->getNameAsString()
+                        << "\n";
+              return true;
+            }
+          }
         }
         return false;
       }
@@ -153,27 +154,27 @@ class MallocVariableCollector : public MetaCollector {
       void VisitDeclStmt(clang::DeclStmt *ds) {
         // *Probably* non existing case in general...
         if (ds->isSingleDecl()) {
-        if (const auto d = llvm::dyn_cast<clang::VarDecl>(ds->getSingleDecl())) {
-          if (!d->hasInit()) {
-            return;
-          }
-          if (const auto init = llvm::dyn_cast<clang::ExplicitCastExpr>(d->getInit())) {
-            if (const auto ce = llvm::dyn_cast<clang::CallExpr>(init->getSubExpr())) {
-              if (handleFuncCallForVar(ce, d)) {
-                ds->dumpPretty(ctx);
-                std::cout << "\n\n";
+          if (const auto d = llvm::dyn_cast<clang::VarDecl>(ds->getSingleDecl())) {
+            if (!d->hasInit()) {
+              return;
+            }
+            if (const auto init = llvm::dyn_cast<clang::ExplicitCastExpr>(d->getInit())) {
+              if (const auto ce = llvm::dyn_cast<clang::CallExpr>(init->getSubExpr())) {
+                if (handleFuncCallForVar(ce, d)) {
+                  ds->dumpPretty(ctx);
+                  std::cout << "\n\n";
 
-                std::string stmtStr;
-                llvm::raw_string_ostream oss(stmtStr);
-                clang::PrintingPolicy pp(ctx.getLangOpts());
-                int indent = 0;
-                ds->printPretty(oss, nullptr, pp, indent, "\n", &ctx);
-                oss.flush();
-                allocs.insert({d->getNameAsString(), stmtStr});
+                  std::string stmtStr;
+                  llvm::raw_string_ostream oss(stmtStr);
+                  clang::PrintingPolicy pp(ctx.getLangOpts());
+                  int indent = 0;
+                  ds->printPretty(oss, nullptr, pp, indent, "\n", &ctx);
+                  oss.flush();
+                  allocs.insert({d->getNameAsString(), stmtStr});
+                }
               }
             }
           }
-        }
         }
       }
 
@@ -202,13 +203,13 @@ class MallocVariableCollector : public MetaCollector {
               std::cout << "Found new expression for " << vRef->getDecl()->getNameAsString() << "\n";
               bo->dumpPretty(ctx);
               std::cout << "\n\n";
-                std::string stmtStr;
-                llvm::raw_string_ostream oss(stmtStr);
-                clang::PrintingPolicy pp(ctx.getLangOpts());
-                int indent = 0;
-                bo->printPretty(oss, nullptr, pp, indent, "\n", &ctx);
-                oss.flush();
-                allocs.insert({vRef->getDecl()->getNameAsString(), stmtStr});
+              std::string stmtStr;
+              llvm::raw_string_ostream oss(stmtStr);
+              clang::PrintingPolicy pp(ctx.getLangOpts());
+              int indent = 0;
+              bo->printPretty(oss, nullptr, pp, indent, "\n", &ctx);
+              oss.flush();
+              allocs.insert({vRef->getDecl()->getNameAsString(), stmtStr});
             }
           }
         }
@@ -263,15 +264,15 @@ class UniqueTypeCollector : public MetaCollector {
 
       void VisitDeclRefExpr(clang::DeclRefExpr *dre) {
         if (!dre->getDecl()) {
-          return ;
-          }
-          if (const auto decl = dre->getDecl()) {
-            const auto ty = resolveToUnderlyingType(decl->getType().getTypePtr());
-            if (! (ty->isFunctionType() || ty->isFunctionPointerType())) {
-              fTypes.insert(ty);
-            }
+          return;
+        }
+        if (const auto decl = dre->getDecl()) {
+          const auto ty = resolveToUnderlyingType(decl->getType().getTypePtr());
+          if (!(ty->isFunctionType() || ty->isFunctionPointerType())) {
+            fTypes.insert(ty);
           }
         }
+      }
     };
 
     if (!decl->hasBody()) {

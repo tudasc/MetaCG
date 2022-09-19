@@ -1,0 +1,84 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {},
+        "CallInfoMap": {},
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:0228.cpp@F@__uint16_identity#s#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0228.cpp@F@__uint16_identity#s#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0228.cpp@300@F@__uint16_identity#s#@__x"
+                ],
+                "Prefixes": []
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:0228.cpp@F@__uint16_identity#s#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZL17__uint16_identityt"
+                ],
+                "Parameters": [
+                    "c:0228.cpp@300@F@__uint16_identity#s#@__x"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:0228.cpp@300@F@__uint16_identity#s#@__x",
+                    "c:0228.cpp@F@__uint16_identity#s#@SRETURN"
+                ]
+            }
+        },
+        "FunctionMap": {
+            "c:0228.cpp@F@__uint16_identity#s#": "c:0228.cpp@F@__uint16_identity#s#"
+        }
+    },
+    "_CG": {
+        "_ZL17__uint16_identityt": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 1
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0228.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

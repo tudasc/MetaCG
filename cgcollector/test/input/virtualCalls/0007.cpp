@@ -2,12 +2,13 @@
 
 class MyClass {
  public:
-  MyClass() {}
+  MyClass(int b) { int c = b; }
   virtual ~MyClass() {}
 };
 
 int main(int argc, char *argv[]) {
-  MyClass mc;
+  int a = 42;
+  MyClass mc(a);
 
   return 0;
 }

@@ -68,6 +68,34 @@ function applyFileFormatTwoToSingleTU {
   return $fail
 }
 
+function applyFileFormatTwoToSingleTUWithAA {
+  testCaseFile=$1
+  addFlags=$2
+  fail=0
+
+  # Set up the different data files, we need:
+  # - The test case
+  # - Tehe groundtruth data for reconciling the CG constructed by MetaCG
+  tfile=$testCaseFile
+  gfile=${testCaseFile/cpp/ipcg}
+  tgt=${testCaseFile/cpp/gtaacg}
+
+ echo "Running tester on ${tfile}"
+  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA ${addFlags} $tfile -- >>log/testrun.log 2>&1
+  cat $gfile | python3 -m json.tool > ${gfile}_
+  mv ${gfile}_ ${gfile}
+  $testerExe $tgt $gfile >>log/testrun.log 2>&1
+
+  if [ $? -ne 0 ]; then
+    echo "Failure for file: $gfile. Keeping generated file for inspection"
+    fail=$((fail + 1))
+  else
+    rm $gfile
+  fi
+
+  return $fail
+}
+
 function applyFileFormatOneToMultiTU {
   fail=0
   tc=$1
@@ -138,6 +166,58 @@ function applyFileFormatTwoToMultiTU {
   # Translation-unit-local
   $cgcollectorExe --metacg-format-version=2 ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
   $cgcollectorExe --metacg-format-version=2  ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
+
+  cat ./input/multiTU/${ipcgTaFile} | python3 -m json.tool >./input/multiTU/${ipcgTaFile}_
+  mv ./input/multiTU/${ipcgTaFile}_ ./input/multiTU/${ipcgTaFile}
+  cat ./input/multiTU/${ipcgTbFile} | python3 -m json.tool >./input/multiTU/${ipcgTbFile}_
+  mv ./input/multiTU/${ipcgTbFile}_ ./input/multiTU/${ipcgTbFile}
+
+  $testerExe ./input/multiTU/${ipcgTaFile} ./input/multiTU/${gtaFile} >>log/testrun.log 2>&1
+  aErr=$?
+  $testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile} >>log/testrun.log 2>&1
+  bErr=$?
+
+  combFile=${tc}_combined.ipcg
+  echo "null" >./input/multiTU/${combFile}
+
+  ${cgmergeExe} ./input/multiTU/${combFile} ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile} >>log/testrun.log 2>&1
+  mErr=$?
+
+  cat ./input/multiTU/${combFile} | python3 -m json.tool >./input/multiTU/${combFile}_
+  mv ./input/multiTU/${combFile}_ ./input/multiTU/${combFile}
+
+  ${testerExe} ./input/multiTU/${combFile} ./input/multiTU/${gtCombFile} >>log/testrun.log 2>&1
+  cErr=$?
+
+  echo "$aErr or $bErr or $mErr or $cErr"
+
+  if [[ ${aErr} -ne 0 || ${bErr} -ne 0 || ${mErr} -ne 0 || ${cErr} -ne 0 ]]; then
+    echo "Failure for file: $combFile. Keeping generated file for inspection"
+    fail=$((fail + 1))
+  else
+    rm ./input/multiTU/$combFile ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile}
+  fi
+  return $fail
+}
+
+function applyFileFormatTwoToMultiTUWithAA {
+  fail=0
+  tc=$1
+  taFile=${tc}_a.cpp
+  tbFile=${tc}_b.cpp
+
+  # Result files
+  ipcgTaFile="${taFile/cpp/ipcg}"
+  ipcgTbFile="${tbFile/cpp/ipcg}"
+
+  # Groundtruth files
+  gtaFile="${taFile/cpp/gtaacg}"
+  gtbFile="${tbFile/cpp/gtaacg}"
+  gtCombFile="${tc}_combined.gtaacg"
+
+  # Translation-unit-local
+  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
+  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA  ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
 
   cat ./input/multiTU/${ipcgTaFile} | python3 -m json.tool >./input/multiTU/${ipcgTaFile}_
   mv ./input/multiTU/${ipcgTaFile}_ ./input/multiTU/${ipcgTaFile}
