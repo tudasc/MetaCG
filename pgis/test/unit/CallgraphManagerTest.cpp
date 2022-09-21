@@ -8,7 +8,7 @@
 
 #include "LoggerUtil.h"
 
-#include "CallgraphManager.h"
+#include "PiraMCGProcessor.h"
 
 using namespace pira;
 

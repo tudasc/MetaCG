@@ -12,9 +12,9 @@
 #include "CgNodePtr.h"
 
 // PGIS library
-#include "CgNodeMetaData.h"
+#include "MetaData/CgNodeMetaData.h"
 #include "Utility.h"
-#include "CallgraphManager.h"
+#include "PiraMCGProcessor.h"
 #include "nlohmann/json.hpp"
 #include "GlobalConfig.h"
 

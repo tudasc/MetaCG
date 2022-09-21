@@ -9,6 +9,7 @@
 #include <loadImbalance/LIMetaData.h>
 
 #include "spdlog/spdlog.h"
+#include "MetaData/PGISMetaData.h"
 
 using namespace metacg;
 
@@ -36,7 +37,7 @@ CgNodePtrSet getInstrumentationPath(CgNodePtr start) {
 
     path.insert(node);
 
-    if (node->isInstrumented() || node->isRootNode()) {
+    if (pgis::isInstrumented(node) || pgis::isInstrumentedPath(node) || node->isRootNode()) {
       continue;
     }
 
@@ -48,45 +49,6 @@ CgNodePtrSet getInstrumentationPath(CgNodePtr start) {
   }
 
   return CgNodePtrSet(path.begin(), path.end());
-}
-
-/** returns the overhead caused by a call path */
-// TODO this will only work with direct parents instrumented
-unsigned long long getInstrumentationOverheadOfConjunction(CgNodePtr conjunctionNode) {
-  auto parents = conjunctionNode->getParentNodes();
-
-  CgNodePtrSet potentiallyInstrumented;
-  for (auto parentNode : parents) {
-    auto tmpSet = getInstrumentationPath(parentNode);
-    potentiallyInstrumented.insert(tmpSet.begin(), tmpSet.end());
-  }
-
-  // add costs if node is instrumented
-  return std::accumulate(potentiallyInstrumented.begin(), potentiallyInstrumented.end(), 0ULL,
-                         [](unsigned long long acc, CgNodePtr node) {
-                           if (node->isInstrumentedWitness()) {
-                             auto nrCalls = 0ull;
-                             if (node->has<BaseProfileData>()) {
-                               nrCalls = node->get<BaseProfileData>()->getNumberOfCalls();
-                             }
-                             return acc + (nrCalls * CgConfig::nanosPerInstrumentedCall);
-                           }
-                           return acc;
-                         });
-}
-
-bool isValidMarkerPosition(CgNodePtr markerPosition, CgNodePtr conjunction) {
-  if (isOnCycle(markerPosition)) {
-    return true;  // nodes on cycles are always valid marker positions
-  }
-
-  // if one parent of the conjunction parents is unreachable -> valid marker
-  for (auto parentNode : conjunction->getParentNodes()) {
-    if (!reachableFrom(markerPosition, parentNode)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 bool isOnCycle(CgNodePtr node) {
@@ -109,29 +71,6 @@ bool isOnCycle(CgNodePtr node) {
     }
   }
   return false;
-}
-
-void reachableFromMainAnalysis(CgNodePtr mainNode) {
-  CgNodePtrSet visitedNodes;
-  std::queue<CgNodePtr> workQueue;
-  workQueue.push(mainNode);
-
-  while (!workQueue.empty()) {
-    auto node = workQueue.front();
-    workQueue.pop();
-
-    // mark as visited and reachable
-    spdlog::get("console")->trace("Setting reachable: {}", node->getFunctionName());
-    node->setReachable(true);
-    visitedNodes.insert(node);
-
-    // children need to be processed
-    for (auto childNode : node->getChildNodes()) {
-      if (visitedNodes.find(childNode) == visitedNodes.end()) {
-        workQueue.push(childNode);
-      }
-    }
-  }
 }
 
 Statements visitNodeForInclusiveStatements(CgNodePtr node, CgNodePtrSet *visitedNodes) {
@@ -172,39 +111,8 @@ void calculateInclusiveStatementCounts(CgNodePtr mainNode) {
   visitNodeForInclusiveStatements(mainNode, &visitedNodes);
 }
 
-// note: a function is reachable from itself
-bool reachableFrom(CgNodePtr parentNode, CgNodePtr childNode) {
-  if (parentNode == childNode) {
-    return true;
-  }
-
-  // XXX RN: once again code duplication
-  CgNodePtrSet visitedNodes;
-  std::queue<CgNodePtr> workQueue;
-  workQueue.push(parentNode);
-
-  while (!workQueue.empty()) {
-    auto node = workQueue.front();
-    workQueue.pop();
-
-    if (node == childNode) {
-      return true;
-    }
-
-    visitedNodes.insert(node);
-
-    for (auto childNode : node->getChildNodes()) {
-      if (visitedNodes.find(childNode) == visitedNodes.end()) {
-        workQueue.push(childNode);
-      }
-    }
-  }
-
-  return false;
-}
-
 CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,
-                                     const std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> &init) {
+                                     const std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> &init, metacg::analysis::ReachabilityAnalysis &ra) {
   {
     auto it = init.find(startNode);
     if (it != init.end()) {
@@ -225,14 +133,10 @@ CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,
 
     visitedNodes.insert(node);
 
-    // XXX This is itself an expensive computation!
-    //  if (reachableFrom(mainNode, node)){
-    //    pNodes.insert(node);
-    //  }
-    if (!node->isReachable()) {
-      continue;
-    } else {
+    if (ra.isReachableFromMain(node)) {
       pNodes.insert(node);
+    } else {
+      continue;
     }
 
     auto pns = node->getParentNodes();
@@ -246,8 +150,8 @@ CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,
   return pNodes;
 }
 
-CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode) {
-  return allNodesToMain(startNode, mainNode, {});
+CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode, metacg::analysis::ReachabilityAnalysis &ra) {
+  return allNodesToMain(std::move(startNode), std::move(mainNode), {}, ra);
 }
 
 /** Returns a set of all descendants including the starting node */

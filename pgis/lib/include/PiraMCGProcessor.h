@@ -88,7 +88,6 @@ class PiraMCGProcessor {
   size_t size() { return graph.size(); }
 
   int getNumProcs();
-  void printDOT(std::string prefix);
   bool readWhitelist(std::vector<std::string> &whiteNodes);
   bool isNodeListed(std::vector<std::string> whiteNodes, std::string node);
   Callgraph &getCallgraph(PiraMCGProcessor *cg = nullptr);
@@ -97,8 +96,6 @@ class PiraMCGProcessor {
   bool getOutputDotBetweenPhases(){
     return outputDotBetweenPhases;
   }
-
-  //  void setScorepOutputFormat(bool val = true) { scorepOutput_ = val; }
 
   void attachExtrapModels();
 
@@ -110,7 +107,6 @@ class PiraMCGProcessor {
   Config *configPtr;
   bool noOutputRequired{false};
   bool outputDotBetweenPhases {false};
-  //  bool scorepOutput_ = false;
 
   // Extrap interaction
   extrapconnection::ExtrapModelProvider epModelProvider;
@@ -122,7 +118,6 @@ class PiraMCGProcessor {
   void finalizeGraph(bool finalizeGraph = false);
 
   void dumpInstrumentedNames(CgReport report);
-  void dumpUnwoundNames(CgReport report);
 };
 }  // namespace metacg::pgis
 

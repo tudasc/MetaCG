@@ -35,10 +35,6 @@ TEST(VersionTwoMetaCGReaderTest, EmptyJSON) {
   json j;
   metacg::loggerutil::getLogger();
 
-  //  auto &cgm = PiraMCGProcessor::get();
-  //  cgm.clear();
-  //  Config c;
-
   // No MetaData Reader added to CGManager
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
@@ -54,10 +50,6 @@ TEST(VersionTwoMetaCGReaderTest, EmptyCG) {
   json j;
   j["_MetaCG"] = {{"version", "1.0"}, {"generator", {{"name", "testGen"}, {"version", "1.0"}}}};
   j["_CG"] = {};
-  //
-  //  auto &cgm = PiraMCGProcessor::get();
-  //  cgm.clear();
-  //  Config c;
 
   // No MetaData Reader added to CGManager
   auto &mcgm = metacg::graph::MCGManager::get();
@@ -72,11 +64,7 @@ TEST(VersionTwoMetaCGReaderTest, EmptyCG) {
 TEST(VersionTwoMetaCGReaderTest, SingleMetaDataHandlerEmptyJSON) {
   json j;
   metacg::loggerutil::getLogger();
-  //
-  //  auto &cgm = PiraMCGProcessor::get();
-  //  cgm.clear();
-  //
-  //  Config c;
+
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
@@ -100,10 +88,6 @@ TEST(VersionTwoMetaCGReaderTest, OneNodeNoMetaDataHandler) {
                 {"overrides", json::array()},
                 {"callers", json::array()},
                 {"callees", json::array()}}}};
-
-  //  auto &cgm = PiraMCGProcessor::get();
-  //  cgm.clear();
-  //  Config c;
 
   // No MetaData Reader added to CGManager
   auto &mcgm = metacg::graph::MCGManager::get();
@@ -145,10 +129,6 @@ TEST(VersionTwoMetaCGReaderTest, TwoNodesNoMetaDataHandler) {
                 {"callers", {"main"}},
                 {"callees", json::array()},
                 {"meta", {}}}}};
-  //
-  //  auto &cgm = PiraMCGProcessor::get();
-  //  cgm.clear();
-  //  Config c;
 
   // No MetaData Reader added to CGManager
   auto &mcgm = metacg::graph::MCGManager::get();
@@ -190,10 +170,6 @@ TEST(VersionTwoMetaCGReaderTest, TwoNodesOneMetaDataHandler) {
                 {"callers", {"main"}},
                 {"callees", json::array()},
                 {"meta", {{"TestMetaHandler", {}}}}}}};
-
-  //  auto &cgm = PiraMCGProcessor::get();
-  //  cgm.clear();
-  //  Config c;
 
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
@@ -242,11 +218,6 @@ TEST(VersionTwoMetaCGReaderTest, TwoNodesTwoMetaDataHandler) {
                 {"callers", {"main"}},
                 {"callees", json::array()},
                 {"meta", {{"TestMetaHandlerOne", {}}}}}}};
-  //
-  //  auto &cgm = PiraMCGProcessor::get();
-  //  cgm.clear();
-  //  Config c;
-
   // Only used / required in this test.
   struct TestHandlerOne : public metacg::io::retriever::MetaDataHandler {
     int i{0};

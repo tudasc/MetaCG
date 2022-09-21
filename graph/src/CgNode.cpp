@@ -4,66 +4,24 @@
  */
 
 #include "CgNode.h"
-//#include <loadImbalance/LIMetaData.h>
-
-#define RENDER_DEPS 0
 
 namespace metacg {
-//using namespace pira;
 
 CgNode::CgNode(std::string function)
-    : functionName(function),
-      line(-1),
-      state(CgNodeState::NONE),
-      expectedNumberOfSamples(0L),
-      uniqueCallPath(false),
-      reachable(false),
+    : functionName(std::move(function)),
       parentNodes(),
       childNodes(),
-      spantreeParents() {
-  /* Attach meta data container */
-#if 0
-  auto bpd = new BaseProfileData();
-  bpd->setRuntimeInSeconds(.0);
-  bpd->setInclusiveRuntimeInSeconds(.0);
-  bpd->setNumberOfCalls(0);
-  this->addMetaData(bpd);
-
-  auto pod = new PiraOneData();
-  pod->setNumberOfStatements(0);
-  pod->setComesFromCube(false);
-  this->addMetaData(pod);
-
-  auto lid = new LoadImbalance::LIMetaData();
-  lid->setNumberOfInclusiveStatements(0);
-  lid->setVirtual(false);
-  this->isMarkedVirtual = false;
-  this->addMetaData(lid);
-#endif
+      isMarkedVirtual(false),
+      hasBody(false) {
 }
 
 void CgNode::addChildNode(CgNodePtr childNode) { childNodes.insert(childNode); }
 
 void CgNode::addParentNode(CgNodePtr parentNode) { parentNodes.insert(parentNode); }
 
-void CgNode::removeChildNode(CgNodePtr childNode) { childNodes.erase(childNode); }
+void CgNode::removeChildNode(CgNodePtr childNode) { childNodes.erase(childNode);}
 
 void CgNode::removeParentNode(CgNodePtr parentNode) { parentNodes.erase(parentNode); }
-
-bool CgNode::isSpantreeParent(CgNodePtr parentNode) {
-  return this->spantreeParents.find(parentNode) != spantreeParents.end();
-}
-
-void CgNode::reset() {
-  this->state = CgNodeState::NONE;
-  this->spantreeParents.clear();
-}
-
-void CgNode::updateNodeAttributes(bool updateNumberOfSamples) {
-  //auto bpd = this->get<BaseProfileData>();
-  //bpd->setNumberOfCalls(bpd->getNumberOfCallsWithCurrentEdges());
-}
-bool CgNode::hasUniqueCallPath() const { return uniqueCallPath; }
 
 bool CgNode::isLeafNode() const { return getChildNodes().empty(); }
 bool CgNode::isRootNode() const { return getParentNodes().empty(); }
@@ -128,29 +86,9 @@ const CgNodePtrSet &CgNode::getChildNodes() const { return childNodes; }
 
 const CgNodePtrSet &CgNode::getParentNodes() const { return parentNodes; }
 
-void CgNode::setState(CgNodeState state, int numberOfUnwindSteps) {
-  // TODO i think this breaks something
-  if (this->state == CgNodeState::INSTRUMENT_CONJUNCTION && this->state != state) {
-    if (state == CgNodeState::INSTRUMENT_WITNESS) {
-      return;  // instrument conjunction is stronger
-    }
-  }
-
-  this->state = state;
-}
 void CgNode::instrumentFromParent(CgNodePtr parent) {
   this->instrumentedParentEdges.insert(parent);
 }
-bool CgNode::isInstrumented() const {
-  return isInstrumentedWitness() || isInstrumentedConjunction() || isInstrumentedCallpath();
-}
-bool CgNode::isInstrumentedWitness() const { return state == CgNodeState::INSTRUMENT_WITNESS; }
-bool CgNode::isInstrumentedConjunction() const { return state == CgNodeState::INSTRUMENT_CONJUNCTION; }
-bool CgNode::isInstrumentedCallpath() const { return state == CgNodeState::INSTRUMENT_PATH; }
-
-bool CgNode::isUnwound() const { return state == CgNodeState::UNWIND_SAMPLE || state == CgNodeState::UNWIND_INSTR; }
-bool CgNode::isUnwoundSample() const { return state == CgNodeState::UNWIND_SAMPLE; }
-bool CgNode::isUnwoundInstr() const { return state == CgNodeState::UNWIND_INSTR; }
 
 void CgNode::print() {
 #if 0
@@ -160,10 +98,6 @@ void CgNode::print() {
   }
 #endif
 }
-
-void CgNode::setFilename(std::string filename) { this->filename = filename; }
-
-void CgNode::setLineNumber(int line) { this->line = line; }
 
 std::ostream &operator<<(std::ostream &stream, const CgNode &n) {
   stream << "\"" << n.getFunctionName() << "\"";

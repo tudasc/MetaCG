@@ -7,8 +7,9 @@
 #ifndef CGNODEHELPER_H_
 #define CGNODEHELPER_H_
 
-#include "../../../graph/include/CgNode.h"
+#include "CgNode.h"
 #include "Callgraph.h"
+#include "ReachabilityAnalysis.h"
 
 #include <algorithm>  // std::set_intersection
 #include <memory>
@@ -71,31 +72,16 @@ CgNodePtrSet getInstrumentationPath(CgNodePtr start);
 bool isOnCycle(CgNodePtr node);
 
 /**
- * Runs analysis on the call-graph and marks every node which is reachable from main
- */
-void reachableFromMainAnalysis(CgNodePtr mainNode);
-
-/**
  * Calculates the inclusive statement count for every node which is reachable from mainNode and saves in the node field
  */
 void calculateInclusiveStatementCounts(CgNodePtr mainNode);
 
-bool reachableFrom(CgNodePtr parentNode, CgNodePtr childNode);
 CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,
-                                     const std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> &init);
-CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode);
-
-// bool removeInstrumentationOnPath(CgNodePtr node);
-//
-// bool isConnectedOnSpantree(CgNodePtr n1, CgNodePtr n2);
-// bool canReachSameConjunction(CgNodePtr n1, CgNodePtr n2);
+                                     const std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> &init, metacg::analysis::ReachabilityAnalysis &ra);
+CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode, metacg::analysis::ReachabilityAnalysis &ra);
 
 CgNodePtrSet getDescendants(CgNodePtr child);
 CgNodePtrSet getAncestors(CgNodePtr child);
-//
-// void markReachablePar(CgNodePtr start, CgNodePtrUnorderedSet &seen);
-//
-// void markReachableParStart(CgNodePtr start);
 
 double calcRuntimeThreshold(const metacg::Callgraph &cg, bool useLongAsRef);
 

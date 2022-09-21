@@ -7,8 +7,8 @@
 #ifndef CUBEREADER_H_
 #define CUBEREADER_H_
 
-#include "CallgraphManager.h"
-#include "CgNodeMetaData.h"
+#include "PiraMCGProcessor.h"
+#include "MetaData/CgNodeMetaData.h"
 
 #include <Cube.h>
 #include <CubeMetric.h>

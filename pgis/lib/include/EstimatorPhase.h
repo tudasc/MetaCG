@@ -7,7 +7,7 @@
 #ifndef ESTIMATORPHASE_H_
 #define ESTIMATORPHASE_H_
 
-#include "../../../graph/include/Callgraph.h"
+#include "Callgraph.h"
 #include "CgHelper.h"
 #include "CgNode.h"
 
@@ -72,8 +72,8 @@ struct CgReport {
 
 class EstimatorPhase {
  public:
-  EstimatorPhase(std::string name, bool isMetaPhase = false);
-  virtual ~EstimatorPhase() {}
+  explicit EstimatorPhase(std::string name, bool isMetaPhase = false);
+  virtual ~EstimatorPhase() = default;
 
   virtual void doPrerequisites() {}
   virtual void modifyGraph(CgNodePtr mainMethod) = 0;
@@ -106,22 +106,24 @@ class EstimatorPhase {
 class NopEstimatorPhase : public EstimatorPhase {
  public:
   NopEstimatorPhase() : EstimatorPhase("NopEstimator"), didRun(false) {}
-  virtual void modifyGraph(CgNodePtr mainMethod) final { didRun = true; }
+  void modifyGraph(CgNodePtr mainMethod) final { didRun = true; }
   bool didRun;
 };
 
 /**
  * Remove nodes from the graph that are not connected to the main() method.
+ *
+ * TODO: I guess this can be removed by now...?
  */
 class RemoveUnrelatedNodesEstimatorPhase : public EstimatorPhase {
  public:
-  RemoveUnrelatedNodesEstimatorPhase(bool onlyRemoveUnrelatedNodes = true, bool aggressiveReduction = false);
-  ~RemoveUnrelatedNodesEstimatorPhase();
+  explicit RemoveUnrelatedNodesEstimatorPhase(bool onlyRemoveUnrelatedNodes = true, bool aggressiveReduction = false);
+  ~RemoveUnrelatedNodesEstimatorPhase() override;
 
-  void modifyGraph(CgNodePtr mainMethod);
+  void modifyGraph(CgNodePtr mainMethod) override;
 
  private:
-  void printAdditionalReport();
+  void printAdditionalReport() override;
   void checkLeafNodeForRemoval(CgNodePtr node);
 
   int numUnconnectedRemoved;
@@ -135,68 +137,19 @@ class RemoveUnrelatedNodesEstimatorPhase : public EstimatorPhase {
   CgNodePtrSet nodesToRemove;
 };
 
-/**
- * Read out some statistics about the current call graph
- */
-class GraphStatsEstimatorPhase : public EstimatorPhase {
- public:
-  GraphStatsEstimatorPhase();
-  ~GraphStatsEstimatorPhase();
-
-  void modifyGraph(CgNodePtr mainMethod);
-
- private:
-  void printAdditionalReport();
-  bool hasDependencyFor(CgNodePtr conjunction) {
-    for (auto dependency : dependencies) {
-      if (dependency.dependentConjunctions.find(conjunction) != dependency.dependentConjunctions.end()) {
-        return true;
-      }
-    }
-    return false;
-  }
-
- private:
-  struct ConjunctionDependency {
-    CgNodePtrSet dependentConjunctions;
-    CgNodePtrSet markerPositions;
-
-    ConjunctionDependency(CgNodePtrSet dependentConjunctions, CgNodePtrSet markerPositions) {
-      this->dependentConjunctions = dependentConjunctions;
-      this->markerPositions = markerPositions;
-    }
-  };
-
- private:
-  int numCyclesDetected;
-
-  int numberOfConjunctions;
-  std::vector<ConjunctionDependency> dependencies;
-  std::set<CgNodePtr> allValidMarkerPositions;
-};
 
 /**
  * Instrument according to white list
  */
 class WLInstrEstimatorPhase : public EstimatorPhase {
  public:
-  WLInstrEstimatorPhase(std::string wlFilePath);
-  ~WLInstrEstimatorPhase() {}
+  explicit WLInstrEstimatorPhase(std::string wlFilePath);
+  ~WLInstrEstimatorPhase() override = default;
 
-  void modifyGraph(CgNodePtr mainMethod);
+  void modifyGraph(CgNodePtr mainMethod) override;
 
  private:
   std::set<std::string> whiteList;
-};
-
-/** reset all instrumented and unwound nodes on the call graph */
-class ResetEstimatorPhase : public EstimatorPhase {
- public:
-  ResetEstimatorPhase();
-  ~ResetEstimatorPhase();
-
-  void printReport() override;
-  void modifyGraph(CgNodePtr mainMethod);
 };
 
 #endif

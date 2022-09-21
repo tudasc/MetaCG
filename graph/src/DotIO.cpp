@@ -165,7 +165,8 @@ bool DotReader::readAndManage(const std::string &cgName) {
   return manager.addToManagedGraphs(cgName, std::move(graph), setActive);
 }
 
-void DotGenerator::output(const std::string &filename) {
+void DotGenerator::output(DotOutputLocation outputLocation) {
+  auto filename = outputLocation.path + '/' + outputLocation.fileBaseName + '-' + outputLocation.dotName + ".dot";
   metacg::MCGLogger::instance().getConsole()->info("Exporting dot to file: {}", filename);
   std::ofstream outF(filename);
   outF << dotGraphStr << std::endl;

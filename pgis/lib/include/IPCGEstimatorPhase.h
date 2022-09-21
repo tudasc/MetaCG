@@ -79,12 +79,12 @@ class StatisticsEstimatorPhase : public EstimatorPhase {
  */
 class StatementCountEstimatorPhase : public EstimatorPhase {
  public:
-  StatementCountEstimatorPhase(int numberOfStatementsThreshold, bool inclusiveMetric = true,
+  explicit StatementCountEstimatorPhase(int numberOfStatementsThreshold, bool inclusiveMetric = true,
                                StatisticsEstimatorPhase *prevStatEP = nullptr);
-  ~StatementCountEstimatorPhase();
+  ~StatementCountEstimatorPhase() override;
 
   void modifyGraph(CgNodePtr mainMethod) override;
-  void estimateStatementCount(CgNodePtr startNode);
+  void estimateStatementCount(CgNodePtr startNode, metacg::analysis::ReachabilityAnalysis &ra);
 
   int getNumStatements(CgNodePtr node) { return inclStmtCounts[node]; }
 
@@ -96,55 +96,16 @@ class StatementCountEstimatorPhase : public EstimatorPhase {
 };
 
 /**
- * @brief The HybridSelectionStrategy base class
- */
-class HybridSelectionStrategy {
- public:
-  virtual void operator()(CgNodePtr node) = 0;
-};
-
-struct MaxRuntimeSelectionStrategy : public HybridSelectionStrategy {
-  void operator()(CgNodePtr node) override;
-};
-
-struct MaxStmtSelectionStrategy : public HybridSelectionStrategy {
-  void operator()(CgNodePtr node) override;
-};
-
-struct RuntimeFilteredMixedStrategy : public HybridSelectionStrategy {
-  RuntimeFilteredMixedStrategy(long stmtThreshold = 0, double rtThreshold = .0)
-      : stmtThresh(stmtThreshold), rtThresh(rtThreshold) {}
-  void operator()(CgNodePtr node) override;
-  long stmtThresh;
-  double rtThresh;
-};
-
-/**
- * @brief The HybridEstimatorPhase class
- * This is the playground for hybrid selection strategies.
- */
-class HybridEstimatorPhase : public EstimatorPhase {
- public:
-  HybridEstimatorPhase() : EstimatorPhase("HybridEstimatorPhase") {}
-
-  void modifyGraph(CgNodePtr node) override;
-  void addStrategy(HybridSelectionStrategy *strat) { strategies.push_back(strat); }
-
- private:
-  std::vector<HybridSelectionStrategy *> strategies;
-};
-
-/**
  * @brief The RuntimeEstimatorPhase class
  */
 class RuntimeEstimatorPhase : public EstimatorPhase {
  public:
-  RuntimeEstimatorPhase(double runTimeThreshold, bool inclusiveMetric = true);
-  ~RuntimeEstimatorPhase();
+  explicit RuntimeEstimatorPhase(double runTimeThreshold, bool inclusiveMetric = true);
+  ~RuntimeEstimatorPhase() override;
 
   void modifyGraph(CgNodePtr mainMethod) override;
   void estimateRuntime(CgNodePtr startNode);
-  void doInstrumentation(CgNodePtr startNode);
+  void doInstrumentation(CgNodePtr startNode, metacg::analysis::ReachabilityAnalysis &ra);
 
  private:
   double runTimeThreshold;
@@ -158,8 +119,8 @@ class RuntimeEstimatorPhase : public EstimatorPhase {
  */
 class WLCallpathDifferentiationEstimatorPhase : public EstimatorPhase {
  public:
-  WLCallpathDifferentiationEstimatorPhase(std::string whiteListName = "whitelist.txt");
-  ~WLCallpathDifferentiationEstimatorPhase();
+  explicit WLCallpathDifferentiationEstimatorPhase(std::string whiteListName = "whitelist.txt");
+  ~WLCallpathDifferentiationEstimatorPhase() override;
 
   void modifyGraph(CgNodePtr mainMethod) override;
 
@@ -180,7 +141,7 @@ class SummingCountPhaseBase : public EstimatorPhase {
   long int getCounted(const CgNodePtr &node);
 
  protected:
-  void estimateCount(const std::shared_ptr<metacg::CgNode> &startNode);
+  void estimateCount(const std::shared_ptr<metacg::CgNode> &startNode, metacg::analysis::ReachabilityAnalysis &ra);
   virtual long int getPreviousThreshold() const = 0;
   virtual long int getTargetCount(const metacg::CgNode *data) const = 0;
   long int threshold;

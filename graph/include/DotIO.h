@@ -119,12 +119,22 @@ class DotReader {
 };
 
 /**
+ * Denotes where to put a Dot graph. Will be used to write to
+ * path/fileBaseName-dotName.dot
+ */
+struct DotOutputLocation {
+  std::string path;
+  std::string dotName;
+  std::string fileBaseName;
+};
+
+/**
  * Generates a dot representation of the graph that can be persisted into a file.
  */
 class DotGenerator {
  public:
   explicit DotGenerator(const metacg::Callgraph *graph) : cg(graph) {}
-  void output(const std::string &filename);
+  void output(DotOutputLocation outputLocation);
   void generate();
   [[nodiscard]] std::string getDotString() const { return dotGraphStr; }
 

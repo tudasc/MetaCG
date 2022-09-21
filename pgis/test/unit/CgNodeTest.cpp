@@ -5,7 +5,7 @@
  */
 
 #include "CgNode.h"
-#include "CgNodeMetaData.h"
+#include "MetaData/CgNodeMetaData.h"
 #include "LoggerUtil.h"
 #include "CgHelper.h"
 
@@ -33,17 +33,14 @@ TEST_F(CgNodeBasics, CreateNodeDefaults) {
   auto n = getNodeWithMD("foo");
   ASSERT_STREQ("foo", n->getFunctionName().c_str());
   ASSERT_TRUE(n->get<BaseProfileData>());
-  ASSERT_EQ(-1, n->getLineNumber());
   ASSERT_EQ(0.0, n->get<BaseProfileData>()->getRuntimeInSeconds());
   ASSERT_EQ(.0, n->get<BaseProfileData>()->getInclusiveRuntimeInSeconds());
   ASSERT_EQ(0, n->get<BaseProfileData>()->getNumberOfCalls());
   ASSERT_TRUE(n->get<PiraOneData>());
   ASSERT_EQ(0, n->get<PiraOneData>()->getNumberOfStatements());
   ASSERT_EQ(false, n->get<PiraOneData>()->inPreviousProfile());
-  ASSERT_EQ(false, n->hasUniqueCallPath());
   ASSERT_EQ(0, n->getParentNodes().size());
   ASSERT_EQ(0, n->getChildNodes().size());
-  ASSERT_EQ(0, n->getSpantreeParents().size());
   ASSERT_EQ(true, n->isLeafNode());
   ASSERT_EQ(true, n->isRootNode());
 }
@@ -100,7 +97,6 @@ TEST_F(CgNodeBasics, CreateChildParentRuntime) {
   ASSERT_EQ(1.25, n->get<BaseProfileData>()->getRuntimeInSeconds());
   ASSERT_EQ(0.25, c->get<BaseProfileData>()->getRuntimeInSeconds());
   ASSERT_EQ(1.5, n->get<BaseProfileData>()->getInclusiveRuntimeInSeconds());
-  // ASSERT_EQ(1.5, CgHelper::calcInclusiveRuntime(n.get()));
   ASSERT_EQ(true, c->isLeafNode());
   ASSERT_EQ(true, n->isRootNode());
   ASSERT_EQ(false, n->isLeafNode());

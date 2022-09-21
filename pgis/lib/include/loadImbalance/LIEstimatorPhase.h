@@ -44,7 +44,7 @@ class LIEstimatorPhase : public EstimatorPhase {
    */
   void instrumentRelevantChildren(CgNodePtr node, pira::Statements statementThreshold, std::ostringstream &debugString);
 
-  void contextHandling(CgNodePtr n, CgNodePtr mainNode);
+  void contextHandling(CgNodePtr n, CgNodePtr mainNode, metacg::analysis::ReachabilityAnalysis &ra);
 
   /**
    * check whether there is a path from start to end with steps as maximum length

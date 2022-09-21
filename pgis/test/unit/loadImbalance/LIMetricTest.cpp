@@ -5,7 +5,7 @@
  */
 
 #include "gtest/gtest.h"
-#include "CgNodeMetaData.h"
+#include "MetaData/CgNodeMetaData.h"
 #include <loadImbalance/metric/EfficiencyMetric.h>
 #include <loadImbalance/metric/ImbalancePercentageMetric.h>
 #include <loadImbalance/metric/VariationCoeffMetric.h>
@@ -124,7 +124,6 @@ TEST(LIMetricTest, VariationCoeffMetric) {
     func5->get<pira::BaseProfileData>()->setCallData(main, 1, 45.0, 45.0, 1, 6);
     metric.setNode(func5);
     EXPECT_NEAR(metric.calc(), 1.748198, 0.001);
-    // ASSERT_TRUE(false);
   }
   {
     getOrCreateMD<pira::BaseProfileData>(func6);
@@ -187,7 +186,6 @@ TEST(LIMetricTest, ImbalancePercentageMetric) {
     func5->get<pira::BaseProfileData>()->setCallData(main, 1, 45.0, 45.0, 1, 6);
     metric.setNode(func5);
     EXPECT_NEAR(metric.calc(), 0.9555, 0.001);
-    // ASSERT_TRUE(false);
   }
   {
     getOrCreateMD<pira::BaseProfileData>(func6);
