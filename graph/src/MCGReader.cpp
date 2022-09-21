@@ -38,10 +38,12 @@ void MetaCGReader::buildGraph(metacg::graph::MCGManager &cgManager, MetaCGReader
     node->setIsVirtual(fi.isVirtual);
     node->setHasBody(fi.hasBody);
     for (const auto &c : fi.callees) {
-      cgManager.addEdge(k, c);
+      auto calleeNode = cgManager.findOrCreateNode(c);
+      cgManager.addEdge(node, calleeNode);
       auto &potTargets = potentialTargets[c];
       for (const auto &pt : potTargets) {
-        cgManager.addEdge(k, pt);
+        auto potentialCallee = cgManager.findOrCreateNode(pt);
+        cgManager.addEdge(node, potentialCallee);
       }
     }
   }

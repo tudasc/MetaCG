@@ -13,6 +13,9 @@
 #include "MCGReader.h"
 #include "MCGWriter.h"
 
+#include "PiraMCGProcessor.h"
+#include "ErrorCodes.h"
+#include "DotIO.h"
 #include "LegacyMCGReader.h"
 #include "ExtrapEstimatorPhase.h"
 #include "IPCGEstimatorPhase.h"
@@ -23,8 +26,6 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
 
-#include "CallgraphManager.h"
-#include "DotIO.h"
 #include "cxxopts.hpp"
 
 #include <nlohmann/json.hpp>
@@ -46,10 +47,8 @@ void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &cg, Config *c, bool
   auto statEstimator = new StatisticsEstimatorPhase(false);
   if (!keepNotReachable) {
     cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(true, false));  // remove unrelated
-    cg.registerEstimatorPhase(new ResetEstimatorPhase());
   }
   cg.registerEstimatorPhase(statEstimator);
-  cg.registerEstimatorPhase(new ResetEstimatorPhase());
 
   // Actually do the selection
   if (!isIPCG) {
@@ -106,7 +105,7 @@ int main(int argc, char **argv) {
 
   if (argc == 1) {
     errconsole->error("Too few arguments. Use --help to show help.");
-    exit(-1);
+    exit(pgis::TooFewProgramArguments);
   }
 
   cxxopts::Options opts("PGIS", "Generating low-overhead instrumentation selections.");
@@ -133,7 +132,6 @@ int main(int argc, char **argv) {
     (lideEnabled.cliName, "Enable load imbalance detection (PIRA LIDe)", optType(lideEnabled)->default_value("false"))
     (metacgFormat.cliName, "Selects the MetaCG format to expect", optType(metacgFormat)->default_value("1"))
     (dotExport.cliName, "Export call-graph as dot-file after every phase.", optType(dotExport)->default_value(dotExport.defaultValue))
-    (printUnwoundNames.cliName, "Dump unwound names", optType(printUnwoundNames)->default_value("false"))
     (cubeShowOnly.cliName, "Print inclusive time for main", optType(cubeShowOnly)->default_value("false"))
     (useCallSiteInstrumentation.cliName, "Enable experimental call-site instrumentation", optType(useCallSiteInstrumentation)->default_value("false"))
     (heuristicSelection.cliName, "Select the heuristic to use for node selection", optType(heuristicSelection)->default_value(heuristicSelection.defaultValue))
@@ -147,7 +145,6 @@ int main(int argc, char **argv) {
   bool shouldExport{false};
   bool useScorepFormat{false};
   bool extrapRuntimeOnly{false};
-  bool enableDumpUnwoundNames{false};
   bool enableLide{false};
   bool keepNotReachable{false};
   int printDebug{0};
@@ -157,7 +154,7 @@ int main(int argc, char **argv) {
 
   if (result.count("help")) {
     std::cout << opts.help() << "\n";
-    return 0;
+    return pgis::SUCCESS;
   }
 
   /* Options - populated into global configPtr */
@@ -183,7 +180,6 @@ int main(int argc, char **argv) {
   checkAndSet<bool>(ipcgExport.cliName, result, shouldExport);
   checkAndSet<bool>(scorepOut.cliName, result, useScorepFormat);
   checkAndSet<DotExportSelection>(dotExport.cliName, result, enableDotExport);
-  checkAndSet<bool>(printUnwoundNames.cliName, result, enableDumpUnwoundNames);
   std::string disposable;
   checkAndSet<std::string>(extrapConfig.cliName, result, disposable);
   checkAndSet<bool>(lideEnabled.cliName, result, enableLide);
@@ -202,7 +198,7 @@ int main(int argc, char **argv) {
   if (mcgVersion < 2 &&
       pgis::config::getSelectedHeuristic() != HeuristicSelection::HeuristicSelectionEnum::STATEMENTS) {
     errconsole->error("Heuristics other than 'statements' are not supported with metacg format 1");
-    exit(1);
+    exit(pgis::ErroneousHeuristicsConfiguration);
   }
 
   CuttoffSelection dispose_cuttoff;
@@ -254,11 +250,11 @@ int main(int argc, char **argv) {
         DOTCallgraphBuilder::build(filePath, &c);
       } else {
         errconsole->error("Unknown file ending in {}", filePath);
-        exit(-1);
+        exit(pgis::UnknownFileFormat);
       }
     }
     cg.printMainRuntime();
-    return EXIT_SUCCESS;
+    return pgis::SUCCESS;
   }
 
   if (result.count("scorep-out")) {
@@ -314,7 +310,7 @@ int main(int argc, char **argv) {
           cg.registerEstimatorPhase(new LoadImbalance::OnlyMainEstimatorPhase());
           cg.applyRegisteredPhases();
 
-          return EXIT_SUCCESS;
+          return pgis::SUCCESS;
         }
       } else {
         registerEstimatorPhases(cg, &c, true, 0, keepNotReachable);
@@ -336,7 +332,7 @@ int main(int argc, char **argv) {
       DOTCallgraphBuilder::build(filePath, &c);
     } else {
       errconsole->error("Unknown file ending in {}", filePath);
-      exit(-1);
+      exit(pgis::UnknownFileFormat);
     }
 
     // load imbalance detection
@@ -349,7 +345,7 @@ int main(int argc, char **argv) {
       if (!pConfig.getLIConfig()) {
         errconsole->error(
             "Provide configuration for load imbalance detection. Refer to PIRA's README for further details.");
-        return EXIT_FAILURE;
+        return pgis::ErroneousHeuristicsConfiguration;
       }
       cg.registerEstimatorPhase(
           new LoadImbalance::LIEstimatorPhase(std::move(pConfig.getLIConfig())));  // attention: moves out liConfig!
@@ -365,7 +361,7 @@ int main(int argc, char **argv) {
         console->warn("--export flag is highly recommended for load imbalance detection");
       }
 
-      return EXIT_SUCCESS;
+      return pgis::SUCCESS;
     } else {
       c.totalRuntime = c.actualRuntime;
       /* This runtime threshold currently unused */
@@ -379,7 +375,7 @@ int main(int argc, char **argv) {
     auto &pConfig = pgis::config::ParameterConfig::get();
     if (!pConfig.getPiraIIConfig()) {
       console->error("Provide PIRA II configuration in order to use Extra-P estimators.");
-      return EXIT_FAILURE;
+      return pgis::ErroneousHeuristicsConfiguration;
     }
 
     cg.attachExtrapModels();
@@ -407,7 +403,8 @@ int main(int argc, char **argv) {
       enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
     metacg::io::dot::DotGenerator dotGenerator(&cg.getCallgraph(&cg));
     dotGenerator.generate();
-    cg.printDOT("begin");
+    dotGenerator.output({"./DotOutput", "PGIS-Dot", "begin"});
+//    cg.printDOT("begin");
   }
   if (cg.hasPassesRegistered()) {
     if (enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
@@ -418,7 +415,10 @@ int main(int argc, char **argv) {
   }
   if (enableDotExport.mode == DotExportSelection::DotExportEnum::END ||
       enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
-    cg.printDOT("end");
+    metacg::io::dot::DotGenerator dotGenerator(&cg.getCallgraph(&cg));
+    dotGenerator.generate();
+    dotGenerator.output({"./DotOutput", "PGIS-Dot", "end"});
+//    cg.printDOT("end");
   }
 
   // Example use of MetaCG writer
@@ -430,5 +430,5 @@ int main(int argc, char **argv) {
     jsSink.output(ofile);
   }
 
-  return EXIT_SUCCESS;
+  return pgis::SUCCESS;
 }

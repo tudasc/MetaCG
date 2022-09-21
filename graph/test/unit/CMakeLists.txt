@@ -6,6 +6,7 @@ add_executable(
   MCGManagerTest.cpp
   MCGReaderTest.cpp
   MCGWriterTest.cpp
+  ReachabilityAnalysisTest.cpp
   UtilTest.cpp
 )
 

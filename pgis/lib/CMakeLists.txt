@@ -3,7 +3,7 @@ set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(PGIS_LIB_SOURCES
-    src/CallgraphManager.cpp
+    src/PiraMCGProcessor.cpp
     src/CgHelper.cpp
     src/CubeReader.cpp
     src/EstimatorPhase.cpp
@@ -26,6 +26,9 @@ set(PGIS_LIB_SOURCES
     src/LegacyMCGReader.cpp
     include/MetaDataHandler.h
     src/MetaDataHandler.cpp
+    include/MetaData/PGISMetaData.h
+    src/LegacyEstimatorPhases.cpp
+    include/ErrorCodes.h
 )
 
 add_library(pgis SHARED ${PGIS_LIB_SOURCES})

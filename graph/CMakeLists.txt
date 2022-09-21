@@ -20,11 +20,13 @@ set(MetacgGraphLibSources
     include/DotIO.h
     src/DotIO.cpp
     include/Timing.h
+    include/ReachabilityAnalysis.h
+    src/ReachabilityAnalysis.cpp
 )
 
 add_library(metacg SHARED ${MetacgGraphLibSources})
 
-message("Source dir for MetaCG lib: " ${PROJECT_SOURCE_DIR})
+# message("Source dir for MetaCG lib: " ${PROJECT_SOURCE_DIR})
 
 target_include_directories(metacg PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/graph/include>)
 

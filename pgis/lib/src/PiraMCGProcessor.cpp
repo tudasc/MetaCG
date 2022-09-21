@@ -4,11 +4,12 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "CallgraphManager.h"
+#include "ErrorCodes.h"
+#include "PiraMCGProcessor.h"
 #include "Timing.h"
 #include "config/GlobalConfig.h"
 #include "config/ParameterConfig.h"
-
+#include "DotIO.h"
 #include "ExtrapConnection.h"
 
 #include "EXTRAP_Model.hpp"
@@ -39,32 +40,22 @@ void metacg::pgis::PiraMCGProcessor::registerEstimatorPhase(EstimatorPhase *phas
 void metacg::pgis::PiraMCGProcessor::finalizeGraph(bool buildMarker) {
   if (graph.isEmpty()) {
     spdlog::get("errconsole")->error("Running the processor on empty graph. Need to construct graph.");
-    exit(1);
+    exit(::pgis::ErrorCode::NoGraphConstructed);
   }
 
+  // XXX We should double check if this is still required, with the reachabilty now
+  // being part of an explicit analysis class.
   if (graph.size() > 0) {
     // We assume that 'main' is always reachable.
     auto mainNode = graph.getMain();
     if (mainNode == nullptr) {
       spdlog::get("errconsole")->error("PiraMCGProcessor: Cannot find main function");
-      exit(1);
+      exit(::pgis::ErrorCode::NoMainFunctionFound);
     }
-    mainNode->setReachable();
+//    mainNode->setReachable();
 
     // run reachability analysis -> mark reachable nodes
-    CgHelper::reachableFromMainAnalysis(graph.getMain());
-
-    // XXX This is a prerequisite for certain EstimatorPhases and should be demanded by them
-    // CgHelper::calculateInclusiveStatementCounts(mainNode);
-  }
-
-  // also update all node attributes
-  for (auto node : graph) {
-    if (configPtr->samplesFile.empty()) {
-      node->updateNodeAttributes();
-    } else {
-      node->updateNodeAttributes(false);
-    }
+//    CgHelper::reachableFromMainAnalysis(graph.getMain());
   }
 }
 
@@ -74,7 +65,7 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
 
   if (mainFunction == nullptr) {
     spdlog::get("errconsole")->error("PiraMCGProcessor: Cannot find main function.");
-    exit(1);
+    exit(::pgis::ErrorCode::NoMainFunctionFound);
   }
 
   while (!phases.empty()) {
@@ -82,7 +73,7 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
 
     {  // RAII
       const std::string curPhase = phase->getName();
-      metacg::RuntimeTimer rtt("Running " + curPhase);
+      metacg::RuntimeTimer rtt("Running Prerequisites for " + curPhase);
       phase->doPrerequisites();
     }
 
@@ -98,17 +89,23 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
       CgReport report = phase->getReport();
       auto &gOpts = ::pgis::config::GlobalConfig::get();
 
-      if (outputDotBetweenPhases) {
-        printDOT(report.phaseName);
-      }
+//      if (outputDotBetweenPhases) {
+//        printDOT(report.phaseName);
+//      }
 
       dumpInstrumentedNames(report);  // outputs the instrumentation
 
-      if (gOpts.getAs<bool>(printUnwoundNames.cliName)) {
-        dumpUnwoundNames(report);
-      }
+//      if (gOpts.getAs<bool>(printUnwoundNames.cliName)) {
+//        dumpUnwoundNames(report);
+//      }
 
     }  // RAII
+
+    if (outputDotBetweenPhases) {
+      metacg::io::dot::DotGenerator dotGenerator(&graph);
+      dotGenerator.generate();
+      dotGenerator.output({"./DotOutput", "PGIS-Dot", phase->getName()});
+    }
 
     phases.pop();
     // We don't know if estimator phases hold references / pointers to other EstimatorPhases
@@ -135,144 +132,6 @@ int metacg::pgis::PiraMCGProcessor::getNumProcs() {
   return numProcs;
 }
 
-void metacg::pgis::PiraMCGProcessor::printDOT(std::string prefix) {
-  std::string filename = "out/callgraph-" + configPtr->appName + "-" + prefix + ".dot";
-  std::ofstream outfile(filename, std::ofstream::out);
-
-  outfile << "digraph callgraph {\n";
-
-  unsigned long long callsForThreePercentOfOverhead =
-      configPtr->fastestPhaseOvSeconds * 10e9 * 0.03 / (double)CgConfig::nanosPerInstrumentedCall;
-
-  int numProcs = getNumProcs();
-
-  std::vector<std::string> whiteNodes;
-  bool validList = false;
-  bool wlEmpty = configPtr->whitelist.empty();
-  if (!wlEmpty) {
-    validList = readWhitelist(whiteNodes);
-  }
-
-  for (int i = 0; i < numProcs + 1; i++) {
-    double procTime = 0;
-    Callgraph procGraph;
-    if (i < numProcs) {
-      outfile << "subgraph cluster" << i << " {\n";
-    }
-    outfile << "node [shape=Mrecord]\n";
-    for (auto node : graph) {
-      if (wlEmpty || (validList && isNodeListed(whiteNodes, node->getFunctionName()))) {
-        std::string functionName = node->getFunctionName();
-        std::string attributes;
-        std::string additionalLabel;
-        std::string threadLabel;
-        std::string additionalThreads;
-        std::string nodeTime;
-        //        double nodeTimeSum = 0;
-        //        int activeThreads = 0;
-        unsigned long long numCalls = 0;
-
-        const auto &[hasBPD, bpd] = node->checkAndGet<BaseProfileData>();
-        const auto &[hasPOD, pod] = node->checkAndGet<PiraOneData>();
-        const auto &[hasPTD, ptd] = node->checkAndGet<PiraTwoData>();
-
-        const auto getCalls = [&](const auto md) {
-          if (hasBPD) {
-            return md->getNumberOfCalls();
-          } else {
-            return 0ull;
-          }
-        };
-        const auto getInclRT = [&](const auto md) {
-          if (hasBPD) {
-            return md->getInclusiveRuntimeInSeconds();
-          } else {
-            return .0;
-          }
-        };
-        const auto getRT = [&](const auto md) {
-          if (hasBPD) {
-            return md->getRuntimeInSeconds();
-          } else {
-            return .0;
-          }
-        };
-        const auto isFromCube = [&](const auto md) {
-          if (hasPOD) {
-            return md->comesFromCube();
-          } else {
-            return false;
-          }
-        };
-
-        if (!threadLabel.empty() || (i == numProcs && node->get<BaseProfileData>()->getCgLocation().empty())) {
-          procGraph.insert(node);
-          if (node->hasUniqueCallPath()) {
-            attributes += "color=blue, ";
-          }
-          if (CgHelper::isConjunction(node)) {
-            attributes += "color=green, ";
-          }
-          if (node->isInstrumentedWitness()) {
-            attributes += "style=filled, ";
-
-            if (getCalls(bpd) > callsForThreePercentOfOverhead) {
-              attributes += "fillcolor=red, ";
-            } else {
-              attributes += "fillcolor=grey, ";
-            }
-          }
-          if (node->isInstrumentedConjunction()) {
-            attributes += "style=filled, ";
-            attributes += "fillcolor=palegreen, ";
-          }
-
-          additionalLabel += std::string("\\n #calls Total: ");
-          additionalLabel += std::to_string(getCalls(bpd));
-          additionalLabel += std::string("\\n #calls in Process: ");
-          additionalLabel += std::to_string(numCalls);
-          additionalLabel += std::string("\\n CubeInclRT: ");
-          additionalLabel += std::to_string(getInclRT(bpd));
-          additionalLabel += std::string("\\n IsFromCube: ");
-          additionalLabel += std::string((isFromCube(pod) ? "True" : "False"));
-
-          if (hasPTD) {
-            auto conn = ptd->getExtrapModelConnector();
-            if (conn.hasModels()) {
-              if (!conn.isModelSet()) {
-                auto &pConfig = ::pgis::config::ParameterConfig::get();
-                ptd->getExtrapModelConnector().modelAggregation(pConfig.getPiraIIConfig()->modelAggregationStrategy);
-              }
-              auto &theModel = conn.getEPModelFunction();
-              additionalLabel += '\n' + std::string(theModel->getAsString(this->epModelProvider.getParameterList()));
-            }
-          }
-
-          // runtime & expectedSamples in node label
-          std::string expectedSamples;
-          outfile << "\"" << functionName << i << "\"[" << attributes << "label=\"{" << functionName << "\\n"
-                  << "Total Time: " << getRT(bpd) << "s"
-                  << "\\n"
-                  << "|{ #samples: " << expectedSamples << additionalLabel << "}" << nodeTime << "|{"
-                  << threadLabel.substr(0, threadLabel.size() - 1) << "}}\"]" << std::endl;
-        }
-      }
-    }
-
-    for (auto node : procGraph) {
-      node->dumpToDot(outfile, i);
-    }
-    if (i < numProcs) {
-      std::ostringstream procSum;
-      procSum << procTime;
-      outfile << "label = \"Process " << i << ": \\n" << procSum.str() << "s\"";
-    }
-    outfile << "\n}\n";
-  }
-  outfile << "\n}" << std::endl;
-  outfile.close();
-}
-
 bool metacg::pgis::PiraMCGProcessor::readWhitelist(std::vector<std::string> &whiteNodes) {
   std::ifstream in(configPtr->whitelist.c_str());
 
@@ -283,7 +142,8 @@ bool metacg::pgis::PiraMCGProcessor::readWhitelist(std::vector<std::string> &whi
 
   std::string str;
   while (std::getline(in, str)) {
-    if (str.size() > 0) {
+    if (str.empty()) {
+      continue;
     }
     whiteNodes.push_back(str);
   }
@@ -353,18 +213,6 @@ void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(CgReport report) {
     ss << scorepEnd << "\n";
 
     outfile << ss.str();
-  }
-}
-
-void metacg::pgis::PiraMCGProcessor::dumpUnwoundNames(CgReport report) {
-  std::string filename = "out/unw-" + configPtr->appName + "-" + report.phaseName + ".txt";
-  std::ofstream outfile(filename, std::ofstream::out);
-
-  for (auto pair : report.unwoundNames) {
-    std::string name = pair.first;
-    int unwindSteps = pair.second;
-
-    outfile << unwindSteps << " " << name << std::endl;
   }
 }
 

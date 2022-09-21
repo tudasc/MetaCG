@@ -158,7 +158,7 @@ class MCGManager {
     return managedGraphs.cend();
   }
 
-  size_t graphs_size() { return managedGraphs.size(); }
+  size_t graphs_size() const { return managedGraphs.size(); }
 
   [[nodiscard]] metacg::Callgraph *getCallgraph() { return activeGraph; }
   [[nodiscard]] metacg::Callgraph *getOrCreateCallgraph(const std::string &name) { return managedGraphs[name].get(); }

@@ -93,3 +93,12 @@ TEST_F(MCGManagerTest, OneMetaDataAttached) {
   const auto &handlers = mcgm.getMetaHandlers();
   ASSERT_EQ(handlers.size(), 1);
 }
+
+TEST_F(MCGManagerTest, TwoNodeOneEdgeCG) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  auto cg = mcgm.getCallgraph();
+  cg->addEdge("main", "LC1");
+  ASSERT_TRUE(cg->getMain() != nullptr);
+  auto mainNode = cg->getMain();
+  ASSERT_TRUE(mainNode->getChildNodes().size() == 1);
+}

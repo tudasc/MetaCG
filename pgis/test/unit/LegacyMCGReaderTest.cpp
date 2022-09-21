@@ -36,10 +36,6 @@ TEST(VersionOneMCGReaderTest, EmptyJSON) {
   json j;
   metacg::loggerutil::getLogger();
 
-  //  auto &cgm = metacg::graph::MCGManager::get();
-  //  cgm.clear();
-  //  Config c;
-
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
@@ -59,11 +55,6 @@ TEST(VersionOneMCGReaderTest, SimpleJSON) {
       {"parents", json::array()}, {"callees", json::array()},
 
   };
-
-  //  auto &cgm = PiraMCGProcessor::get();
-  //
-  //  cgm.clear();
-  //  Config c;
 
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
@@ -105,11 +96,6 @@ TEST(VersionOneMCGReaderTest, MultiNodeJSON) {
       {"isVirtual", false},  {"overriddenBy", json::array()}, {"overriddenFunctions", json::array()},
       {"parents", {"main"}}, {"callees", json::array()},
   };
-
-  //  auto &cgm = PiraMCGProcessor::get();
-  //
-  //  cgm.clear();
-  //  Config c;
 
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();

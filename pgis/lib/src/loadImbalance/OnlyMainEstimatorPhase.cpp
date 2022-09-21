@@ -5,6 +5,7 @@
  */
 
 #include "loadImbalance/OnlyMainEstimatorPhase.h"
+#include "MetaData/PGISMetaData.h"
 
 using namespace metacg;
 using namespace LoadImbalance;
@@ -14,5 +15,6 @@ OnlyMainEstimatorPhase::OnlyMainEstimatorPhase() : EstimatorPhase("OnlyMainEstim
 OnlyMainEstimatorPhase::~OnlyMainEstimatorPhase() noexcept {}
 
 void OnlyMainEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
-  mainMethod->setState(CgNodeState::INSTRUMENT_WITNESS);
+//  mainMethod->setState(CgNodeState::INSTRUMENT_WITNESS);
+  pgis::instrumentNode(mainMethod);
 }

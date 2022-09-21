@@ -167,9 +167,10 @@ class PiraTwoData : public metacg::MetaData {
 class FilePropertiesMetaData : public metacg::MetaData {
  public:
   static constexpr const char *key() { return "FilePropertiesMetaData"; }
-  FilePropertiesMetaData() : origin("INVALID"), fromSystemInclude(false) {}
+  FilePropertiesMetaData() : origin("INVALID"), fromSystemInclude(false), lineNumber(0){}
   std::string origin;
   bool fromSystemInclude;
+  int lineNumber;
 };
 
 class CodeStatisticsMetaData : public metacg::MetaData {

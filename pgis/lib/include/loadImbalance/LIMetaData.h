@@ -9,7 +9,7 @@
 
 #include <optional>
 
-#include "CgNodeMetaData.h"
+#include "MetaData/CgNodeMetaData.h"
 #include "MetaData.h"
 #include "nlohmann/json.hpp"
 

@@ -1,5 +1,5 @@
 #include "CgNode.h"
-#include "CallgraphManager.h"
+#include "PiraMCGProcessor.h"
 #include "MCGManager.h"
 
 #include "MetaDataHandler.h"

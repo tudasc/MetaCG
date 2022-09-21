@@ -34,8 +34,6 @@ TEST(LIMetaDataTest, SimpleAnnotation) {
   LoadImbalance::LIRetriever pr;
   int annotCount = metacg::io::doAnnotate(c, pr, j);
 
-  // std::cout << j << std::endl;
-
   ASSERT_EQ(1, annotCount);
   ASSERT_TRUE(j["main"]["meta"]["LIData"]["visited"] == true);
   ASSERT_TRUE(j["main"]["meta"]["LIData"]["irrelevant"] == false);
@@ -66,8 +64,6 @@ TEST(LIMetaDataTest, ComplexAnnotation) {
 
   LoadImbalance::LIRetriever pr;
   int annotCount = metacg::io::doAnnotate(c, pr, j);
-
-  // std::cout << j << std::endl;
 
   ASSERT_EQ(2, annotCount);
   ASSERT_TRUE(j["main"]["meta"]["LIData"]["visited"] == true);

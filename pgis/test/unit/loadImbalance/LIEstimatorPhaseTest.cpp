@@ -7,10 +7,10 @@
 #include "gtest/gtest.h"
 
 #include "LoggerUtil.h"
-#include "CallgraphManager.h"
+#include "PiraMCGProcessor.h"
 #include "MCGManager.h"
+#include "MetaData/PGISMetaData.h"
 #include "loadImbalance/LIEstimatorPhase.h"
-
 #include "loadImbalance/LIMetaData.h"
 #include <memory>
 
@@ -149,18 +149,18 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
 
   ASSERT_EQ(graph.getMain(), mainNode);
 
-  ASSERT_EQ(graph.getMain()->isInstrumented(), true);
-  ASSERT_EQ(graph.getNode("child1")->isInstrumented(), false);
-  ASSERT_EQ(graph.getNode("child2")->isInstrumented(), false);
-  ASSERT_EQ(graph.getNode("child3")->isInstrumented(), false);
-  ASSERT_EQ(graph.getNode("child4")->isInstrumented(), true);
-  ASSERT_EQ(graph.getNode("child5")->isInstrumented(), false);
+  ASSERT_EQ(pgis::isInstrumented(graph.getMain()), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("child1")), false);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("child2")), false);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("child3")), false);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("child4")), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("child5")), false);
 
-  ASSERT_EQ(graph.getNode("gc1")->isInstrumented(), false);
-  ASSERT_EQ(graph.getNode("gc2")->isInstrumented(), false);
-  ASSERT_EQ(graph.getNode("gc3")->isInstrumented(), true);
-  ASSERT_EQ(graph.getNode("gc4")->isInstrumented(), true);
-  ASSERT_EQ(graph.getNode("gc5")->isInstrumented(), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("gc1")), false);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("gc2")), false);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("gc3")), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("gc4")), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("gc5")), true);
 }
 
 TEST_F(LIEstimatorPhaseTest, Virtual) {
@@ -212,10 +212,10 @@ TEST_F(LIEstimatorPhaseTest, Virtual) {
   auto graph = cm.getCallgraph(&cm);
 
   ASSERT_EQ(graph.getMain(), mainNode);
-  ASSERT_EQ(graph.getNode("main")->isInstrumented(), true);
-  ASSERT_EQ(graph.getNode("child")->isInstrumented(), true);
-  ASSERT_EQ(graph.getNode("grandchild")->isInstrumented(), true);
-  ASSERT_EQ(graph.getNode("grandgrandchild")->isInstrumented(), false);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("main")), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("child")), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("grandchild")), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("grandgrandchild")), false);
 }
 
 TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
@@ -274,10 +274,10 @@ TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
   auto graph = cm.getCallgraph(&cm);
 
   ASSERT_EQ(graph.getMain(), mainNode);
-  ASSERT_EQ(graph.getNode("main")->isInstrumented(), true);
-  ASSERT_EQ(graph.getNode("child1")->isInstrumented(), true);
-  ASSERT_EQ(graph.getNode("child2")->isInstrumented(), true);
-  ASSERT_EQ(graph.getNode("grandchild")->isInstrumented(), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("main")), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("child1")), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("child2")), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("grandchild")), true);
 }
 
 TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
@@ -333,10 +333,10 @@ TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
   auto graph = cm.getCallgraph(&cm);
 
   ASSERT_EQ(graph.getMain(), mainNode);
-  ASSERT_EQ(graph.getNode("main")->isInstrumented(), true);
-  ASSERT_EQ(graph.getNode("child1")->isInstrumented(), true);
-  ASSERT_EQ(graph.getNode("child2")->isInstrumented(), false);
-  ASSERT_EQ(graph.getNode("grandchild")->isInstrumented(), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("main")), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("child1")), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("child2")), false);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("grandchild")), true);
 }
 
 TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
@@ -389,8 +389,8 @@ TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
   auto graph = cm.getCallgraph(&cm);
 
   ASSERT_EQ(graph.getMain(), mainNode);
-  ASSERT_EQ(graph.getNode("main")->isInstrumented(), true);
-  ASSERT_EQ(graph.getNode("child1")->isInstrumented(), false);
-  ASSERT_EQ(graph.getNode("child2")->isInstrumented(), true);
-  ASSERT_EQ(graph.getNode("child3")->isInstrumented(), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("main")), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("child1")), false);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("child2")), true);
+  ASSERT_EQ(pgis::isInstrumented(graph.getNode("child3")), true);
 }

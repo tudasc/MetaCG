@@ -6,6 +6,7 @@
 
 #include "loadImbalance/LIEstimatorPhase.h"
 #include "CgHelper.h"
+#include "MetaData/PGISMetaData.h"
 
 #include <loadImbalance/LIMetaData.h>
 #include <loadImbalance/metric/EfficiencyMetric.h>
@@ -38,7 +39,8 @@ void LIEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
 
   // make sure no node is marked for instrumentation yet
   for (const CgNodePtr &n : *graph) {
-    n->setState(CgNodeState::NONE);
+//    n->setState(CgNodeState::NONE);
+    pgis::resetInstrumentation(n);
   }
 
   instrument(mainMethod);  // keep main method instrumented at all times
@@ -114,9 +116,10 @@ void LIEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
 
   // after all nodes have been checked for imbalance and iterative descent has been performed:
   // ContextHandling for imbalanced nodes:
+  metacg::analysis::ReachabilityAnalysis ra(graph);
   for (const CgNodePtr &n : *graph) {
     if (n->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Imbalanced)) {
-      contextHandling(n, mainMethod);
+      contextHandling(n, mainMethod, ra);
     }
   }
 
@@ -173,7 +176,7 @@ void LIEstimatorPhase::instrumentRelevantChildren(CgNodePtr node, pira::Statemen
   }
 }
 
-void LoadImbalance::LIEstimatorPhase::contextHandling(CgNodePtr n, CgNodePtr mainNode) {
+void LoadImbalance::LIEstimatorPhase::contextHandling(CgNodePtr n, CgNodePtr mainNode, metacg::analysis::ReachabilityAnalysis &ra) {
   if (c->contextStrategy == ContextStrategy::None) {
     return;
   }
@@ -185,7 +188,7 @@ void LoadImbalance::LIEstimatorPhase::contextHandling(CgNodePtr n, CgNodePtr mai
 
   CgNodePtrSet nodesOnPathToMain;
 
-  auto nodesToMain = CgHelper::allNodesToMain(n, mainNode);
+  auto nodesToMain = CgHelper::allNodesToMain(n, mainNode, ra);
   for (auto ntm : nodesToMain) {
     nodesOnPathToMain.insert(ntm);
   }
@@ -253,7 +256,8 @@ bool LIEstimatorPhase::reachableInNSteps(CgNodePtr start, CgNodePtr end, int ste
   return false;
 }
 
-void LIEstimatorPhase::instrument(CgNodePtr node) { node->setState(CgNodeState::INSTRUMENT_WITNESS); }
+void LIEstimatorPhase::instrument(CgNodePtr node) { pgis::instrumentNode(node); }
+//node->setState(CgNodeState::INSTRUMENT_WITNESS); }
 
 void LIEstimatorPhase::findSyncPoints(CgNodePtr node) {
   std::ostringstream debugString;
