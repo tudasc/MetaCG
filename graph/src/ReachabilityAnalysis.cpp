@@ -1,18 +1,22 @@
-//
-// Created by jp on 13.07.22.
-//
+/**
+* File: ReachabilityAnalysis.cpp
+* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+* https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #include "ReachabilityAnalysis.h"
 
+#include <queue>
+
 namespace metacg::analysis {
 
-void ReachabilityAnalysis::runForNode(const CgNodePtr n) {
+void ReachabilityAnalysis::runForNode(const CgNode* const n) {
   computedFor.insert(n);
 
   auto &reachableSet = reachableNodes[n];
   // Compute the information as it is not available
-  std::unordered_set<CgNodePtr> visitedNodes;
-  std::queue<CgNodePtr> workQueue;
+  std::unordered_set<const CgNode*> visitedNodes;
+  std::queue<const CgNode*> workQueue;
   workQueue.push(n);
 
   // Visit all reachable nodes and mark as visited
@@ -23,7 +27,7 @@ void ReachabilityAnalysis::runForNode(const CgNodePtr n) {
 
     // children need to be processed
     // XXX include knowledge if childNode is in computedFor set
-    for (const auto childNode : node->getChildNodes()) {
+    for (const auto childNode : cg->getCallees(node->getId())) {
       if (visitedNodes.find(childNode) == visitedNodes.end()) {
         workQueue.push(childNode);
       }
@@ -40,7 +44,7 @@ void ReachabilityAnalysis::computeReachableFromMain() {
   runForNode(mainNode);
 }
 
-bool ReachabilityAnalysis::isReachableFromMain(const CgNodePtr node, bool forceUpdate) {
+bool ReachabilityAnalysis::isReachableFromMain(const CgNode* const node, bool forceUpdate) {
   if (forceUpdate || computedFor.find(cg->getMain()) == computedFor.end()) {
     computeReachableFromMain();
   }
@@ -48,7 +52,7 @@ bool ReachabilityAnalysis::isReachableFromMain(const CgNodePtr node, bool forceU
   return reachableFromMain->second.find(node) != reachableFromMain->second.end();
 }
 
-bool ReachabilityAnalysis::existsPathBetween(const CgNodePtr src, const CgNodePtr dest, bool forceUpdate) {
+bool ReachabilityAnalysis::existsPathBetween(const CgNode* const src, const CgNode* const dest, bool forceUpdate) {
   auto &reachableSet = reachableNodes[src];
   // Check if we already computed for src and return if we found that a path exists
   if (!forceUpdate && computedFor.find(src) != computedFor.end()) {

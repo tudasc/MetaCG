@@ -1,43 +1,25 @@
 /**
  * File: CgNode.cpp
- * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "CgNode.h"
 
-namespace metacg {
+#include <iostream>
+using namespace metacg;
 
-CgNode::CgNode(std::string function)
-    : functionName(std::move(function)),
-      parentNodes(),
-      childNodes(),
-      isMarkedVirtual(false),
-      hasBody(false) {
-}
+std::string CgNode::getFunctionName() const { return functionName; }
 
-void CgNode::addChildNode(CgNodePtr childNode) { childNodes.insert(childNode); }
+bool CgNode::operator==(const CgNode &otherNode) const { return id == otherNode.id; }
 
-void CgNode::addParentNode(CgNodePtr parentNode) { parentNodes.insert(parentNode); }
+bool CgNode::isSameFunction(const CgNode &otherNode) const { return id == otherNode.getId(); }
 
-void CgNode::removeChildNode(CgNodePtr childNode) { childNodes.erase(childNode);}
+bool CgNode::isSameFunctionName(const CgNode &otherNode) const { return functionName == otherNode.getFunctionName(); }
 
-void CgNode::removeParentNode(CgNodePtr parentNode) { parentNodes.erase(parentNode); }
-
-bool CgNode::isLeafNode() const { return getChildNodes().empty(); }
-bool CgNode::isRootNode() const { return getParentNodes().empty(); }
-
-bool CgNode::isSameFunction(CgNodePtr cgNodeToCompareTo) const {
-  if (this->functionName.compare(cgNodeToCompareTo->getFunctionName()) == 0) {
-    return true;
-  }
-  return false;
-}
-
-std::string CgNode::getFunctionName() const { return this->functionName; }
-
-void CgNode::dumpToDot(std::ofstream &outStream, int procNum) {
+void CgNode::dumpToDot(std::ofstream &outputStream, int procNum) {
 #if 0
-  std::shared_ptr<CgNode> thisNode;
+    std::shared_ptr<CgNode> thisNode;
   if (parentNodes.empty()) {
     for (auto childNode : childNodes) {
       for (int i = 0; i < procNum; i++) {
@@ -82,17 +64,9 @@ void CgNode::dumpToDot(std::ofstream &outStream, int procNum) {
 #endif
 }
 
-const CgNodePtrSet &CgNode::getChildNodes() const { return childNodes; }
-
-const CgNodePtrSet &CgNode::getParentNodes() const { return parentNodes; }
-
-void CgNode::instrumentFromParent(CgNodePtr parent) {
-  this->instrumentedParentEdges.insert(parent);
-}
-
 void CgNode::print() {
 #if 0
-  std::cout << this->functionName << std::endl;
+    std::cout << this->functionName << std::endl;
   for (auto n : childNodes) {
     std::cout << "--" << *n << std::endl;
   }
@@ -105,40 +79,10 @@ std::ostream &operator<<(std::ostream &stream, const CgNode &n) {
   return stream;
 }
 
-std::ostream &operator<<(std::ostream &stream, const CgNodePtrSet &s) {
-  stream << "[ ";
-  for (auto node : s) {
-    stream << node->getFunctionName() << " | ";
+
+
+CgNode::~CgNode() {
+  for (const auto &md : metaFields) {
+    delete md.second;
   }
-  stream << " ]";
-
-  return stream;
 }
-}
-
-namespace std {
-bool less<std::shared_ptr<metacg::CgNode>>::operator()(const std::shared_ptr<metacg::CgNode> &a,
-                                               const std::shared_ptr<metacg::CgNode> &b) const {
-  return a->getFunctionName() < b->getFunctionName();
-}
-
-bool less_equal<std::shared_ptr<metacg::CgNode>>::operator()(const std::shared_ptr<metacg::CgNode> &a,
-                                                     const std::shared_ptr<metacg::CgNode> &b) const {
-  return a->getFunctionName() <= b->getFunctionName();
-}
-
-bool equal_to<std::shared_ptr<metacg::CgNode>>::operator()(const std::shared_ptr<metacg::CgNode> &a,
-                                                   const std::shared_ptr<metacg::CgNode> &b) const {
-  return a->getFunctionName() == b->getFunctionName();
-}
-
-bool greater<std::shared_ptr<metacg::CgNode>>::operator()(const std::shared_ptr<metacg::CgNode> &a,
-                                                  const std::shared_ptr<metacg::CgNode> &b) const {
-  return a->getFunctionName() > b->getFunctionName();
-}
-
-bool greater_equal<std::shared_ptr<metacg::CgNode>>::operator()(const std::shared_ptr<metacg::CgNode> &a,
-                                                        const std::shared_ptr<metacg::CgNode> &b) const {
-  return a->getFunctionName() >= b->getFunctionName();
-}
-}  // namespace std

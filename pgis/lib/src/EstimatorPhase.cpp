@@ -16,15 +16,16 @@ using namespace pira;
 
 #define NO_DEBUG
 
-EstimatorPhase::EstimatorPhase(std::string name, bool isMetaPhase)
-    : graph(nullptr),  // just so eclipse does not nag
+EstimatorPhase::EstimatorPhase(std::string name,metacg::Callgraph* callgraph, bool isMetaPhase)
+    : graph(callgraph),  // just so eclipse does not nag
       report(),        // initializes all members of report
       name(std::move(name)),
       config(nullptr),
       noReportRequired(isMetaPhase) {}
 
 void EstimatorPhase::generateReport() {
-  for (const auto node : *graph) {
+  for (const auto& elem : graph->getNodes()) {
+    const auto& node= elem.second.get();
     if (pgis::isInstrumented(node)) {
       report.instrumentedNames.insert(node->getFunctionName());
       report.instrumentedNodes.insert(node);
@@ -34,13 +35,16 @@ void EstimatorPhase::generateReport() {
 
     // Edge instrumentation
     // XXX This is used in LI implementation
-    for (CgNodePtr parent : node->getInstrumentedParentEdges()) {
-      report.instrumentedEdges.insert({parent, node});
-    }
+
+    //Fixme: the attribute got removed
+
+    //for (metacg::CgNode* parent : node->getInstrumentedParentEdges()) {
+    //  report.instrumentedEdges.insert({parent, node});
+    //}
   }
 }
 
-void EstimatorPhase::setGraph(Callgraph *graph) { this->graph = graph; }
+void EstimatorPhase::setGraph(Callgraph* graph) { this->graph = graph; }
 
 CgReport EstimatorPhase::getReport() { return this->report; }
 

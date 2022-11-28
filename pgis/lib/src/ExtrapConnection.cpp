@@ -180,7 +180,7 @@ void ExtrapModelProvider::buildModels() {
     //    if (i % configPtr.repetitions == 0) {
     const auto attEpData = [&](auto &cube, auto cnode, auto n) {
       console->debug("Attaching Cube info from file {}", fns.at(i));
-      auto ptd = getOrCreateMD<pira::PiraTwoData>(n, ExtrapConnector({}, {}));
+      auto ptd = n->template getOrCreateMD<pira::PiraTwoData>(ExtrapConnector({}, {}));
       ptd->setExtrapParameters(config.params);
       ptd->addToRuntimeVec(CubeCallgraphBuilder::impl::time(cube, cnode));
     };
@@ -190,7 +190,8 @@ void ExtrapModelProvider::buildModels() {
     //   }
   }
 
-  for (const auto &n : metacg::pgis::PiraMCGProcessor::get()) {
+  for (const auto &elem : metacg::pgis::PiraMCGProcessor::get()) {
+    const auto& n = elem.second.get();
     console->trace("No PiraTwoData meta data");
     if (n->has<pira::PiraTwoData>()) {
       auto ptd = CubeCallgraphBuilder::impl::get<pira::PiraTwoData>(n);

@@ -20,8 +20,8 @@ struct TestHandler : public metacg::io::retriever::MetaDataHandler {
   int i{0};
   const std::string toolName() const override { return "TestMetaHandler"; }
   void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
-  bool handles(const CgNodePtr n) const override { return false; }
-  json value(const CgNodePtr n) const {
+  bool handles(const CgNode *const n) const override { return false; }
+  json value(const CgNode *const n) const override {
     json j;
     j = i;
     return j;
@@ -40,7 +40,8 @@ TEST(MCGWriterTest, EmptyGraph) {
   metacg::loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.resetActiveGraph();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<Callgraph>());
   mcgm.addMetaHandler<TestHandler>();
 
   metacg::io::JsonSink jsSink;
@@ -56,7 +57,7 @@ TEST(MCGWriterTest, OneNodeGraphNoHandlerAttached) {
 
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetActiveGraph();
-  auto mainNode = mcgm.findOrCreateNode("main");
+  auto mainNode = mcgm.getCallgraph()->getOrInsertNode("main");
 
   metacg::io::JsonSink jsSink;
   metacg::io::MCGWriter mcgw(mcgm);

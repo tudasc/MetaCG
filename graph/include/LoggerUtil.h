@@ -1,7 +1,7 @@
 /**
-* File: LoggerUtil.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: LoggerUtil.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #ifndef METACG_GRAPH_LOGGERUTIL_H
 #define METACG_GRAPH_LOGGERUTIL_H
@@ -41,9 +41,9 @@ class MCGLogger {
 
 namespace loggerutil {
 /**
-  * Enables output of logged errors.
-  *
-  * Typically not needed to call explicitly, use the convenience macro instead.
+ * Enables output of logged errors.
+ *
+ * Typically not needed to call explicitly, use the convenience macro instead.
  */
 inline void enableErrors() {
   MCGLogger::instance().getConsole()->set_level(spdlog::level::err);
@@ -77,17 +77,13 @@ inline void getLogger() {
  * Typically not needed to call explicitly, use the convenience macro instead.
  */
 struct ErrorOutEnabler {
-  ErrorOutEnabler() {
-    enableErrors();
-  }
-  ~ErrorOutEnabler() {
-    disableErrors();
-  }
+  ErrorOutEnabler() { enableErrors(); }
+  ~ErrorOutEnabler() { disableErrors(); }
 };
 
 }  // namespace loggerutil
 
-}
+}  // namespace metacg
 
 /**
  * Convenience macro to enable error output for a single scope.

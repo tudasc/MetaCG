@@ -20,7 +20,7 @@
 using namespace metacg;
 using namespace LoadImbalance;
 
-LIEstimatorPhase::LIEstimatorPhase(std::unique_ptr<LIConfig> &&config) : EstimatorPhase("LIEstimatorPhase") {
+LIEstimatorPhase::LIEstimatorPhase(std::unique_ptr<LIConfig> &&config, metacg::Callgraph* cg) : EstimatorPhase("LIEstimatorPhase", cg) {
   this->c = std::move(config);
 
   if (c->metricType == MetricType::Efficiency) {
@@ -34,11 +34,12 @@ LIEstimatorPhase::LIEstimatorPhase(std::unique_ptr<LIConfig> &&config) : Estimat
 
 LIEstimatorPhase::~LIEstimatorPhase() { delete this->metric; }
 
-void LIEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
+void LIEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
   double totalRuntime = mainMethod->get<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds();
 
   // make sure no node is marked for instrumentation yet
-  for (const CgNodePtr &n : *graph) {
+  for (const auto& elem : graph->getNodes()) {
+    const auto& n=elem.second.get();
 //    n->setState(CgNodeState::NONE);
     pgis::resetInstrumentation(n);
   }
@@ -46,11 +47,13 @@ void LIEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   instrument(mainMethod);  // keep main method instrumented at all times
 
   // take notes about imbalanced nodes (for output)
-  std::vector<CgNodePtr> imbalancedNodeSet;
+  std::vector<metacg::CgNode*> imbalancedNodeSet;
 
-  for (const CgNodePtr &n : *graph) {
+  for (const auto& elem : graph->getNodes()) {
+    const auto& n=elem.second.get();
     // only visit nodes with profiling information which have not yet been marked as irrelevant
-    if (n->get<pira::PiraOneData>()->comesFromCube() && !n->get<LIMetaData>()->isFlagged(FlagType::Irrelevant)) {
+
+    if (n->getOrCreateMD<pira::PiraOneData>()->comesFromCube() && ! n->getOrCreateMD<LIMetaData>()->isFlagged(FlagType::Irrelevant)) {
       spdlog::get("console")->debug("LIEstimatorPhase: Processing node " + n->getFunctionName());
 
       // flag node as visited
@@ -117,8 +120,9 @@ void LIEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   // after all nodes have been checked for imbalance and iterative descent has been performed:
   // ContextHandling for imbalanced nodes:
   metacg::analysis::ReachabilityAnalysis ra(graph);
-  for (const CgNodePtr &n : *graph) {
-    if (n->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Imbalanced)) {
+  for (const auto& elem : graph->getNodes()) {
+    const auto& n=elem.second.get();
+    if (n->getOrCreateMD<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Imbalanced)) {
       contextHandling(n, mainMethod, ra);
     }
   }
@@ -134,16 +138,16 @@ void LIEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   spdlog::get("console")->info("Load imbalance summary: " + imbalancedNames.str());
 }
 
-void LIEstimatorPhase::instrumentRelevantChildren(CgNodePtr node, pira::Statements statementThreshold,
+void LIEstimatorPhase::instrumentRelevantChildren(metacg::CgNode* node, pira::Statements statementThreshold,
                                                   std::ostringstream &debugString) {
-  std::queue<CgNodePtr> workQueue;
-  std::set<CgNodePtr> visitedSet;
-  for (CgNodePtr child : node->getChildNodes()) {
+  std::queue<metacg::CgNode*> workQueue;
+  CgNodeRawPtrUSet visitedSet;
+  for (auto& child : graph->getCallees(node)) {
     workQueue.push(child);
   }
 
   while (!workQueue.empty()) {
-    CgNodePtr child = workQueue.front();
+    metacg::CgNode* child = workQueue.front();
     workQueue.pop();
 
     // no double processing of child (or grandchilds)
@@ -155,7 +159,7 @@ void LIEstimatorPhase::instrumentRelevantChildren(CgNodePtr node, pira::Statemen
 
     // process grandchilds (as possible implementations of virtual functions are children of those)
     if (child->get<LoadImbalance::LIMetaData>()->isVirtual()) {
-      for (CgNodePtr gc : child->getChildNodes()) {
+      for (metacg::CgNode* gc : graph->getCallees(child)) {
         workQueue.push(gc);
       }
     }
@@ -176,7 +180,7 @@ void LIEstimatorPhase::instrumentRelevantChildren(CgNodePtr node, pira::Statemen
   }
 }
 
-void LoadImbalance::LIEstimatorPhase::contextHandling(CgNodePtr n, CgNodePtr mainNode, metacg::analysis::ReachabilityAnalysis &ra) {
+void LoadImbalance::LIEstimatorPhase::contextHandling(metacg::CgNode* n, metacg::CgNode* mainNode, metacg::analysis::ReachabilityAnalysis &ra) {
   if (c->contextStrategy == ContextStrategy::None) {
     return;
   }
@@ -186,27 +190,27 @@ void LoadImbalance::LIEstimatorPhase::contextHandling(CgNodePtr n, CgNodePtr mai
     return;
   }
 
-  CgNodePtrSet nodesOnPathToMain;
+  CgNodeRawPtrUSet nodesOnPathToMain;
 
-  auto nodesToMain = CgHelper::allNodesToMain(n, mainNode, ra);
+  auto nodesToMain = CgHelper::allNodesToMain(n, mainNode,graph, ra);
   for (auto ntm : nodesToMain) {
     nodesOnPathToMain.insert(ntm);
   }
 
-  CgNodePtrSet relevantPaths = nodesOnPathToMain;
+  CgNodeRawPtrUSet relevantPaths = nodesOnPathToMain;
 
   if (c->contextStrategy == ContextStrategy::MajorPathsToMain ||
       c->contextStrategy == ContextStrategy::MajorParentSteps) {
-    for (CgNodePtr x : nodesOnPathToMain) {
+    for (metacg::CgNode* x : nodesOnPathToMain) {
       if (!x->get<LIMetaData>()->isFlagged(FlagType::Visited)) {
         relevantPaths.erase(x);
       }
     }
   }
 
-  CgNodePtrSet toInstrument = relevantPaths;
+  CgNodeRawPtrUSet toInstrument = relevantPaths;
   if (c->contextStrategy == ContextStrategy::MajorParentSteps) {
-    for (CgNodePtr x : relevantPaths) {
+    for (metacg::CgNode* x : relevantPaths) {
       if (!reachableInNSteps(x, n, c->contextStepCount)) {
         toInstrument.erase(x);
       }
@@ -214,18 +218,18 @@ void LoadImbalance::LIEstimatorPhase::contextHandling(CgNodePtr n, CgNodePtr mai
   }
 
   // apply instrumentation
-  for (CgNodePtr x : toInstrument) {
+  for (metacg::CgNode* x : toInstrument) {
     instrument(x);
   }
 }
 
-bool LIEstimatorPhase::reachableInNSteps(CgNodePtr start, CgNodePtr end, int steps) {
+bool LIEstimatorPhase::reachableInNSteps(metacg::CgNode* start, metacg::CgNode* end, int steps) {
   struct Task {
-    CgNodePtr node;
+    CgNode* node;
     int remainingSteps;
   };
 
-  CgNodePtrSet visitedSet;
+  CgNodeRawPtrUSet visitedSet;
   std::queue<Task> taskQueue;
   taskQueue.push({start, steps});
 
@@ -246,7 +250,7 @@ bool LIEstimatorPhase::reachableInNSteps(CgNodePtr start, CgNodePtr end, int ste
 
     // go deeper
     if (currentTask.remainingSteps > 0) {
-      for (CgNodePtr child : currentTask.node->getChildNodes()) {
+      for (CgNode* child : graph->getCallees(currentTask.node)) {
         taskQueue.push({child, currentTask.remainingSteps - 1});
       }
     }
@@ -256,21 +260,21 @@ bool LIEstimatorPhase::reachableInNSteps(CgNodePtr start, CgNodePtr end, int ste
   return false;
 }
 
-void LIEstimatorPhase::instrument(CgNodePtr node) { pgis::instrumentNode(node); }
+void LIEstimatorPhase::instrument(CgNode* node) { pgis::instrumentNode(node); }
 //node->setState(CgNodeState::INSTRUMENT_WITNESS); }
 
-void LIEstimatorPhase::findSyncPoints(CgNodePtr node) {
+void LIEstimatorPhase::findSyncPoints(CgNode* node) {
   std::ostringstream debugString;
 
   debugString << "LI Detection: Find synchronization points for node " << node->getFunctionName() << "(";
 
   // process all parents which are balanced + visisted
-  for (CgNodePtr parent : node->getParentNodes()) {
+  for (CgNode* parent : graph->getCallers(node)) {
     if (!parent->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Imbalanced) &&
         parent->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Visited)) {
       // instrument all descendant synchronization routines
       instrumentByPattern(
-          parent, [](CgNodePtr nodeInQuestion) { return nodeInQuestion->getFunctionName().rfind("MPI_", 0) == 0; },
+          parent, [](CgNode* nodeInQuestion) { return nodeInQuestion->getFunctionName().rfind("MPI_", 0) == 0; },
           debugString);
     }
   }
@@ -278,25 +282,26 @@ void LIEstimatorPhase::findSyncPoints(CgNodePtr node) {
   spdlog::get("console")->debug(debugString.str());
 }
 
-void LIEstimatorPhase::instrumentByPattern(CgNodePtr startNode, std::function<bool(CgNodePtr)> pattern,
+void LIEstimatorPhase::instrumentByPattern(CgNode* startNode, std::function<bool(CgNode*)> pattern,
                                            std::ostringstream &debugString) {
-  std::queue<CgNodePtr> workQueue;
-  CgNodePtrSet alreadyVisited;
+  std::queue<CgNode*> workQueue;
+  CgNodeRawPtrUSet alreadyVisited;
 
   workQueue.push(startNode);
 
   while (!workQueue.empty()) {
-    CgNodePtr node = workQueue.front();
+    CgNode* node = workQueue.front();
     workQueue.pop();
 
     // do not process a node twice
     if (alreadyVisited.find(node) == alreadyVisited.end()) {
       alreadyVisited.insert(node);
-      for (CgNodePtr child : node->getChildNodes()) {
+      for (CgNode* child : graph->getCallees(node)) {
         workQueue.push(child);
         if (pattern(child)) {
           // mark for call-site instrumentation
-          child->instrumentFromParent(node);
+          //Fixme this is probably important, and should be moved to metadata
+          //child->instrumentFromParent(node);
           debugString << " " << node->getFunctionName() << "->" << child->getFunctionName();
         }
       }

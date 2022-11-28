@@ -93,8 +93,11 @@ class FilePropertyCollector : public MetaCollector {
     return result;
   }
 
+
+
  public:
   FilePropertyCollector() : MetaCollector("fileProperties") {}
+  virtual ~FilePropertyCollector()=default;
 };
 
 class CodeStatisticsCollector : public MetaCollector {
@@ -112,6 +115,7 @@ class CodeStatisticsCollector : public MetaCollector {
 
  public:
   CodeStatisticsCollector() : MetaCollector("codeStatistics") {}
+  virtual ~CodeStatisticsCollector()=default;
 };
 
 class MallocVariableCollector : public MetaCollector {
@@ -225,6 +229,7 @@ class MallocVariableCollector : public MetaCollector {
 
  public:
   MallocVariableCollector() : MetaCollector("mallocCollector") {}
+  virtual ~MallocVariableCollector()=default;
 };
 
 class UniqueTypeCollector : public MetaCollector {

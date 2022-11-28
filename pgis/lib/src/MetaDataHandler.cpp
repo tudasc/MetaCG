@@ -41,7 +41,7 @@ inline void to_json(json &j, const pira::PiraTwoData &data) {
   spdlog::get("console")->debug("PiraTwoData to_json:\n{}", j.dump());
 }
 
-json BaseProfileDataHandler::value(const CgNodePtr n) const {
+json BaseProfileDataHandler::value(const metacg::CgNode* n) const {
   json j;
   to_json(j, *(n->get<pira::BaseProfileData>()));
   return j;
@@ -58,8 +58,8 @@ void BaseProfileDataHandler::read([[maybe_unused]] const json &j, const std::str
   auto numCalls = jIt["numCalls"].get<unsigned long long int>();
   auto rtInSeconds = jIt["timeInSeconds"].get<double>();
   auto inclRtInSeconds = jIt["inclusiveRtInSeconds"].get<double>();
-  auto node = mcgm->findOrCreateNode(functionName);
-  auto bpd = getOrCreateMD<pira::BaseProfileData>(node);
+  auto node = mcgm->getCallgraph()->getOrInsertNode(functionName);
+  auto bpd = node->getOrCreateMD<pira::BaseProfileData>();
   bpd->setNumberOfCalls(numCalls);
   bpd->setRuntimeInSeconds(rtInSeconds);
   bpd->setInclusiveRuntimeInSeconds(inclRtInSeconds);
@@ -74,12 +74,12 @@ void PiraOneDataRetriever::read([[maybe_unused]] const json &j, const std::strin
   }
   auto numStmts = jIt.get<long long int>();
   spdlog::get("console")->debug("Read {} stmts from file", numStmts);
-  auto node = mcgm->findOrCreateNode(functionName);
-  auto pod = getOrCreateMD<pira::PiraOneData>(node);
+  auto node = mcgm->getCallgraph()->getOrInsertNode(functionName);
+  auto pod = node->getOrCreateMD<pira::PiraOneData>();
   pod->setNumberOfStatements(numStmts);
 }
 
-bool PiraTwoDataRetriever::handles(const CgNodePtr n) const {
+bool PiraTwoDataRetriever::handles(const metacg::CgNode* n) const {
   spdlog::get("console")->trace("PiraTwoRetriever:handles {}", n->getFunctionName());
   // Keep the check and get semantics here
   auto [has, o] = n->checkAndGet<pira::PiraTwoData>();
@@ -97,7 +97,7 @@ bool PiraTwoDataRetriever::handles(const CgNodePtr n) const {
   return false;
 }
 
-json PiraTwoDataRetriever::value(const CgNodePtr n) const {
+json PiraTwoDataRetriever::value(const metacg::CgNode* n) const {
   nlohmann::json j;
   to_json(j, *(n->get<pira::PiraTwoData>()));
 
@@ -115,13 +115,13 @@ void FilePropertyHandler::read(const json &j, const std::string &functionName) {
   }
   std::string fileOrigin = jIt["origin"].get<std::string>();
   bool isFromSystemInclude = jIt["systemInclude"].get<bool>();
-  auto node = mcgm->findOrCreateNode(functionName);
-  auto md = getOrCreateMD<pira::FilePropertiesMetaData>(node);
+  auto node = mcgm->getCallgraph()->getOrInsertNode(functionName);
+  auto md = node->getOrCreateMD<pira::FilePropertiesMetaData>();
   md->origin = fileOrigin;
   md->fromSystemInclude = isFromSystemInclude;
 }
 
-json FilePropertyHandler::value(const CgNodePtr n) const {
+json FilePropertyHandler::value(const metacg::CgNode* n) const {
   json j;
   auto fpData = n->get<pira::FilePropertiesMetaData>();
   j["origin"] = fpData->origin;
@@ -135,12 +135,12 @@ void CodeStatisticsHandler::read(const json &j, const std::string &functionName)
     spdlog::get("console")->trace("Could not retrieve meta data for {}", toolname);
   }
   int numVars = jIt["numVars"].get<int>();
-  auto node = mcgm->findOrCreateNode(functionName);
-  auto md = getOrCreateMD<pira::CodeStatisticsMetaData>(node);
+  auto node = mcgm->getCallgraph()->getOrInsertNode(functionName);
+  auto md = node->getOrCreateMD<pira::CodeStatisticsMetaData>();
   md->numVars = numVars;
 }
 
-json CodeStatisticsHandler::value(const CgNodePtr n) const {
+json CodeStatisticsHandler::value(const metacg::CgNode* n) const {
   json j;
   auto csData = n->get<pira::CodeStatisticsMetaData>();
   j["numVars"] = csData->numVars;
@@ -156,15 +156,15 @@ void NumOperationsHandler::read(const json &j, const std::string &functionName) 
   int numberOfFloatOps = jIt["numberOfFloatOps"].get<int>();
   int numberOfControlFlowOps = jIt["numberOfControlFlowOps"].get<int>();
   int numberOfMemoryAccesses = jIt["numberOfMemoryAccesses"].get<int>();
-  auto node = mcgm->findOrCreateNode(functionName);
-  auto md = getOrCreateMD<pira::NumOperationsMetaData>(node);
+  auto node = mcgm->getCallgraph()->getOrInsertNode(functionName);
+  auto md = node->getOrCreateMD<pira::NumOperationsMetaData>();
   md->numberOfIntOps = numberOfIntOps;
   md->numberOfFloatOps = numberOfFloatOps;
   md->numberOfControlFlowOps = numberOfControlFlowOps;
   md->numberOfMemoryAccesses = numberOfMemoryAccesses;
 }
 
-json NumOperationsHandler::value(const CgNodePtr n) const {
+json NumOperationsHandler::value(const metacg::CgNode* n) const {
   json j;
   auto noData = n->get<pira::NumOperationsMetaData>();
   j["numberOfIntOps"] = noData->numberOfIntOps;
@@ -180,12 +180,12 @@ void NumConditionalBranchHandler::read(const json &j, const std::string &functio
     spdlog::get("console")->trace("Could not retrieve meta data for {}", toolname);
   }
   int numberOfConditionalBranches = jIt.get<int>();
-  auto node = mcgm->findOrCreateNode(functionName);
-  auto md = getOrCreateMD<pira::NumConditionalBranchMetaData>(node);
+  auto node = mcgm->getCallgraph()->getOrInsertNode(functionName);
+  auto md = node->getOrCreateMD<pira::NumConditionalBranchMetaData>();
   md->numConditionalBranches = numberOfConditionalBranches;
 }
 
-json NumConditionalBranchHandler::value(const CgNodePtr n) const {
+json NumConditionalBranchHandler::value(const metacg::CgNode* n) const {
   json j;
   auto ncData = n->get<pira::NumConditionalBranchMetaData>();
   j["numConditionalBranches"] = ncData->numConditionalBranches;
@@ -198,12 +198,12 @@ void LoopDepthHandler::read(const json &j, const std::string &functionName) {
     spdlog::get("console")->trace("Could not retrieve meta data for {}", toolname);
   }
   int loopDepth = jIt.get<int>();
-  auto node = mcgm->findOrCreateNode(functionName);
-  auto md = getOrCreateMD<pira::LoopDepthMetaData>(node);
+  auto node = mcgm->getCallgraph()->getOrInsertNode(functionName);
+  auto md = node->getOrCreateMD<pira::LoopDepthMetaData>();
   md->loopDepth = loopDepth;
 }
 
-json LoopDepthHandler::value(const CgNodePtr n) const {
+json LoopDepthHandler::value(const metacg::CgNode* n) const {
   json j;
   auto ldData = n->get<pira::LoopDepthMetaData>();
   j["loopDepth"] = ldData->loopDepth;
@@ -216,12 +216,12 @@ void GlobalLoopDepthHandler::read(const json &j, const std::string &functionName
     spdlog::get("console")->trace("Could not retrieve meta data for {}", toolname);
   }
   int globalLoopDepth = jIt.get<int>();
-  auto node = mcgm->findOrCreateNode(functionName);
-  auto md = getOrCreateMD<pira::GlobalLoopDepthMetaData>(node);
+  auto node = mcgm->getCallgraph()->getOrInsertNode(functionName);
+  auto md = node->getOrCreateMD<pira::GlobalLoopDepthMetaData>();
   md->globalLoopDepth = globalLoopDepth;
 }
 
-json GlobalLoopDepthHandler::value(const CgNodePtr n) const {
+json GlobalLoopDepthHandler::value(const metacg::CgNode* n) const {
   json j;
   auto gldData = n->get<pira::GlobalLoopDepthMetaData>();
   j["globalLoopDepth"] = gldData->globalLoopDepth;

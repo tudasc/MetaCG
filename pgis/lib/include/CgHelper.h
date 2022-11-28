@@ -64,48 +64,48 @@ struct Config {
 
 namespace CgHelper {
 
-bool isConjunction(CgNodePtr node);
+bool isConjunction(const metacg::CgNode* node, const metacg::Callgraph* const graph);
 
-CgNodePtrSet getInstrumentationPath(CgNodePtr start);
+CgNodeRawPtrUSet getInstrumentationPath(metacg::CgNode* start, const metacg::Callgraph* const graph);
 
 // Graph Stats
-bool isOnCycle(CgNodePtr node);
+bool isOnCycle(metacg::CgNode* node, const metacg::Callgraph* const graph);
 
 /**
  * Calculates the inclusive statement count for every node which is reachable from mainNode and saves in the node field
  */
-void calculateInclusiveStatementCounts(CgNodePtr mainNode);
+void calculateInclusiveStatementCounts(metacg::CgNode* mainNode, const metacg::Callgraph* const graph);
 
-CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,
-                                     const std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> &init, metacg::analysis::ReachabilityAnalysis &ra);
-CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode, metacg::analysis::ReachabilityAnalysis &ra);
+CgNodeRawPtrUSet allNodesToMain(metacg::CgNode* startNode, metacg::CgNode* mainNode, const metacg::Callgraph* const graph,
+                                     const std::unordered_map<metacg::CgNode*, CgNodeRawPtrUSet> &init, metacg::analysis::ReachabilityAnalysis &ra);
+CgNodeRawPtrUSet allNodesToMain(metacg::CgNode* startNode, metacg::CgNode* mainNode, const metacg::Callgraph* const graph, metacg::analysis::ReachabilityAnalysis &ra);
 
-CgNodePtrSet getDescendants(CgNodePtr child);
-CgNodePtrSet getAncestors(CgNodePtr child);
+CgNodeRawPtrUSet getDescendants(metacg::CgNode* child, const metacg::Callgraph* const graph);
+CgNodeRawPtrUSet getAncestors(metacg::CgNode* child, const metacg::Callgraph* const graph);
 
 double calcRuntimeThreshold(const metacg::Callgraph &cg, bool useLongAsRef);
 
-inline CgNodePtrSet setIntersect(const CgNodePtrSet &a, const CgNodePtrSet &b) {
-  CgNodePtrSet intersect;
+inline CgNodeRawPtrUSet setIntersect(const CgNodeRawPtrUSet &a, const CgNodeRawPtrUSet &b) {
+  CgNodeRawPtrUSet intersect;
 
   std::set_intersection(a.begin(), a.end(), b.begin(), b.end(), std::inserter(intersect, intersect.begin()));
 
   return intersect;
 }
 
-inline CgNodePtrSet setDifference(const CgNodePtrSet &a, const CgNodePtrSet &b) {
-  CgNodePtrSet difference;
+inline CgNodeRawPtrUSet setDifference(const CgNodeRawPtrUSet &a, const CgNodeRawPtrUSet &b) {
+  CgNodeRawPtrUSet difference;
 
   std::set_difference(a.begin(), a.end(), b.begin(), b.end(), std::inserter(difference, difference.begin()));
 
   return difference;
 }
 
-inline bool isSubsetOf(const CgNodePtrSet &smallSet, const CgNodePtrSet &largeSet) {
+inline bool isSubsetOf(const CgNodeRawPtrUSet &smallSet, const CgNodeRawPtrUSet &largeSet) {
   return setDifference(smallSet, largeSet) == smallSet;
 }
 
-inline bool intersects(const CgNodePtrSet &a, const CgNodePtrSet &b) { return !setIntersect(a, b).empty(); }
+inline bool intersects(const CgNodeRawPtrUSet &a, const CgNodeRawPtrUSet &b) { return !setIntersect(a, b).empty(); }
 }  // namespace CgHelper
 
 
@@ -116,8 +116,9 @@ using Callgraph = metacg::Callgraph;
 
 template <typename MD, typename... Args>
 void attachMetaDataToGraph(Callgraph *cg, const Args &... args) {
-  for (auto n : *cg) {
-    if (!getOrCreateMD<MD>(n, args...)) {
+  for (const auto& n : cg->getNodes()) {
+
+    if (! n.second->template getOrCreateMD<MD>(args...)) {
       assert(false && MD::key() != "" && "Could not create MetaData with key");
     }
   }

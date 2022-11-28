@@ -36,24 +36,27 @@ using json = nlohmann::json;
  */
 struct MetaDataHandler {
   /** Invoked to decide if meta data should be output into the json file for the node */
-  [[nodiscard]] virtual bool handles(const CgNodePtr n) const = 0;
+  [[nodiscard]] virtual bool handles(const CgNode *const n) const = 0;
 
   /** Invoked to find or create meta data entry in json */
   [[nodiscard]] virtual const std::string toolName() const = 0;
 
   /** Creates or returns the object to attach as meta information */
-  virtual json value(const CgNodePtr n) const { return "Should not have happened"; }
+  virtual json value(const CgNode *const n) const = 0;
 
   /** Reads the meta data from the json file and attaches it to the graph nodes */
   virtual void read([[maybe_unused]] const json &j, const std::string &functionName) = 0;
 
-  /** Call back automatically invoked when adding to PiraMCGProcessor */
-  void registerMCGManager(metacg::graph::MCGManager *manager) { mcgm = manager; }
+  virtual ~MetaDataHandler() = default;
 
+  /** Call back automatically invoked when adding to PiraMCGProcessor */
+  virtual void registerMCGManager(metacg::graph::MCGManager *manager) final { mcgm = manager; }
+
+ protected:
   /** Reference to MCGManager (no owned) to interact while constructing */
-  metacg::graph::MCGManager *mcgm;
+  metacg::graph::MCGManager *mcgm = nullptr;
 };
-}
+}  // namespace io::retriever
 
 }  // namespace metacg
-#endif  // METACG_METADATA_H
+#endif  // METACG_GRAPH_METADATA_H

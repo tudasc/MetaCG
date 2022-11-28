@@ -9,9 +9,10 @@
 
 //// REMOVE UNRELATED NODES ESTIMATOR PHASE
 
-RemoveUnrelatedNodesEstimatorPhase::RemoveUnrelatedNodesEstimatorPhase(bool onlyRemoveUnrelatedNodes,
+RemoveUnrelatedNodesEstimatorPhase::RemoveUnrelatedNodesEstimatorPhase(metacg::Callgraph *cg,
+                                                                       bool onlyRemoveUnrelatedNodes,
                                                                        bool aggressiveReduction)
-    : EstimatorPhase("RemoveUnrelated", true),
+    : EstimatorPhase("RemoveUnrelated", cg, true),
       numUnconnectedRemoved(0),
       numLeafsRemoved(0),
       numChainsRemoved(0),
@@ -21,23 +22,23 @@ RemoveUnrelatedNodesEstimatorPhase::RemoveUnrelatedNodesEstimatorPhase(bool only
 
 RemoveUnrelatedNodesEstimatorPhase::~RemoveUnrelatedNodesEstimatorPhase() { nodesToRemove.clear(); }
 
-void RemoveUnrelatedNodesEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
+void RemoveUnrelatedNodesEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
   /* remove unrelated nodes (not reachable from main) */
-  CgNodePtrSet nodesReachableFromMain = CgHelper::getDescendants(mainMethod);
+  CgNodeRawPtrUSet nodesReachableFromMain = CgHelper::getDescendants(mainMethod, graph);
 
   for (auto node : nodesReachableFromMain) {
-    if (graph->getGraph().find(node) != graph->getGraph().end()) {
-//      node->setReachable();
+    if (graph->hasNode(node)) {
+      //      node->setReachable();
     }
   }
 }
 
-void RemoveUnrelatedNodesEstimatorPhase::checkLeafNodeForRemoval(CgNodePtr potentialLeaf) {
-  if (CgHelper::isConjunction(potentialLeaf)) {
+void RemoveUnrelatedNodesEstimatorPhase::checkLeafNodeForRemoval(metacg::CgNode *potentialLeaf) {
+  if (CgHelper::isConjunction(potentialLeaf, graph)) {
     return;  // conjunctions are never removed
   }
 
-  for (auto child : potentialLeaf->getChildNodes()) {
+  for (auto child : graph->getCallees(potentialLeaf)) {
     if (nodesToRemove.find(child) == nodesToRemove.end()) {
       return;
     }
@@ -46,7 +47,7 @@ void RemoveUnrelatedNodesEstimatorPhase::checkLeafNodeForRemoval(CgNodePtr poten
   nodesToRemove.insert(potentialLeaf);
   numLeafsRemoved++;
 
-  for (auto parentNode : potentialLeaf->getParentNodes()) {
+  for (auto parentNode : graph->getCallers(potentialLeaf)) {
     checkLeafNodeForRemoval(parentNode);
   }
 }
@@ -64,7 +65,7 @@ void RemoveUnrelatedNodesEstimatorPhase::printAdditionalReport() {
 
 //// WL INSTR ESTIMATOR PHASE
 
-WLInstrEstimatorPhase::WLInstrEstimatorPhase(std::string wlFilePath) : EstimatorPhase("WLInstr") {
+WLInstrEstimatorPhase::WLInstrEstimatorPhase(const std::string &wlFilePath) : EstimatorPhase("WLInstr", nullptr) {
   std::ifstream ifStream(wlFilePath);
   if (!ifStream.good()) {
     std::cerr << "Error: can not find whitelist at .. " << wlFilePath << std::endl;
@@ -72,13 +73,14 @@ WLInstrEstimatorPhase::WLInstrEstimatorPhase(std::string wlFilePath) : Estimator
 
   std::string buff;
   while (getline(ifStream, buff)) {
-    whiteList.insert(buff);
+    whiteList.insert(std::hash<std::string>()(buff));
   }
 }
 
-void WLInstrEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
-  for (auto node : (*graph)) {
-    if (whiteList.find(node->getFunctionName()) != whiteList.end()) {
+void WLInstrEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
+  for (const auto &elem : graph->getNodes()) {
+    const auto &node = elem.second.get();
+    if (whiteList.find(node->getId()) != whiteList.end()) {
       //      node->setState(CgNodeState::INSTRUMENT_WITNESS);
       pgis::instrumentNode(node);
     }

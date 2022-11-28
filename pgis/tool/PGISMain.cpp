@@ -13,12 +13,12 @@
 #include "MCGReader.h"
 #include "MCGWriter.h"
 
-#include "PiraMCGProcessor.h"
-#include "ErrorCodes.h"
 #include "DotIO.h"
-#include "LegacyMCGReader.h"
+#include "ErrorCodes.h"
 #include "ExtrapEstimatorPhase.h"
 #include "IPCGEstimatorPhase.h"
+#include "LegacyMCGReader.h"
+#include "PiraMCGProcessor.h"
 #include <loadImbalance/LIEstimatorPhase.h>
 #include <loadImbalance/LIRetriever.h>
 #include <loadImbalance/OnlyMainEstimatorPhase.h>
@@ -43,44 +43,43 @@ using namespace ::pgis::options;
 
 void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &cg, Config *c, bool isIPCG, float runtimeThreshold,
                              bool keepNotReachable) {
-
-  auto statEstimator = new StatisticsEstimatorPhase(false);
+  auto statEstimator = new StatisticsEstimatorPhase(false,cg.getCallgraph());
   if (!keepNotReachable) {
-    cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(true, false));  // remove unrelated
+    cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(cg.getCallgraph(),true, false));  // remove unrelated
   }
   cg.registerEstimatorPhase(statEstimator);
 
   // Actually do the selection
   if (!isIPCG) {
     metacg::MCGLogger::instance().getConsole()->info("New runtime threshold for profiling: ${}$", runtimeThreshold);
-    cg.registerEstimatorPhase(new RuntimeEstimatorPhase(runtimeThreshold));
+    cg.registerEstimatorPhase(new RuntimeEstimatorPhase(cg.getCallgraph(),runtimeThreshold));
   } else {
     HeuristicSelection::HeuristicSelectionEnum heuristicMode = pgis::config::getSelectedHeuristic();
     switch (heuristicMode) {
       case HeuristicSelection::HeuristicSelectionEnum::STATEMENTS: {
         const int nStmt = 2000;
         metacg::MCGLogger::instance().getConsole()->info("New runtime threshold for profiling: ${}$", nStmt);
-        cg.registerEstimatorPhase(new StatementCountEstimatorPhase(nStmt, true, statEstimator));
+        cg.registerEstimatorPhase(new StatementCountEstimatorPhase(nStmt,   cg.getCallgraph(), true, statEstimator));
       } break;
       case HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES:
-        cg.registerEstimatorPhase(new ConditionalBranchesEstimatorPhase(0, statEstimator));
+        cg.registerEstimatorPhase(new ConditionalBranchesEstimatorPhase(0, cg.getCallgraph(), statEstimator));
         break;
       case HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES_REVERSE:
-        cg.registerEstimatorPhase(new ConditionalBranchesReverseEstimatorPhase(0, statEstimator));
+        cg.registerEstimatorPhase(new ConditionalBranchesReverseEstimatorPhase(0, cg.getCallgraph(), statEstimator));
         break;
       case HeuristicSelection::HeuristicSelectionEnum::FP_MEM_OPS:
-        cg.registerEstimatorPhase(new FPAndMemOpsEstimatorPhase(0, statEstimator));
+        cg.registerEstimatorPhase(new FPAndMemOpsEstimatorPhase(0, cg.getCallgraph(), statEstimator));
         break;
       case HeuristicSelection::HeuristicSelectionEnum::LOOPDEPTH:
-        cg.registerEstimatorPhase(new LoopDepthEstimatorPhase(0, statEstimator));
+        cg.registerEstimatorPhase(new LoopDepthEstimatorPhase(0, cg.getCallgraph(), statEstimator));
         break;
       case HeuristicSelection::HeuristicSelectionEnum::GlOBAL_LOOPDEPTH:
-        cg.registerEstimatorPhase(new GlobalLoopDepthEstimatorPhase(0, statEstimator));
+        cg.registerEstimatorPhase(new GlobalLoopDepthEstimatorPhase(0, cg.getCallgraph(), statEstimator));
         break;
     }
   }
 
-  cg.registerEstimatorPhase(new StatisticsEstimatorPhase(true));
+  cg.registerEstimatorPhase(new StatisticsEstimatorPhase(true, cg.getCallgraph()));
 }
 
 bool stringEndsWith(const std::string &s, const std::string &suffix) {
@@ -172,7 +171,6 @@ int main(int argc, char **argv) {
   // checkAndSet<std::string>("whitelist", result, c.whitelist);
 
   checkAndSet<std::string>("out-file", result, c.outputFile);
-
   checkAndSet<bool>(staticSelection.cliName, result, applyStaticFilter);
   checkAndSet<bool>(modelFilter.cliName, result, applyModelFilter);
   checkAndSet<bool>(runtimeOnly.cliName, result, extrapRuntimeOnly);
@@ -298,7 +296,7 @@ int main(int argc, char **argv) {
     }
 
     console->info("Read MetaCG with {} nodes.", mcgm.getCallgraph()->size());
-    cg.setCG(*mcgm.getCallgraph());
+    cg.setCG(mcgm.getCallgraph());
 
     if (applyStaticFilter) {
       // load imbalance detection
@@ -347,16 +345,25 @@ int main(int argc, char **argv) {
             "Provide configuration for load imbalance detection. Refer to PIRA's README for further details.");
         return pgis::ErroneousHeuristicsConfiguration;
       }
-      cg.registerEstimatorPhase(
-          new LoadImbalance::LIEstimatorPhase(std::move(pConfig.getLIConfig())));  // attention: moves out liConfig!
+
+      cg.registerEstimatorPhase(new LoadImbalance::LIEstimatorPhase(std::move(pConfig.getLIConfig()),cg.getCallgraph())); // attention: moves out liConfig!
 
       cg.applyRegisteredPhases();
 
       // should be set for working load imbalance detection
       if (result.count("export")) {
-        console->info("Exporting load imbalance data to IPCG file.");
-        metacg::io::annotateJSON(cg.getCallgraph(&metacg::pgis::PiraMCGProcessor::get()), mcgFullPath,
-                                 LoadImbalance::LIRetriever());
+        console->info("Exporting load imbalance data to IPCG file {}.", mcgFullPath);
+        console->warn(
+            "The old annotate mechanism has been removed and this functionality has not been tested with MCGWriter.");
+
+        metacg::io::MCGWriter mcgWriter{mcgm};
+        metacg::io::JsonSink jsonSink;
+        mcgWriter.write(jsonSink);
+        {
+          std::ofstream out(mcgFullPath);
+          out << jsonSink.getJson().dump(4) << std::endl;
+        }
+
       } else {
         console->warn("--export flag is highly recommended for load imbalance detection");
       }
@@ -382,29 +389,37 @@ int main(int argc, char **argv) {
 
     if (applyModelFilter) {
       console->info("Applying model filter");
-      cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueFilter(true, extrapRuntimeOnly));
+      cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueFilter(cg.getCallgraph(),true, extrapRuntimeOnly));
     } else {
       console->info("Applying model expander");
       if (!keepNotReachable) {
-        cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(true, false));  // remove unrelated
+        cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(cg.getCallgraph(),true, false));  // remove unrelated
       }
-      cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(true, extrapRuntimeOnly));
+      cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(cg.getCallgraph(),true, extrapRuntimeOnly));
     }
     // XXX Should this be done after filter / expander were run? Currently we do this after model creation, yet,
     // *before* running the estimator phase
     if (result.count("export")) {
       console->info("Exporting to IPCG file.");
-      metacg::io::annotateJSON(cg.getCallgraph(&metacg::pgis::PiraMCGProcessor::get()), mcgFullPath,
-                               metacg::io::retriever::PiraTwoDataRetriever());
+      console->warn(
+          "The old annotate mechanism has been removed and this functionality has not been tested with MCGWriter.");
+
+      metacg::io::MCGWriter mcgWriter{mcgm};
+      metacg::io::JsonSink jsonSink;
+      mcgWriter.write(jsonSink);
+      {
+        std::ofstream out(mcgFullPath);
+        out << jsonSink.getJson().dump(4) << std::endl;
+      }
     }
   }
 
   if (enableDotExport.mode == DotExportSelection::DotExportEnum::BEGIN ||
       enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
-    metacg::io::dot::DotGenerator dotGenerator(&cg.getCallgraph(&cg));
+    metacg::io::dot::DotGenerator dotGenerator(cg.getCallgraph(&cg));
     dotGenerator.generate();
     dotGenerator.output({"./DotOutput", "PGIS-Dot", "begin"});
-//    cg.printDOT("begin");
+    //    cg.printDOT("begin");
   }
   if (cg.hasPassesRegistered()) {
     if (enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
@@ -415,10 +430,10 @@ int main(int argc, char **argv) {
   }
   if (enableDotExport.mode == DotExportSelection::DotExportEnum::END ||
       enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
-    metacg::io::dot::DotGenerator dotGenerator(&cg.getCallgraph(&cg));
+    metacg::io::dot::DotGenerator dotGenerator(cg.getCallgraph(&cg));
     dotGenerator.generate();
     dotGenerator.output({"./DotOutput", "PGIS-Dot", "end"});
-//    cg.printDOT("end");
+    //    cg.printDOT("end");
   }
 
   // Example use of MetaCG writer

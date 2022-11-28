@@ -11,6 +11,8 @@ struct MetaInformation {
   virtual void applyOnJSON(nlohmann::json &json, const std::string &functionName, const std::string &metaFieldName,
                            int mcgFormatVersion) = 0;
   virtual bool equals(MetaInformation *mi) = 0;
+
+  virtual ~MetaInformation() = default;
 };
 
 struct NumberOfStatementsResult final : public MetaInformation {

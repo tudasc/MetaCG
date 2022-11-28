@@ -6,8 +6,9 @@
 #include "MCGReader.h"
 #include "MCGBaseInfo.h"
 #include "Util.h"
-
 #include "Timing.h"
+
+#include <queue>
 
 namespace metacg {
 namespace io {
@@ -34,16 +35,16 @@ void MetaCGReader::buildGraph(metacg::graph::MCGManager &cgManager, MetaCGReader
   // Register nodes in the actual graph
   for (const auto &[k, fi] : functions) {
     console->trace("Inserting MetaCG node for function {}", k);
-    auto node = cgManager.findOrCreateNode(k);  // node pointer currently unused
+    auto node = cgManager.getCallgraph()->getOrInsertNode(k);  // node pointer currently unused
     node->setIsVirtual(fi.isVirtual);
     node->setHasBody(fi.hasBody);
     for (const auto &c : fi.callees) {
-      auto calleeNode = cgManager.findOrCreateNode(c);
-      cgManager.addEdge(node, calleeNode);
+      auto calleeNode = cgManager.getCallgraph()->getOrInsertNode(c);
+      cgManager.getCallgraph()->addEdge(node, calleeNode);
       auto &potTargets = potentialTargets[c];
       for (const auto &pt : potTargets) {
-        auto potentialCallee = cgManager.findOrCreateNode(pt);
-        cgManager.addEdge(node, potentialCallee);
+        auto potentialCallee = cgManager.getCallgraph()->getOrInsertNode(pt);
+        cgManager.getCallgraph()->addEdge(node, potentialCallee);
       }
     }
   }
@@ -130,8 +131,8 @@ void VersionTwoMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
   auto generatorVersion = mcgInfo["generator"]["version"].get<std::string>();
   MCGGeneratorVersionInfo genVersionInfo{generatorName, metacg::util::getMajorVersionFromString(generatorVersion),
                                          metacg::util::getMinorVersionFromString(generatorVersion), ""};
-  console->info("The metacg (version {}) file was generated with {} (version: {})", mcgVersion,
-                               generatorName, generatorVersion);
+  console->info("The metacg (version {}) file was generated with {} (version: {})", mcgVersion, generatorName,
+                generatorVersion);
   {  // raii
     std::string metaReadersStr;
     int i = 1;

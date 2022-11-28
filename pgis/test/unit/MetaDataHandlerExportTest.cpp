@@ -23,8 +23,8 @@ struct TestHandler : public metacg::io::retriever::MetaDataHandler {
  int i{0};
  const std::string toolName() const override { return "TestMetaHandler"; }
  void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
- bool handles(const CgNodePtr n) const override { return false; }
- json value(const CgNodePtr n) const {
+ bool handles(const metacg::CgNode* n) const override { return false; }
+ json value(const metacg::CgNode* n) const override {
    json j;
    j = i;
    return j;
@@ -41,10 +41,9 @@ static const std::string lid{"LIData"};
 
 TEST(MCGWriterTest, OneNodeGraph) {
   metacg::loggerutil::getLogger();
-
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetActiveGraph();
-  auto mainNode = mcgm.findOrCreateNode("main");
+  auto mainNode = mcgm.getCallgraph()->getOrInsertNode("main");
   ::pgis::attachMetaDataToGraph<pira::BaseProfileData>(mcgm.getCallgraph());
   ::pgis::attachMetaDataToGraph<pira::PiraOneData>(mcgm.getCallgraph());
   ::pgis::attachMetaDataToGraph<LoadImbalance::LIMetaData>(mcgm.getCallgraph());
@@ -87,7 +86,7 @@ TEST(MCGWriterTest, OneNodeGraphWithData) {
 
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetActiveGraph();
-  auto mainNode = mcgm.findOrCreateNode("main");
+  auto mainNode = mcgm.getCallgraph()->getOrInsertNode("main");
   ::pgis::attachMetaDataToGraph<pira::BaseProfileData>(mcgm.getCallgraph());
   ::pgis::attachMetaDataToGraph<pira::PiraOneData>(mcgm.getCallgraph());
   ::pgis::attachMetaDataToGraph<LoadImbalance::LIMetaData>(mcgm.getCallgraph());
@@ -139,7 +138,7 @@ TEST(MCGWriterTest, OneNodeGraphNoDataForHandler) {
 
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetActiveGraph();
-  auto mainNode = mcgm.findOrCreateNode("main");
+  auto mainNode = mcgm.getCallgraph()->getOrInsertNode("main");
   mcgm.addMetaHandler<metacg::io::retriever::GlobalLoopDepthHandler>();
 
   // How to use the MCGWriter

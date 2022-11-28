@@ -43,7 +43,7 @@ template <typename... Largs>
 void apply(metacg::graph::MCGManager &mcgm, cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, std::string &where,
            Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
-    auto target = mcgm.findOrCreateNode(where);
+    auto target = mcgm.getCallgraph()->getOrInsertNode(where);
     applyOne(cu, cnode, target, largs...);
   }
 }
@@ -148,7 +148,7 @@ void build(std::string filePath, metacg::graph::MCGManager &mcgm, Largs... largs
     console->trace("Cube contains: {} nodes", cnodes.size());
     for (const auto cnode : cnodes) {
       if (!cnode->get_parent()) {
-        mcgm.findOrCreateNode(getName(useMangledNames, cnode));
+        mcgm.getCallgraph()->getOrInsertNode(getName(useMangledNames, cnode));
         continue;
       }
 
@@ -158,7 +158,12 @@ void build(std::string filePath, metacg::graph::MCGManager &mcgm, Largs... largs
       auto cName = getName(useMangledNames, cNode);
 
       // Insert edge
-      mcgm.addEdge(pName, cName);
+      if(!mcgm.getCallgraph()->existEdgeFromTo(pName,cName)){
+        mcgm.getCallgraph()->addEdge(pName, cName);
+      }else{
+        console->trace("Tried adding edge between {} and {} even though it already exists", pName,cName);
+      }
+
       // Leave what to capture and attach to the user
       apply(mcgm, cube, cnode, cName, largs...);
     }
