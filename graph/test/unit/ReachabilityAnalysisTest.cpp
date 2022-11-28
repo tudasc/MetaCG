@@ -1,8 +1,8 @@
 /**
-* File: ReachabilityAnalysisTest.cpp
-* License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: ReachabilityAnalysisTest.cpp
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #include "gtest/gtest.h"
 
@@ -181,7 +181,7 @@ TEST_F(ReachabilityAnalysisTest, ReachableBetweenNodesWithCycle) {
   cg->addEdge(mainS, LC1);
   cg->addEdge(LC1, RC1);
   cg->addEdge(RC1, RC2);
-  cg->addEdge(RC2, LC1); // creates cycle main -> lc1 -> rc1 -> rc2 -> lc1 -> lc2
+  cg->addEdge(RC2, LC1);  // creates cycle main -> lc1 -> rc1 -> rc2 -> lc1 -> lc2
   cg->addEdge(LC1, LC2);
   cg->addEdge(mainS, LC2);
   ReachabilityAnalysis ra(cg);
@@ -189,4 +189,4 @@ TEST_F(ReachabilityAnalysisTest, ReachableBetweenNodesWithCycle) {
   ASSERT_TRUE(ra.existsPathBetween(cg->getNode(RC2), cg->getNode(LC2)));
   ASSERT_FALSE(ra.existsPathBetween(cg->getNode(RC2), cg->getNode(RC3)));
 }
-}
+}  // namespace

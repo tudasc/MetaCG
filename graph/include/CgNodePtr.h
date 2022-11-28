@@ -7,13 +7,13 @@
 #define METACG_GRAPH_CGNODEPTR_H
 
 #include <memory>
-#include <set>
 #include <unordered_set>
 
 namespace metacg {
-  class CgNode;
+class CgNode;
 }
 
+/*
 namespace std {
 template <>
 struct less<std::shared_ptr<metacg::CgNode>> {
@@ -38,10 +38,11 @@ struct greater_equal<std::shared_ptr<metacg::CgNode>> {
   bool operator()(const std::shared_ptr<metacg::CgNode> &a, const std::shared_ptr<metacg::CgNode> &b) const;
 };
 }  // namespace std
+*/
+typedef std::unique_ptr<metacg::CgNode> CgNodePtr;  // hopefully this typedef helps readability
 
-typedef std::shared_ptr<metacg::CgNode> CgNodePtr;  // hopefully this typedef helps readability
+typedef std::unordered_set<metacg::CgNode *> CgNodeRawPtrUSet;
 
-typedef std::set<CgNodePtr> CgNodePtrSet;
-typedef std::unordered_set<CgNodePtr> CgNodePtrUnorderedSet;
+
 
 #endif

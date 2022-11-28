@@ -1,6 +1,8 @@
-//
-// Created by jp on 17.06.22.
-//
+/**
+* File: DotIO.cpp
+* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+* https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #include "DotIO.h"
 #include "LoggerUtil.h"
@@ -9,6 +11,7 @@
 
 #include <cctype>  // for std:isspace
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 namespace metacg::io::dot {
@@ -115,6 +118,7 @@ void DotParser::handleEntity(const dot::ParsedToken &token) {
     if (seenTokens.top().type == dot::ParsedToken::TokenType::CONNECTOR) {
       seenTokens.push(token);
       reduceStack();
+
       seenTokens.push(token);
     } else {
       seenTokens.pop();        // Remove currently held entity, as this is not a connector
@@ -146,7 +150,9 @@ void DotParser::reduceStack() {
     auto srcElement = seenTokens.top();
     assert(srcElement.type == dot::ParsedToken::TokenType::ENTITY);
     seenTokens.pop();
-    callgraph->addEdge(srcElement.spelling, targetElement.spelling);
+
+    callgraph->addEdge(callgraph->getOrInsertNode(srcElement.spelling),
+                       callgraph->getOrInsertNode(targetElement.spelling));
   }
 }
 
@@ -178,18 +184,19 @@ void DotGenerator::generate() {
 
   dotGraphStrStr << "digraph callgraph {\n";
   // First build all node labels and a set of all edges
-  for (const auto &node : *cg) {
-    const auto nodeName = node->getFunctionName();
-    const auto childNodes = node->getChildNodes();
-    const auto parentNodes = node->getParentNodes();
+
+  for (const auto &node : cg->getNodes()) {
+    const auto nodeName = node.second->getFunctionName();
+    const auto childNodes = cg->getCallees(node.second);
+    const auto parentNodes = cg->getCallers(node.second);
     const std::string nodeLabel{"  \"" + nodeName + '\"'};
     dotGraphStrStr << nodeLabel << '\n';
 
     for (const auto &c : childNodes) {
-      edges.insert({node.get(), c.get()});
+      edges.insert({node.second.get(), c});
     }
     for (const auto &p : parentNodes) {
-      edges.insert({p.get(), node.get()});
+      edges.insert({p, node.second.get()});
     }
   }
 

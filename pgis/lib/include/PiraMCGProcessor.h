@@ -49,20 +49,21 @@ class PiraMCGProcessor {
   extrapconnection::ExtrapModelProvider &getModelProvider() { return epModelProvider; }
 
   void printMainRuntime() {
-    const auto mainNode = graph.getMain();
+    const auto mainNode = graph->getMain();
     const auto inclTime = mainNode->get<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds();
     spdlog::get("console")->info("Runtime of main is: {}", inclTime);
   }
 
  private:
-  PiraMCGProcessor() : graph(getEmptyGraph()), configPtr(nullptr), epModelProvider({}){};
+  PiraMCGProcessor() : graph(&getEmptyGraph()), configPtr(nullptr), epModelProvider({}){};
   explicit PiraMCGProcessor(Config *config, extrapconnection::ExtrapConfig epCfg = {});
 
   PiraMCGProcessor(const PiraMCGProcessor &other) = default;
   PiraMCGProcessor(PiraMCGProcessor &&other) = default;
 
   PiraMCGProcessor &operator=(const PiraMCGProcessor &other) = delete;
-  PiraMCGProcessor &operator=(PiraMCGProcessor &&other) = default;
+  //PiraMCGProcessor &operator=(PiraMCGProcessor &&other) = default;
+  PiraMCGProcessor &operator=(PiraMCGProcessor &&other) = delete;
 
  public:
   ~PiraMCGProcessor() = default;
@@ -81,16 +82,16 @@ class PiraMCGProcessor {
   void applyRegisteredPhases();
 
   // Delegates to the underlying graph
-  metacg::Callgraph::ContainerT::iterator begin() const { return graph.begin(); }
-  metacg::Callgraph::ContainerT::iterator end() const { return graph.end(); }
-  metacg::Callgraph::ContainerT::const_iterator cbegin() const { return graph.cbegin(); }
-  metacg::Callgraph::ContainerT::const_iterator cend() const { return graph.cend(); }
-  size_t size() { return graph.size(); }
+  metacg::Callgraph::NodeContainer::const_iterator begin() const { return graph->getNodes().begin(); }
+  metacg::Callgraph::NodeContainer::const_iterator end() const { return graph->getNodes().end(); }
+  metacg::Callgraph::NodeContainer::const_iterator cbegin() const { return graph->getNodes().cbegin(); }
+  metacg::Callgraph::NodeContainer::const_iterator cend() const { return graph->getNodes().cend(); }
+  size_t size() { return graph->size(); }
 
   int getNumProcs();
   bool readWhitelist(std::vector<std::string> &whiteNodes);
   bool isNodeListed(std::vector<std::string> whiteNodes, std::string node);
-  Callgraph &getCallgraph(PiraMCGProcessor *cg = nullptr);
+  Callgraph* getCallgraph(PiraMCGProcessor *cg = nullptr);
   void setNoOutput() { noOutputRequired = true; }
   void setOutputDotBetweenPhases(bool val = true) {outputDotBetweenPhases = val;}
   bool getOutputDotBetweenPhases(){
@@ -99,11 +100,11 @@ class PiraMCGProcessor {
 
   void attachExtrapModels();
 
-  void setCG(Callgraph& newGraph) {graph = newGraph; }
+  void setCG(Callgraph* newGraph) {graph = newGraph; }
 
  private:
   // this set represents the call graph during the actual computation
-  Callgraph &graph;
+  Callgraph *graph=nullptr;
   Config *configPtr;
   bool noOutputRequired{false};
   bool outputDotBetweenPhases {false};

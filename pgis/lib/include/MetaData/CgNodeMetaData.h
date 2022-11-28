@@ -37,7 +37,7 @@ class BaseProfileData : public metacg::MetaData {
 
   // Regular profile data
   // Warning: This function is *not* used by the Cube reader
-  void setCallData(CgNodePtr parentNode, unsigned long long calls, double timeInSeconds, double inclusiveTimeInSeconds,
+  void setCallData(metacg::CgNode* parentNode, unsigned long long calls, double timeInSeconds, double inclusiveTimeInSeconds,
                    int threadId, int procId) {
     callFrom[parentNode] += calls;
     timeFrom[parentNode] += timeInSeconds;
@@ -52,7 +52,7 @@ class BaseProfileData : public metacg::MetaData {
 
   double getRuntimeInSeconds() const { return this->timeInSeconds; }
   void setRuntimeInSeconds(double newRuntimeInSeconds) { this->timeInSeconds = newRuntimeInSeconds; }
-  double getRuntimeInSecondsForParent(CgNodePtr parent) { return this->timeFrom[parent]; }
+  double getRuntimeInSecondsForParent(metacg::CgNode* parent) { return this->timeFrom[parent]; }
 
   void setInclusiveRuntimeInSeconds(double newInclusiveTimeInSeconds) {
     this->inclTimeInSeconds = newInclusiveTimeInSeconds;
@@ -65,7 +65,7 @@ class BaseProfileData : public metacg::MetaData {
     }
     return v;
   }
-  unsigned long long getNumberOfCalls(CgNodePtr parentNode) { return callFrom[parentNode]; }
+  unsigned long long getNumberOfCalls(metacg::CgNode* parentNode) { return callFrom[parentNode]; }
 
   const std::vector<CgLocation> &getCgLocation() const { return cgLoc; }
 
@@ -77,8 +77,8 @@ class BaseProfileData : public metacg::MetaData {
   double inclTimeInSeconds{.0};
   int threadId{0};
   int processId{0};
-  std::unordered_map<CgNodePtr, unsigned long long> callFrom;
-  std::unordered_map<CgNodePtr, double> timeFrom;
+  std::unordered_map<metacg::CgNode*, unsigned long long> callFrom;
+  std::unordered_map<metacg::CgNode*, double> timeFrom;
   std::vector<CgLocation> cgLoc;
 };
 

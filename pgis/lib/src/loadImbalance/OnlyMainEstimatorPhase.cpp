@@ -10,11 +10,11 @@
 using namespace metacg;
 using namespace LoadImbalance;
 
-OnlyMainEstimatorPhase::OnlyMainEstimatorPhase() : EstimatorPhase("OnlyMainEstimatorPhase") {}
+OnlyMainEstimatorPhase::OnlyMainEstimatorPhase() : EstimatorPhase("OnlyMainEstimatorPhase", nullptr) {}
 
 OnlyMainEstimatorPhase::~OnlyMainEstimatorPhase() noexcept {}
 
-void OnlyMainEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
+void OnlyMainEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
 //  mainMethod->setState(CgNodeState::INSTRUMENT_WITNESS);
   pgis::instrumentNode(mainMethod);
 }

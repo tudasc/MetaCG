@@ -12,6 +12,7 @@ set(MetacgGraphLibSources
     include/CgNodePtr.h
     include/MetaData.h
     include/MCGManager.h
+    src/MCGManager.cpp
     include/MCGWriter.h
     src/MCGWriter.cpp
     include/Util.h
@@ -22,6 +23,8 @@ set(MetacgGraphLibSources
     include/Timing.h
     include/ReachabilityAnalysis.h
     src/ReachabilityAnalysis.cpp
+    include/CgEdge.h
+    src/CgEdge.cpp
 )
 
 add_library(metacg SHARED ${MetacgGraphLibSources})

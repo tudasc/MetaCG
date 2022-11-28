@@ -27,12 +27,13 @@ using namespace metacg;
 
 namespace pira {
 
-void ExtrapLocalEstimatorPhaseBase::modifyGraph(CgNodePtr mainNode) {
+void ExtrapLocalEstimatorPhaseBase::modifyGraph(metacg::CgNode* mainNode) {
   auto console = spdlog::get("console");
   console->trace("Running ExtrapLocalEstimatorPhaseBase::modifyGraph");
   metacg::analysis::ReachabilityAnalysis ra(graph);
 
-  for (const auto &n : *graph) {
+  for (const auto &elem : graph->getNodes()) {
+    const auto& n= elem.second.get();
     auto [shouldInstr, funcRtVal] = shouldInstrument(n);
     if (shouldInstr) {
       auto useCSInstr =
@@ -48,7 +49,7 @@ void ExtrapLocalEstimatorPhaseBase::modifyGraph(CgNodePtr mainNode) {
       kernels.emplace_back(funcRtVal, n);
 
       if (allNodesToMain) {
-        auto nodesToMain = CgHelper::allNodesToMain(n, mainNode, ra);
+        auto nodesToMain = CgHelper::allNodesToMain(n, mainNode,graph, ra);
         console->trace("Node {} has {} nodes on paths to main.", n->getFunctionName(), nodesToMain.size());
         for (const auto &ntm : nodesToMain) {
           pgis::instrumentNode(ntm);
@@ -76,12 +77,12 @@ void ExtrapLocalEstimatorPhaseBase::printReport() {
   console->info("$$ Identified Kernels (w/ Runtime) $$\n{}$$ End Kernels $$", ss.str());
 }
 
-std::pair<bool, double> ExtrapLocalEstimatorPhaseBase::shouldInstrument(CgNodePtr node) const {
+std::pair<bool, double> ExtrapLocalEstimatorPhaseBase::shouldInstrument(metacg::CgNode* node) const {
   assert(false && "Base class should not be instantiated.");
   return {false, -1};
 }
 
-std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(CgNodePtr node) const {
+std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(metacg::CgNode* node) const {
   spdlog::get("console")->trace("Running {}", __PRETTY_FUNCTION__);
 
   // get extrapolation threshold from parameter configPtr
@@ -128,14 +129,15 @@ std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstru
   return {fVal > extrapolationThreshold, fVal};
 }
 
-void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(CgNodePtr mainNode) {
-  std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> pathsToMain;
+void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(metacg::CgNode* mainNode) {
+  std::unordered_map<metacg::CgNode*, CgNodeRawPtrUSet> pathsToMain;
   metacg::analysis::ReachabilityAnalysis ra(graph);
 
   // get statement threshold from parameter configPtr
   int statementThreshold = pgis::config::ParameterConfig::get().getPiraIIConfig()->statementThreshold;
 
-  for (const auto &n : *graph) {
+  for (const auto &elem : graph->getNodes()) {
+    const auto& n = elem.second.get();
     auto console = spdlog::get("console");
     console->trace("Running ExtrapLocalEstimatorPhaseExpander::modifyGraph on {}", n->getFunctionName());
     auto [shouldInstr, funcRtVal] = shouldInstrument(n);
@@ -152,7 +154,7 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(CgNodePtr mainNod
 
       if (allNodesToMain) {
         if (pathsToMain.find(n) == pathsToMain.end()) {
-          auto nodesToMain = CgHelper::allNodesToMain(n, mainNode, pathsToMain, ra);
+          auto nodesToMain = CgHelper::allNodesToMain(n, mainNode,graph, pathsToMain, ra);
           pathsToMain[n] = nodesToMain;
         }
         auto nodesToMain = pathsToMain[n];
@@ -163,16 +165,16 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(CgNodePtr mainNod
         }
       }
 
-      std::unordered_set<CgNodePtr> totalToMain;
-      for (const auto &c : n->getChildNodes()) {
+      std::unordered_set<metacg::CgNode*> totalToMain;
+      for (const auto &c : graph->getCallees(n->getId())) {
         if (!c->get<PiraTwoData>()->getExtrapModelConnector().hasModels()) {
           // We use our heuristic to deepen the instrumentation
-          StatementCountEstimatorPhase scep(statementThreshold);  // TODO we use some threshold value here?
+          StatementCountEstimatorPhase scep(statementThreshold, graph);  // TODO we use some threshold value here?
           scep.estimateStatementCount(c, ra);
           if (allNodesToMain) {
             if (pathsToMain.find(c) == pathsToMain.end()) {
               auto cLocal = c;
-              auto nodesToMain = CgHelper::allNodesToMain(cLocal, mainNode, pathsToMain, ra);
+              auto nodesToMain = CgHelper::allNodesToMain(cLocal, mainNode,graph, pathsToMain, ra);
               pathsToMain[cLocal] = nodesToMain;
               totalToMain.insert(nodesToMain.begin(), nodesToMain.end());
             }

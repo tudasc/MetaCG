@@ -9,14 +9,14 @@
 
 #include "CgNode.h"
 #include "LoggerUtil.h"
-#include <algorithm>
-#include <cstdlib>
 #include <set>
 #include <string>
 
+
+
 namespace metacg::util {
 
-inline std::set<std::string> to_string(const std::set<CgNodePtr> &nodes) {
+inline std::set<std::string> getFunctionNames(const std::unordered_set<CgNode *> &nodes) {
   std::set<std::string> names;
   for (const auto n : nodes) {
     names.emplace(n->getFunctionName());

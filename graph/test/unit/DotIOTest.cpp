@@ -1,3 +1,8 @@
+/**
+* File: DotIOTest.cpp
+* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+* https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #include "LoggerUtil.h"
 #include "gtest/gtest.h"
@@ -24,7 +29,7 @@ TEST_F(DotIOTest, EmptyCGExport) {
 }
 
 TEST_F(DotIOTest, OneNodeCGExport) {
-  const auto cg = metacg::graph::MCGManager::get().getCallgraph();
+  const auto &cg = metacg::graph::MCGManager::get().getCallgraph();
   cg->getOrInsertNode("main");
   metacg::io::dot::DotGenerator generator(cg);
   generator.generate();
@@ -59,9 +64,9 @@ TEST_F(DotIOTest, TwoNodeOneEdgeCGExport) {
 
 TEST_F(DotIOTest, ThreeNodeOneEdgeCGExport) {
   const auto cg = metacg::graph::MCGManager::get().getCallgraph();
+  auto unreachableChild = cg->getOrInsertNode("unreachable");
   auto parent = cg->getOrInsertNode("foo");
   auto child = cg->getOrInsertNode("bar");
-  auto unreachableChild = cg->getOrInsertNode("unreachable");
   cg->addEdge(parent, child);
   metacg::io::dot::DotGenerator generator(cg);
   generator.generate();
@@ -71,23 +76,23 @@ TEST_F(DotIOTest, ThreeNodeOneEdgeCGExport) {
 
 TEST_F(DotIOTest, ThreeNodeTwoEdgeCGExport) {
   const auto cg = metacg::graph::MCGManager::get().getCallgraph();
-  auto c1 = cg->getOrInsertNode("c1");
-  auto c2 = cg->getOrInsertNode("c2");
   auto c3 = cg->getOrInsertNode("c3");
+  auto c2 = cg->getOrInsertNode("c2");
+  auto c1 = cg->getOrInsertNode("c1");
   cg->addEdge(c1, c2);
   cg->addEdge(c2, c3);
   metacg::io::dot::DotGenerator generator(cg);
   generator.generate();
   const auto dotStr = generator.getDotString();
-  EXPECT_EQ(dotStr, "digraph callgraph {\n  \"c1\"\n  \"c2\"\n  \"c3\"\n\n  c1 -> c2\n  c2 -> c3\n}\n");
+  EXPECT_EQ(dotStr, "digraph callgraph {\n  \"c1\"\n  \"c2\"\n  \"c3\"\n\n  c2 -> c3\n  c1 -> c2\n}\n");
 }
 
 TEST_F(DotIOTest, NoMultipleEdgesExport) {
   const auto cg = metacg::graph::MCGManager::get().getCallgraph();
-  auto c1 = cg->getOrInsertNode("c1");
-  auto c2 = cg->getOrInsertNode("c2");
-  auto c3 = cg->getOrInsertNode("c3");
   auto c4 = cg->getOrInsertNode("c4");
+  auto c3 = cg->getOrInsertNode("c3");
+  auto c2 = cg->getOrInsertNode("c2");
+  auto c1 = cg->getOrInsertNode("c1");
   cg->addEdge(c1, c2);
   cg->addEdge(c3, c2);
   cg->addEdge(c2, c4);
@@ -95,13 +100,13 @@ TEST_F(DotIOTest, NoMultipleEdgesExport) {
   generator.generate();
   const auto dotStr = generator.getDotString();
   EXPECT_EQ(dotStr,
-            "digraph callgraph {\n  \"c1\"\n  \"c2\"\n  \"c3\"\n  \"c4\"\n\n  c1 -> c2\n  c2 -> c4\n  c3 -> c2\n}\n");
+            "digraph callgraph {\n  \"c1\"\n  \"c2\"\n  \"c3\"\n  \"c4\"\n\n  c2 -> c4\n  c3 -> c2\n  c1 -> c2\n}\n");
 }
 
 TEST_F(DotIOTest, TwoNodesWithCycleCGExport) {
   const auto cg = metacg::graph::MCGManager::get().getCallgraph();
-  auto c1 = cg->getOrInsertNode("c1");
   auto c2 = cg->getOrInsertNode("c2");
+  auto c1 = cg->getOrInsertNode("c1");
   cg->addEdge(c1, c2);
   cg->addEdge(c2, c1);
   metacg::io::dot::DotGenerator generator(cg);
@@ -112,16 +117,16 @@ TEST_F(DotIOTest, TwoNodesWithCycleCGExport) {
 
 TEST_F(DotIOTest, ThreeNodesWithCycleCGExport) {
   const auto cg = metacg::graph::MCGManager::get().getCallgraph();
-  auto c1 = cg->getOrInsertNode("c1");
-  auto c2 = cg->getOrInsertNode("c2");
   auto c3 = cg->getOrInsertNode("c3");
+  auto c2 = cg->getOrInsertNode("c2");
+  auto c1 = cg->getOrInsertNode("c1");
   cg->addEdge(c1, c2);
   cg->addEdge(c2, c3);
   cg->addEdge(c3, c1);
   metacg::io::dot::DotGenerator generator(cg);
   generator.generate();
   const auto dotStr = generator.getDotString();
-  EXPECT_EQ(dotStr, "digraph callgraph {\n  \"c1\"\n  \"c2\"\n  \"c3\"\n\n  c1 -> c2\n  c2 -> c3\n  c3 -> c1\n}\n");
+  EXPECT_EQ(dotStr, "digraph callgraph {\n  \"c1\"\n  \"c2\"\n  \"c3\"\n\n  c2 -> c3\n  c1 -> c2\n  c3 -> c1\n}\n");
 }
 
 TEST_F(DotIOTest, ReadEmptyDot) {
@@ -129,7 +134,7 @@ TEST_F(DotIOTest, ReadEmptyDot) {
   auto readerSrc = metacg::io::dot::DotStringSource(dotStr);
   metacg::io::dot::DotReader reader(metacg::graph::MCGManager::get(), readerSrc);
   auto created = reader.readAndManage("empty");
-  ASSERT_EQ(created, true);
+  EXPECT_EQ(created, true);
 }
 
 TEST_F(DotIOTest, ReadOneNodeDot) {
@@ -138,9 +143,9 @@ TEST_F(DotIOTest, ReadOneNodeDot) {
   auto &manager = metacg::graph::MCGManager::get();
   metacg::io::dot::DotReader reader(manager, readerSrc);
   auto created = reader.readAndManage("empty");
-  ASSERT_EQ(created, true);
+  EXPECT_EQ(created, true);
   auto graph = manager.getCallgraph();
-  ASSERT_TRUE(graph->hasNode("node_one"));
+  EXPECT_TRUE(graph->hasNode("node_one"));
 }
 
 TEST_F(DotIOTest, ReadOneNodeDotWithLeadingSpaces) {
@@ -149,9 +154,9 @@ TEST_F(DotIOTest, ReadOneNodeDotWithLeadingSpaces) {
   auto &manager = metacg::graph::MCGManager::get();
   metacg::io::dot::DotReader reader(manager, readerSrc);
   auto created = reader.readAndManage("empty");
-  ASSERT_EQ(created, true);
+  EXPECT_EQ(created, true);
   auto graph = manager.getCallgraph();
-  ASSERT_TRUE(graph->hasNode("node_one"));
+  EXPECT_TRUE(graph->hasNode("node_one"));
 }
 
 TEST_F(DotIOTest, ReadTwoNodeDotNoEdge) {
@@ -160,15 +165,15 @@ TEST_F(DotIOTest, ReadTwoNodeDotNoEdge) {
   auto &manager = metacg::graph::MCGManager::get();
   metacg::io::dot::DotReader reader(manager, readerSrc);
   auto created = reader.readAndManage("empty");
-  ASSERT_EQ(created, true);
+  EXPECT_EQ(created, true);
   auto graph = manager.getCallgraph();
-  ASSERT_TRUE(graph->hasNode("node_one"));
-  ASSERT_TRUE(graph->hasNode("node_two"));
+  EXPECT_TRUE(graph->hasNode("node_one"));
+  EXPECT_TRUE(graph->hasNode("node_two"));
 
-  EXPECT_EQ(graph->getNode("node_one")->getChildNodes().size(), 0);
-  EXPECT_EQ(graph->getNode("node_two")->getChildNodes().size(), 0);
-  EXPECT_EQ(graph->getNode("node_one")->getParentNodes().size(), 0);
-  EXPECT_EQ(graph->getNode("node_two")->getParentNodes().size(), 0);
+  EXPECT_EQ(graph->getCallees("node_one").size(), 0);
+  EXPECT_EQ(graph->getCallees("node_two").size(), 0);
+  EXPECT_EQ(graph->getCallers("node_one").size(), 0);
+  EXPECT_EQ(graph->getCallers("node_two").size(), 0);
 }
 
 TEST_F(DotIOTest, ReadTwoNodeDotWithEdge) {
@@ -177,16 +182,16 @@ TEST_F(DotIOTest, ReadTwoNodeDotWithEdge) {
   auto &manager = metacg::graph::MCGManager::get();
   metacg::io::dot::DotReader reader(manager, readerSrc);
   auto created = reader.readAndManage("empty");
-  ASSERT_EQ(created, true);
+  EXPECT_EQ(created, true);
   auto graph = manager.getCallgraph();
 
-  ASSERT_TRUE(graph->hasNode("node_one"));
+  EXPECT_TRUE(graph->hasNode("node_one"));
   auto nodeOne = graph->getNode("node_one");
-  ASSERT_EQ(nodeOne->getChildNodes().size(), 1);
+  EXPECT_EQ(graph->getCallees(nodeOne->getId()).size(), 1);
 
-  ASSERT_TRUE(graph->hasNode("node_two"));
+  EXPECT_TRUE(graph->hasNode("node_two"));
   auto nodeTwo = graph->getNode("node_two");
-  ASSERT_EQ(nodeTwo->getParentNodes().size(), 1);
+  EXPECT_EQ(graph->getCallers(nodeTwo->getId()).size(), 1);
 }
 
 TEST(DotTokenizerTest, InitialTest) {
@@ -304,7 +309,7 @@ TEST(DotParserTest, OneEdgeWithWhitespaceTest) {
   EXPECT_EQ(cg->size(), 2);
   auto aNode = cg->getNode("a");
   auto bNode = cg->getNode("b");
-  auto aChildNodes = aNode->getChildNodes();
+  auto aChildNodes = cg->getCallees(aNode->getId());
   EXPECT_TRUE(aChildNodes.find(bNode) != aChildNodes.end());
 }
 
@@ -316,7 +321,7 @@ TEST(DotParserTest, OneEdgeAllNewLineTest) {
   EXPECT_EQ(cg->size(), 2);
   auto aNode = cg->getNode("a");
   auto bNode = cg->getNode("b");
-  auto aChildNodes = aNode->getChildNodes();
+  auto aChildNodes = cg->getCallees(aNode->getId());
   EXPECT_TRUE(aChildNodes.find(bNode) != aChildNodes.end());
 }
 
@@ -328,7 +333,7 @@ TEST(DotParserTest, OneEdgeTest) {
   EXPECT_EQ(cg->size(), 2);
   auto aNode = cg->getNode("a");
   auto bNode = cg->getNode("b");
-  auto aChildNodes = aNode->getChildNodes();
+  auto aChildNodes = cg->getCallees(aNode->getId());
   EXPECT_TRUE(aChildNodes.find(bNode) != aChildNodes.end());
 }
 
@@ -344,6 +349,6 @@ TEST(DotParserTest, MultiNodeOneEdgeTest) {
   EXPECT_TRUE(cg->hasNode("b"));
   auto aNode = cg->getNode("a");
   auto bNode = cg->getNode("b");
-  auto aChildNodes = aNode->getChildNodes();
+  auto aChildNodes = cg->getCallees(aNode->getId());
   EXPECT_TRUE(aChildNodes.find(bNode) != aChildNodes.end());
 }

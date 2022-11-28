@@ -3,13 +3,10 @@ add_executable(
   pgistests
   CallgraphTest.cpp
   # CallgraphManagerTest.cpp
-  CgNodeTest.cpp
-  IPCGAnnotation.cpp
   IPCGEstimatorPhaseTest.cpp
   LegacyMCGReaderTest.cpp
   loadImbalance/LIConfigTest.cpp
   loadImbalance/LIEstimatorPhaseTest.cpp
-  loadImbalance/LIMetaDataTest.cpp
   loadImbalance/LIMetricTest.cpp
   MetaDataHandlerExportTest.cpp
 )

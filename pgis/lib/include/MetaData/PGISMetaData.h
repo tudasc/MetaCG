@@ -33,28 +33,28 @@ class InstrumentationMetaData : public metacg::MetaData {
   InstrumentationState state;
 };
 
-inline void resetInstrumentation(CgNodePtr node) {
-  auto md = getOrCreateMD<InstrumentationMetaData>(std::move(node));
+inline void resetInstrumentation(metacg::CgNode* node) {
+  auto md = node->getOrCreateMD<InstrumentationMetaData>();
   md->reset();
 }
 
-inline void instrumentNode(CgNodePtr node) {
-  auto md = getOrCreateMD<InstrumentationMetaData>(std::move(node));
+inline void instrumentNode(metacg::CgNode* node) {
+  auto md = node->getOrCreateMD<InstrumentationMetaData>();
   md->setInstrumented();
 }
 
-inline void instrumentPathNode(CgNodePtr node) {
-  auto md = getOrCreateMD<InstrumentationMetaData>(std::move(node));
+inline void instrumentPathNode(metacg::CgNode* node) {
+  auto md = node->getOrCreateMD<InstrumentationMetaData>();
   md->setInstrumentedPath();
 }
 
-inline bool isInstrumented(CgNodePtr node) {
-  auto md = getOrCreateMD<InstrumentationMetaData>(std::move(node));
+inline bool isInstrumented(metacg::CgNode* node) {
+  auto md = node->getOrCreateMD<InstrumentationMetaData>();
   return md->isInstrumented();
 }
 
-inline bool isInstrumentedPath(CgNodePtr node) {
-  auto md = getOrCreateMD<InstrumentationMetaData>(std::move(node));
+inline bool isInstrumentedPath(metacg::CgNode* node) {
+  auto md = node->getOrCreateMD<InstrumentationMetaData>() ;
   return md->isInstrumentedPath();
 }
 

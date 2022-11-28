@@ -20,15 +20,15 @@ namespace CgHelper {
 using namespace pira;
 
 /** returns true for nodes with two or more parents */
-bool isConjunction(CgNodePtr node) { return (node->getParentNodes().size() > 1); }
+bool isConjunction(const metacg::CgNode* node, const metacg::Callgraph* const graph) { return (graph->getCallers(node).size() > 1); }
 
 /** Returns a set of all nodes from the starting node up to the instrumented
  * nodes.
  *  It should not break for cycles, because cycles have to be instrumented by
  * definition. */
-CgNodePtrSet getInstrumentationPath(CgNodePtr start) {
-  CgNodePtrUnorderedSet path;  // visited nodes
-  std::queue<CgNodePtr> workQueue;
+CgNodeRawPtrUSet getInstrumentationPath(metacg::CgNode* start, const metacg::Callgraph* const graph) {
+  CgNodeRawPtrUSet path;  // visited nodes
+  std::queue<metacg::CgNode*> workQueue;
   workQueue.push(start);
 
   while (!workQueue.empty()) {
@@ -36,24 +36,23 @@ CgNodePtrSet getInstrumentationPath(CgNodePtr start) {
     workQueue.pop();
 
     path.insert(node);
-
-    if (pgis::isInstrumented(node) || pgis::isInstrumentedPath(node) || node->isRootNode()) {
+    if (pgis::isInstrumented(node) || pgis::isInstrumentedPath(node) || /*node.isRootNode()*/ graph->getCallers(node).empty()) {
       continue;
     }
 
-    for (auto parentNode : node->getParentNodes()) {
+    for (auto parentNode : graph->getCallers(node)) {
       if (path.find(parentNode) == path.end()) {
         workQueue.push(parentNode);
       }
     }
   }
 
-  return CgNodePtrSet(path.begin(), path.end());
+  return CgNodeRawPtrUSet (path.begin(), path.end());
 }
 
-bool isOnCycle(CgNodePtr node) {
-  CgNodePtrSet visitedNodes;
-  std::queue<CgNodePtr> workQueue;
+bool isOnCycle(metacg::CgNode* node, const metacg::Callgraph* const graph) {
+  CgNodeRawPtrUSet visitedNodes;
+  std::queue<metacg::CgNode*> workQueue;
   workQueue.push(node);
   while (!workQueue.empty()) {
     auto currentNode = workQueue.front();
@@ -62,7 +61,7 @@ bool isOnCycle(CgNodePtr node) {
     if (visitedNodes.count(currentNode) == 0) {
       visitedNodes.insert(currentNode);
 
-      for (auto child : currentNode->getChildNodes()) {
+      for (auto child : graph->getCallees(currentNode)) {
         if (child == node) {
           return true;
         }
@@ -73,16 +72,16 @@ bool isOnCycle(CgNodePtr node) {
   return false;
 }
 
-Statements visitNodeForInclusiveStatements(CgNodePtr node, CgNodePtrSet *visitedNodes) {
+Statements visitNodeForInclusiveStatements(metacg::CgNode* node, CgNodeRawPtrUSet *visitedNodes, const metacg::Callgraph* const graph) {
   if (visitedNodes->find(node) != visitedNodes->end()) {
     return node->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements();
   }
   visitedNodes->insert(node);
 
-  CgNodePtrSet visistedChilds;
+  CgNodeRawPtrUSet visistedChilds;
 
   Statements inclusiveStatements = node->get<PiraOneData>()->getNumberOfStatements();
-  for (auto childNode : node->getChildNodes()) {
+  for (auto childNode : graph->getCallees(node)) {
     // prevent double processing
     if (visistedChilds.find(childNode) != visistedChilds.end())
       continue;
@@ -90,9 +89,9 @@ Statements visitNodeForInclusiveStatements(CgNodePtr node, CgNodePtrSet *visited
 
     // approximate statements of a abstract function with maximum of its children (potential call targets)
     if (node->get<LoadImbalance::LIMetaData>()->isVirtual() && node->get<PiraOneData>()->getNumberOfStatements() == 0) {
-      inclusiveStatements = std::max(inclusiveStatements, visitNodeForInclusiveStatements(childNode, visitedNodes));
+      inclusiveStatements = std::max(inclusiveStatements, visitNodeForInclusiveStatements(childNode, visitedNodes,graph));
     } else {
-      inclusiveStatements += visitNodeForInclusiveStatements(childNode, visitedNodes);
+      inclusiveStatements += visitNodeForInclusiveStatements(childNode, visitedNodes,graph);
     }
   }
 
@@ -103,16 +102,16 @@ Statements visitNodeForInclusiveStatements(CgNodePtr node, CgNodePtrSet *visited
   return inclusiveStatements;
 }
 
-void calculateInclusiveStatementCounts(CgNodePtr mainNode) {
-  CgNodePtrSet visitedNodes;
+void calculateInclusiveStatementCounts(metacg::CgNode* mainNode, const metacg::Callgraph* const graph) {
+  CgNodeRawPtrUSet visitedNodes;
 
   spdlog::get("console")->trace("Starting inclusive statement counting. mainNode = " + mainNode->getFunctionName());
 
-  visitNodeForInclusiveStatements(mainNode, &visitedNodes);
+  visitNodeForInclusiveStatements(mainNode, &visitedNodes,graph);
 }
 
-CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,
-                                     const std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> &init, metacg::analysis::ReachabilityAnalysis &ra) {
+CgNodeRawPtrUSet allNodesToMain(metacg::CgNode* startNode, metacg::CgNode* mainNode, const metacg::Callgraph* const graph,
+                                     const std::unordered_map<metacg::CgNode*, CgNodeRawPtrUSet> &init, metacg::analysis::ReachabilityAnalysis &ra) {
   {
     auto it = init.find(startNode);
     if (it != init.end()) {
@@ -120,11 +119,11 @@ CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,
     }
   }
 
-  CgNodePtrUnorderedSet pNodes;
+  CgNodeRawPtrUSet pNodes;
   pNodes.insert(mainNode);
 
-  CgNodePtrUnorderedSet visitedNodes;
-  std::queue<CgNodePtr> workQueue;
+  CgNodeRawPtrUSet visitedNodes;
+  std::queue<metacg::CgNode*> workQueue;
   workQueue.push(startNode);
 
   while (!workQueue.empty()) {
@@ -139,7 +138,7 @@ CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,
       continue;
     }
 
-    auto pns = node->getParentNodes();
+    auto pns = graph->getCallers(node);
     for (auto pNode : pns) {
       if (visitedNodes.find(pNode) == visitedNodes.end()) {
         workQueue.push(pNode);
@@ -150,15 +149,15 @@ CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,
   return pNodes;
 }
 
-CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode, metacg::analysis::ReachabilityAnalysis &ra) {
-  return allNodesToMain(std::move(startNode), std::move(mainNode), {}, ra);
+CgNodeRawPtrUSet allNodesToMain(metacg::CgNode* startNode, metacg::CgNode* mainNode, const metacg::Callgraph* const graph, metacg::analysis::ReachabilityAnalysis &ra) {
+  return allNodesToMain(startNode, mainNode, graph,{}, ra);
 }
 
 /** Returns a set of all descendants including the starting node */
-CgNodePtrSet getDescendants(CgNodePtr startingNode) {
+CgNodeRawPtrUSet getDescendants(metacg::CgNode* startingNode, const metacg::Callgraph* const graph) {
   // CgNodePtrUnorderedSet childs;
-  CgNodePtrSet childs;
-  std::queue<CgNodePtr> workQueue;
+  CgNodeRawPtrUSet childs;
+  std::queue<metacg::CgNode*> workQueue;
   workQueue.push(startingNode);
 
   while (!workQueue.empty()) {
@@ -167,7 +166,7 @@ CgNodePtrSet getDescendants(CgNodePtr startingNode) {
 
     childs.insert(node);
 
-    for (auto childNode : node->getChildNodes()) {
+    for (auto childNode : graph->getCallees(node)) {
       if (childs.find(childNode) == childs.end()) {
         workQueue.push(childNode);
       }
@@ -177,9 +176,9 @@ CgNodePtrSet getDescendants(CgNodePtr startingNode) {
 }
 
 /** Returns a set of all ancestors including the startingNode */
-CgNodePtrSet getAncestors(CgNodePtr startingNode) {
-  CgNodePtrSet ancestors;
-  std::queue<CgNodePtr> workQueue;
+CgNodeRawPtrUSet getAncestors(metacg::CgNode* startingNode, const metacg::Callgraph* const graph) {
+  CgNodeRawPtrUSet ancestors;
+  std::queue<metacg::CgNode*> workQueue;
   workQueue.push(startingNode);
 
   while (!workQueue.empty()) {
@@ -188,7 +187,7 @@ CgNodePtrSet getAncestors(CgNodePtr startingNode) {
 
     ancestors.insert(node);
 
-    for (auto parentNode : node->getParentNodes()) {
+    for (auto parentNode : graph->getCallers(node)) {
       if (ancestors.find(parentNode) == ancestors.end()) {
         workQueue.push(parentNode);
       }
@@ -200,7 +199,8 @@ CgNodePtrSet getAncestors(CgNodePtr startingNode) {
 
 double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef) {
   std::vector<double> rt;
-  for (const auto &n : cg) {
+  for (const auto &elem : cg.getNodes()) {
+    const auto& n = elem.second.get();
     const auto &[hasBPD, bpd] = n->checkAndGet<BaseProfileData>();
     if (hasBPD) {
       spdlog::get("console")->trace("Found BaseProfileData for {}: Adding inclusive runtime of {} to RT vector.",

@@ -25,12 +25,11 @@ using namespace pira;
 using namespace ::pgis::options;
 
 metacg::pgis::PiraMCGProcessor::PiraMCGProcessor(Config *config, extrapconnection::ExtrapConfig epCfg)
-    : graph(getEmptyGraph()), configPtr(config), epModelProvider(epCfg) {}
+    : graph(&getEmptyGraph()), configPtr(config), epModelProvider(epCfg) {}
 
 void metacg::pgis::PiraMCGProcessor::registerEstimatorPhase(EstimatorPhase *phase, bool noReport) {
   phases.push(phase);
   phase->injectConfig(configPtr);
-  phase->setGraph(&graph);
 
   if (noReport) {
     phase->setNoReport();
@@ -38,16 +37,16 @@ void metacg::pgis::PiraMCGProcessor::registerEstimatorPhase(EstimatorPhase *phas
 }
 
 void metacg::pgis::PiraMCGProcessor::finalizeGraph(bool buildMarker) {
-  if (graph.isEmpty()) {
+  if (graph->isEmpty()) {
     spdlog::get("errconsole")->error("Running the processor on empty graph. Need to construct graph.");
     exit(::pgis::ErrorCode::NoGraphConstructed);
   }
 
-  // XXX We should double check if this is still required, with the reachabilty now
+  // XXX We should double-check if this is still required, with the reachability now
   // being part of an explicit analysis class.
-  if (graph.size() > 0) {
+  if (graph->size() > 0) {
     // We assume that 'main' is always reachable.
-    auto mainNode = graph.getMain();
+    auto mainNode = graph->getMain();
     if (mainNode == nullptr) {
       spdlog::get("errconsole")->error("PiraMCGProcessor: Cannot find main function");
       exit(::pgis::ErrorCode::NoMainFunctionFound);
@@ -61,7 +60,7 @@ void metacg::pgis::PiraMCGProcessor::finalizeGraph(bool buildMarker) {
 
 void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
   finalizeGraph();
-  auto mainFunction = graph.getMain();
+  auto mainFunction = graph->getMain();
 
   if (mainFunction == nullptr) {
     spdlog::get("errconsole")->error("PiraMCGProcessor: Cannot find main function.");
@@ -87,7 +86,7 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
       phase->printReport();
 
       CgReport report = phase->getReport();
-      auto &gOpts = ::pgis::config::GlobalConfig::get();
+      [[maybe_unused]] auto &gOpts = ::pgis::config::GlobalConfig::get();
 
 //      if (outputDotBetweenPhases) {
 //        printDOT(report.phaseName);
@@ -102,7 +101,7 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
     }  // RAII
 
     if (outputDotBetweenPhases) {
-      metacg::io::dot::DotGenerator dotGenerator(&graph);
+      metacg::io::dot::DotGenerator dotGenerator(graph);
       dotGenerator.generate();
       dotGenerator.output({"./DotOutput", "PGIS-Dot", phase->getName()});
     }
@@ -116,7 +115,8 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
 int metacg::pgis::PiraMCGProcessor::getNumProcs() {
   int numProcs = 1;
   int prevNum = 0;
-  for (auto node : graph) {
+  for (const auto& elem : graph->getNodes()) {
+    const auto& node= elem.second.get();
     if (!node->get<BaseProfileData>()->getCgLocation().empty()) {
       for (CgLocation cgLoc : node->get<BaseProfileData>()->getCgLocation()) {
         if (cgLoc.getProcId() != prevNum) {
@@ -182,7 +182,7 @@ void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(CgReport report) {
     if (report.instrumentedNodes.empty()) {
       outfile << "aFunctionThatDoesNotExist" << std::endl;
     } else {
-      for (auto name : report.instrumentedNames) {
+      for (const auto& name : report.instrumentedNames) {
         outfile << name << std::endl;
       }
     }
@@ -200,7 +200,7 @@ void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(CgReport report) {
       ss << include << " " << name << "\n";
     }
     for (const auto &[name, node] : report.instrumentedPaths) {
-      for (const auto &parent : node->getParentNodes()) {
+      for (const auto &parent : graph->getCallers(node)) {
         ss << include << " " << parent->getFunctionName() << " " << arrow << " " << name << "\n";
       }
     }
@@ -216,13 +216,14 @@ void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(CgReport report) {
   }
 }
 
-Callgraph &metacg::pgis::PiraMCGProcessor::getCallgraph(PiraMCGProcessor *cg) { if (cg) { return cg->graph; } return graph; }
+Callgraph* metacg::pgis::PiraMCGProcessor::getCallgraph(PiraMCGProcessor *cg) { if (cg) { return cg->graph; } return graph; }
 
 void metacg::pgis::PiraMCGProcessor::attachExtrapModels() {
   epModelProvider.buildModels();
-  for (const auto &n : graph) {
+  for (const auto &elem : graph->getNodes()) {
+    const auto& n=elem.second.get();
     spdlog::get("console")->debug("Attaching models for {}", n->getFunctionName());
-    auto ptd = getOrCreateMD<PiraTwoData>(n, epModelProvider.getModelFor(n->getFunctionName()));
+    auto ptd = n->getOrCreateMD<PiraTwoData>(epModelProvider.getModelFor(n->getFunctionName()));
     if (!ptd->getExtrapModelConnector().hasModels()) {
       spdlog::get("console")->trace("attachExtrapModels hasModels == false -> Setting new ModelConnector");
       ptd->setExtrapModelConnector(epModelProvider.getModelFor(n->getFunctionName()));
