@@ -37,8 +37,7 @@ class BaseProfileData : public metacg::MetaData {
 
   // Regular profile data
   // Warning: This function is *not* used by the Cube reader
-  void setCallData(metacg::CgNode* parentNode, unsigned long long calls, double timeInSeconds, double inclusiveTimeInSeconds,
-                   int threadId, int procId) {
+  void setCallData(metacg::CgNode* parentNode, unsigned long long calls, double timeInSeconds, double inclusiveTimeInSeconds, int threadId, int procId) {
     callFrom[parentNode] += calls;
     timeFrom[parentNode] += timeInSeconds;
     this->timeInSeconds += timeInSeconds;
@@ -48,15 +47,39 @@ class BaseProfileData : public metacg::MetaData {
     this->cgLoc.emplace_back(CgLocation(timeInSeconds, inclusiveTimeInSeconds, threadId, procId, calls));
   }
   unsigned long long getNumberOfCalls() const { return this->numCalls; }
-  void setNumberOfCalls(unsigned long long nrCall) { this->numCalls = nrCall; }
+  void setNumberOfCalls(unsigned long long nrCall) {
+    assert(numCalls == 0 && "You probably don't want to overwrite the calls");
+    this->numCalls = nrCall;
+  }
+
+  void addCalls(unsigned long long nrCall) {
+    // assert(nrCall >= 0);
+    this->numCalls += nrCall;
+  }
 
   double getRuntimeInSeconds() const { return this->timeInSeconds; }
-  void setRuntimeInSeconds(double newRuntimeInSeconds) { this->timeInSeconds = newRuntimeInSeconds; }
-  double getRuntimeInSecondsForParent(metacg::CgNode* parent) { return this->timeFrom[parent]; }
+  void setRuntimeInSeconds(double newRuntimeInSeconds) {
+    assert(timeInSeconds == 0 && "You probably don't want to overwrite the runtime");
+    this->timeInSeconds = newRuntimeInSeconds;
+  }
+
+  void addRuntime(double runtime) {
+    assert(runtime >= 0);
+    this->timeInSeconds += runtime;
+  }
+
+  double getRuntimeInSecondsForParent(metacg::CgNode *parent) { return this->timeFrom[parent]; }
 
   void setInclusiveRuntimeInSeconds(double newInclusiveTimeInSeconds) {
+    assert(inclTimeInSeconds == 0 && "You probably don't want to overwrite the incl runtime");
     this->inclTimeInSeconds = newInclusiveTimeInSeconds;
   }
+
+  void addInclusiveRuntimeInSeconds(double newInclusiveTimeInSeconds) {
+    assert(newInclusiveTimeInSeconds >= 0);
+    this->inclTimeInSeconds += newInclusiveTimeInSeconds;
+  }
+
   double getInclusiveRuntimeInSeconds() const { return this->inclTimeInSeconds; }
   unsigned long long getNumberOfCallsWithCurrentEdges() const {
     auto v = 0ull;
@@ -81,7 +104,6 @@ class BaseProfileData : public metacg::MetaData {
   std::unordered_map<metacg::CgNode*, double> timeFrom;
   std::vector<CgLocation> cgLoc;
 };
-
 
 /**
  * This class holds data relevant to the PIRA I analyses.
@@ -167,7 +189,7 @@ class PiraTwoData : public metacg::MetaData {
 class FilePropertiesMetaData : public metacg::MetaData {
  public:
   static constexpr const char *key() { return "FilePropertiesMetaData"; }
-  FilePropertiesMetaData() : origin("INVALID"), fromSystemInclude(false), lineNumber(0){}
+  FilePropertiesMetaData() : origin("INVALID"), fromSystemInclude(false), lineNumber(0) {}
   std::string origin;
   bool fromSystemInclude;
   int lineNumber;
