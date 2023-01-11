@@ -12,7 +12,7 @@ Once constructed, the graph can be serialized into a JSON format, which contains
 
 ```{.json}
 {
- "_MetaCG: {
+ "_MetaCG": {
    "version": "2.0",
    "generator": {
     "name": "ToolName",
@@ -31,7 +31,9 @@ Once constructed, the graph can be serialized into a JSON format, which contains
     "meta": {
      "MetaTool": {}
     }
+   }
   }
+}
 ```
 
 - *_MetaCG* contains information about the file itself, such as the file format version.
@@ -45,18 +47,19 @@ Once constructed, the graph can be serialized into a JSON format, which contains
   - *overriddenBy*: A set of functions that this function is overridden by.
   - *meta*: A special field into which a tool can export its (intermediate) results.
 
-This allows, e.g., the PIRA profiler to export various additional information about the program's functions into the MetaCG file.
+This allows, e.g., the PIRA profiler, to export various additional information about the program's functions into the MetaCG file.
 Examples are empirically determined performance models, runtime measurements, or loop nesting depth per function.
 
 ## Requirements / Building
 
 MetaCG consists of the graph library, a CG construction tool, and an example analysis tool.
-The graph library is always built.
-The CG construction tool `CGCollector` can be disabled via the CMake option `-DWITH_CGCOLLECTOR=OFF`.
-The example analysis tool `PGIS` can be disabled via the CMake option `-DWITH_PGIS=OFF`.
+The graph library is always built, while the CGCollector and the PGIS tool can be disabled at configure time.
+
+We test MetaCG internally using GCC 10 and 11 for Clang 10 and 14 (for GCC 10) and 13 and 14 (for GCC 11), respectively.
+Other version combinations *may* work.
 
 **Build Requirements (for full build)**
-- Clang/LLVM version 10.
+- Clang/LLVM version 10 (and above)
 - Cube 4.5 [scalasca.org](https://www.scalasca.org/software/cube-4.x/download.html)
 - Extra-P 3.0 [.tar.gz](http://apps.fz-juelich.de/scalasca/releases/extra-p/extrap-3.0.tar.gz)
 - nlohmann/json library [github](https://github.com/nlohmann/json)
@@ -67,7 +70,7 @@ The example analysis tool `PGIS` can be disabled via the CMake option `-DWITH_PG
 
 ### Building
 
-Clang/LLVM (v 10) and the cube library are assumed to be available on the system.
+Clang/LLVM (in a supported version) and the Cube library are assumed to be available on the system.
 Extra-P can be built using the `build_submodules.sh` script provided in the repository, though it is not tested outside of our CI system.
 It builds and installs Extra-P into `./deps/src` and `./deps/install`, respectively.
 
