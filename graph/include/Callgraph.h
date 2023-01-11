@@ -6,25 +6,37 @@
 #ifndef METACG_GRAPH_CALLGRAPH_H
 #define METACG_GRAPH_CALLGRAPH_H
 
+#include "CgEdge.h"
+#include "CgEdgePtr.h"
 #include "CgNode.h"
+#include "CgNodePtr.h"
+#include <cstddef>
 
+template <>
+struct std::hash<std::pair<size_t, size_t>> {
+  std::size_t operator()(std::pair<size_t, size_t> const &p) const noexcept {
+    std::size_t h1 = std::hash<size_t>{}(p.first);
+    std::size_t h2 = std::hash<size_t>{}(p.second);
+    return h1 ^ (h2 << 1);  // or use boost::hash_combine
+  }
+};
 namespace metacg {
-
-/**
- * Holds the actual call graph.
- */
 class Callgraph {
  public:
-  Callgraph() : graph(), mainNode(nullptr), lastSearched(nullptr) {}
+  // TODO: Can NodeContainer be a set if nameIdMap maps to CgNodePtr?
+  typedef std::unordered_map<size_t, CgNodePtr> NodeContainer;
+  typedef std::unordered_map<std::string, size_t> NameIdMap;
+  typedef std::unordered_map<std::pair<size_t, size_t>, CgEdgePtr> EdgeContainer;
+  typedef std::unordered_map<size_t, std::vector<size_t>> CallerList;
+  typedef std::unordered_map<size_t, std::vector<size_t>> CalleeList;
 
-  // TODO: Can this be a hash set?
-  typedef CgNodePtrSet ContainerT;
+  Callgraph() : nodes(), nameIdMap(), edges(), mainNode(nullptr), lastSearched(nullptr) {}
 
   /**
    * @brief getMain
    * @return main function CgNodePtr
    */
-  CgNodePtr getMain();
+  CgNode *getMain();
 
   /**
    * Inserts an edge from parentName to childName
@@ -38,21 +50,25 @@ class Callgraph {
    * @param parentNode function node of calling function
    * @param childNode function node of called function
    */
-  void addEdge(CgNodePtr parentNode, CgNodePtr childNode);
+  void addEdge(const CgNode &parentNode, const CgNode &childNode);
+
+  void addEdge(size_t parentID, size_t childID);
+
+  void addEdge(const CgNode *parent, const CgNode *child);
 
   /**
    * Inserts a new node and sets it as the 'main' function if its name is main or _Z4main or _ZSt4mainiPPc
    * @param node
    */
-  void insert(CgNodePtr node);
-
+  size_t insert(CgNodePtr node);
+  size_t insert(const std::string& nodeName);
   /**
    * Returns the node with the given name\n
    * If no node exists yet, it creates a new one.
    * @param name to identify the node by
    * @return CgNodePtr to the identified node
    */
-  CgNodePtr getOrInsertNode(const std::string &name);
+  CgNode *getOrInsertNode(const std::string &name);
 
   /**
    * Clears the graph to an empty graph with no main node and no lastSearched node.
@@ -64,54 +80,72 @@ class Callgraph {
    * @param name
    * @return true iff exists, false otherwise
    */
-  bool hasNode(std::string name);
+  bool hasNode(const std::string &name);
 
   /**
    * @brief hasNode checks whether a node exists in the graph mapping
    * @param node
    * @return true iff exists, false otherwise
    */
-  bool hasNode(CgNodePtr n);
+  bool hasNode(const CgNode &n);
+
+  bool hasNode(const CgNode *n);
+  bool hasNode(const size_t n);
 
   /**
    * @brief getLastSearchedNode - only call after hasNode returned True
    * @return node found by #hasNode - nullptr otherwise
    */
-  CgNodePtr getLastSearchedNode();
+  CgNode *getLastSearchedNode() const;
 
   /**
    * @brief getNode searches the node in the graph and returns it
    * @param name
    * @return node for function with name - nullptr otherwise
    */
-  CgNodePtr getNode(std::string name);
+  CgNode *getNode(const std::string &name) const;
+  CgNode *getNode(size_t id) const;
+
+  bool existEdgeFromTo(const CgNode &source, const CgNode &target) const;
+  bool existEdgeFromTo(const CgNode *source, const CgNode *&target) const;
+  bool existEdgeFromTo(size_t source, size_t target) const;
+  bool existEdgeFromTo(const std::string &source, const std::string &target) const;
+
+  CgNodeRawPtrUSet getCallees(const CgNodePtr &node) const;
+  CgNodeRawPtrUSet getCallees(size_t node) const;
+  CgNodeRawPtrUSet getCallees(const std::string &node) const;
+  CgNodeRawPtrUSet getCallees(const CgNode *node) const;
+
+  CgNodeRawPtrUSet getCallers(const CgNodePtr &node) const;
+  CgNodeRawPtrUSet getCallers(size_t node) const;
+  CgNodeRawPtrUSet getCallers(const std::string &node) const;
+  CgNodeRawPtrUSet getCallers(const CgNode *node) const;
 
   size_t size() const;
 
-  ContainerT &getGraph();
+  bool isEmpty() const;
 
-  bool isEmpty();
-  ContainerT::iterator begin() const;
-  ContainerT::iterator end() const;
-
-  ContainerT::const_iterator cbegin() const;
-  ContainerT::const_iterator cend() const;
+  const NodeContainer &getNodes() const;
+  const EdgeContainer &getEdges() const;
 
  private:
   // this set represents the call graph during the actual computation
-  ContainerT graph;
+  NodeContainer nodes;
+  NameIdMap nameIdMap;
+  EdgeContainer edges;
+  CallerList callerList;
+  CalleeList calleeList;
 
   // Dedicated node pointer to main function
-  CgNodePtr mainNode;
+  CgNode *mainNode;
 
   // Temporary storage for hasNode/getLastSearchedNode combination
-  CgNodePtr lastSearched;
+  CgNode *lastSearched;
 };
 
-static Callgraph &getEmptyGraph() {
+[[maybe_unused]] static Callgraph& getEmptyGraph() {
   static Callgraph graph;
   return graph;
 }
-
 }  // namespace metacg
 #endif

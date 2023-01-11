@@ -22,12 +22,12 @@ namespace LoadImbalance {
  */
 class LIEstimatorPhase : public EstimatorPhase {
  public:
-  explicit LIEstimatorPhase(std::unique_ptr<LIConfig> &&config);
+  explicit LIEstimatorPhase(std::unique_ptr<LIConfig> &&config, metacg::Callgraph* cg);
   ~LIEstimatorPhase() override;
 
-  void modifyGraph(CgNodePtr mainMethod) override;
+  void modifyGraph(metacg::CgNode* mainMethod) override;
 
-  void doPrerequisites() override { CgHelper::calculateInclusiveStatementCounts(graph->getMain()); }
+  void doPrerequisites() override { CgHelper::calculateInclusiveStatementCounts(graph->getMain(),graph); }
 
  private:
   AbstractMetric *metric;
@@ -42,26 +42,26 @@ class LIEstimatorPhase : public EstimatorPhase {
   /**
    * Instrument all children which have not been marked as irrelevant
    */
-  void instrumentRelevantChildren(CgNodePtr node, pira::Statements statementThreshold, std::ostringstream &debugString);
+  void instrumentRelevantChildren(metacg::CgNode* node, pira::Statements statementThreshold, std::ostringstream &debugString);
 
-  void contextHandling(CgNodePtr n, CgNodePtr mainNode);
+  void contextHandling(metacg::CgNode* n, metacg::CgNode* mainNode, metacg::analysis::ReachabilityAnalysis &ra);
 
   /**
    * check whether there is a path from start to end with steps as maximum length
    */
-  static bool reachableInNSteps(CgNodePtr start, CgNodePtr end, int steps);
+  bool reachableInNSteps(metacg::CgNode* start, metacg::CgNode* end, int steps);
 
-  void findSyncPoints(CgNodePtr node);
+  void findSyncPoints(metacg::CgNode* node);
 
   /**
    * mark a node for instrumentation
    */
-  static void instrument(CgNodePtr node);
+  static void instrument(metacg::CgNode* node);
 
   /**
    * Instrument all descendants of start node if they correspond the a pattern
    */
-  void instrumentByPattern(CgNodePtr startNode, std::function<bool(CgNodePtr)> pattern,
+  void instrumentByPattern(metacg::CgNode* startNode, std::function<bool(metacg::CgNode*)> pattern,
                            std::ostringstream &debugString);
 };
 }  // namespace LoadImbalance

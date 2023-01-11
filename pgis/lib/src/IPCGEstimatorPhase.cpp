@@ -4,9 +4,13 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
+#include "ReachabilityAnalysis.h"
+
 #include "IPCGEstimatorPhase.h"
 #include "CgHelper.h"
 #include "config/GlobalConfig.h"
+#include "MetaData/CgNodeMetaData.h"
+#include "MetaData/PGISMetaData.h"
 
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
@@ -17,37 +21,40 @@ using namespace metacg;
 using namespace pira;
 
 FirstNLevelsEstimatorPhase::FirstNLevelsEstimatorPhase(int levels)
-    : EstimatorPhase(std::string("FirstNLevels") + std::to_string(levels)), levels(levels) {}
+    : EstimatorPhase(std::string("FirstNLevels") + std::to_string(levels), nullptr), levels(levels) {}
 
 FirstNLevelsEstimatorPhase::~FirstNLevelsEstimatorPhase() {}
 
-void FirstNLevelsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) { instrumentLevel(mainMethod, levels); }
+void FirstNLevelsEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) { instrumentLevel(mainMethod, levels); }
 
-void FirstNLevelsEstimatorPhase::instrumentLevel(CgNodePtr parentNode, int levelsLeft) {
+void FirstNLevelsEstimatorPhase::instrumentLevel(metacg::CgNode* parentNode, int levelsLeft) {
   if (levelsLeft == 0) {
     return;
   }
 
-  parentNode->setState(CgNodeState::INSTRUMENT_WITNESS);
+//  parentNode->setState(CgNodeState::INSTRUMENT_WITNESS);
+  pgis::instrumentNode(parentNode);
 
-  for (auto childNode : parentNode->getChildNodes()) {
+  for (auto childNode : graph->getCallees(parentNode)) {
     instrumentLevel(childNode, levelsLeft - 1);
   }
 }
 
 //// STATEMENT COUNT ESTIMATOR PHASE
 
-StatementCountEstimatorPhase::StatementCountEstimatorPhase(int numberOfStatementsThreshold, bool inclusiveMetric,
+StatementCountEstimatorPhase::StatementCountEstimatorPhase(int numberOfStatementsThreshold, metacg::Callgraph* callgraph, bool inclusiveMetric,
                                                            StatisticsEstimatorPhase *prevStatEP)
     : EstimatorPhase((inclusiveMetric ? std::string("Incl-") : std::string("Excl-")) + std::string("StatementCount-") +
-                     std::to_string(numberOfStatementsThreshold)),
+                     std::to_string(numberOfStatementsThreshold),callgraph),
       numberOfStatementsThreshold(numberOfStatementsThreshold),
       inclusiveMetric(inclusiveMetric),
       pSEP(prevStatEP) {}
 
 StatementCountEstimatorPhase::~StatementCountEstimatorPhase() {}
 
-void StatementCountEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
+void StatementCountEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
+  metacg::analysis::ReachabilityAnalysis ra(graph);
+
   if (pSEP) {
     numberOfStatementsThreshold = pSEP->getCuttoffNumInclStmts();
     // numberOfStatementsThreshold = pSEP->getMaxNumInclStmts() * .5;
@@ -55,24 +62,25 @@ void StatementCountEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
     spdlog::get("console")->debug("Changed count: now using {} as threshold", numberOfStatementsThreshold);
   }
 
-  for (auto node : *graph) {
+  for (const auto& elem : graph->getNodes()) {
+    const auto& node =elem.second.get();
     spdlog::get("console")->trace("Processing node: {}", node->getFunctionName());
-    if (!node->isReachable()) {
+    if (!ra.isReachableFromMain(node)) {
       spdlog::get("console")->trace("\tskipping.");
       continue;
     }
     spdlog::get("console")->trace("\testimating.");
-    estimateStatementCount(node);
+    estimateStatementCount(node, ra);
   }
 }
 
-void StatementCountEstimatorPhase::estimateStatementCount(CgNodePtr startNode) {
+void StatementCountEstimatorPhase::estimateStatementCount(metacg::CgNode* startNode, metacg::analysis::ReachabilityAnalysis &ra) {
   int inclStmtCount = 0;
   if (inclusiveMetric) {
     // INCLUSIVE
-    std::queue<CgNodePtr> workQueue;
+    std::queue<metacg::CgNode*> workQueue;
     workQueue.push(startNode);
-    std::set<CgNodePtr> visitedNodes;
+    std::set<metacg::CgNode*> visitedNodes;
 
     while (!workQueue.empty()) {
       auto node = workQueue.front();
@@ -83,9 +91,9 @@ void StatementCountEstimatorPhase::estimateStatementCount(CgNodePtr startNode) {
 
       inclStmtCount += nodePOD->getNumberOfStatements();
 
-      for (auto childNode : node->getChildNodes()) {
+      for (auto childNode : graph->getCallees(node)) {
         if (visitedNodes.find(childNode) == visitedNodes.end()) {
-          if (childNode->isReachable()) {
+          if (ra.isReachableFromMain(childNode)) {
             workQueue.push(childNode);
           }
         }
@@ -102,129 +110,51 @@ void StatementCountEstimatorPhase::estimateStatementCount(CgNodePtr startNode) {
   console->trace("Function: {} >> InclStatementCount: {}", startNode->getFunctionName(), inclStmtCount);
   if (inclStmtCount >= numberOfStatementsThreshold) {
     console->trace("Function {} added to instrumentation list", startNode->getFunctionName());
-    startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
+//    startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
+    pgis::instrumentNode(startNode);
   }
   auto useCSInstr = pgis::config::GlobalConfig::get().getAs<bool>(pgis::options::useCallSiteInstrumentation.cliName);
   if (useCSInstr && /*!startNode->get<PiraOneData>()->getHasBody()*/ !startNode->getHasBody() &&
       startNode->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
     console->trace("Function {} added to instrumentation path", startNode->getFunctionName());
-    startNode->setState(CgNodeState::INSTRUMENT_PATH);
-  }
-}
-
-void MaxRuntimeSelectionStrategy::operator()(CgNodePtr node) {
-  // If we have at least one child, initialize maxRtChild with the first child node
-  CgNodePtr maxRtChild{(node->getChildNodes().empty() ? nullptr : *(node->getChildNodes().begin()))};
-
-  for (auto childNode : node->getChildNodes()) {
-    const auto childPOD = childNode->get<BaseProfileData>();
-    const auto maxRtPOD = maxRtChild->get<BaseProfileData>();
-    if (childPOD->getInclusiveRuntimeInSeconds() > maxRtPOD->getInclusiveRuntimeInSeconds()) {
-      maxRtChild = childNode;
-    }
-  }
-  // If we have a maxRtChild, this is not a leaf node.
-  if (maxRtChild) {
-    const auto maxRtPOD = maxRtChild->get<PiraOneData>();
-    maxRtChild->setState(CgNodeState::INSTRUMENT_WITNESS);
-    maxRtPOD->setDominantRuntime();
-  } else {
-    // This is a leaf node. Instrument the children
-    if (node->get<PiraOneData>()->isDominantRuntime()) {
-      for (auto child : node->getChildNodes()) {
-        child->setState(CgNodeState::INSTRUMENT_WITNESS);
-      }
-    }
-  }
-}
-
-void MaxStmtSelectionStrategy::operator()(CgNodePtr node) {
-  std::map<CgNodePtr, size_t> childStmts;
-  int maxStmts = 0;
-  int totStmts = 0;
-  CgNodePtr maxChild{nullptr};
-  for (auto childNode : node->getChildNodes()) {
-    StatementCountEstimatorPhase scep(999999999);  // prevent pass from instrumentation
-    scep.estimateStatementCount(childNode);
-    childStmts[childNode] = scep.getNumStatements(childNode);
-    if (childStmts[childNode] > maxStmts) {
-      maxStmts = childStmts[childNode];
-      maxChild = childNode;
-    }
-    totStmts += childStmts[childNode];
-  }
-  int stmtThreshold = maxStmts * .3;
-  float alpha = 1.0f;
-  if (node->getChildNodes().size() > 0) {
-    stmtThreshold = (totStmts / node->getChildNodes().size()) * alpha;
-  } else {
-    stmtThreshold = 0;
-  }
-  if (stmtThreshold < 1) {
-    // This can happen, if all leaves are std lib functions.
-    return;
-  }
-  for (auto childNode : node->getChildNodes()) {
-    if (!childNode->isReachable()) {
-      continue;
-    }
-    if (childNode->get<PiraOneData>()->getNumberOfStatements() >= stmtThreshold) {
-      childNode->setState(CgNodeState::INSTRUMENT_WITNESS);
-    }
-  }
-}
-
-void RuntimeFilteredMixedStrategy::operator()(CgNodePtr node) {
-  if (node->get<BaseProfileData>()->getInclusiveRuntimeInSeconds() > rtThresh) {
-    for (auto child : node->getChildNodes()) {
-      if (child->get<PiraOneData>()->comesFromCube()) {
-        continue;
-      }
-      if (child->get<PiraOneData>()->getNumberOfStatements() > stmtThresh) {
-        child->setState(CgNodeState::INSTRUMENT_WITNESS);
-      }
-    }
-  }
-}
-
-void HybridEstimatorPhase::modifyGraph(CgNodePtr node) {
-  for (auto node : *graph) {
-    for (const auto s : strategies) {
-      s->operator()(node);
-    }
+//    startNode->setState(CgNodeState::INSTRUMENT_PATH);
+    pgis::instrumentPathNode(startNode);
   }
 }
 
 // Runtime estimator phase
 
-RuntimeEstimatorPhase::RuntimeEstimatorPhase(double runTimeThreshold, bool inclusiveMetric)
+RuntimeEstimatorPhase::RuntimeEstimatorPhase(metacg::Callgraph *cg, double runTimeThreshold, bool inclusiveMetric)
     : EstimatorPhase((inclusiveMetric ? std::string("Incl-") : std::string("Excl-")) + std::string("Runtime-") +
-                     std::to_string(runTimeThreshold)),
+                     std::to_string(runTimeThreshold),cg),
       runTimeThreshold(runTimeThreshold),
       inclusiveMetric(inclusiveMetric) {}
 
 RuntimeEstimatorPhase::~RuntimeEstimatorPhase() {}
 
-void RuntimeEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
-  for (auto node : *graph) {
+void RuntimeEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
+  metacg::analysis::ReachabilityAnalysis ra(graph);
+
+  for (const auto& elem : graph->getNodes()) {
+    const auto& node =elem.second.get();
     estimateRuntime(node);
   }
 
   runTimeThreshold = CgHelper::calcRuntimeThreshold(*graph, true);
   spdlog::get("console")->debug("The runtime is threshold is computed as: {}", runTimeThreshold);
 
-  std::queue<CgNodePtr> workQueue;
+  std::queue<metacg::CgNode*> workQueue;
   workQueue.push(mainMethod);
-  CgNodePtrSet visitedNodes;
+  CgNodeRawPtrUSet visitedNodes;
 
   while (!workQueue.empty()) {
     auto node = workQueue.front();
     workQueue.pop();
 
     visitedNodes.insert(node);
-    doInstrumentation(node);
+    doInstrumentation(node, ra);
 
-    for (auto childNode : node->getChildNodes()) {
+    for (auto childNode : graph->getCallees(node)) {
       // Only visit unseen, profiled nodes. Only those have actual timing info!
       if (visitedNodes.find(childNode) == visitedNodes.end()) {
         workQueue.push(childNode);
@@ -233,14 +163,14 @@ void RuntimeEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
   }
 }
 
-void RuntimeEstimatorPhase::estimateRuntime(CgNodePtr startNode) {
+void RuntimeEstimatorPhase::estimateRuntime(metacg::CgNode* startNode) {
   double runTime = 0.0;
 
   if (inclusiveMetric) {
     // INCLUSIVE
-    std::queue<CgNodePtr> workQueue;
+    std::queue<metacg::CgNode*> workQueue;
     workQueue.push(startNode);
-    CgNodePtrUnorderedSet visitedNodes;
+    CgNodeRawPtrUSet visitedNodes;
 
     while (!workQueue.empty()) {
       auto node = workQueue.front();
@@ -249,11 +179,14 @@ void RuntimeEstimatorPhase::estimateRuntime(CgNodePtr startNode) {
       visitedNodes.insert(node);
 
       // Only count the runtime of nodes comming from the profile
-      if (node->get<PiraOneData>()->comesFromCube()) {
+
+
+
+      if (node->getOrCreateMD<PiraOneData>()->comesFromCube()) {
         runTime += node->get<BaseProfileData>()->getRuntimeInSeconds();
       }
 
-      for (auto childNode : node->getChildNodes()) {
+      for (auto childNode : graph->getCallees(node)) {
         // Only visit unseen, profiled nodes. Only those have actual timing info!
         if (visitedNodes.find(childNode) == visitedNodes.end() && childNode->get<PiraOneData>()->comesFromCube()) {
           workQueue.push(childNode);
@@ -262,33 +195,36 @@ void RuntimeEstimatorPhase::estimateRuntime(CgNodePtr startNode) {
     }
 
     // inclRunTime[startNode] = runTime;
-    inclRunTime[startNode] = startNode->get<BaseProfileData>()->getInclusiveRuntimeInSeconds();
+
+    inclRunTime[startNode] = startNode->getOrCreateMD<BaseProfileData>()->getInclusiveRuntimeInSeconds();
   } else {
     // EXCLUSIVE
     runTime = startNode->get<BaseProfileData>()->getRuntimeInSeconds();
   }
 }
 
-void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
+void RuntimeEstimatorPhase::doInstrumentation(metacg::CgNode* startNode, metacg::analysis::ReachabilityAnalysis &ra) {
   auto runTime = inclRunTime[startNode];
   spdlog::get("console")->debug(
       "Processing {}:\n\tNode RT:\t{}\n\tCalced RT:\t{}\n\tThreshold:\t{}", startNode->getFunctionName(),
       startNode->get<BaseProfileData>()->getInclusiveRuntimeInSeconds(), runTime, runTimeThreshold);
   if (runTime >= runTimeThreshold) {
     // keep the nodes on the paths in the profile, when they expose sufficient runtime.
-    startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
+//    startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
+    pgis::instrumentNode(startNode);
     spdlog::get("console")->info("Instrumenting {} because of its runtime", startNode->getFunctionName());
     int instrChildren = 0;
 
-    std::map<CgNodePtr, long int> childStmts;
+    std::map<metacg::CgNode*, long int> childStmts;
     long int maxStmts = 0;
     int totStmts = 0;
     // If we have at least one child, initialize maxRtChild with the first child node
-    CgNodePtr maxRtChild{nullptr};
+    metacg::CgNode* maxRtChild{nullptr};
 
-    for (auto childNode : startNode->getChildNodes()) {
-      StatementCountEstimatorPhase scep(999999999);  // prevent pass from instrumentation
-      scep.estimateStatementCount(childNode);
+    for (auto childNode : graph->getCallees(startNode)) {
+      StatementCountEstimatorPhase scep(999999999,graph);  // prevent pass from instrumentation
+      //scep.setGraph(graph);
+      scep.estimateStatementCount(childNode, ra);
       childStmts[childNode] = scep.getNumStatements(childNode);
 
       if (childStmts[childNode] > maxStmts) {
@@ -329,12 +265,12 @@ void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
      * XXX: We should only consider children that have a body defines, i.e., that are eligible for instrumentation
      * with our method. This specifically excludes, for example, stdlib functions.
      */
-    auto numChildren = startNode->getChildNodes().size();
+    auto numChildren = graph->getCallees(startNode).size();
 #define NEW_PIRA_ONE 1
 //#undef NEW_PIRA_ONE
 #ifdef NEW_PIRA_ONE
     alpha = .3f;
-    numChildren = std::count_if(std::begin(startNode->getChildNodes()), std::end(startNode->getChildNodes()),
+    numChildren = std::count_if(std::begin(graph->getCallees(startNode)), std::end(graph->getCallees(startNode)),
                                 [&](const auto &n) { return childStmts[n] > 0; });
 #endif
     if (numChildren > 0) {
@@ -358,17 +294,19 @@ void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
     }
     if (maxRtChild) {
       spdlog::get("console")->debug("This is the dominant runtime path");
-      maxRtChild->setState(CgNodeState::INSTRUMENT_WITNESS);
+//      maxRtChild->setState(CgNodeState::INSTRUMENT_WITNESS);
+      pgis::instrumentNode(maxRtChild);
       maxRtChild->get<PiraOneData>()->setDominantRuntime();
     } else {
       spdlog::get("console")->debug("This is the non-dominant runtime path");
       if (startNode->get<PiraOneData>()->isDominantRuntime()) {
         spdlog::get("console")->debug("\tPrincipal: {}", startNode->getFunctionName());
-        for (auto child : startNode->getChildNodes()) {
+        for (auto child : graph->getCallees(startNode)) {
           spdlog::get("console")->trace("\tEvaluating {} with {} [stmt threshold: {}]", child->getFunctionName(),
                                         childStmts[child], stmtThreshold);
           if (childStmts[child] > stmtThreshold) {
-            child->setState(CgNodeState::INSTRUMENT_WITNESS);
+//            child->setState(CgNodeState::INSTRUMENT_WITNESS);
+            pgis::instrumentNode(child);
             instrChildren++;
           }
         }
@@ -382,11 +320,11 @@ void RuntimeEstimatorPhase::doInstrumentation(CgNodePtr startNode) {
   }
 }
 
-void StatisticsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
-  numFunctions = graph->getGraph().size();
+void StatisticsEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
+  numFunctions = graph->getNodes().size();
   // Threshold irrelevant, only building incl aggregation of interest
-  StatementCountEstimatorPhase sce(999999999);
-  sce.setGraph(graph);
+  StatementCountEstimatorPhase sce(999999999,graph);
+  //sce.setGraph(graph);
   sce.modifyGraph(mainMethod);
 
   const auto heuristicMode = pgis::config::getSelectedHeuristic();
@@ -395,42 +333,44 @@ void StatisticsEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
       // Statements get always collected
       break;
     case pgis::options::HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES: {
-      ConditionalBranchesEstimatorPhase cbe(ConditionalBranchesEstimatorPhase::limitThreshold);
-      cbe.setGraph(graph);
+      ConditionalBranchesEstimatorPhase cbe(ConditionalBranchesEstimatorPhase::limitThreshold,graph);
+      //cbe.setGraph(graph);
       cbe.modifyGraph(mainMethod);
     } break;
     case pgis::options::HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES_REVERSE: {
-      ConditionalBranchesReverseEstimatorPhase cbre(ConditionalBranchesReverseEstimatorPhase::limitThreshold);
-      cbre.setGraph(graph);
+      ConditionalBranchesReverseEstimatorPhase cbre(ConditionalBranchesReverseEstimatorPhase::limitThreshold,graph);
+      //cbre.setGraph(graph);
       cbre.modifyGraph(mainMethod);
     } break;
     case pgis::options::HeuristicSelection::HeuristicSelectionEnum::FP_MEM_OPS: {
-      FPAndMemOpsEstimatorPhase re(FPAndMemOpsEstimatorPhase::limitThreshold);
-      re.setGraph(graph);
+      FPAndMemOpsEstimatorPhase re(FPAndMemOpsEstimatorPhase::limitThreshold,graph);
+      //re.setGraph(graph);
       re.modifyGraph(mainMethod);
     } break;
     case pgis::options::HeuristicSelection::HeuristicSelectionEnum::LOOPDEPTH: {
-      LoopDepthEstimatorPhase lde(LoopDepthEstimatorPhase::limitThreshold);
-      lde.setGraph(graph);
+      LoopDepthEstimatorPhase lde(LoopDepthEstimatorPhase::limitThreshold,graph);
+      //lde.setGraph(graph);
       lde.modifyGraph(mainMethod);
     } break;
     case pgis::options::HeuristicSelection::HeuristicSelectionEnum::GlOBAL_LOOPDEPTH: {
-      GlobalLoopDepthEstimatorPhase glde(GlobalLoopDepthEstimatorPhase::limitThreshold);
-      glde.setGraph(graph);
+      GlobalLoopDepthEstimatorPhase glde(GlobalLoopDepthEstimatorPhase::limitThreshold,graph);
+      //glde.setGraph(graph);
       glde.modifyGraph(mainMethod);
     } break;
   }
   spdlog::get("console")->info("Running StatisticsEstimatorPhase::modifyGraph");
 
-  for (const auto &node : *graph) {
-    if (!node->isReachable()) {
+  metacg::analysis::ReachabilityAnalysis ra(graph);
+  for (const auto& elem : graph->getNodes()) {
+    const auto& node =elem.second.get();
+    if (!ra.isReachableFromMain(node)) {
       spdlog::get("console")->trace("Running on non-reachable function {}", node->getFunctionName());
       continue;
     }
 
     numReachableFunctions++;
     auto numStmts = node->get<PiraOneData>()->getNumberOfStatements();
-    if (node->isInstrumentedWitness()) {
+    if (pgis::isInstrumented(node)) {
       stmtsCoveredWithInstr += numStmts;
     }
     if (node->get<PiraOneData>()->comesFromCube()) {
@@ -614,11 +554,11 @@ long int StatisticsEstimatorPhase::getCuttoffReversesConditionalBranches() const
 // WL CALLPATH DIFFERENTIATION ESTIMATOR PHASE
 
 WLCallpathDifferentiationEstimatorPhase::WLCallpathDifferentiationEstimatorPhase(std::string whiteListName)
-    : EstimatorPhase("WLCallpathDifferentiation"), whitelistName(whiteListName) {}
+    : EstimatorPhase("WLCallpathDifferentiation", nullptr), whitelistName(whiteListName) {}
 
 WLCallpathDifferentiationEstimatorPhase::~WLCallpathDifferentiationEstimatorPhase() {}
 
-void WLCallpathDifferentiationEstimatorPhase::modifyGraph(CgNodePtr mainMethod) {
+void WLCallpathDifferentiationEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
   // TODO: move this parsing somewhere else
   std::ifstream file(whitelistName);
   if (!file) {
@@ -630,7 +570,7 @@ void WLCallpathDifferentiationEstimatorPhase::modifyGraph(CgNodePtr mainMethod) 
     if (line.empty()) {
       continue;
     }
-    CgNodePtr node = graph->getNode(line);
+    metacg::CgNode* node = graph->getNode(line);
     if (node == nullptr) {
       continue;
     }
@@ -638,20 +578,22 @@ void WLCallpathDifferentiationEstimatorPhase::modifyGraph(CgNodePtr mainMethod) 
   }
   file.close();
 
-  for (const auto &node : *graph) {
-    if (CgHelper::isConjunction(node) && (whitelist.find(node) != whitelist.end())) {
-      for (const auto &parentNode : node->getParentNodes()) {
-        parentNode->setState(CgNodeState::INSTRUMENT_WITNESS);
+  for (const auto& elem : graph->getNodes()) {
+    const auto& node =elem.second.get();
+    if (CgHelper::isConjunction(node , graph) && (whitelist.find(node) != whitelist.end())) {
+      for (const auto &parentNode : graph->getCallers(node)) {
+//        parentNode->setState(CgNodeState::INSTRUMENT_WITNESS);
+        pgis::instrumentNode(parentNode);
       }
     }
   }
 }
 
-void WLCallpathDifferentiationEstimatorPhase::addNodeAndParentsToWhitelist(CgNodePtr node) {
+void WLCallpathDifferentiationEstimatorPhase::addNodeAndParentsToWhitelist(metacg::CgNode* node) {
   if (whitelist.find(node) == whitelist.end()) {
     whitelist.insert(node);
 
-    for (const auto &parentNode : node->getParentNodes()) {
+    for (const auto &parentNode : graph->getCallers(node)) {
       addNodeAndParentsToWhitelist(parentNode);
     }
   }
@@ -659,29 +601,32 @@ void WLCallpathDifferentiationEstimatorPhase::addNodeAndParentsToWhitelist(CgNod
 
 SummingCountPhaseBase::~SummingCountPhaseBase() = default;
 
-void SummingCountPhaseBase::modifyGraph(CgNodePtr mainMethod) {
+void SummingCountPhaseBase::modifyGraph(metacg::CgNode* mainMethod) {
+  metacg::analysis::ReachabilityAnalysis ra(graph);
+
   if (pSEP) {
     threshold = getPreviousThreshold();
     spdlog::get("console")->debug("Changed count: now using {} as threshold", threshold);
   }
   runInitialization();
-  for (const auto &node : *graph) {
+  for (const auto& elem : graph->getNodes()) {
+    const auto& node =elem.second.get();
     spdlog::get("console")->trace("Processing node: {}", node->getFunctionName());
-    if (!node->isReachable()) {
+    if (!ra.isReachableFromMain(node)) {
       spdlog::get("console")->trace("\tskipping.");
       continue;
     }
     spdlog::get("console")->trace("\testimating.");
-    estimateCount(node);
+    estimateCount(node, ra);
   }
 }
-void SummingCountPhaseBase::estimateCount(const std::shared_ptr<CgNode> &startNode) {
+void SummingCountPhaseBase::estimateCount(CgNode* startNode, metacg::analysis::ReachabilityAnalysis &ra) {
   long int count = 0;
   // INCLUSIVE
   if (inclusive) {
-    std::queue<CgNodePtr> workQueue;
+    std::queue<metacg::CgNode*> workQueue;
     workQueue.push(startNode);
-    std::set<CgNodePtr> visitedNodes;
+    std::set<metacg::CgNode*> visitedNodes;
 
     while (!workQueue.empty()) {
       auto node = workQueue.front();
@@ -689,37 +634,39 @@ void SummingCountPhaseBase::estimateCount(const std::shared_ptr<CgNode> &startNo
 
       visitedNodes.insert(node);
 
-      count += getTargetCount(node.get());
+      count += getTargetCount(node);
 
-      for (const auto &childNode : node->getChildNodes()) {
+      for (const auto &childNode : graph->getCallees(node)) {
         if (visitedNodes.find(childNode) == visitedNodes.end()) {
-          if (childNode->isReachable()) {
+          if (ra.isReachableFromMain(childNode)) {
             workQueue.push(childNode);
           }
         }
       }
     }
   } else {
-    count += getTargetCount(startNode.get());
+    count += getTargetCount(startNode);
   }
   counts[startNode] = count;
 
   spdlog::get("console")->trace("Function: {} >> InclStatementCount: {}", startNode->getFunctionName(), count);
   if (count >= threshold) {
-    startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
+//    startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
+    pgis::instrumentNode(startNode);
   }
   if (/*!startNode->get<PiraOneData>()->getHasBody()*/ !startNode->getHasBody() &&
       startNode->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
-    startNode->setState(CgNodeState::INSTRUMENT_PATH);
+//    startNode->setState(CgNodeState::INSTRUMENT_PATH);
+    pgis::instrumentPathNode(startNode);
   }
 }
-SummingCountPhaseBase::SummingCountPhaseBase(long int threshold, const std::string &name,
+SummingCountPhaseBase::SummingCountPhaseBase(long int threshold, const std::string &name, metacg::Callgraph* callgraph,
                                              StatisticsEstimatorPhase *prevStatEP, bool inclusive)
-    : EstimatorPhase((inclusive ? "Incl-" : "Excl-") + name + "-" + std::to_string(threshold)),
+    : EstimatorPhase((inclusive ? "Incl-" : "Excl-") + name + "-" + std::to_string(threshold),callgraph),
       threshold(threshold),
       pSEP(prevStatEP),
       inclusive(inclusive) {}
-long int SummingCountPhaseBase::getCounted(const CgNodePtr &node) { return counts[node]; }
+long int SummingCountPhaseBase::getCounted(const metacg::CgNode* node) { return counts[node]; }
 void SummingCountPhaseBase::runInitialization() {}
 
 long int ConditionalBranchesEstimatorPhase::getPreviousThreshold() const {
@@ -734,13 +681,15 @@ long int ConditionalBranchesEstimatorPhase::getTargetCount(const CgNode *node) c
     return 0;
   }
 }
-ConditionalBranchesEstimatorPhase::ConditionalBranchesEstimatorPhase(long int threshold,
-                                                                     StatisticsEstimatorPhase *prevStatEP)
-    : SummingCountPhaseBase(threshold, "ConditionalBranches", prevStatEP) {}
 
-ConditionalBranchesReverseEstimatorPhase::ConditionalBranchesReverseEstimatorPhase(long int threshold,
+ConditionalBranchesEstimatorPhase::ConditionalBranchesEstimatorPhase(long int threshold, metacg::Callgraph* callgraph,
+                                                                     StatisticsEstimatorPhase *prevStatEP)
+    : SummingCountPhaseBase(threshold, "ConditionalBranches",callgraph, prevStatEP) {}
+
+
+ConditionalBranchesReverseEstimatorPhase::ConditionalBranchesReverseEstimatorPhase(long int threshold, metacg::Callgraph* callgraph,
                                                                                    StatisticsEstimatorPhase *prevStatEP)
-    : SummingCountPhaseBase(threshold, "ConditionalBranchesReverse", prevStatEP) {}
+    : SummingCountPhaseBase(threshold, "ConditionalBranchesReverse", callgraph, prevStatEP) {}
 long int ConditionalBranchesReverseEstimatorPhase::getPreviousThreshold() const {
   return pSEP->getCuttoffReversesConditionalBranches();
 }
@@ -755,7 +704,8 @@ long int ConditionalBranchesReverseEstimatorPhase::getTargetCount(const CgNode *
 }
 void ConditionalBranchesReverseEstimatorPhase::runInitialization() {
   maxBranches = 0;
-  for (const auto &node : *graph) {
+  for (const auto& elem : graph->getNodes()) {
+    const auto& node =elem.second.get();
     if (node->has<NumConditionalBranchMetaData>()) {
       const auto md = node->get<NumConditionalBranchMetaData>();
       maxBranches = std::max(maxBranches, static_cast<long int>(md->numConditionalBranches));
@@ -765,8 +715,8 @@ void ConditionalBranchesReverseEstimatorPhase::runInitialization() {
   }
 }
 
-FPAndMemOpsEstimatorPhase::FPAndMemOpsEstimatorPhase(long int threshold, StatisticsEstimatorPhase *prevStatEP)
-    : SummingCountPhaseBase(threshold, "IntMemoryAccesses", prevStatEP) {}
+FPAndMemOpsEstimatorPhase::FPAndMemOpsEstimatorPhase(long int threshold, metacg::Callgraph* callgraph, StatisticsEstimatorPhase *prevStatEP)
+    : SummingCountPhaseBase(threshold, "IntMemoryAccesses",callgraph, prevStatEP) {}
 long int FPAndMemOpsEstimatorPhase::getPreviousThreshold() const { return pSEP->getCuttoffRoofline(); }
 long int FPAndMemOpsEstimatorPhase::getTargetCount(const CgNode *node) const {
   if (node->has<NumOperationsMetaData>()) {
@@ -778,8 +728,8 @@ long int FPAndMemOpsEstimatorPhase::getTargetCount(const CgNode *node) const {
   }
 }
 
-LoopDepthEstimatorPhase::LoopDepthEstimatorPhase(long int threshold, StatisticsEstimatorPhase *prevStatEP)
-    : SummingCountPhaseBase(threshold, "LoopDepth", prevStatEP, false) {}
+LoopDepthEstimatorPhase::LoopDepthEstimatorPhase(long int threshold, metacg::Callgraph* callgraph, StatisticsEstimatorPhase *prevStatEP)
+    : SummingCountPhaseBase(threshold, "LoopDepth", callgraph, prevStatEP, false) {}
 long int LoopDepthEstimatorPhase::getPreviousThreshold() const { return pSEP->getCuttoffLoopDepth(); }
 long int LoopDepthEstimatorPhase::getTargetCount(const CgNode *node) const {
   if (node->has<LoopDepthMetaData>()) {
@@ -791,8 +741,8 @@ long int LoopDepthEstimatorPhase::getTargetCount(const CgNode *node) const {
   }
 }
 
-GlobalLoopDepthEstimatorPhase::GlobalLoopDepthEstimatorPhase(long int threshold, StatisticsEstimatorPhase *prevStatEP)
-    : SummingCountPhaseBase(threshold, "GlobalLoopDepth", prevStatEP, false) {}
+GlobalLoopDepthEstimatorPhase::GlobalLoopDepthEstimatorPhase(long int threshold, metacg::Callgraph* callgraph, StatisticsEstimatorPhase *prevStatEP)
+    : SummingCountPhaseBase(threshold, "GlobalLoopDepth", callgraph, prevStatEP, false) {}
 long int GlobalLoopDepthEstimatorPhase::getPreviousThreshold() const { return pSEP->getCuttoffGlobalLoopDepth(); }
 long int GlobalLoopDepthEstimatorPhase::getTargetCount(const CgNode *node) const {
   if (node->has<GlobalLoopDepthMetaData>()) {

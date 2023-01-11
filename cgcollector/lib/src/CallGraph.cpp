@@ -31,6 +31,12 @@
 #include <llvm/Support/GraphWriter.h>
 #include <llvm/Support/raw_ostream.h>
 
+#if LLVM_VERSION_MAJOR > 10
+#include <clang/AST/ParentMapContext.h>
+#endif
+
+#include "helper/common.h"
+
 #include <cassert>
 #include <memory>
 #include <string>
@@ -166,7 +172,7 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
     if (closedCes.find(ce) != closedCes.end()) {
       return;
     }
-//    closedCes.insert(ce);
+    //    closedCes.insert(ce);
     if (auto directCallee = ce->getDirectCallee()) {
       const auto fName = directCallee->getNameAsString();
       if (auto body = directCallee->getBody()) {
@@ -265,7 +271,7 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
       auto lhs = bo->getLHS();
       auto rhs = bo->getRHS();
 
-      DeclRefRetriever lhsDRR([]( [[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
+      DeclRefRetriever lhsDRR([]([[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
       lhsDRR.Visit(lhs);
       auto lhsSymbols = lhsDRR.getSymbols();
 #if 0
@@ -277,7 +283,7 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
       }
 #endif
 
-      DeclRefRetriever rhsDRR([]( [[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
+      DeclRefRetriever rhsDRR([]([[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
       rhsDRR.Visit(rhs);
       auto rhsSymbols = rhsDRR.getSymbols();
 #if 0
@@ -586,7 +592,8 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
             if (const auto vDecl = dyn_cast<VarDecl>(paramDecl)) {
               // *argIter can be any expression
               const auto argExpr = *argIter;
-              DeclRefRetriever drr([]( [[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols, "Argument Expr Retriever");
+              DeclRefRetriever drr([]([[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols,
+                                   "Argument Expr Retriever");
               drr.Visit(argExpr);
               // drr.printSymbols();
               for (const auto sym : drr.getSymbols()) {
@@ -842,6 +849,10 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
   void handleCallExprLike(CallExpr *CE) {
     Decl *D = nullptr;
     if ((D = getDeclFromCall(CE))) {
+      //      if (const auto ND = llvm::dyn_cast_or_null<NamedDecl>(D)) {
+      //        auto DStr = getMangledName(ND);
+      //        std::cout << DStr.front() << std::endl;
+      //      }
       addCalledDecl(D, CE);
     }
 
@@ -902,7 +913,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       }
     }
     if (auto ice = CE->getCallee()) {
-      DeclRefRetriever drr([]( [[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
+      DeclRefRetriever drr([]([[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
       drr.Visit(ice);
 #if 0
       std::cout << "CE->getCallee() => drr.Visit(ice)" << std::endl;
@@ -939,11 +950,26 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     VisitChildren(CE);
   }
 
-  void VisitCXXMemberCallExpr(CXXMemberCallExpr *mce) { handleCallExprLike(mce); }
+  void VisitCXXMemberCallExpr(CXXMemberCallExpr *mce) {
+    //    std::cout << "Visiting CXXMemberCallExpr: " << std::endl;
+    handleCallExprLike(mce);
+  }
 
-  void VisitCallExpr(CallExpr *CE) {
-    handleCallExprLike(CE);
-    return;
+  void VisitCallExpr(CallExpr *CE) { handleCallExprLike(CE); }
+
+  void VisitLambdaExpr(LambdaExpr *LE) {
+    auto LEstr = getMangledName(LE->getCallOperator());
+    //    std::cout << "Visiting the lambda expression: " << LEstr.front() << " @ " << LE->getCallOperator() <<
+    //    std::endl;
+    auto lambdaStaticInvoker = LE->getLambdaClass()->getLambdaStaticInvoker();
+    addCalledDecl(lambdaStaticInvoker, LE->getCallOperator(), nullptr);
+    for (auto conversionIt = LE->getLambdaClass()->conversion_begin();
+         conversionIt != LE->getLambdaClass()->conversion_end(); ++conversionIt) {
+      if (auto conv = *conversionIt) {
+        addCalledDecl(conv, lambdaStaticInvoker, nullptr);
+      }
+    }
+    VisitChildren(LE);
   }
 
   // Adds may-call edges for the ObjC message sends.
@@ -1005,7 +1031,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       auto lhs = bo->getLHS();
       auto rhs = bo->getRHS();
 
-      DeclRefRetriever lhsDRR([]( [[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
+      DeclRefRetriever lhsDRR([]([[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
       lhsDRR.Visit(lhs);
       auto lhsSymbols = lhsDRR.getSymbols();
 #if 0
@@ -1017,7 +1043,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       }
 #endif
 
-      DeclRefRetriever rhsDRR([]( [[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
+      DeclRefRetriever rhsDRR([]([[maybe_unused]] DeclRefExpr *dre) { return false; }, relevantSymbols);
       rhsDRR.Visit(rhs);
       auto rhsSymbols = rhsDRR.getSymbols();
 #if 0
@@ -1104,7 +1130,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
               insertFuncAlias(vDecl, ice);
             } else if (auto innerCe = dyn_cast<CallExpr>(initializer)) {
               // RecursiveLookUpCallExpr(innerCe);
-              (void) innerCe;
+              (void)innerCe;
             }
           }
         }
@@ -1138,7 +1164,8 @@ CallGraph::~CallGraph() = default;
 
 bool CallGraph::includeInGraph(const Decl *D) {
   assert(D);
-
+  // NOTE: It could make sense to check here that only FunctionDecls are included. Right now this function also returns
+  // true for VarDecls/ParmVarDecls that are called because they contain a function pointer
   if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
     // We skip function template definitions, as their semantics is
     // only determined when they are instantiated.
@@ -1162,6 +1189,7 @@ void CallGraph::addNodeForDecl(Decl *D, bool IsGlobal) {
   // Allocate a new node, mark it as root, and process it's calls.
   CallGraphNode *Node = getOrInsertNode(D);
 
+#ifndef DEBUG_TEST_AA
   // Process all the calls by this function as well.
   if (Stmt *Body = D->getBody()) {
     CGBuilder builder(this, Node, captureCtorsDtors, unresolvedSymbols);
@@ -1169,6 +1197,7 @@ void CallGraph::addNodeForDecl(Decl *D, bool IsGlobal) {
     // builder.printAliases();
     unresolvedSymbols.insert(builder.getUnresolvedSymbols().begin(), builder.getUnresolvedSymbols().end());
   }
+#endif
 }
 
 CallGraphNode *CallGraph::getNode(const Decl *F) const {
@@ -1223,7 +1252,7 @@ bool CallGraph::VisitFunctionDecl(clang::FunctionDecl *FD) {
 }
 
 bool CallGraph::VisitCXXMethodDecl(clang::CXXMethodDecl *MD) {
-  if (!MD->isVirtual()) {
+  if (!MD->isVirtual() || !includeInGraph(MD)) {
     // std::cout << "Method " << MD->getNameAsString() << " not known to be virtual" << std::endl;
     return true;
   }

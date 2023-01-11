@@ -1,6 +1,4 @@
 
-
-
 function check_selection {
   testSuite=$1
 	testNo=$(echo $2 | cut -d'.' -f 1)

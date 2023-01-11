@@ -12,7 +12,6 @@ void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j, const int ve
   if (version == 2) {
     attachFormatTwoHeader(j);
   }
-
   for (auto it = ++cg.begin(); it != cg.end(); ++it) {
     if (auto f_decl = llvm::dyn_cast<clang::FunctionDecl>(it->getFirst())) {
       FunctionNames callees;
@@ -22,9 +21,9 @@ void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j, const int ve
       for (auto &it : *(it->getSecond())) {
         if (auto calleeDecl = llvm::dyn_cast<clang::FunctionDecl>(it->getDecl())) {
           auto calleeNames = getMangledName(calleeDecl);
-//          for (const auto &n : calleeNames) {
-            // std::cout << mNames.front() << " -- " << n << std::endl;
- //         }
+          //          for (const auto &n : calleeNames) {
+          // std::cout << mNames.front() << " -- " << n << std::endl;
+          //         }
           callees.insert(std::begin(calleeNames), std::end(calleeNames));
         }
       }
@@ -45,7 +44,7 @@ void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j, const int ve
         auto overridingNames = getMangledName(llvm::dyn_cast<clang::FunctionDecl>(f));
         overriddenBy.insert(std::begin(overridingNames), std::end(overridingNames));
       }
-      // which functions does call the current function
+      // which functions do call the current function
       FunctionNames callers;
       for (auto f : it->getSecond()->getParents()) {
         // this check has to be done because of the root element, which has a nullptr as the decl

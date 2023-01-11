@@ -9,9 +9,10 @@
 
 #include "Callgraph.h"
 #include "MCGBaseInfo.h"
-#include "config.h"
 
 #include "nlohmann/json.hpp"
+
+#include <fstream>
 
 namespace metacg::io {
 
@@ -68,19 +69,20 @@ class MCGWriter {
    * General construction of node data, e.g., function name.
    * @param node
    */
-  void createNodeData(const CgNodePtr node, nlohmann::json &j);
+  void createNodeData(const CgNode *node, nlohmann::json &j) const;
 
   /**
    * Using the stored MetaDataHandler in MCGM to walk MCG and extract all meta data.
    * @param node
    * @param mcgm
    */
-  void createAndAddMetaData(CgNodePtr node, const graph::MCGManager &mcgm, nlohmann::json &j);
+  void createAndAddMetaData(const CgNode *const node, const graph::MCGManager &mcgm, nlohmann::json &j);
 
   graph::MCGManager &mcgManager;
   MCGFileInfo fileInfo;
 };
 
+#if 0
 /*
  * Old Annotation mechanism.
  * TODO: Replace fully with MCGWriter mechanism.
@@ -122,13 +124,14 @@ void annotateJSON(metacg::Callgraph &cg, const std::string &filename, PropRetrie
   }
 
   int annotated = metacg::io::doAnnotate(cg, retriever, j);
-  spdlog::get("console")->trace("Annotated {} json nodes", annotated);
+  metacg::MCGLogger::instance().getConsole()->trace("Annotated {} json nodes", annotated);
 
   {
     std::ofstream out(filename);
     out << j << std::endl;
   }
 }
-
+#endif
 }  // namespace metacg::io
+
 #endif  // METACG_MCGWRITER_H

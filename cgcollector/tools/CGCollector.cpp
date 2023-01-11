@@ -1,9 +1,9 @@
 #include "config.h"
 
+#include "AliasAnalysis.h"
+#include "CallGraph.h"
 #include "CallgraphToJSON.h"
 #include "MetaCollector.h"
-
-#include "CallGraph.h"
 
 #include <clang/AST/ASTConsumer.h>
 #include <clang/Frontend/FrontendAction.h>
@@ -18,9 +18,24 @@ static llvm::cl::OptionCategory cgc("CGCollector");
 static llvm::cl::opt<bool> captureCtorsDtors("capture-ctors-dtors",
                                              llvm::cl::desc("Capture calls to Constructors and Destructors"),
                                              llvm::cl::cat(cgc));
+static llvm::cl::opt<bool> captureStackCtorsDtors(
+    "capture-stack-ctors-dtors",
+    llvm::cl::desc(
+        "Capture calls to Constructors and Destructors of stack allocated variables. (Only works together with AA)"),
+    llvm::cl::cat(cgc));
 static llvm::cl::opt<int> metacgFormatVersion("metacg-format-version",
                                               llvm::cl::desc("metacg file version to output, values={1,2}, default=1"),
                                               llvm::cl::cat(cgc));
+
+/**
+ * The classic CG construction and the AA one work a bit differently. The classic one inserts nodes for all function,
+ * even if they are never called and do not call any functions themself, the AA one does only include functions that
+ * either get called or are calling another function.
+ */
+static llvm::cl::opt<bool> disableClassicCGConstruction(
+    "disable-classic-cgc", llvm::cl::desc("Disable the \"classic\" call graph construction"), llvm::cl::cat(cgc));
+static llvm::cl::opt<bool> enableAA("enable-AA", llvm::cl::desc("Enable Alias Analysis (experimental)"),
+                                    llvm::cl::cat(cgc));
 
 typedef std::vector<MetaCollector *> MetaCollectorVector;
 
@@ -30,13 +45,23 @@ class CallGraphCollectorConsumer : public clang::ASTConsumer {
 
   virtual void HandleTranslationUnit(clang::ASTContext &Context) {
     callGraph.setCaptureCtorsDtors(captureCtorsDtors);
-    callGraph.TraverseDecl(Context.getTranslationUnitDecl());
+    if (!disableClassicCGConstruction) {
+      callGraph.TraverseDecl(Context.getTranslationUnitDecl());
+    }
+    nlohmann::json AliasAnalysisMetadata;
+    if (enableAA) {
+      calculateAliasInfo(Context.getTranslationUnitDecl(), &callGraph, AliasAnalysisMetadata, metacgFormatVersion,
+                         captureCtorsDtors, captureStackCtorsDtors);
+    }
 
     for (const auto mc : _mcs) {
       mc->calculateFor(callGraph);
     }
 
     convertCallGraphToJSON(callGraph, _json, metacgFormatVersion);
+    if (enableAA && metacgFormatVersion >= 2) {
+      _json["PointerEquivalenceData"] = AliasAnalysisMetadata;
+    }
   }
 
  private:
@@ -71,9 +96,18 @@ int main(int argc, const char **argv) {
   metacgFormatVersion.setInitialValue(1);  // Have the old file format as default
 
   std::cout << "Running metacg::CGCollector (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
-            << ")\nGit revision: " << MetaCG_GIT_SHA << std::endl;
+            << ")\nGit revision: " << MetaCG_GIT_SHA << " LLVM/Clang version: " << LLVM_VERSION_STRING << std::endl;
 
+#if (LLVM_VERSION_MAJOR >= 10) && (LLVM_VERSION_MAJOR <= 12)
   clang::tooling::CommonOptionsParser OP(argc, argv, cgc);
+#else
+  auto ParseResult = clang::tooling::CommonOptionsParser::create(argc, argv, cgc);
+  if (!ParseResult) {
+    std::cerr << toString(ParseResult.takeError()) << "\n";
+    return -1;
+  }
+  clang::tooling::CommonOptionsParser &OP = ParseResult.get();
+#endif
   clang::tooling::ClangTool CT(OP.getCompilations(), OP.getSourcePathList());
 
   nlohmann::json j;

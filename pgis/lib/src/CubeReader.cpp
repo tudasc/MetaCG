@@ -6,9 +6,9 @@
 
 #include "CubeReader.h"
 #include "../../../graph/include/CgNode.h"
-#include "CgNodeMetaData.h"
+#include "MetaData/CgNodeMetaData.h"
 
-#include "CallgraphManager.h"
+#include "PiraMCGProcessor.h"
 #include "spdlog/spdlog.h"
 
 using namespace pira;

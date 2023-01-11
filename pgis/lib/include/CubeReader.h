@@ -7,8 +7,8 @@
 #ifndef CUBEREADER_H_
 #define CUBEREADER_H_
 
-#include "CallgraphManager.h"
-#include "CgNodeMetaData.h"
+#include "MetaData/CgNodeMetaData.h"
+#include "PiraMCGProcessor.h"
 
 #include <Cube.h>
 #include <CubeMetric.h>
@@ -43,7 +43,7 @@ template <typename... Largs>
 void apply(metacg::graph::MCGManager &mcgm, cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, std::string &where,
            Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
-    auto target = mcgm.findOrCreateNode(where);
+    auto target = mcgm.getCallgraph()->getOrInsertNode(where);
     applyOne(cu, cnode, target, largs...);
   }
 }
@@ -84,7 +84,7 @@ const auto getName = [](const bool mangled, const auto cn) {
 const auto attRuntime = [](auto &cube, auto cnode, auto n) {
   if (has<BaseProfileData>(n)) {
     spdlog::get("console")->debug("Attaching runtime {} to node {}", impl::time(cube, cnode), n->getFunctionName());
-    get<BaseProfileData>(n)->setRuntimeInSeconds(impl::time(cube, cnode));
+    get<BaseProfileData>(n)->addRuntime(impl::time(cube, cnode));
   } else {
     spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
   }
@@ -96,7 +96,7 @@ const auto attRuntime = [](auto &cube, auto cnode, auto n) {
 const auto attNrCall = [](auto &cube, auto cnode, auto n) {
   if (has<BaseProfileData>(n)) {
     spdlog::get("console")->debug("Attaching visits {} to node {}", impl::visits(cube, cnode), n->getFunctionName());
-    get<BaseProfileData>(n)->setNumberOfCalls(impl::visits(cube, cnode));
+    get<BaseProfileData>(n)->addCalls(impl::visits(cube, cnode));
   } else {
     spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
   }
@@ -116,14 +116,14 @@ const auto attInclRuntime = [](auto &cube, auto cnode, auto n) {
                                           cube::CUBE_CALCULATE_INCLUSIVE, thread, cube::CUBE_CALCULATE_INCLUSIVE);
 
       double timeInSeconds = cube.get_sev(cube.get_met("time"), cnode, thread);
-
+      // FIXME: Check if this also suffers from the cnode problem
       CgLocation cgLoc(timeInSeconds, inclusiveTime, threadId, procId, numberOfCalls);
       get<BaseProfileData>(n)->pushCgLocation(cgLoc);
 
       cumulatedTime += inclusiveTime;
     }
 
-    get<BaseProfileData>(n)->setInclusiveRuntimeInSeconds(cumulatedTime);
+    get<BaseProfileData>(n)->addInclusiveRuntimeInSeconds(cumulatedTime);
     spdlog::get("console")->debug("Attaching inclusive runtime {} to node {}", cumulatedTime, n->getFunctionName());
   } else if (has<PiraOneData>(n)) {
     get<PiraOneData>(n)->setComesFromCube();
@@ -148,7 +148,7 @@ void build(std::string filePath, metacg::graph::MCGManager &mcgm, Largs... largs
     console->trace("Cube contains: {} nodes", cnodes.size());
     for (const auto cnode : cnodes) {
       if (!cnode->get_parent()) {
-        mcgm.findOrCreateNode(getName(useMangledNames, cnode));
+        mcgm.getCallgraph()->getOrInsertNode(getName(useMangledNames, cnode));
         continue;
       }
 
@@ -158,7 +158,12 @@ void build(std::string filePath, metacg::graph::MCGManager &mcgm, Largs... largs
       auto cName = getName(useMangledNames, cNode);
 
       // Insert edge
-      mcgm.addEdge(pName, cName);
+      if(!mcgm.getCallgraph()->existEdgeFromTo(pName,cName)){
+        mcgm.getCallgraph()->addEdge(pName, cName);
+      }else{
+        console->trace("Tried adding edge between {} and {} even though it already exists", pName,cName);
+      }
+
       // Leave what to capture and attach to the user
       apply(mcgm, cube, cnode, cName, largs...);
     }

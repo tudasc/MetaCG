@@ -1,80 +1,80 @@
 {
-  "_CG": {
-    "_ZN12DeriveDerive3fooEv": {
-      "callees": [],
-      "callers": [],
-      "doesOverride": true,
-      "hasBody": true,
-      "isVirtual": true,
-      "meta": {
-        "codeStatistics": {
-          "numVars": 0
+    "_CG": {
+        "_ZN12DeriveDerive3fooEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": true,
+            "hasBody": true,
+            "isVirtual": true,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0050_b.cpp",
+                    "systemInclude": false
+                },
+                "mallocCollector": [],
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": [
+                "_ZN6Derive3fooEv"
+            ]
         },
-        "fileProperties": {
-          "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0050_b.cpp",
-          "systemInclude": false
+        "_ZN4Base3fooEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": true,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0050.h",
+                    "systemInclude": false
+                },
+                "mallocCollector": [],
+                "numStatements": 0
+            },
+            "overriddenBy": [
+                "_ZN6Derive3fooEv"
+            ],
+            "overrides": []
         },
-        "mallocCollector": [],
-        "numStatements": 0
-      },
-      "overriddenBy": [],
-      "overrides": [
-        "_ZN6Derive3fooEv"
-      ]
+        "_ZN6Derive3fooEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": true,
+            "hasBody": true,
+            "isVirtual": true,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0050.h",
+                    "systemInclude": false
+                },
+                "mallocCollector": [],
+                "numStatements": 0
+            },
+            "overriddenBy": [
+                "_ZN12DeriveDerive3fooEv"
+            ],
+            "overrides": [
+                "_ZN4Base3fooEv"
+            ]
+        }
     },
-    "_ZN4Base3fooEv": {
-      "callees": [],
-      "callers": [],
-      "doesOverride": false,
-      "hasBody": true,
-      "isVirtual": true,
-      "meta": {
-        "codeStatistics": {
-          "numVars": 0
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "0d36c2c6619b53464d31d589be9bc2f9e11660f4",
+            "version": "0.2"
         },
-        "fileProperties": {
-          "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0050.h",
-          "systemInclude": false
-        },
-        "mallocCollector": [],
-        "numStatements": 0
-      },
-      "overriddenBy": [
-        "_ZN6Derive3fooEv"
-      ],
-      "overrides": []
-    },
-    "_ZN6Derive3fooEv": {
-      "callees": [],
-      "callers": [],
-      "doesOverride": true,
-      "hasBody": true,
-      "isVirtual": true,
-      "meta": {
-        "codeStatistics": {
-          "numVars": 0
-        },
-        "fileProperties": {
-          "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0050.h",
-          "systemInclude": false
-        },
-        "mallocCollector": [],
-        "numStatements": 0
-      },
-      "overriddenBy": [
-        "_ZN12DeriveDerive3fooEv"
-      ],
-      "overrides": [
-        "_ZN4Base3fooEv"
-      ]
+        "version": "2.0"
     }
-  },
-  "_MetaCG": {
-    "generator": {
-      "name": "CGCollector",
-      "sha": "0d36c2c6619b53464d31d589be9bc2f9e11660f4",
-      "version": "0.2"
-    },
-    "version": "2.0"
-  }
 }

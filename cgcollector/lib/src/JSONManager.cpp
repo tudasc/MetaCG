@@ -1,9 +1,8 @@
 
 #include "JSONManager.h"
-#include <string>
-#include <set>
 #include <queue>
-
+#include <set>
+#include <string>
 
 FuncMapT::mapped_type &getOrInsert(std::string function, FuncMapT &functions) {
   if (functions.find(function) != functions.end()) {
@@ -117,17 +116,16 @@ nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename)
   return j;
 }
 
-
-nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filename) {
+nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filename, nlohmann::json *CompleteJsonOut) {
   using json = nlohmann::json;
 
   std::cout << "Reading " << filename << std::endl;
 
-  const auto readNumStmts = [] (auto &jsonElem, auto &funcItem) {
+  const auto readNumStmts = [](auto &jsonElem, auto &funcItem) {
     auto metaInfo = jsonElem["meta"]["numStatements"];
-      funcItem.numStatements = metaInfo;
+    funcItem.numStatements = metaInfo;
   };
-  const auto readFileOrigin = [] (auto &jsonElem, auto &funcItem) {
+  const auto readFileOrigin = [](auto &jsonElem, auto &funcItem) {
     auto foJson = jsonElem["meta"]["fileProperties"];
     if (foJson.is_null()) {
       exit(-1);
@@ -136,12 +134,15 @@ nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filenam
     fpMetaInfo->fileOrigin = foJson["origin"].template get<std::string>();
     fpMetaInfo->isFromSystemInclude = foJson["systemInclude"].template get<bool>();
     funcItem.metaInfo["fileProperty"] = fpMetaInfo;
-    };
+  };
 
   json jj;
   readIPCG(filename, jj);
-  
+
   json j = jj["_CG"];
+  if (CompleteJsonOut) {
+    *CompleteJsonOut = jj;
+  }
 
   if (j.is_null()) {
     std::cerr << "Encountered null element as top level CG" << std::endl;
@@ -223,7 +224,6 @@ nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filenam
     funcInfo.overriddenBy.insert(potentialTargets[k].begin(), potentialTargets[k].end());
     funcInfo.overriddenFunctions.insert(overrides[k].begin(), overrides[k].end());
   }
-//  std::cout << "Filename: " << filename << "\n" << j << std::endl;
+  // std::cout << "Filename: " << filename << "\n" << j << std::endl;
   return j;
 }
-

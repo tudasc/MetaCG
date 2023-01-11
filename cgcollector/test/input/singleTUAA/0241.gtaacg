@@ -1,0 +1,355 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {
+            "c:@F@main#@CALL_EXPR@@240-242": "c:@F@main#"
+        },
+        "CallInfoMap": {
+            "c:@F@main#@CALL_EXPR@@240-242": {
+                "Arguments": [],
+                "CalledObjects": [
+                    "c:0241.cpp@217@F@main#@f"
+                ]
+            }
+        },
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@S@Storage@F@Storage#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Storage@F@Storage#&1$@S@Storage#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Storage@F@Storage#&1$@S@Storage#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Storage@F@Storage#&1$@S@Storage#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Storage@F@Storage#&1$@S@Storage#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Storage@F@Storage#&&$@S@Storage#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Storage@F@Storage#&&$@S@Storage#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Storage@F@Storage#&&$@S@Storage#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Storage@F@Storage#&&$@S@Storage#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@Storage@F@Storage#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@foo#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0241.cpp@199@F@main#@sptr",
+                    "&c:0241.cpp@169@F@main#@s"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "*c:0241.cpp@199@F@main#@sptr"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:0241.cpp@217@F@main#@f",
+                    "(*c:0241.cpp@199@F@main#@sptr).c:@S@Storage@FI@fptr",
+                    "(c:0241.cpp@169@F@main#@s).c:@S@Storage@FI@fptr",
+                    "c:@S@Storage@FI@fptr",
+                    "&c:@F@foo#"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "c:@F@foo#"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@F@main#@CALL_EXPR@@240-242",
+                    "c:@F@foo#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0241.cpp@169@F@main#@s",
+                    "*c:0241.cpp@199@F@main#@sptr",
+                    "c:@F@main#@CALL_EXPR@@177-177"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "c:@S@Storage@FI@fptr",
+                        "Object": "(c:0241.cpp@169@F@main#@s).c:@S@Storage@FI@fptr"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@S@Storage@F@Storage#@THIS",
+                    "&c:@F@main#@CALL_EXPR@@177-177"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "c:@F@main#@CALL_EXPR@@177-177"
+                    }
+                ]
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@foo#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z3foov"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@foo#@SRETURN"
+                ]
+            },
+            "c:@F@main#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "main"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@main#@SRETURN"
+                ]
+            },
+            "c:@S@Storage@F@Storage#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN7StorageC2Ev",
+                    "_ZN7StorageC1Ev"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@Storage@F@Storage#&&$@S@Storage#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN7StorageC2EOS_",
+                    "_ZN7StorageC1EOS_"
+                ],
+                "Parameters": [
+                    "c:@S@Storage@F@Storage#&&$@S@Storage#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@Storage@F@Storage#&1$@S@Storage#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN7StorageC2ERKS_",
+                    "_ZN7StorageC1ERKS_"
+                ],
+                "Parameters": [
+                    "c:@S@Storage@F@Storage#&1$@S@Storage#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": []
+            }
+        },
+        "FunctionMap": {
+            "&c:@F@foo#": "c:@F@foo#",
+            "c:@F@foo#": "c:@F@foo#",
+            "c:@F@main#": "c:@F@main#",
+            "c:@S@Storage@F@Storage#": "c:@S@Storage@F@Storage#",
+            "c:@S@Storage@F@Storage#&&$@S@Storage#": "c:@S@Storage@F@Storage#&&$@S@Storage#",
+            "c:@S@Storage@F@Storage#&1$@S@Storage#": "c:@S@Storage@F@Storage#&1$@S@Storage#"
+        }
+    },
+    "_CG": {
+        "_Z3foov": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0241.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN7StorageC1Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0241.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN7StorageC2Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0241.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z3foov",
+                "_ZN7StorageC1Ev",
+                "_ZN7StorageC2Ev"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 3
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0241.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 4,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 6,
+                    "numberOfMemoryAccesses": 2
+                },
+                "numStatements": 6
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

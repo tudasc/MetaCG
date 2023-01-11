@@ -5,6 +5,7 @@
  */
 
 #include "loadImbalance/metric/AbstractMetric.h"
+#include "MetaData/CgNodeMetaData.h"
 
 #include <cmath>
 #include <limits>
@@ -89,13 +90,13 @@ void LoadImbalance::AbstractMetric::calcIndicators(std::ostringstream &debugStri
   }
 }
 
-void LoadImbalance::AbstractMetric::setNode(CgNodePtr newNode, std::ostringstream &debugString) {
+void LoadImbalance::AbstractMetric::setNode(metacg::CgNode* newNode, std::ostringstream &debugString) {
   this->node = newNode;
 
   this->calcIndicators(debugString);
 }
 
-void LoadImbalance::AbstractMetric::setNode(CgNodePtr newNode) {
+void LoadImbalance::AbstractMetric::setNode(metacg::CgNode* newNode) {
   std::ostringstream dummy;
 
   this->setNode(newNode, dummy);

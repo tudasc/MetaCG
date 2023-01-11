@@ -17,8 +17,8 @@ int getLoopDepth(const std::string &entry, const llvm::StringMap<llvm::StringMap
 
   for (const auto &child : children) {
     if (visited.find(child.first()) == visited.end()) {
-      maxChildDepth = std::max(maxChildDepth, child.second + getLoopDepth(child.first(), callDepths, localLoopDepth,
-                                                                          globalLoopDepth, visited));
+      maxChildDepth = std::max(maxChildDepth, child.second + getLoopDepth(std::string(child.first()), callDepths,
+                                                                          localLoopDepth, globalLoopDepth, visited));
     }
   }
   // Remove mark
@@ -46,7 +46,7 @@ void calculateGlobalCallDepth(nlohmann::json &j, bool useOnlyMainEntry) {
   for (const auto &[key, val] : cg.items()) {
     const auto &metaval = val["meta"];
     assert(metaval.count("loopDepth") == 1);
-    bool inserted = localLoopDepth.insert({key, metaval["loopDepth"]}).second;
+    [[maybe_unused]] const bool inserted = localLoopDepth.insert({key, metaval["loopDepth"]}).second;
     assert(inserted);
     MapT called;
     assert(val.count("callees") == 1);
@@ -76,7 +76,7 @@ void calculateGlobalCallDepth(nlohmann::json &j, bool useOnlyMainEntry) {
     }
     for (const auto &f : called) {
       if (!f.second) {
-        entryPoints.push_back(f.first());
+        entryPoints.emplace_back(f.first());
       }
     }
   } else {

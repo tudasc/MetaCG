@@ -6,15 +6,15 @@
 #ifndef METACG_GRAPH_MCGREADER_H
 #define METACG_GRAPH_MCGREADER_H
 
+#include "LoggerUtil.h"
 #include "MCGManager.h"
 
 #include "nlohmann/json.hpp"
 
-#include <loadImbalance/LIMetaData.h>
+#include <fstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <utility>
 
 namespace metacg::io {
 
@@ -42,12 +42,12 @@ struct FileSource : ReaderSource {
    * and returns the json object.
    */
   virtual nlohmann::json get() const override {
-    spdlog::get("console")->info("Reading metacg file from: {}", filename);
+    metacg::MCGLogger::instance().getConsole()->info("Reading metacg file from: {}", filename);
     nlohmann::json j;
     {
       std::ifstream in(filename);
       if (!in.is_open()) {
-        spdlog::get("errconsole")->error("Opening file {} failed.", filename);
+        metacg::MCGLogger::instance().getErrConsole()->error("Opening file {} failed.", filename);
         throw std::runtime_error("Opening file failed");
       }
       in >> j;
@@ -119,7 +119,14 @@ class MetaCGReader {
    * Checks if the jsonValue contains a value for key and sets field accordingly
    */
   template <typename FieldTy, typename JsonTy>
-  void setIfNotNull(FieldTy &field, const JsonTy &jsonValue, const std::string &key);
+  void setIfNotNull(FieldTy &field, const JsonTy &jsonValue, const std::string &key) {
+    auto jsonField = jsonValue.value()[key];
+    if (!jsonField.is_null()) {
+      field = jsonField.template get<typename std::remove_reference<FieldTy>::type>();
+    } else {
+      metacg::MCGLogger::instance().getErrConsole()->warn("Tried to read non-existing field {} for node.", key);
+    }
+  }
 
   /**
    * Build the virtual function hierarchy in PGIS using the functions map
@@ -143,19 +150,6 @@ class MetaCGReader {
  private:
   // filename of the metacg this instance parses
   const std::string filename;
-};
-
-/**
- * Class to read metacg files in file format v1.0.
- * The file format is also typically referred to as IPCG files.
- */
-class VersionOneMetaCGReader : public MetaCGReader {
- public:
-  explicit VersionOneMetaCGReader(ReaderSource &source) : MetaCGReader(source) {}
-  void read(metacg::graph::MCGManager &cgManager) override;
-
- private:
-  void addNumStmts(metacg::graph::MCGManager &cgm);
 };
 
 /**

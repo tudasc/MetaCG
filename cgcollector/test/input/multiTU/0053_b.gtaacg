@@ -1,0 +1,1185 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {},
+        "CallInfoMap": {},
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@~MyClassDeriveD#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@~MyClassDeriveD#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@~MyClassDeriveD#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@operator=#&1$@S@MyClassDeriveD#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@operator=#&1$@S@MyClassDeriveD#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@operator=#&1$@S@MyClassDeriveD#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@operator=#&1$@S@MyClassDeriveD#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@operator=#&&$@S@MyClassDeriveD#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@operator=#&&$@S@MyClassDeriveD#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@operator=#&&$@S@MyClassDeriveD#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@operator=#&&$@S@MyClassDeriveD#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@foo#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@MyClassDeriveD#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@MyClassDeriveD#&1$@S@MyClassDeriveD#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@MyClassDeriveD#&1$@S@MyClassDeriveD#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@MyClassDeriveD#&1$@S@MyClassDeriveD#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@MyClassDeriveD#&1$@S@MyClassDeriveD#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@MyClassDeriveD#&&$@S@MyClassDeriveD#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@MyClassDeriveD#&&$@S@MyClassDeriveD#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@MyClassDeriveD#&&$@S@MyClassDeriveD#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@MyClassDeriveD#&&$@S@MyClassDeriveD#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@MyClassDeriveD#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@~MyClassDerive#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@~MyClassDerive#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@~MyClassDerive#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@operator=#&1$@S@MyClassDerive#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@operator=#&1$@S@MyClassDerive#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@operator=#&1$@S@MyClassDerive#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@operator=#&1$@S@MyClassDerive#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@operator=#&&$@S@MyClassDerive#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@operator=#&&$@S@MyClassDerive#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@operator=#&&$@S@MyClassDerive#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@operator=#&&$@S@MyClassDerive#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@foo#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@MyClassDerive#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@MyClassDerive#&1$@S@MyClassDerive#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@MyClassDerive#&1$@S@MyClassDerive#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@MyClassDerive#&1$@S@MyClassDerive#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@MyClassDerive#&1$@S@MyClassDerive#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@MyClassDerive#&&$@S@MyClassDerive#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@MyClassDerive#&&$@S@MyClassDerive#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@MyClassDerive#&&$@S@MyClassDerive#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@MyClassDerive#&&$@S@MyClassDerive#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDerive@F@MyClassDerive#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@~MyClass#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@~MyClass#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@~MyClass#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@operator=#&1$@S@MyClass#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@operator=#&1$@S@MyClass#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@operator=#&1$@S@MyClass#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@operator=#&1$@S@MyClass#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@operator=#&&$@S@MyClass#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@operator=#&&$@S@MyClass#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@operator=#&&$@S@MyClass#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@operator=#&&$@S@MyClass#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@MyClass#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@MyClass#&1$@S@MyClass#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@MyClass#&1$@S@MyClass#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@MyClass#&1$@S@MyClass#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@MyClass#&1$@S@MyClass#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@MyClass#&&$@S@MyClass#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@MyClass#&&$@S@MyClass#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@MyClass#&&$@S@MyClass#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@MyClass#&&$@S@MyClass#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClass@F@MyClass#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new[]#l#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new[]#l#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new[]#l#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new#l#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new#l#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator new#l#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete[]#*v#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete[]#*v#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete[]#*v#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete#*v#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete#*v#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@operator delete#*v#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#I#**C#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#I#**C#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0053_b.cpp@155@F@main#I#**C#@argv"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0053_b.cpp@145@F@main#I#**C#@argc"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "(*c:0053_b.cpp@173@F@main#I#**C#@m).c:@S@MyClass@F@foo#",
+                    "c:@S@MyClass@F@foo#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@foo#@SRETURN",
+                    "c:@S@MyClassDerive@F@foo#@SRETURN",
+                    "c:@F@main#I#**C#@CALL_EXPR@@210-217",
+                    "c:@S@MyClass@F@foo#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@MyClassDeriveD#@THIS",
+                    "c:@S@MyClassDerive@F@MyClassDerive#@THIS",
+                    "c:@S@MyClass@F@MyClass#@THIS",
+                    "&c:@S@MyClassDerive@F@MyClassDerive#@CALL_EXPR@@61-61",
+                    "&c:@S@MyClassDeriveD@F@MyClassDeriveD#@CALL_EXPR@@57-57",
+                    "&c:@F@main#I#**C#@CALL_EXPR@@190-205"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "c:@S@MyClassDerive@F@MyClassDerive#@CALL_EXPR@@61-61"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@F@main#I#**C#@NEW@186-205",
+                    "*c:0053_b.cpp@173@F@main#I#**C#@m",
+                    "c:@F@main#I#**C#@CALL_EXPR@@190-205",
+                    "c:@S@MyClassDeriveD@F@MyClassDeriveD#@CALL_EXPR@@57-57",
+                    "c:@S@MyClassDerive@F@MyClassDerive#@CALL_EXPR@@61-61"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "c:@S@MyClass@F@foo#",
+                        "Object": "(*c:0053_b.cpp@173@F@main#I#**C#@m).c:@S@MyClass@F@foo#"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@S@MyClassDeriveD@F@foo#@THIS",
+                    "c:@S@MyClassDerive@F@foo#@THIS",
+                    "c:@S@MyClass@F@foo#@THIS",
+                    "c:0053_b.cpp@173@F@main#I#**C#@m",
+                    "&c:@F@main#I#**C#@NEW@186-205"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "*c:0053_b.cpp@173@F@main#I#**C#@m"
+                    }
+                ]
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@main#I#**C#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "main"
+                ],
+                "Parameters": [
+                    "c:0053_b.cpp@145@F@main#I#**C#@argc",
+                    "c:0053_b.cpp@155@F@main#I#**C#@argv"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@main#I#**C#@SRETURN"
+                ]
+            },
+            "c:@F@operator delete#*v#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZdlPv"
+                ],
+                "Parameters": [
+                    "c:@F@operator delete#*v#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@operator delete#*v#@SRETURN"
+                ]
+            },
+            "c:@F@operator delete[]#*v#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZdaPv"
+                ],
+                "Parameters": [
+                    "c:@F@operator delete[]#*v#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@operator delete[]#*v#@SRETURN"
+                ]
+            },
+            "c:@F@operator new#l#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Znwm"
+                ],
+                "Parameters": [
+                    "c:@F@operator new#l#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@operator new#l#@SRETURN"
+                ]
+            },
+            "c:@F@operator new[]#l#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Znam"
+                ],
+                "Parameters": [
+                    "c:@F@operator new[]#l#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@operator new[]#l#@SRETURN"
+                ]
+            },
+            "c:@S@MyClass@F@MyClass#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN7MyClassC2Ev"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@MyClass@F@MyClass#&&$@S@MyClass#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN7MyClassC2EOS_"
+                ],
+                "Parameters": [
+                    "c:@S@MyClass@F@MyClass#&&$@S@MyClass#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@MyClass@F@MyClass#&1$@S@MyClass#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN7MyClassC2ERKS_"
+                ],
+                "Parameters": [
+                    "c:@S@MyClass@F@MyClass#&1$@S@MyClass#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@MyClass@F@foo#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN7MyClass3fooEv"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@S@MyClass@F@foo#@SRETURN"
+                ]
+            },
+            "c:@S@MyClass@F@operator=#&&$@S@MyClass#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN7MyClassaSEOS_"
+                ],
+                "Parameters": [
+                    "c:@S@MyClass@F@operator=#&&$@S@MyClass#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@S@MyClass@F@operator=#&&$@S@MyClass#@SRETURN"
+                ]
+            },
+            "c:@S@MyClass@F@operator=#&1$@S@MyClass#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN7MyClassaSERKS_"
+                ],
+                "Parameters": [
+                    "c:@S@MyClass@F@operator=#&1$@S@MyClass#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@S@MyClass@F@operator=#&1$@S@MyClass#@SRETURN"
+                ]
+            },
+            "c:@S@MyClass@F@~MyClass#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN7MyClassD2Ev",
+                    "_ZN7MyClassD1Ev"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@MyClassDerive@F@MyClassDerive#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN13MyClassDeriveC2Ev",
+                    "_ZN13MyClassDeriveC1Ev"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@MyClassDerive@F@MyClassDerive#&&$@S@MyClassDerive#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN13MyClassDeriveC2EOS_",
+                    "_ZN13MyClassDeriveC1EOS_"
+                ],
+                "Parameters": [
+                    "c:@S@MyClassDerive@F@MyClassDerive#&&$@S@MyClassDerive#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@MyClassDerive@F@MyClassDerive#&1$@S@MyClassDerive#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN13MyClassDeriveC2ERKS_",
+                    "_ZN13MyClassDeriveC1ERKS_"
+                ],
+                "Parameters": [
+                    "c:@S@MyClassDerive@F@MyClassDerive#&1$@S@MyClassDerive#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@MyClassDerive@F@foo#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN13MyClassDerive3fooEv"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@S@MyClassDerive@F@foo#@SRETURN"
+                ]
+            },
+            "c:@S@MyClassDerive@F@operator=#&&$@S@MyClassDerive#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN13MyClassDeriveaSEOS_"
+                ],
+                "Parameters": [
+                    "c:@S@MyClassDerive@F@operator=#&&$@S@MyClassDerive#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@S@MyClassDerive@F@operator=#&&$@S@MyClassDerive#@SRETURN"
+                ]
+            },
+            "c:@S@MyClassDerive@F@operator=#&1$@S@MyClassDerive#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN13MyClassDeriveaSERKS_"
+                ],
+                "Parameters": [
+                    "c:@S@MyClassDerive@F@operator=#&1$@S@MyClassDerive#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@S@MyClassDerive@F@operator=#&1$@S@MyClassDerive#@SRETURN"
+                ]
+            },
+            "c:@S@MyClassDerive@F@~MyClassDerive#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN13MyClassDeriveD2Ev",
+                    "_ZN13MyClassDeriveD1Ev"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@MyClassDeriveD@F@MyClassDeriveD#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN14MyClassDeriveDC2Ev",
+                    "_ZN14MyClassDeriveDC1Ev"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@MyClassDeriveD@F@MyClassDeriveD#&&$@S@MyClassDeriveD#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN14MyClassDeriveDC2EOS_",
+                    "_ZN14MyClassDeriveDC1EOS_"
+                ],
+                "Parameters": [
+                    "c:@S@MyClassDeriveD@F@MyClassDeriveD#&&$@S@MyClassDeriveD#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@MyClassDeriveD@F@MyClassDeriveD#&1$@S@MyClassDeriveD#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN14MyClassDeriveDC2ERKS_",
+                    "_ZN14MyClassDeriveDC1ERKS_"
+                ],
+                "Parameters": [
+                    "c:@S@MyClassDeriveD@F@MyClassDeriveD#&1$@S@MyClassDeriveD#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@MyClassDeriveD@F@foo#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN14MyClassDeriveD3fooEv"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@S@MyClassDeriveD@F@foo#@SRETURN"
+                ]
+            },
+            "c:@S@MyClassDeriveD@F@operator=#&&$@S@MyClassDeriveD#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN14MyClassDeriveDaSEOS_"
+                ],
+                "Parameters": [
+                    "c:@S@MyClassDeriveD@F@operator=#&&$@S@MyClassDeriveD#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@S@MyClassDeriveD@F@operator=#&&$@S@MyClassDeriveD#@SRETURN"
+                ]
+            },
+            "c:@S@MyClassDeriveD@F@operator=#&1$@S@MyClassDeriveD#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN14MyClassDeriveDaSERKS_"
+                ],
+                "Parameters": [
+                    "c:@S@MyClassDeriveD@F@operator=#&1$@S@MyClassDeriveD#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@S@MyClassDeriveD@F@operator=#&1$@S@MyClassDeriveD#@SRETURN"
+                ]
+            },
+            "c:@S@MyClassDeriveD@F@~MyClassDeriveD#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN14MyClassDeriveDD2Ev",
+                    "_ZN14MyClassDeriveDD1Ev"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": []
+            }
+        },
+        "FunctionMap": {
+            "c:@F@main#I#**C#": "c:@F@main#I#**C#",
+            "c:@F@operator delete#*v#": "c:@F@operator delete#*v#",
+            "c:@F@operator delete[]#*v#": "c:@F@operator delete[]#*v#",
+            "c:@F@operator new#l#": "c:@F@operator new#l#",
+            "c:@F@operator new[]#l#": "c:@F@operator new[]#l#",
+            "c:@S@MyClass@F@MyClass#": "c:@S@MyClass@F@MyClass#",
+            "c:@S@MyClass@F@MyClass#&&$@S@MyClass#": "c:@S@MyClass@F@MyClass#&&$@S@MyClass#",
+            "c:@S@MyClass@F@MyClass#&1$@S@MyClass#": "c:@S@MyClass@F@MyClass#&1$@S@MyClass#",
+            "c:@S@MyClass@F@foo#": "c:@S@MyClass@F@foo#",
+            "c:@S@MyClass@F@operator=#&&$@S@MyClass#": "c:@S@MyClass@F@operator=#&&$@S@MyClass#",
+            "c:@S@MyClass@F@operator=#&1$@S@MyClass#": "c:@S@MyClass@F@operator=#&1$@S@MyClass#",
+            "c:@S@MyClass@F@~MyClass#": "c:@S@MyClass@F@~MyClass#",
+            "c:@S@MyClassDerive@F@MyClassDerive#": "c:@S@MyClassDerive@F@MyClassDerive#",
+            "c:@S@MyClassDerive@F@MyClassDerive#&&$@S@MyClassDerive#": "c:@S@MyClassDerive@F@MyClassDerive#&&$@S@MyClassDerive#",
+            "c:@S@MyClassDerive@F@MyClassDerive#&1$@S@MyClassDerive#": "c:@S@MyClassDerive@F@MyClassDerive#&1$@S@MyClassDerive#",
+            "c:@S@MyClassDerive@F@foo#": "c:@S@MyClassDerive@F@foo#",
+            "c:@S@MyClassDerive@F@operator=#&&$@S@MyClassDerive#": "c:@S@MyClassDerive@F@operator=#&&$@S@MyClassDerive#",
+            "c:@S@MyClassDerive@F@operator=#&1$@S@MyClassDerive#": "c:@S@MyClassDerive@F@operator=#&1$@S@MyClassDerive#",
+            "c:@S@MyClassDerive@F@~MyClassDerive#": "c:@S@MyClassDerive@F@~MyClassDerive#",
+            "c:@S@MyClassDeriveD@F@MyClassDeriveD#": "c:@S@MyClassDeriveD@F@MyClassDeriveD#",
+            "c:@S@MyClassDeriveD@F@MyClassDeriveD#&&$@S@MyClassDeriveD#": "c:@S@MyClassDeriveD@F@MyClassDeriveD#&&$@S@MyClassDeriveD#",
+            "c:@S@MyClassDeriveD@F@MyClassDeriveD#&1$@S@MyClassDeriveD#": "c:@S@MyClassDeriveD@F@MyClassDeriveD#&1$@S@MyClassDeriveD#",
+            "c:@S@MyClassDeriveD@F@foo#": "c:@S@MyClassDeriveD@F@foo#",
+            "c:@S@MyClassDeriveD@F@operator=#&&$@S@MyClassDeriveD#": "c:@S@MyClassDeriveD@F@operator=#&&$@S@MyClassDeriveD#",
+            "c:@S@MyClassDeriveD@F@operator=#&1$@S@MyClassDeriveD#": "c:@S@MyClassDeriveD@F@operator=#&1$@S@MyClassDeriveD#",
+            "c:@S@MyClassDeriveD@F@~MyClassDeriveD#": "c:@S@MyClassDeriveD@F@~MyClassDeriveD#"
+        }
+    },
+    "_CG": {
+        "_ZN13MyClassDerive3fooEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": true,
+            "hasBody": false,
+            "isVirtual": true,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0053.h",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [
+                "_ZN14MyClassDeriveD3fooEv"
+            ],
+            "overrides": [
+                "_ZN7MyClass3fooEv"
+            ]
+        },
+        "_ZN13MyClassDeriveC1Ev": {
+            "callees": [
+                "_ZN7MyClassC2Ev"
+            ],
+            "callers": [
+                "_ZN14MyClassDeriveDC1Ev",
+                "_ZN14MyClassDeriveDC2Ev"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0053.h",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN13MyClassDeriveC2Ev": {
+            "callees": [
+                "_ZN7MyClassC2Ev"
+            ],
+            "callers": [
+                "_ZN14MyClassDeriveDC1Ev",
+                "_ZN14MyClassDeriveDC2Ev"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0053.h",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN14MyClassDeriveD3fooEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": true,
+            "hasBody": true,
+            "isVirtual": true,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0053_b.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": [
+                "_ZN13MyClassDerive3fooEv"
+            ]
+        },
+        "_ZN14MyClassDeriveDC1Ev": {
+            "callees": [
+                "_ZN13MyClassDeriveC1Ev",
+                "_ZN13MyClassDeriveC2Ev"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0053_b.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN14MyClassDeriveDC2Ev": {
+            "callees": [
+                "_ZN13MyClassDeriveC1Ev",
+                "_ZN13MyClassDeriveC2Ev"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0053_b.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN7MyClass3fooEv": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": true,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0053.h",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [
+                "_ZN13MyClassDerive3fooEv"
+            ],
+            "overrides": []
+        },
+        "_ZN7MyClassC2Ev": {
+            "callees": [],
+            "callers": [
+                "_ZN13MyClassDeriveC1Ev",
+                "_ZN13MyClassDeriveC2Ev"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0053.h",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_ZN14MyClassDeriveDC1Ev",
+                "_ZN14MyClassDeriveDC2Ev",
+                "_ZN7MyClass3fooEv"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 3
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0053_b.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "_ZN7MyClass3fooEv": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 6,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 1
+                },
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

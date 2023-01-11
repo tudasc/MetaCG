@@ -17,10 +17,9 @@ int main(int argc, char **argv) {
   FuncMapT genFuncMap;
 
   // Read the ground truth, i.e., expected content
-  gt = buildFromJSONv2(gtFuncMap, argv[1]);
+  gt = buildFromJSONv2(gtFuncMap, argv[1], nullptr);
   // Read the generated result
-  gen = buildFromJSONv2(genFuncMap, argv[2]);
-
+  gen = buildFromJSONv2(genFuncMap, argv[2], nullptr);
 
   // Test for equality of result and groundtruth
   // Test same functions in both [set of keys equal]

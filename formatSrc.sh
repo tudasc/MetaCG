@@ -12,3 +12,4 @@ find ./cgcollector/tools -iname ".h" -exec clang-format -i {} \;
 # Apply CMake formatting
 find . -name "CMakeLists.txt" -exec cmake-format -i {} \;
 find ./cmake -name "*.cmake" -type f -exec cmake-format -i {} \;
+

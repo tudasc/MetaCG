@@ -14,7 +14,7 @@
 
 #include "../../graph/include/Callgraph.h"
 
-#include "CallgraphManager.h"
+#include "PiraMCGProcessor.h"
 #include "IPCGEstimatorPhase.h"
 
 void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &cg, Config *c, bool isIPCG, float runtimeThreshold) {

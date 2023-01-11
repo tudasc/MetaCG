@@ -23,30 +23,6 @@
             "main"
         ]
     },
-    "_ZN7MyClassC5Ev": {
-        "callees": [],
-        "doesOverride": false,
-        "hasBody": true,
-        "isVirtual": false,
-        "numStatements": 0,
-        "overriddenBy": [],
-        "overriddenFunctions": [],
-        "parents": [
-            "main"
-        ]
-    },
-    "_ZN7MyClassCEv": {
-        "callees": [],
-        "doesOverride": false,
-        "hasBody": true,
-        "isVirtual": false,
-        "numStatements": 0,
-        "overriddenBy": [],
-        "overriddenFunctions": [],
-        "parents": [
-            "main"
-        ]
-    },
     "_ZN7MyClassD0Ev": {
         "callees": [],
         "doesOverride": false,
@@ -77,22 +53,10 @@
         "overriddenFunctions": [],
         "parents": []
     },
-    "_ZN7MyClassD5Ev": {
-        "callees": [],
-        "doesOverride": false,
-        "hasBody": true,
-        "isVirtual": true,
-        "numStatements": 0,
-        "overriddenBy": [],
-        "overriddenFunctions": [],
-        "parents": []
-    },
     "main": {
         "callees": [
             "_ZN7MyClassC1Ev",
-            "_ZN7MyClassC2Ev",
-            "_ZN7MyClassC5Ev",
-            "_ZN7MyClassCEv"
+            "_ZN7MyClassC2Ev"
         ],
         "doesOverride": false,
         "hasBody": true,

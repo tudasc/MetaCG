@@ -1,0 +1,273 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {
+            "c:@F@call#@CALL_EXPR@@158-160": "c:@F@call#",
+            "c:@F@call#@CALL_EXPR@@174-176": "c:@F@call#"
+        },
+        "CallInfoMap": {
+            "c:@F@call#@CALL_EXPR@@158-160": {
+                "Arguments": [],
+                "CalledObjects": [
+                    "c:0206.cpp@73@F@call#@a"
+                ]
+            },
+            "c:@F@call#@CALL_EXPR@@174-176": {
+                "Arguments": [],
+                "CalledObjects": [
+                    "c:0206.cpp@73@F@call#@b"
+                ]
+            }
+        },
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@F@main#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@call#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@bar#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@bar#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0206.cpp@88@F@call#@s"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#@CALL_EXPR@@195-200",
+                    "c:@F@call#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0206.cpp@73@F@call#@b",
+                    "c:0206.cpp@73@F@call#@a",
+                    "c:@F@foo#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@call#@CALL_EXPR@@174-176",
+                    "c:@F@call#@CALL_EXPR@@158-160",
+                    "c:@F@foo#@SRETURN"
+                ],
+                "Prefixes": []
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@bar#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z3barv"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@bar#@SRETURN"
+                ]
+            },
+            "c:@F@call#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z4callv"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@call#@SRETURN"
+                ]
+            },
+            "c:@F@foo#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z3foov"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@foo#@SRETURN"
+                ]
+            },
+            "c:@F@main#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "main"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@main#@SRETURN"
+                ]
+            }
+        },
+        "FunctionMap": {
+            "c:@F@bar#": "c:@F@bar#",
+            "c:@F@call#": "c:@F@call#",
+            "c:@F@foo#": "c:@F@foo#",
+            "c:@F@main#": "c:@F@main#"
+        }
+    },
+    "_CG": {
+        "_Z3barv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/functionPointers/0206.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z3foov": {
+            "callees": [],
+            "callers": [
+                "_Z4callv"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/functionPointers/0206.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z4callv": {
+            "callees": [
+                "_Z3foov"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 3
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/functionPointers/0206.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "_Z3foov": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 2,
+                "numOperations": {
+                    "numberOfControlFlowOps": 6,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 5,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 8
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z4callv"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/functionPointers/0206.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "_Z4callv": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

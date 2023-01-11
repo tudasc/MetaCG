@@ -2,12 +2,34 @@
 
 . base.sh
 
+build_dir=build # may be changed with opt 'b'
+while getopts ":b:h" opt; do
+  case $opt in
+    b)
+      if [ -z $OPTARG ]; then
+        echo "no build directory given, assuming \"build\""
+      fi
+      build_dir=$OPTARG
+      ;;
+    h)
+      echo "use -b to provide a build directory NAME"
+      echo "use -h to print this help"
+      exit 0
+      ;;
+    \?)
+      echo "Invalid option -$OPTARG"
+      exit 1
+      ;;
+  esac
+done
+
+
 fails=0
 testNo=0
 logDir=$PWD/logging
 logFile=$logDir/cgvalidate.log
 inputDir=$PWD/input
-buildDir=$PWD/../../../../build/cgcollector/tools/
+buildDir=$PWD/../../../../${build_dir}/cgcollector/tools/
 executable=$buildDir/cgvalidate
 
 #cleanup

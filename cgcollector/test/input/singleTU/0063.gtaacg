@@ -1,0 +1,59 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {},
+        "CallInfoMap": {},
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@F@on_exit#*Fv(#I#*v)#S2_#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@on_exit#*Fv(#I#*v)#S2_#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0063.cpp@220@F@on_exit#*Fv(#I#*v)#S2_#@__arg"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0063.cpp@177@F@on_exit#*Fv(#I#*v)#S2_#@__func"
+                ],
+                "Prefixes": []
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@on_exit#*Fv(#I#*v)#S2_#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z7on_exitPFviPvES_"
+                ],
+                "Parameters": [
+                    "c:0063.cpp@177@F@on_exit#*Fv(#I#*v)#S2_#@__func",
+                    "c:0063.cpp@220@F@on_exit#*Fv(#I#*v)#S2_#@__arg"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@on_exit#*Fv(#I#*v)#S2_#@SRETURN"
+                ]
+            }
+        },
+        "FunctionMap": {
+            "c:@F@on_exit#*Fv(#I#*v)#S2_#": "c:@F@on_exit#*Fv(#I#*v)#S2_#"
+        }
+    },
+    "_CG": null,
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

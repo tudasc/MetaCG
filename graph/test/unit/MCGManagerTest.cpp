@@ -6,75 +6,186 @@
 
 #include "gtest/gtest.h"
 
-#include "../../../pgis/test/unit/LoggerUtil.h"
+#include "LoggerUtil.h"
 
 #include "MCGManager.h"
-#include "MetaDataHandler.h"
+#include "MetaData.h"
 
-using namespace pira;
+using json = nlohmann::json;
+
+/**
+ * This is to test, if it can actually work as imagined
+ */
+
+struct TestHandler : public metacg::io::retriever::MetaDataHandler {
+  int i{0};
+  const std::string toolName() const override { return "TestMetaHandler"; }
+  void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
+  bool handles(const metacg::CgNode *const n) const override { return false; }
+  json value(const metacg::CgNode *const n) const override {
+    json j;
+    j = i;
+    return j;
+  }
+};
 
 class MCGManagerTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    loggerutil::getLogger();
+    metacg::loggerutil::getLogger();
     auto &mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
-    mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+    mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   }
 };
 
 TEST_F(MCGManagerTest, EmptyCG) {
-
   auto &mcgm = metacg::graph::MCGManager::get();
   ASSERT_EQ(0, mcgm.size());
 
-  auto graph = *mcgm.getCallgraph();
+  auto graph = mcgm.getCallgraph();
 
-  ASSERT_TRUE(graph.isEmpty());
-  ASSERT_EQ(false, graph.hasNode("main"));
-  ASSERT_EQ(nullptr, graph.getMain());
-  ASSERT_EQ(0, graph.size());
+  ASSERT_TRUE(graph->isEmpty());
+  ASSERT_EQ(false, graph->hasNode("main"));
+  ASSERT_EQ(nullptr, graph->getMain());
+  ASSERT_EQ(0, graph->size());
 }
 
 TEST_F(MCGManagerTest, OneNodeCG) {
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.findOrCreateNode("main");
-  auto nPtr = mcgm.findOrCreateNode("main");
-  auto graph = *mcgm.getCallgraph();
-  ASSERT_FALSE(graph.isEmpty());
-  ASSERT_NE(nullptr, graph.getMain());
-  ASSERT_EQ(nPtr, graph.getMain());
+  mcgm.getCallgraph()->getOrInsertNode("main");
+  auto nPtr = mcgm.getCallgraph()->getOrInsertNode("main");
+  auto graph = mcgm.getCallgraph();
+  ASSERT_FALSE(graph->isEmpty());
+  ASSERT_NE(nullptr, graph->getMain());
+  ASSERT_EQ(nPtr, graph->getMain());
 }
 
 TEST_F(MCGManagerTest, TwoNodeCG) {
   auto &mcgm = metacg::graph::MCGManager::get();
-  auto mainNode = mcgm.findOrCreateNode("main");
-  auto childNode = mcgm.findOrCreateNode("child1");
-  mcgm.addEdge("main", "child1");
-  ASSERT_EQ(mainNode, mcgm.findOrCreateNode("main"));
-  ASSERT_EQ(childNode, mcgm.findOrCreateNode("child1"));
-  auto graph = *mcgm.getCallgraph();
-  ASSERT_EQ(mainNode, graph.getMain());
-  ASSERT_EQ(childNode, graph.getNode("child1"));
+  auto mainNode = mcgm.getCallgraph()->getOrInsertNode("main");
+  auto childNode = mcgm.getCallgraph()->getOrInsertNode("child1");
+  mcgm.getCallgraph()->addEdge("main", "child1");
+  ASSERT_EQ(mainNode, mcgm.getCallgraph()->getOrInsertNode("main"));
+  ASSERT_EQ(childNode, mcgm.getCallgraph()->getOrInsertNode("child1"));
+  auto graph = mcgm.getCallgraph();
+  ASSERT_EQ(mainNode, graph->getMain());
+  ASSERT_EQ(childNode, graph->getNode("child1"));
 }
 
 TEST_F(MCGManagerTest, ThreeNodeCG) {
   auto &mcgm = metacg::graph::MCGManager::get();
-  auto mainNode = mcgm.findOrCreateNode("main");
-  auto childNode = mcgm.findOrCreateNode("child1");
-  mcgm.addEdge("main", "child1");
-  ASSERT_EQ(mainNode, mcgm.findOrCreateNode("main"));
-  ASSERT_EQ(childNode, mcgm.findOrCreateNode("child1"));
-  auto childNode2 = mcgm.findOrCreateNode("child2");
-  mcgm.addEdge("main", "child2");
-  ASSERT_EQ(2, mainNode->getChildNodes().size());
-  ASSERT_EQ(1, childNode->getParentNodes().size());
-  ASSERT_EQ(1, childNode2->getParentNodes().size());
+  auto mainNode = mcgm.getCallgraph()->getOrInsertNode("main");
+  auto childNode = mcgm.getCallgraph()->getOrInsertNode("child1");
+  mcgm.getCallgraph()->addEdge("main", "child1");
+  ASSERT_EQ(mainNode, mcgm.getCallgraph()->getOrInsertNode("main"));
+  ASSERT_EQ(childNode, mcgm.getCallgraph()->getOrInsertNode("child1"));
+  auto childNode2 = mcgm.getCallgraph()->getOrInsertNode("child2");
+  mcgm.getCallgraph()->addEdge("main", "child2");
+  ASSERT_EQ(2, mcgm.getCallgraph()->getCallees(mainNode->getId()).size());
+  ASSERT_EQ(1, mcgm.getCallgraph()->getCallers(childNode->getId()).size());
+  ASSERT_EQ(1, mcgm.getCallgraph()->getCallers(childNode2->getId()).size());
+}
+
+TEST_F(MCGManagerTest, ComplexCG) {
+  // Call-order: top to bottom or arrow if given
+  /*
+   *              main
+   *            /     \
+   *          1        2<--|
+   *         / \       |\__|
+   *        3-->4      5
+   *              \    |
+   *               \-->6
+   *
+   */
+
+  auto &mcgm = metacg::graph::MCGManager::get();
+  auto mainNode = mcgm.getCallgraph()->getOrInsertNode("main");
+  auto childNode1 = mcgm.getCallgraph()->getOrInsertNode("child1");
+  auto childNode2 = mcgm.getCallgraph()->getOrInsertNode("child2");
+  auto childNode3 = mcgm.getCallgraph()->getOrInsertNode("child3");
+  auto childNode4 = mcgm.getCallgraph()->getOrInsertNode("child4");
+  auto childNode5 = mcgm.getCallgraph()->getOrInsertNode("child5");
+  auto childNode6 = mcgm.getCallgraph()->getOrInsertNode("child6");
+  mcgm.getCallgraph()->addEdge("main", "child1");
+  mcgm.getCallgraph()->addEdge("main", "child2");
+  mcgm.getCallgraph()->addEdge("child1", "child3");
+  mcgm.getCallgraph()->addEdge("child1", "child4");
+  mcgm.getCallgraph()->addEdge("child3", "child4");
+  mcgm.getCallgraph()->addEdge("child4", "child6");
+  mcgm.getCallgraph()->addEdge("child2", "child5");
+  mcgm.getCallgraph()->addEdge("child2", "child2");
+  mcgm.getCallgraph()->addEdge("child5", "child6");
+
+  // Main has 2 children: child 1 and 2
+  ASSERT_EQ(mcgm.getCallgraph()->getCallees(mainNode->getId()).size(), 2);
+  for (const auto &elem : mcgm.getCallgraph()->getCallees(mainNode->getId())) {
+    ASSERT_TRUE(elem->getFunctionName() == "child1" || elem->getFunctionName() == "child2");
+  }
+  // Child 1 has 2 children: child 3 and 4
+  ASSERT_EQ(mcgm.getCallgraph()->getCallees(childNode1->getId()).size(), 2);
+  for (const auto &elem : mcgm.getCallgraph()->getCallees(childNode1->getId())) {
+    ASSERT_TRUE(elem->getFunctionName() == "child3" || elem->getFunctionName() == "child4");
+  }
+  // Child 2 has 2 child: child2 and child 5
+  ASSERT_EQ(mcgm.getCallgraph()->getCallees(childNode2->getId()).size(), 2);
+  for (const auto &elem : mcgm.getCallgraph()->getCallees(childNode2->getId())) {
+    ASSERT_TRUE(elem->getFunctionName() == "child2" || elem->getFunctionName() == "child5");
+  }
+  // Child 3 has 1 child: child 4
+  ASSERT_EQ(mcgm.getCallgraph()->getCallees(childNode3->getId()).size(), 1);
+  ASSERT_TRUE((*mcgm.getCallgraph()->getCallees(childNode3->getId()).begin())->getFunctionName() == "child4");
+  // Child 4 has 1 child: child 6
+  ASSERT_EQ(mcgm.getCallgraph()->getCallees(childNode4->getId()).size(), 1);
+  ASSERT_TRUE((*mcgm.getCallgraph()->getCallees(childNode4->getId()).begin())->getFunctionName() == "child6");
+  // Child 5 has 1 child: child 6
+  ASSERT_EQ(mcgm.getCallgraph()->getCallees(childNode5->getId()).size(), 1);
+  ASSERT_TRUE((*mcgm.getCallgraph()->getCallees(childNode5->getId()).begin())->getFunctionName() == "child6");
+  // Child 6 has 0 children:
+  ASSERT_EQ(mcgm.getCallgraph()->getCallees(childNode6->getId()).size(), 0);
+
+  // Main has 0 parents:
+  ASSERT_EQ(mcgm.getCallgraph()->getCallers(mainNode->getId()).size(), 0);
+  // Child 1 has 1 parent: main
+  ASSERT_EQ(mcgm.getCallgraph()->getCallers(childNode1->getId()).size(), 1);
+  ASSERT_TRUE((*mcgm.getCallgraph()->getCallers(childNode1->getId()).begin())->getFunctionName() == "main");
+  // Child 2 has 2 parents: main and child2
+  ASSERT_EQ(mcgm.getCallgraph()->getCallers(childNode2->getId()).size(), 2);
+  for (const auto &elem : mcgm.getCallgraph()->getCallers(childNode2->getId())) {
+    ASSERT_TRUE(elem->getFunctionName() == "main" || elem->getFunctionName() == "child2");
+  }
+  // Child 3 has 1 parent: child 1
+  ASSERT_EQ(mcgm.getCallgraph()->getCallers(childNode3->getId()).size(), 1);
+  ASSERT_TRUE((*mcgm.getCallgraph()->getCallers(childNode3->getId()).begin())->getFunctionName() == "child1");
+  // Child 4 has 2 parents: child 1 and child 3
+  ASSERT_EQ(mcgm.getCallgraph()->getCallers(childNode4->getId()).size(), 2);
+  for (const auto &elem : mcgm.getCallgraph()->getCallers(childNode4->getId())) {
+    ASSERT_TRUE(elem->getFunctionName() == "child1" || elem->getFunctionName() == "child3");
+  }
+  // Child 5 has 1 parent: child 2
+  ASSERT_EQ(mcgm.getCallgraph()->getCallers(childNode5->getId()).size(), 1);
+  ASSERT_TRUE((*mcgm.getCallgraph()->getCallers(childNode5->getId()).begin())->getFunctionName() == "child2");
+  // Child 6 has 2 parents: child 4 and child 5
+  ASSERT_EQ(mcgm.getCallgraph()->getCallers(childNode6->getId()).size(), 2);
+  for (const auto &elem : mcgm.getCallgraph()->getCallers(childNode6->getId())) {
+    ASSERT_TRUE(elem->getFunctionName() == "child4" || elem->getFunctionName() == "child5");
+  }
 }
 
 TEST_F(MCGManagerTest, OneMetaDataAttached) {
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.addMetaHandler<metacg::io::retriever::TestHandler>();
+  mcgm.addMetaHandler<TestHandler>();
   const auto &handlers = mcgm.getMetaHandlers();
   ASSERT_EQ(handlers.size(), 1);
+}
+
+TEST_F(MCGManagerTest, TwoNodeOneEdgeCG) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  auto cg = mcgm.getCallgraph();
+  cg->addEdge(cg->getOrInsertNode("main"), cg->getOrInsertNode("LC1"));
+
+  ASSERT_TRUE(cg->getMain() != nullptr);
+  auto mainNode = cg->getMain();
+  ASSERT_TRUE(mcgm.getCallgraph()->getCallees(mainNode->getId()).size() == 1);
 }

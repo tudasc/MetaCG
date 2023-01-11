@@ -15,7 +15,7 @@
 #pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic ignored "-Wsign-compare"
-#include "CallgraphManager.h"
+#include "PiraMCGProcessor.h"
 #include "EXTRAP_SingleParameterModelGenerator.hpp"
 #include <EXTRAP_MultiParameterSimpleModelGenerator.hpp>
 #include <EXTRAP_SingleParameterSimpleModelGenerator.hpp>
@@ -77,7 +77,6 @@ ExtrapConfig getExtrapConfigFromJSON(std::string filePath) {
     }
     if (key == "params") {
       auto subTree = it.value();
-      // TODO double check if this is the correct sub-tree
       for (json::iterator st_it = subTree.begin(); st_it != subTree.end(); ++st_it) {
         // This case should only be hit, when actually a PARAMETER!
         std::string paramName = '.' + st_it.key();
@@ -151,7 +150,7 @@ void ExtrapModelProvider::buildModels() {
   reader.prepareCubeFileReader(scalingType, finalDir, config.prefix, config.postfix, cubeFileName, extrapParams,
                                paramPrefixes, paramValues, config.repetitions);
 
-  int dimensions = extrapParams.size();
+  int dimensions = extrapParams.size(); // The Extra-P API awaits int instead of size_t
   auto console = spdlog::get("console");
   auto cubeFiles = reader.getFileNames(dimensions);
   auto fns = reader.getFileNames(dimensions);
@@ -181,7 +180,7 @@ void ExtrapModelProvider::buildModels() {
     //    if (i % configPtr.repetitions == 0) {
     const auto attEpData = [&](auto &cube, auto cnode, auto n) {
       console->debug("Attaching Cube info from file {}", fns.at(i));
-      auto ptd = getOrCreateMD<pira::PiraTwoData>(n, ExtrapConnector({}, {}));
+      auto ptd = n->template getOrCreateMD<pira::PiraTwoData>(ExtrapConnector({}, {}));
       ptd->setExtrapParameters(config.params);
       ptd->addToRuntimeVec(CubeCallgraphBuilder::impl::time(cube, cnode));
     };
@@ -191,7 +190,8 @@ void ExtrapModelProvider::buildModels() {
     //   }
   }
 
-  for (const auto &n : metacg::pgis::PiraMCGProcessor::get()) {
+  for (const auto &elem : metacg::pgis::PiraMCGProcessor::get()) {
+    const auto& n = elem.second.get();
     console->trace("No PiraTwoData meta data");
     if (n->has<pira::PiraTwoData>()) {
       auto ptd = CubeCallgraphBuilder::impl::get<pira::PiraTwoData>(n);
@@ -225,11 +225,8 @@ void ExtrapModelProvider::buildModels() {
    * Notes
    * - We can have multiple models for one function, as Extra-P models based on the call-path profiles.
    * - We have models for each metric captured in the target application.
-   * - We need the call paths to retrieve the model we want, i.e., need to construct the call path.
    */
-
-  // FIXME: Delete object / prevent resource leakage
-  EXTRAP::ModelGenerator *mg = nullptr;
+  EXTRAP::ModelGenerator *mg = nullptr; // deleted in class destructor
   if (extrapParams.size() == 1) {
     auto smg = new EXTRAP::SingleParameterSimpleModelGenerator();
     smg->setEpsilon(0.05);
@@ -239,10 +236,6 @@ void ExtrapModelProvider::buildModels() {
   } else {
     auto mmg = new EXTRAP::MultiParameterSimpleModelGenerator();
     mg = mmg;
-  }
-
-  if (!mg) {
-    spdlog::get("errconsole")->error("Creation of Model Generator failed.");
   }
 
   experiment->addModelGenerator(mg);
@@ -261,16 +254,13 @@ void ExtrapModelProvider::buildModels() {
         continue;
       }
       console->debug("Processing for {}", cp->getRegion()->getName());
-      // Currently only one model is generated at a time. // How to handle multiple?
       auto functionModels = experiment->getModels(*m, *cp);
 
       for (auto i : functionModels) {
-        if (!i) {
+        if (i == nullptr) {
           spdlog::get("errconsole")->warn("Function model is NULL");
-          auto tf = i->getModelFunction();
-          if (!tf) {
-            spdlog::get("errconsole")->warn("Function model is NULL");
-          }
+          assert(false && "the function model should not be nullptr");
+          // What happened if it is indeed nullptr?
         }
         console->debug("{} >>>> {}", cp->getRegion()->getName(), i->getModelFunction()->getAsString(extrapParams));
       }

@@ -11,47 +11,15 @@
 #include "MetaData.h"
 #include "CgNodePtr.h"
 
-// PGIS library
-#include "CgLocation.h"
-#include "CgNodeMetaData.h"
-
 // System library
 #include <map>
-#include <queue>
 #include <string>
 #include <vector>
 // clang-format on
 
-// iterate priority_queue as of: http://stackoverflow.com/a/1385520
-template <class T, class S, class C>
-S &Container(std::priority_queue<T, S, C> &q) {
-  struct HackedQueue : private std::priority_queue<T, S, C> {
-    static S &Container(std::priority_queue<T, S, C> &q) { return q.*&HackedQueue::c; }
-  };
-  return HackedQueue::Container(q);
-}
-
 namespace metacg {
 
-enum CgNodeState {
-  NONE, // used
-  INSTRUMENT_WITNESS, // used
-  UNWIND_SAMPLE, // unused
-  INSTRUMENT_CONJUNCTION, // unclear
-  UNWIND_INSTR, // unused
-  INSTRUMENT_CUBE, // unused
-  INSTRUMENT_PATH // used
-};
-
-/**
- * Node in the call graph with potentially attached metadata.
- */
 class CgNode {
-  /* MetaData storage */
-  using MetaData = metacg::MetaData;
-  mutable std::unordered_map<std::string, MetaData *> metaFields;
-  /* End MetaData storage */
-
  public:
   /**
    * Checks if metadata of type #T is attached
@@ -70,9 +38,9 @@ class CgNode {
    */
   template <typename T>
   inline T *get() const {
-    assert(metaFields[T::key()] && "meta field for key must exist");
-    auto val = metaFields[T::key()];
-    return reinterpret_cast<T *>(val);
+    assert(metaFields.count(T::key()) > 0 && "meta field for key must exist");
+    auto val = metaFields.at(T::key());
+    return static_cast<T *>(val);
   }
 
   /**
@@ -97,44 +65,67 @@ class CgNode {
    */
   template <typename T>
   inline void addMetaData(T *md) {
-    //    if (this->has<T>()) {
-    //      assert(false && "MetaData with key already attached");
-    //    }
+    if (this->has<T>()) {
+      assert(false && "MetaData with key already attached");
+    }
     metaFields[T::key()] = md;
   }
 
-  explicit CgNode(std::string function);
-  ~CgNode() {
-    for (auto md : metaFields) {
-      delete md.second;
+  /**
+   * Convenience function to get the existing meta data node, or attach a new meta data node.
+   * TODO: Should this return a pair<bool, T*> instead with first indicating if newly inserted?
+   *
+   * @tparam T
+   * @tparam Args
+   * @param p
+   * @param args Arguments to construct MetaData  T, ignored when MetaData already exists.
+   * @return
+   */
+  template <typename T, typename... Args>
+  T *getOrCreateMD(const Args &...args) {
+    auto [has, md] = this->template checkAndGet<T>();
+    if (has) {
+      return md;
+    } else {
+      auto nmd = new T(args...);
+      this->template addMetaData(nmd);
+      return nmd;
     }
   }
 
+  /**
+   * Creates a call graph node for a function with name @function.
+   * It should not be used directly, instead construct CgNodePtr values.
+   * TODO: Currently sets isVirtual and hasBody per default to false. This should be refactored.
+   * @param function
+   */
+  explicit CgNode(std::string function, bool isVirtual = false, bool hasBody = false)
+      : id(std::hash<std::string>()(function)),
+        functionName(std::move(function)),
+        isMarkedVirtual(isVirtual),
+        hasBody(hasBody){};
+
+  /**
+   * CgNode destructs all attached meta data when destructed.
+   */
+  ~CgNode();
+
+  /** We delete copy ctor and copy assign op */
   CgNode(const CgNode &other) = delete;
   CgNode(const CgNode &&other) = delete;
-
   CgNode &operator=(CgNode other) = delete;
   CgNode &operator=(const CgNode &other) = delete;
   CgNode &operator=(CgNode &&other) = delete;
+  bool operator==(const CgNode &otherNode) const;
 
-  void addChildNode(CgNodePtr childNode);
-  void addParentNode(CgNodePtr parentNode);
-  void removeChildNode(CgNodePtr childNode);
-  void removeParentNode(CgNodePtr parentNode);
-  const CgNodePtrSet &getChildNodes() const;
-  const CgNodePtrSet &getParentNodes() const;
+  bool isSameFunction(const CgNode &otherNode) const;
 
   /**
-  * Compares the function names for equality.
-  * @param otherNode
-  * @return
-  */
-  bool isSameFunction(CgNodePtr otherNode) const;
-
-  // Reachable from main
-  void setReachable(bool reachable = true) { this->reachable = reachable; }
-  // Reachable from main
-  bool isReachable() const { return this->reachable; }
+   * Compares the function names for equality.
+   * @param otherNode
+   * @return
+   */
+  bool isSameFunctionName(const CgNode &otherNode) const;
 
   bool isVirtual() const { return isMarkedVirtual; }
   void setIsVirtual(bool virtuality) { isMarkedVirtual = virtuality; }
@@ -142,111 +133,26 @@ class CgNode {
   bool getHasBody() const { return hasBody; }
   void setHasBody(bool hasBody) { this->hasBody = hasBody; }
 
-  std::string getFunctionName() const;
-  int getLineNumber() const { return line; }
-  void setLineNumber(int line);
-  void setFilename(std::string filename);
-  std::string getFilename() { return filename; }
-
-  // Node states (they are specific to PGIS)
-  // TODO: Move to some PGIS MetaData
-  void setState(CgNodeState state, int numberOfUnwindSteps = 0);
-  bool isInstrumented() const;
-  bool isInstrumentedWitness() const;
-  bool isInstrumentedConjunction() const;
-  bool isInstrumentedCallpath() const;
-  bool isUnwound() const;
-  bool isUnwoundSample() const;
-  bool isUnwoundInstr() const;
-
   /**
-   * Mark for instrumentation: this -> parent
+   *
+   * @return the nameIdMap of the function
    */
-  void instrumentFromParent(CgNodePtr parent);
-  std::unordered_set<CgNodePtr> getInstrumentedParentEdges() { return this->instrumentedParentEdges; }
-
-  // spanning tree stuff (still relevant?)
-  bool isSpantreeParent(CgNodePtr);
-  const CgNodePtrSet &getSpantreeParents() const { return spantreeParents; }
-  void reset();
-
-  // XXX Still used?
-  void updateNodeAttributes(bool updateNumberOfSamples = true);
-
-
-  bool hasUniqueCallPath() const;
-  bool isLeafNode() const;
-  bool isRootNode() const;
+  std::string getFunctionName() const;
 
   void dumpToDot(std::ofstream &outputStream, int procNum);
 
   void print();
 
+  size_t getId() const { return id; }
+
   friend std::ostream &operator<<(std::ostream &stream, const CgNode &n);
-  friend std::ostream &operator<<(std::ostream &stream, const CgNodePtrSet &s);
 
  private:
+  size_t id = -1;
   std::string functionName;
-  CgNodeState state;
-
-  // note that these metrics are based on a profile and might be pessimistic
-  unsigned long long expectedNumberOfSamples;
-
-  bool reachable;
+  std::unordered_map<std::string, MetaData *> metaFields;
   bool isMarkedVirtual;
   bool hasBody;
-
-  CgNodePtrSet childNodes;
-  CgNodePtrSet parentNodes;
-
-  std::unordered_set<CgNodePtr> instrumentedParentEdges;
-
-  // if the node is a conjunction, these are the potentially instrumented nodes
-  CgNodePtrSet potentialMarkerPositions;
-  // if the node is a potential marker position, these conjunctions depend on its instrumentation
-  CgNodePtrSet dependentConjunctions;
-
-  // this is possibly the dumbest way to implement a spanning tree
-  CgNodePtrSet spantreeParents;
-
-  // node attributes
-  bool uniqueCallPath;
-
-  // for later use
-  std::string filename;
-  int line;
 };
-
-}
-
-struct CgEdge {
-  CgNodePtr from;
-  CgNodePtr to;
-
-  CgEdge(CgNodePtr from, CgNodePtr to) : from(from), to(to) {}
-
-  inline bool operator<(const CgEdge &other) const { return std::tie(from, to) < std::tie(other.from, other.to); }
-
-  friend bool operator==(const CgEdge &lhs, const CgEdge &rhs) {
-    return std::tie(lhs.from, lhs.to) == std::tie(rhs.from, rhs.to);
-  }
-
-  friend std::ostream &operator<<(std::ostream &stream, const CgEdge &e) {
-    stream << *(e.from) << " -> " << *(e.to);
-    return stream;
-  }
-};
-
-template <typename T, typename... Args>
-T *getOrCreateMD(CgNodePtr p, const Args &... args) {
-  auto [has, md] = p->template checkAndGet<T>();
-  if (has) {
-    return md;
-  } else {
-    auto nmd = new T(args...);
-    p->template addMetaData(nmd);
-    return nmd;
-  }
-}
-
+}  // namespace metacg
 #endif

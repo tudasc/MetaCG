@@ -7,7 +7,9 @@
 #ifndef CGNODEHELPER_H_
 #define CGNODEHELPER_H_
 
-#include "../../../graph/include/CgNode.h"
+#include "CgNode.h"
+#include "Callgraph.h"
+#include "ReachabilityAnalysis.h"
 
 #include <algorithm>  // std::set_intersection
 #include <memory>
@@ -62,63 +64,64 @@ struct Config {
 
 namespace CgHelper {
 
-bool isConjunction(CgNodePtr node);
+bool isConjunction(const metacg::CgNode* node, const metacg::Callgraph* const graph);
 
-CgNodePtrSet getInstrumentationPath(CgNodePtr start);
+CgNodeRawPtrUSet getInstrumentationPath(metacg::CgNode* start, const metacg::Callgraph* const graph);
 
 // Graph Stats
-bool isOnCycle(CgNodePtr node);
-
-/**
- * Runs analysis on the call-graph and marks every node which is reachable from main
- */
-void reachableFromMainAnalysis(CgNodePtr mainNode);
+bool isOnCycle(metacg::CgNode* node, const metacg::Callgraph* const graph);
 
 /**
  * Calculates the inclusive statement count for every node which is reachable from mainNode and saves in the node field
  */
-void calculateInclusiveStatementCounts(CgNodePtr mainNode);
+void calculateInclusiveStatementCounts(metacg::CgNode* mainNode, const metacg::Callgraph* const graph);
 
-bool reachableFrom(CgNodePtr parentNode, CgNodePtr childNode);
-CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode,
-                                     const std::unordered_map<CgNodePtr, CgNodePtrUnorderedSet> &init);
-CgNodePtrUnorderedSet allNodesToMain(CgNodePtr startNode, CgNodePtr mainNode);
+CgNodeRawPtrUSet allNodesToMain(metacg::CgNode* startNode, metacg::CgNode* mainNode, const metacg::Callgraph* const graph,
+                                     const std::unordered_map<metacg::CgNode*, CgNodeRawPtrUSet> &init, metacg::analysis::ReachabilityAnalysis &ra);
+CgNodeRawPtrUSet allNodesToMain(metacg::CgNode* startNode, metacg::CgNode* mainNode, const metacg::Callgraph* const graph, metacg::analysis::ReachabilityAnalysis &ra);
 
-// bool removeInstrumentationOnPath(CgNodePtr node);
-//
-// bool isConnectedOnSpantree(CgNodePtr n1, CgNodePtr n2);
-// bool canReachSameConjunction(CgNodePtr n1, CgNodePtr n2);
-
-CgNodePtrSet getDescendants(CgNodePtr child);
-CgNodePtrSet getAncestors(CgNodePtr child);
-//
-// void markReachablePar(CgNodePtr start, CgNodePtrUnorderedSet &seen);
-//
-// void markReachableParStart(CgNodePtr start);
+CgNodeRawPtrUSet getDescendants(metacg::CgNode* child, const metacg::Callgraph* const graph);
+CgNodeRawPtrUSet getAncestors(metacg::CgNode* child, const metacg::Callgraph* const graph);
 
 double calcRuntimeThreshold(const metacg::Callgraph &cg, bool useLongAsRef);
 
-inline CgNodePtrSet setIntersect(const CgNodePtrSet &a, const CgNodePtrSet &b) {
-  CgNodePtrSet intersect;
+inline CgNodeRawPtrUSet setIntersect(const CgNodeRawPtrUSet &a, const CgNodeRawPtrUSet &b) {
+  CgNodeRawPtrUSet intersect;
 
   std::set_intersection(a.begin(), a.end(), b.begin(), b.end(), std::inserter(intersect, intersect.begin()));
 
   return intersect;
 }
 
-inline CgNodePtrSet setDifference(const CgNodePtrSet &a, const CgNodePtrSet &b) {
-  CgNodePtrSet difference;
+inline CgNodeRawPtrUSet setDifference(const CgNodeRawPtrUSet &a, const CgNodeRawPtrUSet &b) {
+  CgNodeRawPtrUSet difference;
 
   std::set_difference(a.begin(), a.end(), b.begin(), b.end(), std::inserter(difference, difference.begin()));
 
   return difference;
 }
 
-inline bool isSubsetOf(const CgNodePtrSet &smallSet, const CgNodePtrSet &largeSet) {
+inline bool isSubsetOf(const CgNodeRawPtrUSet &smallSet, const CgNodeRawPtrUSet &largeSet) {
   return setDifference(smallSet, largeSet) == smallSet;
 }
 
-inline bool intersects(const CgNodePtrSet &a, const CgNodePtrSet &b) { return !setIntersect(a, b).empty(); }
+inline bool intersects(const CgNodeRawPtrUSet &a, const CgNodeRawPtrUSet &b) { return !setIntersect(a, b).empty(); }
 }  // namespace CgHelper
 
+
+
+namespace pgis {
+
+using Callgraph = metacg::Callgraph;
+
+template <typename MD, typename... Args>
+void attachMetaDataToGraph(Callgraph *cg, const Args &... args) {
+  for (const auto& n : cg->getNodes()) {
+
+    if (! n.second->template getOrCreateMD<MD>(args...)) {
+      assert(false && MD::key() != "" && "Could not create MetaData with key");
+    }
+  }
+}
+} // namespace pgis
 #endif

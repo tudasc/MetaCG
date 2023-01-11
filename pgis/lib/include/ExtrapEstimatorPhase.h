@@ -12,6 +12,7 @@
 #define PGOE_EXTRAPESTIMATORPHASE_H
 
 #include "EstimatorPhase.h"
+#include "MetaData/CgNodeMetaData.h"
 
 #include "spdlog/spdlog.h"
 
@@ -59,8 +60,8 @@ class ExtrapLocalEstimatorPhaseBase : public EstimatorPhase {
  public:
   using value_type = EXTRAP::Value;
 
-  ExtrapLocalEstimatorPhaseBase(bool allNodesToMain = false, bool useRuntimeOnly = false)
-      : EstimatorPhase("ExtrapLocalEstimatorPhaseBase"),
+  ExtrapLocalEstimatorPhaseBase(metacg::Callgraph *cg, bool allNodesToMain = false, bool useRuntimeOnly = false)
+      : EstimatorPhase("ExtrapLocalEstimatorPhaseBase", cg),
         allNodesToMain(allNodesToMain),
         useRuntimeOnly(useRuntimeOnly) {}
 
@@ -74,9 +75,9 @@ class ExtrapLocalEstimatorPhaseBase : public EstimatorPhase {
 
   ExtrapLocalEstimatorPhaseBase &operator=(ExtrapLocalEstimatorPhaseBase &&other) = default;
 
-  virtual void modifyGraph(CgNodePtr mainNode) override;
+  virtual void modifyGraph(metacg::CgNode* mainNode) override;
 
-  virtual std::pair<bool, double> shouldInstrument(CgNodePtr node) const;
+  virtual std::pair<bool, double> shouldInstrument(metacg::CgNode* node) const;
 
   void printReport() override;
 
@@ -86,18 +87,18 @@ class ExtrapLocalEstimatorPhaseBase : public EstimatorPhase {
    */
   /*
   template <typename... Vals>
-  value_type evalModelWValue(CgNodePtr n, Vals... values) const;
+  value_type evalModelWValue(metacg::CgNode* n, Vals... values) const;
   */
-  auto evalModelWValue(CgNodePtr n, std::vector<std::pair<std::string, double>> values) const;
+  auto evalModelWValue(metacg::CgNode* n, std::vector<std::pair<std::string, double>> values) const;
   bool allNodesToMain;
   bool useRuntimeOnly;
 
-  std::vector<std::pair<double, CgNodePtr>> kernels;
+  std::vector<std::pair<double, metacg::CgNode*>> kernels;
 };
 
 #if 0
 template <typename... Vals>
-ExtrapLocalEstimatorPhaseBase::value_type ExtrapLocalEstimatorPhaseBase::evalModelWValue(CgNodePtr n,
+ExtrapLocalEstimatorPhaseBase::value_type ExtrapLocalEstimatorPhaseBase::evalModelWValue(metacg::CgNode* n,
                                                                                          Vals... values) const {
   auto fModel = n->getExtrapModelConnector().getEPModelFunction();
 
@@ -111,7 +112,7 @@ ExtrapLocalEstimatorPhaseBase::value_type ExtrapLocalEstimatorPhaseBase::evalMod
 }
 #endif
 
-auto ExtrapLocalEstimatorPhaseBase::evalModelWValue(CgNodePtr n,
+auto ExtrapLocalEstimatorPhaseBase::evalModelWValue(metacg::CgNode* n,
                                                     std::vector<std::pair<std::string, double>> values) const {
   auto &fModel = n->get<PiraTwoData>()->getExtrapModelConnector().getEPModelFunction();
 
@@ -134,17 +135,17 @@ auto ExtrapLocalEstimatorPhaseBase::evalModelWValue(CgNodePtr n,
 
 class ExtrapLocalEstimatorPhaseSingleValueFilter : public ExtrapLocalEstimatorPhaseBase {
  public:
-  ExtrapLocalEstimatorPhaseSingleValueFilter(bool allNodesToMain = false, bool useRuntimeOnly = false)
-      : ExtrapLocalEstimatorPhaseBase(allNodesToMain, useRuntimeOnly) {}
-  virtual std::pair<bool, double> shouldInstrument(CgNodePtr node) const override;
+  ExtrapLocalEstimatorPhaseSingleValueFilter(metacg::Callgraph *cg, bool allNodesToMain = false, bool useRuntimeOnly = false)
+      : ExtrapLocalEstimatorPhaseBase(cg,allNodesToMain, useRuntimeOnly) {}
+  virtual std::pair<bool, double> shouldInstrument(metacg::CgNode* node) const override;
 };
 
 class ExtrapLocalEstimatorPhaseSingleValueExpander : public ExtrapLocalEstimatorPhaseSingleValueFilter {
  public:
-  ExtrapLocalEstimatorPhaseSingleValueExpander(bool allNodesToMain = true, bool useRuntimeOnly = false)
-      : ExtrapLocalEstimatorPhaseSingleValueFilter(allNodesToMain, useRuntimeOnly) {}
+  ExtrapLocalEstimatorPhaseSingleValueExpander(metacg::Callgraph *cg, bool allNodesToMain = true, bool useRuntimeOnly = false)
+      : ExtrapLocalEstimatorPhaseSingleValueFilter(cg,allNodesToMain, useRuntimeOnly) {}
 
-  virtual void modifyGraph(CgNodePtr mainNode) override;
+  virtual void modifyGraph(metacg::CgNode* mainNode) override;
 };
 
 }  // namespace pira

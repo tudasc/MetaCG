@@ -1,66 +1,6 @@
-# LLVM related stuff (XXX Do we actually need LLVM?)
-find_package(
-  LLVM
-  REQUIRED
-  CONFIG
-)
-
-# Clang related stuff
-find_package(
-  Clang
-  REQUIRED
-  CONFIG
-)
-
-# Cube library installation
-find_library(CUBE_LIB cube4)
-find_path(CUBE_INCLUDE cube)
-
-# Extra-P installation directory for library
-find_library(EXTRAP_LIB extrap)
-# Extra-P source tree for includes (they are not installed with extra-p)
-find_path(EXTRAP_INCLUDE extrap)
-
 include(json)
 include(cxxopts)
 include(spdlog)
-
-# External dependencies
-function(add_clang target)
-  # clang specified as system lib to suppress all warnings from clang headers
-  target_include_directories(${target} SYSTEM PUBLIC ${CLANG_INCLUDE_DIRS})
-
-  target_link_libraries(
-    ${target}
-    clangTooling
-    clangFrontend
-    clangSerialization
-    clangAST
-    clangBasic
-    clangIndex
-    LLVMSupport
-  )
-endfunction()
-
-function(add_extrap target)
-  target_include_directories(${target} SYSTEM PUBLIC ${EXTRAP_INCLUDE})
-  target_link_directories(
-    ${target}
-    PUBLIC
-    ${EXTRAP_LIB}
-  )
-  target_link_libraries(${target} extrap)
-endfunction()
-
-function(add_cube target)
-  target_include_directories(${target} SYSTEM PUBLIC ${CUBE_INCLUDE})
-  target_link_directories(
-    ${target}
-    PUBLIC
-    ${CUBE_LIB}
-  )
-  target_link_libraries(${target} cube4)
-endfunction()
 
 # Internal dependencies
 function(add_metacg target)
@@ -95,16 +35,8 @@ function(add_graph_includes target)
   target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/graph/include>)
 endfunction()
 
-function(add_mcg_includes target)
-  target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/pgis/lib/include/libIPCG>)
-endfunction()
-
 function(add_pgis_library target)
   target_link_libraries(${target} pgis)
-endfunction()
-
-function(add_mcg_library target)
-  target_link_libraries(${target} mcg)
 endfunction()
 
 function(add_metacg_library target)

@@ -1,0 +1,539 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {
+            "c:@F@main#@CALL_EXPR@@585-596": "c:@F@main#"
+        },
+        "CallInfoMap": {
+            "c:@F@main#@CALL_EXPR@@585-596": {
+                "Arguments": [],
+                "CalledObjects": [
+                    "(c:0112.cpp@498@F@main#@h).c:@S@obstack@FI@chunkfun"
+                ]
+            }
+        },
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@S@obstack@FI@chunk"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@obstack@F@obstack#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@obstack@F@obstack#&1$@S@obstack#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@obstack@F@obstack#&1$@S@obstack#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@obstack@F@obstack#&1$@S@obstack#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@obstack@F@obstack#&1$@S@obstack#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@obstack@F@obstack#&&$@S@obstack#@UNNAMED_PARAM@0"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@obstack@F@obstack#&&$@S@obstack#@THIS"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@obstack@F@obstack#&&$@S@obstack#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@obstack@F@obstack#&&$@S@obstack#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@S@obstack@F@obstack#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@xmalloc#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@xfree#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@xfree#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@free_fun#*$@S@obstack#*v#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@chunk_fun#*$@S@obstack#*v#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "(c:0112.cpp@498@F@main#@h).c:@S@obstack@FI@chunk"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#@CALL_EXPR@@518-548",
+                    "c:@F@chunk_fun#*$@S@obstack#*v#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0112.cpp@367@F@free_fun#*$@S@obstack#*v#@h",
+                    "c:0112.cpp@280@F@chunk_fun#*$@S@obstack#*v#@h",
+                    "&c:0112.cpp@498@F@main#@h"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "*c:0112.cpp@367@F@free_fun#*$@S@obstack#*v#@h"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@F@main#@CALL_EXPR@@553-580",
+                    "c:@F@free_fun#*$@S@obstack#*v#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "(*c:0112.cpp@280@F@chunk_fun#*$@S@obstack#*v#@h).c:@S@obstack@FI@chunkfun",
+                    "(c:0112.cpp@498@F@main#@h).c:@S@obstack@FI@chunkfun",
+                    "c:@S@obstack@FI@chunkfun",
+                    "c:0112.cpp@299@F@chunk_fun#*$@S@obstack#*v#@f",
+                    "&c:@F@xmalloc#"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "c:@F@xmalloc#"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@F@main#@CALL_EXPR@@585-596",
+                    "c:@F@xmalloc#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "(*c:0112.cpp@367@F@free_fun#*$@S@obstack#*v#@h).c:@S@obstack@FI@freefun",
+                    "(c:0112.cpp@498@F@main#@h).c:@S@obstack@FI@freefun",
+                    "c:@S@obstack@FI@freefun",
+                    "c:0112.cpp@386@F@free_fun#*$@S@obstack#*v#@f",
+                    "&c:@F@xfree#"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "c:@F@xfree#"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:0112.cpp@498@F@main#@h",
+                    "*c:0112.cpp@280@F@chunk_fun#*$@S@obstack#*v#@h",
+                    "*c:0112.cpp@367@F@free_fun#*$@S@obstack#*v#@h",
+                    "c:@F@main#@CALL_EXPR@@513-513"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "c:@S@obstack@FI@chunk",
+                        "Object": "(c:0112.cpp@498@F@main#@h).c:@S@obstack@FI@chunk"
+                    },
+                    {
+                        "Member": "c:@S@obstack@FI@chunkfun",
+                        "Object": "(c:0112.cpp@498@F@main#@h).c:@S@obstack@FI@chunkfun"
+                    },
+                    {
+                        "Member": "c:@S@obstack@FI@freefun",
+                        "Object": "(c:0112.cpp@498@F@main#@h).c:@S@obstack@FI@freefun"
+                    }
+                ]
+            },
+            {
+                "Objects": [
+                    "c:@S@obstack@F@obstack#@THIS",
+                    "&c:@F@main#@CALL_EXPR@@513-513"
+                ],
+                "Prefixes": [
+                    {
+                        "Member": "",
+                        "Object": "c:@F@main#@CALL_EXPR@@513-513"
+                    }
+                ]
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@chunk_fun#*$@S@obstack#*v#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z9chunk_funP7obstackPv"
+                ],
+                "Parameters": [
+                    "c:0112.cpp@280@F@chunk_fun#*$@S@obstack#*v#@h",
+                    "c:0112.cpp@299@F@chunk_fun#*$@S@obstack#*v#@f"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@chunk_fun#*$@S@obstack#*v#@SRETURN"
+                ]
+            },
+            "c:@F@free_fun#*$@S@obstack#*v#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z8free_funP7obstackPv"
+                ],
+                "Parameters": [
+                    "c:0112.cpp@367@F@free_fun#*$@S@obstack#*v#@h",
+                    "c:0112.cpp@386@F@free_fun#*$@S@obstack#*v#@f"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@free_fun#*$@S@obstack#*v#@SRETURN"
+                ]
+            },
+            "c:@F@main#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "main"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@main#@SRETURN"
+                ]
+            },
+            "c:@F@xfree#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z5xfreev"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@xfree#@SRETURN"
+                ]
+            },
+            "c:@F@xmalloc#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z7xmallocv"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@xmalloc#@SRETURN"
+                ]
+            },
+            "c:@S@obstack@F@obstack#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN7obstackC2Ev",
+                    "_ZN7obstackC1Ev"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@obstack@F@obstack#&&$@S@obstack#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN7obstackC2EOS_",
+                    "_ZN7obstackC1EOS_"
+                ],
+                "Parameters": [
+                    "c:@S@obstack@F@obstack#&&$@S@obstack#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": []
+            },
+            "c:@S@obstack@F@obstack#&1$@S@obstack#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_ZN7obstackC2ERKS_",
+                    "_ZN7obstackC1ERKS_"
+                ],
+                "Parameters": [
+                    "c:@S@obstack@F@obstack#&1$@S@obstack#@UNNAMED_PARAM@0"
+                ],
+                "ReferencedInReturnStmts": []
+            }
+        },
+        "FunctionMap": {
+            "&c:@F@xfree#": "c:@F@xfree#",
+            "&c:@F@xmalloc#": "c:@F@xmalloc#",
+            "c:@F@chunk_fun#*$@S@obstack#*v#": "c:@F@chunk_fun#*$@S@obstack#*v#",
+            "c:@F@free_fun#*$@S@obstack#*v#": "c:@F@free_fun#*$@S@obstack#*v#",
+            "c:@F@main#": "c:@F@main#",
+            "c:@F@xfree#": "c:@F@xfree#",
+            "c:@F@xmalloc#": "c:@F@xmalloc#",
+            "c:@S@obstack@F@obstack#": "c:@S@obstack@F@obstack#",
+            "c:@S@obstack@F@obstack#&&$@S@obstack#": "c:@S@obstack@F@obstack#&&$@S@obstack#",
+            "c:@S@obstack@F@obstack#&1$@S@obstack#": "c:@S@obstack@F@obstack#&1$@S@obstack#"
+        }
+    },
+    "_CG": {
+        "_Z7xmallocv": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0112.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z8free_funP7obstackPv": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 2
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0112.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 1
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z9chunk_funP7obstackPv": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 2
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0112.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 1
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN7obstackC1Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0112.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN7obstackC2Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0112.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z7xmallocv",
+                "_Z8free_funP7obstackPv",
+                "_Z9chunk_funP7obstackPv",
+                "_ZN7obstackC1Ev",
+                "_ZN7obstackC2Ev"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 1
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTUAA/0112.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "_Z8free_funP7obstackPv": 0,
+                    "_Z9chunk_funP7obstackPv": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 5,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 7,
+                    "numberOfMemoryAccesses": 1
+                },
+                "numStatements": 4
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

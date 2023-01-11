@@ -1,0 +1,78 @@
+{
+  "_CG": {
+    "_ZZ4mainENK3$_0clEii": {
+      "callees": [],
+      "callers": [
+        "main"
+      ],
+      "doesOverride": false,
+      "hasBody": true,
+      "isVirtual": false,
+      "meta": {
+        "codeStatistics": {
+          "numVars": 5
+        },
+        "fileProperties": {
+          "origin": "/tmp/tmp.xzlAw8bNoO/cgcollector/test/input/metaCollectors/numStatements/0042.cpp",
+          "systemInclude": false
+        },
+        "globalLoopDepth": 1,
+        "loopCallDepth": {},
+        "loopDepth": 1,
+        "mallocCollector": [],
+        "numConditionalBranches": 1,
+        "numOperations": {
+          "numberOfControlFlowOps": 3,
+          "numberOfFloatOps": 15,
+          "numberOfIntOps": 5,
+          "numberOfMemoryAccesses": 0
+        },
+        "numStatements": 5
+      },
+      "overriddenBy": [],
+      "overrides": []
+    },
+    "main": {
+      "callees": [
+        "_ZZ4mainENK3$_0clEii"
+      ],
+      "callers": [],
+      "doesOverride": false,
+      "hasBody": true,
+      "isVirtual": false,
+      "meta": {
+        "codeStatistics": {
+          "numVars": 4
+        },
+        "fileProperties": {
+          "origin": "/tmp/tmp.xzlAw8bNoO/cgcollector/test/input/metaCollectors/numStatements/0042.cpp",
+          "systemInclude": false
+        },
+        "globalLoopDepth": 1,
+        "loopCallDepth": {
+          "_ZZ4mainENK3$_0clEii": 0
+        },
+        "loopDepth": 1,
+        "mallocCollector": [],
+        "numConditionalBranches": 1,
+        "numOperations": {
+          "numberOfControlFlowOps": 8,
+          "numberOfFloatOps": 17,
+          "numberOfIntOps": 5,
+          "numberOfMemoryAccesses": 0
+        },
+        "numStatements": 3
+      },
+      "overriddenBy": [],
+      "overrides": []
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "CGCollector",
+      "sha": "GITDIR-NOTFOUND",
+      "version": "0.4"
+    },
+    "version": "2.0"
+  }
+}

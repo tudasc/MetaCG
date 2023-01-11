@@ -1,6 +1,7 @@
 # File: .gitlab-ci.yml
 # License: Part of the MetaCG proect. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/jplehr/pira/LICENSE.txt
 # Description: File to configure our Gitlab CI
+include: .ci-defaults-template.yml
 
 # Stages
 stages:
@@ -11,49 +12,45 @@ stages:
   - test
   - integration-test
   - install
-  - deploy
 
-.lb-setup: &lb-setup
-  - module load gcc/8.3
-  - module load git llvm/10.0.0 cmake python/3.7.4
-  - module load libcube/4.5
+.job-setup: &job-setup
+  parallel:
+    matrix:
+      - GCC: 10
+        #LLVM: [10.0.1, 11.1.0, 12.0.1, 13.0.0, 14.0.0]
+        LLVM: [10.0.1, 14.0.0]
+      - GCC: 11
+        LLVM: [13.0.0, 14.0.0]
+  variables:
+    MCG_BUILD: build-GCC-$GCC-LLVM-$LLVM
 
+
+# State: Download
 mcg-download:
   stage: download
-  tags:
-    - general
-  before_script: *lb-setup
   variables:
     GIT_STRATEGY: clone
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - echo 'Done.'
 
+
+# Stage: lint
 mcg-cmake-lint:
   stage: lint
-  tags:
-    - metacg
-  before_script: *lb-setup
-  variables:
-    GIT_STRATEGY: none
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - for f in $(find . -name "CMakeLists.txt"); do cmake-format --check $f || exit 1; done
     - for f in $(find ./cmake -type f); do cmake-format --check $f || exit 1; done
 
+
+# Stage: build-deps
 build-dependencies:
   stage: build-deps
-  tags:
-    - general
-  before_script: *lb-setup
-  variables:
-    GIT_STRATEGY: none
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
     - ./build_submodules.sh
 
 mcg-container:
-  stage: build-deps
+  stage: build
   tags:
     - podman
   variables:
@@ -66,165 +63,193 @@ mcg-container:
     - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/graph/test/unit/libtests
     - podman image rm metacg:$CI_COMMIT_SHA
 
+
+# Stage: build
 build-mcg:
+  <<: *job-setup
   stage: build
-  tags:
-    - general
-  before_script: *lb-setup
-  variables:
-    GIT_STRATEGY: none
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tmp/metacg -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=./extern/install/extrap/include -DEXTRAP_LIB=./extern/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-    - cmake --build build --parallel
+    - module load clang/$LLVM
+    - cmake -S . -B $MCG_BUILD -DCMAKE_BUILD_TYPE=Debug 
+        -DCMAKE_INSTALL_PREFIX=/tmp/metacg/full
+        -DCUBE_LIB=$(dirname $(which cube_info))/../lib 
+        -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+        -DEXTRAP_INCLUDE=./extern/install/extrap/include 
+        -DEXTRAP_LIB=./extern/install/extrap/lib 
+        -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+    - cmake --build $MCG_BUILD --parallel
+    - module purge
 
+build-mcg-stripped-pgis:
+  <<: *job-setup
+  stage: build
+  script:
+    - module load clang/$LLVM
+    - cmake -S . -B $MCG_BUILD-no-pgis -DCMAKE_BUILD_TYPE=Debug
+      -DCMAKE_INSTALL_PREFIX=/tmp/metacg/no_pgis
+      -DCUBE_LIB=$(dirname $(which cube_info))/../lib
+      -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+      -DEXTRAP_INCLUDE=./extern/install/extrap/include
+      -DEXTRAP_LIB=./extern/install/extrap/lib
+      -DWITH_PGIS=OFF
+      -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+    - cmake --build $MCG_BUILD-no-pgis --parallel
+    - module purge
+
+build-mcg-stripped-cgcollector:
+  <<: *job-setup
+  stage: build
+  script:
+    - module load clang/$LLVM
+    - cmake -S . -B $MCG_BUILD-no-cgcollector -DCMAKE_BUILD_TYPE=Debug
+      -DCMAKE_INSTALL_PREFIX=/tmp/metacg/no_cgcollector
+      -DCUBE_LIB=$(dirname $(which cube_info))/../lib
+      -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+      -DEXTRAP_INCLUDE=./extern/install/extrap/include
+      -DEXTRAP_LIB=./extern/install/extrap/lib
+      -DWITH_CGCOLLECTOR=OFF
+      -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+    - cmake --build $MCG_BUILD-no-cgcollector --parallel
+    - module purge
+
+build-mcg-stripped-all:
+  <<: *job-setup
+  stage: build
+  script:
+    - module load clang/$LLVM
+    - cmake -S . -B $MCG_BUILD-no-all -DCMAKE_BUILD_TYPE=Debug
+      -DCMAKE_INSTALL_PREFIX=/tmp/metacg/no_all
+      -DCUBE_LIB=$(dirname $(which cube_info))/../lib
+      -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+      -DEXTRAP_INCLUDE=./extern/install/extrap/include
+      -DEXTRAP_LIB=./extern/install/extrap/lib
+      -DWITH_PGIS=OFF
+      -DWITH_CGCOLLECTOR=OFF
+      -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+    - cmake --build $MCG_BUILD-no-all --parallel
+    - module purge
+
+
+# Stage: test
 test-cgc:
+  <<: *job-setup
   stage: test
-  tags:
-    - general
-  before_script: *lb-setup
-  variables:
-    GIT_STRATEGY: none
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
+    - module load clang/$LLVM
     - cd cgcollector/test
-    - mkdir log
-    - bash run_format_one_test.sh
-    - bash run_format_two_test.sh
-
-test-cgvalidate:
-  stage: integration-test
-  tags:
-    - general
-  before_script: *lb-setup
-  variables:
-    GIT_STRATEGY: none
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
-  script:
-    - cd cgcollector/test/integration
-    - ./runner.sh
-
-install-mcg:
-  stage: install
-  tags:
-    - general
-  before_script: *lb-setup
-  variables:
-    GIT_STRATEGY: none
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
-  script:
-    - cmake --install build
-    - stat /tmp/metacg/bin/cgcollector
-    - stat /tmp/metacg/bin/cgmerge
-    - export LD_LIBRARY_PATH=/tmp/metacg/lib:$LD_LIBRARY_PATH
-    - /tmp/metacg/bin/cgcollector --help
-    - rm -r /tmp/metacg
+    - mkdir -p log
+    - bash run_format_one_test.sh -b $MCG_BUILD
+    - bash run_format_two_test.sh -b $MCG_BUILD
+    - bash run_aa_test.sh -b $MCG_BUILD
 
 test-graphlib:
+  <<: *job-setup
   stage: test
-  tags:
-    - general
-  before_script: *lb-setup
-  variables:
-    GIT_STRATEGY: none
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - cd build/graph/test/unit && ./libtests
+    - module load clang/$LLVM
+    - cd $MCG_BUILD/graph/test/unit && ./libtests --gtest_output=xml:gcc-$GCC-llvm-$LLVM.xml
+    - GCCv=$GCC && LLVMv=$LLVM && sed -i -e "s/Test\"/Test-gcc-$GCCv-llvm-$LLVMv\"/g" gcc-$GCC-llvm-$LLVM.xml
+  artifacts:
+    when: always
+    paths:
+      - $MCG_BUILD/graph/test/unit/gcc-$GCC-llvm-$LLVM.xml
+    reports:
+      junit: $MCG_BUILD/graph/test/unit/gcc-$GCC-llvm-$LLVM.xml
 
 test-pgis:
+  <<: *job-setup
   stage: test
-  tags:
-    - general
-  before_script: *lb-setup
-  variables:
-    GIT_STRATEGY: none
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - cd build/pgis/test/unit && ./pgistests
+    - module load clang/$LLVM
+    - cd $MCG_BUILD/pgis/test/unit && ./pgistests --gtest_output=xml:gcc-$GCC-llvm-$LLVM.xml
+    - GCCv=$GCC && LLVMv=$LLVM && sed -i -e "s/Test\"/Test-gcc-$GCCv-llvm-$LLVMv\"/g" gcc-$GCC-llvm-$LLVM.xml
+  artifacts:
+    when: always
+    paths:
+      - $MCG_BUILD/pgis/test/unit/gcc-$GCC-llvm-$LLVM.xml
+    reports:
+      junit: $MCG_BUILD/pgis/test/unit/gcc-$GCC-llvm-$LLVM.xml
 
-test-static-pgis:
+
+# Stage: integration-test
+test-cgvalidate:
+  <<: *job-setup
   stage: integration-test
-  tags:
-    - general
-  before_script: *lb-setup
-  variables:
-    GIT_STRATEGY: none
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - cd pgis
-    - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
-    - cd test/integration
-    - ./selectionTestRunner.sh static
+    - cd cgcollector/test/integration
+    - ./runner.sh $MCG_BUILD
 
 test-basic-pgis:
+  <<: *job-setup
   stage: integration-test
-  tags:
-    - general
-  before_script: *lb-setup
-  variables:
-    GIT_STRATEGY: none
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
+    - module load clang/$LLVM
     - cd pgis
     - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
-    - ./basicTestRunner.sh
+    - ./basicTestRunner.sh -b $MCG_BUILD
+
+test-static-pgis:
+  <<: *job-setup
+  stage: integration-test
+  script:
+    - module load clang/$LLVM
+    - cd pgis
+    - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
+    - cd test/integration
+    - ./selectionTestRunner.sh -t static -b $MCG_BUILD
 
 test-modeling-pgis:
+  <<: *job-setup
   stage: integration-test
-  tags:
-    - general
-  before_script: *lb-setup
-  variables:
-    GIT_STRATEGY: none
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
+    - module load clang/$LLVM
     - cd pgis
     - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
-    - ./selectionTestRunner.sh modeling
+    - ./selectionTestRunner.sh -t modeling -b $MCG_BUILD
 
 test-dynamic-pgis:
+  <<: *job-setup
   stage: integration-test
-  tags:
-    - general
-  before_script: *lb-setup
-  variables:
-    GIT_STRATEGY: none
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
+    - module load clang/$LLVM
     - cd pgis
     - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
-    - ./selectionTestRunner.sh dynamic
+    - ./selectionTestRunner.sh -t dynamic -b $MCG_BUILD
     
 test-imbalance-pgis:
+  <<: *job-setup
   stage: integration-test
-  tags:
-    - general
-  before_script: *lb-setup
-  variables:
-    GIT_STRATEGY: none
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
+    - module load clang/$LLVM
     - cd pgis
     - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
-    - ./selectionTestRunner.sh imbalance
+    - ./selectionTestRunner.sh -t imbalance -b $MCG_BUILD
+
+
+# Stage: install
+install-mcg:
+  <<: *job-setup
+  stage: install
+  script:
+    - cmake --install $MCG_BUILD
+    - stat /tmp/metacg/full/bin/cgcollector
+    - stat /tmp/metacg/full/bin/cgmerge
+    - export LD_LIBRARY_PATH=/tmp/metacg/full/lib:$LD_LIBRARY_PATH
+    - /tmp/metacg/full/bin/cgcollector --help
+    - rm -r /tmp/metacg/full
 
 install-pgis:
+  <<: *job-setup
   stage: install
-  tags:
-    - general
-  before_script: *lb-setup
-  variables:
-    GIT_STRATEGY: none
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
+    - module load clang/$LLVM
     - export LD_LIBRARY_PATH=$PWD/extern/install/extrap/lib:$LD_LIBRARY_PATH
-    - cmake --install build
-    - stat /tmp/metacg/bin/pgis_pira
-    - export LD_LIBRARY_PATH=/tmp/metacg/lib:$LD_LIBRARY_PATH
-    - /tmp/metacg/bin/pgis_pira --help
-    - rm -r /tmp/metacg
-
+    - cmake --install $MCG_BUILD
+    - stat /tmp/metacg/full/bin/pgis_pira
+    - export LD_LIBRARY_PATH=/tmp/metacg/full/lib:$LD_LIBRARY_PATH
+    - /tmp/metacg/full/bin/pgis_pira --help
+    - rm -r /tmp/metacg/full

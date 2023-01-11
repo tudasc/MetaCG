@@ -1,9 +1,10 @@
 #ifndef CGCOLLECTOR_JSONMANAGER_H
 #define CGCOLLECTOR_JSONMANAGER_H
 
-#include "config.h"
 #include "MetaInformation.h"
+#include "config.h"
 
+#include "AliasAnalysis.h"
 #include "nlohmann/json.hpp"
 
 #include <fstream>
@@ -37,12 +38,12 @@ inline void writeIPCG(const std::string &filename, const nlohmann::json &callgra
 }
 
 inline void attachFormatTwoHeader(nlohmann::json &j) {
-    std::string cgcMajorVersion = std::to_string(CGCollector_VERSION_MAJOR);
-    std::string cgcMinorVersion = std::to_string(CGCollector_VERSION_MINOR);
-    std::string cgcVersion{cgcMajorVersion + '.' + cgcMinorVersion};
-    j = {{"_MetaCG", {}}, {"_CG", {}}};
-    j["_MetaCG"] = {{"version", "2.0"},
-                    {"generator", {{"name", "CGCollector"}, {"version", cgcVersion}, {"sha", MetaCG_GIT_SHA}}}};
+  std::string cgcMajorVersion = std::to_string(CGCollector_VERSION_MAJOR);
+  std::string cgcMinorVersion = std::to_string(CGCollector_VERSION_MINOR);
+  std::string cgcVersion{cgcMajorVersion + '.' + cgcMinorVersion};
+  j = {{"_MetaCG", {}}, {"_CG", {}}};
+  j["_MetaCG"] = {{"version", "2.0"},
+                  {"generator", {{"name", "CGCollector"}, {"version", cgcVersion}, {"sha", MetaCG_GIT_SHA}}}};
 }
 
 inline void insertNode(nlohmann::json &callgraph, const std::string &nodeName, const FunctionNames &callees,
@@ -73,7 +74,6 @@ inline void insertDefaultNode(nlohmann::json &callgraph, const std::string &node
   insertNode(callgraph, nodeName, empty, empty, empty, empty, false, false, false, 1);
 }
 
-
 struct FunctionInfo {
   FunctionInfo() : functionName("_UNDEF_"), isVirtual(false), doesOverride(false), numStatements(-1), hasBody(false) {}
   ~FunctionInfo() = default;
@@ -91,6 +91,26 @@ struct FunctionInfo {
     isEqual &= (overriddenBy == other.overriddenBy);
 
     return isEqual;
+  }
+
+  /**
+   * Checks if a function contains the callees that are expected
+   * @param required Functions that need to be called by the function
+   * @param blacklist Functions that are not allowed to be called by the function
+   * @param strict If strict is set to true, only calls to functions in required are allowed
+   * @return
+   */
+  bool check_callees(const std::set<std::string> &required, const std::set<std::string> &blacklist, bool strict) const {
+    if (strict) {
+      return callees == required;
+    } else {
+      bool containsRequired = std::includes(callees.begin(), callees.end(), required.begin(), required.end());
+      if (containsRequired) {
+        return std::none_of(blacklist.begin(), blacklist.end(),
+                            [this](const auto &be) { return callees.find(be) != callees.end(); });
+      }
+      return false;
+    }
   }
 
   bool compareMeta(const FunctionInfo &other) const {
@@ -124,7 +144,6 @@ typedef std::map<std::string, FunctionInfo> FuncMapT;
 
 nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename);
 
-nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filename);
-
+nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filename, nlohmann::json *CompleteJsonOut);
 
 #endif /* ifndef CGCOLLECTOR_JSONMANAGER_H */

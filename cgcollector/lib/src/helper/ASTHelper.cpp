@@ -1,38 +1,38 @@
-/*
- * currently this is a copy of the ASTHelper of clangOfflineCGCollector
- */
-
 #include "helper/ASTHelper.h"
 #include <algorithm>
 #include <clang/AST/RecursiveASTVisitor.h>
 #include <iostream>
 
-int getNumStmtsInStmt(clang::Stmt *d) {
+int getNumStmtsInStmt(clang::Stmt *stmt) {
   int numStmts = 0;
-  if (d == nullptr) {
+  if (stmt == nullptr) {
     return 0;
   }
 
-  if (llvm::isa<clang::CompoundStmt>(d)) {
-    numStmts += getNumStmtsInCompoundStmt(llvm::dyn_cast<clang::CompoundStmt>(d));
-  } else if (llvm::isa<clang::IfStmt>(d)) {
-    numStmts += getNumStmtsInIfStmt(llvm::dyn_cast<clang::IfStmt>(d));
-  } else if (llvm::isa<clang::ForStmt>(d)) {
-    numStmts += getNumStmtsInForStmt(llvm::dyn_cast<clang::ForStmt>(d));
-  } else if (llvm::isa<clang::WhileStmt>(d)) {
-    numStmts += getNumStmtsInWhileStmt(llvm::dyn_cast<clang::WhileStmt>(d));
-  } else if (llvm::isa<clang::CXXForRangeStmt>(d)) {
-    numStmts += getNumStmtsInCXXForRangeStmt(llvm::dyn_cast<clang::CXXForRangeStmt>(d));
-  } else if (llvm::isa<clang::DoStmt>(d)) {
-    numStmts += getNumStmtsInDoStmt(llvm::dyn_cast<clang::DoStmt>(d));
-  } else if (llvm::isa<clang::CXXTryStmt>(d)) {
-    numStmts += getNumStmtsInTryStmt(llvm::dyn_cast<clang::CXXTryStmt>(d));
-  } else if (llvm::isa<clang::SwitchStmt>(d)) {
-    numStmts += getNumStmtsInSwitchCase(llvm::dyn_cast<clang::SwitchStmt>(d));
-  } else if (llvm::isa<clang::CaseStmt>(d)) {
-    numStmts += getNumStmtsInCaseStmt(llvm::dyn_cast<clang::CaseStmt>(d));
+  if (llvm::isa<clang::CompoundStmt>(stmt)) {
+    numStmts += getNumStmtsInCompoundStmt(llvm::dyn_cast<clang::CompoundStmt>(stmt));
+  } else if (llvm::isa<clang::IfStmt>(stmt)) {
+    numStmts += getNumStmtsInIfStmt(llvm::dyn_cast<clang::IfStmt>(stmt));
+  } else if (llvm::isa<clang::ForStmt>(stmt)) {
+    numStmts += getNumStmtsInForStmt(llvm::dyn_cast<clang::ForStmt>(stmt));
+  } else if (llvm::isa<clang::WhileStmt>(stmt)) {
+    numStmts += getNumStmtsInWhileStmt(llvm::dyn_cast<clang::WhileStmt>(stmt));
+  } else if (llvm::isa<clang::CXXForRangeStmt>(stmt)) {
+    numStmts += getNumStmtsInCXXForRangeStmt(llvm::dyn_cast<clang::CXXForRangeStmt>(stmt));
+  } else if (llvm::isa<clang::DoStmt>(stmt)) {
+    numStmts += getNumStmtsInDoStmt(llvm::dyn_cast<clang::DoStmt>(stmt));
+  } else if (llvm::isa<clang::CXXTryStmt>(stmt)) {
+    numStmts += getNumStmtsInTryStmt(llvm::dyn_cast<clang::CXXTryStmt>(stmt));
+  } else if (llvm::isa<clang::SwitchStmt>(stmt)) {
+    numStmts += getNumStmtsInSwitchCase(llvm::dyn_cast<clang::SwitchStmt>(stmt));
+  } else if (llvm::isa<clang::CaseStmt>(stmt)) {
+    numStmts += getNumStmtsInCaseStmt(llvm::dyn_cast<clang::CaseStmt>(stmt));
+  } else if (llvm::isa<clang::NullStmt>(stmt)) {
+    // The empty statement has no influence on the count
+  } else if (llvm::isa<clang::LambdaExpr>(stmt)) {
+    // Let's see if we hit that case -- I guess not
   } else {
-    if (!llvm::isa<clang::DefaultStmt>(d)) {
+    if (!llvm::isa<clang::DefaultStmt>(stmt)) {
       numStmts += 1;
     }
   }
