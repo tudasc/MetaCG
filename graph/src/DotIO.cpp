@@ -1,7 +1,7 @@
 /**
-* File: DotIO.cpp
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: DotIO.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "DotIO.h"
@@ -187,8 +187,8 @@ void DotGenerator::generate() {
 
   for (const auto &node : cg->getNodes()) {
     const auto nodeName = node.second->getFunctionName();
-    const auto childNodes = cg->getCallees(node.second);
-    const auto parentNodes = cg->getCallers(node.second);
+    const auto childNodes = cg->getCallees(*node.second);
+    const auto parentNodes = cg->getCallers(*node.second);
     const std::string nodeLabel{"  \"" + nodeName + '\"'};
     dotGraphStrStr << nodeLabel << '\n';
 

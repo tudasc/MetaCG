@@ -23,8 +23,6 @@ set(MetacgGraphLibSources
     include/Timing.h
     include/ReachabilityAnalysis.h
     src/ReachabilityAnalysis.cpp
-    include/CgEdge.h
-    src/CgEdge.cpp
 )
 
 add_library(metacg SHARED ${MetacgGraphLibSources})

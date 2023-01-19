@@ -6,8 +6,6 @@
 #ifndef METACG_GRAPH_CALLGRAPH_H
 #define METACG_GRAPH_CALLGRAPH_H
 
-#include "CgEdge.h"
-#include "CgEdgePtr.h"
 #include "CgNode.h"
 #include "CgNodePtr.h"
 #include <cstddef>
@@ -26,7 +24,8 @@ class Callgraph {
   // TODO: Can NodeContainer be a set if nameIdMap maps to CgNodePtr?
   typedef std::unordered_map<size_t, CgNodePtr> NodeContainer;
   typedef std::unordered_map<std::string, size_t> NameIdMap;
-  typedef std::unordered_map<std::pair<size_t, size_t>, CgEdgePtr> EdgeContainer;
+  typedef std::unordered_map<std::string, MetaData *> NamedMetadata;
+  typedef std::unordered_map<std::pair<size_t, size_t>, NamedMetadata> EdgeContainer;
   typedef std::unordered_map<size_t, std::vector<size_t>> CallerList;
   typedef std::unordered_map<size_t, std::vector<size_t>> CalleeList;
 
@@ -61,7 +60,7 @@ class Callgraph {
    * @param node
    */
   size_t insert(CgNodePtr node);
-  size_t insert(const std::string& nodeName);
+  size_t insert(const std::string &nodeName);
   /**
    * Returns the node with the given name\n
    * If no node exists yet, it creates a new one.
@@ -111,15 +110,15 @@ class Callgraph {
   bool existEdgeFromTo(size_t source, size_t target) const;
   bool existEdgeFromTo(const std::string &source, const std::string &target) const;
 
-  CgNodeRawPtrUSet getCallees(const CgNodePtr &node) const;
+  CgNodeRawPtrUSet getCallees(const CgNode &node) const;
+  CgNodeRawPtrUSet getCallees(const CgNode *node) const;
   CgNodeRawPtrUSet getCallees(size_t node) const;
   CgNodeRawPtrUSet getCallees(const std::string &node) const;
-  CgNodeRawPtrUSet getCallees(const CgNode *node) const;
 
-  CgNodeRawPtrUSet getCallers(const CgNodePtr &node) const;
+  CgNodeRawPtrUSet getCallers(const CgNode &node) const;
+  CgNodeRawPtrUSet getCallers(const CgNode *node) const;
   CgNodeRawPtrUSet getCallers(size_t node) const;
   CgNodeRawPtrUSet getCallers(const std::string &node) const;
-  CgNodeRawPtrUSet getCallers(const CgNode *node) const;
 
   size_t size() const;
 
@@ -127,6 +126,77 @@ class Callgraph {
 
   const NodeContainer &getNodes() const;
   const EdgeContainer &getEdges() const;
+
+  void setNodes(NodeContainer external_container);
+  void setEdges(EdgeContainer external_container);
+
+  void recomputeCache();
+
+  template <class T>
+  void addEdgeMetaData(const CgNode &func1, const CgNode &func2, T *md) {
+    addEdgeMetaData({func1.getId(), func2.getId()}, md);
+  }
+  template <class T>
+  void addEdgeMetaData(const CgNode *func1, const CgNode *func2, T *md) {
+    addEdgeMetaData({func1->getId(), func2->getId()}, md);
+  }
+  template <class T>
+  void addEdgeMetaData(const std::pair<size_t, size_t> id, T *md) {
+    edges.at(id)[T::key] = md;
+  }
+  template <class T>
+  void addEdgeMetaData(const std::string &func1, const std::string &func2, T *md) {
+    addEdgeMetaData({nameIdMap.at(func1), nameIdMap.at(func2)}, md);
+  }
+
+  MetaData *getEdgeMetaData(const CgNode &func1, const CgNode &func2, const std::string &metadataName) const;
+  MetaData *getEdgeMetaData(const CgNode *func1, const CgNode *func2, const std::string &metadataName) const;
+  MetaData *getEdgeMetaData(const std::pair<size_t, size_t> id, const std::string &metadataName) const;
+  MetaData *getEdgeMetaData(const std::string &func1, const std::string &func2, const std::string &metadataName) const;
+
+  template <class T>
+  T *getEdgeMetaData(const CgNode &func1, const CgNode &func2) {
+    return getEdgeMetaData<T>({func1.getId(), func2.getId()});
+  }
+  template <class T>
+  T *getEdgeMetaData(const CgNode *func1, const CgNode *func2) {
+    return getEdgeMetaData<T>({func1->getId(), func2->getId()});
+  }
+  template <class T>
+  T *getEdgeMetaData(const std::pair<size_t, size_t> id) {
+    return static_cast<T>(edges.at(id).at(T::key));
+  }
+  template <class T>
+  T *getEdgeMetaData(const std::string &func1, const std::string &func2) {
+    return getEdgeMetaData<T>({nameIdMap.at(func1), nameIdMap.at(func2)});
+  }
+
+  const NamedMetadata &getAllEdgeMetaData(const CgNode &func1, const CgNode &func2) const;
+  const NamedMetadata &getAllEdgeMetaData(const CgNode *func1, const CgNode *func2) const;
+  const NamedMetadata &getAllEdgeMetaData(const std::pair<size_t, size_t> id) const;
+  const NamedMetadata &getAllEdgeMetaData(const std::string &func1, const std::string &func2) const;
+
+  bool hasEdgeMetaData(const CgNode &func1, const CgNode &func2, const std::string &metadataName) const;
+  bool hasEdgeMetaData(const CgNode *func1, const CgNode *func2, const std::string &metadataName) const;
+  bool hasEdgeMetaData(const std::pair<size_t, size_t> id, const std::string &metadataName) const;
+  bool hasEdgeMetaData(const std::string &func1, const std::string &func2, const std::string &metadataName) const;
+
+  template <class T>
+  bool hasEdgeMetaData(const CgNode &func1, const CgNode &func2) const {
+    return hasEdgeMetaData<T>({func1.getId(), func2.getId()});
+  }
+  template <class T>
+  bool hasEdgeMetaData(const CgNode *func1, const CgNode *func2) const {
+    return hasEdgeMetaData<T>({func1->getId(), func2->getId()});
+  }
+  template <class T>
+  bool hasEdgeMetaData(const std::pair<size_t, size_t> id) const {
+    return edges.at(id).find(T::key) != edges.at(id).end();
+  }
+  template <class T>
+  bool hasEdgeMetaData(const std::string &func1, const std::string &func2) const {
+    return hasEdgeMetaData<T>({nameIdMap.at(func1), nameIdMap.at(func2)});
+  }
 
  private:
   // this set represents the call graph during the actual computation
@@ -143,7 +213,7 @@ class Callgraph {
   CgNode *lastSearched;
 };
 
-[[maybe_unused]] static Callgraph& getEmptyGraph() {
+[[maybe_unused]] static Callgraph &getEmptyGraph() {
   static Callgraph graph;
   return graph;
 }

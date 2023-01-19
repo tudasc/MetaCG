@@ -5,7 +5,6 @@
  */
 #include "Callgraph.h"
 #include "LoggerUtil.h"
-#include <iostream>
 
 using namespace metacg;
 
@@ -76,7 +75,7 @@ void Callgraph::addEdge(const CgNode &parentNode, const CgNode &childNode) {
   }
   calleeList[parentNode.getId()].push_back(childNode.getId());
   callerList[childNode.getId()].push_back(parentNode.getId());
-  edges[{parentNode.getId(), childNode.getId()}] = std::make_unique<metacg::CgEdge>(parentNode, childNode);
+  edges[{parentNode.getId(), childNode.getId()}] = {};
 }
 
 void Callgraph::addEdge(const std::string &parentName, const std::string &childName) {
@@ -181,7 +180,8 @@ bool Callgraph::existEdgeFromTo(const std::string &source, const std::string &ta
   return existEdgeFromTo(nameIdMap.at(source), nameIdMap.at(target));
 }
 
-CgNodeRawPtrUSet Callgraph::getCallees(const CgNodePtr &node) const { return getCallees(node->getId()); }
+CgNodeRawPtrUSet Callgraph::getCallees(const CgNode &node) const { return getCallees(node.getId()); }
+CgNodeRawPtrUSet Callgraph::getCallees(const CgNode *node) const { return getCallees(node->getId()); }
 CgNodeRawPtrUSet Callgraph::getCallees(size_t node) const {
   CgNodeRawPtrUSet returnSet;
   if (calleeList.count(node) == 0) {
@@ -199,9 +199,8 @@ CgNodeRawPtrUSet Callgraph::getCallees(const std::string &node) const {
   return getCallees(nameIdMap.at(node));
 }
 
-CgNodeRawPtrUSet Callgraph::getCallees(const CgNode *node) const { return getCallees(node->getId()); }
-
-CgNodeRawPtrUSet Callgraph::getCallers(const CgNodePtr &node) const { return getCallers(node->getId()); }
+CgNodeRawPtrUSet Callgraph::getCallers(const CgNode *node) const { return getCallers(node->getId()); }
+CgNodeRawPtrUSet Callgraph::getCallers(const CgNode &node) const { return getCallers(node.getId()); };
 CgNodeRawPtrUSet Callgraph::getCallers(size_t node) const {
   CgNodeRawPtrUSet returnSet;
   if (callerList.count(node) == 0) {
@@ -218,4 +217,59 @@ CgNodeRawPtrUSet Callgraph::getCallers(const std::string &node) const {
   assert(nameIdMap.find(node) != nameIdMap.end());
   return getCallers(nameIdMap.at(node));
 }
-CgNodeRawPtrUSet Callgraph::getCallers(const CgNode *node) const { return getCallers(node->getId()); }
+void Callgraph::setNodes(Callgraph::NodeContainer external_container) { nodes = std::move(external_container); }
+void Callgraph::setEdges(Callgraph::EdgeContainer external_container) { edges = std::move(external_container); }
+void Callgraph::recomputeCache() {
+  nameIdMap.clear();
+  for (const auto &elem : nodes) {
+    nameIdMap[elem.second->getFunctionName()] = elem.first;
+  }
+  callerList.clear();
+  calleeList.clear();
+  for (const auto &elem : edges) {
+    calleeList[elem.first.first].push_back(elem.first.second);
+    callerList[elem.first.second].push_back(elem.first.first);
+  }
+}
+
+MetaData *Callgraph::getEdgeMetaData(const CgNode &func1, const CgNode &func2, const std::string &metadataName) const {
+  return getEdgeMetaData({func1.getId(), func2.getId()}, metadataName);
+}
+MetaData *Callgraph::getEdgeMetaData(const CgNode *func1, const CgNode *func2, const std::string &metadataName) const {
+  return getEdgeMetaData({func1->getId(), func2->getId()}, metadataName);
+}
+MetaData *Callgraph::getEdgeMetaData(const std::pair<size_t, size_t> id, const std::string &metadataName) const {
+  return edges.at(id).at(metadataName);
+}
+MetaData *Callgraph::getEdgeMetaData(const std::string &func1, const std::string &func2,
+                                     const std::string &metadataName) const {
+  return getEdgeMetaData({nameIdMap.at(func1), nameIdMap.at(func2)}, metadataName);
+}
+
+const metacg::Callgraph::NamedMetadata &Callgraph::getAllEdgeMetaData(const CgNode &func1, const CgNode &func2) const {
+  return getAllEdgeMetaData({func1.getId(), func2.getId()});
+}
+const metacg::Callgraph::NamedMetadata &Callgraph::getAllEdgeMetaData(const CgNode *func1, const CgNode *func2) const {
+  return getAllEdgeMetaData({func1->getId(), func2->getId()});
+}
+const metacg::Callgraph::NamedMetadata &Callgraph::getAllEdgeMetaData(const std::pair<size_t, size_t> id) const {
+  return edges.at(id);
+}
+const metacg::Callgraph::NamedMetadata &Callgraph::getAllEdgeMetaData(const std::string &func1,
+                                                                      const std::string &func2) const {
+  return getAllEdgeMetaData({nameIdMap.at(func1), nameIdMap.at(func2)});
+}
+
+bool Callgraph::hasEdgeMetaData(const CgNode &func1, const CgNode &func2, const std::string &metadataName) const {
+  return hasEdgeMetaData({func1.getId(), func2.getId()}, metadataName);
+}
+bool Callgraph::hasEdgeMetaData(const CgNode *func1, const CgNode *func2, const std::string &metadataName) const {
+  return hasEdgeMetaData({func1->getId(), func2->getId()}, metadataName);
+}
+bool Callgraph::hasEdgeMetaData(const std::pair<size_t, size_t> id, const std::string &metadataName) const {
+  return edges.at(id).find(metadataName) != edges.at(id).end();
+}
+bool Callgraph::hasEdgeMetaData(const std::string &func1, const std::string &func2,
+                                const std::string &metadataName) const {
+  return hasEdgeMetaData({nameIdMap.at(func1), nameIdMap.at(func2)}, metadataName);
+}
