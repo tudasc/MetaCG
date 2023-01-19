@@ -8,6 +8,7 @@
 #include "Callgraph.h"
 #include "MCGManager.h"
 #include "Util.h"
+#include "config.h"
 
 using FunctionNames = std::set<std::string>;
 

@@ -131,7 +131,7 @@ class CgNode {
   void setIsVirtual(bool virtuality) { isMarkedVirtual = virtuality; }
 
   bool getHasBody() const { return hasBody; }
-  void setHasBody(bool hasBody) { this->hasBody = hasBody; }
+  void setHasBody(bool bodyStatus) { hasBody = bodyStatus; }
 
   /**
    *
