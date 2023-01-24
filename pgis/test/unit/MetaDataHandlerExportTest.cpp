@@ -1,34 +1,34 @@
 /**
-* File: MetaDataHandlerExportTest.cpp
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: MetaDataHandlerExportTest.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 #include "gtest/gtest.h"
 
+#include "CgHelper.h"
 #include "LoggerUtil.h"
 #include "MCGManager.h"
 #include "MCGWriter.h"
 #include "MetaDataHandler.h"
 #include "loadImbalance/LIRetriever.h"
-#include "CgHelper.h"
 #include "nlohmann/json.hpp"
 
 using namespace metacg;
 using json = nlohmann::json;
 
 /**
-* MetaDataHandler used for testing
-*/
+ * MetaDataHandler used for testing
+ */
 struct TestHandler : public metacg::io::retriever::MetaDataHandler {
- int i{0};
- const std::string toolName() const override { return "TestMetaHandler"; }
- void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
- bool handles(const metacg::CgNode* n) const override { return false; }
- json value(const metacg::CgNode* n) const override {
-   json j;
-   j = i;
-   return j;
- }
+  int i{0};
+  const std::string toolName() const override { return "TestMetaHandler"; }
+  void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
+  bool handles(const metacg::CgNode *n) const override { return false; }
+  json value(const metacg::CgNode *n) const override {
+    json j;
+    j = i;
+    return j;
+  }
 };
 
 namespace JsonFieldNames {
@@ -42,8 +42,9 @@ static const std::string lid{"LIData"};
 TEST(MCGWriterTest, OneNodeGraph) {
   metacg::loggerutil::getLogger();
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.resetActiveGraph();
-  auto mainNode = mcgm.getCallgraph()->getOrInsertNode("main");
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
+  mcgm.getCallgraph()->getOrInsertNode("main");
   ::pgis::attachMetaDataToGraph<pira::BaseProfileData>(mcgm.getCallgraph());
   ::pgis::attachMetaDataToGraph<pira::PiraOneData>(mcgm.getCallgraph());
   ::pgis::attachMetaDataToGraph<LoadImbalance::LIMetaData>(mcgm.getCallgraph());
@@ -85,7 +86,8 @@ TEST(MCGWriterTest, OneNodeGraphWithData) {
   metacg::loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.resetActiveGraph();
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.getCallgraph()->getOrInsertNode("main");
   ::pgis::attachMetaDataToGraph<pira::BaseProfileData>(mcgm.getCallgraph());
   ::pgis::attachMetaDataToGraph<pira::PiraOneData>(mcgm.getCallgraph());
@@ -137,8 +139,9 @@ TEST(MCGWriterTest, OneNodeGraphNoDataForHandler) {
   metacg::loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.resetActiveGraph();
-  auto mainNode = mcgm.getCallgraph()->getOrInsertNode("main");
+  mcgm.resetManager();
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
+  mcgm.getCallgraph()->getOrInsertNode("main");
   mcgm.addMetaHandler<metacg::io::retriever::GlobalLoopDepthHandler>();
 
   // How to use the MCGWriter
