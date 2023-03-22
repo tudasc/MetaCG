@@ -10,7 +10,9 @@
 // clang-format off
 // Graph library
 #include "CgNodePtr.h"
+#include "Utility.h"
 #include "MetaData.h"
+#include "LoggerUtil.h"
 
 // PGIS library
 #include "ExtrapConnection.h"
@@ -31,13 +33,33 @@ typedef unsigned long long Statements;
 /**
  * This class holds basic profile information, e.g., from reading a CUBE
  */
-class BaseProfileData : public metacg::MetaData {
+class BaseProfileData : public metacg::MetaData::Registrar<BaseProfileData> {
  public:
-  static constexpr const char *key() { return "BaseProfileData"; }
+  static constexpr const char *key = "BaseProfileData";
+  BaseProfileData() = default;
+  BaseProfileData(const nlohmann::json &j) {
+    metacg::MCGLogger::instance().getConsole()->trace("Running BaseProfileDataHandler::read");
+    if (j.is_null()) {
+      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve metadata for {}", "BaseProfileData");
+      return;
+    }
+    auto jsonNumCalls = j["numCalls"].get<unsigned long long int>();
+    auto rtInSeconds = j["timeInSeconds"].get<double>();
+    auto inclRtInSeconds = j["inclusiveRtInSeconds"].get<double>();
+    setNumberOfCalls(jsonNumCalls);
+    setRuntimeInSeconds(rtInSeconds);
+    setInclusiveRuntimeInSeconds(inclRtInSeconds);
+  }
+  nlohmann::json to_json() const final {
+    return nlohmann::json{{"numCalls", getNumberOfCalls()},
+                          {"timeInSeconds", getRuntimeInSeconds()},
+                          {"inclusiveRtInSeconds", getInclusiveRuntimeInSeconds()}};
+  };
 
   // Regular profile data
   // Warning: This function is *not* used by the Cube reader
-  void setCallData(metacg::CgNode* parentNode, unsigned long long calls, double timeInSeconds, double inclusiveTimeInSeconds, int threadId, int procId) {
+  void setCallData(metacg::CgNode *parentNode, unsigned long long calls, double timeInSeconds,
+                   double inclusiveTimeInSeconds, int threadId, int procId) {
     callFrom[parentNode] += calls;
     timeFrom[parentNode] += timeInSeconds;
     this->timeInSeconds += timeInSeconds;
@@ -47,21 +69,12 @@ class BaseProfileData : public metacg::MetaData {
     this->cgLoc.emplace_back(CgLocation(timeInSeconds, inclusiveTimeInSeconds, threadId, procId, calls));
   }
   unsigned long long getNumberOfCalls() const { return this->numCalls; }
-  void setNumberOfCalls(unsigned long long nrCall) {
-    assert(numCalls == 0 && "You probably don't want to overwrite the calls");
-    this->numCalls = nrCall;
-  }
+  void setNumberOfCalls(unsigned long long nrCall) { this->numCalls = nrCall; }
 
-  void addCalls(unsigned long long nrCall) {
-    // assert(nrCall >= 0);
-    this->numCalls += nrCall;
-  }
+  void addCalls(unsigned long long nrCall) { this->numCalls += nrCall; }
 
   double getRuntimeInSeconds() const { return this->timeInSeconds; }
-  void setRuntimeInSeconds(double newRuntimeInSeconds) {
-    assert(timeInSeconds == 0 && "You probably don't want to overwrite the runtime");
-    this->timeInSeconds = newRuntimeInSeconds;
-  }
+  void setRuntimeInSeconds(double newRuntimeInSeconds) { this->timeInSeconds = newRuntimeInSeconds; }
 
   void addRuntime(double runtime) {
     assert(runtime >= 0);
@@ -71,15 +84,8 @@ class BaseProfileData : public metacg::MetaData {
   double getRuntimeInSecondsForParent(metacg::CgNode *parent) { return this->timeFrom[parent]; }
 
   void setInclusiveRuntimeInSeconds(double newInclusiveTimeInSeconds) {
-    assert(inclTimeInSeconds == 0 && "You probably don't want to overwrite the incl runtime");
     this->inclTimeInSeconds = newInclusiveTimeInSeconds;
   }
-
-  void addInclusiveRuntimeInSeconds(double newInclusiveTimeInSeconds) {
-    assert(newInclusiveTimeInSeconds >= 0);
-    this->inclTimeInSeconds += newInclusiveTimeInSeconds;
-  }
-
   double getInclusiveRuntimeInSeconds() const { return this->inclTimeInSeconds; }
   unsigned long long getNumberOfCallsWithCurrentEdges() const {
     auto v = 0ull;
@@ -88,7 +94,13 @@ class BaseProfileData : public metacg::MetaData {
     }
     return v;
   }
-  unsigned long long getNumberOfCalls(metacg::CgNode* parentNode) { return callFrom[parentNode]; }
+
+  void addInclusiveRuntimeInSeconds(double newInclusiveTimeInSeconds) {
+    assert(newInclusiveTimeInSeconds >= 0);
+    this->inclTimeInSeconds += newInclusiveTimeInSeconds;
+  }
+
+  unsigned long long getNumberOfCalls(metacg::CgNode *parentNode) { return callFrom[parentNode]; }
 
   const std::vector<CgLocation> &getCgLocation() const { return cgLoc; }
 
@@ -100,8 +112,8 @@ class BaseProfileData : public metacg::MetaData {
   double inclTimeInSeconds{.0};
   int threadId{0};
   int processId{0};
-  std::unordered_map<metacg::CgNode*, unsigned long long> callFrom;
-  std::unordered_map<metacg::CgNode*, double> timeFrom;
+  std::unordered_map<metacg::CgNode *, unsigned long long> callFrom;
+  std::unordered_map<metacg::CgNode *, double> timeFrom;
   std::vector<CgLocation> cgLoc;
 };
 
@@ -109,9 +121,26 @@ class BaseProfileData : public metacg::MetaData {
  * This class holds data relevant to the PIRA I analyses.
  * Most notably, it offers the number of statements and the principal (dominant) runtime node
  */
-class PiraOneData : public metacg::MetaData {
+class PiraOneData : public metacg::MetaData::Registrar<PiraOneData> {
  public:
-  static constexpr const char *key() { return "PiraOneData"; }
+  static constexpr const char *key = "numStatements";
+  PiraOneData() = default;
+  explicit PiraOneData(const nlohmann::json &j) {
+    metacg::MCGLogger::instance().getConsole()->trace("Running PiraOneMetaDataRetriever::read from json");
+    if (j.is_null()) {
+      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", "PiraOneData");
+      return;
+    }
+    auto jsonNumStmts = j.get<long long int>();
+    metacg::MCGLogger::instance().getConsole()->debug("Read {} stmts from file", jsonNumStmts);
+    setNumberOfStatements(jsonNumStmts);
+  }
+
+  nlohmann::json to_json() const final {
+    nlohmann::json j;
+    j["numStatements"] = getNumberOfStatements();
+    return j;
+  };
 
   void setNumberOfStatements(int numStmts) { this->numStmts = numStmts; }
   int getNumberOfStatements() const { return this->numStmts; }
@@ -152,28 +181,61 @@ inline void to_json(nlohmann::json &j, const PiraOneData &data) {
  * This class holds data relevant to the PIRA II anslyses.
  * Most notably it encapsulates the Extra-P peformance models
  */
-class PiraTwoData : public metacg::MetaData {
+class PiraTwoData : public metacg::MetaData::Registrar<PiraTwoData> {
  public:
-  static constexpr const char *key() { return "PiraTwoData"; }
+  static constexpr const char *key = "PiraTwoData";
 
-  PiraTwoData() : epCon({}, {}), params(), rtVec(), numReps(0) {}
-  explicit PiraTwoData(const extrapconnection::ExtrapConnector &ec) : epCon(ec), params(), rtVec(), numReps(0) {}
+  explicit PiraTwoData() : epCon({}, {}), params(), rtVec(), numReps(0) {}
+  explicit PiraTwoData(const nlohmann::json &j) : epCon({}, {}), params(), rtVec(), numReps(0){};
+  explicit PiraTwoData(const extrapconnection::ExtrapConnector &ec) : epCon(ec), params(), rtVec(), numReps(0) {
+    metacg::MCGLogger::instance().getConsole()->warn(
+        "Running PiraTwoDataRetriever::read from json, currently not implemented / supported");
+  }
   PiraTwoData(const PiraTwoData &other)
       : epCon(other.epCon), params(other.params), rtVec(other.rtVec), numReps(other.numReps) {
-    spdlog::get("console")->trace("PiraTwo Copy CTor\n\tother: {}\n\tThis: {}", other.rtVec.size(), rtVec.size());
+    metacg::MCGLogger::instance().getConsole()->trace("PiraTwo Copy CTor\n\tother: {}\n\tThis: {}", other.rtVec.size(),
+                                                      rtVec.size());
   }
+
+  nlohmann::json to_json() const final {
+    nlohmann::json j;
+    if (getExtrapModel() == nullptr) {
+      metacg::MCGLogger::instance().getConsole()->error(
+          "PiraTwoData can not be exported, no connected ExtraP model exists");
+      return j;
+    }
+    auto &gOpts = ::pgis::config::GlobalConfig::get();
+    auto rtOnly = gOpts.getAs<bool>("runtime-only");
+
+    auto rtAndParams = valTup(getRuntimeVec(), getExtrapParameters(), getNumReps());
+    nlohmann::json experiments;
+    for (auto elem : rtAndParams) {
+      nlohmann::json exp{};
+      exp["runtime"] = elem.first;
+      exp[elem.second.first] = elem.second.second;
+      experiments += exp;
+    }
+    if (!rtOnly) {
+      j = nlohmann::json{{"experiments", experiments},
+                         {"model", getExtrapModel()->getAsString(getExtrapModelConnector().getParamList())}};
+    } else {
+      j = nlohmann::json{{"experiments", experiments}};
+    }
+    metacg::MCGLogger::instance().getConsole()->debug("PiraTwoData to_json:\n{}", j.dump());
+    return j;
+  };
 
   void setExtrapModelConnector(extrapconnection::ExtrapConnector epCon) { this->epCon = epCon; }
   extrapconnection::ExtrapConnector &getExtrapModelConnector() { return epCon; }
   const extrapconnection::ExtrapConnector &getExtrapModelConnector() const { return epCon; }
 
   void setExtrapParameters(std::vector<std::pair<std::string, std::vector<int>>> params) { this->params = params; }
-  auto &getExtrapParameters() const { return this->params; }
+  const std::vector<std::pair<std::string, std::vector<int>>> &getExtrapParameters() const { return this->params; }
 
   void addToRuntimeVec(double runtime) { this->rtVec.push_back(runtime); }
-  auto &getRuntimeVec() const { return this->rtVec; }
+  const std::vector<double> &getRuntimeVec() const { return this->rtVec; }
 
-  auto &getExtrapModel() const { return epCon.getEPModelFunction(); }
+  const std::unique_ptr<EXTRAP::Function> &getExtrapModel() const { return epCon.getEPModelFunction(); }
 
   bool hasExtrapModel() const { return epCon.hasModels(); }
 
@@ -186,45 +248,149 @@ class PiraTwoData : public metacg::MetaData {
   int numReps;
 };
 
-class FilePropertiesMetaData : public metacg::MetaData {
+class FilePropertiesMetaData : public metacg::MetaData::Registrar<FilePropertiesMetaData> {
  public:
-  static constexpr const char *key() { return "FilePropertiesMetaData"; }
+  static constexpr const char *key = "FilePropertiesMetaData";
   FilePropertiesMetaData() : origin("INVALID"), fromSystemInclude(false), lineNumber(0) {}
+  explicit FilePropertiesMetaData(const nlohmann::json &j) {
+    if (j.is_null()) {
+      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for fileProperties");
+      return;
+    }
+
+    std::string fileOrigin = j["origin"].get<std::string>();
+    bool isFromSystemInclude = j["systemInclude"].get<bool>();
+    origin = fileOrigin;
+    fromSystemInclude = isFromSystemInclude;
+  }
+
+  nlohmann::json to_json() const final {
+    nlohmann::json j;
+    j["origin"] = origin;
+    j["systemInclude"] = fromSystemInclude;
+    return j;
+  };
   std::string origin;
   bool fromSystemInclude;
   int lineNumber;
 };
 
-class CodeStatisticsMetaData : public metacg::MetaData {
+class CodeStatisticsMetaData : public metacg::MetaData::Registrar<CodeStatisticsMetaData> {
  public:
-  static constexpr const char *key() { return "CodeStatisticsMetaData"; }
+  static constexpr const char *key = "CodeStatisticsMetaData";
+  CodeStatisticsMetaData() = default;
+  explicit CodeStatisticsMetaData(const nlohmann::json &j) {
+    if (j.is_null()) {
+      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}",
+                                                        "CodeStatisticsMetaData");
+      return;
+    }
+    int jNumVars = j["numVars"].get<int>();
+    numVars = jNumVars;
+  }
+
+  nlohmann::json to_json() const final {
+    nlohmann::json j;
+    j["numVars"] = numVars;
+    return j;
+  };
+
   int numVars{0};
 };
 
-class NumConditionalBranchMetaData : public metacg::MetaData {
+class NumConditionalBranchMetaData : public metacg::MetaData::Registrar<NumConditionalBranchMetaData> {
  public:
-  static constexpr const char *key() { return "NumConditionalBranchMetaData"; }
+  static constexpr const char *key = "NumConditionalBranchMetaData";
+  NumConditionalBranchMetaData() = default;
+  explicit NumConditionalBranchMetaData(const nlohmann::json &j) {
+    if (j.is_null()) {
+      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}",
+                                                        "NumConditionalBranchMetaData");
+      return;
+    }
+    int numberOfConditionalBranches = j.get<int>();
+    numConditionalBranches = numberOfConditionalBranches;
+  }
+
+  nlohmann::json to_json() const final {
+    nlohmann::json j;
+    j["numConditionalBranches"] = numConditionalBranches;
+    return j;
+  };
   int numConditionalBranches{0};
 };
 
-class NumOperationsMetaData : public metacg::MetaData {
+class NumOperationsMetaData : public metacg::MetaData::Registrar<NumOperationsMetaData> {
  public:
-  static constexpr const char *key() { return "NumOperationsMetaData"; }
+  NumOperationsMetaData() = default;
+  static constexpr const char *key = "NumOperationsMetaData";
+
+  explicit NumOperationsMetaData(const nlohmann::json &j) {
+    if (j.is_null()) {
+      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", "NumOperationsMetaData");
+      return;
+    }
+    int jNumberOfIntOps = j["numberOfIntOps"].get<int>();
+    int jNumberOfFloatOps = j["numberOfFloatOps"].get<int>();
+    int jNumberOfControlFlowOps = j["numberOfControlFlowOps"].get<int>();
+    int jNumberOfMemoryAccesses = j["numberOfMemoryAccesses"].get<int>();
+    numberOfIntOps = jNumberOfIntOps;
+    numberOfFloatOps = jNumberOfFloatOps;
+    numberOfControlFlowOps = jNumberOfControlFlowOps;
+    numberOfMemoryAccesses = jNumberOfMemoryAccesses;
+  }
+  nlohmann::json to_json() const final {
+    nlohmann::json j;
+    j["numberOfIntOps"] = numberOfIntOps;
+    j["numberOfFloatOps"] = numberOfFloatOps;
+    j["numberOfControlFlowOps"] = numberOfControlFlowOps;
+    j["numberOfMemoryAccesses"] = numberOfMemoryAccesses;
+    return j;
+  };
   int numberOfIntOps{0};
   int numberOfFloatOps{0};
   int numberOfControlFlowOps{0};
   int numberOfMemoryAccesses{0};
 };
 
-class LoopDepthMetaData : public metacg::MetaData {
+class LoopDepthMetaData : public metacg::MetaData::Registrar<LoopDepthMetaData> {
  public:
-  static constexpr const char *key() { return "LoopDepthMetaData"; }
+  static constexpr const char *key = "LoopDepthMetaData";
+  LoopDepthMetaData() = default;
+  explicit LoopDepthMetaData(const nlohmann::json &j) {
+    if (j.is_null()) {
+      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", "LoopDepthMetaData");
+      return;
+    }
+    loopDepth = j.get<int>();
+  }
+
+  nlohmann::json to_json() const final {
+    nlohmann::json j;
+    j["loopDepth"] = loopDepth;
+    return j;
+  };
   int loopDepth{0};
 };
 
-class GlobalLoopDepthMetaData : public metacg::MetaData {
+class GlobalLoopDepthMetaData : public metacg::MetaData::Registrar<GlobalLoopDepthMetaData> {
  public:
-  static constexpr const char *key() { return "GlobalLoopDepthMetaData"; }
+  GlobalLoopDepthMetaData() = default;
+  static constexpr const char *key = "GlobalLoopDepthMetaData";
+
+  explicit GlobalLoopDepthMetaData(const nlohmann::json &j) {
+    if (j.is_null()) {
+      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}",
+                                                        "GlobalLoopDepthMetaData");
+      return;
+    }
+    globalLoopDepth = j.get<int>();
+  }
+  nlohmann::json to_json() const final {
+    nlohmann::json j;
+    j["globalLoopDepth"] = globalLoopDepth;
+    return j;
+  };
   int globalLoopDepth{0};
 };
 

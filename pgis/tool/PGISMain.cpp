@@ -20,7 +20,7 @@
 #include "LegacyMCGReader.h"
 #include "PiraMCGProcessor.h"
 #include <loadImbalance/LIEstimatorPhase.h>
-#include <loadImbalance/LIRetriever.h>
+#include <loadImbalance/LIMetaData.h>
 #include <loadImbalance/OnlyMainEstimatorPhase.h>
 
 #include "spdlog/sinks/stdout_color_sinks.h"
@@ -28,7 +28,6 @@
 
 #include "cxxopts.hpp"
 
-#include <nlohmann/json.hpp>
 
 namespace pgis::options {
 
@@ -266,27 +265,6 @@ int main(int argc, char **argv) {
       mcgReader.read(mcgm);
     } else if (mcgVersion == 2) {
       metacg::io::VersionTwoMetaCGReader mcgReader(fs);
-      // Example how to add MetaDataHandler
-      mcgm.addMetaHandler<metacg::io::retriever::PiraOneDataRetriever>();
-      mcgm.addMetaHandler<metacg::io::retriever::FilePropertyHandler>();
-      mcgm.addMetaHandler<metacg::io::retriever::CodeStatisticsHandler>();
-      mcgm.addMetaHandler<LoadImbalance::LoadImbalanceMetaDataHandler>();
-      const auto heuristicMode = ::pgis::config::getSelectedHeuristic();
-      switch (heuristicMode) {
-        case HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES:
-        case HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES_REVERSE:
-          mcgm.addMetaHandler<metacg::io::retriever::NumConditionalBranchHandler>();
-          break;
-        case HeuristicSelection::HeuristicSelectionEnum::FP_MEM_OPS:
-          mcgm.addMetaHandler<metacg::io::retriever::NumOperationsHandler>();
-          break;
-        case HeuristicSelection::HeuristicSelectionEnum::LOOPDEPTH:
-          mcgm.addMetaHandler<metacg::io::retriever::LoopDepthHandler>();
-          break;
-        case HeuristicSelection::HeuristicSelectionEnum::GlOBAL_LOOPDEPTH:
-          mcgm.addMetaHandler<metacg::io::retriever::GlobalLoopDepthHandler>();
-          break;
-      }
       mcgReader.read(mcgm);
       // XXX Find better way to do this: both conceptually and complexity-wise
       pgis::attachMetaDataToGraph<pira::PiraOneData>(mcgm.getCallgraph());

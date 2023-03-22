@@ -5,8 +5,8 @@
  */
 #include "MCGReader.h"
 #include "MCGBaseInfo.h"
-#include "Util.h"
 #include "Timing.h"
+#include "Util.h"
 
 #include <queue>
 
@@ -47,6 +47,13 @@ void MetaCGReader::buildGraph(metacg::graph::MCGManager &cgManager, MetaCGReader
         cgManager.getCallgraph()->addEdge(node, potentialCallee);
       }
     }
+
+    std::unordered_map<std::string, metacg::MetaData *> metadataContainer;
+    for (const auto &elem : fi.namedMetadata) {
+      if (auto obj = metacg::MetaData::create(elem.first, elem.second); obj != nullptr)
+        metadataContainer[elem.first] = obj;
+    }
+    node->setMetaDataContainer(metadataContainer);
   }
 }
 
@@ -133,15 +140,6 @@ void VersionTwoMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
                                          metacg::util::getMinorVersionFromString(generatorVersion), ""};
   console->info("The metacg (version {}) file was generated with {} (version: {})", mcgVersion, generatorName,
                 generatorVersion);
-  {  // raii
-    std::string metaReadersStr;
-    int i = 1;
-    for (const auto mh : cgManager.getMetaHandlers()) {
-      metaReadersStr += std::to_string(i) + ") " + mh->toolName() + "  ";
-      ++i;
-    }
-    console->info("Executing the meta readers: {}", metaReadersStr);
-  }
 
   MCGFileInfo fileInfo{ffInfo, genVersionInfo};
   auto jsonCG = j[ffInfo.cgFieldName];
@@ -175,25 +173,13 @@ void VersionTwoMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
 
     /** Information relevant for analysis */
     setIfNotNull(fi.hasBody, it, fileInfo.nodeInfo.hasBodyStr);
+
+    /** Metadata */
+    setIfNotNull(fi.namedMetadata, it, fileInfo.nodeInfo.metaStr);
   }
 
   auto potentialTargets = buildVirtualFunctionHierarchy(cgManager);
   buildGraph(cgManager, potentialTargets);
-
-  for (json::iterator it = jsonCG.begin(); it != jsonCG.end(); ++it) {
-    /**
-     * Pass each attached meta reader the current json object, to see if it has meta data
-     *  particular to that reader attached.
-     */
-    auto &jsonElem = it.value()[fileInfo.nodeInfo.metaStr];
-    if (!jsonElem.is_null()) {
-      for (const auto metaHandler : cgManager.getMetaHandlers()) {
-        if (jsonElem.contains(metaHandler->toolName())) {
-          metaHandler->read(jsonElem, it.key());
-        }
-      }
-    }
-  }
 }
 }  // namespace io
 }  // namespace metacg

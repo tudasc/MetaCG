@@ -14,6 +14,7 @@
 // System library
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 // clang-format on
 
@@ -28,7 +29,7 @@ class CgNode {
    */
   template <typename T>
   inline bool has() const {
-    return metaFields.find(T::key()) != metaFields.end();
+    return metaFields.find(T::key) != metaFields.end();
   }
 
   /**
@@ -38,8 +39,8 @@ class CgNode {
    */
   template <typename T>
   inline T *get() const {
-    assert(metaFields.count(T::key()) > 0 && "meta field for key must exist");
-    auto val = metaFields.at(T::key());
+    assert(metaFields.count(T::key) > 0 && "meta field for key must exist");
+    auto val = metaFields.at(T::key);
     return static_cast<T *>(val);
   }
 
@@ -68,7 +69,7 @@ class CgNode {
     if (this->has<T>()) {
       assert(false && "MetaData with key already attached");
     }
-    metaFields[T::key()] = md;
+    metaFields[T::key] = md;
   }
 
   /**
@@ -147,6 +148,10 @@ class CgNode {
 
   friend std::ostream &operator<<(std::ostream &stream, const CgNode &n);
 
+  std::unordered_map<std::string, MetaData *> &getMetaDataContainer() { return metaFields; }
+
+  void setMetaDataContainer(std::unordered_map<std::string, MetaData *> data) { metaFields = std::move(data); }
+
  private:
   size_t id = -1;
   std::string functionName;
@@ -154,5 +159,6 @@ class CgNode {
   bool isMarkedVirtual;
   bool hasBody;
 };
+
 }  // namespace metacg
 #endif

@@ -1,36 +1,19 @@
 /**
-* File: LegacyMCGReaderTest.cpp
-* License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: LegacyMCGReaderTest.cpp
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
-#include "gtest/gtest.h"
+#include "LegacyMCGReader.h"
 #include "LoggerUtil.h"
 #include "MCGManager.h"
-#include "LegacyMCGReader.h"
-#include "MetaDataHandler.h"
 #include "loadImbalance/LIMetaData.h"
+#include "gtest/gtest.h"
 
 #include "nlohmann/json.hpp"
 
 using namespace metacg;
 using json = nlohmann::json;
-
-/**
-* MetaDataHandler used for testing
-*/
-struct TestHandler : public metacg::io::retriever::MetaDataHandler {
- int i{0};
- const std::string toolName() const override { return "TestMetaHandler"; }
- void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
- bool handles(const metacg::CgNode* n) const override { return false; }
- json value(const metacg::CgNode* n) const override {
-   json j;
-   j = i;
-   return j;
- }
-};
-
 
 TEST(VersionOneMCGReaderTest, EmptyJSON) {
   json j;
@@ -38,7 +21,7 @@ TEST(VersionOneMCGReaderTest, EmptyJSON) {
 
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   metacg::io::JsonSource js(j);
   metacg::io::VersionOneMetaCGReader mcgReader(js);
   mcgReader.read(mcgm);
@@ -58,7 +41,7 @@ TEST(VersionOneMCGReaderTest, SimpleJSON) {
 
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   metacg::io::JsonSource js(j);
   metacg::io::VersionOneMetaCGReader mcgReader(js);
   mcgReader.read(mcgm);
@@ -66,7 +49,7 @@ TEST(VersionOneMCGReaderTest, SimpleJSON) {
   Callgraph &graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 1);
 
-  metacg::CgNode* mainNode = graph.getNode("main");
+  metacg::CgNode *mainNode = graph.getNode("main");
   mainNode->getOrCreateMD<pira::PiraOneData>();
   mainNode->getOrCreateMD<pira::PiraTwoData>();
   mainNode->getOrCreateMD<LoadImbalance::LIMetaData>();
@@ -99,7 +82,7 @@ TEST(VersionOneMCGReaderTest, MultiNodeJSON) {
 
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   metacg::io::JsonSource js(j);
   metacg::io::VersionOneMetaCGReader mcgReader(js);
   mcgReader.read(mcgm);
@@ -107,7 +90,7 @@ TEST(VersionOneMCGReaderTest, MultiNodeJSON) {
   Callgraph &graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 2);
 
-  metacg::CgNode* mainNode = graph.getNode("main");
+  metacg::CgNode *mainNode = graph.getNode("main");
   ASSERT_NE(mainNode, nullptr);
   mainNode->getOrCreateMD<pira::PiraOneData>();
   mainNode->getOrCreateMD<pira::PiraTwoData>();
@@ -122,7 +105,7 @@ TEST(VersionOneMCGReaderTest, MultiNodeJSON) {
     EXPECT_EQ(cn->getFunctionName(), "foo");
   }
 
-  metacg::CgNode* fooNode = graph.getNode("foo");
+  metacg::CgNode *fooNode = graph.getNode("foo");
   ASSERT_NE(fooNode, nullptr);
 
   fooNode->getOrCreateMD<pira::PiraOneData>();

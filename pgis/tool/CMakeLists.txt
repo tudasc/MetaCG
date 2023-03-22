@@ -3,7 +3,6 @@ set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-targets)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 add_executable(pgis_pira PGISMain.cpp)
-
 # add_executable(pgis_stmt_printer StmtPrinterMain.cpp)
 
 add_pgis(pgis_pira)

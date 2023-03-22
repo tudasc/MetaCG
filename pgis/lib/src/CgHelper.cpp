@@ -97,7 +97,7 @@ Statements visitNodeForInclusiveStatements(metacg::CgNode* node, CgNodeRawPtrUSe
 
   node->get<LoadImbalance::LIMetaData>()->setNumberOfInclusiveStatements(inclusiveStatements);
 
-  spdlog::get("console")->trace("Visiting node " + node->getFunctionName() +
+  metacg::MCGLogger::instance().getConsole()->trace("Visiting node " + node->getFunctionName() +
                                 ". Result = " + std::to_string(inclusiveStatements));
   return inclusiveStatements;
 }
@@ -105,7 +105,7 @@ Statements visitNodeForInclusiveStatements(metacg::CgNode* node, CgNodeRawPtrUSe
 void calculateInclusiveStatementCounts(metacg::CgNode* mainNode, const metacg::Callgraph* const graph) {
   CgNodeRawPtrUSet visitedNodes;
 
-  spdlog::get("console")->trace("Starting inclusive statement counting. mainNode = " + mainNode->getFunctionName());
+  metacg::MCGLogger::instance().getConsole()->trace("Starting inclusive statement counting. mainNode = " + mainNode->getFunctionName());
 
   visitNodeForInclusiveStatements(mainNode, &visitedNodes,graph);
 }
@@ -203,14 +203,14 @@ double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef) {
     const auto& n = elem.second.get();
     const auto &[hasBPD, bpd] = n->checkAndGet<BaseProfileData>();
     if (hasBPD) {
-      spdlog::get("console")->trace("Found BaseProfileData for {}: Adding inclusive runtime of {} to RT vector.",
+      metacg::MCGLogger::instance().getConsole()->trace("Found BaseProfileData for {}: Adding inclusive runtime of {} to RT vector.",
                                     n->getFunctionName(), bpd->getInclusiveRuntimeInSeconds());
       if (bpd->getInclusiveRuntimeInSeconds() != 0) {
         rt.push_back(bpd->getInclusiveRuntimeInSeconds());
       }
     }
   }
-  spdlog::get("console")->info("The number of elements for runtime threshold calculation: {}", rt.size());
+  metacg::MCGLogger::instance().getConsole()->info("The number of elements for runtime threshold calculation: {}", rt.size());
 
   std::sort(rt.begin(), rt.end());
   {  // raii
@@ -218,7 +218,7 @@ double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef) {
     for (const auto r : rt) {
       runtimeStr += ' ' + std::to_string(r);
     }
-    spdlog::get("console")->debug("Runtime vector [values are seconds]: {}", runtimeStr);
+    metacg::MCGLogger::instance().getConsole()->debug("Runtime vector [values are seconds]: {}", runtimeStr);
   }
 
   size_t lastIndex = rt.size() * .5;

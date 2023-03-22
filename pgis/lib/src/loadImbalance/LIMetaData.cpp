@@ -25,10 +25,9 @@ bool LIMetaData::isFlagged(FlagType type) const { return this->flags.at(type); }
 void LIMetaData::setAssessment(double assessment) { this->assessment = std::optional<double>(assessment); }
 
 std::optional<double> LIMetaData::getAssessment() { return this->assessment; }
-
-void LoadImbalance::to_json(nlohmann::json &j, const LoadImbalance::LIMetaData &d) {
-  j = nlohmann::json{
-      {flagType2String(FlagType::Visited), d.isFlagged(FlagType::Visited)},
-      {flagType2String(FlagType::Irrelevant), d.isFlagged(FlagType::Irrelevant)},
+nlohmann::json LIMetaData::to_json() const {
+  return nlohmann::json{
+      {flagType2String(FlagType::Visited), isFlagged(FlagType::Visited)},
+      {flagType2String(FlagType::Irrelevant), isFlagged(FlagType::Irrelevant)},
   };
 }
