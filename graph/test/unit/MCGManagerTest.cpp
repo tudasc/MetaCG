@@ -13,22 +13,6 @@
 
 using json = nlohmann::json;
 
-/**
- * This is to test, if it can actually work as imagined
- */
-
-struct TestHandler : public metacg::io::retriever::MetaDataHandler {
-  int i{0};
-  const std::string toolName() const override { return "TestMetaHandler"; }
-  void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
-  bool handles(const metacg::CgNode *const n) const override { return false; }
-  json value(const metacg::CgNode *const n) const override {
-    json j;
-    j = i;
-    return j;
-  }
-};
-
 class MCGManagerTest : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -171,13 +155,6 @@ TEST_F(MCGManagerTest, ComplexCG) {
   for (const auto &elem : mcgm.getCallgraph()->getCallers(childNode6->getId())) {
     ASSERT_TRUE(elem->getFunctionName() == "child4" || elem->getFunctionName() == "child5");
   }
-}
-
-TEST_F(MCGManagerTest, OneMetaDataAttached) {
-  auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.addMetaHandler<TestHandler>();
-  const auto &handlers = mcgm.getMetaHandlers();
-  ASSERT_EQ(handlers.size(), 1);
 }
 
 TEST_F(MCGManagerTest, TwoNodeOneEdgeCG) {

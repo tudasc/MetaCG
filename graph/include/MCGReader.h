@@ -90,7 +90,7 @@ class MetaCGReader {
     std::unordered_set<std::string> parents;
     std::unordered_set<std::string> overriddenFunctions;
     std::unordered_set<std::string> overriddenBy;
-
+    std::unordered_map<std::string, json> namedMetadata;
     // load imbalance detection data
     bool visited = false;
     bool irrelevant = false;

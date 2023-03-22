@@ -37,7 +37,7 @@ size_t Callgraph::insert(CgNodePtr node) {
       MCGLogger::instance().getErrConsole()->error(
           "There already exists a mapping from {} to {}, but the newly inserted node {} generates the same ID ({}) "
           "this probably is a hash function collision, and is unrecoverable",
-          n->second, n->second, node->getFunctionName(), node->getId());
+          n->first, n->second, node->getFunctionName(), node->getId());
       abort();
     } else {
       MCGLogger::instance().getErrConsole()->warn(
@@ -159,6 +159,7 @@ CgNode *Callgraph::getOrInsertNode(const std::string &name) {
   }
 }
 const metacg::Callgraph::NodeContainer &Callgraph::getNodes() const { return nodes; }
+
 const metacg::Callgraph::EdgeContainer &Callgraph::getEdges() const { return edges; }
 
 bool Callgraph::existEdgeFromTo(const CgNode &source, const CgNode &target) const {
@@ -217,6 +218,7 @@ CgNodeRawPtrUSet Callgraph::getCallers(const std::string &node) const {
   assert(nameIdMap.find(node) != nameIdMap.end());
   return getCallers(nameIdMap.at(node));
 }
+
 void Callgraph::setNodes(Callgraph::NodeContainer external_container) { nodes = std::move(external_container); }
 void Callgraph::setEdges(Callgraph::EdgeContainer external_container) { edges = std::move(external_container); }
 void Callgraph::recomputeCache() {

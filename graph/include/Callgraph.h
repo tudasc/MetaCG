@@ -8,7 +8,6 @@
 
 #include "CgNode.h"
 #include "CgNodePtr.h"
-#include <cstddef>
 
 template <>
 struct std::hash<std::pair<size_t, size_t>> {
@@ -129,7 +128,6 @@ class Callgraph {
 
   void setNodes(NodeContainer external_container);
   void setEdges(EdgeContainer external_container);
-
   void recomputeCache();
 
   template <class T>

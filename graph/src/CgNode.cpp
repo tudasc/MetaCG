@@ -79,8 +79,6 @@ std::ostream &operator<<(std::ostream &stream, const CgNode &n) {
   return stream;
 }
 
-
-
 CgNode::~CgNode() {
   for (const auto &md : metaFields) {
     delete md.second;

@@ -15,7 +15,7 @@
 // From PGIS library
 #include "EstimatorPhase.h"
 #include "ExtrapConnection.h"
-#include "MetaDataHandler.h"
+#include "MetaData/CgNodeMetaData.h"
 
 // System library
 #include <map>
@@ -51,7 +51,7 @@ class PiraMCGProcessor {
   void printMainRuntime() {
     const auto mainNode = graph->getMain();
     const auto inclTime = mainNode->get<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds();
-    spdlog::get("console")->info("Runtime of main is: {}", inclTime);
+    metacg::MCGLogger::instance().getConsole()->info("Runtime of main is: {}", inclTime);
   }
 
  private:
@@ -62,7 +62,6 @@ class PiraMCGProcessor {
   PiraMCGProcessor(PiraMCGProcessor &&other) = default;
 
   PiraMCGProcessor &operator=(const PiraMCGProcessor &other) = delete;
-  //PiraMCGProcessor &operator=(PiraMCGProcessor &&other) = default;
   PiraMCGProcessor &operator=(PiraMCGProcessor &&other) = delete;
 
  public:
@@ -91,23 +90,21 @@ class PiraMCGProcessor {
   int getNumProcs();
   bool readWhitelist(std::vector<std::string> &whiteNodes);
   bool isNodeListed(std::vector<std::string> whiteNodes, std::string node);
-  Callgraph* getCallgraph(PiraMCGProcessor *cg = nullptr);
+  Callgraph *getCallgraph(PiraMCGProcessor *cg = nullptr);
   void setNoOutput() { noOutputRequired = true; }
-  void setOutputDotBetweenPhases(bool val = true) {outputDotBetweenPhases = val;}
-  bool getOutputDotBetweenPhases(){
-    return outputDotBetweenPhases;
-  }
+  void setOutputDotBetweenPhases(bool val = true) { outputDotBetweenPhases = val; }
+  bool getOutputDotBetweenPhases() { return outputDotBetweenPhases; }
 
   void attachExtrapModels();
 
-  void setCG(Callgraph* newGraph) {graph = newGraph; }
+  void setCG(Callgraph *newGraph) { graph = newGraph; }
 
  private:
   // this set represents the call graph during the actual computation
-  Callgraph *graph=nullptr;
+  Callgraph *graph = nullptr;
   Config *configPtr;
   bool noOutputRequired{false};
-  bool outputDotBetweenPhases {false};
+  bool outputDotBetweenPhases{false};
 
   // Extrap interaction
   extrapconnection::ExtrapModelProvider epModelProvider;

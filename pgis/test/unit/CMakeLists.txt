@@ -8,7 +8,6 @@ add_executable(
   loadImbalance/LIConfigTest.cpp
   loadImbalance/LIEstimatorPhaseTest.cpp
   loadImbalance/LIMetricTest.cpp
-  MetaDataHandlerExportTest.cpp
 )
 
 target_link_libraries(pgistests gtest_main)

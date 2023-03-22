@@ -1,9 +1,8 @@
 /**
-* File: MCGManager.cpp
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: MCGManager.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
-
 
 #include "MCGManager.h"
 
@@ -15,7 +14,6 @@ MCGManager &MCGManager::get() {
 }
 
 void MCGManager::resetManager() {
-  metaHandlers.clear();
   managedGraphs.clear();
   activeGraph = nullptr;
 }
@@ -23,15 +21,6 @@ void MCGManager::resetManager() {
 bool MCGManager::resetActiveGraph() {
   if (activeGraph) {
     activeGraph->clear();
-    // just because a graph exists, doesn't mean it has attached metadata
-    //  I think this is the best way to do it
-    //  until map::contains comes with c++20
-    //  I expect most callgraphs to have attached metadata
-    //  so the exception should be rare
-    try {
-      metaHandlers.at(activeGraph).clear();
-    } catch (const std::out_of_range &ex) {
-    }
     return true;
   } else {
     assert(false && "Graph manager could not reset active Graph, no active graph exists");
@@ -39,23 +28,19 @@ bool MCGManager::resetActiveGraph() {
   }
 }
 
-std::vector<metacg::io::retriever::MetaDataHandler *> MCGManager::getMetaHandlers() const {
-  std::vector<metacg::io::retriever::MetaDataHandler *> handler;
-  // the tests expect an empty vector of metadata handlers to be returned if the active graph is either not metadata
-  // annotated or doesn't exist
-  if (metaHandlers.count(activeGraph) != 0) {
-    for (const auto &mh : metaHandlers.at(activeGraph)) {
-      handler.push_back(mh.get());
-    }
-  }
-  return handler;
-}
-
 size_t MCGManager::size() const { return activeGraph->size(); }
 
 size_t MCGManager::graphs_size() const { return managedGraphs.size(); }
 
-metacg::Callgraph *MCGManager::getCallgraph() { return activeGraph; }
+metacg::Callgraph *MCGManager::getCallgraph(const std::string &name, bool setActive) {
+  if (name.empty()) {
+    return activeGraph;
+  }
+  if (setActive) {
+    this->setActive(name);
+  }
+  return managedGraphs.at(name).get();
+}
 
 metacg::Callgraph *MCGManager::getOrCreateCallgraph(const std::string &name) { return managedGraphs[name].get(); }
 
