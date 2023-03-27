@@ -34,14 +34,14 @@ CgNodeRawPtrUSet getInstrumentationPath(metacg::CgNode* start, const metacg::Cal
   while (!workQueue.empty()) {
     auto node = workQueue.front();
     workQueue.pop();
+    if (path.find(node) == path.end()) {
+      path.insert(node);
+      if (pgis::isInstrumented(node) || pgis::isInstrumentedPath(node) ||
+          /*node.isRootNode()*/ graph->getCallers(node).empty()) {
+        continue;
+      }
 
-    path.insert(node);
-    if (pgis::isInstrumented(node) || pgis::isInstrumentedPath(node) || /*node.isRootNode()*/ graph->getCallers(node).empty()) {
-      continue;
-    }
-
-    for (auto parentNode : graph->getCallers(node)) {
-      if (path.find(parentNode) == path.end()) {
+      for (auto parentNode : graph->getCallers(node)) {
         workQueue.push(parentNode);
       }
     }
@@ -58,7 +58,7 @@ bool isOnCycle(metacg::CgNode* node, const metacg::Callgraph* const graph) {
     auto currentNode = workQueue.front();
     workQueue.pop();
 
-    if (visitedNodes.count(currentNode) == 0) {
+    if (visitedNodes.find(currentNode) == visitedNodes.end()) {
       visitedNodes.insert(currentNode);
 
       for (auto child : graph->getCallees(currentNode)) {
@@ -130,17 +130,17 @@ CgNodeRawPtrUSet allNodesToMain(metacg::CgNode* startNode, metacg::CgNode* mainN
     auto node = workQueue.front();
     workQueue.pop();
 
-    visitedNodes.insert(node);
+    if (visitedNodes.find(node) == visitedNodes.end()) {
+      visitedNodes.insert(node);
 
-    if (ra.isReachableFromMain(node)) {
-      pNodes.insert(node);
-    } else {
-      continue;
-    }
+      if (ra.isReachableFromMain(node)) {
+        pNodes.insert(node);
+      } else {
+        continue;
+      }
 
-    auto pns = graph->getCallers(node);
-    for (auto pNode : pns) {
-      if (visitedNodes.find(pNode) == visitedNodes.end()) {
+      auto pns = graph->getCallers(node);
+      for (auto pNode : pns) {
         workQueue.push(pNode);
       }
     }
@@ -163,11 +163,8 @@ CgNodeRawPtrUSet getDescendants(metacg::CgNode* startingNode, const metacg::Call
   while (!workQueue.empty()) {
     auto node = workQueue.front();
     workQueue.pop();
-
-    childs.insert(node);
-
-    for (auto childNode : graph->getCallees(node)) {
-      if (childs.find(childNode) == childs.end()) {
+    if (const auto [it, inserted] = childs.insert(node); inserted) {
+      for (auto childNode : graph->getCallees(node)) {
         workQueue.push(childNode);
       }
     }
@@ -184,11 +181,8 @@ CgNodeRawPtrUSet getAncestors(metacg::CgNode* startingNode, const metacg::Callgr
   while (!workQueue.empty()) {
     auto node = workQueue.front();
     workQueue.pop();
-
-    ancestors.insert(node);
-
-    for (auto parentNode : graph->getCallers(node)) {
-      if (ancestors.find(parentNode) == ancestors.end()) {
+    if (const auto [it, inserted] = ancestors.insert(node); inserted) {
+      for (auto parentNode : graph->getCallers(node)) {
         workQueue.push(parentNode);
       }
     }
