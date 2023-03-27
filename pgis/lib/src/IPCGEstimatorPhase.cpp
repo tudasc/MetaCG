@@ -87,12 +87,10 @@ void StatementCountEstimatorPhase::estimateStatementCount(metacg::CgNode* startN
       const auto nodePOD = node->get<PiraOneData>();
       workQueue.pop();
 
-      visitedNodes.insert(node);
+      if (const auto [it, inserted] = visitedNodes.insert(node); inserted) {
+        inclStmtCount += nodePOD->getNumberOfStatements();
 
-      inclStmtCount += nodePOD->getNumberOfStatements();
-
-      for (auto childNode : graph->getCallees(node)) {
-        if (visitedNodes.find(childNode) == visitedNodes.end()) {
+        for (auto childNode : graph->getCallees(node)) {
           if (ra.isReachableFromMain(childNode)) {
             workQueue.push(childNode);
           }
@@ -151,12 +149,13 @@ void RuntimeEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
     auto node = workQueue.front();
     workQueue.pop();
 
-    visitedNodes.insert(node);
-    doInstrumentation(node, ra);
+    if (visitedNodes.find(node) == visitedNodes.end()) {
+      visitedNodes.insert(node);
+      doInstrumentation(node, ra);
 
-    for (auto childNode : graph->getCallees(node)) {
-      // Only visit unseen, profiled nodes. Only those have actual timing info!
-      if (visitedNodes.find(childNode) == visitedNodes.end()) {
+      for (auto childNode : graph->getCallees(node)) {
+        // Only visit unseen, profiled nodes. Only those have actual timing info!
+
         workQueue.push(childNode);
       }
     }
@@ -164,42 +163,12 @@ void RuntimeEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
 }
 
 void RuntimeEstimatorPhase::estimateRuntime(metacg::CgNode* startNode) {
-  double runTime = 0.0;
-
   if (inclusiveMetric) {
     // INCLUSIVE
-    std::queue<metacg::CgNode*> workQueue;
-    workQueue.push(startNode);
-    CgNodeRawPtrUSet visitedNodes;
-
-    while (!workQueue.empty()) {
-      auto node = workQueue.front();
-      workQueue.pop();
-
-      visitedNodes.insert(node);
-
-      // Only count the runtime of nodes comming from the profile
-
-
-
-      if (node->getOrCreateMD<PiraOneData>()->comesFromCube()) {
-        runTime += node->get<BaseProfileData>()->getRuntimeInSeconds();
-      }
-
-      for (auto childNode : graph->getCallees(node)) {
-        // Only visit unseen, profiled nodes. Only those have actual timing info!
-        if (visitedNodes.find(childNode) == visitedNodes.end() && childNode->get<PiraOneData>()->comesFromCube()) {
-          workQueue.push(childNode);
-        }
-      }
-    }
-
-    // inclRunTime[startNode] = runTime;
-
     inclRunTime[startNode] = startNode->getOrCreateMD<BaseProfileData>()->getInclusiveRuntimeInSeconds();
   } else {
     // EXCLUSIVE
-    runTime = startNode->get<BaseProfileData>()->getRuntimeInSeconds();
+    assert(false && "Only run this metric in inclusive mode.");
   }
 }
 
@@ -632,12 +601,12 @@ void SummingCountPhaseBase::estimateCount(CgNode* startNode, metacg::analysis::R
       auto node = workQueue.front();
       workQueue.pop();
 
-      visitedNodes.insert(node);
+      if (visitedNodes.find(node) == visitedNodes.end()) {
+        visitedNodes.insert(node);
 
-      count += getTargetCount(node);
+        count += getTargetCount(node);
 
-      for (const auto &childNode : graph->getCallees(node)) {
-        if (visitedNodes.find(childNode) == visitedNodes.end()) {
+        for (const auto &childNode : graph->getCallees(node)) {
           if (ra.isReachableFromMain(childNode)) {
             workQueue.push(childNode);
           }
