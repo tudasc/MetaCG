@@ -5,6 +5,7 @@
  */
 
 #include "MCGManager.h"
+#include "LoggerUtil.h"
 
 using namespace metacg::graph;
 
@@ -36,14 +37,23 @@ metacg::Callgraph *MCGManager::getCallgraph(const std::string &name, bool setAct
   if (name.empty()) {
     return activeGraph;
   }
-  if (setActive) {
-    this->setActive(name);
+  if (auto graph = managedGraphs.find(name); graph != managedGraphs.end()) {
+    if (setActive) {
+      this->setActive(name);
+    }
+    return graph->second.get();
   }
-  return managedGraphs.at(name).get();
+  return nullptr;
 }
 
-metacg::Callgraph *MCGManager::getOrCreateCallgraph(const std::string &name) { return managedGraphs[name].get(); }
-
+metacg::Callgraph *MCGManager::getOrCreateCallgraph(const std::string &name, bool setActive) {
+  if (auto graph = managedGraphs.find(name); graph != managedGraphs.end()) {
+    return graph->second.get();
+  } else {
+    managedGraphs[name] = std::make_unique<Callgraph>();
+    return managedGraphs[name].get();
+  }
+}
 bool MCGManager::setActive(const std::string &callgraph) {
   // I think this is the best way to do it
   // until map::contains comes with c++20
@@ -77,4 +87,14 @@ bool MCGManager::addToManagedGraphs(const std::string &name, std::unique_ptr<Cal
   }
   return true;
 }
+
+std::unordered_set<std::string> MCGManager::getAllManagedGraphNames() {
+  std::unordered_set<std::string> retSet;
+  retSet.reserve(managedGraphs.size());
+  for (auto &elem : managedGraphs) {
+    retSet.insert(elem.first);
+  }
+  return retSet;
+}
+
 MCGManager::~MCGManager() = default;

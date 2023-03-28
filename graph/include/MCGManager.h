@@ -36,7 +36,7 @@ class MCGManager {
 
   [[nodiscard]] Callgraph *getCallgraph(const std::string &name = "", bool setActive = false);
 
-  [[nodiscard]] Callgraph *getOrCreateCallgraph(const std::string &name);
+  [[nodiscard]] Callgraph *getOrCreateCallgraph(const std::string &name, bool setActive = false);
 
   /**
    * Sets a callgraph to be the currently active one
@@ -79,7 +79,7 @@ class MCGManager {
 
   std::unordered_map<std::string, std::unique_ptr<Callgraph>> managedGraphs;
   Callgraph *activeGraph = nullptr;
-  std::unordered_set<std::string> getAllManagedGraphs();
+  std::unordered_set<std::string> getAllManagedGraphNames();
 };
 
 }  // namespace graph
