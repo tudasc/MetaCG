@@ -134,7 +134,8 @@ int main(int argc, char **argv) {
     (useCallSiteInstrumentation.cliName, "Enable experimental call-site instrumentation", optType(useCallSiteInstrumentation)->default_value("false"))
     (heuristicSelection.cliName, "Select the heuristic to use for node selection", optType(heuristicSelection)->default_value(heuristicSelection.defaultValue))
     (cuttoffSelection.cliName, "Select the algorithm to determine the cutoff for node selection", optType(cuttoffSelection)->default_value(cuttoffSelection.defaultValue))
-    (keepUnreachable.cliName, "Also consider functions which seem to be unreachable from main", optType(keepUnreachable)->default_value("false"));
+    (keepUnreachable.cliName, "Also consider functions which seem to be unreachable from main", optType(keepUnreachable)->default_value("false"))
+    (sortDotEdges.cliName, "Sort edges in DOT graph lexicographically", optType(sortDotEdges)->default_value(sortDotEdges.defaultValue));
   // clang-format on
 
   Config c;
@@ -177,15 +178,16 @@ int main(int argc, char **argv) {
   checkAndSet<bool>(ipcgExport.cliName, result, shouldExport);
   checkAndSet<bool>(scorepOut.cliName, result, useScorepFormat);
   checkAndSet<DotExportSelection>(dotExport.cliName, result, enableDotExport);
-  std::string disposable;
-  checkAndSet<std::string>(extrapConfig.cliName, result, disposable);
+  bool bDisposable;
+  checkAndSet<bool>(sortDotEdges.cliName, result, bDisposable);
+  std::string disposableStr;
+  checkAndSet<std::string>(extrapConfig.cliName, result, disposableStr);
   checkAndSet<bool>(lideEnabled.cliName, result, enableLide);
-  checkAndSet<std::string>(parameterFileConfig.cliName, result, disposable);
+  checkAndSet<std::string>(parameterFileConfig.cliName, result, disposableStr);
 
   int mcgVersion;
   checkAndSet<int>(metacgFormat.cliName, result, mcgVersion);
 
-  bool bDisposable;
   checkAndSet<bool>(useCallSiteInstrumentation.cliName, result, bDisposable);
 
   checkAndSet<bool>(keepUnreachable.cliName, result, keepNotReachable);
@@ -394,7 +396,8 @@ int main(int argc, char **argv) {
 
   if (enableDotExport.mode == DotExportSelection::DotExportEnum::BEGIN ||
       enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
-    metacg::io::dot::DotGenerator dotGenerator(cg.getCallgraph(&cg));
+    const auto sortedDot = pgis::config::GlobalConfig::get().getAs<bool>(sortDotEdges.cliName);
+    metacg::io::dot::DotGenerator dotGenerator(cg.getCallgraph(&cg), sortedDot);
     dotGenerator.generate();
     dotGenerator.output({"./DotOutput", "PGIS-Dot", "begin"});
     //    cg.printDOT("begin");
@@ -408,7 +411,8 @@ int main(int argc, char **argv) {
   }
   if (enableDotExport.mode == DotExportSelection::DotExportEnum::END ||
       enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
-    metacg::io::dot::DotGenerator dotGenerator(cg.getCallgraph(&cg));
+    const auto sortedDot = pgis::config::GlobalConfig::get().getAs<bool>(sortDotEdges.cliName);
+    metacg::io::dot::DotGenerator dotGenerator(cg.getCallgraph(&cg), sortedDot);
     dotGenerator.generate();
     dotGenerator.output({"./DotOutput", "PGIS-Dot", "end"});
     //    cg.printDOT("end");

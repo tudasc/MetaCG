@@ -133,14 +133,19 @@ struct DotOutputLocation {
  */
 class DotGenerator {
  public:
-  explicit DotGenerator(const metacg::Callgraph *graph) : cg(graph) {}
+  explicit DotGenerator(const metacg::Callgraph *graph, const bool sortedEdges = true)
+      : cg(graph), outputSorted(sortedEdges) {}
+
   void output(DotOutputLocation outputLocation);
+
   void generate();
+
   [[nodiscard]] std::string getDotString() const { return dotGraphStr; }
 
  private:
   std::string dotGraphStr;
   const metacg::Callgraph *cg;
+  bool outputSorted;
 };
 
 template <typename Decorator>
