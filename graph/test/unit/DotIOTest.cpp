@@ -84,7 +84,7 @@ TEST_F(DotIOTest, ThreeNodeTwoEdgeCGExport) {
   metacg::io::dot::DotGenerator generator(cg);
   generator.generate();
   const auto dotStr = generator.getDotString();
-  EXPECT_EQ(dotStr, "digraph callgraph {\n  \"c1\"\n  \"c2\"\n  \"c3\"\n\n  c2 -> c3\n  c1 -> c2\n}\n");
+  EXPECT_EQ(dotStr, "digraph callgraph {\n  \"c1\"\n  \"c2\"\n  \"c3\"\n\n  c1 -> c2\n  c2 -> c3\n}\n");
 }
 
 TEST_F(DotIOTest, NoMultipleEdgesExport) {
@@ -100,7 +100,7 @@ TEST_F(DotIOTest, NoMultipleEdgesExport) {
   generator.generate();
   const auto dotStr = generator.getDotString();
   EXPECT_EQ(dotStr,
-            "digraph callgraph {\n  \"c1\"\n  \"c2\"\n  \"c3\"\n  \"c4\"\n\n  c2 -> c4\n  c3 -> c2\n  c1 -> c2\n}\n");
+            "digraph callgraph {\n  \"c1\"\n  \"c2\"\n  \"c3\"\n  \"c4\"\n\n  c1 -> c2\n  c2 -> c4\n  c3 -> c2\n}\n");
 }
 
 TEST_F(DotIOTest, TwoNodesWithCycleCGExport) {
@@ -126,7 +126,7 @@ TEST_F(DotIOTest, ThreeNodesWithCycleCGExport) {
   metacg::io::dot::DotGenerator generator(cg);
   generator.generate();
   const auto dotStr = generator.getDotString();
-  EXPECT_EQ(dotStr, "digraph callgraph {\n  \"c1\"\n  \"c2\"\n  \"c3\"\n\n  c2 -> c3\n  c1 -> c2\n  c3 -> c1\n}\n");
+  EXPECT_EQ(dotStr, "digraph callgraph {\n  \"c1\"\n  \"c2\"\n  \"c3\"\n\n  c1 -> c2\n  c2 -> c3\n  c3 -> c1\n}\n");
 }
 
 TEST_F(DotIOTest, ReadEmptyDot) {

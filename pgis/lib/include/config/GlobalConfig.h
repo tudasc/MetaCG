@@ -167,6 +167,8 @@ static const HeuristicSelectionOpt heuristicSelection{"heuristic-selection", "st
 static const CuttoffSelectionOpt cuttoffSelection{"cuttoff-selection", "unique_median"};
 static const BoolOpt keepUnreachable{"keep-unreachable", "false"};
 
+static const BoolOpt sortDotEdges{"sort-dot-edges", "true"};
+
 template <typename OptObject>
 struct OptHelper {
   typedef typename std::remove_reference<typename std::remove_cv<OptObject>::type>::type::type type;

@@ -178,36 +178,105 @@ void DotGenerator::output(DotOutputLocation outputLocation) {
   outF << dotGraphStr << std::endl;
 }
 
-void DotGenerator::generate() {
-  std::stringstream dotGraphStrStr;
-  std::set<std::pair<CgNode *, CgNode *>> edges;
+namespace impl {
+/** Lexicographical sorting within the edge container for easier testing */
+struct CGDotEdgeComparator {
+  explicit CGDotEdgeComparator(const Callgraph *cg) : cg(cg) {}
 
-  dotGraphStrStr << "digraph callgraph {\n";
-  // First build all node labels and a set of all edges
+  bool operator()(const std::pair<size_t, size_t> &l, const std::pair<size_t, size_t> &r) const {
+    const auto lName = cg->getNode(l.first)->getFunctionName() + cg->getNode(l.second)->getFunctionName();
+    const auto rName = cg->getNode(r.first)->getFunctionName() + cg->getNode(r.second)->getFunctionName();
+    return lName < rName;
+  }
 
+  const Callgraph *cg;
+};
+
+/**
+ * Iterates the call graph to populate edge and node sets.
+ */
+template <typename EdgeContainerTy, typename NodeContainerTy>
+void fillNodesAndEdges(const Callgraph *cg, NodeContainerTy &nodeNames, EdgeContainerTy &edges) {
   for (const auto &node : cg->getNodes()) {
-    const auto nodeName = node.second->getFunctionName();
-    const auto childNodes = cg->getCallees(*node.second);
-    const auto parentNodes = cg->getCallers(*node.second);
-    const std::string nodeLabel{"  \"" + nodeName + '\"'};
-    dotGraphStrStr << nodeLabel << '\n';
+    nodeNames.insert(node.second->getFunctionName());
+
+    const auto childNodes = cg->getCallees(node.first);
+    const auto parentNodes = cg->getCallers(node.first);
 
     for (const auto &c : childNodes) {
-      edges.insert({node.second.get(), c});
+      edges.emplace(std::make_pair(node.first, c->getId()));
     }
-    for (const auto &p : parentNodes) {
-      edges.insert({p, node.second.get()});
-    }
-  }
 
-  // Plainly for "better" reading / formatting
-  if (!edges.empty()) {
-    dotGraphStrStr << '\n';
+    for (const auto &p : parentNodes) {
+      edges.emplace(std::make_pair(p->getId(), node.first));
+    }
   }
+}
+
+/**
+ * Outputs the node set into the out stream, appending new lines.
+ */
+template <typename NodeContainerTy>
+void getNodesStringStream(NodeContainerTy &nodes, std::stringstream &outStr) {
+  for (const auto &nodeName : nodes) {
+    const std::string nodeLabel{"  \"" + nodeName + '\"'};
+    outStr << nodeLabel << '\n';
+  }
+}
+
+/**
+ * Prepares node and edge sets and outputs the list of nodes into out stream.
+ */
+template <typename EdgeSetTy, typename NodeSetTy>
+void generateDotString(const Callgraph *cg, std::stringstream &outStr, EdgeSetTy &edges) {
+  NodeSetTy nodes;
+
+  fillNodesAndEdges<EdgeSetTy, NodeSetTy>(cg, nodes, edges);
+
+  getNodesStringStream(nodes, outStr);
+
+  if (!edges.empty()) {
+    outStr << '\n';
+  }
+}
+
+}  // namespace impl
+
+/**
+ * Generates a sorted or unsorted list of edges and an unsorted list of nodes
+ * for the dot representation of the call graph in outStr.
+ */
+template <typename EdgeContainerTy, typename NodeContainerTy>
+void generateDotString(const Callgraph *cg, EdgeContainerTy &edges, std::stringstream &outStr) {
+  impl::generateDotString<EdgeContainerTy, NodeContainerTy>(cg, outStr, edges);
+
   // Go over edge set to output edges once
   for (const auto &p : edges) {
-    const auto edgeStr = (p.first)->getFunctionName() + " -> " + (p.second)->getFunctionName();
-    dotGraphStrStr << "  " << edgeStr << '\n';
+    const auto edgeStr =
+        (cg->getNode(p.first))->getFunctionName() + " -> " + (cg->getNode(p.second))->getFunctionName();
+    outStr << "  " << edgeStr << '\n';
+  }
+}
+
+/**
+ * Generates the actual DOT string that can be rendered by the graphviz package.
+ */
+void DotGenerator::generate() {
+  std::stringstream dotGraphStrStr;
+
+  dotGraphStrStr << "digraph callgraph {\n";
+
+  if (outputSorted) {
+    using EdgeSetTy = std::set<std::pair<size_t, size_t>, impl::CGDotEdgeComparator>;
+    using NodeSetTy = std::set<std::string>;
+    impl::CGDotEdgeComparator comparator(cg);
+    EdgeSetTy edges(comparator);
+    generateDotString<EdgeSetTy, NodeSetTy>(cg, edges, dotGraphStrStr);
+  } else {
+    using EdgeSetTy = std::unordered_set<std::pair<size_t, size_t>>;
+    using NodeSetTy = std::unordered_set<std::string>;
+    EdgeSetTy edges;
+    generateDotString<EdgeSetTy, NodeSetTy>(cg, edges, dotGraphStrStr);
   }
 
   dotGraphStrStr << "}\n";
