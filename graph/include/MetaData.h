@@ -30,7 +30,7 @@ class MetaDataFactory {
   static CRTPBase *create(const std::string &s, const nlohmann::json &j) {
     if (data().find(s) == data().end()) {
       MCGLogger::instance().getErrConsole()->template warn(
-          "Could not create: {} the Metadata is unknown in you application", s);
+          "Could not create: {}, the Metadata is unknown in you application", s);
       return nullptr;
     }
     return data().at(s)(j);
@@ -41,6 +41,7 @@ class MetaDataFactory {
     friend T;
 
     static bool registerT() {
+      MCGLogger::instance().getConsole()->template trace("Registering {} \n",T::key);
       const auto name = T::key;
       MetaDataFactory::data()[name] = [](const nlohmann::json &j) -> CRTPBase * { return new T(j); };
       return true;
