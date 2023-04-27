@@ -56,5 +56,5 @@ void metacg::io::MCGWriter::createNodeData(const CgNode *const node, nlohmann::j
                                                   {nodeInfo.overriddenByStr, overriddenBy},
                                                   {nodeInfo.callersStr, metacg::util::getFunctionNames(callers)},
                                                   {nodeInfo.hasBodyStr, hasBody},
-                                                  {nodeInfo.metaStr, nullptr}};
+                                                  {nodeInfo.metaStr, node->getMetaDataContainer() }};
 }

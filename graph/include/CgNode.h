@@ -119,6 +119,11 @@ class CgNode {
   CgNode &operator=(CgNode &&other) = delete;
   bool operator==(const CgNode &otherNode) const;
 
+  /**
+   * Compares the function for equality by their node id.
+   * @param otherNode
+   * @return
+   */
   bool isSameFunction(const CgNode &otherNode) const;
 
   /**
@@ -128,14 +133,35 @@ class CgNode {
    */
   bool isSameFunctionName(const CgNode &otherNode) const;
 
+  /**
+   * Check whether the function is marked virtual.
+   * @param
+   * @return the virtuality status
+   */
   bool isVirtual() const { return isMarkedVirtual; }
+
+  /**
+   * Set the virtuality for the function.
+   * @param virtuality - the new status of the function
+   * @return
+   */
   void setIsVirtual(bool virtuality) { isMarkedVirtual = virtuality; }
 
+  /**
+   * Check whether a function body has been found.
+   * @param
+   * @return
+   */
   bool getHasBody() const { return hasBody; }
+
+  /**
+   * Mark function to have a body found
+   * @param bodyStatus - the new status of the node
+   * @return
+   */
   void setHasBody(bool bodyStatus) { hasBody = bodyStatus; }
 
   /**
-   *
    * @return the nameIdMap of the function
    */
   std::string getFunctionName() const;
@@ -144,12 +170,27 @@ class CgNode {
 
   void print();
 
+  /**
+   * Get the id of the function node
+   *
+   * @return the id of the function node
+   */
   size_t getId() const { return id; }
 
   friend std::ostream &operator<<(std::ostream &stream, const CgNode &n);
 
-  std::unordered_map<std::string, MetaData *> &getMetaDataContainer() { return metaFields; }
+  /**
+   * Get the whole container of all attached metadata with its unique name identifier
+   *
+   * @return a map, mapping the name of the metadata to a metadata pointer
+   */
+  const std::unordered_map<std::string, MetaData *> &getMetaDataContainer() const { return metaFields; }
 
+  /**
+   * Override the current set of all node attached metadata with a new set
+   *
+   * @param data - a map, mapping the name of the metadata to a metadata pointer
+   */
   void setMetaDataContainer(std::unordered_map<std::string, MetaData *> data) { metaFields = std::move(data); }
 
  private:
@@ -161,4 +202,81 @@ class CgNode {
 };
 
 }  // namespace metacg
+
+namespace nlohmann {
+
+template <typename T>
+struct adl_serializer<std::unique_ptr<T>> {
+  // allow nlohmann to serialize unique pointer
+  // as json does not have a representation of a pointer construct 
+  // we only generate the value of the object pointed to
+  static void to_json(json &j, const std::unique_ptr<T> &uniquePointerT) {
+    if (uniquePointerT) {
+      j = *uniquePointerT;
+    } else {
+      j = nullptr;
+    }
+  }
+
+  static void from_json(const json &j, std::unique_ptr<T> &uniquePointerT) {
+    if (j.is_null()) {
+      uniquePointerT = nullptr;
+    } else {
+      uniquePointerT.reset(j.get<T>());
+    }
+  }
+};
+
+template <>
+struct adl_serializer<std::unordered_map<std::string, metacg::MetaData *>> {
+  static std::unordered_map<std::string, metacg::MetaData *> from_json(const json &j) {
+    // use compound type serialization instead of metadata serialization,
+    // because we need access to key and value for metadata creation
+    std::unordered_map<std::string, metacg::MetaData *> metadataAccumulator;
+    metadataAccumulator.reserve(j.size());
+    for (const auto &elem : j.items()) {
+      // logging of generation failure is done in create<> function, no else needed
+      // if metadata can not be fully generated, there will not be a stub key generated for it
+      if (auto obj = metacg::MetaData::create<>(elem.key(), elem.value()); obj != nullptr) {
+        metadataAccumulator[elem.key()] = obj;
+      }
+    }
+    return metadataAccumulator;
+  }
+
+  //we need to fully specialize the adl_serializer
+  static void to_json(json &j, const std::unordered_map<std::string, metacg::MetaData *> &t) {
+    json jsonAccumulator;
+    for (const auto &elem : t) {
+      jsonAccumulator[elem.first] = elem.second->to_json();
+    }
+    j = jsonAccumulator;
+  }
+};
+
+// place CgNodePtr de/serialization here instead of CgNodePtr.h
+// because we need full access underlying datastructure CgNode
+template <>
+struct adl_serializer<CgNodePtr> {
+  static CgNodePtr from_json(const json &j) {
+    CgNodePtr cgNode = nullptr;
+    if (j.is_null()) {
+      return cgNode;
+    }
+    cgNode = std::make_unique<metacg::CgNode>(j.at("FunctionName"));
+    cgNode->setIsVirtual(j.at("IsVirtual").get<bool>());
+    cgNode->setHasBody(j.at("HasBody").get<bool>());
+    cgNode->setMetaDataContainer(j.at("MetaData"));
+    return cgNode;
+  }
+  static void to_json(json &j, const CgNodePtr &t) {
+    j = {{"FunctionName", t->getFunctionName()},
+         {"IsVirtual", t->isVirtual()},
+         {"HasBody", t->getHasBody()},
+         {"MetaData", t->getMetaDataContainer()}};
+  }
+};
+
+}  // namespace nlohmann
+
 #endif
