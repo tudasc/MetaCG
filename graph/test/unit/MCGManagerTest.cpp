@@ -35,6 +35,24 @@ TEST_F(MCGManagerTest, EmptyCG) {
   ASSERT_EQ(0, graph->size());
 }
 
+TEST_F(MCGManagerTest, GetOrCreateCGActive) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  auto *cg = mcgm.getOrCreateCallgraph("newCG", true);
+  ASSERT_NE(nullptr, cg);
+  ASSERT_TRUE(mcgm.assertActive("newCG"));
+}
+
+TEST_F(MCGManagerTest, GetOrCreateCGExistingActive) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newCG", std::make_unique<metacg::Callgraph>(), false);
+  mcgm.addToManagedGraphs("newCG2", std::make_unique<metacg::Callgraph>(), false);
+  ASSERT_FALSE(mcgm.assertActive("newCG"));
+  ASSERT_FALSE(mcgm.assertActive("newCG2"));
+  auto *cg = mcgm.getOrCreateCallgraph("newCG", true);
+  ASSERT_TRUE(mcgm.assertActive("newCG"));
+  ASSERT_FALSE(mcgm.assertActive("newCG2"));
+}
+
 TEST_F(MCGManagerTest, OneNodeCG) {
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.getCallgraph()->getOrInsertNode("main");

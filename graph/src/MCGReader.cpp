@@ -36,14 +36,17 @@ void MetaCGReader::buildGraph(metacg::graph::MCGManager &cgManager, MetaCGReader
   for (const auto &[k, fi] : functions) {
     console->trace("Inserting MetaCG node for function {}", k);
     auto node = cgManager.getCallgraph()->getOrInsertNode(k);  // node pointer currently unused
+    assert(node && "node is present in call graph");
     node->setIsVirtual(fi.isVirtual);
     node->setHasBody(fi.hasBody);
     for (const auto &c : fi.callees) {
       auto calleeNode = cgManager.getCallgraph()->getOrInsertNode(c);
+      assert(calleeNode && "calleeNode is present in call graph");
       cgManager.getCallgraph()->addEdge(node, calleeNode);
       auto &potTargets = potentialTargets[c];
       for (const auto &pt : potTargets) {
         auto potentialCallee = cgManager.getCallgraph()->getOrInsertNode(pt);
+        assert(potentialCallee && "potentialCallee is present in call graph");
         cgManager.getCallgraph()->addEdge(node, potentialCallee);
       }
     }
