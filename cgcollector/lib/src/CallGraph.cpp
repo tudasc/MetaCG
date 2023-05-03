@@ -462,7 +462,7 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
     }
     G->getOrInsertNode(caller)->addCallee(G->getOrInsertNode(callee));
     if (C) {
-      G->CalledDecls.try_emplace(C, callee);
+      G->addDeclToCalledDecls(C, callee);
     }
   }
   auto getAliases() { return aliases; }
@@ -785,7 +785,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     CallGraphNode *CalleeNode = G->getOrInsertNode(D);
     callerNode->addCallee(CalleeNode);
     if (C) {
-      G->CalledDecls.try_emplace(C, D);
+      G->addDeclToCalledDecls(C, D);
     }
   }
 
@@ -795,7 +795,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       return;
     G->getOrInsertNode(Caller)->addCallee(G->getOrInsertNode(Callee));
     if (C) {
-      G->CalledDecls.try_emplace(C, Callee);
+      G->addDeclToCalledDecls(C, Callee);
     }
   }
 
@@ -1303,6 +1303,14 @@ void CallGraph::print(raw_ostream &OS) const {
 LLVM_DUMP_METHOD void CallGraph::dump() const { print(llvm::errs()); }
 
 void CallGraph::viewGraph() const { llvm::ViewGraph(this, "CallGraph"); }
+void CallGraph::addDeclToCalledDecls(const clang::CallExpr *ce, const clang::Decl *decl) {
+  if (decl && llvm::isa<clang::FunctionDecl>(decl)) {
+    if (!isa<ObjCMethodDecl>(decl)) {
+      decl = decl->getCanonicalDecl();
+    }
+  }
+  CalledDecls.try_emplace(ce, decl);
+}
 
 void CallGraphNode::print(raw_ostream &os) const {
   if (const NamedDecl *ND = dyn_cast_or_null<NamedDecl>(FD))

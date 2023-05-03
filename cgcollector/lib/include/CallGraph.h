@@ -82,6 +82,8 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
   /// one into the graph.
   CallGraphNode *getOrInsertNode(const clang::Decl *);
 
+  void addDeclToCalledDecls(const clang::CallExpr *, const clang::Decl *);
+
   using iterator = FunctionMapTy::iterator;
   using const_iterator = FunctionMapTy::const_iterator;
 
