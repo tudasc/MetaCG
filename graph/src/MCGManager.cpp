@@ -48,9 +48,15 @@ metacg::Callgraph *MCGManager::getCallgraph(const std::string &name, bool setAct
 
 metacg::Callgraph *MCGManager::getOrCreateCallgraph(const std::string &name, bool setActive) {
   if (auto graph = managedGraphs.find(name); graph != managedGraphs.end()) {
+    if (setActive) {
+      activeGraph = graph->second.get();
+    }
     return graph->second.get();
   } else {
     managedGraphs[name] = std::make_unique<Callgraph>();
+    if (setActive) {
+      activeGraph = managedGraphs[name].get();
+    }
     return managedGraphs[name].get();
   }
 }
