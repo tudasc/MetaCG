@@ -9,5 +9,5 @@ function(add_cube target)
     PUBLIC
     ${CUBE_LIB}
   )
-  target_link_libraries(${target} cube4)
+  target_link_libraries(${target} PUBLIC cube4)
 endfunction()

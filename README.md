@@ -58,26 +58,43 @@ The graph library is always built, while the CGCollector and the PGIS tool can b
 We test MetaCG internally using GCC 10 and 11 for Clang 10 and 14 (for GCC 10) and 13 and 14 (for GCC 11), respectively.
 Other version combinations *may* work.
 
-**Build Requirements (for full build)**
-- Clang/LLVM version 10 (and above)
-- Cube 4.5 [scalasca.org](https://www.scalasca.org/software/cube-4.x/download.html)
-- Extra-P 3.0 [.tar.gz](http://apps.fz-juelich.de/scalasca/releases/extra-p/extrap-3.0.tar.gz)
+**Build Requirements (for graph lib)**
 - nlohmann/json library [github](https://github.com/nlohmann/json)
 - spdlog [github](https://github.com/gabime/spdlog)
 - cxxopts [github](https://github.com/jarro2783/cxxopts)
+
+**Additional Build Requirements (for full build)**
+- Clang/LLVM version 10 (and above)
+- Cube 4.5 [scalasca.org](https://www.scalasca.org/software/cube-4.x/download.html)
+- Extra-P 3.0 [.tar.gz](http://apps.fz-juelich.de/scalasca/releases/extra-p/extrap-3.0.tar.gz)
 - PyQt5
 - matplotlib
 
 ### Building
 
-Clang/LLVM (in a supported version) and the Cube library are assumed to be available on the system.
-Extra-P can be built using the `build_submodules.sh` script provided in the repository, though it is not tested outside of our CI system.
-It builds and installs Extra-P into `./deps/src` and `./deps/install`, respectively.
+#### Graph Library Only
 
+The default is to build only the graph library.
+This enables the library to be used in a project by `find_package(MetaCG <VERSION_STR> REQUIRED)` and `target_link_library(target metacg::metacg)`.
 The `nlohmann-json`, `spdlog` and `cxxopts` library are downloaded at configure time, unless `-DMETACG_USE_EXTERNAL_JSON=ON` or `-DMETACG_USE_EXTERNAL_SPDLOG=ON` is given.
 This will search for the respective libraries in the common CMake locations.
 While CMake looks for `nlohmann-json` version 3.10., MetaCG should work starting from version 3.9.2.
 For spdlog, we rely on version 1.8.2 -- other versions *may* work.
+
+```{.sh}
+# To build the MetaCG library w/o PGIS or CGCollector
+$> cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/where/to/install
+$> cmake --build build --parallel
+$> cmake --install build
+```
+
+#### Full Package Build
+
+You can configure MetaCG to also build CGCollector and PGIS.
+This requires additional dependencies.
+Clang/LLVM (in a supported version) and the Cube library are assumed to be available on the system.
+Extra-P can be built using the `build_submodules.sh` script provided in the repository, though it is not tested outside of our CI system.
+It builds and installs Extra-P into `./deps/src` and `./deps/install`, respectively.
 
 ```{.sh}
 ?> ./build_submodules.sh
@@ -85,25 +102,32 @@ For spdlog, we rely on version 1.8.2 -- other versions *may* work.
 
 Thereafter, the package can be configured and built from the top-level CMake.
 Change the `CMAKE_INSTALL_PREFIX` to where you want your MetaCG installation to live.
-Providing `SPDLOG_SHARED=ON` is necessary to build the shared object version of spdlog and prevent linker errors.
 
 ```{.sh}
-?> cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tmp/metacg -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=./extern/src/extrap/extrap-3.0/include -DEXTRAP_LIB=./extern/install/extrap/lib -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-?> cmake --build build --parallel
+# To build the MetaCG library w/ PGIS and CGCollector
+$> cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/where/to/install -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=./extern/src/extrap/extrap-3.0/include -DEXTRAP_LIB=./extern/install/extrap/lib
+$> cmake --build build --parallel
 # Installation installs CGCollector, CGMerge, CGValidate, PGIS
-?> cmake --install build
+$> cmake --install build
 ```
 
 ### CMake Options
+
+These options are common for the MetaCG package.
+
+- Bool `METACG_WITH_CGCOLLECTOR`: Whether to build call-graph construction tool <default=OFF>
+- Bool `METACG_WITH_PGIS`: Whether to build demo-analysis tool <default=OFF>
+- Bool `METACG_USE_EXTERNAL_JSON`: Search for installed version of nlohmann-json <default=OFF>
+- Bool `METACG_USE_EXTERNAL_SPDLOG`: Search for installed version of spdlog <default=OFF>
+
+#### PGIS CMake Options
+
+These options are required when building with `METACG_WITH_PGIS=ON`.
 
 - Path `CUBE_LIB`: Path to the libcube library directory
 - Path `CUBE_INCLUDE`: Path to the libcube include directory
 - Path `EXTRAP_LIB`: Path to the Extra-P library directory
 - Path `EXTRAP_INCLUDE`: Path to the Extra-P include directory
-- Bool `WITH_CGCOLLECTOR`: Whether to build call-graph construction tool
-- Bool `WITH_PGIS`: Whether to build demo-analysis tool
-- Bool `METACG_USE_EXTERNAL_JSON`: Search for installed version of nlohmann-json
-- Bool `METACG_USE_EXTERNAL_SPDLOG`: Search for installed version of spdlog
 
 ## Usage
 
