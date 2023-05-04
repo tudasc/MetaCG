@@ -59,20 +59,20 @@ if(NOT
 )
   set(GIT_SHA1 "NO_GIT_ROOT")
 endif()
-message(${GIT_SHA1})
 
+# Configure the file that holds version information
 configure_file(Config.h.in config.h)
 
 # Component options MetaCG graph library will always be built. The actual graph implementation
 add_subdirectory(graph)
 
-# The collector toolchain: CGCollector, CGMerge, and CGValidate Should CGCollector be built
+# Build the collector toolchain: CGCollector, CGMerge, and CGValidate
 option(
-  WITH_CGCOLLECTOR
+  METACG_BUILD_CGCOLLECTOR
   "On or off"
-  ON
+  OFF
 )
-if(WITH_CGCOLLECTOR)
+if(METACG_BUILD_CGCOLLECTOR)
   include(ClangLLVM)
   include(CubeLib)
   add_subdirectory(cgcollector)
@@ -80,11 +80,11 @@ endif()
 
 # PIRA analyzer Should PGIS be built
 option(
-  WITH_PGIS
+  METACG_BUILD_PGIS
   "On or off"
-  ON
+  OFF
 )
-if(WITH_PGIS)
+if(METACG_BUILD_PGIS)
   include(ExtraP)
   include(CubeLib)
   add_subdirectory(pgis)

@@ -4,13 +4,13 @@ set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 # include directories
 function(add_collector_include target)
   target_include_directories(
-    ${target} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/cgcollector/lib/include>
-                     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/cgcollector>
+    ${target} PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/cgcollector/lib/include>
+                     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   )
 endfunction()
 
 function(add_collector_lib target)
-  target_link_libraries(${target} collector)
+  target_link_libraries(${target} PUBLIC collector)
 endfunction()
 
 # Compile flags

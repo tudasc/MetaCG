@@ -7,15 +7,12 @@ add_executable(
   UtilTest.cpp
 )
 
-target_include_directories(libtests PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/graph/include>)
-target_link_libraries(libtests gtest_main)
+target_include_directories(libtests PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_link_libraries(libtests PUBLIC gtest_main)
+target_link_libraries(libtests PUBLIC metacg::metacg)
 
-# add_pgis(libtests)
 add_json(libtests)
 add_spdlog_libraries(libtests)
 add_config_include(libtests)
-
-# add_library(ipcg)
-target_link_libraries(libtests metacg)
 
 add_test(NAME libraryTests COMMAND libtests)

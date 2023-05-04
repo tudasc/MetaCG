@@ -25,9 +25,12 @@ if(NOT
         "13")
     OR (${LLVM_VERSION_MAJOR}
         VERSION_EQUAL
-        "14"))
+        "14")
+    OR (${LLVM_VERSION_MAJOR}
+        VERSION_EQUAL
+        "15"))
 )
-  message(SEND_ERROR "LLVM/Clang version 10, 13 and 14 are supported and tested.")
+  message(SEND_ERROR "LLVM/Clang version 10, 13, 14 and 15 are supported and tested.")
 endif()
 
 function(add_clang target)
@@ -36,18 +39,18 @@ function(add_clang target)
 
   target_link_libraries(
     ${target}
-    clangTooling
-    clangFrontend
-    clangSerialization
-    clangAST
-    clangBasic
-    clangIndex
+    PUBLIC clangTooling
+           clangFrontend
+           clangSerialization
+           clangAST
+           clangBasic
+           clangIndex
   )
   if(LLVM_LINK_LLVM_DYLIB)
-    target_link_libraries(${target} LLVM)
+    target_link_libraries(${target} PUBLIC LLVM)
   else()
     llvm_map_components_to_libnames(llvm_libs support)
-    target_link_libraries(${target} ${llvm_libs})
+    target_link_libraries(${target} PUBLIC ${llvm_libs})
   endif()
 
 endfunction()
