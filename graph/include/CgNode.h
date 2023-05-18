@@ -208,7 +208,7 @@ namespace nlohmann {
 template <typename T>
 struct adl_serializer<std::unique_ptr<T>> {
   // allow nlohmann to serialize unique pointer
-  // as json does not have a representation of a pointer construct 
+  // as json does not have a representation of a pointer construct
   // we only generate the value of the object pointed to
   static void to_json(json &j, const std::unique_ptr<T> &uniquePointerT) {
     if (uniquePointerT) {
@@ -236,7 +236,8 @@ struct adl_serializer<std::unordered_map<std::string, metacg::MetaData *>> {
     metadataAccumulator.reserve(j.size());
     for (const auto &elem : j.items()) {
       // logging of generation failure is done in create<> function, no else needed
-      // if metadata can not be fully generated, there will not be a stub key generated for it
+      // if metadata can not be fully generated, there will not be a stub key generated for it in the memory
+      // representation
       if (auto obj = metacg::MetaData::create<>(elem.key(), elem.value()); obj != nullptr) {
         metadataAccumulator[elem.key()] = obj;
       }
@@ -244,11 +245,14 @@ struct adl_serializer<std::unordered_map<std::string, metacg::MetaData *>> {
     return metadataAccumulator;
   }
 
-  //we need to fully specialize the adl_serializer
+  // we need to fully specialize the adl_serializer
   static void to_json(json &j, const std::unordered_map<std::string, metacg::MetaData *> &t) {
     json jsonAccumulator;
     for (const auto &elem : t) {
-      jsonAccumulator[elem.first] = elem.second->to_json();
+      // if metadata_json can not be fully generated, there will not be a stub key generated for it in the json file
+      if (auto generated = elem.second->to_json(); !generated.empty()) {
+        jsonAccumulator[elem.first] = generated;
+      }
     }
     j = jsonAccumulator;
   }
