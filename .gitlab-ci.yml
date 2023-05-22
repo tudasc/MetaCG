@@ -219,7 +219,7 @@ test-dynamic-pgis:
     - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
     - ./selectionTestRunner.sh -t dynamic -b $MCG_BUILD
-    
+
 test-imbalance-pgis:
   <<: *job-setup
   stage: integration-test
@@ -230,6 +230,13 @@ test-imbalance-pgis:
     - cd test/integration
     - ./selectionTestRunner.sh -t imbalance -b $MCG_BUILD
 
+test-target-collector:
+  <<: *job-setup
+  stage: integration-test
+  script:
+    - module load clang/$LLVM
+    - cd graph/test/integration/TargetCollector
+    - ./TestRunner.sh -b $MCG_BUILD
 
 # Stage: install
 install-mcg:
