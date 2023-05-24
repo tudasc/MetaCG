@@ -103,3 +103,10 @@ option(
   "On or off"
   OFF
 )
+
+# If set to on, CMake looks for installed cxxopts
+option(
+  METACG_USE_EXTERNAL_CXXOPTS
+  "On or Off"
+  OFF
+)

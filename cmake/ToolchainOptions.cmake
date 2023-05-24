@@ -1,5 +1,4 @@
 include(json)
-include(cxxopts)
 include(spdlog)
 
 # Internal dependencies
