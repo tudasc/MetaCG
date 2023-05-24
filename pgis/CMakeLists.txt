@@ -1,6 +1,8 @@
 set(PROJECT_NAME PGIS)
 set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 
+include(cxxopts)
+
 enable_testing()
 
 add_subdirectory(lib)

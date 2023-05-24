@@ -22,7 +22,6 @@ else()
   )
   FetchContent_Declare(spdlog URL https://github.com/gabime/spdlog/archive/refs/tags/v1.8.2.tar.gz)
   FetchContent_MakeAvailable(spdlog)
-
 endif()
 
 function(add_spdlog_libraries target)
