@@ -89,6 +89,16 @@ TEST_F(MCGManagerTest, ThreeNodeCG) {
   ASSERT_EQ(1, mcgm.getCallgraph()->getCallers(childNode2->getId()).size());
 }
 
+TEST_F(MCGManagerTest, TwoNodeOneEdgeCG) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  auto cg = mcgm.getCallgraph();
+  cg->addEdge(cg->getOrInsertNode("main"), cg->getOrInsertNode("LC1"));
+
+  ASSERT_TRUE(cg->getMain() != nullptr);
+  auto mainNode = cg->getMain();
+  ASSERT_TRUE(mcgm.getCallgraph()->getCallees(mainNode->getId()).size() == 1);
+}
+
 TEST_F(MCGManagerTest, ComplexCG) {
   // Call-order: top to bottom or arrow if given
   /*
@@ -173,14 +183,4 @@ TEST_F(MCGManagerTest, ComplexCG) {
   for (const auto &elem : mcgm.getCallgraph()->getCallers(childNode6->getId())) {
     ASSERT_TRUE(elem->getFunctionName() == "child4" || elem->getFunctionName() == "child5");
   }
-}
-
-TEST_F(MCGManagerTest, TwoNodeOneEdgeCG) {
-  auto &mcgm = metacg::graph::MCGManager::get();
-  auto cg = mcgm.getCallgraph();
-  cg->addEdge(cg->getOrInsertNode("main"), cg->getOrInsertNode("LC1"));
-
-  ASSERT_TRUE(cg->getMain() != nullptr);
-  auto mainNode = cg->getMain();
-  ASSERT_TRUE(mcgm.getCallgraph()->getCallees(mainNode->getId()).size() == 1);
 }

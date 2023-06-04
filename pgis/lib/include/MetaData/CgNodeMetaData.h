@@ -186,11 +186,11 @@ class PiraTwoData : public metacg::MetaData::Registrar<PiraTwoData> {
   static constexpr const char *key = "PiraTwoData";
 
   explicit PiraTwoData() : epCon({}, {}), params(), rtVec(), numReps(0) {}
-  explicit PiraTwoData(const nlohmann::json &j) : epCon({}, {}), params(), rtVec(), numReps(0){};
-  explicit PiraTwoData(const extrapconnection::ExtrapConnector &ec) : epCon(ec), params(), rtVec(), numReps(0) {
+  explicit PiraTwoData(const nlohmann::json &j) : epCon({}, {}), params(), rtVec(), numReps(0) {
     metacg::MCGLogger::instance().getConsole()->warn(
-        "Running PiraTwoDataRetriever::read from json, currently not implemented / supported");
-  }
+        "Read PiraTwoData from json currently not implemented / supported");
+  };
+  explicit PiraTwoData(const extrapconnection::ExtrapConnector &ec) : epCon(ec), params(), rtVec(), numReps(0) {}
   PiraTwoData(const PiraTwoData &other)
       : epCon(other.epCon), params(other.params), rtVec(other.rtVec), numReps(other.numReps) {
     metacg::MCGLogger::instance().getConsole()->trace("PiraTwo Copy CTor\n\tother: {}\n\tThis: {}", other.rtVec.size(),

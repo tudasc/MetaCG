@@ -130,27 +130,45 @@ void VersionTwoMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
 
   auto j = source.get();
 
-  auto mcgInfo = j[ffInfo.metaInfoFieldName];
-  if (mcgInfo.is_null()) {
-    errConsole->error("Could not read version info from metacg file.");
-    throw std::runtime_error("Could not read version info from metacg file");
+  if (j.is_null()) {
+    const std::string errorMsg = "JSON source did not contain any data.";
+    errConsole->error(errorMsg);
+    throw std::runtime_error(errorMsg);
   }
+
+  if (!j.contains(ffInfo.metaInfoFieldName) || j.at(ffInfo.metaInfoFieldName).is_null()) {
+    const std::string errorMsg = "Could not read version info from metacg file.";
+    errConsole->error(errorMsg);
+    throw std::runtime_error(errorMsg);
+  }
+
+  auto mcgInfo = j.at(ffInfo.metaInfoFieldName);
+  // from here on we assume, that if any file meta information is given, it is correct
+
   /// XXX How to make that we can use the MCGGeneratorVersionInfo to access the identifiers
-  auto mcgVersion = mcgInfo["version"].get<std::string>();
-  auto generatorName = mcgInfo["generator"]["name"].get<std::string>();
-  auto generatorVersion = mcgInfo["generator"]["version"].get<std::string>();
+  auto mcgVersion = mcgInfo.at("version").get<std::string>();
+
+  if (mcgVersion.compare(0, 1, std::string("2")) != 0) {
+    const std::string errorMsg = "File is of version " + mcgVersion + ", this reader handles version 2.x";
+    errConsole->error(errorMsg);
+    throw std::runtime_error(errorMsg);
+  }
+
+  auto generatorName = mcgInfo.at("generator").at("name").get<std::string>();
+  auto generatorVersion = mcgInfo.at("generator").at("version").get<std::string>();
   MCGGeneratorVersionInfo genVersionInfo{generatorName, metacg::util::getMajorVersionFromString(generatorVersion),
                                          metacg::util::getMinorVersionFromString(generatorVersion), ""};
   console->info("The metacg (version {}) file was generated with {} (version: {})", mcgVersion, generatorName,
                 generatorVersion);
 
   MCGFileInfo fileInfo{ffInfo, genVersionInfo};
-  auto jsonCG = j[ffInfo.cgFieldName];
-  if (jsonCG.is_null()) {
-    errConsole->error("The call graph in the metacg file was null.");
-    throw std::runtime_error("CG in metacg file was null.");
+  if (!j.contains(ffInfo.cgFieldName) || j.at(ffInfo.cgFieldName).is_null()) {
+    const std::string errorMsg = "The call graph in the metacg file was not found or null.";
+    errConsole->error(errorMsg);
+    throw std::runtime_error(errorMsg);
   }
 
+  auto jsonCG = j.at(ffInfo.cgFieldName);
   for (json::iterator it = jsonCG.begin(); it != jsonCG.end(); ++it) {
     auto &fi = getOrInsert(it.key());  // new entry for function it.key
 

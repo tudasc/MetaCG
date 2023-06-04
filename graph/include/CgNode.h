@@ -229,6 +229,7 @@ struct adl_serializer<std::unique_ptr<T>> {
 
 template <>
 struct adl_serializer<std::unordered_map<std::string, metacg::MetaData *>> {
+  // interestingly enough, j.dump returns an empty string, but this function gets called and works
   static std::unordered_map<std::string, metacg::MetaData *> from_json(const json &j) {
     // use compound type serialization instead of metadata serialization,
     // because we need access to key and value for metadata creation

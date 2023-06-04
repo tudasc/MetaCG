@@ -47,8 +47,9 @@ struct FileSource : ReaderSource {
     {
       std::ifstream in(filename);
       if (!in.is_open()) {
-        metacg::MCGLogger::instance().getErrConsole()->error("Opening file {} failed.", filename);
-        throw std::runtime_error("Opening file failed");
+        const std::string errorMsg = "Opening file " + filename + " failed.";
+        metacg::MCGLogger::instance().getErrConsole()->error(errorMsg);
+        throw std::runtime_error(errorMsg);
       }
       in >> j;
     }
@@ -63,7 +64,7 @@ struct FileSource : ReaderSource {
  * Currently only used in unit tests.
  */
 struct JsonSource : ReaderSource {
-  explicit JsonSource(nlohmann::json j) : json(j) {}
+  explicit JsonSource(nlohmann::json j) : json(std::move(j)) {}
   virtual nlohmann::json get() const override { return json; }
   nlohmann::json json;
 };
