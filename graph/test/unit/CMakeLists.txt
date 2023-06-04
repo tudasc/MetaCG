@@ -3,6 +3,8 @@ add_executable(
   libtests
   DotIOTest.cpp
   MCGManagerTest.cpp
+  MCGReaderTest.cpp
+  MCGWriterTest.cpp
   ReachabilityAnalysisTest.cpp
   UtilTest.cpp
 )
