@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+timeStamp=$(date +%s)
+: ${CI_CONCURRENT_ID:=$timeStamp}
+
 build_dir=build # may be changed with opt 'b'
 while getopts ":b:h" opt; do
   case $opt in
@@ -23,33 +26,41 @@ done
 
 echo "Running integration test for TargetCollector script"
 
+echo "{}" > src/wholeProgramCG-${CI_CONCURRENT_ID}.ipcg
 test_command=(python3 ../../../../TargetCollector.py \
      -a=".." \
      -g=both \
-     -b=build \
+     -b=build-${CI_CONCURRENT_ID} \
      -c="$PWD"/../../../../"${build_dir}"/cgcollector/tools/cgcollector \
      -m="$PWD"/../../../../"${build_dir}"/cgcollector/tools/cgmerge \
-     -o="src/wholeProgramCG.ipcg" \
-     -t testExe)
+     -o="src/wholeProgramCG-${CI_CONCURRENT_ID}.ipcg" \
+     -t testExe \
+     --ci-concurrent-suffix=$CI_CONCURRENT_ID
+   )
 
 echo "${test_command[@]}"
 "${test_command[@]}"
 
-diff -q ./src/foo.ipcg ./src/foo.expected > /dev/null 2>&1
+echo "--- Now running diffs ---"
+
+diff -q ./src/foo.cpp${CI_CONCURRENT_ID}.ipcg ./src/foo.expected > /dev/null 2>&1
 resultOfTest=$?
 if [ $resultOfTest -ne 0 ]; then
+  echo "diff for foo failed"
 	exit 1
 fi
 
-diff -q ./src/main.ipcg ./src/main.expected > /dev/null 2>&1
+diff -q ./src/main.cpp${CI_CONCURRENT_ID}.ipcg ./src/main.expected > /dev/null 2>&1
 resultOfTest=$?
 if [ $resultOfTest -ne 0 ]; then
+  echo "diff for main failed"
 	exit 1
 fi
 
-diff -q ./src/wholeProgramCG.ipcg ./src/wholeProgramCG.expected > /dev/null 2>&1
+diff -q ./src/wholeProgramCG-${CI_CONCURRENT_ID}.ipcg ./src/wholeProgramCG.expected > /dev/null 2>&1
 resultOfTest=$?
 if [ $resultOfTest -ne 0 ]; then
+  echo "diff for wholeProgram failed"
 	exit 1
 fi
 
