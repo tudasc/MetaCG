@@ -5,6 +5,7 @@
 fails=0
 
 buildDirParam=build # Can be changed via -b
+timeStamp=$(date +%s)
 
 while getopts ":b:h" opt; do
   case $opt in
@@ -26,11 +27,13 @@ while getopts ":b:h" opt; do
   esac
 done
 
+: ${CI_CONCURRENT_ID:=$timeStamp}
+
 buildDir="../../../${buildDirParam}/pgis"
 testExec=${buildDir}/tool/pgis_pira
 testSuite='basic'
 logDir=$PWD/logging
-logFile=${logDir}/${testSuite}.log
+logFile=${logDir}/${testSuite}-${CI_CONCURRENT_ID}.log
 
 rm -rf $logDir && mkdir ${logDir}
 

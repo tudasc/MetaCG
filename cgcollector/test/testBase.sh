@@ -4,6 +4,9 @@ testerExe=cgsimpletester
 cgmergeExe=cgmerge
 build_dir=build # may be changed with opt 'b'
 
+timeStamp=$(date +%s)
+: ${CI_CONCURRENT_ID:=$timeStamp}
+
 mkdir -p log
 
 # Function to invoke the CGCollector to a target source code
@@ -18,11 +21,11 @@ function applyFileFormatOneToSingleTU {
   # - The test case
   # - Tehe groundtruth data for reconciling the CG constructed by MetaCG
   tfile=$testCaseFile
-  gfile=${testCaseFile/cpp/ipcg}
+  gfile=${testCaseFile/cpp/ipcg}-${CI_CONCURRENT_ID}
   tgt=${testCaseFile/cpp/gtipcg}
 
   echo "Running ${testerExe} on ${tfile}"
-  $cgcollectorExe --metacg-format-version=1 ${addFlags} $tfile -- >>log/testrun.log 2>&1
+  $cgcollectorExe --metacg-format-version=1 ${addFlags} --output ${gfile} $tfile -- >>log/testrun.log 2>&1
   cat $gfile | python3 -m json.tool > ${gfile}_
   mv ${gfile}_ ${gfile}
   $testerExe $tgt $gfile >>log/testrun.log 2>&1
@@ -49,11 +52,11 @@ function applyFileFormatTwoToSingleTU {
   # - The test case
   # - Tehe groundtruth data for reconciling the CG constructed by MetaCG
   tfile=$testCaseFile
-  gfile=${testCaseFile/cpp/ipcg}
+  gfile=${testCaseFile/cpp/ipcg}-${CI_CONCURRENT_ID}
   tgt=${testCaseFile/cpp/gtmcg}
 
  echo "Running tester on ${tfile}"
-  $cgcollectorExe --metacg-format-version=2 ${addFlags} $tfile -- >>log/testrun.log 2>&1
+  $cgcollectorExe --metacg-format-version=2 ${addFlags} --output ${gfile} $tfile -- >>log/testrun.log 2>&1
   cat $gfile | python3 -m json.tool > ${gfile}_
   mv ${gfile}_ ${gfile}
   $testerExe $tgt $gfile >>log/testrun.log 2>&1
@@ -77,11 +80,11 @@ function applyFileFormatTwoToSingleTUWithAA {
   # - The test case
   # - Tehe groundtruth data for reconciling the CG constructed by MetaCG
   tfile=$testCaseFile
-  gfile=${testCaseFile/cpp/ipcg}
+  gfile=${testCaseFile/cpp/ipcg}-${CI_CONCURRENT_ID}
   tgt=${testCaseFile/cpp/gtaacg}
 
  echo "Running tester on ${tfile}"
-  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA ${addFlags} $tfile -- >>log/testrun.log 2>&1
+  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA ${addFlags} --output ${gfile} $tfile -- >>log/testrun.log 2>&1
   cat $gfile | python3 -m json.tool > ${gfile}_
   mv ${gfile}_ ${gfile}
   $testerExe $tgt $gfile >>log/testrun.log 2>&1
@@ -103,8 +106,8 @@ function applyFileFormatOneToMultiTU {
   tbFile=${tc}_b.cpp
 
   # Result files
-  ipcgTaFile="${taFile/cpp/ipcg}"
-  ipcgTbFile="${tbFile/cpp/ipcg}"
+  ipcgTaFile="${taFile/cpp/ipcg}-${CI_CONCURRENT_ID}"
+  ipcgTbFile="${tbFile/cpp/ipcg}-${CI_CONCURRENT_ID}"
 
   # Groundtruth files
   gtaFile="${taFile/cpp/gtipcg}"
@@ -112,8 +115,8 @@ function applyFileFormatOneToMultiTU {
   gtCombFile="${tc}_combined.gtipcg"
 
   # Translation-unit-local
-  $cgcollectorExe ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
-  $cgcollectorExe ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
+  $cgcollectorExe --output ./input/multiTU/${ipcgTaFile} ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
+  $cgcollectorExe --output ./input/multiTU/${ipcgTbFile} ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
 
   cat ./input/multiTU/${ipcgTaFile} | python3 -m json.tool >./input/multiTU/${ipcgTaFile}_
   mv ./input/multiTU/${ipcgTaFile}_ ./input/multiTU/${ipcgTaFile}
@@ -125,7 +128,7 @@ function applyFileFormatOneToMultiTU {
   $testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile} >>log/testrun.log 2>&1
   bErr=$?
 
-  combFile=${tc}_combined.ipcg
+  combFile=${tc}_combined-${CI_CONCURRENT_ID}.ipcg
   echo "null" >./input/multiTU/${combFile}
 
   ${cgmergeExe} ./input/multiTU/${combFile} ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile} >>log/testrun.log 2>&1
@@ -155,8 +158,8 @@ function applyFileFormatTwoToMultiTU {
   tbFile=${tc}_b.cpp
 
   # Result files
-  ipcgTaFile="${taFile/cpp/ipcg}"
-  ipcgTbFile="${tbFile/cpp/ipcg}"
+  ipcgTaFile="${taFile/cpp/ipcg}-${CI_CONCURRENT_ID}"
+  ipcgTbFile="${tbFile/cpp/ipcg}-${CI_CONCURRENT_ID}"
 
   # Groundtruth files
   gtaFile="${taFile/cpp/gtmcg}"
@@ -164,8 +167,8 @@ function applyFileFormatTwoToMultiTU {
   gtCombFile="${tc}_combined.gtmcg"
 
   # Translation-unit-local
-  $cgcollectorExe --metacg-format-version=2 ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
-  $cgcollectorExe --metacg-format-version=2  ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
+  $cgcollectorExe --metacg-format-version=2 --output ./input/multiTU/${ipcgTaFile} ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
+  $cgcollectorExe --metacg-format-version=2 --output ./input/multiTU/${ipcgTbFile} ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
 
   cat ./input/multiTU/${ipcgTaFile} | python3 -m json.tool >./input/multiTU/${ipcgTaFile}_
   mv ./input/multiTU/${ipcgTaFile}_ ./input/multiTU/${ipcgTaFile}
@@ -177,7 +180,7 @@ function applyFileFormatTwoToMultiTU {
   $testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile} >>log/testrun.log 2>&1
   bErr=$?
 
-  combFile=${tc}_combined.ipcg
+  combFile=${tc}_combined-${CI_CONCURRENT_ID}.ipcg
   echo "null" >./input/multiTU/${combFile}
 
   ${cgmergeExe} ./input/multiTU/${combFile} ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile} >>log/testrun.log 2>&1
@@ -207,8 +210,8 @@ function applyFileFormatTwoToMultiTUWithAA {
   tbFile=${tc}_b.cpp
 
   # Result files
-  ipcgTaFile="${taFile/cpp/ipcg}"
-  ipcgTbFile="${tbFile/cpp/ipcg}"
+  ipcgTaFile="${taFile/cpp/ipcg}-${CI_CONCURRENT_ID}"
+  ipcgTbFile="${tbFile/cpp/ipcg}-${CI_CONCURRENT_ID}"
 
   # Groundtruth files
   gtaFile="${taFile/cpp/gtaacg}"
@@ -216,8 +219,8 @@ function applyFileFormatTwoToMultiTUWithAA {
   gtCombFile="${tc}_combined.gtaacg"
 
   # Translation-unit-local
-  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
-  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA  ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
+  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA --output ./input/multiTU/${ipcgTaFile} ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
+  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA --output ./input/multiTU/${ipcgTbFile}  ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
 
   cat ./input/multiTU/${ipcgTaFile} | python3 -m json.tool >./input/multiTU/${ipcgTaFile}_
   mv ./input/multiTU/${ipcgTaFile}_ ./input/multiTU/${ipcgTaFile}
@@ -229,7 +232,7 @@ function applyFileFormatTwoToMultiTUWithAA {
   $testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile} >>log/testrun.log 2>&1
   bErr=$?
 
-  combFile=${tc}_combined.ipcg
+  combFile=${tc}_combined-${CI_CONCURRENT_ID}.ipcg
   echo "null" >./input/multiTU/${combFile}
 
   ${cgmergeExe} ./input/multiTU/${combFile} ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile} >>log/testrun.log 2>&1

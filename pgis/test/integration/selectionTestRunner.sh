@@ -4,6 +4,7 @@
 . base.sh
 
 buildDirParam=build # Can be changed via -b
+timeStamp=$(date +%s)
 
 while getopts ":t:b:h" opt; do
   case $opt in
@@ -33,11 +34,13 @@ while getopts ":t:b:h" opt; do
   esac
 done
 
+: ${CI_CONCURRENT_ID:=$timeStamp}
+
 buildDir="../../../../${buildDirParam}/pgis"
 
-outDir=$PWD/out$testSuite
-logDir=$PWD/logging
-logFile=${logDir}/${testSuite}.log
+outDir=$PWD/out$testSuite-${CI_CONCURRENT_ID}
+logDir=$PWD/logging-${CI_CONCURRENT_ID}
+logFile=${logDir}/${testSuite}-${CI_CONCURRENT_ID}.log
 
 echo "Running Tests with build directory: ${buildDir}"
 
@@ -69,7 +72,7 @@ for testNoInit in *.afl; do
 		thisFail=1
 	fi
 	
-	check_selection $testSuite $testNo $outDir
+	check_selection $testSuite $testNo $outDir $CI_CONCURRENT_ID
 
 	if [ $? -ne 0 ]; then
 		fails=$(($fails+1))
@@ -102,7 +105,7 @@ for testNoInit in *.afl; do
 		thisFail=1
 	fi
 	
-	check_selection $testSuite $testNo $outDir
+	check_selection $testSuite $testNo $outDir $CI_CONCURRENT_ID
 
 	if [ $? -ne 0 ]; then
 		fails=$(($fails+1))
@@ -136,7 +139,7 @@ for testNoInit in *.spl; do
 		thisFail=1
 	fi
 	
-	check_selection $testSuite $testNo $outDir
+	check_selection $testSuite $testNo $outDir $CI_CONCURRENT_ID
 
 	if [ $? -ne 0 ]; then
 		fails=$(($fails+1))
