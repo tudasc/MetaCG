@@ -27,6 +27,8 @@ static llvm::cl::opt<int> metacgFormatVersion("metacg-format-version",
                                               llvm::cl::desc("metacg file version to output, values={1,2}, default=1"),
                                               llvm::cl::cat(cgc));
 
+static llvm::cl::opt<std::string> outputFilenameOption("output", llvm::cl::desc("Output filename to store MetaCG"), llvm::cl::cat(cgc));
+
 /**
  * The classic CG construction and the AA one work a bit differently. The classic one inserts nodes for all function,
  * even if they are never called and do not call any functions themself, the AA one does only include functions that
@@ -94,6 +96,7 @@ int main(int argc, const char **argv) {
     return -1;
   }
   metacgFormatVersion.setInitialValue(1);  // Have the old file format as default
+  outputFilenameOption.setInitialValue("");
 
   std::cout << "Running metacg::CGCollector (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
             << ")\nGit revision: " << MetaCG_GIT_SHA << " LLVM/Clang version: " << LLVM_VERSION_STRING << std::endl;
@@ -144,8 +147,13 @@ int main(int argc, const char **argv) {
     mc->addMetaInformationToCompleteJson(j, metacgFormatVersion);
   }
 
+  // Default to sourcefile.ipcg
   std::string filename(*OP.getSourcePathList().begin());
-  filename = filename.substr(0, filename.find_last_of('.')) + ".ipcg";
+  if (outputFilenameOption.empty()) {
+    filename = filename.substr(0, filename.find_last_of('.')) + ".ipcg";
+  } else {
+    filename = outputFilenameOption;
+  }
 
   std::ofstream file(filename);
   file << j << std::endl;

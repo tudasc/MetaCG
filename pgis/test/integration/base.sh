@@ -3,6 +3,7 @@ function check_selection {
   testSuite=$1
 	testNo=$(echo $2 | cut -d'.' -f 1)
 	outDir=$3
+  ciConcurrentId=$4
 	aflFileExt=""
 
 	cat ${outDir}/instrumented-${testNo}.txt 2>&1 > /dev/null
@@ -24,14 +25,18 @@ function check_selection {
 		echo "No awaited-function-list file"
 		return 255
 	fi
-	cat ${outDir}/instrumented-${testNo}.txt | sort | uniq > /tmp/pgis_temp_${testSuite}_res.txt
-	cat ${PWD}/${testNo}.${aflFileExt} | sort | uniq > /tmp/pgis_temp_${testSuite}_bl.txt
-	diff -q /tmp/pgis_temp_${testSuite}_res.txt /tmp/pgis_temp_${testSuite}_bl.txt 2>&1 > /dev/null
+
+  sortedTmpICFile="/tmp/pgis_temp_${testSuite}_res-$ciConcurrentId.txt"
+  sortedTmpBLFile="/tmp/pgis_temp_${testSuite}_bl-$ciConcurrentId.txt"
+
+	cat ${outDir}/instrumented-${testNo}.txt | sort | uniq > $sortedTmpICFile
+	cat ${PWD}/${testNo}.${aflFileExt} | sort | uniq > $sortedTmpBLFile
+	diff -q $sortedTmpICFile $sortedTmpBLFile 2>&1 > /dev/null
   resultOfTest=$?
 	if [ $resultOfTest -eq 0 ]; then
 	  rm ${outDir}/instrumented-${testNo}.txt
 	fi
-  rm /tmp/pgis_temp_${testSuite}_bl.txt /tmp/pgis_temp_${testSuite}_res.txt 
+  rm $sortedTmpBLFile $sortedTmpICFile
 	return $resultOfTest
 }
 
