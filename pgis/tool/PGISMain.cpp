@@ -285,7 +285,7 @@ int main(int argc, char **argv) {
         console->info("Using trivial static analysis for load imbalance detection (OnlyMainEstimatorPhase");
         // static instrumentation -> OnlyMainEstimatorPhase
         if (!result.count("cube")) {
-          cg.registerEstimatorPhase(new LoadImbalance::OnlyMainEstimatorPhase());
+          cg.registerEstimatorPhase(new LoadImbalance::OnlyMainEstimatorPhase(cg.getCallgraph()));
           cg.applyRegisteredPhases();
 
           return pgis::SUCCESS;

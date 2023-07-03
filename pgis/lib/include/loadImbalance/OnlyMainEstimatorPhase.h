@@ -15,8 +15,7 @@ namespace LoadImbalance {
  */
 class OnlyMainEstimatorPhase : public EstimatorPhase {
  public:
-  OnlyMainEstimatorPhase();
-  ~OnlyMainEstimatorPhase() noexcept;
+  OnlyMainEstimatorPhase(metacg::Callgraph *callgraph);
 
   void modifyGraph(metacg::CgNode* mainMethod) override;
 };
