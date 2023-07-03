@@ -51,16 +51,16 @@ function check_and_print {
 	testFile=$2
 	errCode=$3
 	thisFail=0
-	if [ ${errCode} -ne 0 ]; then
+	failStr=' PASS'
+
+  if [ ${errCode} -ne 0 ]; then
+    echo "Error: ${errCode}"
 		fails=$((fails+1))
-		thisFail=1
-	fi
-	if [ $thisFail -eq 1 ]; then
 		failStr=' FAIL'
-	else
-	  failStr=' PASS'
 	fi
+
 	echo "Test ${testFile} | ${failStr}"
+
 	return ${fails}
 }
 

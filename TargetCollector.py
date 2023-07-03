@@ -54,6 +54,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--target', metavar="<str>", type=str,
                         help='The target name for which to generate the callgraph',
                         required=True)
+    parser.add_argument('--ci-concurrent-suffix', metavar="<str>", type=str, help='Suffix appended to output filename in concurrent CI runs', required=False)
 
     # parse all arguments after the first one, as this is the name we got called by
     parserObject: argparse.Namespace = parser.parse_args(sys.argv[1:])
@@ -98,10 +99,15 @@ if __name__ == '__main__':
         extraArguments = [f'--extra-arg=-I{i}' for i in includeDirectories] + \
                          [f'--extra-arg=-I{i}' for i in parserObject.extra_args.split(" ") if i != ""]
 
+        # Account for CI concurrent suffix
+        fileSuffix = ''
+        if parserObject.ci_concurrent_suffix != None:
+          fileSuffix = str(parserObject.ci_concurrent_suffix)
+
+        tempIPCGs = [(source, source + fileSuffix + '.ipcg') for source in sources]
+
         # generate a separate cgcollector command for each source
-        commands = [
-            parserObject.cgcollector + " " + " ".join(extraArguments) + " " + source
-            for source in sources]
+        commands = [ parserObject.cgcollector + " " + " ".join(extraArguments) + " --output " + io[1] + " " + io[0] for io in tempIPCGs]
 
         # use a thread pool to run all commands in parallel (w.r.t pool-size)
         with Pool(parserObject.jobs) as p:
@@ -109,7 +115,7 @@ if __name__ == '__main__':
 
         # generate the command to merge all ipcg graphs
         command = parserObject.cgmerge + " " + parserObject.output + " " + " ".join(
-            ['.'.join(source.split('.')[:-1]) + ".ipcg" for source in sources])
+            [io[1] for io in tempIPCGs])
 
         # run the command
         subprocess.run(command.split(" "))
