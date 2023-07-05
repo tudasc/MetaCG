@@ -1,5 +1,8 @@
 # Integration Testing
 
+For concurrent test execution, the Gitlab Runner `CI_CONCURRENT_ID` is used to distinguish output files between the different instances.
+This variable is used across the different scripts in the various directories, and please refer to the specific script for its dedicated use.
+
 Currently, three distinct input folders `inputstatic`, `inputdynamic`, and `inputmodeling` are used to group the available integration tests.
 The top-level invocation is handled using the `runner.sh`.
 Folder names correspond to the selection mode, i.e., `inputstatic` has the files required for the `static` test suite, etc.
