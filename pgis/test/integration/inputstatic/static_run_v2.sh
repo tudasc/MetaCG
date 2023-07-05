@@ -10,6 +10,8 @@ else
 fi
 
 echo -e "Static Selection\nRunning $binary"
-echo "${binary} ${scorepOut} --metacg-format 2 --out-file $outDir --use-cs-instrumentation --static ${PWD}/$testNo"
-${binary} ${scorepOut} --metacg-format 2 --out-file $outDir --use-cs-instrumentation --static ${PWD}/$testNo
+cmd="${binary} ${scorepOut} --metacg-format 2 --out-file $outDir --use-cs-instrumentation --static ${PWD}/$testNo"
+echo $cmd
+$cmd
+
 

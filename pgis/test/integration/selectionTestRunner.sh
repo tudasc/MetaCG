@@ -34,6 +34,9 @@ while getopts ":t:b:h" opt; do
   esac
 done
 
+# To run these tests in parallel, we use the CI_CONCURRENT_ID in files that are written
+# by any of the tools invoked here. The variables is set automatically by Gitlab Runner
+# and in case it is unset, we simply set it to the current timestamp in seconds since epoch
 : ${CI_CONCURRENT_ID:=$timeStamp}
 
 buildDir="../../../../${buildDirParam}/pgis"
@@ -64,8 +67,8 @@ for testNoInit in *.afl; do
 	echo "Running $testNo"
 	thisFail=0
 
-	#bash "${testSuite}_run.sh" $buildDir $outDir $testNo 2>&1 >> "$logFile"
-	bash "${testSuite}_run.sh" $buildDir $outDir $testNo
+	bash "${testSuite}_run.sh" $buildDir $outDir $testNo 2>&1 >> "$logFile"
+	#bash "${testSuite}_run.sh" $buildDir $outDir $testNo
 
 	if [ $? -ne 0 ]; then
 		fails=$(($fails+1))
@@ -80,6 +83,8 @@ for testNoInit in *.afl; do
 	fi
 	if [ $thisFail -eq 1 ]; then
 		failStr=' FAIL'
+    # In case of error, print the log file
+    cat $logFile
 	else
 		failStr=' PASS'
 	fi
@@ -97,8 +102,8 @@ for testNoInit in *.afl; do
 	echo "Running $testNo"
 	thisFail=0
 
-	#bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo >> "$logFile" 2>&1
-	bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo
+	bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo >> "$logFile" 2>&1
+	#bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo
 
 	if [ $? -ne 0 ]; then
 		fails=$(($fails+1))
@@ -113,6 +118,8 @@ for testNoInit in *.afl; do
 	fi
 	if [ $thisFail -eq 1 ]; then
 		failStr=' FAIL'
+    # in case of error, print the log file
+    cat $logFile
 	else
 		failStr=' PASS'
 	fi
@@ -147,6 +154,8 @@ for testNoInit in *.spl; do
 	fi
 	if [ $thisFail -eq 1 ]; then
 		failStr=' FAIL'
+    # In case of error, print the log file
+    cat $logFile
 	else
 		failStr=' PASS'
 	fi
