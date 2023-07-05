@@ -10,7 +10,7 @@ else
 fi
 
 echo -e "Static Selection\nRunning $binary"
-cmd="${binary} ${scorepOut} --out-file $outDir --use-cs-instrumentation --static ${PWD}/$testNo"
+cmd="${binary} ${scorepOut} --out-dir $outDir --use-cs-instrumentation --static ${PWD}/$testNo"
 echo $cmd
 $cmd
 

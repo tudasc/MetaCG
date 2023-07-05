@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
   opts.add_options()
     ("m,mangled", "Use mangled names", cxxopts::value<bool>()->default_value("false"))
     // not sure
-    (outDirectory.cliName, "Output file name", optType(outDirectory)->default_value("out"))
+    (outBaseDir.cliName, "Base path to place instrumentation configuration", optType(outBaseDir)->default_value("out"))
     // from here: keep all
     (staticSelection.cliName, "Apply static selection", optType(staticSelection)->default_value("false"))
     ("c,cube", "Cube file for dynamic instrumentation", cxxopts::value<std::string>()->default_value(""))
@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
   // checkAndSet<bool>("all-threads", result, c.showAllThreads);
   // checkAndSet<std::string>("whitelist", result, c.whitelist);
 
-  checkAndSet<std::string>("out-file", result, c.outputFile);
+  checkAndSet<std::string>(outBaseDir.cliName, result, c.outputFile);
   checkAndSet<bool>(staticSelection.cliName, result, applyStaticFilter);
   checkAndSet<bool>(modelFilter.cliName, result, applyModelFilter);
   checkAndSet<bool>(runtimeOnly.cliName, result, extrapRuntimeOnly);

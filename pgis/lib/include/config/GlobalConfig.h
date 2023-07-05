@@ -155,7 +155,7 @@ static const BoolOpt cubeShowOnly{"cube-show-only", "false"};
 static const IntOpt debugLevel{"debug", "0"};
 
 static const StringOpt extrapConfig{"extrap", ""};
-static const StringOpt outDirectory{"out-file", "out"};
+static const StringOpt outBaseDir{"out-dir", "out"};
 
 static const BoolOpt lideEnabled{"lide", "false"};
 

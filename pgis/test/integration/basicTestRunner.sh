@@ -43,7 +43,7 @@ fi
 echo "Running Tests with build directory: ${buildDir}"
 
 for testFile in ./ipcgread/*.ipcg; do
-	$testExec --out-file $outDir --static $testFile >${logFile} 2>&1
+	$testExec --out-dir $outDir --static $testFile >${logFile} 2>&1
 	errCode=$?
 	check_and_print $fails $testFile $errCode
 	fails=$?
