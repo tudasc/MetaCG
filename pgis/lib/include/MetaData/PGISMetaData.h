@@ -29,6 +29,8 @@ class InstrumentationMetaData : public metacg::MetaData::Registrar<Instrumentati
     return {};
   };
 
+  virtual const char *getKey() const final { return key; }
+
   void reset() { state = InstrumentationState::None; }
   void setInstrumented() { state = InstrumentationState::Instrumented; }
   void setInstrumentedPath() { state = InstrumentationState::InstrumentedPath; }

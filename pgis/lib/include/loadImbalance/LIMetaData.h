@@ -30,8 +30,7 @@ class LIMetaData : public metacg::MetaData::Registrar<LIMetaData> {
   LIMetaData() = default;
   explicit LIMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}",
-                                                        "LIData");
+      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", key);
       return;
     }
 
@@ -49,6 +48,8 @@ class LIMetaData : public metacg::MetaData::Registrar<LIMetaData> {
   };
 
   virtual nlohmann::json to_json() const;
+
+  virtual const char *getKey() const final { return key; }
 
   void setNumberOfInclusiveStatements(pira::Statements inclusiveStatements) {
     this->inclusiveStatements = inclusiveStatements;

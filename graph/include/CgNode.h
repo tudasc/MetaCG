@@ -32,6 +32,10 @@ class CgNode {
     return metaFields.find(T::key) != metaFields.end();
   }
 
+  inline bool has(const MetaData *const md) const { return metaFields.find(md->getKey()) != metaFields.end(); }
+
+  inline bool has(const std::string &metadataName) const { return metaFields.find(metadataName) != metaFields.end(); }
+
   /**
    * Returns pointer to attached metadata of type #T
    * @tparam T
@@ -42,6 +46,12 @@ class CgNode {
     assert(metaFields.count(T::key) > 0 && "meta field for key must exist");
     auto val = metaFields.at(T::key);
     return static_cast<T *>(val);
+  }
+
+  inline MetaData *get(const std::string &metadataName) const {
+    assert(metaFields.count(metadataName) > 0 && "meta field for key must exist");
+    auto val = metaFields.at(metadataName);
+    return val;
   }
 
   /**
@@ -70,6 +80,13 @@ class CgNode {
       assert(false && "MetaData with key already attached");
     }
     metaFields[T::key] = md;
+  }
+
+  inline void addMetaData(MetaData *const md) {
+    if (this->has(md->getKey())) {
+      assert(false && "MetaData with key already attached");
+    }
+    metaFields[md->getKey()] = md;
   }
 
   /**
