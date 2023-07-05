@@ -250,7 +250,7 @@ class PiraTwoData : public metacg::MetaData::Registrar<PiraTwoData> {
 
 class FilePropertiesMetaData : public metacg::MetaData::Registrar<FilePropertiesMetaData> {
  public:
-  static constexpr const char *key = "FilePropertiesMetaData";
+  static constexpr const char *key = "fileProperties";
   FilePropertiesMetaData() : origin("INVALID"), fromSystemInclude(false), lineNumber(0) {}
   explicit FilePropertiesMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
@@ -277,7 +277,7 @@ class FilePropertiesMetaData : public metacg::MetaData::Registrar<FileProperties
 
 class CodeStatisticsMetaData : public metacg::MetaData::Registrar<CodeStatisticsMetaData> {
  public:
-  static constexpr const char *key = "CodeStatisticsMetaData";
+  static constexpr const char *key = "codeStatistics";
   CodeStatisticsMetaData() = default;
   explicit CodeStatisticsMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
@@ -300,7 +300,7 @@ class CodeStatisticsMetaData : public metacg::MetaData::Registrar<CodeStatistics
 
 class NumConditionalBranchMetaData : public metacg::MetaData::Registrar<NumConditionalBranchMetaData> {
  public:
-  static constexpr const char *key = "NumConditionalBranchMetaData";
+  static constexpr const char *key = "numConditionalBranches";
   NumConditionalBranchMetaData() = default;
   explicit NumConditionalBranchMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
@@ -313,9 +313,7 @@ class NumConditionalBranchMetaData : public metacg::MetaData::Registrar<NumCondi
   }
 
   nlohmann::json to_json() const final {
-    nlohmann::json j;
-    j["numConditionalBranches"] = numConditionalBranches;
-    return j;
+    return numConditionalBranches;
   };
   int numConditionalBranches{0};
 };
@@ -323,7 +321,7 @@ class NumConditionalBranchMetaData : public metacg::MetaData::Registrar<NumCondi
 class NumOperationsMetaData : public metacg::MetaData::Registrar<NumOperationsMetaData> {
  public:
   NumOperationsMetaData() = default;
-  static constexpr const char *key = "NumOperationsMetaData";
+  static constexpr const char *key = "numOperations";
 
   explicit NumOperationsMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
@@ -355,7 +353,7 @@ class NumOperationsMetaData : public metacg::MetaData::Registrar<NumOperationsMe
 
 class LoopDepthMetaData : public metacg::MetaData::Registrar<LoopDepthMetaData> {
  public:
-  static constexpr const char *key = "LoopDepthMetaData";
+  static constexpr const char *key = "loopDepth";
   LoopDepthMetaData() = default;
   explicit LoopDepthMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
@@ -366,9 +364,7 @@ class LoopDepthMetaData : public metacg::MetaData::Registrar<LoopDepthMetaData> 
   }
 
   nlohmann::json to_json() const final {
-    nlohmann::json j;
-    j["loopDepth"] = loopDepth;
-    return j;
+    return loopDepth;
   };
   int loopDepth{0};
 };
@@ -376,7 +372,7 @@ class LoopDepthMetaData : public metacg::MetaData::Registrar<LoopDepthMetaData> 
 class GlobalLoopDepthMetaData : public metacg::MetaData::Registrar<GlobalLoopDepthMetaData> {
  public:
   GlobalLoopDepthMetaData() = default;
-  static constexpr const char *key = "GlobalLoopDepthMetaData";
+  static constexpr const char *key = "globalLoopDepth";
 
   explicit GlobalLoopDepthMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
@@ -387,9 +383,7 @@ class GlobalLoopDepthMetaData : public metacg::MetaData::Registrar<GlobalLoopDep
     globalLoopDepth = j.get<int>();
   }
   nlohmann::json to_json() const final {
-    nlohmann::json j;
-    j["globalLoopDepth"] = globalLoopDepth;
-    return j;
+    return globalLoopDepth;
   };
   int globalLoopDepth{0};
 };
