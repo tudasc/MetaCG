@@ -41,7 +41,7 @@ class MetaDataFactory {
     friend T;
 
     static bool registerT() {
-      MCGLogger::instance().getConsole()->template trace("Registering {} \n",T::key);
+      MCGLogger::instance().getConsole()->template trace("Registering {} \n", T::key);
       const auto name = T::key;
       MetaDataFactory::data()[name] = [](const nlohmann::json &j) -> CRTPBase * { return new T(j); };
       return true;
@@ -77,6 +77,7 @@ struct MetaData : MetaDataFactory<MetaData> {
   explicit MetaData(Key) {}
   static constexpr const char *key = "BaseClass";
   virtual nlohmann::json to_json() const = 0;
+  virtual const char *getKey() const = 0;
   virtual ~MetaData() = default;
 };
 

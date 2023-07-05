@@ -38,6 +38,9 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
     j["metadataFloat"] = metadataFloat;
     return j;
   };
+
+  virtual const char *getKey() const final { return key; }
+
   std::string metadataString;
   int metadataInt = 0;
   float metadataFloat = 0.0f;
