@@ -6,7 +6,7 @@ binary=${buildDir}/tool/pgis_pira
 
 echo -e "Modeling-based selection\nRunning $binary"
 extrapDef="${testNo/mcg/json}"
-cmd="${binary} --use-cs-instrumentation --metacg-format 2 --debug 1 --out-file $outDir --parameter-file ${PWD}/parameters.json --extrap ${PWD}/${extrapDef} ${PWD}/$testNo"
+cmd="${binary} --use-cs-instrumentation --metacg-format 2 --debug 1 --out-dir $outDir --parameter-file ${PWD}/parameters.json --extrap ${PWD}/${extrapDef} ${PWD}/$testNo"
 echo $cmd
 $cmd
 

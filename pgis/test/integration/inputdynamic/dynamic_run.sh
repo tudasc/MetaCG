@@ -6,7 +6,7 @@ binary=${buildDir}/tool/pgis_pira
 
 echo -e "Dynamic Selection\nRunning $binary"
 cubeTest="${testNo/ipcg/cubex}"
-cmd="${binary} --use-cs-instrumentation --out-file $outDir ${PWD}/$testNo --cube ${PWD}/$cubeTest"
+cmd="${binary} --use-cs-instrumentation --out-dir $outDir ${PWD}/$testNo --cube ${PWD}/$cubeTest"
 echo $cmd
 $cmd
 
