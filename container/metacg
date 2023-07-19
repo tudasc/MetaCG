@@ -22,7 +22,7 @@ RUN cd metacg && \
       -DCUBE_INCLUDE=/opt/metacg/extern/install/cubelib/include/cubelib \
       -DEXTRAP_INCLUDE=./extern/install/extrap/include \
       -DEXTRAP_LIB=./extern/install/extrap/lib \
-      -DMETACG_WITH_PGIS=ON \
-      -DMETACG_WITH_CGCOLLECTOR=ON \
+      -DMETACG_BUILD_PGIS=ON \
+      -DMETACG_BUILD_CGCOLLECTOR=ON \
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON && \
     cmake --build build --parallel

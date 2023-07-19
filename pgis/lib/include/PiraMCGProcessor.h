@@ -115,7 +115,7 @@ class PiraMCGProcessor {
 
   void finalizeGraph(bool finalizeGraph = false);
 
-  void dumpInstrumentedNames(CgReport report);
+  void dumpInstrumentedNames(InstrumentationConfiguration IC);
 };
 }  // namespace metacg::pgis
 
