@@ -16,75 +16,41 @@
 #include <set>
 #include <string>
 
-struct CgReport {
-  CgReport()
-      : instrumentedMethods(0),
-        overallMethods(0),
-        unwConjunctions(0),
-        overallConjunctions(0),
-        instrumentedCalls(0),
-        unwindSamples(0),
-        samplesTaken(0),
-        instrOvSeconds(.0),
-        unwindOvSeconds(.0),
-        samplingOvSeconds(.0),
-        overallSeconds(.0),
-        instrOvPercent(.0),
-        unwindOvPercent(.0),
-        samplingOvPercent(.0),
-        overallPercent(.0),
-        phaseName(std::string()),
-        metaPhase(false),
-        instrumentedNames(),
-        instrumentedNodes(),
-        instrumentedEdges() {}
-
-  unsigned int instrumentedMethods;
-  unsigned int overallMethods;
-
-  unsigned int unwConjunctions;
-  unsigned int overallConjunctions;
-
-  unsigned long long instrumentedCalls;
-  unsigned long long unwindSamples;
-  unsigned long long samplesTaken;
-
-  double instrOvSeconds;
-  double unwindOvSeconds;
-  double samplingOvSeconds;
-  double overallSeconds;
-
-  double instrOvPercent;
-  double unwindOvPercent;
-  double samplingOvPercent;
-  double overallPercent;
-
+/**
+ * Helper struct that creates a temporary IC from the CG
+ *
+ * Used by the EstimatorPhase / MCGProcessor to generate and output the InstrumentationConfiguration after a specific
+ * EstimatorPhase.
+ */
+struct InstrumentationConfiguration {
   std::string phaseName;
-  bool metaPhase;
-
   std::unordered_set<std::string> instrumentedNames;
   std::unordered_set<metacg::CgNode *> instrumentedNodes;
   std::unordered_map<std::string, metacg::CgNode *> instrumentedPaths;
   std::unordered_map<metacg::CgNode *, metacg::CgNode *> instrumentedEdges;
-  //  std::priority_queue<metacg::CgNode*, std::vector<metacg::CgNode*>, CalledMoreOften> instrumentedNodes;
-
-  std::map<std::string, int> unwoundNames;
 };
 
+/**
+ * Base class for estimator analyses in PGIS.
+ *
+ * An estimator phase evaluates _some_ node property to decide if that particular node
+ * shall be added to the instrumentation configuration (IC).
+ * The pure virtual method modifyGraph needs to be implemented.
+ */
 class EstimatorPhase {
  public:
-  explicit EstimatorPhase(std::string name, metacg::Callgraph *callgraph, bool isMetaPhase = false);
+  explicit EstimatorPhase(std::string name, metacg::Callgraph *callgraph);
   virtual ~EstimatorPhase() = default;
 
   virtual void doPrerequisites() {}
   virtual void modifyGraph(metacg::CgNode *mainMethod) = 0;
 
-  void generateReport();
+  void generateIC();
 
   [[deprecated]] void setGraph(metacg::Callgraph *graph);
   void injectConfig(Config *config) { this->config = config; }
 
-  struct CgReport getReport();
+  InstrumentationConfiguration getIC();
   virtual void printReport();
 
   void setNoReport() { noReportRequired = true; }
@@ -94,14 +60,11 @@ class EstimatorPhase {
  protected:
   metacg::Callgraph *graph;
 
-  CgReport report;
+  InstrumentationConfiguration IC;
   std::string name;
 
   Config *config;
   bool noReportRequired;
-
-  /* print some additional information of the phase */
-  virtual void printAdditionalReport();
 };
 
 class NopEstimatorPhase : public EstimatorPhase {
@@ -125,7 +88,6 @@ class RemoveUnrelatedNodesEstimatorPhase : public EstimatorPhase {
   void modifyGraph(metacg::CgNode *mainMethod) override;
 
  private:
-  void printAdditionalReport() override;
   void checkLeafNodeForRemoval(metacg::CgNode *node);
 
   int numUnconnectedRemoved;
