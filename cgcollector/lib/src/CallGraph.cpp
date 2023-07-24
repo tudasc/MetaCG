@@ -52,16 +52,6 @@ using namespace clang;
 STATISTIC(NumObjCCallEdges, "Number of Objective-C method call edges");
 STATISTIC(NumBlockCallEdges, "Number of block call edges");
 
-void printNamedDeclToConsole(const Decl *D) {
-  std::function<void()> func;
-  assert(D);
-#ifndef NDEBUG
-  auto fd = llvm::dyn_cast<NamedDecl>(D);
-  if (fd) {
-    std::cout << fd->getNameAsString() << std::endl;
-  }
-#endif
-}
 
 auto Location(Decl *decl, Stmt *expr) {
   const auto &ctx = decl->getASTContext();
@@ -889,7 +879,6 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
                 for (const auto sym : worklist) {
                   ss << sym->getNameAsString() << "\n";
                 }
-                std::cout << ss.str() << std::endl;
                 break;
               }
               const auto curSym = worklist.front();
@@ -909,7 +898,8 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
           unresolvedSymbols.erase(unresolvedSymbols.find(func));
           ss << "Unresolved symbols after loop: " << unresolvedSymbols.size() << "\n";
         }
-        std::cout << ss.str() << std::endl;
+        // Debug output
+        // std::cout << ss.str() << std::endl;
       }
     }
     if (auto ice = CE->getCallee()) {
@@ -1233,7 +1223,7 @@ bool CallGraph::VisitFunctionDecl(clang::FunctionDecl *FD) {
   // We skip function template definitions, as their semantics is
   // only determined when they are instantiated.
   static int count = 0;
-  if (includeInGraph(FD) && FD->isThisDeclarationADefinition()) {
+  if (includeInGraph(FD) && (FD->isThisDeclarationADefinition() || includeUnusedDecls)) {
     count++;
     if (count % 100 == 0) {
       std::cout << "Processing function nr " << count << std::endl;

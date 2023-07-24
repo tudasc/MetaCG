@@ -8,6 +8,9 @@
 #include <clang/AST/Expr.h>
 
 namespace implementation {
+bool printLoc(llvm::raw_ostream &OS, clang::SourceLocation BeginLoc, clang::SourceLocation EndLoc,
+              const clang::SourceManager &SM, bool PrintFilename);
+
 void generateUSRForCallOrConstructExpr(const clang::Expr *CE, const clang::ASTContext *Context,
                                        clang::SmallVectorImpl<char> &Buf, clang::FunctionDecl *ParentFunctionDecl);
 StringType generateUSRForCallOrConstructExpr(const clang::Expr *CE, const clang::ASTContext *Context,
@@ -60,4 +63,24 @@ StringType generateUSRForMaterializeTemporaryExpr(clang::MaterializeTemporaryExp
  * @return
  */
 StringType generateUSRForSymbolicReturn(clang::FunctionDecl *ParentFunctionDecl);
+
+/**
+ *  Generates a USR for any construct inside a function. Warning: This is just based on the location and does not follow
+ * the usual USR format
+ * @tparam T
+ * @param S
+ * @param SM
+ * @return
+ */
+template <typename T>
+std::string generateUSRForConstructInFunction(const T *S, const clang::SourceManager &SM) {
+  assert(S);
+  std::string USR;
+  llvm::SmallString<64> Buf;
+  llvm::raw_svector_ostream Out(Buf);
+  [[maybe_unused]] bool Error = printLoc(Out, S->getBeginLoc(), S->getEndLoc(), SM, false);
+  assert(!Error);
+  USR += Buf.str();
+  return USR;
+}
 }  // namespace implementation

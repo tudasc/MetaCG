@@ -23,11 +23,14 @@ static llvm::cl::opt<bool> captureStackCtorsDtors(
     llvm::cl::desc(
         "Capture calls to Constructors and Destructors of stack allocated variables. (Only works together with AA)"),
     llvm::cl::cat(cgc));
+static llvm::cl::opt<bool> includeUnusedDecl("include-unused-decl", llvm::cl::desc("Includes unused decls into the CG"),
+                                       llvm::cl::cat(cgc));
 static llvm::cl::opt<int> metacgFormatVersion("metacg-format-version",
                                               llvm::cl::desc("metacg file version to output, values={1,2}, default=1"),
                                               llvm::cl::cat(cgc));
 
-static llvm::cl::opt<std::string> outputFilenameOption("output", llvm::cl::desc("Output filename to store MetaCG"), llvm::cl::cat(cgc));
+static llvm::cl::opt<std::string> outputFilenameOption("output", llvm::cl::desc("Output filename to store MetaCG"),
+                                                       llvm::cl::cat(cgc));
 
 /**
  * The classic CG construction and the AA one work a bit differently. The classic one inserts nodes for all function,
@@ -39,6 +42,17 @@ static llvm::cl::opt<bool> disableClassicCGConstruction(
 static llvm::cl::opt<bool> enableAA("enable-AA", llvm::cl::desc("Enable Alias Analysis (experimental)"),
                                     llvm::cl::cat(cgc));
 
+// Configuration for the call count estimation
+static llvm::cl::opt<float> loopCountEstimation("cce-loop-count",
+                                                llvm::cl::desc("Loop count estimation for the call count estimation"),
+                                                llvm::cl::init(100.0), llvm::cl::cat(cgc));
+static llvm::cl::opt<float> conditionTrueChance(
+    "cce-condition-true-chance", llvm::cl::desc("Conditional branch true chance for the call count estimation"),
+    llvm::cl::init(0.5), llvm::cl::cat(cgc));
+static llvm::cl::opt<float> exceptionChance(
+    "cce-exception-chance", llvm::cl::desc("Chance of an exception block being executed for the call count estimation"),
+    llvm::cl::init(0.1), llvm::cl::cat(cgc));
+
 typedef std::vector<MetaCollector *> MetaCollectorVector;
 
 class CallGraphCollectorConsumer : public clang::ASTConsumer {
@@ -47,6 +61,7 @@ class CallGraphCollectorConsumer : public clang::ASTConsumer {
 
   virtual void HandleTranslationUnit(clang::ASTContext &Context) {
     callGraph.setCaptureCtorsDtors(captureCtorsDtors);
+    callGraph.setIncludeDecl(includeUnusedDecl);
     if (!disableClassicCGConstruction) {
       callGraph.TraverseDecl(Context.getTranslationUnitDecl());
     }
@@ -123,6 +138,9 @@ int main(int argc, const char **argv) {
   auto noOperationsCollector = std::make_unique<NumOperationsCollector>();
   auto loopDepthCollector = std::make_unique<LoopDepthCollector>();
   auto globalLoopDepthCollector = std::make_unique<GlobalLoopDepthCollector>();
+  auto inlineCollector = std::make_unique<InlineCollector>();
+  auto estimateCallCountCollector = std::make_unique<EstimateCallCountCollector>(
+      loopCountEstimation, conditionTrueChance, 1.0 - conditionTrueChance, exceptionChance);
 
   MetaCollectorVector mcs{noStmtsCollector.get()};
   mcs.push_back(foCollector.get());
@@ -134,6 +152,8 @@ int main(int argc, const char **argv) {
     mcs.push_back(noOperationsCollector.get());
     mcs.push_back(loopDepthCollector.get());
     mcs.push_back(globalLoopDepthCollector.get());
+    mcs.push_back(inlineCollector.get());
+    mcs.push_back(estimateCallCountCollector.get());
   }
 
   CT.run(

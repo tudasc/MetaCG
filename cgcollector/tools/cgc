@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
 target=$1
+optarg=$2
 
 if [ -z "$target" ]; then
 	echo "Need to specify a target. Exit."
-	echo -e "Usage:\ncgc target.[c|cpp]"
+	echo -e "Usage:\ncgc target.[c|cpp] optional arguments"
 	exit -2
 fi
 
@@ -21,7 +22,7 @@ fi
 
 shoulddebug=false
 
-collectorCommand="cgcollector --capture-ctors-dtors --extra-arg=-I$clangpath/lib/clang/$clangversion/include $target"
+collectorCommand="cgcollector --capture-ctors-dtors --extra-arg=-I$clangpath/lib/clang/$clangversion/include $optarg $target"
 
 if [ -z "$shoulddebug" ]; then
   echo "Running command $collectorCommand"
