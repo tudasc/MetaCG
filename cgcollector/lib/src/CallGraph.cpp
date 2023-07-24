@@ -85,16 +85,19 @@ class DeclRefRetriever : public StmtVisitor<DeclRefRetriever<Filter>> {
       if (const auto valueDecl = dyn_cast<ValueDecl>(decl)) {
         const auto ty = resolveToUnderlyingType(valueDecl->getType().getTypePtr());
         const auto inRelevantMemberExpr = [](DeclRefExpr *dre) {
+          assert(dre);
           const auto decl = dre->getDecl();
           auto &ctx = decl->getASTContext();
           auto pMap = ctx.getParents(*dre);
           auto firstParent = pMap.begin();
-          if (const auto memExp = dyn_cast<MemberExpr>((*firstParent).get<Stmt>())) {
+          assert(firstParent != pMap.end());
+          if (const auto memExp = dyn_cast_or_null<MemberExpr>((*firstParent).get<Stmt>())) {
             return true;
           }
           return false;
         };
         const auto inRelevantSymbols = [&](const ValueDecl *vd) {
+          assert(vd);
           if (const auto vDecl = dyn_cast<VarDecl>(vd)) {
             bool relevant = relevantSymbols.find(vDecl) != relevantSymbols.end();
             return relevant;
@@ -127,6 +130,7 @@ class DeclRefRetriever : public StmtVisitor<DeclRefRetriever<Filter>> {
   const std::unordered_set<Decl *> &getSymbols() { return symbols; }
 
   void VisitChildren(Stmt *S) {
+    assert(S);
     for (Stmt *SubStmt : S->children())
       if (SubStmt) {
         this->Visit(SubStmt);
@@ -577,6 +581,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
   }
 
   void handleFunctionPointerInArguments(CallExpr *CE) {
+    assert(CE);
     std::string loc;
     if (CE->getCalleeDecl()) {
       loc = Location(CE->getCalleeDecl(), CE);
