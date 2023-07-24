@@ -5,7 +5,7 @@
 #include <set>
 #include <string>
 
-int getLoopDepth(const std::string &entry, const llvm::StringMap<llvm::StringMap<int>> &callDepths,
+int getCallDepth(const std::string &entry, const llvm::StringMap<llvm::StringMap<int>> &callDepths,
                  const llvm::StringMap<int> &localLoopDepth, llvm::StringMap<int> &globalLoopDepth,
                  llvm::StringMap<bool> &visited) {
   // First mark ourselves as visited, to infinite loops
@@ -17,7 +17,7 @@ int getLoopDepth(const std::string &entry, const llvm::StringMap<llvm::StringMap
 
   for (const auto &child : children) {
     if (visited.find(child.first()) == visited.end()) {
-      maxChildDepth = std::max(maxChildDepth, child.second + getLoopDepth(std::string(child.first()), callDepths,
+      maxChildDepth = std::max(maxChildDepth, child.second + getCallDepth(std::string(child.first()), callDepths,
                                                                           localLoopDepth, globalLoopDepth, visited));
     }
   }
@@ -86,7 +86,7 @@ void calculateGlobalCallDepth(nlohmann::json &j, bool useOnlyMainEntry) {
   }
 
   for (const auto &entry : entryPoints) {
-    globalLoopDepth.insert_or_assign(entry, getLoopDepth(entry, callDepths, localLoopDepth, globalLoopDepth, visited));
+    globalLoopDepth.insert_or_assign(entry, getCallDepth(entry, callDepths, localLoopDepth, globalLoopDepth, visited));
   }
 
   for (auto &[key, val] : cg.items()) {

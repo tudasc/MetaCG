@@ -46,10 +46,24 @@ inline void attachFormatTwoHeader(nlohmann::json &j) {
                   {"generator", {{"name", "CGCollector"}, {"version", cgcVersion}, {"sha", MetaCG_GIT_SHA}}}};
 }
 
+/**
+ *
+ * @param callgraph
+ * @param nodeName
+ * @param callees
+ * @param callers
+ * @param overriddenBy
+ * @param overriddenFunctions
+ * @param isVirtual
+ * @param doesOverride
+ * @param hasBody
+ * @param version
+ * @param directInsertWorkaround Workaround to enable CGValidate to work with the metacg version 2 file format
+ */
 inline void insertNode(nlohmann::json &callgraph, const std::string &nodeName, const FunctionNames &callees,
                        const FunctionNames &callers, const FunctionNames &overriddenBy,
                        const FunctionNames &overriddenFunctions, const bool isVirtual, const bool doesOverride,
-                       const bool hasBody, int version) {
+                       const bool hasBody, int version, const bool directInsertWorkaround = false) {
   if (version == 1) {
     callgraph[nodeName] = {{"callees", callees},
                            {"isVirtual", isVirtual},
@@ -59,19 +73,37 @@ inline void insertNode(nlohmann::json &callgraph, const std::string &nodeName, c
                            {"parents", callers},
                            {"hasBody", hasBody}};
   } else if (version == 2) {
-    callgraph["_CG"][nodeName] = {{"callees", callees},
-                                  {"isVirtual", isVirtual},
-                                  {"doesOverride", doesOverride},
-                                  {"overrides", overriddenFunctions},
-                                  {"overriddenBy", overriddenBy},
-                                  {"callers", callers},
-                                  {"hasBody", hasBody}};
+    if (!directInsertWorkaround) {
+      callgraph["_CG"][nodeName] = {{"callees", callees},
+                                    {"isVirtual", isVirtual},
+                                    {"doesOverride", doesOverride},
+                                    {"overrides", overriddenFunctions},
+                                    {"overriddenBy", overriddenBy},
+                                    {"callers", callers},
+                                    {"hasBody", hasBody}};
+    } else {
+      callgraph[nodeName] = {{"callees", callees},
+                             {"isVirtual", isVirtual},
+                             {"doesOverride", doesOverride},
+                             {"overrides", overriddenFunctions},
+                             {"overriddenBy", overriddenBy},
+                             {"callers", callers},
+                             {"hasBody", hasBody}};
+    }
   }
 }
 
-inline void insertDefaultNode(nlohmann::json &callgraph, const std::string &nodeName) {
+/**
+ *
+ * @param callgraph
+ * @param nodeName
+ * @param version
+ * @param directInsertWorkaround Workaround to enable CGValidate to work with the metacg version 2 file format
+ */
+inline void insertDefaultNode(nlohmann::json &callgraph, const std::string &nodeName, const int version = 1,
+                              const bool directInsertWorkaround = false) {
   const FunctionNames empty;
-  insertNode(callgraph, nodeName, empty, empty, empty, empty, false, false, false, 1);
+  insertNode(callgraph, nodeName, empty, empty, empty, empty, false, false, false, version, directInsertWorkaround);
 }
 
 struct FunctionInfo {

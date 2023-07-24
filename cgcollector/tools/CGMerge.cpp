@@ -97,6 +97,7 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
           doMerge(c, v);
           c["meta"]["numStatements"] = v["meta"]["numStatements"];
           c["meta"]["fileProperties"] = v["meta"]["fileProperties"];
+          c["meta"]["inlineInfo"] = v["meta"]["inlineInfo"];
           // TODO JR, find some better way to check if merge is needed
           if (c["meta"].contains("loopDepth")) {
             hasLoopInfo = true;
@@ -111,7 +112,37 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
         } else {
           // nothing special
         }
+        if (!c["meta"].contains("estimateCallCount") && v["meta"].contains("estimateCallCount")) {
+          c["meta"]["estimateCallCount"] = v["meta"]["estimateCallCount"];
+        } else if (c["meta"].contains("estimateCallCount") && v["meta"].contains("estimateCallCount")) {
+          auto &ccalls = c["meta"]["estimateCallCount"]["calls"];
+          const auto &vcalls = v["meta"]["estimateCallCount"]["calls"];
+          auto &ccodeRegions = c["meta"]["estimateCallCount"]["codeRegions"];
+          const auto &vcodeRegions = v["meta"]["estimateCallCount"]["codeRegions"];
+          for (const auto &[regionName, region] : vcodeRegions.items()) {
+            auto iter = ccodeRegions.find(regionName);
+            if (iter == ccodeRegions.end()) {
+              ccodeRegions[regionName] = region;
+            } else {
+              auto ccodeRegionFunctions = (*iter)["functions"].get<std::set<std::string>>();
+              const auto vcodeRegionFunctions = region["functions"].get<std::set<std::string>>();
+              ccodeRegionFunctions.insert(vcodeRegionFunctions.begin(), vcodeRegionFunctions.end());
+              (*iter)["functions"] = ccodeRegionFunctions;
+            }
+          }
 
+          for (const auto &[functionName, functionInfo] : vcalls.items()) {
+            auto iter = ccalls.find(functionName);
+            if (iter == ccalls.end()) {
+              ccalls[functionName] = functionInfo;
+            } else {
+              auto cfunctioninfo = (*iter).get<std::set<std::pair<double, std::string>>>();
+              const auto vfunctionInfo = functionInfo.get<std::set<std::pair<double, std::string>>>();
+              cfunctioninfo.insert(vfunctionInfo.begin(), vfunctionInfo.end());
+              (*iter) = cfunctioninfo;
+            }
+          }
+        }
         // Merge the loop depths
         if (hasLoopInfo) {
           if (!c["meta"].contains("loopCallDepth") && v["meta"].contains("loopCallDepth")) {
@@ -166,6 +197,7 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
   if (hasAAInfo) {
     wholeCGFinal["PointerEquivalenceData"] = File1Data;
   }
+
   if (hasLoopInfo) {
     if (hasAAInfo) {
       // FIXME The global loop depth currently does not work together,

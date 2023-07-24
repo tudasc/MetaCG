@@ -13,13 +13,14 @@
 #include <clang/AST/StmtVisitor.h>
 #include <clang/Basic/SourceManager.h>
 #if LLVM_VERSION_MAJOR == 11
-  #include <clang/Basic/FileManager.h>
+#include <clang/Basic/FileManager.h>
 #endif
 
 #include <map>
 #include <memory>
 
 #include <iostream>
+#include <llvm/Support/CommandLine.h>
 
 class MetaCollector {
   std::string name;
@@ -93,11 +94,9 @@ class FilePropertyCollector : public MetaCollector {
     return result;
   }
 
-
-
  public:
   FilePropertyCollector() : MetaCollector("fileProperties") {}
-  virtual ~FilePropertyCollector()=default;
+  virtual ~FilePropertyCollector() = default;
 };
 
 class CodeStatisticsCollector : public MetaCollector {
@@ -115,7 +114,7 @@ class CodeStatisticsCollector : public MetaCollector {
 
  public:
   CodeStatisticsCollector() : MetaCollector("codeStatistics") {}
-  virtual ~CodeStatisticsCollector()=default;
+  virtual ~CodeStatisticsCollector() = default;
 };
 
 class MallocVariableCollector : public MetaCollector {
@@ -229,7 +228,7 @@ class MallocVariableCollector : public MetaCollector {
 
  public:
   MallocVariableCollector() : MetaCollector("mallocCollector") {}
-  virtual ~MallocVariableCollector()=default;
+  virtual ~MallocVariableCollector() = default;
 };
 
 class UniqueTypeCollector : public MetaCollector {
@@ -384,6 +383,125 @@ class GlobalLoopDepthCollector final : public MetaCollector {
       }
     }
     result->calledFunctions = calledFunctions;
+    return result;
+  }
+};
+
+class InlineCollector final : public MetaCollector {
+ public:
+  InlineCollector() : MetaCollector("inlineInfo") {}
+
+ private:
+  std::unique_ptr<MetaInformation> calculateForFunctionDecl(
+      const clang::FunctionDecl *const decl,
+      [[maybe_unused]] const llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> &calledDecls) override {
+    assert(decl);
+    auto result = std::make_unique<InlineResult>();
+    const auto alwaysInlineAttr = decl->getAttr<clang::AlwaysInlineAttr>();
+    result->markedInline = decl->isInlineSpecified();
+    result->likelyInline = decl->isInlined();
+    result->isTemplate = decl->isTemplateInstantiation();
+    result->markedAlwaysInline = alwaysInlineAttr;
+    return result;
+  }
+};
+
+class EstimateCallCountCollector final : public MetaCollector {
+ public:
+  EstimateCallCountCollector(float loopCount, float trueChance, float falseChance, float exceptionChance)
+      : MetaCollector("estimateCallCount"),
+        loopCount(loopCount),
+        trueChance(trueChance),
+        falseChance(falseChance),
+        exceptionChance(exceptionChance) {}
+
+ private:
+  float loopCount;
+  float trueChance;
+  float falseChance;
+  float exceptionChance;
+
+  /**
+   *
+   * @param decl
+   * @param calledDecls
+   * @return
+   * This function calculates per-function metadata about the code regions inside a function, the calls in the code
+   * regions, and the estimated influence of the code region on the number of executed calls in it
+   *
+   * It returns two data structures:
+   * calledFunctions: std::map<std::string, std::set<std::pair<double, std::string>>>:
+   * Maps the name of a called function to the regions that call it. The double describes how often it is called in this
+   * region
+   *
+   * codeRegions: std::map<std::string, CodeRegion>
+   * Maps the name of a code region to information about the region. The information are: The parent region, the
+   * function calls in the region, and how often it is estimated that the region is executed for each call to the
+   * parent.
+   *
+   * The empty region name "" is special and refers to the function scope
+   *
+   * The algorithm is the following:
+   * 1. Iterate over all callsites where we can identify the called function
+   * 2. Add all of them to the list of calledFunctions together with their code region. If it already exists in the
+   * list, increase the number of times it is called in the region
+   * 3. Construct the codeRegions by walking over the chain of parent code regions for each call. If the region already
+   * exists, the functions in it are updated if necessary. Otherwise the region is newly inserted
+   */
+  std::unique_ptr<MetaInformation> calculateForFunctionDecl(
+      const clang::FunctionDecl *const decl,
+      const llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> &calledDecls) override {
+    assert(decl);
+    auto result = std::make_unique<EstimateCallCountResult>();
+    std::map<std::string, std::set<std::pair<double, std::string>>> calledFunctions;
+    std::map<std::string, CodeRegion> codeRegions;
+    const auto callCounts = getEstimatedCallCountInStmt(decl->getBody(), decl->getASTContext().getSourceManager(),
+                                                        loopCount, trueChance, falseChance, exceptionChance);
+    for (const auto &callCount : callCounts) {
+      // There are unfortunately some cases where we can not map the call to what is called
+      if (const auto calledDeclsIter = calledDecls.find(callCount.first); calledDeclsIter != calledDecls.end()) {
+        // TODO: Maybe handle constructors
+        if (auto fdecl = llvm::dyn_cast<clang::FunctionDecl>(calledDeclsIter->getSecond())) {
+          const auto fnames = getMangledName(fdecl);
+          for (const auto &fname : fnames) {
+            for (const auto &cc : callCount.second) {
+              {
+                auto &calledFunction = calledFunctions[fname];
+                const auto regionName = !cc.first.empty() ? cc.first.back() : "";
+                auto regionIter = std::find_if(calledFunction.begin(), calledFunction.end(),
+                                               [&](const auto &i) { return i.second == regionName; });
+                if (regionIter != calledFunction.end()) {
+                  calledFunctions[fname].emplace(regionIter->first + 1.0, regionName);
+                  calledFunction.erase(regionIter);
+                } else {
+                  calledFunctions[fname].emplace(1.0, regionName);
+                }
+              }
+
+              for (size_t j = 0; j < cc.first.size(); ++j) {
+                const auto regionName = cc.first[j];
+                const auto codeRegionIter = codeRegions.find(regionName);
+                if (codeRegionIter == codeRegions.end()) {
+                  CodeRegion codeRegion;
+                  codeRegion.parentCalls = cc.second[j];
+                  if (j != 0) {
+                    codeRegion.parent = cc.first[j - 1];
+                  }
+                  if (j == cc.first.size() - 1) {
+                    codeRegion.functions.insert(fname);
+                  }
+                  codeRegions.emplace(regionName, codeRegion);
+                } else if (j == cc.first.size() - 1) {
+                  codeRegionIter->second.functions.insert(fname);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    result->calledFunctions = calledFunctions;
+    result->codeRegions = codeRegions;
     return result;
   }
 };

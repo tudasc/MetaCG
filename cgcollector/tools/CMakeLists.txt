@@ -18,6 +18,7 @@ add_config_include(cgmerge)
 add_json(cgmerge)
 
 add_collector_include(cgvalidate)
+add_collector_lib(cgvalidate)
 add_cube(cgvalidate)
 add_config_include(cgvalidate)
 add_json(cgvalidate)

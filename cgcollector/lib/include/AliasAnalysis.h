@@ -300,7 +300,7 @@ using CallInfoConstIterType = MapType<StringType, CallInfo>::const_iterator;
 struct EquivClassContainer {
   EquivClassContainer() = default;
 
-  ListType<EquivClass> EquivClasses;  // std::list for stable iterators
+  ListType<EquivClass> EquivClasses;            // std::list for stable iterators
 
   MapType<StringType, StringType> FunctionMap;  // Maps an equivalence class to a function name if it is one
   // map to keep element order consistent

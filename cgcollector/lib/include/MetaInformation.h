@@ -6,6 +6,9 @@
 #include <clang/AST/Expr.h>
 #include <iostream>
 #include <llvm/ADT/DenseMap.h>
+#include <set>
+#include <string>
+#include <vector>
 
 struct MetaInformation {
   virtual void applyOnJSON(nlohmann::json &json, const std::string &functionName, const std::string &metaFieldName,
@@ -182,4 +185,57 @@ struct GlobalLoopDepthResult final : public MetaInformation {
     return o->calledFunctions == calledFunctions;
   }
 };
+
+struct InlineResult final : public MetaInformation {
+  bool markedInline = false;
+  bool likelyInline = false;
+  bool markedAlwaysInline = false;
+  bool isTemplate = false;
+  void applyOnJSON(nlohmann::json &json, [[maybe_unused]] const std::string &functionName,
+                   const std::string &metaFieldName, int mcgFormatVersion) override {
+    if (mcgFormatVersion > 1) {
+      json["meta"][metaFieldName] = {{"markedInline", markedInline},
+                                     {"likelyInline", likelyInline},
+                                     {"isTemplate", isTemplate},
+                                     {"markedAlwaysInline", markedAlwaysInline}};
+    }
+  }
+  bool equals(MetaInformation *mi) override {
+    const auto o = static_cast<InlineResult *>(mi);
+    return o->markedInline == markedInline && o->likelyInline == likelyInline && o->isTemplate == isTemplate &&
+           o->markedAlwaysInline == markedAlwaysInline;
+  }
+};
+
+struct CodeRegion {
+  std::string parent;
+  std::set<std::string> functions;
+  double parentCalls;
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(CodeRegion, parent, functions, parentCalls)
+  bool operator==(const CodeRegion &rhs) const {
+    return parent == rhs.parent && functions == rhs.functions && parentCalls == rhs.parentCalls;
+  }
+};
+
+using CalledFunctionType = std::map<std::string, std::set<std::pair<double, std::string>>>;
+using CodeRegionsType = std::map<std::string, CodeRegion>;
+
+struct EstimateCallCountResult final : public MetaInformation {
+  // Maps the name of called function to the estimate of local calls to it and the regions in
+  // which they occur. the region name is empty if its directly in the function
+  CalledFunctionType calledFunctions;
+  CodeRegionsType codeRegions;
+  void applyOnJSON(nlohmann::json &json, [[maybe_unused]] const std::string &functionName,
+                   const std::string &metaFieldName, int mcgFormatVersion) override {
+    if (mcgFormatVersion > 1) {
+      json["meta"][metaFieldName]["calls"] = calledFunctions;
+      json["meta"][metaFieldName]["codeRegions"] = codeRegions;
+    }
+  }
+  bool equals(MetaInformation *mi) override {
+    const auto o = static_cast<EstimateCallCountResult *>(mi);
+    return o->calledFunctions == calledFunctions && o->codeRegions == codeRegions;
+  }
+};
+
 #endif /* ifndef CGCOLLECTOR_METAINFORMATION_H */
