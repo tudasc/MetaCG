@@ -67,7 +67,9 @@ for testNoInit in *.afl; do
 	echo "Running $testNo"
 	thisFail=0
 
-	bash "${testSuite}_run.sh" $buildDir $outDir $testNo 2>&1 >> "$logFile"
+  # We now overwrite logs with each execution. On error, the log is echo'ed inside
+  # this script.
+	bash "${testSuite}_run.sh" $buildDir $outDir $testNo 2>&1 > "$logFile"
 	#bash "${testSuite}_run.sh" $buildDir $outDir $testNo
 
 	if [ $? -ne 0 ]; then
@@ -84,6 +86,7 @@ for testNoInit in *.afl; do
 	if [ $thisFail -eq 1 ]; then
 		failStr=' FAIL'
     # In case of error, print the log file
+    echo ">>> ERROR OCCURRED -- Dumping log <<<"
     cat $logFile
 	else
 		failStr=' PASS'
@@ -102,7 +105,7 @@ for testNoInit in *.afl; do
 	echo "Running $testNo"
 	thisFail=0
 
-	bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo >> "$logFile" 2>&1
+	bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo > "$logFile" 2>&1
 	#bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo
 
 	if [ $? -ne 0 ]; then
@@ -119,6 +122,7 @@ for testNoInit in *.afl; do
 	if [ $thisFail -eq 1 ]; then
 		failStr=' FAIL'
     # in case of error, print the log file
+    echo ">>> ERROR OCCURRED -- Dumping log <<<"
     cat $logFile
 	else
 		failStr=' PASS'
@@ -138,7 +142,7 @@ for testNoInit in *.spl; do
 	echo "Running $testNo"
 	thisFail=0
 
-	bash "${testSuite}_run.sh" $buildDir $outDir $testNo "spl" 2>&1 >> "$logFile"
+	bash "${testSuite}_run.sh" $buildDir $outDir $testNo "spl" 2>&1 > "$logFile"
 	#bash "${testSuite}_run.sh" $buildDir $outDir $testNo
 
 	if [ $? -ne 0 ]; then
