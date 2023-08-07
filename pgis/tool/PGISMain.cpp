@@ -28,6 +28,7 @@
 
 #include "cxxopts.hpp"
 
+#include <filesystem>
 
 namespace pgis::options {
 
@@ -35,6 +36,7 @@ template <typename T>
 auto optType(T &obj) {
   return cxxopts::value<arg_t<decltype(obj)>>();
 }
+
 }  // namespace pgis::options
 
 using namespace pira;
@@ -85,15 +87,29 @@ bool stringEndsWith(const std::string &s, const std::string &suffix) {
   return s.size() >= suffix.size() && s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-template <typename Target, typename OptsT, typename ConfigT>
-void checkAndSet(const std::string id, const OptsT &opts, ConfigT &cfg) {
-  auto &gConfig = pgis::config::GlobalConfig::get();
-  if (opts.count(id)) {
-    cfg = opts[id].template as<Target>();
+/**
+ * Checks command line option for value, adds it to global config and returns the set value for local use.
+ */
+template <typename OptTy, typename ResTy>
+typename OptTy::type storeOpt(const OptTy &opt, const ResTy &res) {
+  using Ty = typename OptTy::type;
+  Ty tmp = res[opt.cliName].template as<Ty>();
+  pgis::config::GlobalConfig::get().putOption(opt.cliName, tmp);
+  return tmp;
+}
 
-    gConfig.putOption(id, cfg);
+/**
+ * Template only to use type deduction
+ */
+template <typename Opt>
+void setDebugLevel(const Opt &result) {
+  int printDebug = storeOpt(debugLevel, result);
+  if (printDebug == 1) {
+    spdlog::set_level(spdlog::level::debug);
+  } else if (printDebug == 2) {
+    spdlog::set_level(spdlog::level::trace);
   } else {
-    gConfig.putOption(id, opts[id].template as<Target>());
+    spdlog::set_level(spdlog::level::info);
   }
 }
 
@@ -106,6 +122,7 @@ int main(int argc, char **argv) {
     exit(pgis::TooFewProgramArguments);
   }
 
+  auto &gConfig = pgis::config::GlobalConfig::get();
   cxxopts::Options opts("PGIS", "Generating low-overhead instrumentation selections.");
 
   /* The marked options should go away for the PGIS release */
@@ -116,12 +133,12 @@ int main(int argc, char **argv) {
     (outBaseDir.cliName, "Base path to place instrumentation configuration", optType(outBaseDir)->default_value("out"))
     // from here: keep all
     (staticSelection.cliName, "Apply static selection", optType(staticSelection)->default_value("false"))
-    ("c,cube", "Cube file for dynamic instrumentation", cxxopts::value<std::string>()->default_value(""))
+    (cubeFilePath.cliName, "Cube file for dynamic instrumentation", optType(cubeFilePath)->default_value(""))
     ("h,help", "Show help", cxxopts::value<bool>()->default_value("false"))
     (extrapConfig.cliName, "File to read Extra-P info from", optType(extrapConfig)->default_value(""))
     (modelFilter.cliName, "Use Extra-P models to filter only.", optType(modelFilter)->default_value("false"))
     (runtimeOnly.cliName, "Do not use model, but multiple runtimes", optType(runtimeOnly)->default_value("false"))
-    ("a,all-threads","Show all Threads even if unused.", cxxopts::value<bool>()->default_value("false"))
+    //("a,all-threads","Show all Threads even if unused.", cxxopts::value<bool>()->default_value("false"))
     ("w, whitelist", "Filter nodes through given whitelist", cxxopts::value<std::string>()->default_value(""))
     (debugLevel.cliName, "Whether debug messages should be printed", optType(debugLevel)->default_value("0"))
     (scorepOut.cliName, "Write instrumentation file with Score-P syntax", optType(scorepOut)->default_value("false"))
@@ -139,15 +156,6 @@ int main(int argc, char **argv) {
   // clang-format on
 
   Config c;
-  bool applyStaticFilter{false};
-  bool applyModelFilter{false};
-  bool shouldExport{false};
-  bool useScorepFormat{false};
-  bool extrapRuntimeOnly{false};
-  bool enableLide{false};
-  bool keepNotReachable{false};
-  int printDebug{0};
-  DotExportSelection enableDotExport;
 
   auto result = opts.parse(argc, argv);
 
@@ -156,43 +164,45 @@ int main(int argc, char **argv) {
     return pgis::SUCCESS;
   }
 
-  /* Options - populated into global configPtr */
-  /* XXX These are currently only here for reference, while refactoring the options part of PGIS. */
-  // checkAndSet<std::string>("other", result, c.otherPath);
-  // checkAndSet<int>("samples", result, CgConfig::samplesPerSecond);
-  // checkAndSet<double>("ref", result, c.referenceRuntime);
-  // checkAndSet<bool>("mangled", result, c.useMangledNames);
-  // checkAndSet<int>("half", result, c.nanosPerHalfProbe);
-  // checkAndSet<bool>("tiny", result, c.tinyReport);
-  // checkAndSet<bool>("ignore-sampling", result, c.ignoreSamplingOv);
-  // checkAndSet<std::string>("samples-file", result, c.samplesFile);
-  // checkAndSet<bool>("greedy-unwind", result, c.greedyUnwind);
-  // checkAndSet<bool>("all-threads", result, c.showAllThreads);
-  // checkAndSet<std::string>("whitelist", result, c.whitelist);
+  /* Initialize the debug level */
+  setDebugLevel(result);
 
-  checkAndSet<std::string>(outBaseDir.cliName, result, c.outputFile);
-  checkAndSet<bool>(staticSelection.cliName, result, applyStaticFilter);
-  checkAndSet<bool>(modelFilter.cliName, result, applyModelFilter);
-  checkAndSet<bool>(runtimeOnly.cliName, result, extrapRuntimeOnly);
-  checkAndSet<int>(debugLevel.cliName, result, printDebug);
-  checkAndSet<bool>(ipcgExport.cliName, result, shouldExport);
-  checkAndSet<bool>(scorepOut.cliName, result, useScorepFormat);
-  checkAndSet<DotExportSelection>(dotExport.cliName, result, enableDotExport);
-  bool bDisposable;
-  checkAndSet<bool>(sortDotEdges.cliName, result, bDisposable);
-  std::string disposableStr;
-  checkAndSet<std::string>(extrapConfig.cliName, result, disposableStr);
-  checkAndSet<bool>(lideEnabled.cliName, result, enableLide);
-  checkAndSet<std::string>(parameterFileConfig.cliName, result, disposableStr);
+  /* Enable DOT export */
+  DotExportSelection enableDotExport;
+  storeOpt(dotExport, result);
+  storeOpt(sortDotEdges, result);
 
-  int mcgVersion;
-  checkAndSet<int>(metacgFormat.cliName, result, mcgVersion);
+  /* Enable static, aggregated statement filtering */
+  bool applyStaticFilter = storeOpt(staticSelection, result);
 
-  checkAndSet<bool>(useCallSiteInstrumentation.cliName, result, bDisposable);
+  /* Use Extra-P performance-model-based filtering or runtime-based only */
+  bool applyModelFilter = storeOpt(modelFilter, result);
+  bool extrapRuntimeOnly = storeOpt(runtimeOnly, result);
+  storeOpt(extrapConfig, result);
 
-  checkAndSet<bool>(keepUnreachable.cliName, result, keepNotReachable);
-  HeuristicSelection dispose_heuristic;
-  checkAndSet<HeuristicSelection>(heuristicSelection.cliName, result, dispose_heuristic);
+  /* Whether profiling info should be exported */
+  bool shouldExport = storeOpt(ipcgExport, result);
+
+  /* Whether Score-P output file format should be used */
+  bool useScorepFormat = storeOpt(scorepOut, result);
+  if (useScorepFormat) {
+    console->info("Setting Score-P Output Format");
+  }
+
+  /* Enable MPI Load-Imbalance detection */
+  bool enableLide = storeOpt(lideEnabled, result);
+  storeOpt(parameterFileConfig, result);
+
+  /* Which MetaCG file format version to use/expect */
+  int mcgVersion = storeOpt(metacgFormat, result);
+
+  /* Enable call-site instrumentation (TODO: Is the instrumentor functional?) */
+  storeOpt(useCallSiteInstrumentation, result);
+
+  /* Keep unreachable nodes in the call graph */
+  bool keepNotReachable = storeOpt(keepUnreachable, result);
+
+  HeuristicSelection dispose_heuristic = storeOpt(heuristicSelection, result);
 
   if (mcgVersion < 2 &&
       pgis::config::getSelectedHeuristic() != HeuristicSelection::HeuristicSelectionEnum::STATEMENTS) {
@@ -200,27 +210,24 @@ int main(int argc, char **argv) {
     exit(pgis::ErroneousHeuristicsConfiguration);
   }
 
-  CuttoffSelection dispose_cuttoff;
-  checkAndSet<CuttoffSelection>(cuttoffSelection.cliName, result, dispose_cuttoff);
+  CuttoffSelection dispose_cuttoff = storeOpt(cuttoffSelection, result);
 
-  if (printDebug == 1) {
-    spdlog::set_level(spdlog::level::debug);
-  } else if (printDebug == 2) {
-    spdlog::set_level(spdlog::level::trace);
-  } else {
-    spdlog::set_level(spdlog::level::info);
-  }
+  /* Where should the instrumentation configuration be written to */
+  c.outputFile = storeOpt(outBaseDir, result);
 
   // for static instrumentation
   std::string mcgFullPath(argv[argc - 1]);
+  // TODO: Use the filesystem STL functions for all of the path bits
+  std::filesystem::path p(argv[argc - 1]);
+  console->info("MetaCG file path given: {}", p.string());
+
   std::string mcgFilename = mcgFullPath.substr(mcgFullPath.find_last_of('/') + 1);
   c.appName = mcgFilename.substr(0, mcgFilename.find_last_of('.'));
 
   const auto parseExtrapArgs = [](auto argsRes) {
     if (argsRes.count("extrap")) {
       // Read in extra-p configuration
-      auto &gConfig = pgis::config::GlobalConfig::get();
-      auto filePath = gConfig.getAs<std::string>(extrapConfig.cliName);
+      auto filePath = pgis::config::GlobalConfig::get().getVal(extrapConfig);
       std::ifstream epFile(filePath);
       return extrapconnection::getExtrapConfigFromJSON(filePath);
     } else {
@@ -236,7 +243,7 @@ int main(int argc, char **argv) {
   cg.setExtrapConfig(parseExtrapArgs(result));
 
   /* To briefly inspect a CUBE profile for inclusive runtime of main */
-  if (result.count(cubeShowOnly.cliName)) {
+  if (storeOpt(cubeShowOnly, result)) {
     if (result.count("cube")) {
       // for dynamic instrumentation
       std::string filePath(result["cube"].as<std::string>());
@@ -256,13 +263,9 @@ int main(int argc, char **argv) {
     return pgis::SUCCESS;
   }
 
-  if (result.count("scorep-out")) {
-    console->info("Setting Score-P Output Format");
-  }
-
   if (stringEndsWith(mcgFullPath, ".ipcg") || stringEndsWith(mcgFullPath, ".mcg")) {
     metacg::io::FileSource fs(mcgFullPath);
-    if (::pgis::config::GlobalConfig::get().getAs<int>(metacgFormat.cliName) == 1) {
+    if (::pgis::config::GlobalConfig::get().getVal(metacgFormat) == 1) {
       metacg::io::VersionOneMetaCGReader mcgReader(fs);
       mcgReader.read(mcgm);
     } else if (mcgVersion == 2) {

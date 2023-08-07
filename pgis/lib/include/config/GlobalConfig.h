@@ -25,11 +25,18 @@ struct Opt {
   const std::string defaultValue;  // This is std::string to be easy compatible with cxxopts
 };
 
+template<typename To>
+To myCast(const std::string &val) {
+  std::istringstream ss {val};
+  To _t;
+  ss >> _t;
+  return _t;
+}
+
 using BoolOpt = Opt<bool>;
 using IntOpt = Opt<int>;
-using LongOpt = Opt<long>;
-using StringOpt = Opt<std::string>;
 using DoubleOpt = Opt<double>;
+using StringOpt = Opt<std::string>;
 
 class HeuristicSelection {
  public:
@@ -146,7 +153,6 @@ static const BoolOpt staticSelection{"static", "false"};
 static const BoolOpt modelFilter{"model-filter", "false"};
 static const BoolOpt scorepOut{"scorep-out", "false"};
 static const BoolOpt ipcgExport{"export", "false"};
-// static const BoolOpt dotExport{"dot-export", "false"};
 static const DotExportSelectionOpt dotExport{"dot-export", "none"};
 static const BoolOpt printUnwoundNames{"dump-unwound-names", "false"};
 static const BoolOpt useCallSiteInstrumentation{"use-cs-instrumentation", "false"};
@@ -156,6 +162,7 @@ static const IntOpt debugLevel{"debug", "0"};
 
 static const StringOpt extrapConfig{"extrap", ""};
 static const StringOpt outBaseDir{"out-dir", "out"};
+static const StringOpt cubeFilePath{"cube", ""};
 
 static const BoolOpt lideEnabled{"lide", "false"};
 
@@ -182,6 +189,10 @@ inline const std::string optKey(const T &obj) {
 }
 }  // namespace options
 namespace config {
+
+/**
+ * Class that holds all options as specified when PGIS is invoked
+ */
 class GlobalConfig {
  public:
   inline static GlobalConfig &get() {
@@ -189,6 +200,22 @@ class GlobalConfig {
     return instance;
   }
 
+  /**
+   * Return the stored value for the passed-in option
+   */
+  template <typename Ty>
+  typename Ty::type getVal(const Ty &opt) const {
+    using T = typename Ty::type;
+    auto o = getOption(opt.cliName);
+    if (o.has_value()) {
+      return std::any_cast<T>(o);
+    }
+    return pgis::options::myCast<typename Ty::type>(opt.defaultValue);
+  }
+
+  /**
+   * Return the stored value cast explicitly to ReTy
+   */
   template <typename ReTy>
   inline ReTy getAs(const std::string &optionName) const {
     auto opt = getOption(optionName);
@@ -198,6 +225,9 @@ class GlobalConfig {
     return ReTy();
   }
 
+  /**
+   * Return the stored std::any object for optionName
+   */
   inline std::any getOption(const std::string &optionName) const {
     try {
       auto opt = configOptions.at(optionName);
@@ -208,6 +238,9 @@ class GlobalConfig {
     }
   }
 
+  /**
+   * Store value for optionName
+   */
   template <typename ValType>
   bool putOption(const std::string &optionName, ValType &value) {
     auto exists = (configOptions.find(optionName) != configOptions.end());
