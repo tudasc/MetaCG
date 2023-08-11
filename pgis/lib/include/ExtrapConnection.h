@@ -94,7 +94,7 @@ void printConfig(ExtrapConfig &cfg);
 inline std::string demangle(std::string &input) {
   char *res;
   int st;
-  res = abi::__cxa_demangle(input.c_str(), 0, 0, &st);
+  res = abi::__cxa_demangle(input.c_str(), nullptr, nullptr, &st);
   if (st < 0) {
     return input;
   }

@@ -35,6 +35,14 @@ ParameterConfig::ParameterConfig() {
       this->liConfig = std::make_unique<LoadImbalance::LIConfig>();
       json.at(lideName).get_to<LoadImbalance::LIConfig>(*this->liConfig);
     }
+
+    // Overhead configuration
+    const std::string overheadName = "Overhead";
+    // Always init with default values
+    overheadConfig = std::make_unique<OverheadConfig>();
+    if (json.contains(overheadName)) {
+      json.at(overheadName).get_to<OverheadConfig>(*overheadConfig);
+    }
   } catch (nlohmann::json::exception &e) {
     spdlog::get("errconsole")->error("Unable to parse parameter configuration file: {}", e.what());
     exit(EXIT_FAILURE);

@@ -7,6 +7,7 @@
 #ifndef PGIS_PARAMETERCONFIG_H
 #define PGIS_PARAMETERCONFIG_H
 
+#include "OverheadConfig.h"
 #include "PiraIIConfig.h"
 #include "loadImbalance/LIConfig.h"
 #include <optional>
@@ -34,6 +35,7 @@ class ParameterConfig {
   // ====================================
   std::unique_ptr<PiraIIConfig> piraIIconfig = nullptr;
   std::unique_ptr<LoadImbalance::LIConfig> liConfig = nullptr;
+  std::unique_ptr<OverheadConfig> overheadConfig = nullptr;
   // ===================================
   // end of actual configuration objects
 
@@ -63,6 +65,12 @@ class ParameterConfig {
     assert(this->liConfig != nullptr &&
            "ParameterConfig.h: Tried to read analysis parameters for PIRA LIDe which have not been provided.");
     return this->liConfig;
+  }
+
+  std::unique_ptr<OverheadConfig> &getOverheadConfig() {
+    assert(this->overheadConfig != nullptr &&
+           "ParameterConfig.h: Tried to read analysis parameters for PIRA Overhead which have not been provided.");
+    return this->overheadConfig;
   }
 };
 }  // namespace pgis::config

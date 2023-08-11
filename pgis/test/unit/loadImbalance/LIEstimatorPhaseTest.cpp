@@ -7,9 +7,9 @@
 #include "gtest/gtest.h"
 
 #include "LoggerUtil.h"
-#include "PiraMCGProcessor.h"
 #include "MCGManager.h"
 #include "MetaData/PGISMetaData.h"
+#include "PiraMCGProcessor.h"
 #include "loadImbalance/LIEstimatorPhase.h"
 #include "loadImbalance/LIMetaData.h"
 #include <memory>
@@ -39,7 +39,7 @@ TEST_F(LIEstimatorPhaseTest, EmptyCG) {
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -61,7 +61,7 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -82,17 +82,17 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
   childNode1->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 0.2, 0.2, 2, 0);
 
   auto gc1 = mcgm.getCallgraph()->getOrInsertNode("gc1");
-  mcgm.getCallgraph()->addEdge(childNode1,gc1);
+  mcgm.getCallgraph()->addEdge(childNode1, gc1);
 
   // irrelevant and imbalanced
-  auto childNode2 = mcgm.getCallgraph()->getOrInsertNode("child2");\
+  auto childNode2 = mcgm.getCallgraph()->getOrInsertNode("child2");
   attachAllMetaDataToGraph(mcgm.getCallgraph());
   childNode2->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 0.0001, 0.001, 0, 0);
   childNode2->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 0.2, 0.2, 1, 0);
   childNode2->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 0.5, 0.5, 2, 0);
 
   auto gc2 = mcgm.getCallgraph()->getOrInsertNode("gc2");
-  mcgm.getCallgraph()->addEdge(childNode2,gc2);
+  mcgm.getCallgraph()->addEdge(childNode2, gc2);
 
   // relevant and balanced
   auto childNode3 = mcgm.getCallgraph()->getOrInsertNode("child3");
@@ -102,7 +102,7 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
   childNode3->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 5.0, 5.0, 2, 0);
 
   auto gc3 = mcgm.getCallgraph()->getOrInsertNode("gc3");
-  mcgm.getCallgraph()->addEdge(childNode3,gc3);
+  mcgm.getCallgraph()->addEdge(childNode3, gc3);
 
   // relevant and imbalanced
   auto childNode4 = mcgm.getCallgraph()->getOrInsertNode("child4");
@@ -112,7 +112,7 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
   childNode4->get<pira::BaseProfileData>()->setCallData(mainNode, 1, 10.0, 10.0, 2, 0);
 
   auto gc4 = mcgm.getCallgraph()->getOrInsertNode("gc4");
-  mcgm.getCallgraph()->addEdge(childNode4,gc4);
+  mcgm.getCallgraph()->addEdge(childNode4, gc4);
 
   auto gc5 = mcgm.getCallgraph()->getOrInsertNode("gc5");
   mcgm.getCallgraph()->addEdge(childNode4, gc5);
@@ -121,19 +121,18 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
   // no profiling data for child5
   attachAllMetaDataToGraph(mcgm.getCallgraph());
 
-
-  mcgm.getCallgraph()->addEdge(mainNode,childNode1);
-  mcgm.getCallgraph()->addEdge(mainNode,childNode2);
-  mcgm.getCallgraph()->addEdge(mainNode,childNode3);
-  mcgm.getCallgraph()->addEdge(mainNode,childNode4);
+  mcgm.getCallgraph()->addEdge(mainNode, childNode1);
+  mcgm.getCallgraph()->addEdge(mainNode, childNode2);
+  mcgm.getCallgraph()->addEdge(mainNode, childNode3);
+  mcgm.getCallgraph()->addEdge(mainNode, childNode4);
   childNode1->get<pira::PiraOneData>()->setComesFromCube();
   childNode2->get<pira::PiraOneData>()->setComesFromCube();
   childNode3->get<pira::PiraOneData>()->setComesFromCube();
   childNode4->get<pira::PiraOneData>()->setComesFromCube();
   childNode5->get<pira::PiraOneData>()->setComesFromCube();
 
-  for (const auto& elem : mcgm.getCallgraph()->getNodes()) {
-    const auto& n=elem.second.get();
+  for (const auto &elem : mcgm.getCallgraph()->getNodes()) {
+    const auto &n = elem.second.get();
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
 
@@ -170,7 +169,7 @@ TEST_F(LIEstimatorPhaseTest, Virtual) {
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
   ASSERT_TRUE(mcgm.getCallgraph()->isEmpty());
   cm.setConfig(&cfg);
@@ -193,12 +192,12 @@ TEST_F(LIEstimatorPhaseTest, Virtual) {
 
   auto grandgrandchild = mcgm.getCallgraph()->getOrInsertNode("grandgrandchild");
 
-  mcgm.getCallgraph()->addEdge(mainNode,child);
-  mcgm.getCallgraph()->addEdge(child,grandchild);
-  mcgm.getCallgraph()->addEdge(grandchild,grandgrandchild);
+  mcgm.getCallgraph()->addEdge(mainNode, child);
+  mcgm.getCallgraph()->addEdge(child, grandchild);
+  mcgm.getCallgraph()->addEdge(grandchild, grandgrandchild);
   attachAllMetaDataToGraph(mcgm.getCallgraph());
-  for (const auto& elem : mcgm.getCallgraph()->getNodes()) {
-    const auto& n=elem.second.get();
+  for (const auto &elem : mcgm.getCallgraph()->getNodes()) {
+    const auto &n = elem.second.get();
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
   cm.setCG(mcgm.getCallgraph());
@@ -220,13 +219,12 @@ TEST_F(LIEstimatorPhaseTest, Virtual) {
   ASSERT_EQ(pgis::isInstrumented(graph->getNode("grandgrandchild")), false);
 }
 
-
 TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
   Config cfg;
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -254,8 +252,8 @@ TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
   mcgm.getCallgraph()->addEdge(child2, grandchild);
 
   attachAllMetaDataToGraph(mcgm.getCallgraph());
-  for (const auto& elem : mcgm.getCallgraph()->getNodes()) {
-    const auto& n=elem.second.get();
+  for (const auto &elem : mcgm.getCallgraph()->getNodes()) {
+    const auto &n = elem.second.get();
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
 
@@ -289,7 +287,7 @@ TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -314,8 +312,8 @@ TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
   mcgm.getCallgraph()->addEdge(child1, grandchild);
   mcgm.getCallgraph()->addEdge(child2, grandchild);
   attachAllMetaDataToGraph(mcgm.getCallgraph());
-  for (const auto& elem : mcgm.getCallgraph()->getNodes()) {
-    const auto& n=elem.second.get();
+  for (const auto &elem : mcgm.getCallgraph()->getNodes()) {
+    const auto &n = elem.second.get();
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
 
@@ -349,7 +347,7 @@ TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
   auto &cm = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -370,7 +368,7 @@ TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
   auto child2 = mcgm.getCallgraph()->getOrInsertNode("child2");
   attachAllMetaDataToGraph(mcgm.getCallgraph());
   child2->get<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Visited);
-  //child1->addChildNode(child2);  // TODO: Necessary? Remove me!
+  // child1->addChildNode(child2);  // TODO: Necessary? Remove me!
   mcgm.getCallgraph()->addEdge(child1, child2);
 
   auto child3 = mcgm.getCallgraph()->getOrInsertNode("child3");

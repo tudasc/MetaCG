@@ -61,12 +61,11 @@ class HeuristicSelection {
     } else if (name == "global_loopdepth") {
       out.mode = HeuristicSelectionEnum::GlOBAL_LOOPDEPTH;
     } else {
-     metacg::MCGLogger::instance().getErrConsole()
-          ->error(
-              "Invalid input for heuristic selection\n"
-              "Valid values: statements, conditionalbranches, conditionalbranches_reverse, fp_and_mem_ops, loopdepth, "
-              "global_loopdepth\n"
-              "Default: statements");
+      metacg::MCGLogger::instance().getErrConsole()->error(
+          "Invalid input for heuristic selection\n"
+          "Valid values: statements, conditionalbranches, conditionalbranches_reverse, fp_and_mem_ops, loopdepth, "
+          "global_loopdepth\n"
+          "Default: statements");
       // is.setstate(is.rdstate() | std::ios::failbit);
       exit(-1);
       return is;
@@ -102,11 +101,10 @@ class CuttoffSelection {
     } else if (name == "unique_median") {
       out.mode = CuttoffSelectionEnum::UNIQUE_MEDIAN;
     } else {
-      metacg::MCGLogger::instance().getErrConsole()
-          ->error(
-              "Invalid input for cuttof selection\n"
-              "Valid values: max, median, unique_median\n"
-              "Default: unique_median");
+      metacg::MCGLogger::instance().getErrConsole()->error(
+          "Invalid input for cuttof selection\n"
+          "Valid values: max, median, unique_median\n"
+          "Default: unique_median");
       // is.setstate(is.rdstate() | std::ios::failbit);
       exit(-1);
       return is;
@@ -122,6 +120,39 @@ class CuttoffSelection {
   CuttoffSelectionEnum mode = CuttoffSelectionEnum::UNIQUE_MEDIAN;
 };
 using CuttoffSelectionOpt = Opt<CuttoffSelection>;
+
+class OverheadSelection {
+ public:
+  friend std::istream &operator>>(std::istream &is, OverheadSelection &out) {
+    std::string name;
+    is >> name;
+    if (name.empty()) {
+      return is;
+    }
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+    if (name == "none") {
+      out.mode = OverheadSelectionEnum::None;
+    } else if (name == "random") {
+      out.mode = OverheadSelectionEnum::Random;
+    } else if (name == "time_per_call") {
+      out.mode = OverheadSelectionEnum::TimePerCall;
+    } else if (name == "time_per_call_keep_small") {
+      out.mode = OverheadSelectionEnum::TimePerCallKeepSmall;
+    } else {
+      metacg::MCGLogger::instance().getErrConsole()->error(
+          "Invalid input for overhead algorithm selection\n"
+          "Valid values: none, random, time_per_call, time_per_call_keep_small\n"
+          "Default: none");
+      // The config parser seems to ignore errors
+      // is.setstate(is.rdstate() | std::ios::failbit);
+      exit(-1);
+    }
+    return is;
+  }
+  enum class OverheadSelectionEnum { None, Random, TimePerCall, TimePerCallKeepSmall };
+  OverheadSelectionEnum mode = OverheadSelectionEnum::None;
+};
+using OverheadSelectionOpt = Opt<OverheadSelection>;
 
 class DotExportSelection {
  public:
@@ -156,6 +187,9 @@ static const BoolOpt ipcgExport{"export", "false"};
 static const DotExportSelectionOpt dotExport{"dot-export", "none"};
 static const BoolOpt printUnwoundNames{"dump-unwound-names", "false"};
 static const BoolOpt useCallSiteInstrumentation{"use-cs-instrumentation", "false"};
+
+// TODO: Currently only implemented for the fill and overhead pass
+static const BoolOpt onlyInstrumentEligibleNodes{"only-instrument-eligible-nodes", "false"};
 static const BoolOpt cubeShowOnly{"cube-show-only", "false"};
 
 static const IntOpt debugLevel{"debug", "0"};
@@ -170,9 +204,16 @@ static const StringOpt parameterFileConfig{"parameter-file", ""};
 
 static const IntOpt metacgFormat{"metacg-format", "1"};
 
+// "0" means no consideration of Overhead
+static const IntOpt targetOverhead{"target-overhead", "0"};
+static const IntOpt prevOverhead{"prev-overhead", "0"};
+
 static const HeuristicSelectionOpt heuristicSelection{"heuristic-selection", "statements"};
 static const CuttoffSelectionOpt cuttoffSelection{"cuttoff-selection", "unique_median"};
 static const BoolOpt keepUnreachable{"keep-unreachable", "false"};
+static const BoolOpt fillGaps{"fill-gaps", "false"};
+
+static const OverheadSelectionOpt overheadSelection{"overhead-selection", "none"};
 
 static const BoolOpt sortDotEdges{"sort-dot-edges", "true"};
 
@@ -268,6 +309,12 @@ inline options::HeuristicSelection::HeuristicSelectionEnum getSelectedHeuristic(
   const auto &gConfig = pgis::config::GlobalConfig::get();
   const auto heuristicMode = gConfig.getAs<options::HeuristicSelection>(pgis::options::heuristicSelection.cliName).mode;
   return heuristicMode;
+}
+
+inline options::OverheadSelection::OverheadSelectionEnum getSelectedOverheadAlgorithm() {
+  const auto &gConfig = pgis::config::GlobalConfig::get();
+  const auto overheadMode = gConfig.getAs<options::OverheadSelection>(pgis::options::overheadSelection.cliName).mode;
+  return overheadMode;
 }
 
 }  // namespace config

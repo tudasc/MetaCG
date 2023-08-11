@@ -86,6 +86,12 @@ CgNodeRawPtrUSet allNodesToMain(metacg::CgNode *startNode, metacg::CgNode *mainN
 CgNodeRawPtrUSet getDescendants(metacg::CgNode *child, const metacg::Callgraph *const graph);
 CgNodeRawPtrUSet getAncestors(metacg::CgNode *child, const metacg::Callgraph *const graph);
 
+/**
+ *
+ * @param cg
+ * @param useLongAsRef If TRUE use half second biggest runtime, else median
+ * @return
+ */
 double calcRuntimeThreshold(const metacg::Callgraph &cg, bool useLongAsRef);
 
 inline CgNodeRawPtrUSet setIntersect(const CgNodeRawPtrUSet &a, const CgNodeRawPtrUSet &b) {
@@ -109,6 +115,16 @@ inline bool isSubsetOf(const CgNodeRawPtrUSet &smallSet, const CgNodeRawPtrUSet 
 }
 
 inline bool intersects(const CgNodeRawPtrUSet &a, const CgNodeRawPtrUSet &b) { return !setIntersect(a, b).empty(); }
+
+/**
+ *
+ * @param graph
+ * @param node
+ * @param calledFunctionName
+ * @return Estimation of how often `node` calls `calledFunctionName` per invocation
+ */
+double getEstimatedCallsFromNode(metacg::Callgraph *graph, metacg::CgNode *node, const std::string &calledFunctionName);
+
 }  // namespace CgHelper
 
 namespace pgis {

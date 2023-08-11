@@ -13,7 +13,7 @@ using namespace LoadImbalance;
 OnlyMainEstimatorPhase::OnlyMainEstimatorPhase(Callgraph *callgraph)
     : EstimatorPhase("OnlyMainEstimatorPhase", callgraph) {}
 
-void OnlyMainEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
-//  mainMethod->setState(CgNodeState::INSTRUMENT_WITNESS);
+void OnlyMainEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
+  //  mainMethod->setState(CgNodeState::INSTRUMENT_WITNESS);
   pgis::instrumentNode(mainMethod);
 }

@@ -1,8 +1,8 @@
 /**
-* File: LegacyMCGReader.h
-* License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: LegacyMCGReader.h
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #ifndef METACG_PGIS_INCLUDE_LEGACYMCGREADER_H
 #define METACG_PGIS_INCLUDE_LEGACYMCGREADER_H
@@ -23,6 +23,6 @@ class VersionOneMetaCGReader : public MetaCGReader {
  private:
   void addNumStmts(metacg::graph::MCGManager &cgm);
 };
-}
+}  // namespace metacg::io
 
 #endif

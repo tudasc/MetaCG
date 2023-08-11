@@ -17,7 +17,7 @@ class OnlyMainEstimatorPhase : public EstimatorPhase {
  public:
   OnlyMainEstimatorPhase(metacg::Callgraph *callgraph);
 
-  void modifyGraph(metacg::CgNode* mainMethod) override;
+  void modifyGraph(metacg::CgNode *mainMethod) override;
 };
 }  // namespace LoadImbalance
 
