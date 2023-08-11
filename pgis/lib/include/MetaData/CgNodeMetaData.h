@@ -10,6 +10,7 @@
 // clang-format off
 // Graph library
 #include "CgNodePtr.h"
+#include "CgNode.h"
 #include "Utility.h"
 #include "MetaData.h"
 #include "LoggerUtil.h"
@@ -19,6 +20,9 @@
 #include "config/GlobalConfig.h"
 
 #include "CgLocation.h"
+
+#include <string>
+#include <map>
 
 #include "nlohmann/json.hpp"
 
@@ -63,7 +67,6 @@ class BaseProfileData : public metacg::MetaData::Registrar<BaseProfileData> {
   void setCallData(metacg::CgNode *parentNode, unsigned long long calls, double timeInSeconds,
                    double inclusiveTimeInSeconds, int threadId, int procId) {
     callFrom[parentNode] += calls;
-    timeFrom[parentNode] += timeInSeconds;
     this->timeInSeconds += timeInSeconds;
     this->inclTimeInSeconds += inclusiveTimeInSeconds;
     this->threadId = threadId;
@@ -83,11 +86,16 @@ class BaseProfileData : public metacg::MetaData::Registrar<BaseProfileData> {
     this->timeInSeconds += runtime;
   }
 
-  double getRuntimeInSecondsForParent(metacg::CgNode *parent) { return this->timeFrom[parent]; }
-
   void setInclusiveRuntimeInSeconds(double newInclusiveTimeInSeconds) {
-    this->inclTimeInSeconds = newInclusiveTimeInSeconds;
+    assert(inclTimeInSeconds == 0 && "You probably don't want to overwrite the incl runtime");
+    inclTimeInSeconds = newInclusiveTimeInSeconds;
   }
+
+  void addInclusiveRuntimeInSeconds(double newInclusiveTimeInSeconds) {
+    assert(newInclusiveTimeInSeconds >= 0);
+    inclTimeInSeconds += newInclusiveTimeInSeconds;
+  }
+
   double getInclusiveRuntimeInSeconds() const { return this->inclTimeInSeconds; }
   unsigned long long getNumberOfCallsWithCurrentEdges() const {
     auto v = 0ull;
@@ -97,12 +105,17 @@ class BaseProfileData : public metacg::MetaData::Registrar<BaseProfileData> {
     return v;
   }
 
-  void addInclusiveRuntimeInSeconds(double newInclusiveTimeInSeconds) {
-    assert(newInclusiveTimeInSeconds >= 0);
-    this->inclTimeInSeconds += newInclusiveTimeInSeconds;
+  std::map<std::string, unsigned long long> getCallsFromParents() const {
+    std::map<std::string, unsigned long long> result;
+    for (const auto &p : callFrom) {
+      if (p.first) {
+        result[p.first->getFunctionName()] = p.second;
+      }
+    }
+    return result;
   }
 
-  unsigned long long getNumberOfCalls(metacg::CgNode *parentNode) { return callFrom[parentNode]; }
+  void addNumberOfCallsFrom(metacg::CgNode *parentNode, unsigned long long calls) { callFrom[parentNode] += calls; }
 
   const std::vector<CgLocation> &getCgLocation() const { return cgLoc; }
 
@@ -115,7 +128,6 @@ class BaseProfileData : public metacg::MetaData::Registrar<BaseProfileData> {
   int threadId{0};
   int processId{0};
   std::unordered_map<metacg::CgNode *, unsigned long long> callFrom;
-  std::unordered_map<metacg::CgNode *, double> timeFrom;
   std::vector<CgLocation> cgLoc;
 };
 
@@ -321,9 +333,7 @@ class NumConditionalBranchMetaData : public metacg::MetaData::Registrar<NumCondi
     numConditionalBranches = numberOfConditionalBranches;
   }
 
-  nlohmann::json to_json() const final {
-    return numConditionalBranches;
-  };
+  nlohmann::json to_json() const final { return numConditionalBranches; };
 
   virtual const char *getKey() const final { return key; }
 
@@ -378,9 +388,7 @@ class LoopDepthMetaData : public metacg::MetaData::Registrar<LoopDepthMetaData> 
     loopDepth = j.get<int>();
   }
 
-  nlohmann::json to_json() const final {
-    return loopDepth;
-  };
+  nlohmann::json to_json() const final { return loopDepth; };
 
   virtual const char *getKey() const final { return key; }
 
@@ -399,13 +407,199 @@ class GlobalLoopDepthMetaData : public metacg::MetaData::Registrar<GlobalLoopDep
     }
     globalLoopDepth = j.get<int>();
   }
-  nlohmann::json to_json() const final {
-    return globalLoopDepth;
-  };
+  nlohmann::json to_json() const final { return globalLoopDepth; };
 
   virtual const char *getKey() const final { return key; }
 
   int globalLoopDepth{0};
+};
+
+class InlineMetaData : public metacg::MetaData::Registrar<InlineMetaData> {
+ public:
+  static constexpr const char *key = "inlineInfo";
+  virtual const char *getKey() const final { return key; }
+  InlineMetaData() = default;
+  explicit InlineMetaData(const nlohmann::json &j) {
+    if (j.is_null()) {
+      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
+    }
+    markedInline = j["markedInline"].get<bool>();
+    likelyInline = j["likelyInline"].get<bool>();
+    isTemplate = j["isTemplate"].get<bool>();
+    markedAlwaysInline = j["markedAlwaysInline"].get<bool>();
+  }
+
+  nlohmann::json to_json() const final {
+    nlohmann::json j;
+    j["markedInline"] = markedInline;
+    j["likelyInline"] = likelyInline;
+    j["isTemplate"] = isTemplate;
+    j["markedAlwaysInline"] = markedAlwaysInline;
+    return j;
+  }
+
+  bool markedInline{false};
+  bool likelyInline{false};
+  bool markedAlwaysInline{false};
+  bool isTemplate{false};
+};
+
+// COPIED FROM cgcollector/lib/include/MetaInformation.h  Needs to be kept in sync
+struct CodeRegion {
+  std::string parent;
+  std::set<std::string> functions;
+  double parentCalls;
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(CodeRegion, parent, functions, parentCalls)
+};
+
+using CalledFunctionType = std::map<std::string, std::set<std::pair<double, std::string>>>;
+using CodeRegionsType = std::map<std::string, CodeRegion>;
+
+class CallCountEstimationMetaData : public metacg::MetaData::Registrar<CallCountEstimationMetaData> {
+ public:
+  static constexpr const char *key = "estimateCallCount";
+  virtual const char *getKey() const final { return key; }
+  CallCountEstimationMetaData() = default;
+  explicit CallCountEstimationMetaData(const nlohmann::json &j) {
+    if (j.is_null()) {
+      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
+    }
+    calledFunctions = j["calls"].get<pira::CalledFunctionType>();
+    codeRegions = j["codeRegions"].get<pira::CodeRegionsType>();
+  }
+
+  nlohmann::json to_json() const final {
+    nlohmann::json j;
+    j["calls"] = calledFunctions;
+    j["codeRegions"] = codeRegions;
+    return j;
+  }
+
+  CalledFunctionType
+      calledFunctions;  // Maps the name of called function to the estimate of local calls to it and the regions in
+                        // which they occur. the region name is empty if its directly in the function
+  CodeRegionsType codeRegions;
+};
+
+struct InstumentationInfo {
+  inline bool operator<(const InstumentationInfo &rhs) const {
+    return std::tie(infoPerCall, inclusiveStmtCount, exclusiveStmtCount, callsFromParents) <
+           std::tie(rhs.infoPerCall, rhs.inclusiveStmtCount, rhs.exclusiveStmtCount, rhs.callsFromParents);
+  };
+  double callsFromParents;
+  unsigned long inclusiveStmtCount;
+  unsigned long exclusiveStmtCount;
+  double infoPerCall;
+  bool Init = false;  // Ignored for comparisons
+  InstumentationInfo(double callsFromParents, unsigned long inclusiveStmtCount, unsigned long exclusiveStmtCount) {
+    this->callsFromParents = callsFromParents;
+    this->exclusiveStmtCount = exclusiveStmtCount;
+    this->inclusiveStmtCount = inclusiveStmtCount;
+    this->infoPerCall = inclusiveStmtCount / callsFromParents;
+    this->Init = true;
+  };
+  InstumentationInfo() = default;
+  bool operator==(const InstumentationInfo &rhs) const {
+    return std::tie(callsFromParents, inclusiveStmtCount, exclusiveStmtCount, infoPerCall) ==
+           std::tie(rhs.callsFromParents, rhs.inclusiveStmtCount, rhs.exclusiveStmtCount, rhs.infoPerCall);
+  }
+};
+
+/**
+ * This is just for temporay data and does not get serialized
+ */
+class TemporaryInstrumentationDecisionMetadata
+    : public metacg::MetaData::Registrar<TemporaryInstrumentationDecisionMetadata> {
+ public:
+  static constexpr const char *key = "TemporaryInstrumentationDecisionMetadata";
+  virtual const char *getKey() const final { return key; }
+  TemporaryInstrumentationDecisionMetadata() = default;
+  explicit TemporaryInstrumentationDecisionMetadata(const nlohmann::json &j) {
+    (void)j;
+    // This is just temporary data
+  }
+  nlohmann::json to_json() const final { return {}; }
+  InstumentationInfo info;
+  bool isKicked = false;
+  bool parentHasHighExclusiveRuntime = false;
+};
+
+/**
+ * Class holding instrumentation results, i.e. cube information after running the instrumented binary
+ */
+class InstrumentationResultMetaData : public metacg::MetaData::Registrar<InstrumentationResultMetaData> {
+ public:
+  static constexpr const char *key = "instrumentationResult";
+  virtual const char *getKey() const final { return key; }
+
+  InstrumentationResultMetaData() = default;
+  explicit InstrumentationResultMetaData(const nlohmann::json &j) {
+    if (j.is_null()) {
+      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
+    }
+    callCount = j["calls"];
+    runtime = j["runtime"];
+    timePerCall = j["timePerCall"];
+    isExclusiveRuntime = j["exclusive"];
+    inclusiveRunTimeCube = j["inclusiveRuntimeCube"];
+    inclusiveTimePerCallCube = j["inclusiveTimePerCallCube"];
+    inclusiveRunTimeSum = j["inclusiveRuntimeSum"];
+    inclusiveTimePerCallSum = j["inclusiveTimePerCallSum"];
+    shouldBeInstrumented = j["shouldBeInstrumented"];
+    callsFromParents = j["callsFromParents"];
+  }
+
+  nlohmann::json to_json() const final {
+    nlohmann::json j;
+    j["calls"] = callCount;
+    j["runtime"] = runtime;
+    j["timePerCall"] = timePerCall;
+    j["exclusive"] = isExclusiveRuntime;
+    j["inclusiveRuntimeCube"] = inclusiveRunTimeCube;
+    j["inclusiveTimePerCallCube"] = inclusiveTimePerCallCube;
+    j["inclusiveRuntimeSum"] = inclusiveRunTimeSum;
+    j["inclusiveTimePerCallSum"] = inclusiveTimePerCallSum;
+    j["shouldBeInstrumented"] = shouldBeInstrumented;
+    j["callsFromParents"] = callsFromParents;
+    return j;
+  }
+
+  unsigned long long callCount{0};
+  std::map<std::string, unsigned long long> callsFromParents;
+  /**
+   * The runtime of just the node. May be inclusive of other nodes depending on if they are instrumented or not
+   */
+  double runtime{0};
+  /**
+   * based on runtime
+   */
+  double timePerCall{0};
+  /**
+   * The inclusive runtime of the node based on cube info. This can be lower than the runtime of a child if the child
+   * gets called by other functions too
+   */
+  double inclusiveRunTimeCube{0};
+  /**
+   * based on inclusiveRunTimeCube
+   */
+  double inclusiveTimePerCallCube{0};
+  /**
+   * The inclusive runtime of the node based on summing the runtime of all its childs and itself
+   */
+  double inclusiveRunTimeSum{0};
+  /**
+   * based on inclusiveRunTimeSum
+   */
+  double inclusiveTimePerCallSum{0};
+  /**
+   * True if all childs are instrumented
+   */
+  bool isExclusiveRuntime{false};
+
+  /**
+   * True if the node should be instrumented. Used to detect nodes with zero calls
+   */
+  bool shouldBeInstrumented{false};
 };
 
 }  // namespace pira

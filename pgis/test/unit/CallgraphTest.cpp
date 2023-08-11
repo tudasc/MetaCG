@@ -29,7 +29,7 @@ TEST_F(CallgraphTest, OnlyMainCG) {
   Callgraph c;
   ASSERT_TRUE(c.isEmpty());
   ASSERT_EQ(nullptr, c.getMain());
-  auto n=c.insert( "main");
+  auto n = c.insert("main");
   ASSERT_FALSE(c.isEmpty());
   ASSERT_EQ(n, c.getMain()->getId());
   ASSERT_EQ(n, c.getNode("main")->getId());
@@ -55,7 +55,7 @@ TEST_F(CallgraphTest, TwoNodeConnectedCG) {
   Callgraph c;
   auto main = c.insert("main");
   auto child = c.insert("child");
-  c.addEdge(main,child);
+  c.addEdge(main, child);
   ASSERT_EQ(2, c.size());
   ASSERT_EQ(true, c.hasNode("main"));
   ASSERT_EQ(true, c.hasNode("child"));
@@ -71,20 +71,20 @@ TEST_F(CallgraphTest, HasNodeGetLastSearchedTest) {
   ASSERT_EQ(nullptr, c.getLastSearchedNode());
   c.hasNode("child");
   ASSERT_NE(nullptr, c.getLastSearchedNode());
-  ASSERT_EQ(c.getLastSearchedNode()->getFunctionName(),"child");
+  ASSERT_EQ(c.getLastSearchedNode()->getFunctionName(), "child");
 }
 
 TEST_F(CallgraphTest, InsertTwiceTest) {
   Callgraph c;
-  auto node1 =  c.insert("node");
+  auto node1 = c.insert("node");
   ASSERT_EQ(1, c.size());
 }
 
 TEST_F(CallgraphTest, SearchNodes) {
   Callgraph c;
-  auto node =  c.insert("node1");
-  auto node2 =  c.insert("node2");
-  c.addEdge(node,node2);
+  auto node = c.insert("node1");
+  auto node2 = c.insert("node2");
+  c.addEdge(node, node2);
   ASSERT_EQ(nullptr, c.getMain());
   ASSERT_EQ(false, c.hasNode("main"));
   ASSERT_EQ(false, c.hasNode("nodeee"));

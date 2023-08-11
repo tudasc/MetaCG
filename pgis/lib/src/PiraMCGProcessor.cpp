@@ -4,13 +4,13 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "ErrorCodes.h"
 #include "PiraMCGProcessor.h"
+#include "DotIO.h"
+#include "ErrorCodes.h"
+#include "ExtrapConnection.h"
 #include "Timing.h"
 #include "config/GlobalConfig.h"
 #include "config/ParameterConfig.h"
-#include "DotIO.h"
-#include "ExtrapConnection.h"
 
 #include "EXTRAP_Model.hpp"
 
@@ -18,6 +18,7 @@
 
 #include "spdlog/spdlog.h"
 
+#include <climits>
 #include <iomanip>  //  std::setw()
 
 using namespace metacg;
@@ -103,8 +104,8 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
 int metacg::pgis::PiraMCGProcessor::getNumProcs() {
   int numProcs = 1;
   int prevNum = 0;
-  for (const auto& elem : graph->getNodes()) {
-    const auto& node= elem.second.get();
+  for (const auto &elem : graph->getNodes()) {
+    const auto &node = elem.second.get();
     if (!node->get<BaseProfileData>()->getCgLocation().empty()) {
       for (CgLocation cgLoc : node->get<BaseProfileData>()->getCgLocation()) {
         if (cgLoc.getProcId() != prevNum) {
@@ -153,13 +154,21 @@ void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(InstrumentationConfig
     return;
   }
 
-  std::string filename = configPtr->outputFile + "/instrumented-" + configPtr->appName + "-" + IC.phaseName + ".txt";
-  std::size_t found = filename.find(configPtr->outputFile + "/instrumented-" + configPtr->appName + "-" + "Incl");
-  if (found != std::string::npos) {
-    filename = configPtr->outputFile + "/instrumented-" + configPtr->appName + ".txt";
+  //  std::string filename =
+  //      configPtr->outputFile + "/instrumented-" + configPtr->appName + "-" + IC.phaseName + ".txt";
+  //  std::size_t found = filename.find(configPtr->outputFile + "/instrumented-" + configPtr->appName + "-" + "Incl");
+  //  if (found != std::string::npos) {
+  //    filename = configPtr->outputFile + "/instrumented-" + configPtr->appName + ".txt";
+  //  }
+  std::string filename = configPtr->outputFile + "/instrumented-" + configPtr->appName + ".txt";
+  char buff[PATH_MAX];
+  const auto ret = getcwd(buff, PATH_MAX);
+  if (ret == nullptr) {
+    spdlog::get("errconsole")->error("Cannot get current working directory");
+    exit(::pgis::ErrorCode::CouldNotGetCWD);
   }
-  filename = configPtr->outputFile + "/instrumented-" + configPtr->appName + ".txt";
-  spdlog::get("console")->info("Writing to {}", filename);
+  std::string curCwd(buff);
+  spdlog::get("console")->info("Writing to {}. Current cwd {}", filename, curCwd);
   std::ofstream outfile(filename, std::ofstream::out);
 
   // The simple whitelist used so far in PIRA
@@ -198,12 +207,17 @@ void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(InstrumentationConfig
   }
 }
 
-Callgraph* metacg::pgis::PiraMCGProcessor::getCallgraph(PiraMCGProcessor *cg) { if (cg) { return cg->graph; } return graph; }
+Callgraph *metacg::pgis::PiraMCGProcessor::getCallgraph(PiraMCGProcessor *cg) {
+  if (cg) {
+    return cg->graph;
+  }
+  return graph;
+}
 
 void metacg::pgis::PiraMCGProcessor::attachExtrapModels() {
   epModelProvider.buildModels();
   for (const auto &elem : graph->getNodes()) {
-    const auto& n=elem.second.get();
+    const auto &n = elem.second.get();
     spdlog::get("console")->debug("Attaching models for {}", n->getFunctionName());
     auto ptd = n->getOrCreateMD<PiraTwoData>(epModelProvider.getModelFor(n->getFunctionName()));
     if (!ptd->getExtrapModelConnector().hasModels()) {

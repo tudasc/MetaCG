@@ -8,22 +8,21 @@
 #include "config/ParameterConfig.h"
 
 #include "CubeReader.h"
-#include "DotReader.h"
-#include "LoggerUtil.h"
-#include "MCGReader.h"
-#include "MCGWriter.h"
-
 #include "DotIO.h"
+#include "DotReader.h"
 #include "ErrorCodes.h"
 #include "ExtrapEstimatorPhase.h"
 #include "IPCGEstimatorPhase.h"
 #include "LegacyMCGReader.h"
+#include "LoggerUtil.h"
+#include "MCGReader.h"
+#include "MCGWriter.h"
+#include "MetaData/PGISMetaData.h"
 #include "PiraMCGProcessor.h"
 #include <loadImbalance/LIEstimatorPhase.h>
 #include <loadImbalance/LIMetaData.h>
 #include <loadImbalance/OnlyMainEstimatorPhase.h>
 
-#include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
 
 #include "cxxopts.hpp"
@@ -43,24 +42,25 @@ using namespace pira;
 using namespace ::pgis::options;
 
 void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &cg, Config *c, bool isIPCG, float runtimeThreshold,
-                             bool keepNotReachable) {
-  auto statEstimator = new StatisticsEstimatorPhase(false,cg.getCallgraph());
+                             bool keepNotReachable, bool fillInstrumentationGaps) {
+  auto statEstimator = new StatisticsEstimatorPhase(false, cg.getCallgraph());
   if (!keepNotReachable) {
-    cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(cg.getCallgraph(),true, false));  // remove unrelated
+    cg.registerEstimatorPhase(
+        new RemoveUnrelatedNodesEstimatorPhase(cg.getCallgraph(), true, false));  // remove unrelated
   }
   cg.registerEstimatorPhase(statEstimator);
 
   // Actually do the selection
   if (!isIPCG) {
     metacg::MCGLogger::instance().getConsole()->info("New runtime threshold for profiling: ${}$", runtimeThreshold);
-    cg.registerEstimatorPhase(new RuntimeEstimatorPhase(cg.getCallgraph(),runtimeThreshold));
+    cg.registerEstimatorPhase(new RuntimeEstimatorPhase(cg.getCallgraph(), runtimeThreshold));
   } else {
     HeuristicSelection::HeuristicSelectionEnum heuristicMode = pgis::config::getSelectedHeuristic();
     switch (heuristicMode) {
       case HeuristicSelection::HeuristicSelectionEnum::STATEMENTS: {
         const int nStmt = 2000;
         metacg::MCGLogger::instance().getConsole()->info("New runtime threshold for profiling: ${}$", nStmt);
-        cg.registerEstimatorPhase(new StatementCountEstimatorPhase(nStmt,   cg.getCallgraph(), true, statEstimator));
+        cg.registerEstimatorPhase(new StatementCountEstimatorPhase(nStmt, cg.getCallgraph(), true, statEstimator));
       } break;
       case HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES:
         cg.registerEstimatorPhase(new ConditionalBranchesEstimatorPhase(0, cg.getCallgraph(), statEstimator));
@@ -79,8 +79,11 @@ void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &cg, Config *c, bool
         break;
     }
   }
-
+  if (fillInstrumentationGaps) {
+    cg.registerEstimatorPhase(new FillInstrumentationGapsPhase(cg.getCallgraph()));
+  }
   cg.registerEstimatorPhase(new StatisticsEstimatorPhase(true, cg.getCallgraph()));
+  cg.registerEstimatorPhase(new StoreInstrumentationDecisionsPhase(cg.getCallgraph()));
 }
 
 bool stringEndsWith(const std::string &s, const std::string &suffix) {
@@ -146,12 +149,17 @@ int main(int argc, char **argv) {
     (parameterFileConfig.cliName, "File path to configuration file containing analysis parameters", optType(parameterFileConfig)->default_value(""))
     (lideEnabled.cliName, "Enable load imbalance detection (PIRA LIDe)", optType(lideEnabled)->default_value("false"))
     (metacgFormat.cliName, "Selects the MetaCG format to expect", optType(metacgFormat)->default_value("1"))
+    (targetOverhead.cliName, "The target overhead in percent * 10 (>1000)", optType(targetOverhead)->default_value(targetOverhead.defaultValue))
+    (prevOverhead.cliName, "The previous overhead in percent * 10 (>1000)", optType(prevOverhead)->default_value(prevOverhead.defaultValue))
     (dotExport.cliName, "Export call-graph as dot-file after every phase.", optType(dotExport)->default_value(dotExport.defaultValue))
     (cubeShowOnly.cliName, "Print inclusive time for main", optType(cubeShowOnly)->default_value("false"))
     (useCallSiteInstrumentation.cliName, "Enable experimental call-site instrumentation", optType(useCallSiteInstrumentation)->default_value("false"))
+    (onlyInstrumentEligibleNodes.cliName, "Only select nodes for instrumentation that can be instrumented", optType(onlyInstrumentEligibleNodes)->default_value(onlyInstrumentEligibleNodes.defaultValue))
     (heuristicSelection.cliName, "Select the heuristic to use for node selection", optType(heuristicSelection)->default_value(heuristicSelection.defaultValue))
     (cuttoffSelection.cliName, "Select the algorithm to determine the cutoff for node selection", optType(cuttoffSelection)->default_value(cuttoffSelection.defaultValue))
     (keepUnreachable.cliName, "Also consider functions which seem to be unreachable from main", optType(keepUnreachable)->default_value("false"))
+    (fillGaps.cliName, "Fills gaps in the cg of instrumented functions", optType(fillGaps)->default_value(fillGaps.defaultValue))
+    (overheadSelection.cliName, "Algorithm to deal with to high overheads", optType(overheadSelection)->default_value(overheadSelection.defaultValue))
     (sortDotEdges.cliName, "Sort edges in DOT graph lexicographically", optType(sortDotEdges)->default_value(sortDotEdges.defaultValue));
   // clang-format on
 
@@ -193,24 +201,42 @@ int main(int argc, char **argv) {
   bool enableLide = storeOpt(lideEnabled, result);
   storeOpt(parameterFileConfig, result);
 
+  /* Whether gaps in the instrumentation should be filled by a separate pass */
+  bool fillInstrumentationGaps = storeOpt(fillGaps, result);
+
   /* Which MetaCG file format version to use/expect */
   int mcgVersion = storeOpt(metacgFormat, result);
 
   /* Enable call-site instrumentation (TODO: Is the instrumentor functional?) */
   storeOpt(useCallSiteInstrumentation, result);
 
+  /* Only select nodes for instrumentation that can actually be instrumented */
+  storeOpt(onlyInstrumentEligibleNodes, result);
+
   /* Keep unreachable nodes in the call graph */
   bool keepNotReachable = storeOpt(keepUnreachable, result);
 
-  HeuristicSelection dispose_heuristic = storeOpt(heuristicSelection, result);
+  /* Select algorithms to use in the static selection */
+  storeOpt(heuristicSelection, result);
+  storeOpt(cuttoffSelection, result);
+
+  /* Select targeted overhead */
+  int targetOverheadArg = storeOpt(targetOverhead, result);
+  int prevOverheadArg = storeOpt(prevOverhead, result);
+  if ((prevOverheadArg != 0 || targetOverheadArg != 0) && targetOverheadArg < 1000) {
+    errconsole->error("Target overhead in percent must greater than 100%");
+    exit(pgis::ErroneousOverheadConfiguration);
+  }
+  OverheadSelection overheadMode = storeOpt(overheadSelection, result);
+  if (targetOverheadArg != 0 && overheadMode.mode == OverheadSelection::OverheadSelectionEnum::None) {
+    errconsole->warn("Overhead mode is none but target overhead is specified");
+  }
 
   if (mcgVersion < 2 &&
       pgis::config::getSelectedHeuristic() != HeuristicSelection::HeuristicSelectionEnum::STATEMENTS) {
     errconsole->error("Heuristics other than 'statements' are not supported with metacg format 1");
     exit(pgis::ErroneousHeuristicsConfiguration);
   }
-
-  CuttoffSelection dispose_cuttoff = storeOpt(cuttoffSelection, result);
 
   /* Where should the instrumentation configuration be written to */
   c.outputFile = storeOpt(outBaseDir, result);
@@ -294,13 +320,13 @@ int main(int argc, char **argv) {
           return pgis::SUCCESS;
         }
       } else {
-        registerEstimatorPhases(cg, &c, true, 0, keepNotReachable);
+        registerEstimatorPhases(cg, &c, true, 0, keepNotReachable, fillInstrumentationGaps);
         cg.applyRegisteredPhases();
         cg.removeAllEstimatorPhases();
       }
     }
   }
-
+  cg.registerEstimatorPhase(new AttachInstrumentationResultsEstimatorPhase(cg.getCallgraph()));
   if (result.count("cube")) {
     // for dynamic instrumentation
     std::string filePath(result["cube"].as<std::string>());
@@ -320,7 +346,6 @@ int main(int argc, char **argv) {
     // ========================
     if (enableLide) {
       console->info("Using load imbalance detection mode");
-      auto &gConfig = pgis::config::GlobalConfig::get();
       auto &pConfig = pgis::config::ParameterConfig::get();
 
       if (!pConfig.getLIConfig()) {
@@ -329,7 +354,8 @@ int main(int argc, char **argv) {
         return pgis::ErroneousHeuristicsConfiguration;
       }
 
-      cg.registerEstimatorPhase(new LoadImbalance::LIEstimatorPhase(std::move(pConfig.getLIConfig()),cg.getCallgraph())); // attention: moves out liConfig!
+      cg.registerEstimatorPhase(new LoadImbalance::LIEstimatorPhase(
+          std::move(pConfig.getLIConfig()), cg.getCallgraph()));  // attention: moves out liConfig!
 
       cg.applyRegisteredPhases();
 
@@ -355,7 +381,7 @@ int main(int argc, char **argv) {
     } else {
       c.totalRuntime = c.actualRuntime;
       /* This runtime threshold currently unused */
-      registerEstimatorPhases(cg, &c, false, runTimeThreshold, keepNotReachable);
+      registerEstimatorPhases(cg, &c, false, runTimeThreshold, keepNotReachable, fillInstrumentationGaps);
       console->info("Registered estimator phases");
     }
   }
@@ -372,13 +398,19 @@ int main(int argc, char **argv) {
 
     if (applyModelFilter) {
       console->info("Applying model filter");
-      cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueFilter(cg.getCallgraph(),true, extrapRuntimeOnly));
+      cg.registerEstimatorPhase(
+          new pira::ExtrapLocalEstimatorPhaseSingleValueFilter(cg.getCallgraph(), true, extrapRuntimeOnly));
     } else {
       console->info("Applying model expander");
       if (!keepNotReachable) {
-        cg.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(cg.getCallgraph(),true, false));  // remove unrelated
+        cg.registerEstimatorPhase(
+            new RemoveUnrelatedNodesEstimatorPhase(cg.getCallgraph(), true, false));  // remove unrelated
       }
-      cg.registerEstimatorPhase(new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(cg.getCallgraph(),true, extrapRuntimeOnly));
+      cg.registerEstimatorPhase(
+          new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(cg.getCallgraph(), true, extrapRuntimeOnly));
+    }
+    if (fillInstrumentationGaps) {
+      cg.registerEstimatorPhase(new FillInstrumentationGapsPhase(cg.getCallgraph()));
     }
     // XXX Should this be done after filter / expander were run? Currently we do this after model creation, yet,
     // *before* running the estimator phase
@@ -421,12 +453,13 @@ int main(int argc, char **argv) {
     //    cg.printDOT("end");
   }
 
-  // Example use of MetaCG writer
+  // Serialize the cg
   {
     metacg::io::JsonSink jsSink;
     metacg::io::MCGWriter mcgw(mcgm);
     mcgw.write(jsSink);
-    std::ofstream ofile("filename");
+    std::string filename = c.outputFile + "/instrumented-" + c.appName + ".mcg";
+    std::ofstream ofile(filename);
     jsSink.output(ofile);
   }
 

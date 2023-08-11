@@ -29,22 +29,23 @@ using PiraOneData = pira::PiraOneData;
 using PiraTwoData = pira::PiraTwoData;
 
 template <typename N, typename... Largs>
-void applyOne(cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, N node, Largs... largs) {
+void applyOne(cube::Cube &cu, cube::Cnode *cnode, N cgNode, cube::Cnode *pnode, N pCgNode, Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
-    applyOne(cu, cnode, node, largs...);
+    applyOne(cu, cnode, cgNode, pnode, pCgNode, largs...);
   }
 }
 template <typename N, typename L, typename... Largs>
-void applyOne(cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, N node, L lam, Largs... largs) {
-  lam(cu, cnode, node);
-  applyOne(cu, cnode, node, largs...);
+void applyOne(cube::Cube &cu, cube::Cnode *cnode, N cgNode, cube::Cnode *pnode, N pCgNode, L lam, Largs... largs) {
+  lam(cu, cnode, cgNode, pnode, pCgNode);
+  applyOne(cu, cnode, cgNode, pnode, pCgNode, largs...);
 }
 template <typename... Largs>
-void apply(metacg::graph::MCGManager &mcgm, cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, std::string &where,
-           Largs... largs) {
+void apply(metacg::graph::MCGManager &mcgm, cube::Cube &cu, cube::Cnode *cnode, const std::string &cNodeName,
+           cube::Cnode *pnode, const std::string &pNodeName, Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
-    auto target = mcgm.getCallgraph()->getOrInsertNode(where);
-    applyOne(cu, cnode, target, largs...);
+    auto target = mcgm.getCallgraph()->getOrInsertNode(cNodeName);
+    auto parent = mcgm.getCallgraph()->hasNode(pNodeName) ? mcgm.getCallgraph()->getNode(pNodeName) : nullptr;
+    applyOne(cu, cnode, target, pnode, parent, largs...);
   }
 }
 
@@ -81,10 +82,12 @@ const auto getName = [](const bool mangled, const auto cn) {
   }
 };
 
-const auto attRuntime = [](auto &cube, auto cnode, auto n) {
+const auto attRuntime = [](auto &cube, auto cnode, auto n, auto pNode, auto pn) {
   if (has<BaseProfileData>(n)) {
     spdlog::get("console")->debug("Attaching runtime {} to node {}", impl::time(cube, cnode), n->getFunctionName());
-    get<BaseProfileData>(n)->addRuntime(impl::time(cube, cnode));
+    const auto runtime = impl::time(cube, cnode);
+    const auto &bpd = get<BaseProfileData>(n);
+    bpd->addRuntime(runtime);
   } else {
     spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
   }
@@ -93,16 +96,20 @@ const auto attRuntime = [](auto &cube, auto cnode, auto n) {
   }
 };
 
-const auto attNrCall = [](auto &cube, auto cnode, auto n) {
+const auto attNrCall = [](auto &cube, auto cnode, auto n, auto pNode, auto pn) {
   if (has<BaseProfileData>(n)) {
     spdlog::get("console")->debug("Attaching visits {} to node {}", impl::visits(cube, cnode), n->getFunctionName());
-    get<BaseProfileData>(n)->addCalls(impl::visits(cube, cnode));
+    const auto calls = impl::visits(cube, cnode);
+    const auto &bpd = get<BaseProfileData>(n);
+    bpd->addCalls(calls);
+    bpd->addNumberOfCallsFrom(pn, calls);
   } else {
     spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
   }
 };
 
-const auto attInclRuntime = [](auto &cube, auto cnode, auto n) {
+const auto attInclRuntime = [](auto &cube, auto cnode, auto n, [[maybe_unused]] auto pNode,
+                               [[maybe_unused]] auto pName) {
   if (has<BaseProfileData>(n)) {
     // fill CgLocations and calculate inclusive runtime
     double cumulatedTime = 0;
@@ -148,7 +155,8 @@ void build(std::string filePath, metacg::graph::MCGManager &mcgm, Largs... largs
     console->trace("Cube contains: {} nodes", cnodes.size());
     for (const auto cnode : cnodes) {
       if (!cnode->get_parent()) {
-        mcgm.getCallgraph()->getOrInsertNode(getName(useMangledNames, cnode));
+        // Root node. This should be the name of the program and not main. Do not add it to the callgraph
+        assert(getName(useMangledNames, cnode) != "main");
         continue;
       }
 
@@ -157,15 +165,19 @@ void build(std::string filePath, metacg::graph::MCGManager &mcgm, Largs... largs
       auto pName = getName(useMangledNames, pNode);
       auto cName = getName(useMangledNames, cNode);
 
-      // Insert edge
-      if(!mcgm.getCallgraph()->existEdgeFromTo(pName,cName)){
-        mcgm.getCallgraph()->addEdge(pName, cName);
-      }else{
-        console->trace("Tried adding edge between {} and {} even though it already exists", pName,cName);
+      // Insert edge, if parent is not root
+      if (pNode->get_parent()) {
+        if (!mcgm.getCallgraph()->existEdgeFromTo(pName, cName)) {
+          mcgm.getCallgraph()->addEdge(pName, cName);
+        } else {
+          console->trace("Tried adding edge between {} and {} even though it already exists", pName, cName);
+        }
+      } else {
+        assert(pName != "main");
       }
 
       // Leave what to capture and attach to the user
-      apply(mcgm, cube, cnode, cName, largs...);
+      apply(mcgm, cube, cnode, cName, pNode, pName, largs...);
     }
 
   } catch (std::exception &e) {

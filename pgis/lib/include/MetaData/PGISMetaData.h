@@ -58,14 +58,19 @@ inline void instrumentPathNode(metacg::CgNode *node) {
   md->setInstrumentedPath();
 }
 
-inline bool isInstrumented(metacg::CgNode *node) {
+[[nodiscard]] inline bool isInstrumented(metacg::CgNode *node) {
   auto md = node->getOrCreateMD<InstrumentationMetaData>();
   return md->isInstrumented();
 }
 
-inline bool isInstrumentedPath(metacg::CgNode *node) {
+[[nodiscard]] inline bool isInstrumentedPath(metacg::CgNode *node) {
   auto md = node->getOrCreateMD<InstrumentationMetaData>();
   return md->isInstrumentedPath();
+}
+
+[[nodiscard]] inline bool isAnyInstrumented(metacg::CgNode *node) {
+  auto md = node->getOrCreateMD<InstrumentationMetaData>();
+  return md->isInstrumented() || md->isInstrumentedPath();
 }
 
 }  // namespace pgis

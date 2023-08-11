@@ -4,8 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "gtest/gtest.h"
 #include "MetaData/CgNodeMetaData.h"
+#include "gtest/gtest.h"
 #include <loadImbalance/metric/EfficiencyMetric.h>
 #include <loadImbalance/metric/ImbalancePercentageMetric.h>
 #include <loadImbalance/metric/VariationCoeffMetric.h>
@@ -21,7 +21,6 @@ TEST(LIMetricTest, EfficiencyMetric) {
             main = std::make_unique<CgNode>("main");
 
   {
-
     func1->getOrCreateMD<pira::BaseProfileData>();
     // func1: no profiling data
     metric.setNode(func1.get());

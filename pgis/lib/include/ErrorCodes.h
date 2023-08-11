@@ -16,8 +16,10 @@ enum ErrorCode : int {
   NoMainFunctionFound,
   ErroneousHeuristicsConfiguration,
   UnknownFileFormat,
-  TooFewProgramArguments = 1024
+  ErroneousOverheadConfiguration,
+  CouldNotGetCWD,
+  TooFewProgramArguments = 1024,
 };
-}
+}  // namespace pgis
 
 #endif  // METACG_ERRORCODES_H
