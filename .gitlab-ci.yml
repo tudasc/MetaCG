@@ -66,6 +66,22 @@ build-dependencies:
       # 
 
 # Stage: build
+build-mcg-no-tests:
+  <<: *job-setup
+  stage: build
+  script:
+    - module load clang/$LLVM
+    - cmake -S . -B $MCG_BUILD-no-tests -G Ninja -DCMAKE_BUILD_TYPE=Debug 
+        -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-no-tests
+        -DCUBE_LIB=$(dirname $(which cube_info))/../lib 
+        -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+        -DEXTRAP_INCLUDE=./extern/install/extrap/include 
+        -DEXTRAP_LIB=./extern/install/extrap/lib 
+        -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        -DMETACG_BUILD_UNIT_TESTS=OFF
+    - cmake --build $MCG_BUILD-no-tests --parallel
+    - module purge
+
 build-mcg-stripped-all:
   <<: *job-setup
   stage: build

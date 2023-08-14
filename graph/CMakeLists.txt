@@ -63,4 +63,6 @@ add_config_include(metacg)
 add_json(metacg)
 add_spdlog_libraries(metacg)
 
-add_subdirectory(test/unit)
+if(METACG_BUILD_UNIT_TESTS)
+  add_subdirectory(test/unit)
+endif()

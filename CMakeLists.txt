@@ -41,6 +41,14 @@ list(
 
 set(METACG_Directory ${CMAKE_CURRENT_SOURCE_DIR})
 
+# Whether the GoogleTest-based unit tests should be built and GoogleTest is downloaded as dependency This needs to be
+# here, so ToolchainOptions already "sees" the option's value
+option(
+  METACG_BUILD_UNIT_TESTS
+  "On or Off"
+  ON
+)
+
 # This also downloads and builds googletest
 include(ToolchainOptions)
 # Making packaging easier
