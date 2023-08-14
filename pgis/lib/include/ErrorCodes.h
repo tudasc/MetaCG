@@ -18,7 +18,8 @@ enum ErrorCode : int {
   UnknownFileFormat,
   ErroneousOverheadConfiguration,
   CouldNotGetCWD,
-  TooFewProgramArguments = 1024,
+  FileDoesNotExist,
+  TooFewProgramArguments = 1024
 };
 }  // namespace pgis
 

@@ -41,7 +41,7 @@ void printConfig(ExtrapConfig &cfg) {
       cfg.directory, cfg.repetitions, cfg.prefix, cfg.postfix, cfg.iteration, parameterStr);
 }
 
-ExtrapConfig getExtrapConfigFromJSON(std::string filePath) {
+ExtrapConfig getExtrapConfigFromJSON(const std::filesystem::path &filePath) {
   using json = nlohmann::json;
 
   json j;

@@ -223,7 +223,7 @@ class PiraTwoData : public metacg::MetaData::Registrar<PiraTwoData> {
     auto &gOpts = ::pgis::config::GlobalConfig::get();
     auto rtOnly = gOpts.getAs<bool>("runtime-only");
 
-    auto rtAndParams = valTup(getRuntimeVec(), getExtrapParameters(), getNumReps());
+    auto rtAndParams = utils::valTup(getRuntimeVec(), getExtrapParameters(), getNumReps());
     nlohmann::json experiments;
     for (auto elem : rtAndParams) {
       nlohmann::json exp{};
