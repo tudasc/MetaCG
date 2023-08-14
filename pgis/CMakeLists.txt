@@ -7,4 +7,6 @@ enable_testing()
 
 add_subdirectory(lib)
 add_subdirectory(tool)
-add_subdirectory(test/unit)
+if(METACG_BUILD_UNIT_TESTS)
+  add_subdirectory(test/unit)
+endif()
