@@ -19,7 +19,15 @@
 #include <string>
 #include <unistd.h>
 
-namespace {
+namespace utils {
+namespace string {
+
+inline bool stringEndsWith(const std::string &s, const std::string &suffix) {
+  return s.size() >= suffix.size() && s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
+}  // namespace string
+
 inline std::string getHostname() {
   char *cName = (char *)malloc(255 * sizeof(char));
   if (!gethostname(cName, 255)) {
@@ -63,7 +71,7 @@ auto valTup(C1 co, C2 ct, int numReps) {
   return res;
 }
 
-}  // namespace
+}  // namespace utils
 
 inline bool isEligibleForPathInstrumentation(metacg::CgNode *node, metacg::Callgraph *graph,
                                              std::vector<metacg::CgNode *> parents = {}) {

@@ -24,6 +24,7 @@
 
 #include "cxxabi.h"
 
+#include <filesystem>
 #include <map>
 #include <numeric>
 #include <string>
@@ -87,11 +88,11 @@ class ExtrapExtrapolator {
 };
 
 /* Utility functions to read in configuration and print it */
-ExtrapConfig getExtrapConfigFromJSON(std::string filePath);
+ExtrapConfig getExtrapConfigFromJSON(const std::filesystem::path &filePath);
 
 void printConfig(ExtrapConfig &cfg);
 
-inline std::string demangle(std::string &input) {
+inline std::string demangle(std::string input) {
   char *res;
   int st;
   res = abi::__cxa_demangle(input.c_str(), nullptr, nullptr, &st);
@@ -193,7 +194,7 @@ class ExtrapModelProvider {
     }
   }
   // Needs to be defined in header, so deduction works correctly in usages.
-  auto getModelFor(std::string functionName) {
+  auto getModelFor(const std::string &functionName) {
     if (models.empty()) {
       buildModels();
     }
@@ -213,7 +214,7 @@ class ExtrapModelProvider {
 
   std::vector<EXTRAP::Parameter> getParameterList();
 
-  std::vector<double> getConfigValues(std::string key) {
+  std::vector<double> getConfigValues(const std::string &key) {
     std::vector<double> vals;
     vals.reserve(config.params.size());
     // FIXME for now we assume only a single parameter!!

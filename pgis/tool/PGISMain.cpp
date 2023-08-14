@@ -19,6 +19,7 @@
 #include "MCGWriter.h"
 #include "MetaData/PGISMetaData.h"
 #include "PiraMCGProcessor.h"
+#include "Utility.h"
 #include <loadImbalance/LIEstimatorPhase.h>
 #include <loadImbalance/LIMetaData.h>
 #include <loadImbalance/OnlyMainEstimatorPhase.h>
@@ -41,53 +42,66 @@ auto optType(T &obj) {
 using namespace pira;
 using namespace ::pgis::options;
 
-void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &cg, Config *c, bool isIPCG, float runtimeThreshold,
-                             bool keepNotReachable, bool fillInstrumentationGaps) {
-  auto statEstimator = new StatisticsEstimatorPhase(false, cg.getCallgraph());
-  if (!keepNotReachable) {
-    cg.registerEstimatorPhase(
-        new RemoveUnrelatedNodesEstimatorPhase(cg.getCallgraph(), true, false));  // remove unrelated
+static pgis::ErrorCode readFromCubeFile(const std::filesystem::path &cubeFilePath, Config *cfgPtr) {
+  if (!std::filesystem::exists(cubeFilePath)) {
+    return pgis::FileDoesNotExist;
   }
-  cg.registerEstimatorPhase(statEstimator);
+
+  if (const auto ext = cubeFilePath.extension(); ext.string() != ".cubex") {
+    return pgis::UnknownFileFormat;
+  }
+
+  auto &mcgm = metacg::graph::MCGManager::get();
+  // TODO: Change to std::filesystem
+  CubeCallgraphBuilder::buildFromCube(cubeFilePath.string(), cfgPtr, mcgm);
+  return pgis::SUCCESS;
+}
+
+void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &consumer, Config *c, bool isIPCG, float runtimeThreshold,
+                             bool keepNotReachable, bool fillInstrumentationGaps) {
+  auto statEstimator = new StatisticsEstimatorPhase(false, consumer.getCallgraph());
+  if (!keepNotReachable) {
+    consumer.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(consumer.getCallgraph(), true, false));
+  }
+  consumer.registerEstimatorPhase(statEstimator);
 
   // Actually do the selection
   if (!isIPCG) {
     metacg::MCGLogger::instance().getConsole()->info("New runtime threshold for profiling: ${}$", runtimeThreshold);
-    cg.registerEstimatorPhase(new RuntimeEstimatorPhase(cg.getCallgraph(), runtimeThreshold));
+    consumer.registerEstimatorPhase(new RuntimeEstimatorPhase(consumer.getCallgraph(), runtimeThreshold));
   } else {
     HeuristicSelection::HeuristicSelectionEnum heuristicMode = pgis::config::getSelectedHeuristic();
     switch (heuristicMode) {
       case HeuristicSelection::HeuristicSelectionEnum::STATEMENTS: {
         const int nStmt = 2000;
         metacg::MCGLogger::instance().getConsole()->info("New runtime threshold for profiling: ${}$", nStmt);
-        cg.registerEstimatorPhase(new StatementCountEstimatorPhase(nStmt, cg.getCallgraph(), true, statEstimator));
+        consumer.registerEstimatorPhase(
+            new StatementCountEstimatorPhase(nStmt, consumer.getCallgraph(), true, statEstimator));
       } break;
       case HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES:
-        cg.registerEstimatorPhase(new ConditionalBranchesEstimatorPhase(0, cg.getCallgraph(), statEstimator));
+        consumer.registerEstimatorPhase(
+            new ConditionalBranchesEstimatorPhase(0, consumer.getCallgraph(), statEstimator));
         break;
       case HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES_REVERSE:
-        cg.registerEstimatorPhase(new ConditionalBranchesReverseEstimatorPhase(0, cg.getCallgraph(), statEstimator));
+        consumer.registerEstimatorPhase(
+            new ConditionalBranchesReverseEstimatorPhase(0, consumer.getCallgraph(), statEstimator));
         break;
       case HeuristicSelection::HeuristicSelectionEnum::FP_MEM_OPS:
-        cg.registerEstimatorPhase(new FPAndMemOpsEstimatorPhase(0, cg.getCallgraph(), statEstimator));
+        consumer.registerEstimatorPhase(new FPAndMemOpsEstimatorPhase(0, consumer.getCallgraph(), statEstimator));
         break;
       case HeuristicSelection::HeuristicSelectionEnum::LOOPDEPTH:
-        cg.registerEstimatorPhase(new LoopDepthEstimatorPhase(0, cg.getCallgraph(), statEstimator));
+        consumer.registerEstimatorPhase(new LoopDepthEstimatorPhase(0, consumer.getCallgraph(), statEstimator));
         break;
       case HeuristicSelection::HeuristicSelectionEnum::GlOBAL_LOOPDEPTH:
-        cg.registerEstimatorPhase(new GlobalLoopDepthEstimatorPhase(0, cg.getCallgraph(), statEstimator));
+        consumer.registerEstimatorPhase(new GlobalLoopDepthEstimatorPhase(0, consumer.getCallgraph(), statEstimator));
         break;
     }
   }
   if (fillInstrumentationGaps) {
-    cg.registerEstimatorPhase(new FillInstrumentationGapsPhase(cg.getCallgraph()));
+    consumer.registerEstimatorPhase(new FillInstrumentationGapsPhase(consumer.getCallgraph()));
   }
-  cg.registerEstimatorPhase(new StatisticsEstimatorPhase(true, cg.getCallgraph()));
-  cg.registerEstimatorPhase(new StoreInstrumentationDecisionsPhase(cg.getCallgraph()));
-}
-
-bool stringEndsWith(const std::string &s, const std::string &suffix) {
-  return s.size() >= suffix.size() && s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
+  consumer.registerEstimatorPhase(new StatisticsEstimatorPhase(true, consumer.getCallgraph()));
+  consumer.registerEstimatorPhase(new StoreInstrumentationDecisionsPhase(consumer.getCallgraph()));
 }
 
 /**
@@ -183,6 +197,9 @@ int main(int argc, char **argv) {
   /* Enable static, aggregated statement filtering */
   bool applyStaticFilter = storeOpt(staticSelection, result);
 
+  /* Store the provided cube file path, if any */
+  storeOpt(cubeFilePath, result);
+
   /* Use Extra-P performance-model-based filtering or runtime-based only */
   bool applyModelFilter = storeOpt(modelFilter, result);
   bool extrapRuntimeOnly = storeOpt(runtimeOnly, result);
@@ -241,57 +258,51 @@ int main(int argc, char **argv) {
   /* Where should the instrumentation configuration be written to */
   c.outputFile = storeOpt(outBaseDir, result);
 
-  // for static instrumentation
-  std::string mcgFullPath(argv[argc - 1]);
-  // TODO: Use the filesystem STL functions for all of the path bits
+  /*
+   * Optional arguments are paresed / consumed, the positional arguments are next.
+   * They can be accessed just via argv[]
+   */
+
+  // Use the filesystem STL functions for all of the path bits
   std::filesystem::path p(argv[argc - 1]);
-  console->info("MetaCG file path given: {}", p.string());
+  auto mcgExtension = p.extension();
+  c.appName = p.stem().string();
+  // TODO: Replace occurrences of this string with fileystem::path
+  std::string mcgFullPath = p.string();
 
-  std::string mcgFilename = mcgFullPath.substr(mcgFullPath.find_last_of('/') + 1);
-  c.appName = mcgFilename.substr(0, mcgFilename.find_last_of('.'));
-
-  const auto parseExtrapArgs = [](auto argsRes) {
-    if (argsRes.count("extrap")) {
-      // Read in extra-p configuration
-      auto filePath = pgis::config::GlobalConfig::get().getVal(extrapConfig);
-      std::ifstream epFile(filePath);
-      return extrapconnection::getExtrapConfigFromJSON(filePath);
-    } else {
-      return extrapconnection::ExtrapConfig();
-    }
-  };
+  console->info("MetaCG file: {}", p.string());
+  console->info("Using AppName: {}", c.appName);
 
   float runTimeThreshold = .0f;
-  auto &cg = metacg::pgis::PiraMCGProcessor::get();
+  auto &consumer = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
-  cg.setConfig(&c);
-  cg.setExtrapConfig(parseExtrapArgs(result));
+  consumer.setConfig(&c);
+
+  if (!gConfig.getVal(extrapConfig).empty()) {
+    std::filesystem::path p(gConfig.getVal(extrapConfig));
+    if (!std::filesystem::exists(p)) {
+      errconsole->error("The provided Extra-P configuration file does not exist.\nFile given: {}", p.string());
+      exit(pgis::FileDoesNotExist);
+    }
+    console->info("Reading Extra-P configuration from {}", p.string());
+    consumer.setExtrapConfig(extrapconnection::getExtrapConfigFromJSON(p));
+  }
 
   /* To briefly inspect a CUBE profile for inclusive runtime of main */
   if (storeOpt(cubeShowOnly, result)) {
-    if (result.count("cube")) {
-      // for dynamic instrumentation
-      std::string filePath(result["cube"].as<std::string>());
-
-      std::string fileName = filePath.substr(filePath.find_last_of('/') + 1);
-
-      if (stringEndsWith(filePath, ".cubex")) {
-        CubeCallgraphBuilder::buildFromCube(filePath, &c, mcgm);
-      } else if (stringEndsWith(filePath, ".dot")) {
-        DOTCallgraphBuilder::build(filePath, &c);
-      } else {
-        errconsole->error("Unknown file ending in {}", filePath);
-        exit(pgis::UnknownFileFormat);
-      }
+    std::filesystem::path cubeFile(gConfig.getVal(cubeFilePath));
+    if (auto ret = readFromCubeFile(cubeFile, &c); ret != pgis::SUCCESS) {
+      exit(ret);
     }
-    cg.printMainRuntime();
+
+    consumer.printMainRuntime();
     return pgis::SUCCESS;
   }
 
-  if (stringEndsWith(mcgFullPath, ".ipcg") || stringEndsWith(mcgFullPath, ".mcg")) {
+  if (utils::string::stringEndsWith(mcgFullPath, ".ipcg") || utils::string::stringEndsWith(mcgFullPath, ".mcg")) {
     metacg::io::FileSource fs(mcgFullPath);
-    if (::pgis::config::GlobalConfig::get().getVal(metacgFormat) == 1) {
+    if (mcgVersion == 1) {
       metacg::io::VersionOneMetaCGReader mcgReader(fs);
       mcgReader.read(mcgm);
     } else if (mcgVersion == 2) {
@@ -305,7 +316,7 @@ int main(int argc, char **argv) {
     }
 
     console->info("Read MetaCG with {} nodes.", mcgm.getCallgraph()->size());
-    cg.setCG(mcgm.getCallgraph());
+    consumer.setCG(mcgm.getCallgraph());
 
     if (applyStaticFilter) {
       // load imbalance detection
@@ -314,32 +325,23 @@ int main(int argc, char **argv) {
         console->info("Using trivial static analysis for load imbalance detection (OnlyMainEstimatorPhase");
         // static instrumentation -> OnlyMainEstimatorPhase
         if (!result.count("cube")) {
-          cg.registerEstimatorPhase(new LoadImbalance::OnlyMainEstimatorPhase(cg.getCallgraph()));
-          cg.applyRegisteredPhases();
+          consumer.registerEstimatorPhase(new LoadImbalance::OnlyMainEstimatorPhase(consumer.getCallgraph()));
+          consumer.applyRegisteredPhases();
 
           return pgis::SUCCESS;
         }
       } else {
-        registerEstimatorPhases(cg, &c, true, 0, keepNotReachable, fillInstrumentationGaps);
-        cg.applyRegisteredPhases();
-        cg.removeAllEstimatorPhases();
+        registerEstimatorPhases(consumer, &c, true, 0, keepNotReachable, fillInstrumentationGaps);
+        consumer.applyRegisteredPhases();
+        consumer.removeAllEstimatorPhases();
       }
     }
   }
-  cg.registerEstimatorPhase(new AttachInstrumentationResultsEstimatorPhase(cg.getCallgraph()));
+  consumer.registerEstimatorPhase(new AttachInstrumentationResultsEstimatorPhase(consumer.getCallgraph()));
   if (result.count("cube")) {
-    // for dynamic instrumentation
-    std::string filePath(result["cube"].as<std::string>());
-
-    std::string fileName = filePath.substr(filePath.find_last_of('/') + 1);
-
-    if (stringEndsWith(filePath, ".cubex")) {
-      CubeCallgraphBuilder::buildFromCube(filePath, &c, mcgm);
-    } else if (stringEndsWith(filePath, ".dot")) {
-      DOTCallgraphBuilder::build(filePath, &c);
-    } else {
-      errconsole->error("Unknown file ending in {}", filePath);
-      exit(pgis::UnknownFileFormat);
+    std::filesystem::path cubeFile(gConfig.getVal(cubeFilePath));
+    if (auto ret = readFromCubeFile(cubeFile, &c); ret != pgis::SUCCESS) {
+      exit(ret);
     }
 
     // load imbalance detection
@@ -354,10 +356,11 @@ int main(int argc, char **argv) {
         return pgis::ErroneousHeuristicsConfiguration;
       }
 
-      cg.registerEstimatorPhase(new LoadImbalance::LIEstimatorPhase(
-          std::move(pConfig.getLIConfig()), cg.getCallgraph()));  // attention: moves out liConfig!
+      // attention: moves out liConfig!
+      consumer.registerEstimatorPhase(
+          new LoadImbalance::LIEstimatorPhase(std::move(pConfig.getLIConfig()), consumer.getCallgraph()));
 
-      cg.applyRegisteredPhases();
+      consumer.applyRegisteredPhases();
 
       // should be set for working load imbalance detection
       if (result.count("export")) {
@@ -381,7 +384,7 @@ int main(int argc, char **argv) {
     } else {
       c.totalRuntime = c.actualRuntime;
       /* This runtime threshold currently unused */
-      registerEstimatorPhases(cg, &c, false, runTimeThreshold, keepNotReachable, fillInstrumentationGaps);
+      registerEstimatorPhases(consumer, &c, false, runTimeThreshold, keepNotReachable, fillInstrumentationGaps);
       console->info("Registered estimator phases");
     }
   }
@@ -394,23 +397,23 @@ int main(int argc, char **argv) {
       return pgis::ErroneousHeuristicsConfiguration;
     }
 
-    cg.attachExtrapModels();
+    consumer.attachExtrapModels();
 
     if (applyModelFilter) {
       console->info("Applying model filter");
-      cg.registerEstimatorPhase(
-          new pira::ExtrapLocalEstimatorPhaseSingleValueFilter(cg.getCallgraph(), true, extrapRuntimeOnly));
+      consumer.registerEstimatorPhase(
+          new pira::ExtrapLocalEstimatorPhaseSingleValueFilter(consumer.getCallgraph(), true, extrapRuntimeOnly));
     } else {
       console->info("Applying model expander");
       if (!keepNotReachable) {
-        cg.registerEstimatorPhase(
-            new RemoveUnrelatedNodesEstimatorPhase(cg.getCallgraph(), true, false));  // remove unrelated
+        consumer.registerEstimatorPhase(
+            new RemoveUnrelatedNodesEstimatorPhase(consumer.getCallgraph(), true, false));  // remove unrelated
       }
-      cg.registerEstimatorPhase(
-          new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(cg.getCallgraph(), true, extrapRuntimeOnly));
+      consumer.registerEstimatorPhase(
+          new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(consumer.getCallgraph(), true, extrapRuntimeOnly));
     }
     if (fillInstrumentationGaps) {
-      cg.registerEstimatorPhase(new FillInstrumentationGapsPhase(cg.getCallgraph()));
+      consumer.registerEstimatorPhase(new FillInstrumentationGapsPhase(consumer.getCallgraph()));
     }
     // XXX Should this be done after filter / expander were run? Currently we do this after model creation, yet,
     // *before* running the estimator phase
@@ -432,25 +435,25 @@ int main(int argc, char **argv) {
   if (enableDotExport.mode == DotExportSelection::DotExportEnum::BEGIN ||
       enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
     const auto sortedDot = pgis::config::GlobalConfig::get().getAs<bool>(sortDotEdges.cliName);
-    metacg::io::dot::DotGenerator dotGenerator(cg.getCallgraph(&cg), sortedDot);
+    metacg::io::dot::DotGenerator dotGenerator(consumer.getCallgraph(&consumer), sortedDot);
     dotGenerator.generate();
     dotGenerator.output({"./DotOutput", "PGIS-Dot", "begin"});
-    //    cg.printDOT("begin");
+    //    consumer.printDOT("begin");
   }
-  if (cg.hasPassesRegistered()) {
+  if (consumer.hasPassesRegistered()) {
     if (enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
-      cg.setOutputDotBetweenPhases();
+      consumer.setOutputDotBetweenPhases();
     }
     console->info("Running registered estimator phases");
-    cg.applyRegisteredPhases();
+    consumer.applyRegisteredPhases();
   }
   if (enableDotExport.mode == DotExportSelection::DotExportEnum::END ||
       enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
     const auto sortedDot = pgis::config::GlobalConfig::get().getAs<bool>(sortDotEdges.cliName);
-    metacg::io::dot::DotGenerator dotGenerator(cg.getCallgraph(&cg), sortedDot);
+    metacg::io::dot::DotGenerator dotGenerator(consumer.getCallgraph(&consumer), sortedDot);
     dotGenerator.generate();
     dotGenerator.output({"./DotOutput", "PGIS-Dot", "end"});
-    //    cg.printDOT("end");
+    //    consumer.printDOT("end");
   }
 
   // Serialize the cg
