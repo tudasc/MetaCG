@@ -71,67 +71,10 @@ class MCGWriter {
    */
   void createNodeData(const CgNode *node, nlohmann::json &j) const;
 
-  /**
-   * Using the stored MetaDataHandler in MCGM to walk MCG and extract all meta data.
-   * @param node
-   * @param mcgm
-   */
-  void createAndAddMetaData(const CgNode *const node, const graph::MCGManager &mcgm, nlohmann::json &j);
-
   graph::MCGManager &mcgManager;
   MCGFileInfo fileInfo;
 };
 
-#if 0
-/*
- * Old Annotation mechanism.
- * TODO: Replace fully with MCGWriter mechanism.
- */
-template <typename PropRetriever>
-int doAnnotate(metacg::Callgraph &cg, PropRetriever retriever, nlohmann::json &j) {
-  const auto functionElement = [](nlohmann::json &container, auto name) {
-    for (nlohmann::json::iterator it = container.begin(); it != container.end(); ++it) {
-      if (it.key() == name) {
-        return it;
-      }
-    }
-    return container.end();
-  };
-
-  const auto holdsValue = [](auto jsonIt, auto jsonEnd) { return jsonIt != jsonEnd; };
-
-  int annots = 0;
-  for (const auto &node : cg) {
-    if (retriever.handles(node)) {
-      auto funcElem = functionElement(j, node->getFunctionName());
-
-      if (holdsValue(funcElem, j.end())) {
-        auto &nodeMeta = (*funcElem)["meta"];
-        nodeMeta[retriever.toolName()] = retriever.value(node);
-        annots++;
-      }
-    }
-  }
-  return annots;
-}
-
-template <typename PropRetriever>
-void annotateJSON(metacg::Callgraph &cg, const std::string &filename, PropRetriever retriever) {
-  nlohmann::json j;
-  {
-    std::ifstream in(filename);
-    in >> j;
-  }
-
-  int annotated = metacg::io::doAnnotate(cg, retriever, j);
-  metacg::MCGLogger::instance().getConsole()->trace("Annotated {} json nodes", annotated);
-
-  {
-    std::ofstream out(filename);
-    out << j << std::endl;
-  }
-}
-#endif
 }  // namespace metacg::io
 
 #endif  // METACG_MCGWRITER_H

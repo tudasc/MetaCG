@@ -14,10 +14,16 @@ if(METACG_USE_EXTERNAL_JSON)
 else()
   message("Using fetched release version of json library")
 
+  # Use the json library install option to install when MetaCG is installed
+  set(JSON_Install
+      ON
+      CACHE INTERNAL ""
+  )
+
   FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.10.5/json.tar.xz)
   FetchContent_MakeAvailable(json)
 endif()
 
 function(add_json target)
-  target_link_libraries(${target} nlohmann_json::nlohmann_json)
+  target_link_libraries(${target} PRIVATE nlohmann_json::nlohmann_json)
 endfunction()

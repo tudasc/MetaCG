@@ -5,8 +5,8 @@
  */
 #include "MCGReader.h"
 #include "MCGBaseInfo.h"
-#include "Util.h"
 #include "Timing.h"
+#include "Util.h"
 
 #include <queue>
 
@@ -36,17 +36,27 @@ void MetaCGReader::buildGraph(metacg::graph::MCGManager &cgManager, MetaCGReader
   for (const auto &[k, fi] : functions) {
     console->trace("Inserting MetaCG node for function {}", k);
     auto node = cgManager.getCallgraph()->getOrInsertNode(k);  // node pointer currently unused
+    assert(node && "node is present in call graph");
     node->setIsVirtual(fi.isVirtual);
     node->setHasBody(fi.hasBody);
     for (const auto &c : fi.callees) {
       auto calleeNode = cgManager.getCallgraph()->getOrInsertNode(c);
+      assert(calleeNode && "calleeNode is present in call graph");
       cgManager.getCallgraph()->addEdge(node, calleeNode);
       auto &potTargets = potentialTargets[c];
       for (const auto &pt : potTargets) {
         auto potentialCallee = cgManager.getCallgraph()->getOrInsertNode(pt);
+        assert(potentialCallee && "potentialCallee is present in call graph");
         cgManager.getCallgraph()->addEdge(node, potentialCallee);
       }
     }
+
+    std::unordered_map<std::string, metacg::MetaData *> metadataContainer;
+    for (const auto &elem : fi.namedMetadata) {
+      if (auto obj = metacg::MetaData::create(elem.first, elem.second); obj != nullptr)
+        metadataContainer[elem.first] = obj;
+    }
+    node->setMetaDataContainer(metadataContainer);
   }
 }
 
@@ -120,36 +130,45 @@ void VersionTwoMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
 
   auto j = source.get();
 
-  auto mcgInfo = j[ffInfo.metaInfoFieldName];
-  if (mcgInfo.is_null()) {
-    errConsole->error("Could not read version info from metacg file.");
-    throw std::runtime_error("Could not read version info from metacg file");
+  if (j.is_null()) {
+    const std::string errorMsg = "JSON source did not contain any data.";
+    errConsole->error(errorMsg);
+    throw std::runtime_error(errorMsg);
   }
+
+  if (!j.contains(ffInfo.metaInfoFieldName) || j.at(ffInfo.metaInfoFieldName).is_null()) {
+    const std::string errorMsg = "Could not read version info from metacg file.";
+    errConsole->error(errorMsg);
+    throw std::runtime_error(errorMsg);
+  }
+
+  auto mcgInfo = j.at(ffInfo.metaInfoFieldName);
+  // from here on we assume, that if any file meta information is given, it is correct
+
   /// XXX How to make that we can use the MCGGeneratorVersionInfo to access the identifiers
-  auto mcgVersion = mcgInfo["version"].get<std::string>();
-  auto generatorName = mcgInfo["generator"]["name"].get<std::string>();
-  auto generatorVersion = mcgInfo["generator"]["version"].get<std::string>();
+  auto mcgVersion = mcgInfo.at("version").get<std::string>();
+
+  if (mcgVersion.compare(0, 1, std::string("2")) != 0) {
+    const std::string errorMsg = "File is of version " + mcgVersion + ", this reader handles version 2.x";
+    errConsole->error(errorMsg);
+    throw std::runtime_error(errorMsg);
+  }
+
+  auto generatorName = mcgInfo.at("generator").at("name").get<std::string>();
+  auto generatorVersion = mcgInfo.at("generator").at("version").get<std::string>();
   MCGGeneratorVersionInfo genVersionInfo{generatorName, metacg::util::getMajorVersionFromString(generatorVersion),
                                          metacg::util::getMinorVersionFromString(generatorVersion), ""};
   console->info("The metacg (version {}) file was generated with {} (version: {})", mcgVersion, generatorName,
                 generatorVersion);
-  {  // raii
-    std::string metaReadersStr;
-    int i = 1;
-    for (const auto mh : cgManager.getMetaHandlers()) {
-      metaReadersStr += std::to_string(i) + ") " + mh->toolName() + "  ";
-      ++i;
-    }
-    console->info("Executing the meta readers: {}", metaReadersStr);
-  }
 
   MCGFileInfo fileInfo{ffInfo, genVersionInfo};
-  auto jsonCG = j[ffInfo.cgFieldName];
-  if (jsonCG.is_null()) {
-    errConsole->error("The call graph in the metacg file was null.");
-    throw std::runtime_error("CG in metacg file was null.");
+  if (!j.contains(ffInfo.cgFieldName) || j.at(ffInfo.cgFieldName).is_null()) {
+    const std::string errorMsg = "The call graph in the metacg file was not found or null.";
+    errConsole->error(errorMsg);
+    throw std::runtime_error(errorMsg);
   }
 
+  auto jsonCG = j.at(ffInfo.cgFieldName);
   for (json::iterator it = jsonCG.begin(); it != jsonCG.end(); ++it) {
     auto &fi = getOrInsert(it.key());  // new entry for function it.key
 
@@ -175,25 +194,13 @@ void VersionTwoMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
 
     /** Information relevant for analysis */
     setIfNotNull(fi.hasBody, it, fileInfo.nodeInfo.hasBodyStr);
+
+    /** Metadata */
+    setIfNotNull(fi.namedMetadata, it, fileInfo.nodeInfo.metaStr);
   }
 
   auto potentialTargets = buildVirtualFunctionHierarchy(cgManager);
   buildGraph(cgManager, potentialTargets);
-
-  for (json::iterator it = jsonCG.begin(); it != jsonCG.end(); ++it) {
-    /**
-     * Pass each attached meta reader the current json object, to see if it has meta data
-     *  particular to that reader attached.
-     */
-    auto &jsonElem = it.value()[fileInfo.nodeInfo.metaStr];
-    if (!jsonElem.is_null()) {
-      for (const auto metaHandler : cgManager.getMetaHandlers()) {
-        if (jsonElem.contains(metaHandler->toolName())) {
-          metaHandler->read(jsonElem, it.key());
-        }
-      }
-    }
-  }
 }
 }  // namespace io
 }  // namespace metacg

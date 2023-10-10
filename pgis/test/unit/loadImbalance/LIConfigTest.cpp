@@ -6,8 +6,9 @@
 
 #include "LoggerUtil.h"
 #include "nlohmann/json.hpp"
-#include "gtest/gtest.h"
 #include <loadImbalance/LIConfig.h>
+
+#include "gtest/gtest.h"
 
 using namespace nlohmann;
 using namespace LoadImbalance;

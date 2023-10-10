@@ -13,22 +13,6 @@
 
 using json = nlohmann::json;
 
-/**
- * This is to test, if it can actually work as imagined
- */
-
-struct TestHandler : public metacg::io::retriever::MetaDataHandler {
-  int i{0};
-  const std::string toolName() const override { return "TestMetaHandler"; }
-  void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
-  bool handles(const metacg::CgNode *const n) const override { return false; }
-  json value(const metacg::CgNode *const n) const override {
-    json j;
-    j = i;
-    return j;
-  }
-};
-
 class MCGManagerTest : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -49,6 +33,24 @@ TEST_F(MCGManagerTest, EmptyCG) {
   ASSERT_EQ(false, graph->hasNode("main"));
   ASSERT_EQ(nullptr, graph->getMain());
   ASSERT_EQ(0, graph->size());
+}
+
+TEST_F(MCGManagerTest, GetOrCreateCGActive) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  auto *cg = mcgm.getOrCreateCallgraph("newCG", true);
+  ASSERT_NE(nullptr, cg);
+  ASSERT_TRUE(mcgm.assertActive("newCG"));
+}
+
+TEST_F(MCGManagerTest, GetOrCreateCGExistingActive) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newCG", std::make_unique<metacg::Callgraph>(), false);
+  mcgm.addToManagedGraphs("newCG2", std::make_unique<metacg::Callgraph>(), false);
+  ASSERT_FALSE(mcgm.assertActive("newCG"));
+  ASSERT_FALSE(mcgm.assertActive("newCG2"));
+  auto *cg = mcgm.getOrCreateCallgraph("newCG", true);
+  ASSERT_TRUE(mcgm.assertActive("newCG"));
+  ASSERT_FALSE(mcgm.assertActive("newCG2"));
 }
 
 TEST_F(MCGManagerTest, OneNodeCG) {
@@ -85,6 +87,16 @@ TEST_F(MCGManagerTest, ThreeNodeCG) {
   ASSERT_EQ(2, mcgm.getCallgraph()->getCallees(mainNode->getId()).size());
   ASSERT_EQ(1, mcgm.getCallgraph()->getCallers(childNode->getId()).size());
   ASSERT_EQ(1, mcgm.getCallgraph()->getCallers(childNode2->getId()).size());
+}
+
+TEST_F(MCGManagerTest, TwoNodeOneEdgeCG) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  auto cg = mcgm.getCallgraph();
+  cg->addEdge(cg->getOrInsertNode("main"), cg->getOrInsertNode("LC1"));
+
+  ASSERT_TRUE(cg->getMain() != nullptr);
+  auto mainNode = cg->getMain();
+  ASSERT_TRUE(mcgm.getCallgraph()->getCallees(mainNode->getId()).size() == 1);
 }
 
 TEST_F(MCGManagerTest, ComplexCG) {
@@ -171,21 +183,4 @@ TEST_F(MCGManagerTest, ComplexCG) {
   for (const auto &elem : mcgm.getCallgraph()->getCallers(childNode6->getId())) {
     ASSERT_TRUE(elem->getFunctionName() == "child4" || elem->getFunctionName() == "child5");
   }
-}
-
-TEST_F(MCGManagerTest, OneMetaDataAttached) {
-  auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.addMetaHandler<TestHandler>();
-  const auto &handlers = mcgm.getMetaHandlers();
-  ASSERT_EQ(handlers.size(), 1);
-}
-
-TEST_F(MCGManagerTest, TwoNodeOneEdgeCG) {
-  auto &mcgm = metacg::graph::MCGManager::get();
-  auto cg = mcgm.getCallgraph();
-  cg->addEdge(cg->getOrInsertNode("main"), cg->getOrInsertNode("LC1"));
-
-  ASSERT_TRUE(cg->getMain() != nullptr);
-  auto mainNode = cg->getMain();
-  ASSERT_TRUE(mcgm.getCallgraph()->getCallees(mainNode->getId()).size() == 1);
 }

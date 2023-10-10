@@ -15,8 +15,8 @@
 #pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic ignored "-Wsign-compare"
-#include "PiraMCGProcessor.h"
 #include "EXTRAP_SingleParameterModelGenerator.hpp"
+#include "PiraMCGProcessor.h"
 #include <EXTRAP_MultiParameterSimpleModelGenerator.hpp>
 #include <EXTRAP_SingleParameterSimpleModelGenerator.hpp>
 #include <config/PiraIIConfig.h>
@@ -41,7 +41,7 @@ void printConfig(ExtrapConfig &cfg) {
       cfg.directory, cfg.repetitions, cfg.prefix, cfg.postfix, cfg.iteration, parameterStr);
 }
 
-ExtrapConfig getExtrapConfigFromJSON(std::string filePath) {
+ExtrapConfig getExtrapConfigFromJSON(const std::filesystem::path &filePath) {
   using json = nlohmann::json;
 
   json j;
@@ -150,7 +150,7 @@ void ExtrapModelProvider::buildModels() {
   reader.prepareCubeFileReader(scalingType, finalDir, config.prefix, config.postfix, cubeFileName, extrapParams,
                                paramPrefixes, paramValues, config.repetitions);
 
-  int dimensions = extrapParams.size(); // The Extra-P API awaits int instead of size_t
+  int dimensions = extrapParams.size();  // The Extra-P API awaits int instead of size_t
   auto console = spdlog::get("console");
   auto cubeFiles = reader.getFileNames(dimensions);
   auto fns = reader.getFileNames(dimensions);
@@ -178,7 +178,7 @@ void ExtrapModelProvider::buildModels() {
 
   for (size_t i = 0; i < fns.size(); ++i) {
     //    if (i % configPtr.repetitions == 0) {
-    const auto attEpData = [&](auto &cube, auto cnode, auto n) {
+    const auto attEpData = [&](auto &cube, auto cnode, auto n, [[maybe_unused]] auto pnode, [[maybe_unused]] auto pn) {
       console->debug("Attaching Cube info from file {}", fns.at(i));
       auto ptd = n->template getOrCreateMD<pira::PiraTwoData>(ExtrapConnector({}, {}));
       ptd->setExtrapParameters(config.params);
@@ -191,7 +191,7 @@ void ExtrapModelProvider::buildModels() {
   }
 
   for (const auto &elem : metacg::pgis::PiraMCGProcessor::get()) {
-    const auto& n = elem.second.get();
+    const auto &n = elem.second.get();
     console->trace("No PiraTwoData meta data");
     if (n->has<pira::PiraTwoData>()) {
       auto ptd = CubeCallgraphBuilder::impl::get<pira::PiraTwoData>(n);
@@ -226,7 +226,7 @@ void ExtrapModelProvider::buildModels() {
    * - We can have multiple models for one function, as Extra-P models based on the call-path profiles.
    * - We have models for each metric captured in the target application.
    */
-  EXTRAP::ModelGenerator *mg = nullptr; // deleted in class destructor
+  EXTRAP::ModelGenerator *mg = nullptr;  // deleted in class destructor
   if (extrapParams.size() == 1) {
     auto smg = new EXTRAP::SingleParameterSimpleModelGenerator();
     smg->setEpsilon(0.05);

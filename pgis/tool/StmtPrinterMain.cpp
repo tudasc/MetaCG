@@ -14,8 +14,8 @@
 
 #include "../../graph/include/Callgraph.h"
 
-#include "PiraMCGProcessor.h"
 #include "IPCGEstimatorPhase.h"
+#include "PiraMCGProcessor.h"
 
 void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &cg, Config *c, bool isIPCG, float runtimeThreshold) {
   auto statEstimator = new StatisticsEstimatorPhase(false);  // used to compute values for other phases
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
   // PiraMCGProcessor cg(&c);
   auto &cg = metacg::pgis::PiraMCGProcessor::get();
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.addToManagedGraphs("emptyGraph",std::make_unique<metacg::Callgraph>());
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   cg.setConfig(&c);
 
   if (stringEndsWith(filePath_ipcg, ".ipcg")) {

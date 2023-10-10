@@ -5,6 +5,7 @@
 fails=0
 
 buildDirParam=build # Can be changed via -b
+timeStamp=$(date +%s)
 
 while getopts ":b:h" opt; do
   case $opt in
@@ -26,18 +27,23 @@ while getopts ":b:h" opt; do
   esac
 done
 
+: ${CI_CONCURRENT_ID:=$timeStamp}
+
 buildDir="../../../${buildDirParam}/pgis"
 testExec=${buildDir}/tool/pgis_pira
 testSuite='basic'
 logDir=$PWD/logging
-logFile=${logDir}/${testSuite}.log
+logFile=${logDir}/${testSuite}-${CI_CONCURRENT_ID}.log
+outDir=$PWD/outBasic-${CI_CONCURRENT_ID}
 
-rm -rf $logDir && mkdir ${logDir}
+if [ ! -d ${logDir} ]; then
+  mkdir ${logDir}
+fi
 
 echo "Running Tests with build directory: ${buildDir}"
 
 for testFile in ./ipcgread/*.ipcg; do
-	$testExec --static $testFile >${logFile} 2>&1
+	$testExec --out-dir $outDir --static $testFile >${logFile} 2>&1
 	errCode=$?
 	check_and_print $fails $testFile $errCode
 	fails=$?

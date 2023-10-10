@@ -10,17 +10,20 @@ if(METACG_USE_EXTERNAL_SPDLOG)
 else()
   message("Using fetched release version of spdlog library")
 
+  # We require spdlog to be built with shared library support
+  set(SPDLOG_BUILD_SHARED
+      ON
+      CACHE INTERNAL ""
+  )
+  # Use the spdlog install option to install when MetaCG is installed
+  set(SPDLOG_INSTALL
+      ON
+      CACHE INTERNAL ""
+  )
   FetchContent_Declare(spdlog URL https://github.com/gabime/spdlog/archive/refs/tags/v1.8.2.tar.gz)
   FetchContent_MakeAvailable(spdlog)
-
-  # Only install when spdlog is desired as automatically downloaded library
-  install(
-    TARGETS spdlog
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-  )
 endif()
 
 function(add_spdlog_libraries target)
-  target_link_libraries(${target} spdlog::spdlog)
+  target_link_libraries(${target} PRIVATE spdlog::spdlog)
 endfunction()

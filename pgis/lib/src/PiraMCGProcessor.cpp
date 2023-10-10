@@ -4,13 +4,13 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "ErrorCodes.h"
 #include "PiraMCGProcessor.h"
+#include "DotIO.h"
+#include "ErrorCodes.h"
+#include "ExtrapConnection.h"
 #include "Timing.h"
 #include "config/GlobalConfig.h"
 #include "config/ParameterConfig.h"
-#include "DotIO.h"
-#include "ExtrapConnection.h"
 
 #include "EXTRAP_Model.hpp"
 
@@ -18,6 +18,7 @@
 
 #include "spdlog/spdlog.h"
 
+#include <climits>
 #include <iomanip>  //  std::setw()
 
 using namespace metacg;
@@ -51,10 +52,6 @@ void metacg::pgis::PiraMCGProcessor::finalizeGraph(bool buildMarker) {
       spdlog::get("errconsole")->error("PiraMCGProcessor: Cannot find main function");
       exit(::pgis::ErrorCode::NoMainFunctionFound);
     }
-//    mainNode->setReachable();
-
-    // run reachability analysis -> mark reachable nodes
-//    CgHelper::reachableFromMainAnalysis(graph.getMain());
   }
 }
 
@@ -80,23 +77,15 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
       const std::string curPhase = phase->getName();
       metacg::RuntimeTimer rtt("Running " + curPhase);
       phase->modifyGraph(mainFunction);
-      phase->generateReport();
+      phase->generateIC();
 
       spdlog::get("console")->info("Print phase report");
       phase->printReport();
 
-      CgReport report = phase->getReport();
+      InstrumentationConfiguration IC = phase->getIC();
       [[maybe_unused]] auto &gOpts = ::pgis::config::GlobalConfig::get();
 
-//      if (outputDotBetweenPhases) {
-//        printDOT(report.phaseName);
-//      }
-
-      dumpInstrumentedNames(report);  // outputs the instrumentation
-
-//      if (gOpts.getAs<bool>(printUnwoundNames.cliName)) {
-//        dumpUnwoundNames(report);
-//      }
+      dumpInstrumentedNames(IC);  // outputs the instrumentation
 
     }  // RAII
 
@@ -115,8 +104,8 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
 int metacg::pgis::PiraMCGProcessor::getNumProcs() {
   int numProcs = 1;
   int prevNum = 0;
-  for (const auto& elem : graph->getNodes()) {
-    const auto& node= elem.second.get();
+  for (const auto &elem : graph->getNodes()) {
+    const auto &node = elem.second.get();
     if (!node->get<BaseProfileData>()->getCgLocation().empty()) {
       for (CgLocation cgLoc : node->get<BaseProfileData>()->getCgLocation()) {
         if (cgLoc.getProcId() != prevNum) {
@@ -160,29 +149,36 @@ bool metacg::pgis::PiraMCGProcessor::isNodeListed(std::vector<std::string> white
   return false;
 }
 
-void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(CgReport report) {
+void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(InstrumentationConfiguration IC) {
   if (noOutputRequired) {
     return;
   }
 
-  std::string filename =
-      configPtr->outputFile + "/instrumented-" + configPtr->appName + "-" + report.phaseName + ".txt";
-  std::size_t found = filename.find(configPtr->outputFile + "/instrumented-" + configPtr->appName + "-" + "Incl");
-  if (found != std::string::npos) {
-    filename = configPtr->outputFile + "/instrumented-" + configPtr->appName + ".txt";
+  //  std::string filename =
+  //      configPtr->outputFile + "/instrumented-" + configPtr->appName + "-" + IC.phaseName + ".txt";
+  //  std::size_t found = filename.find(configPtr->outputFile + "/instrumented-" + configPtr->appName + "-" + "Incl");
+  //  if (found != std::string::npos) {
+  //    filename = configPtr->outputFile + "/instrumented-" + configPtr->appName + ".txt";
+  //  }
+  std::string filename = configPtr->outputFile + "/instrumented-" + configPtr->appName + ".txt";
+  char buff[PATH_MAX];
+  const auto ret = getcwd(buff, PATH_MAX);
+  if (ret == nullptr) {
+    spdlog::get("errconsole")->error("Cannot get current working directory");
+    exit(::pgis::ErrorCode::CouldNotGetCWD);
   }
-  filename = configPtr->outputFile + "/instrumented-" + configPtr->appName + ".txt";
-  spdlog::get("console")->info("Writing to {}", filename);
+  std::string curCwd(buff);
+  spdlog::get("console")->info("Writing to {}. Current cwd {}", filename, curCwd);
   std::ofstream outfile(filename, std::ofstream::out);
 
   // The simple whitelist used so far in PIRA
   bool scorepOutput = ::pgis::config::GlobalConfig::get().getAs<bool>("scorep-out");
   if (!scorepOutput) {
     spdlog::get("console")->debug("Using plain whitelist format");
-    if (report.instrumentedNodes.empty()) {
+    if (IC.instrumentedNodes.empty()) {
       outfile << "aFunctionThatDoesNotExist" << std::endl;
     } else {
-      for (const auto& name : report.instrumentedNames) {
+      for (const auto &name : IC.instrumentedNames) {
         outfile << name << std::endl;
       }
     }
@@ -196,32 +192,32 @@ void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(CgReport report) {
 
     std::stringstream ss;
     ss << scorepBegin << "\n";
-    for (const auto &name : report.instrumentedNames) {
+    for (const auto &name : IC.instrumentedNames) {
       ss << include << " " << name << "\n";
     }
-    for (const auto &[name, node] : report.instrumentedPaths) {
+    for (const auto &[name, node] : IC.instrumentedPaths) {
       for (const auto &parent : graph->getCallers(node)) {
         ss << include << " " << parent->getFunctionName() << " " << arrow << " " << name << "\n";
       }
     }
 
-    // Edge instrumentation
-    // XXX why?
-    //    for (const auto &[parent, node] : report.instrumentedEdges) {
-    //      ss << include << " " << parent->getFunctionName() << " " << arrow << " " << node->getFunctionName() << "\n";
-    //    }
     ss << scorepEnd << "\n";
 
     outfile << ss.str();
   }
 }
 
-Callgraph* metacg::pgis::PiraMCGProcessor::getCallgraph(PiraMCGProcessor *cg) { if (cg) { return cg->graph; } return graph; }
+Callgraph *metacg::pgis::PiraMCGProcessor::getCallgraph(PiraMCGProcessor *cg) {
+  if (cg) {
+    return cg->graph;
+  }
+  return graph;
+}
 
 void metacg::pgis::PiraMCGProcessor::attachExtrapModels() {
   epModelProvider.buildModels();
   for (const auto &elem : graph->getNodes()) {
-    const auto& n=elem.second.get();
+    const auto &n = elem.second.get();
     spdlog::get("console")->debug("Attaching models for {}", n->getFunctionName());
     auto ptd = n->getOrCreateMD<PiraTwoData>(epModelProvider.getModelFor(n->getFunctionName()));
     if (!ptd->getExtrapModelConnector().hasModels()) {

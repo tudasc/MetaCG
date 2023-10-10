@@ -5,9 +5,9 @@
  */
 
 #include "MCGWriter.h"
-#include "Callgraph.h"
 #include "MCGManager.h"
 #include "Util.h"
+#include "config.h"
 
 using FunctionNames = std::set<std::string>;
 
@@ -25,9 +25,7 @@ void metacg::io::MCGWriter::write(JsonSink &js) {
   attachMCGFormatHeader(j);
   for (const auto &n : mcgManager.getCallgraph()->getNodes()) {
     createNodeData(n.second.get(), j);  // general node data?
-    createAndAddMetaData(n.second.get(), mcgManager, j);
   }
-
   js.setJson(j);
 }
 
@@ -58,18 +56,5 @@ void metacg::io::MCGWriter::createNodeData(const CgNode *const node, nlohmann::j
                                                   {nodeInfo.overriddenByStr, overriddenBy},
                                                   {nodeInfo.callersStr, metacg::util::getFunctionNames(callers)},
                                                   {nodeInfo.hasBodyStr, hasBody},
-                                                  {nodeInfo.metaStr, nullptr}};
-}
-
-void metacg::io::MCGWriter::createAndAddMetaData(const CgNode *const node, const metacg::graph::MCGManager &mcgm,
-                                                 nlohmann::json &j) {
-  const auto funcName = node->getFunctionName();
-  const auto mdHandlers = mcgm.getMetaHandlers();
-  for (const auto mdh : mdHandlers) {
-    if (!mdh->handles(node)) {
-      continue;
-    }
-    const auto mdJson = mdh->value(node);
-    j[fileInfo.formatInfo.cgFieldName][funcName][fileInfo.nodeInfo.metaStr][mdh->toolName()] = mdJson;
-  }
+                                                  {nodeInfo.metaStr, node->getMetaDataContainer() }};
 }

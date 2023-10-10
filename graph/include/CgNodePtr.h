@@ -40,9 +40,6 @@ struct greater_equal<std::shared_ptr<metacg::CgNode>> {
 }  // namespace std
 */
 typedef std::unique_ptr<metacg::CgNode> CgNodePtr;  // hopefully this typedef helps readability
-
 typedef std::unordered_set<metacg::CgNode *> CgNodeRawPtrUSet;
-
-
 
 #endif

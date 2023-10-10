@@ -49,6 +49,7 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
   CallGraphNode *Root;
 
   bool captureCtorsDtors{false};
+  bool includeUnusedDecls{false};
 
   std::vector<const clang::Decl *> inOrderDecls;
 
@@ -65,6 +66,7 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
   using UnresolvedMapTy = std::unordered_map<const clang::FunctionDecl *, std::unordered_set<const clang::VarDecl *>>;
 
   void setCaptureCtorsDtors(bool capture) { captureCtorsDtors = capture; }
+  void setIncludeDecl(bool include) { includeUnusedDecls = include; }
 
   /// Populate the call graph with the functions in the given
   /// declaration.
@@ -81,6 +83,8 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
   /// Lookup the node for the given declaration. If none found, insert
   /// one into the graph.
   CallGraphNode *getOrInsertNode(const clang::Decl *);
+
+  void addDeclToCalledDecls(const clang::CallExpr *, const clang::Decl *);
 
   using iterator = FunctionMapTy::iterator;
   using const_iterator = FunctionMapTy::const_iterator;

@@ -7,7 +7,6 @@
 #ifndef METACG_MCGBASEINFO_H
 #define METACG_MCGBASEINFO_H
 
-#include "config.h"
 #include <string>
 
 namespace metacg {

@@ -22,8 +22,8 @@ add_flags="$2"
 # Extra-P (https://www.scalasca.org/software/extra-p/download.html)
 echo "[MetaCG] Building Extra-P (for PIRA II modeling)"
 echo "[MetaCG] Getting prerequisites ..."
-pip3 install --user PyQt5 2>&1 >/dev/null
-pip3 install --user matplotlib 2>&1 >/dev/null
+pip3 install PyQt5 >/dev/null 2>&1
+pip3 install matplotlib >/dev/null 2>&1
 if [ $? -ne 0 ]; then
   echo "[MetaCG] Installting Extra-P dependencies failed."
   exit 1
@@ -50,19 +50,19 @@ if [ -z $pythonheader ]; then
   exit 1
 fi
 echo "[MetaCG] Found Python.h at " $pythonheader
-../configure --prefix=$extinstalldir/extrap CPPFLAGS=-I$pythonheader 2>&1 >/dev/null
+../configure --prefix=$extinstalldir/extrap CPPFLAGS=-I$pythonheader >/dev/null 2>&1
 if [ $? -ne 0 ]; then
   echo "[MetaCG] Configuring Extra-P failed."
   exit 1
 fi
 
-make -j $parallel_jobs 2>&1 >/dev/null
+make -j $parallel_jobs >/dev/null 2>&1
 if [ $? -ne 0 ]; then
   echo "[MetaCG] Building Extra-P failed."
   exit 1
 fi
 
-make install 2>&1 >/dev/null
+make install >/dev/null 2>&1
 if [ $? -ne 0 ]; then
   echo "[MetaCG] Installing Extra-P failed."
   exit 1

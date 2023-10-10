@@ -1,262 +1,470 @@
 /**
- * File: MCGReaderTest.cpp
- * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * File: DotIOTest.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
+#include "LoggerUtil.h"
 #include "gtest/gtest.h"
 
-#include "LoggerUtil.h"
 #include "MCGManager.h"
 #include "MCGReader.h"
-#include "nlohmann/json.hpp"
 
-using namespace metacg;
-using json = nlohmann::json;
-
-/**
- * MetaDataHandler used for testing
- */
-struct TestHandler : public metacg::io::retriever::MetaDataHandler {
-  int i{0};
-  [[nodiscard]] const std::string toolName() const override { return "TestMetaHandler"; }
-  void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
-  [[nodiscard]] bool handles(const CgNode *const n) const override { return false; }
-  [[nodiscard]] json value(const CgNode *const n) const override {
-    json j;
-    j = i;
-    return j;
+class V2MCGReaderTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    metacg::loggerutil::getLogger();
+    auto &mcgm = metacg::graph::MCGManager::get();
+    mcgm.resetManager();
+    mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   }
 };
 
-TEST(VersionTwoMetaCGReaderTest, EmptyJSON) {
-  json j;
-  metacg::loggerutil::getLogger();
+class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
+ public:
+  static constexpr const char *key = "TestMetaData";
+  TestMetaData() = default;
+  explicit TestMetaData(const nlohmann::json &j) {
+    metadataString = j.at("metadataString");
+    metadataInt = j.at("metadataInt");
+    metadataFloat = j.at("metadataFloat");
+  }
 
-  // No MetaData Reader added to CGManager
-  auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
-  metacg::io::JsonSource js(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(js);
-  ASSERT_THROW(mcgReader.read(mcgm), std::runtime_error);
-}
-
-TEST(VersionTwoMetaCGReaderTest, EmptyCG) {
-  metacg::loggerutil::getLogger();
-
-  json j;
-  j["_MetaCG"] = {{"version", "1.0"}, {"generator", {{"name", "testGen"}, {"version", "1.0"}}}};
-  j["_CG"] = {};
-
-  // No MetaData Reader added to CGManager
-  auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
-  metacg::io::JsonSource js(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(js);
-  // "The call graph in the metacg file was null"
-  ASSERT_THROW(mcgReader.read(mcgm), std::runtime_error);
-}
-
-TEST(VersionTwoMetaCGReaderTest, SingleMetaDataHandlerEmptyJSON) {
-  json j;
-  metacg::loggerutil::getLogger();
-
-  auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
-  mcgm.addMetaHandler<TestHandler>();
-
-  metacg::io::JsonSource js(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(js);
-  ASSERT_THROW(mcgReader.read(mcgm), std::runtime_error);
-}
-
-TEST(VersionTwoMetaCGReaderTest, OneNodeNoMetaDataHandler) {
-  metacg::loggerutil::getLogger();
-
-  json j;
-  j["_MetaCG"] = {{"version", "1.0"}, {"generator", {{"name", "testGen"}, {"version", "1.0"}}}};
-  j["_CG"] = {{"main",
-               {{"doesOverride", false},
-                {"hasBody", true},
-                {"isVirtual", false},
-                {"overriddenBy", json::array()},
-                {"overrides", json::array()},
-                {"callers", json::array()},
-                {"callees", json::array()}}}};
-
-  // No MetaData Reader added to CGManager
-  auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
-  metacg::io::JsonSource js(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(js);
-  mcgReader.read(mcgm);
-
-  auto graph = mcgm.getCallgraph();
-  EXPECT_EQ(graph->size(), 1);
-
-  const auto mainNode = graph->getMain();
-  EXPECT_EQ(mainNode->getFunctionName(), "main");
-  EXPECT_EQ(graph->getCallees(mainNode->getId()).size(), 0);
-  EXPECT_EQ(graph->getCallers(mainNode->getId()).size(), 0);
-}
-
-TEST(VersionTwoMetaCGReaderTest, TwoNodesNoMetaDataHandler) {
-  metacg::loggerutil::getLogger();
-
-  json j;
-  j["_MetaCG"] = {{"version", "1.0"}, {"generator", {{"name", "testGen"}, {"version", "1.0"}}}};
-  j["_CG"] = {{"main",
-               {{"doesOverride", false},
-                {"hasBody", true},
-                {"isVirtual", false},
-                {"overriddenBy", json::array()},
-                {"overrides", json::array()},
-                {"callers", json::array()},
-                {"callees", {"foo"}},
-                {"meta", {}}}},
-              {"foo",
-               {{"doesOverride", false},
-                {"hasBody", true},
-                {"isVirtual", false},
-                {"overriddenBy", json::array()},
-                {"overrides", json::array()},
-                {"callers", {"main"}},
-                {"callees", json::array()},
-                {"meta", {}}}}};
-
-  // No MetaData Reader added to CGManager
-  auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
-  metacg::io::JsonSource js(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(js);
-  mcgReader.read(mcgm);
-
-  auto graph = mcgm.getCallgraph();
-  EXPECT_EQ(graph->size(), 2);
-
-  const auto mainNode = graph->getMain();
-  EXPECT_EQ(mainNode->getFunctionName(), "main");
-  EXPECT_EQ(graph->getCallees(mainNode->getId()).size(), 1);
-  EXPECT_EQ(graph->getCallers(mainNode->getId()).size(), 0);
-}
-
-TEST(VersionTwoMetaCGReaderTest, TwoNodesOneMetaDataHandler) {
-  metacg::loggerutil::getLogger();
-
-  json j;
-  j["_MetaCG"] = {{"version", "1.0"}, {"generator", {{"name", "testGen"}, {"version", "1.0"}}}};
-  j["_CG"] = {{"main",
-               {{"doesOverride", false},
-                {"hasBody", true},
-                {"isVirtual", false},
-                {"overriddenBy", json::array()},
-                {"overrides", json::array()},
-                {"callers", json::array()},
-                {"callees", {"foo"}},
-                {"meta", {{"TestMetaHandler", {}}}}}},
-              {"foo",
-               {{"doesOverride", false},
-                {"hasBody", true},
-                {"isVirtual", false},
-                {"overriddenBy", json::array()},
-                {"overrides", json::array()},
-                {"callers", {"main"}},
-                {"callees", json::array()},
-                {"meta", {{"TestMetaHandler", {}}}}}}};
-
-  auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
-  mcgm.addMetaHandler<TestHandler>();
-
-  metacg::io::JsonSource js(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(js);
-  mcgReader.read(mcgm);
-
-  auto graph = mcgm.getCallgraph();
-  EXPECT_EQ(graph->size(), 2);
-
-  const auto mainNode = graph->getMain();
-  EXPECT_EQ(mainNode->getFunctionName(), "main");
-  EXPECT_EQ(graph->getCallees(mainNode->getId()).size(), 1);
-  EXPECT_EQ(graph->getCallers(mainNode->getId()).size(), 0);
-
-  // XXX This is ugly, but we know the type of the meta handler, so we cast it.
-  auto handlers = mcgm.getMetaHandlers();
-  auto th = handlers.front();
-  TestHandler *tmh = dynamic_cast<TestHandler *>(th);
-  EXPECT_EQ(tmh->i, 2);  // We have two nodes with meta information for this handler's key
-}
-
-TEST(VersionTwoMetaCGReaderTest, TwoNodesTwoMetaDataHandler) {
-  metacg::loggerutil::getLogger();
-
-  json j;
-  j["_MetaCG"] = {{"version", "1.0"}, {"generator", {{"name", "testGen"}, {"version", "1.0"}}}};
-  j["_CG"] = {{"main",
-               {{"doesOverride", false},
-                {"hasBody", true},
-                {"isVirtual", false},
-                {"overriddenBy", json::array()},
-                {"overrides", json::array()},
-                {"callers", json::array()},
-                {"callees", {"foo"}},
-                {"meta", {{"TestMetaHandler", {}}}}}},
-              {"foo",
-               {{"doesOverride", false},
-                {"hasBody", true},
-                {"isVirtual", false},
-                {"overriddenBy", json::array()},
-                {"overrides", json::array()},
-                {"callers", {"main"}},
-                {"callees", json::array()},
-                {"meta", {{"TestMetaHandlerOne", {}}}}}}};
-  // Only used / required in this test.
-  struct TestHandlerOne : public metacg::io::retriever::MetaDataHandler {
-    int i{0};
-    const std::string toolName() const override { return "TestMetaHandlerOne"; }
-    void read([[maybe_unused]] const json &j, const std::string &functionName) override { i++; }
-    bool handles(const CgNode *const n) const override { return false; }
-    json value(const CgNode *const n) const override {
-      json j;
-      j = 1;
-      return j;
-    }
+  nlohmann::json to_json() const final {
+    nlohmann::json j;
+    j["metadataString"] = metadataString;
+    j["metadataInt"] = metadataInt;
+    j["metadataFloat"] = metadataFloat;
+    return j;
   };
 
+  virtual const char *getKey() const final { return key; }
+
+  std::string metadataString;
+  int metadataInt = 0;
+  float metadataFloat = 0.0f;
+};
+
+TEST_F(V2MCGReaderTest, NullCG) {
+  nlohmann::json j;
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
-  mcgm.addMetaHandler<TestHandler>();
-  mcgm.addMetaHandler<TestHandlerOne>();
+  metacg::io::JsonSource jsonSource(j);
+  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  try {
+    mcgReader.read(mcgm);
+    EXPECT_TRUE(false);  // should not reach here
+  } catch (std::exception &e) {
+    EXPECT_TRUE(strcmp(e.what(), "JSON source did not contain any data.") == 0);
+  }
+}
 
-  metacg::io::JsonSource js(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(js);
+TEST_F(V2MCGReaderTest, BrokenMetaInformation) {
+  nlohmann::json j =
+      "{\n"
+      "   \"_CG\":null,\n"
+      "   \"_MetaCG\": null\n"
+      "}"_json;
+  metacg::io::JsonSource jsonSource(j);
+  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  auto &mcgm = metacg::graph::MCGManager::get();
+
+  try {
+    mcgReader.read(mcgm);
+    EXPECT_TRUE(false);  // should not reach here
+  } catch (std::exception &e) {
+    EXPECT_TRUE(strcmp(e.what(), "Could not read version info from metacg file.") == 0);
+  }
+}
+
+TEST_F(V2MCGReaderTest, WrongVersionInformation) {
+  nlohmann::json j =
+      "{\n"
+      "         \"_CG\": null,\n"
+      "         \"_MetaCG\":{\n"
+      "            \"generator\":{\n"
+      "               \"name\":\"Test\",\n"
+      "               \"sha\":\"TestSha\",\n"
+      "               \"version\":\"0.1\"\n"
+      "            },\n"
+      "            \"version\":\"3.0\"\n"
+      "         }\n"
+      "      }"_json;
+  metacg::io::JsonSource jsonSource(j);
+  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  auto &mcgm = metacg::graph::MCGManager::get();
+
+  try {
+    mcgReader.read(mcgm);
+    EXPECT_TRUE(false);  // should not reach here
+  } catch (std::exception &e) {
+    EXPECT_TRUE(strcmp(e.what(), "File is of version 3.0, this reader handles version 2.x") == 0);
+  }
+}
+
+TEST_F(V2MCGReaderTest, BrokenCG) {
+  nlohmann::json j =
+      "{\n"
+      "         \"_CG\": null,\n"
+      "         \"_MetaCG\":{\n"
+      "            \"generator\":{\n"
+      "               \"name\":\"Test\",\n"
+      "               \"sha\":\"TestSha\",\n"
+      "               \"version\":\"0.1\"\n"
+      "            },\n"
+      "            \"version\":\"2.0\"\n"
+      "         }\n"
+      "      }"_json;
+
+  metacg::io::JsonSource jsonSource(j);
+  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  auto &mcgm = metacg::graph::MCGManager::get();
+  try {
+    mcgReader.read(mcgm);
+    EXPECT_TRUE(false);  // should not reach here
+  } catch (std::exception &e) {
+    EXPECT_TRUE(strcmp(e.what(), "The call graph in the metacg file was not found or null.") == 0);
+  }
+}
+
+TEST_F(V2MCGReaderTest, EmptyCGRead) {
+  nlohmann::json j =
+      "{\n"
+      "   \"_CG\":{},\n"
+      "   \"_MetaCG\":{\n"
+      "      \"generator\":{\n"
+      "         \"name\":\"Test\",\n"
+      "         \"sha\":\"TestSha\",\n"
+      "         \"version\":\"0.1\"\n"
+      "      },\n"
+      "      \"version\":\"2.0\"\n"
+      "   }\n"
+      "}"_json;
+  metacg::io::JsonSource jsonSource(j);
+  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  auto &mcgm = metacg::graph::MCGManager::get();
   mcgReader.read(mcgm);
+  EXPECT_EQ(mcgm.graphs_size(), 1);
+  const auto &cg = mcgm.getCallgraph();
+  EXPECT_EQ(cg->size(), 0);
+}
 
-  auto graph = mcgm.getCallgraph();
-  EXPECT_EQ(graph->size(), 2);
+TEST_F(V2MCGReaderTest, OneNodeCGRead) {
+  nlohmann::json j =
+      "{\n"
+      "   \"_CG\":{\n"
+      "      \"main\":{\n"
+      "         \"callees\":[],\n"
+      "         \"callers\":[],\n"
+      "         \"doesOverride\":false,\n"
+      "         \"hasBody\":true,\n"
+      "         \"isVirtual\":false,\n"
+      "         \"meta\":null,\n"
+      "         \"overriddenBy\":[],\n"
+      "         \"overrides\":[]\n"
+      "      }\n"
+      "   },\n"
+      "   \"_MetaCG\":{\n"
+      "      \"generator\":{\n"
+      "         \"name\":\"Test\",\n"
+      "         \"sha\":\"TestSha\",\n"
+      "         \"version\":\"0.1\"\n"
+      "      },\n"
+      "      \"version\":\"2.0\"\n"
+      "   }\n"
+      "}"_json;
+  metacg::io::JsonSource jsonSource(j);
+  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  auto &mcgm = metacg::graph::MCGManager::get();
+  mcgReader.read(mcgm);
+  EXPECT_EQ(mcgm.graphs_size(), 1);
+  const auto &cg = mcgm.getCallgraph();
+  EXPECT_EQ(cg->size(), 1);
+  EXPECT_TRUE(cg->hasNode("main"));
+  EXPECT_TRUE(cg->getMain() != nullptr);
+  EXPECT_TRUE(cg->getMain()->getFunctionName() == "main");
+  EXPECT_TRUE(cg->getMain()->getId() == std::hash<std::string>()("main"));
+  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "main");
+  EXPECT_TRUE(cg->getMain()->getHasBody());
+  EXPECT_FALSE(cg->getMain()->isVirtual());
+  EXPECT_TRUE(cg->getMain()->getMetaDataContainer().empty());
+  EXPECT_TRUE(cg->getCallees("main").empty());
+  EXPECT_TRUE(cg->getCallers("main").empty());
+}
 
-  const auto mainNode = graph->getMain();
-  EXPECT_EQ(mainNode->getFunctionName(), "main");
+TEST_F(V2MCGReaderTest, TwoNodeCGRead) {
+  nlohmann::json j =
+      "{\n"
+      "   \"_CG\":{\n"
+      "      \"main\":{\n"
+      "         \"callees\":[],\n"
+      "         \"callers\":[],\n"
+      "         \"doesOverride\":false,\n"
+      "         \"hasBody\":true,\n"
+      "         \"isVirtual\":false,\n"
+      "         \"meta\":null,\n"
+      "         \"overriddenBy\":[],\n"
+      "         \"overrides\":[]\n"
+      "      },\n"
+      "      \"foo\":{\n"
+      "         \"callees\":[],\n"
+      "         \"callers\":[],\n"
+      "         \"doesOverride\":false,\n"
+      "         \"hasBody\":false,\n"
+      "         \"isVirtual\":false,\n"
+      "         \"meta\":null,\n"
+      "         \"overriddenBy\":[],\n"
+      "         \"overrides\":[]\n"
+      "      }\n"
+      "   },\n"
+      "   \"_MetaCG\":{\n"
+      "      \"generator\":{\n"
+      "         \"name\":\"Test\",\n"
+      "         \"sha\":\"TestSha\",\n"
+      "         \"version\":\"0.1\"\n"
+      "      },\n"
+      "      \"version\":\"2.0\"\n"
+      "   }\n"
+      "}"_json;
 
-  EXPECT_EQ(graph->getCallees(mainNode->getId()).size(), 1);
-  EXPECT_EQ(graph->getCallers(mainNode->getId()).size(), 0);
+  metacg::io::JsonSource jsonSource(j);
+  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  auto &mcgm = metacg::graph::MCGManager::get();
+  mcgReader.read(mcgm);
+  EXPECT_EQ(mcgm.graphs_size(), 1);
+  const auto &cg = mcgm.getCallgraph();
+  EXPECT_EQ(cg->size(), 2);
+  EXPECT_TRUE(cg->hasNode("main"));
+  EXPECT_TRUE(cg->getMain() != nullptr);
+  EXPECT_TRUE(cg->getMain()->getFunctionName() == "main");
+  EXPECT_TRUE(cg->getMain()->getId() == std::hash<std::string>()("main"));
+  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "main");
+  EXPECT_TRUE(cg->getMain()->getHasBody());
+  EXPECT_FALSE(cg->getMain()->isVirtual());
+  EXPECT_TRUE(cg->getMain()->getMetaDataContainer().empty());
+  EXPECT_TRUE(cg->getCallees("main").empty());
+  EXPECT_TRUE(cg->getCallers("main").empty());
 
-  // XXX This is ugly, but we know the type of the meta handler, so we cast it.
-  auto handlers = mcgm.getMetaHandlers();
-  auto th = handlers[0];
-  TestHandler *tmh = dynamic_cast<TestHandler *>(th);
-  ASSERT_NE(tmh, nullptr);
-  EXPECT_EQ(tmh->i, 1);  // We have two nodes with meta information for one handler each
+  EXPECT_TRUE(cg->hasNode("foo"));
+  EXPECT_TRUE(cg->getNode("foo")->getId() == std::hash<std::string>()("foo"));
+  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "foo");
+  EXPECT_FALSE(cg->getNode("foo")->getHasBody());
+  EXPECT_FALSE(cg->getNode("foo")->isVirtual());
+  EXPECT_TRUE(cg->getNode("foo")->getMetaDataContainer().empty());
+  EXPECT_TRUE(cg->getCallees("foo").empty());
+  EXPECT_TRUE(cg->getCallers("foo").empty());
+}
 
-  auto tho = handlers[1];
-  TestHandlerOne *tmho = dynamic_cast<TestHandlerOne *>(tho);
-  ASSERT_NE(tmho, nullptr);
-  EXPECT_EQ(tmho->i, 1);  // We have two nodes with meta information for one handler each
+TEST_F(V2MCGReaderTest, TwoNodeOneEdgeCGRead) {
+  nlohmann::json j =
+      "{\n"
+      "   \"_CG\":{\n"
+      "      \"main\":{\n"
+      "         \"callees\":[\"foo\"],\n"
+      "         \"callers\":[],\n"
+      "         \"doesOverride\":false,\n"
+      "         \"hasBody\":true,\n"
+      "         \"isVirtual\":false,\n"
+      "         \"meta\":null,\n"
+      "         \"overriddenBy\":[],\n"
+      "         \"overrides\":[]\n"
+      "      },\n"
+      "      \"foo\":{\n"
+      "         \"callees\":[],\n"
+      "         \"callers\":[\"main\"],\n"
+      "         \"doesOverride\":false,\n"
+      "         \"hasBody\":false,\n"
+      "         \"isVirtual\":false,\n"
+      "         \"meta\":null,\n"
+      "         \"overriddenBy\":[],\n"
+      "         \"overrides\":[]\n"
+      "      }\n"
+      "   },\n"
+      "   \"_MetaCG\":{\n"
+      "      \"generator\":{\n"
+      "         \"name\":\"GenCC\",\n"
+      "         \"sha\":\"NO_GIT_SHA_AVAILABLE\",\n"
+      "         \"version\":\"0.1\"\n"
+      "      },\n"
+      "      \"version\":\"2.0\"\n"
+      "   }"
+      "}"_json;
+
+  metacg::io::JsonSource jsonSource(j);
+  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  auto &mcgm = metacg::graph::MCGManager::get();
+  mcgReader.read(mcgm);
+  EXPECT_EQ(mcgm.graphs_size(), 1);
+  const auto &cg = mcgm.getCallgraph();
+  EXPECT_EQ(cg->size(), 2);
+  EXPECT_TRUE(cg->hasNode("main"));
+  EXPECT_TRUE(cg->getMain() != nullptr);
+  EXPECT_TRUE(cg->getMain()->getFunctionName() == "main");
+  EXPECT_TRUE(cg->getMain()->getId() == std::hash<std::string>()("main"));
+  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "main");
+  EXPECT_TRUE(cg->getMain()->getHasBody());
+  EXPECT_FALSE(cg->getMain()->isVirtual());
+  EXPECT_TRUE(cg->getMain()->getMetaDataContainer().empty());
+  EXPECT_TRUE(cg->getCallees("main").size() == 1);
+  for (const auto &callee : cg->getCallees("main")) {
+    EXPECT_TRUE(callee->getFunctionName() == "foo");
+  }
+  EXPECT_TRUE(cg->getCallers("main").empty());
+
+  EXPECT_TRUE(cg->hasNode("foo"));
+  EXPECT_TRUE(cg->getNode("foo")->getId() == std::hash<std::string>()("foo"));
+  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "foo");
+  EXPECT_FALSE(cg->getNode("foo")->getHasBody());
+  EXPECT_FALSE(cg->getNode("foo")->isVirtual());
+  EXPECT_TRUE(cg->getNode("foo")->getMetaDataContainer().empty());
+  EXPECT_TRUE(cg->getCallees("foo").empty());
+  EXPECT_TRUE(cg->getCallers("foo").size() == 1);
+  for (const auto &caller : cg->getCallers("foo")) {
+    EXPECT_TRUE(caller->getFunctionName() == "main");
+  }
+}
+
+TEST_F(V2MCGReaderTest, ThreeNodeOneEdgeCGRead) {
+  nlohmann::json j =
+      "{\n"
+      "   \"_CG\":{\n"
+      "      \"main\":{\n"
+      "         \"callees\":[\n"
+      "            \"foo\"\n"
+      "         ],\n"
+      "         \"callers\":[],\n"
+      "         \"doesOverride\":false,\n"
+      "         \"hasBody\":true,\n"
+      "         \"isVirtual\":false,\n"
+      "         \"meta\":null,\n"
+      "         \"overriddenBy\":[],\n"
+      "         \"overrides\":[]\n"
+      "      },\n"
+      "      \"foo\":{\n"
+      "         \"callees\":[],\n"
+      "         \"callers\":[\n"
+      "            \"main\"\n"
+      "         ],\n"
+      "         \"doesOverride\":false,\n"
+      "         \"hasBody\":false,\n"
+      "         \"isVirtual\":false,\n"
+      "         \"meta\":null,\n"
+      "         \"overriddenBy\":[],\n"
+      "         \"overrides\":[]\n"
+      "      },\n"
+      "      \"bar\":{\n"
+      "         \"callees\":[],\n"
+      "         \"callers\":[],\n"
+      "         \"doesOverride\":false,\n"
+      "         \"hasBody\":true,\n"
+      "         \"isVirtual\":true,\n"
+      "         \"meta\":null,\n"
+      "         \"overriddenBy\":[],\n"
+      "         \"overrides\":[]\n"
+      "      }\n"
+      "   },\n"
+      "   \"_MetaCG\":{\n"
+      "      \"generator\":{\n"
+      "         \"name\":\"Test\",\n"
+      "         \"sha\":\"TestSha\",\n"
+      "         \"version\":\"0.1\"\n"
+      "      },\n"
+      "      \"version\":\"2.0\"\n"
+      "   }\n"
+      "}"_json;
+
+  metacg::io::JsonSource jsonSource(j);
+  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  auto &mcgm = metacg::graph::MCGManager::get();
+  mcgReader.read(mcgm);
+  EXPECT_EQ(mcgm.graphs_size(), 1);
+  const auto &cg = mcgm.getCallgraph();
+  EXPECT_EQ(cg->size(), 3);
+  EXPECT_TRUE(cg->hasNode("main"));
+  EXPECT_TRUE(cg->getMain() != nullptr);
+  EXPECT_TRUE(cg->getMain()->getFunctionName() == "main");
+  EXPECT_TRUE(cg->getMain()->getId() == std::hash<std::string>()("main"));
+  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "main");
+  EXPECT_TRUE(cg->getMain()->getHasBody());
+  EXPECT_FALSE(cg->getMain()->isVirtual());
+  EXPECT_TRUE(cg->getMain()->getMetaDataContainer().empty());
+  EXPECT_TRUE(cg->getCallees("main").size() == 1);
+  for (const auto &callee : cg->getCallees("main")) {
+    EXPECT_TRUE(callee->getFunctionName() == "foo");
+  }
+  EXPECT_TRUE(cg->getCallers("main").empty());
+
+  EXPECT_TRUE(cg->hasNode("foo"));
+  EXPECT_TRUE(cg->getNode("foo")->getId() == std::hash<std::string>()("foo"));
+  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "foo");
+  EXPECT_FALSE(cg->getNode("foo")->getHasBody());
+  EXPECT_FALSE(cg->getNode("foo")->isVirtual());
+  EXPECT_TRUE(cg->getNode("foo")->getMetaDataContainer().empty());
+  EXPECT_TRUE(cg->getCallees("foo").empty());
+  EXPECT_TRUE(cg->getCallers("foo").size() == 1);
+  for (const auto &caller : cg->getCallers("foo")) {
+    EXPECT_TRUE(caller->getFunctionName() == "main");
+  }
+
+  EXPECT_TRUE(cg->hasNode("bar"));
+  EXPECT_TRUE(cg->getNode("bar")->getId() == std::hash<std::string>()("bar"));
+  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "bar");
+  EXPECT_TRUE(cg->getNode("bar")->getHasBody());
+  EXPECT_TRUE(cg->getNode("bar")->isVirtual());
+  EXPECT_TRUE(cg->getNode("bar")->getMetaDataContainer().empty());
+  EXPECT_TRUE(cg->getCallees("bar").empty());
+  EXPECT_TRUE(cg->getCallers("bar").empty());
+}
+
+TEST_F(V2MCGReaderTest, MetadataCGRead) {
+  nlohmann::json j =
+      "{\n"
+      "   \"_CG\":{\n"
+      "      \"main\":{\n"
+      "         \"callees\":[],\n"
+      "         \"callers\":[],\n"
+      "         \"doesOverride\":false,\n"
+      "         \"hasBody\":true,\n"
+      "         \"isVirtual\":false,\n"
+      "         \"meta\": {\n"
+      "           \"TestMetaData\": {\n"
+      "                \"metadataString\":\"Test\",\n"
+      "                \"metadataInt\": 1337,\n"
+      "                \"metadataFloat\": 3.1415\n"
+      "           }\n"
+      "         },\n"
+      "         \"overriddenBy\":[],\n"
+      "         \"overrides\":[]\n"
+      "      }\n"
+      "   },\n"
+      "   \"_MetaCG\":{\n"
+      "      \"generator\":{\n"
+      "         \"name\":\"Test\",\n"
+      "         \"sha\":\"TestSha\",\n"
+      "         \"version\":\"0.1\"\n"
+      "      },\n"
+      "      \"version\":\"2.0\"\n"
+      "   }\n"
+      "}"_json;
+
+  metacg::io::JsonSource jsonSource(j);
+  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  auto &mcgm = metacg::graph::MCGManager::get();
+  mcgReader.read(mcgm);
+  EXPECT_EQ(mcgm.graphs_size(), 1);
+  const auto &cg = mcgm.getCallgraph();
+  EXPECT_EQ(cg->size(), 1);
+  EXPECT_TRUE(cg->hasNode("main"));
+  EXPECT_TRUE(cg->getMain() != nullptr);
+  EXPECT_TRUE(cg->getMain()->getFunctionName() == "main");
+  EXPECT_TRUE(cg->getMain()->getId() == std::hash<std::string>()("main"));
+  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "main");
+  EXPECT_TRUE(cg->getMain()->getHasBody());
+  EXPECT_FALSE(cg->getMain()->isVirtual());
+  EXPECT_TRUE(cg->getMain()->getMetaDataContainer().size() == 1);
+  EXPECT_TRUE(cg->getMain()->has<TestMetaData>());
+  EXPECT_TRUE(cg->getMain()->get<TestMetaData>()->metadataString == "Test");
+  EXPECT_TRUE(cg->getMain()->get<TestMetaData>()->metadataInt == 1337);
+  EXPECT_TRUE(cg->getMain()->get<TestMetaData>()->metadataFloat == 3.1415f);
+  EXPECT_TRUE(cg->getCallees("main").empty());
+  EXPECT_TRUE(cg->getCallers("main").empty());
 }

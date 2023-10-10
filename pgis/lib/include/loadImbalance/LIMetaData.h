@@ -9,8 +9,8 @@
 
 #include <optional>
 
-#include "MetaData/CgNodeMetaData.h"
 #include "MetaData.h"
+#include "MetaData/CgNodeMetaData.h"
 #include "nlohmann/json.hpp"
 
 namespace LoadImbalance {
@@ -24,9 +24,32 @@ enum class FlagType { Irrelevant, Visited, Imbalanced };
 /**
  * Class to hold data (for load imbalance detection) which can be annotated to a node
  */
-class LIMetaData : public metacg::MetaData {
+class LIMetaData : public metacg::MetaData::Registrar<LIMetaData> {
  public:
-  static constexpr const char *key() { return "LIMetaData"; }
+  static constexpr const char *key = "LIData";
+  LIMetaData() = default;
+  explicit LIMetaData(const nlohmann::json &j) {
+    if (j.is_null()) {
+      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", key);
+      return;
+    }
+
+    bool irrelevant = j["irrelevant"].get<bool>();
+    bool visited = j["visited"].get<bool>();
+
+    if (irrelevant) {
+      metacg::MCGLogger::instance().getConsole()->debug("Setting flag irrelevant");
+      flag(LoadImbalance::FlagType::Irrelevant);
+    }
+    if (visited) {
+      metacg::MCGLogger::instance().getConsole()->debug("Setting flag visited");
+      flag(LoadImbalance::FlagType::Visited);
+    }
+  };
+
+  virtual nlohmann::json to_json() const;
+
+  virtual const char *getKey() const final { return key; }
 
   void setNumberOfInclusiveStatements(pira::Statements inclusiveStatements) {
     this->inclusiveStatements = inclusiveStatements;

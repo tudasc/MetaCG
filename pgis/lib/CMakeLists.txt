@@ -22,10 +22,7 @@ set(PGIS_LIB_SOURCES
     include/config/PiraIIConfig.h
     include/LegacyMCGReader.h
     src/loadImbalance/LIMetaData.cpp
-    src/loadImbalance/LIRetriever.cpp
     src/LegacyMCGReader.cpp
-    include/MetaDataHandler.h
-    src/MetaDataHandler.cpp
     include/MetaData/PGISMetaData.h
     src/LegacyEstimatorPhases.cpp
     include/ErrorCodes.h

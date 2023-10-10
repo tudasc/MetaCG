@@ -9,13 +9,25 @@
 
 #include "spdlog/spdlog.h"
 
-#include "unistd.h"
+#include "Callgraph.h"
+#include "CgNode.h"
+
+#include "MetaData/PGISMetaData.h"
 
 #include <cerrno>
 #include <cstring>
 #include <string>
+#include <unistd.h>
 
-namespace {
+namespace utils {
+namespace string {
+
+inline bool stringEndsWith(const std::string &s, const std::string &suffix) {
+  return s.size() >= suffix.size() && s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
+}  // namespace string
+
 inline std::string getHostname() {
   char *cName = (char *)malloc(255 * sizeof(char));
   if (!gethostname(cName, 255)) {
@@ -58,6 +70,42 @@ auto valTup(C1 co, C2 ct, int numReps) {
   }
   return res;
 }
-}  // namespace
+
+}  // namespace utils
+
+inline bool isEligibleForPathInstrumentation(metacg::CgNode *node, metacg::Callgraph *graph,
+                                             std::vector<metacg::CgNode *> parents = {}) {
+  if (!parents.empty()) {
+    return std::all_of(parents.begin(), parents.end(), [](const auto &p) { return p->getHasBody(); });
+  }
+  const auto &callers = graph->getCallers(node);
+    return std::any_of(callers.begin(), callers.end(), [](const auto &p) { return p->getHasBody(); });
+}
+
+inline bool isLeafInstrumentationNode(metacg::CgNode *node, metacg::Callgraph *graph) {
+  const auto &callees = graph->getCallees(node);
+  return pgis::isAnyInstrumented(node) && std::none_of(callees.begin(), callees.end(), [&node](const auto &p) {
+           return (node != p) && pgis::isAnyInstrumented(p);
+         });
+}
+
+inline bool isMPIFunction(const metacg::CgNode *node) { return node->getFunctionName().rfind("MPI_") == 0; }
+
+// Calculates the median of a container or the average of its two middle elements if it has an even number of elements.
+template <typename T>
+double calculateMedianAveraged(T container) {
+  assert(!container.empty() && "Can not calculate median for empty container");
+  const auto size = container.size();
+  const auto middle = size / 2;
+  std::nth_element(container.begin(), container.begin() + middle, container.end());
+  if (size % 2 == 1) {
+    return container[middle];
+  } else {
+    const auto right = container[middle];
+    std::nth_element(container.begin(), container.begin() + middle - 1, container.begin() + middle);
+    const auto left = container[middle - 1];
+    return (left + right) / 2.0;
+  }
+}
 
 #endif

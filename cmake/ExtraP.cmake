@@ -10,5 +10,5 @@ function(add_extrap target)
     PUBLIC
     ${EXTRAP_LIB}
   )
-  target_link_libraries(${target} extrap)
+  target_link_libraries(${target} PUBLIC extrap)
 endfunction()

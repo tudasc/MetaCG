@@ -2,16 +2,16 @@
 // Created by jp on 29.06.22.
 //
 
-#include "CgNode.h"
 #include "LegacyMCGReader.h"
-#include "Util.h"
+#include "CgNode.h"
 #include "Timing.h"
+#include "Util.h"
 
 #include <loadImbalance/LIMetaData.h>
 
 namespace metacg::io {
 /**
-    * Version one Reader
+ * Version one Reader
  */
 void VersionOneMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
   metacg::RuntimeTimer rtt("Version One Reader");
@@ -61,10 +61,10 @@ void VersionOneMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
   addNumStmts(cgManager);
 
   // set load imbalance flags in CgNode
-  for (const auto& pfi : functions) {
-    std::optional<metacg::CgNode*> opt_f = cgManager.getCallgraph()->getNode(pfi.first);
+  for (const auto &pfi : functions) {
+    std::optional<metacg::CgNode *> opt_f = cgManager.getCallgraph()->getNode(pfi.first);
     if (opt_f.has_value()) {
-      metacg::CgNode* node = opt_f.value();
+      metacg::CgNode *node = opt_f.value();
       node->getOrCreateMD<LoadImbalance::LIMetaData>();
       node->get<LoadImbalance::LIMetaData>()->setVirtual(pfi.second.isVirtual);
 
@@ -96,4 +96,4 @@ void VersionOneMetaCGReader::addNumStmts(metacg::graph::MCGManager &cgm) {
   }
 }
 
-}
+}  // namespace metacg::io

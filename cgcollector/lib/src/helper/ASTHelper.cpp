@@ -1,7 +1,10 @@
 #include "helper/ASTHelper.h"
+#include "AAUSR.h"
 #include <algorithm>
 #include <clang/AST/RecursiveASTVisitor.h>
 #include <iostream>
+#include <stack>
+#include <string>
 
 int getNumStmtsInStmt(clang::Stmt *stmt) {
   int numStmts = 0;
@@ -644,8 +647,7 @@ class LoopDepthVisitor : public clang::RecursiveASTVisitor<LoopDepthVisitor> {
 
   bool shouldVisitTemplateInstantiations() const { return true; }
 
-  bool TraverseDoStmt(clang::DoStmt *s, DataRecursionQueue *q = nullptr) {
-    (void)q;
+  bool TraverseDoStmt(clang::DoStmt *s, [[maybe_unused]] DataRecursionQueue *q = nullptr) {
     cur_loop_depth++;
     maxdepth = std::max(maxdepth, cur_loop_depth);
     bool result = RecursiveASTVisitor::TraverseDoStmt(s, nullptr);
@@ -653,8 +655,7 @@ class LoopDepthVisitor : public clang::RecursiveASTVisitor<LoopDepthVisitor> {
     return result;
   }
 
-  bool TraverseWhileStmt(clang::WhileStmt *s, DataRecursionQueue *q = nullptr) {
-    (void)q;
+  bool TraverseWhileStmt(clang::WhileStmt *s, [[maybe_unused]] DataRecursionQueue *q = nullptr) {
     cur_loop_depth++;
     maxdepth = std::max(maxdepth, cur_loop_depth);
     bool result = RecursiveASTVisitor::TraverseWhileStmt(s, nullptr);
@@ -662,8 +663,7 @@ class LoopDepthVisitor : public clang::RecursiveASTVisitor<LoopDepthVisitor> {
     return result;
   }
 
-  bool TraverseForStmt(clang::ForStmt *s, DataRecursionQueue *q = nullptr) {
-    (void)q;
+  bool TraverseForStmt(clang::ForStmt *s, [[maybe_unused]] DataRecursionQueue *q = nullptr) {
     cur_loop_depth++;
     maxdepth = std::max(maxdepth, cur_loop_depth);
     bool result = RecursiveASTVisitor::TraverseForStmt(s, nullptr);
@@ -671,8 +671,7 @@ class LoopDepthVisitor : public clang::RecursiveASTVisitor<LoopDepthVisitor> {
     return result;
   }
 
-  bool TraverseCXXForRangeStmt(clang::CXXForRangeStmt *s, DataRecursionQueue *q = nullptr) {
-    (void)q;
+  bool TraverseCXXForRangeStmt(clang::CXXForRangeStmt *s, [[maybe_unused]] DataRecursionQueue *q = nullptr) {
     cur_loop_depth++;
     maxdepth = std::max(maxdepth, cur_loop_depth);
     bool result = RecursiveASTVisitor::TraverseCXXForRangeStmt(s, nullptr);
@@ -699,32 +698,28 @@ class CallDepthVisitor : public clang::RecursiveASTVisitor<CallDepthVisitor> {
 
   bool shouldVisitTemplateInstantiations() const { return true; }
 
-  bool TraverseDoStmt(clang::DoStmt *s, DataRecursionQueue *q = nullptr) {
-    (void)q;
+  bool TraverseDoStmt(clang::DoStmt *s, [[maybe_unused]] DataRecursionQueue *q = nullptr) {
     cur_loop_depth++;
     bool result = RecursiveASTVisitor::TraverseDoStmt(s, nullptr);
     cur_loop_depth--;
     return result;
   }
 
-  bool TraverseWhileStmt(clang::WhileStmt *s, DataRecursionQueue *q = nullptr) {
-    (void)q;
+  bool TraverseWhileStmt(clang::WhileStmt *s, [[maybe_unused]] DataRecursionQueue *q = nullptr) {
     cur_loop_depth++;
     bool result = RecursiveASTVisitor::TraverseWhileStmt(s, nullptr);
     cur_loop_depth--;
     return result;
   }
 
-  bool TraverseForStmt(clang::ForStmt *s, DataRecursionQueue *q = nullptr) {
-    (void)q;
+  bool TraverseForStmt(clang::ForStmt *s, [[maybe_unused]] DataRecursionQueue *q = nullptr) {
     cur_loop_depth++;
     bool result = RecursiveASTVisitor::TraverseForStmt(s, nullptr);
     cur_loop_depth--;
     return result;
   }
 
-  bool TraverseCXXForRangeStmt(clang::CXXForRangeStmt *s, DataRecursionQueue *q = nullptr) {
-    (void)q;
+  bool TraverseCXXForRangeStmt(clang::CXXForRangeStmt *s, [[maybe_unused]] DataRecursionQueue *q = nullptr) {
     cur_loop_depth++;
     bool result = RecursiveASTVisitor::TraverseCXXForRangeStmt(s, nullptr);
     cur_loop_depth--;
@@ -743,6 +738,233 @@ llvm::SmallDenseMap<const clang::CallExpr *, int, 16> getCallDepthsInStmt(clang:
     return llvm::SmallDenseMap<const clang::CallExpr *, int, 16>();
   }
   CallDepthVisitor visitor;
+  visitor.TraverseStmt(s);
+  return visitor.calls;
+}
+
+class EstimatedCallCountVisitor : public clang::RecursiveASTVisitor<EstimatedCallCountVisitor> {
+ private:
+  const clang::SourceManager &SM;
+  std::vector<std::string> parents;
+  std::vector<double> parentsCallMult;
+  bool TraverseStmtCheckNull(clang::Stmt *S, [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+    if (!S) {
+      return true;
+    }
+    return TraverseStmt(S, nullptr);
+  }
+
+  // Returns a unique string representation for an Expr or Stmt defining a BB/Scope. Used for identification and json
+  // serialisation
+  std::string getStrRepr(clang::Expr *E) { return implementation::generateUSRForConstructInFunction(E, SM); }
+  std::string getStrRepr(clang::Stmt *S) { return implementation::generateUSRForConstructInFunction(S, SM); }
+
+  class ParentManager {
+    EstimatedCallCountVisitor *parent;
+
+   public:
+    ParentManager(EstimatedCallCountVisitor *parent, std::string ID) : parent(parent) {
+      parent->parents.emplace_back(std::move(ID));
+    }
+    ~ParentManager() { parent->parents.pop_back(); }
+  };
+
+ public:
+  CallCountEstimation calls;
+  // Cost Model Parameters, Configured via command line parameters
+  const double loopCount;
+  const double ifTrueChance;
+  const double ifFalseChance;
+  const double catchChance;
+  double switchCaseCountFactor;
+
+  bool shouldVisitTemplateInstantiations() const { return true; }
+
+  bool TraverseIfStmt(clang::IfStmt *S, [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+    parentsCallMult.push_back(1.0);
+    bool result = TraverseStmtCheckNull(S->getCond());
+    result = result && TraverseStmtCheckNull(S->getInit());
+    result = result && TraverseStmtCheckNull(S->getConditionVariableDeclStmt());
+
+    if (S->getThen()) {
+      ParentManager manager(this, getStrRepr(S->getThen()));
+      parentsCallMult.back() = ifTrueChance;
+      result = result && TraverseStmtCheckNull(S->getThen());
+    }
+    if (S->getElse()) {
+      ParentManager manager(this, getStrRepr(S->getElse()));
+      parentsCallMult.back() = ifFalseChance;
+      result = result && TraverseStmtCheckNull(S->getElse());
+    }
+
+    parentsCallMult.pop_back();
+    return result;
+  }
+
+  bool TraverseConditionalOperator(clang::ConditionalOperator *S,
+                                   [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+    parentsCallMult.push_back(1.0);
+    bool result = TraverseStmtCheckNull(S->getCond());
+
+    if (S->getTrueExpr()) {
+      ParentManager manager(this, getStrRepr(S->getTrueExpr()));
+      parentsCallMult.back() = ifTrueChance;
+      result = result && TraverseStmtCheckNull(S->getTrueExpr());
+    }
+    if (S->getFalseExpr()) {
+      ParentManager manager(this, getStrRepr(S->getFalseExpr()));
+      parentsCallMult.back() = ifFalseChance;
+      result = result && TraverseStmtCheckNull(S->getFalseExpr());
+    }
+
+    parentsCallMult.pop_back();
+    return result;
+  }
+
+  bool TraverseBinaryConditionalOperator(clang::BinaryConditionalOperator *S,
+                                         [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+    assert(S->getCond());
+
+    parentsCallMult.push_back(1.0);
+    bool result = TraverseStmtCheckNull(S->getCond());
+
+    // The true expr does not get evaluated again, so we do not visit it
+    if (S->getFalseExpr()) {
+      ParentManager manager(this, getStrRepr(S->getFalseExpr()));
+      parentsCallMult.back() = ifFalseChance;
+      result = result && TraverseStmtCheckNull(S->getFalseExpr());
+    }
+    parentsCallMult.pop_back();
+    return result;
+  }
+
+  bool TraverseWhileStmt(clang::WhileStmt *S, [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+    parentsCallMult.push_back(1.0);
+    bool result = TraverseStmtCheckNull(S->getCond());
+    result = result && TraverseStmtCheckNull(S->getConditionVariableDeclStmt());
+    {
+      ParentManager manager(this, getStrRepr(S));
+      parentsCallMult.back() = loopCount;
+      result = result && TraverseStmtCheckNull(S->getCond());
+      result = result && TraverseStmtCheckNull(S->getConditionVariableDeclStmt());
+      result = result && TraverseStmtCheckNull(S->getBody());
+    }
+    parentsCallMult.pop_back();
+    return result;
+  }
+
+  bool TraverseDoStmt(clang::DoStmt *S, [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+    parentsCallMult.push_back(1.0);
+    bool result = TraverseStmtCheckNull(S->getBody());
+    {
+      ParentManager manager(this, getStrRepr(S));
+      parentsCallMult.back() = loopCount;
+      result = result && TraverseStmtCheckNull(S->getBody());
+      result = result && TraverseStmtCheckNull(S->getCond());
+    }
+    parentsCallMult.pop_back();
+    return result;
+  }
+
+  bool TraverseForStmt(clang::ForStmt *S, [[maybe_unused]] DataRecursionQueue *q = nullptr) {
+    parentsCallMult.push_back(1.0);
+    bool result = TraverseStmtCheckNull(S->getInit());
+    result = result && TraverseStmtCheckNull(S->getCond());
+    result = result && TraverseStmtCheckNull(const_cast<clang::DeclStmt *>(S->getConditionVariableDeclStmt()));
+    {
+      ParentManager manager(this, getStrRepr(S));
+      parentsCallMult.back() = loopCount;
+      result = result && TraverseStmtCheckNull(S->getCond());
+      result = result && TraverseStmtCheckNull(const_cast<clang::DeclStmt *>(S->getConditionVariableDeclStmt()));
+      result = result && TraverseStmtCheckNull(const_cast<clang::DeclStmt *>(S->getConditionVariableDeclStmt()));
+      result = result && TraverseStmtCheckNull(S->getBody());
+      result = result && TraverseStmtCheckNull(S->getInc());
+    }
+    parentsCallMult.pop_back();
+    return result;
+  }
+
+  bool TraverseCXXForRangeStmt(clang::CXXForRangeStmt *S, [[maybe_unused]] DataRecursionQueue *q = nullptr) {
+    parentsCallMult.push_back(1.0);
+    bool result = TraverseStmtCheckNull(S->getInit());
+    result = result && TraverseStmtCheckNull(S->getRangeStmt());
+    result = result && TraverseStmtCheckNull(S->getBeginStmt());
+    result = result && TraverseStmtCheckNull(S->getEndStmt());
+    result = result && TraverseStmtCheckNull(S->getCond());
+    {
+      ParentManager manager(this, getStrRepr(S));
+      parentsCallMult.back() = loopCount;
+      result = result && TraverseStmtCheckNull(S->getBody());
+      result = result && TraverseStmtCheckNull(S->getInc());
+      result = result && TraverseStmtCheckNull(S->getCond());
+    }
+    parentsCallMult.pop_back();
+    return result;
+  }
+
+  bool TraverseSwitchStmt(clang::SwitchStmt *S, [[maybe_unused]] DataRecursionQueue *q = nullptr) {
+    int switchCount = 0;
+    for (auto i = S->getSwitchCaseList(); i; i = i->getNextSwitchCase()) {
+      switchCount++;
+    }
+    switchCaseCountFactor = 1.0 / switchCount;
+    bool result = RecursiveASTVisitor::TraverseSwitchStmt(S, nullptr);
+    switchCaseCountFactor = 1.0;
+    return result;
+  }
+
+  bool TraverseCaseStmt(clang::CaseStmt *S, [[maybe_unused]] DataRecursionQueue *q = nullptr) {
+    parentsCallMult.push_back(switchCaseCountFactor);
+    bool result;
+    {
+      ParentManager manager(this, getStrRepr(S));
+      result = RecursiveASTVisitor::TraverseCaseStmt(S, nullptr);
+    }
+    parentsCallMult.pop_back();
+    return result;
+  }
+
+  bool TraverseDefaultStmt(clang::DefaultStmt *S, [[maybe_unused]] DataRecursionQueue *q = nullptr) {
+    parentsCallMult.push_back(switchCaseCountFactor);
+    bool result;
+    {
+      ParentManager manager(this, getStrRepr(S));
+      result = RecursiveASTVisitor::TraverseDefaultStmt(S, nullptr);
+    }
+    parentsCallMult.pop_back();
+    return result;
+  }
+
+  bool TraverseCXXCatchStmt(clang::CXXCatchStmt *S, [[maybe_unused]] DataRecursionQueue *q = nullptr) {
+    parentsCallMult.push_back(catchChance);
+    bool result;
+    {
+      ParentManager manager(this, getStrRepr(S));
+      result = TraverseStmtCheckNull(S->getHandlerBlock(), nullptr);
+    }
+    parentsCallMult.pop_back();
+    return result;
+  }
+
+  bool VisitCallExpr(clang::CallExpr *ce) {
+    calls[ce].emplace(parents, parentsCallMult);
+    return true;
+  }
+  EstimatedCallCountVisitor(const clang::SourceManager &manager, float loopCount, float trueChance, float falseChance,
+                            float exceptionChance)
+      : SM(manager),
+        loopCount(loopCount),
+        ifTrueChance(trueChance),
+        ifFalseChance(falseChance),
+        catchChance(exceptionChance) {}
+};
+
+CallCountEstimation getEstimatedCallCountInStmt(clang::Stmt *s, const clang::SourceManager &SM, float loopCount,
+                                                float trueChance, float falseChance, float exceptionChance) {
+  if (s == nullptr) {
+    return {};
+  }
+  EstimatedCallCountVisitor visitor(SM, loopCount, trueChance, falseChance, exceptionChance);
   visitor.TraverseStmt(s);
   return visitor.calls;
 }

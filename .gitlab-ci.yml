@@ -49,67 +49,37 @@ build-dependencies:
   script:
     - ./build_submodules.sh
 
-mcg-container:
-  stage: build
-  tags:
-    - podman
-  variables:
-    GIT_STRATEGY: clone
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
-  script:
-    - podman login ${CI_REGISTRY} -u ${CI_CONTAINER_REG_USER} -p ${CONTAINER_REGISTRY_READ_TOKEN}
-    - podman build -t registry.git.rwth-aachen.de/tuda-sc/projects/metacg/metacg:$CI_COMMIT_SHA -f container/metacg .
-    - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/pgis/test/unit/pgistests
-    - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/graph/test/unit/libtests
-    - podman image rm metacg:$CI_COMMIT_SHA
-
+      # mcg-container:
+      #   stage: build
+      #   tags:
+      #     - podman
+      #   allow_failure: true
+      #   variables:
+      #     GIT_STRATEGY: clone
+      #     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+      #   script:
+      #     - podman login ${CI_REGISTRY} -u ${CI_CONTAINER_REG_USER} -p ${CONTAINER_REGISTRY_READ_TOKEN}
+      #     - podman build -t registry.git.rwth-aachen.de/tuda-sc/projects/metacg/metacg:$CI_COMMIT_SHA -f container/metacg .
+      #     - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/pgis/test/unit/pgistests
+      #     - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/graph/test/unit/libtests
+      #     - podman image rm metacg:$CI_COMMIT_SHA
+      # 
 
 # Stage: build
-build-mcg:
+build-mcg-no-tests:
   <<: *job-setup
   stage: build
   script:
     - module load clang/$LLVM
-    - cmake -S . -B $MCG_BUILD -DCMAKE_BUILD_TYPE=Debug 
-        -DCMAKE_INSTALL_PREFIX=/tmp/metacg/full
+    - cmake -S . -B $MCG_BUILD-no-tests -G Ninja -DCMAKE_BUILD_TYPE=Debug 
+        -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-no-tests
         -DCUBE_LIB=$(dirname $(which cube_info))/../lib 
         -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
         -DEXTRAP_INCLUDE=./extern/install/extrap/include 
         -DEXTRAP_LIB=./extern/install/extrap/lib 
         -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-    - cmake --build $MCG_BUILD --parallel
-    - module purge
-
-build-mcg-stripped-pgis:
-  <<: *job-setup
-  stage: build
-  script:
-    - module load clang/$LLVM
-    - cmake -S . -B $MCG_BUILD-no-pgis -DCMAKE_BUILD_TYPE=Debug
-      -DCMAKE_INSTALL_PREFIX=/tmp/metacg/no_pgis
-      -DCUBE_LIB=$(dirname $(which cube_info))/../lib
-      -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
-      -DEXTRAP_INCLUDE=./extern/install/extrap/include
-      -DEXTRAP_LIB=./extern/install/extrap/lib
-      -DWITH_PGIS=OFF
-      -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-    - cmake --build $MCG_BUILD-no-pgis --parallel
-    - module purge
-
-build-mcg-stripped-cgcollector:
-  <<: *job-setup
-  stage: build
-  script:
-    - module load clang/$LLVM
-    - cmake -S . -B $MCG_BUILD-no-cgcollector -DCMAKE_BUILD_TYPE=Debug
-      -DCMAKE_INSTALL_PREFIX=/tmp/metacg/no_cgcollector
-      -DCUBE_LIB=$(dirname $(which cube_info))/../lib
-      -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
-      -DEXTRAP_INCLUDE=./extern/install/extrap/include
-      -DEXTRAP_LIB=./extern/install/extrap/lib
-      -DWITH_CGCOLLECTOR=OFF
-      -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-    - cmake --build $MCG_BUILD-no-cgcollector --parallel
+        -DMETACG_BUILD_UNIT_TESTS=OFF
+    - cmake --build $MCG_BUILD-no-tests --parallel
     - module purge
 
 build-mcg-stripped-all:
@@ -117,16 +87,63 @@ build-mcg-stripped-all:
   stage: build
   script:
     - module load clang/$LLVM
-    - cmake -S . -B $MCG_BUILD-no-all -DCMAKE_BUILD_TYPE=Debug
-      -DCMAKE_INSTALL_PREFIX=/tmp/metacg/no_all
+    - cmake -S . -B $MCG_BUILD-no-all -G Ninja -DCMAKE_BUILD_TYPE=Debug 
+        -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-dflt
+        -DCUBE_LIB=$(dirname $(which cube_info))/../lib 
+        -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+        -DEXTRAP_INCLUDE=./extern/install/extrap/include 
+        -DEXTRAP_LIB=./extern/install/extrap/lib 
+        -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+    - cmake --build $MCG_BUILD-no-all --parallel
+    - module purge
+
+build-mcg-stripped-pgis:
+  <<: *job-setup
+  stage: build
+  script:
+    - module load clang/$LLVM
+    - cmake -S . -B $MCG_BUILD-no-cgcollector -G Ninja -DCMAKE_BUILD_TYPE=Debug
+      -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_pgis
       -DCUBE_LIB=$(dirname $(which cube_info))/../lib
       -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
       -DEXTRAP_INCLUDE=./extern/install/extrap/include
       -DEXTRAP_LIB=./extern/install/extrap/lib
-      -DWITH_PGIS=OFF
-      -DWITH_CGCOLLECTOR=OFF
+      -DMETACG_BUILD_PGIS=ON
       -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-    - cmake --build $MCG_BUILD-no-all --parallel
+    - cmake --build $MCG_BUILD-no-cgcollector --parallel
+    - module purge
+
+build-mcg-stripped-cgcollector:
+  <<: *job-setup
+  stage: build
+  script:
+    - module load clang/$LLVM
+    - cmake -S . -B $MCG_BUILD-no-pgis -G Ninja -DCMAKE_BUILD_TYPE=Debug
+      -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_cgcollector
+      -DCUBE_LIB=$(dirname $(which cube_info))/../lib
+      -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+      -DEXTRAP_INCLUDE=./extern/install/extrap/include
+      -DEXTRAP_LIB=./extern/install/extrap/lib
+      -DMETACG_BUILD_CGCOLLECTOR=ON
+      -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+    - cmake --build $MCG_BUILD-no-pgis --parallel
+    - module purge
+
+build-mcg:
+  <<: *job-setup
+  stage: build
+  script:
+    - module load clang/$LLVM
+    - cmake -S . -B $MCG_BUILD -G Ninja -DCMAKE_BUILD_TYPE=Debug
+      -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_all
+      -DCUBE_LIB=$(dirname $(which cube_info))/../lib
+      -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+      -DEXTRAP_INCLUDE=./extern/install/extrap/include
+      -DEXTRAP_LIB=./extern/install/extrap/lib
+      -DMETACG_BUILD_PGIS=ON
+      -DMETACG_BUILD_CGCOLLECTOR=ON
+      -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+    - cmake --build $MCG_BUILD --parallel
     - module purge
 
 
@@ -218,7 +235,7 @@ test-dynamic-pgis:
     - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
     - cd test/integration
     - ./selectionTestRunner.sh -t dynamic -b $MCG_BUILD
-    
+
 test-imbalance-pgis:
   <<: *job-setup
   stage: integration-test
@@ -229,18 +246,25 @@ test-imbalance-pgis:
     - cd test/integration
     - ./selectionTestRunner.sh -t imbalance -b $MCG_BUILD
 
+test-target-collector:
+  <<: *job-setup
+  stage: integration-test
+  script:
+    - module load clang/$LLVM
+    - cd graph/test/integration/TargetCollector
+    - ./TestRunner.sh -b $MCG_BUILD
 
 # Stage: install
 install-mcg:
   <<: *job-setup
   stage: install
   script:
-    - cmake --install $MCG_BUILD
-    - stat /tmp/metacg/full/bin/cgcollector
-    - stat /tmp/metacg/full/bin/cgmerge
-    - export LD_LIBRARY_PATH=/tmp/metacg/full/lib:$LD_LIBRARY_PATH
-    - /tmp/metacg/full/bin/cgcollector --help
-    - rm -r /tmp/metacg/full
+    - cmake --install $MCG_BUILD-no-all
+    - cd graph/test/install
+    - stat /tmp/metacg/$MCG_BUILD-dflt/lib64/libmetacg.so
+    - CMAKE_PREFIX_PATH=/tmp/metacg/$MCG_BUILD-dflt/lib64/cmake/metacg cmake -S . -B $MCG_BUILD -DCMAKE_INSTALL_PREFIX=/tmp/metacg-user/test
+    - cmake --build $MCG_BUILD --parallel
+    - rm -r /tmp/metacg/$MCG_BUILD-dflt
 
 install-pgis:
   <<: *job-setup
@@ -248,8 +272,20 @@ install-pgis:
   script:
     - module load clang/$LLVM
     - export LD_LIBRARY_PATH=$PWD/extern/install/extrap/lib:$LD_LIBRARY_PATH
-    - cmake --install $MCG_BUILD
-    - stat /tmp/metacg/full/bin/pgis_pira
-    - export LD_LIBRARY_PATH=/tmp/metacg/full/lib:$LD_LIBRARY_PATH
-    - /tmp/metacg/full/bin/pgis_pira --help
-    - rm -r /tmp/metacg/full
+    - cmake --install $MCG_BUILD-no-cgcollector
+    - stat /tmp/metacg/$MCG_BUILD-w_pgis/bin/pgis_pira
+    - export LD_LIBRARY_PATH=/tmp/metacg/$MCG_BUILD-w_pgis/lib64:/tmp/metacg/$MCG_BUILD-w_pgis/lib:$LD_LIBRARY_PATH
+    - /tmp/metacg/$MCG_BUILD-w_pgis/bin/pgis_pira --help
+    - rm -r /tmp/metacg/$MCG_BUILD-w_pgis
+
+install-cgcollector:
+  <<: *job-setup
+  stage: install
+  script:
+    - module load clang/$LLVM
+    - export LD_LIBRARY_PATH=$PWD/extern/install/extrap/lib:$LD_LIBRARY_PATH
+    - cmake --install $MCG_BUILD-no-pgis
+    - stat /tmp/metacg/$MCG_BUILD-w_cgcollector/bin/cgcollector
+    - export LD_LIBRARY_PATH=/tmp/metacg/$MCG_BUILD-w_cgcollector/lib64:/tmp/metacg/$MCG_BUILD-w_cgcollector/lib:$LD_LIBRARY_PATH
+    - /tmp/metacg/$MCG_BUILD-w_cgcollector/bin/cgcollector --help
+    - rm -r /tmp/metacg/$MCG_BUILD-w_cgcollector

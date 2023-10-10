@@ -52,16 +52,6 @@ using namespace clang;
 STATISTIC(NumObjCCallEdges, "Number of Objective-C method call edges");
 STATISTIC(NumBlockCallEdges, "Number of block call edges");
 
-void printNamedDeclToConsole(const Decl *D) {
-  std::function<void()> func;
-  assert(D);
-#ifndef NDEBUG
-  auto fd = llvm::dyn_cast<NamedDecl>(D);
-  if (fd) {
-    std::cout << fd->getNameAsString() << std::endl;
-  }
-#endif
-}
 
 auto Location(Decl *decl, Stmt *expr) {
   const auto &ctx = decl->getASTContext();
@@ -85,16 +75,19 @@ class DeclRefRetriever : public StmtVisitor<DeclRefRetriever<Filter>> {
       if (const auto valueDecl = dyn_cast<ValueDecl>(decl)) {
         const auto ty = resolveToUnderlyingType(valueDecl->getType().getTypePtr());
         const auto inRelevantMemberExpr = [](DeclRefExpr *dre) {
+          assert(dre);
           const auto decl = dre->getDecl();
           auto &ctx = decl->getASTContext();
           auto pMap = ctx.getParents(*dre);
           auto firstParent = pMap.begin();
-          if (const auto memExp = dyn_cast<MemberExpr>((*firstParent).get<Stmt>())) {
+          assert(firstParent != pMap.end());
+          if (const auto memExp = dyn_cast_or_null<MemberExpr>((*firstParent).get<Stmt>())) {
             return true;
           }
           return false;
         };
         const auto inRelevantSymbols = [&](const ValueDecl *vd) {
+          assert(vd);
           if (const auto vDecl = dyn_cast<VarDecl>(vd)) {
             bool relevant = relevantSymbols.find(vDecl) != relevantSymbols.end();
             return relevant;
@@ -127,6 +120,7 @@ class DeclRefRetriever : public StmtVisitor<DeclRefRetriever<Filter>> {
   const std::unordered_set<Decl *> &getSymbols() { return symbols; }
 
   void VisitChildren(Stmt *S) {
+    assert(S);
     for (Stmt *SubStmt : S->children())
       if (SubStmt) {
         this->Visit(SubStmt);
@@ -462,7 +456,7 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
     }
     G->getOrInsertNode(caller)->addCallee(G->getOrInsertNode(callee));
     if (C) {
-      G->CalledDecls.try_emplace(C, callee);
+      G->addDeclToCalledDecls(C, callee);
     }
   }
   auto getAliases() { return aliases; }
@@ -577,6 +571,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
   }
 
   void handleFunctionPointerInArguments(CallExpr *CE) {
+    assert(CE);
     std::string loc;
     if (CE->getCalleeDecl()) {
       loc = Location(CE->getCalleeDecl(), CE);
@@ -785,7 +780,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     CallGraphNode *CalleeNode = G->getOrInsertNode(D);
     callerNode->addCallee(CalleeNode);
     if (C) {
-      G->CalledDecls.try_emplace(C, D);
+      G->addDeclToCalledDecls(C, D);
     }
   }
 
@@ -795,7 +790,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       return;
     G->getOrInsertNode(Caller)->addCallee(G->getOrInsertNode(Callee));
     if (C) {
-      G->CalledDecls.try_emplace(C, Callee);
+      G->addDeclToCalledDecls(C, Callee);
     }
   }
 
@@ -889,7 +884,6 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
                 for (const auto sym : worklist) {
                   ss << sym->getNameAsString() << "\n";
                 }
-                std::cout << ss.str() << std::endl;
                 break;
               }
               const auto curSym = worklist.front();
@@ -909,7 +903,8 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
           unresolvedSymbols.erase(unresolvedSymbols.find(func));
           ss << "Unresolved symbols after loop: " << unresolvedSymbols.size() << "\n";
         }
-        std::cout << ss.str() << std::endl;
+        // Debug output
+        // std::cout << ss.str() << std::endl;
       }
     }
     if (auto ice = CE->getCallee()) {
@@ -1233,7 +1228,7 @@ bool CallGraph::VisitFunctionDecl(clang::FunctionDecl *FD) {
   // We skip function template definitions, as their semantics is
   // only determined when they are instantiated.
   static int count = 0;
-  if (includeInGraph(FD) && FD->isThisDeclarationADefinition()) {
+  if (includeInGraph(FD) && (FD->isThisDeclarationADefinition() || includeUnusedDecls)) {
     count++;
     if (count % 100 == 0) {
       std::cout << "Processing function nr " << count << std::endl;
@@ -1303,6 +1298,14 @@ void CallGraph::print(raw_ostream &OS) const {
 LLVM_DUMP_METHOD void CallGraph::dump() const { print(llvm::errs()); }
 
 void CallGraph::viewGraph() const { llvm::ViewGraph(this, "CallGraph"); }
+void CallGraph::addDeclToCalledDecls(const clang::CallExpr *ce, const clang::Decl *decl) {
+  if (decl && llvm::isa<clang::FunctionDecl>(decl)) {
+    if (!isa<ObjCMethodDecl>(decl)) {
+      decl = decl->getCanonicalDecl();
+    }
+  }
+  CalledDecls.try_emplace(ce, decl);
+}
 
 void CallGraphNode::print(raw_ostream &os) const {
   if (const NamedDecl *ND = dyn_cast_or_null<NamedDecl>(FD))

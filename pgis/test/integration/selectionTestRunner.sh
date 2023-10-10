@@ -4,6 +4,7 @@
 . base.sh
 
 buildDirParam=build # Can be changed via -b
+timeStamp=$(date +%s)
 
 while getopts ":t:b:h" opt; do
   case $opt in
@@ -33,11 +34,16 @@ while getopts ":t:b:h" opt; do
   esac
 done
 
+# To run these tests in parallel, we use the CI_CONCURRENT_ID in files that are written
+# by any of the tools invoked here. The variables is set automatically by Gitlab Runner
+# and in case it is unset, we simply set it to the current timestamp in seconds since epoch
+: ${CI_CONCURRENT_ID:=$timeStamp}
+
 buildDir="../../../../${buildDirParam}/pgis"
 
-outDir=$PWD/out$testSuite
-logDir=$PWD/logging
-logFile=${logDir}/${testSuite}.log
+outDir=$PWD/out$testSuite-${CI_CONCURRENT_ID}
+logDir=$PWD/logging-${CI_CONCURRENT_ID}
+logFile=${logDir}/${testSuite}-${CI_CONCURRENT_ID}.log
 
 echo "Running Tests with build directory: ${buildDir}"
 
@@ -61,7 +67,9 @@ for testNoInit in *.afl; do
 	echo "Running $testNo"
 	thisFail=0
 
-	bash "${testSuite}_run.sh" $buildDir $outDir $testNo 2>&1 >> "$logFile"
+  # We now overwrite logs with each execution. On error, the log is echo'ed inside
+  # this script.
+	bash "${testSuite}_run.sh" $buildDir $outDir $testNo 2>&1 > "$logFile"
 	#bash "${testSuite}_run.sh" $buildDir $outDir $testNo
 
 	if [ $? -ne 0 ]; then
@@ -69,7 +77,7 @@ for testNoInit in *.afl; do
 		thisFail=1
 	fi
 	
-	check_selection $testSuite $testNo $outDir
+	check_selection $testSuite $testNo $outDir $CI_CONCURRENT_ID
 
 	if [ $? -ne 0 ]; then
 		fails=$(($fails+1))
@@ -77,6 +85,9 @@ for testNoInit in *.afl; do
 	fi
 	if [ $thisFail -eq 1 ]; then
 		failStr=' FAIL'
+    # In case of error, print the log file
+    echo ">>> ERROR OCCURRED -- Dumping log <<<"
+    cat $logFile
 	else
 		failStr=' PASS'
 	fi
@@ -94,15 +105,15 @@ for testNoInit in *.afl; do
 	echo "Running $testNo"
 	thisFail=0
 
-	#bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo >> "$logFile" 2>&1
-	bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo
+	bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo > "$logFile" 2>&1
+	#bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo
 
 	if [ $? -ne 0 ]; then
 		fails=$(($fails+1))
 		thisFail=1
 	fi
 	
-	check_selection $testSuite $testNo $outDir
+	check_selection $testSuite $testNo $outDir $CI_CONCURRENT_ID
 
 	if [ $? -ne 0 ]; then
 		fails=$(($fails+1))
@@ -110,6 +121,9 @@ for testNoInit in *.afl; do
 	fi
 	if [ $thisFail -eq 1 ]; then
 		failStr=' FAIL'
+    # in case of error, print the log file
+    echo ">>> ERROR OCCURRED -- Dumping log <<<"
+    cat $logFile
 	else
 		failStr=' PASS'
 	fi
@@ -128,7 +142,7 @@ for testNoInit in *.spl; do
 	echo "Running $testNo"
 	thisFail=0
 
-	bash "${testSuite}_run.sh" $buildDir $outDir $testNo "spl" 2>&1 >> "$logFile"
+	bash "${testSuite}_run.sh" $buildDir $outDir $testNo "spl" 2>&1 > "$logFile"
 	#bash "${testSuite}_run.sh" $buildDir $outDir $testNo
 
 	if [ $? -ne 0 ]; then
@@ -136,7 +150,7 @@ for testNoInit in *.spl; do
 		thisFail=1
 	fi
 	
-	check_selection $testSuite $testNo $outDir
+	check_selection $testSuite $testNo $outDir $CI_CONCURRENT_ID
 
 	if [ $? -ne 0 ]; then
 		fails=$(($fails+1))
@@ -144,6 +158,8 @@ for testNoInit in *.spl; do
 	fi
 	if [ $thisFail -eq 1 ]; then
 		failStr=' FAIL'
+    # In case of error, print the log file
+    cat $logFile
 	else
 		failStr=' PASS'
 	fi

@@ -8,6 +8,7 @@
 
 #include "CgNodePtr.h"
 
+#include "LoggerUtil.h"
 #include "nlohmann/json.hpp"
 
 namespace metacg {
@@ -19,44 +20,66 @@ class MCGManager;
  * This is the common base class for the different user-defined metadata.
  *  that can be attached to the call graph.
  *
- *  A class *must* implement a method static constexpr const char *key() that returns the class
+ *  A class *must* implement a  static constexpr const char *key that contains the class
  *  name as a string. This is used for registration in the MetaData field of the CgNode.
  */
-struct MetaData {};
+template <class CRTPBase>
+class MetaDataFactory {
+ public:
+  template <class... T>
+  static CRTPBase *create(const std::string &s, const nlohmann::json &j) {
+    if (data().find(s) == data().end()) {
+      MCGLogger::instance().getErrConsole()->template warn(
+          "Could not create: {}, the Metadata is unknown in you application", s);
+      return nullptr;
+    }
+    return data().at(s)(j);
+  }
 
-// TODO: Find better name for the namespace
-namespace io::retriever {
+  template <class T>
+  struct Registrar : CRTPBase {
+    friend T;
 
-using json = nlohmann::json;
+    static bool registerT() {
+      MCGLogger::instance().getConsole()->template trace("Registering {} \n", T::key);
+      const auto name = T::key;
+      MetaDataFactory::data()[name] = [](const nlohmann::json &j) -> CRTPBase * { return new T(j); };
+      return true;
+    }
+    static bool registered;
 
-/**
- * Example MetaRetriever
- *
- * A retriever needs to implement these three functions.
- */
-struct MetaDataHandler {
-  /** Invoked to decide if meta data should be output into the json file for the node */
-  [[nodiscard]] virtual bool handles(const CgNode *const n) const = 0;
+   private:
+    Registrar() : CRTPBase(Key{}) { (void)registered; }
+  };
 
-  /** Invoked to find or create meta data entry in json */
-  [[nodiscard]] virtual const std::string toolName() const = 0;
+  friend CRTPBase;
 
-  /** Creates or returns the object to attach as meta information */
-  virtual json value(const CgNode *const n) const = 0;
+ private:
+  class Key {
+    Key() = default;
+    template <class T>
+    friend struct Registrar;
+  };
+  using FuncType = CRTPBase *(*)(const nlohmann::json &);
+  MetaDataFactory() = default;
 
-  /** Reads the meta data from the json file and attaches it to the graph nodes */
-  virtual void read([[maybe_unused]] const json &j, const std::string &functionName) = 0;
-
-  virtual ~MetaDataHandler() = default;
-
-  /** Call back automatically invoked when adding to PiraMCGProcessor */
-  virtual void registerMCGManager(metacg::graph::MCGManager *manager) final { mcgm = manager; }
-
- protected:
-  /** Reference to MCGManager (no owned) to interact while constructing */
-  metacg::graph::MCGManager *mcgm = nullptr;
+  static auto &data() {
+    static std::unordered_map<std::string, FuncType> s;
+    return s;
+  }
 };
-}  // namespace io::retriever
+
+template <class Base>
+template <class T>
+bool MetaDataFactory<Base>::Registrar<T>::registered = MetaDataFactory<Base>::Registrar<T>::registerT();
+
+struct MetaData : MetaDataFactory<MetaData> {
+  explicit MetaData(Key) {}
+  static constexpr const char *key = "BaseClass";
+  virtual nlohmann::json to_json() const = 0;
+  virtual const char *getKey() const = 0;
+  virtual ~MetaData() = default;
+};
 
 }  // namespace metacg
 #endif  // METACG_GRAPH_METADATA_H

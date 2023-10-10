@@ -12,7 +12,7 @@
 RemoveUnrelatedNodesEstimatorPhase::RemoveUnrelatedNodesEstimatorPhase(metacg::Callgraph *cg,
                                                                        bool onlyRemoveUnrelatedNodes,
                                                                        bool aggressiveReduction)
-    : EstimatorPhase("RemoveUnrelated", cg, true),
+    : EstimatorPhase("RemoveUnrelated", cg),
       numUnconnectedRemoved(0),
       numLeafsRemoved(0),
       numChainsRemoved(0),
@@ -50,17 +50,6 @@ void RemoveUnrelatedNodesEstimatorPhase::checkLeafNodeForRemoval(metacg::CgNode 
   for (auto parentNode : graph->getCallers(potentialLeaf)) {
     checkLeafNodeForRemoval(parentNode);
   }
-}
-
-void RemoveUnrelatedNodesEstimatorPhase::printAdditionalReport() {
-  std::cout << "\t"
-            << "Removed " << numUnconnectedRemoved << " unconnected node(s)." << std::endl;
-  std::cout << "\t"
-            << "Removed " << numLeafsRemoved << " leaf node(s)." << std::endl;
-  std::cout << "\t"
-            << "Removed " << numChainsRemoved << " node(s) in linear call chains." << std::endl;
-  std::cout << "\t"
-            << "Removed " << numAdvancedOptimizations << " node(s) in advanced optimization." << std::endl;
 }
 
 //// WL INSTR ESTIMATOR PHASE

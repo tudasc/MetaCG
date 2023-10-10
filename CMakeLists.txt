@@ -19,7 +19,7 @@ endif()
 # End of require out-of-source builds
 
 # Project information
-set(METACG_VERSION 0.4.0)
+set(METACG_VERSION 0.6.0)
 project(
   MetaCG
   VERSION ${METACG_VERSION}
@@ -41,6 +41,14 @@ list(
 
 set(METACG_Directory ${CMAKE_CURRENT_SOURCE_DIR})
 
+# Whether the GoogleTest-based unit tests should be built and GoogleTest is downloaded as dependency This needs to be
+# here, so ToolchainOptions already "sees" the option's value
+option(
+  METACG_BUILD_UNIT_TESTS
+  "On or Off"
+  ON
+)
+
 # This also downloads and builds googletest
 include(ToolchainOptions)
 # Making packaging easier
@@ -59,20 +67,20 @@ if(NOT
 )
   set(GIT_SHA1 "NO_GIT_ROOT")
 endif()
-message(${GIT_SHA1})
 
+# Configure the file that holds version information
 configure_file(Config.h.in config.h)
 
 # Component options MetaCG graph library will always be built. The actual graph implementation
 add_subdirectory(graph)
 
-# The collector toolchain: CGCollector, CGMerge, and CGValidate Should CGCollector be built
+# Build the collector toolchain: CGCollector, CGMerge, and CGValidate
 option(
-  WITH_CGCOLLECTOR
+  METACG_BUILD_CGCOLLECTOR
   "On or off"
-  ON
+  OFF
 )
-if(WITH_CGCOLLECTOR)
+if(METACG_BUILD_CGCOLLECTOR)
   include(ClangLLVM)
   include(CubeLib)
   add_subdirectory(cgcollector)
@@ -80,11 +88,11 @@ endif()
 
 # PIRA analyzer Should PGIS be built
 option(
-  WITH_PGIS
+  METACG_BUILD_PGIS
   "On or off"
-  ON
+  OFF
 )
-if(WITH_PGIS)
+if(METACG_BUILD_PGIS)
   include(ExtraP)
   include(CubeLib)
   add_subdirectory(pgis)
@@ -101,5 +109,12 @@ option(
 option(
   METACG_USE_EXTERNAL_SPDLOG
   "On or off"
+  OFF
+)
+
+# If set to on, CMake looks for installed cxxopts
+option(
+  METACG_USE_EXTERNAL_CXXOPTS
+  "On or Off"
   OFF
 )

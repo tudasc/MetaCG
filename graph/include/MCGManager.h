@@ -7,7 +7,6 @@
 #define METACG_GRAPH_MCGMANAGER_H
 
 #include "Callgraph.h"
-#include "LoggerUtil.h"
 #include <vector>
 
 namespace metacg {
@@ -31,39 +30,13 @@ class MCGManager {
    */
   bool resetActiveGraph();
 
-  /**
-   * Registers the MetaDataHandler and takes ownership of the object.
-   * @tparam T
-   * @tparam Args
-   * @param args
-   */
-  template <typename T, typename... Args>
-  bool addMetaHandler(Args... args) {
-    if (activeGraph != nullptr) {
-      metaHandlers[activeGraph].emplace_back(std::make_unique<T>(args...));
-      metaHandlers[activeGraph].back()->registerMCGManager(this);
-      return true;
-    } else {
-      assert(false && "Graph manager could not add metadata handler, no active graph exists");
-      metacg::MCGLogger::instance().getErrConsole()->warn("Graph manager could not add metadata handler, no active graph exists");
-      return false;
-    }
-  }
-
-  /**
-   * Returns list of non-owned pointers to MetaDataHandler.
-   * @return
-   */
-
-  std::vector<metacg::io::retriever::MetaDataHandler *> getMetaHandlers() const;
-
   size_t size() const;
 
   size_t graphs_size() const;
 
-  [[nodiscard]] Callgraph *getCallgraph();
+  [[nodiscard]] Callgraph *getCallgraph(const std::string &name = "", bool setActive = false);
 
-  [[nodiscard]] Callgraph *getOrCreateCallgraph(const std::string &name);
+  [[nodiscard]] Callgraph *getOrCreateCallgraph(const std::string &name, bool setActive = false);
 
   /**
    * Sets a callgraph to be the currently active one
@@ -106,7 +79,7 @@ class MCGManager {
 
   std::unordered_map<std::string, std::unique_ptr<Callgraph>> managedGraphs;
   Callgraph *activeGraph = nullptr;
-  std::unordered_map<Callgraph *, std::vector<std::unique_ptr<metacg::io::retriever::MetaDataHandler>>> metaHandlers{};
+  std::unordered_set<std::string> getAllManagedGraphNames();
 };
 
 }  // namespace graph

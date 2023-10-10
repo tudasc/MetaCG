@@ -27,14 +27,16 @@ done
 fails=0
 testNo=0
 logDir=$PWD/logging
-logFile=$logDir/cgvalidate.log
+logFile=$logDir/cgvalidate-${CI_CONCURRENT_ID}.log
 inputDir=$PWD/input
 buildDir=$PWD/../../../../${build_dir}/cgcollector/tools/
 executable=$buildDir/cgvalidate
 
 #cleanup
-rm -rf $logDir
-mkdir $logDir
+if [ ! -d ${logDir} ]; then
+  mkdir ${logDir}
+fi
+echo "" > ${logFile}
 
 # check if cgvalidate is available
 if ! type $executable > /dev/null; then
@@ -83,12 +85,12 @@ checkErrorCode 0
 
 #fix
 echo "Invocation: $executable -i $inputDir/fix/miss.ipcg -c $inputDir/fix/0001.cubex -p" >> $logFile
-$executable -i $inputDir/fix/miss.ipcg -c $inputDir/fix/0001.cubex -p >> $logFile
-$executable -i $inputDir/fix/miss.ipcg.patched -c $inputDir/fix/0001.cubex >> $logFile
+$executable -i $inputDir/fix/miss.ipcg -c $inputDir/fix/0001.cubex -p -o $inputDir/fix/miss.ipcg.patched-${CI_CONCURRENT_ID} >> $logFile
+$executable -i $inputDir/fix/miss.ipcg.patched-${CI_CONCURRENT_ID} -c $inputDir/fix/0001.cubex >> $logFile
 checkErrorCode 0
 echo "Invocation: $executable -i $inputDir/fixvirtual/miss.ipcg -c $inputDir/fixvirtual/exp1.cubex -p" >> $logFile
-$executable -i $inputDir/fixvirtual/miss.ipcg -c $inputDir/fixvirtual/exp1.cubex -p >> $logFile
-$executable -i $inputDir/fixvirtual/miss.ipcg.patched -c $inputDir/fixvirtual/exp1.cubex >> $logFile
+$executable -i $inputDir/fixvirtual/miss.ipcg -c $inputDir/fixvirtual/exp1.cubex -p -o $inputDir/fixvirtual/miss.ipcg.patched-${CI_CONCURRENT_ID}>> $logFile
+$executable -i $inputDir/fixvirtual/miss.ipcg.patched-${CI_CONCURRENT_ID} -c $inputDir/fixvirtual/exp1.cubex >> $logFile
 checkErrorCode 0
 
 
