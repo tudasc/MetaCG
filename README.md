@@ -50,7 +50,7 @@ Once constructed, the graph can be serialized into a JSON format, which contains
 This allows, e.g., the PIRA profiler, to export various additional information about the program's functions into the MetaCG file.
 Examples are empirically determined performance models, runtime measurements, or loop nesting depth per function.
 
-## Requirements / Building
+## Requirements and Building
 
 MetaCG consists of the graph library, a CG construction tool, and an example analysis tool.
 The graph library is always built, while the CGCollector and the PGIS tool can be disabled at configure time.
@@ -61,12 +61,12 @@ Other version combinations *may* work.
 **Build Requirements (for graph lib)**
 - nlohmann/json library [github](https://github.com/nlohmann/json)
 - spdlog [github](https://github.com/gabime/spdlog)
-- cxxopts [github](https://github.com/jarro2783/cxxopts)
 
 **Additional Build Requirements (for full build)**
 - Clang/LLVM version 10 (and above)
 - Cube 4.5 [scalasca.org](https://www.scalasca.org/software/cube-4.x/download.html)
 - Extra-P 3.0 [.tar.gz](http://apps.fz-juelich.de/scalasca/releases/extra-p/extrap-3.0.tar.gz)
+- cxxopts [github](https://github.com/jarro2783/cxxopts)
 - PyQt5
 - matplotlib
 
@@ -75,15 +75,14 @@ Other version combinations *may* work.
 #### Graph Library Only
 
 The default is to build only the graph library.
-This enables the library to be used in a project by `find_package(MetaCG <VERSION_STR> REQUIRED)` and `target_link_library(target metacg::metacg)`.
-The `nlohmann-json`, `spdlog` and `cxxopts` library are downloaded at configure time, unless `-DMETACG_USE_EXTERNAL_JSON=ON` or `-DMETACG_USE_EXTERNAL_SPDLOG=ON` is given.
-This will search for the respective libraries in the common CMake locations.
+The build requirements are downloaded at configure time.
 While CMake looks for `nlohmann-json` version 3.10., MetaCG should work starting from version 3.9.2.
 For spdlog, we rely on version 1.8.2 -- other versions *may* work.
+If you do not want to download at configure time, please use the respective CMake options listed below.
 
 ```{.sh}
 # To build the MetaCG library w/o PGIS or CGCollector
-$> cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/where/to/install
+$> cmake -S . -B build -G Ninja -DCMAKE_INSTALL_PREFIX=/where/to/install
 $> cmake --build build --parallel
 $> cmake --install build
 ```
@@ -93,11 +92,11 @@ $> cmake --install build
 You can configure MetaCG to also build CGCollector and PGIS.
 This requires additional dependencies.
 Clang/LLVM (in a supported version) and the Cube library are assumed to be available on the system.
-Extra-P can be built using the `build_submodules.sh` script provided in the repository, though it is not tested outside of our CI system.
+Extra-P can be built using the `build_submodules.sh` script provided in the repository, though the script is not tested outside of our CI system.
 It builds and installs Extra-P into `./deps/src` and `./deps/install`, respectively.
 
 ```{.sh}
-?> ./build_submodules.sh
+$> ./build_submodules.sh
 ```
 
 Thereafter, the package can be configured and built from the top-level CMake.
@@ -111,18 +110,18 @@ $> cmake --build build --parallel
 $> cmake --install build
 ```
 
-### CMake Options
+#### General CMake Options
 
 These options are common for the MetaCG package.
 
-- Bool `METACG_WITH_CGCOLLECTOR`: Whether to build call-graph construction tool <default=OFF>
-- Bool `METACG_WITH_PGIS`: Whether to build demo-analysis tool <default=OFF>
+- Bool `METACG_BUILD_CGCOLLECTOR`: Whether to build call-graph construction tool <default=OFF>
+- Bool `METACG_BUILD_PGIS`: Whether to build demo-analysis tool <default=OFF>
 - Bool `METACG_USE_EXTERNAL_JSON`: Search for installed version of nlohmann-json <default=OFF>
 - Bool `METACG_USE_EXTERNAL_SPDLOG`: Search for installed version of spdlog <default=OFF>
 
 #### PGIS CMake Options
 
-These options are required when building with `METACG_WITH_PGIS=ON`.
+These options are required when building with `METACG_BUILD_PGIS=ON`.
 
 - Path `CUBE_LIB`: Path to the libcube library directory
 - Path `CUBE_INCLUDE`: Path to the libcube include directory
@@ -132,14 +131,24 @@ These options are required when building with `METACG_WITH_PGIS=ON`.
 ## Usage
 
 ### Graph Library
-Provides the basic data structure and its means to read and write the data structure with the metadata to a JSON file.
+
+Provides the basic data structures and its means to read and write the call graph with the metadata to a JSON file.
+To include MetaCG as library in your project, you can simply install, find the package and link the library.
+This pulls in all required dependencies and compile flags.
+
+```
+# In your project's CMake
+find_package(MetaCG <VERSION_STR> REQUIRED)
+# Assuming you have a target MainApp
+target_link_library(MainApp metacg::metacg)
+```
 
 ### CGCollector
 Clang-based call-graph generation tool for MetaCG.
 It has the components CGCollector, CGMerge and CGValidate to construct the partial MCG per translation unit, merge the partial MCGs into the final whole-program MCG and validate edges against a full Score-P profile, respectively.
 
 
-## Using CGCollector
+#### Using CGCollector
 
 It is easiest to apply CGCollector, when a compilation database (`compile_commands.json`) is present.
 Then, CGCollector can be applied to a single source file using
@@ -153,19 +162,30 @@ $> cgc target.cpp
 Subsequently, the resulting partial MCGs are merged using `CGMerge` to create the final, whole-program call-graph of the application.
 
 ```{.sh}
-?> echo "null" > $IPCG_FILENAME
-?> find ./src -name "*.mcg" -exec cgmerge $IPCG_FILENAME $IPCG_FILENAME {} +
+$> echo "null" > $IPCG_FILENAME
+$> find ./src -name "*.mcg" -exec cgmerge $IPCG_FILENAME $IPCG_FILENAME {} +
 ```
+
+##### CGCollector / CGMerge on Multi-File Projects
+
+The easiest approch to apply the CGCollector / CGMerge toolchain to a multi-file project is using the `TargetCollector.py` tool.
+It is a convenience tool around CMake's file API that allows to configure the target project and apply the CGCollector / CGMerge to only the source files required for a given CMake target.
+Check out the `graph/test/integration/TargetCollector/TestRunner.sh` script for an example invocation.
+
+In case you want to apply the CGCollector / CGMerge toolchain to a non-CMake project, you need to resort to manually finding the files that need to be processed and merged for the given use case.
+
+#### Validation of Generated Callgraph
 
 Optionally, you can test the call graph for missing edges, by providing an *unfiltered* application profile that was recorded using [Score-P](https://www.vi-hps.org/projects/score-p) in the [Cube](https://www.scalasca.org/scalasca/software/cube-4.x/download.html) library format.
 This is done using the CGValidate tool, which also allows to patch all missing edges and nodes.
+
 
 ### PGIS (The PIRA Analyzer)
 
 This tool is part of the [PIRA](https://github.com/tudasc/pira) toolchain.
 It is used as analysis engine and constructs instrumentation selections guided by both static and dynamic information from a target application.
 
-### Using PGIS
+#### Using PGIS
 
 The PGIS tool offers a variety of modes to operate.
 A list of all modes and options can be found with `pgis_pira --help`.
@@ -176,13 +196,13 @@ Examples of such files can be found in the heuristics respective integration tes
 1. Construct overview instrumentation configurations for Score-P from a MetaCG file.
 
 ```{.sh}
-?> pgis_pira --metacg-format 2 --static mcg-file
+$> pgis_pira --metacg-format 2 --static mcg-file
 ```
 
 2. Construct hot-spot instrumentation using raw runtime values.
 
 ```{.sh}
-?> pgis_pira --metacg-format 2 --cube cube-file mcg-file
+$> pgis_pira --metacg-format 2 --cube cube-file mcg-file
 ```
 
 3. Construct performance model guided instrumentation configurations for Score-P using Extra-P.
@@ -203,11 +223,11 @@ Its content follows what is expected by Extra-P.
 ```
 
 ```{.sh}
-?> pgis_pira --metacg-format 2 --parameter-file <parameter-file> --extrap extrap-file mcg-file
+$> pgis_pira --metacg-format 2 --parameter-file <parameter-file> --extrap extrap-file mcg-file
 ```
 
 4. Evaluate and construct load-imbalance instrumentation configuration.
 
 ```{.sh}
-?> pgis_pira --metacg-format 2 --parameter-file <parameter-file> --lide 1 --cube cube-file mcg-file
+$> pgis_pira --metacg-format 2 --parameter-file <parameter-file> --lide 1 --cube cube-file mcg-file
 ```
