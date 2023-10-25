@@ -24,7 +24,7 @@
 
 namespace extrapconnection {
 void printConfig(ExtrapConfig &cfg) {
-  auto console = spdlog::get("console");
+  auto console = metacg::MCGLogger::instance().getConsole();
 
   std::string parameterStr;
   for (const auto &p : cfg.params) {
@@ -50,10 +50,11 @@ ExtrapConfig getExtrapConfigFromJSON(const std::filesystem::path &filePath) {
     infile >> j;
   }
 
+  auto console = metacg::MCGLogger::instance().getConsole();
   ExtrapConfig cfg;
   for (json::iterator it = j.begin(); it != j.end(); ++it) {
     auto key = it.key();
-    spdlog::get("console")->debug("Iterating for {}", key);
+    console->debug("Iterating for {}", key);
 
     if (key == "dir") {
       cfg.directory = it.value().get<std::string>();
@@ -83,23 +84,24 @@ ExtrapConfig getExtrapConfigFromJSON(const std::filesystem::path &filePath) {
         std::vector<std::string> paramStrs = st_it.value().get<std::vector<std::string>>();
         std::vector<int> paramValues;
         paramValues.reserve(paramStrs.size());
-        std::transform(std::begin(paramStrs), std::end(paramStrs), std::back_inserter(paramValues), [](std::string &s) {
-          spdlog::get("console")->debug("Transforming {}", s);
-          return std::stoi(s);
-        });
+        std::transform(std::begin(paramStrs), std::end(paramStrs), std::back_inserter(paramValues),
+                       [&](std::string &s) {
+                         console->debug("Transforming {}", s);
+                         return std::stoi(s);
+                       });
         cfg.params.emplace_back(std::make_pair(paramName, paramValues));
       }
     } else {
-      spdlog::get("errconsole")->warn("This should not happen! Unkown json identifier found.");
+      metacg::MCGLogger::instance().getErrConsole()->warn("This should not happen! Unkown json identifier found.");
     }
     std::reverse(std::begin(cfg.params), std::end(cfg.params));
     for (auto &p : cfg.params) {
-      spdlog::get("console")->debug("{}", p.first);
+      console->debug("{}", p.first);
     }
   }
 
   // XXX How to have this neat and tidy in a single statement?
-  spdlog::get("console")->info("Parsed File. Resulting Config:");
+  console->info("Parsed File. Resulting Config:");
   printConfig(cfg);
 
   return cfg;
@@ -151,7 +153,8 @@ void ExtrapModelProvider::buildModels() {
                                paramPrefixes, paramValues, config.repetitions);
 
   int dimensions = extrapParams.size();  // The Extra-P API awaits int instead of size_t
-  auto console = spdlog::get("console");
+  auto console = metacg::MCGLogger::instance().getConsole();
+  auto errConsole = metacg::MCGLogger::instance().getErrConsole();
   auto cubeFiles = reader.getFileNames(dimensions);
   auto fns = reader.getFileNames(dimensions);
 
@@ -211,11 +214,11 @@ void ExtrapModelProvider::buildModels() {
     console->info("Read cubes with Extra-P library");
     experiment = reader.readCubeFiles(dimensions);
   } catch (std::exception &e) {
-    spdlog::get("errconsole")->warn("CubeReader failed with message:\n{}", e.what());
+    errConsole->warn("CubeReader failed with message:\n{}", e.what());
   }
 
   if (!experiment) {
-    spdlog::get("errconsole")->error("No experiment was constructed. Aborting.");
+    errConsole->error("No experiment was constructed. Aborting.");
     abort();
   }
 
@@ -258,7 +261,7 @@ void ExtrapModelProvider::buildModels() {
 
       for (auto i : functionModels) {
         if (i == nullptr) {
-          spdlog::get("errconsole")->warn("Function model is NULL");
+          errConsole->warn("Function model is NULL");
           assert(false && "the function model should not be nullptr");
           // What happened if it is indeed nullptr?
         }

@@ -6,6 +6,7 @@
 
 #include "loadImbalance/LIEstimatorPhase.h"
 #include "CgHelper.h"
+#include "LoggerUtil.h"
 #include "MetaData/PGISMetaData.h"
 
 #include <loadImbalance/LIMetaData.h>
@@ -13,7 +14,6 @@
 #include <loadImbalance/metric/ImbalancePercentageMetric.h>
 #include <loadImbalance/metric/VariationCoeffMetric.h>
 #include <queue>
-#include <spdlog/spdlog.h>
 #include <sstream>
 #include <unordered_map>
 
@@ -56,7 +56,7 @@ void LIEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
 
     if (n->getOrCreateMD<pira::PiraOneData>()->comesFromCube() &&
         !n->getOrCreateMD<LIMetaData>()->isFlagged(FlagType::Irrelevant)) {
-      spdlog::get("console")->debug("LIEstimatorPhase: Processing node " + n->getFunctionName());
+      metacg::MCGLogger::instance().getConsole()->debug("LIEstimatorPhase: Processing node " + n->getFunctionName());
 
       // flag node as visited
       n->get<LIMetaData>()->flag(FlagType::Visited);
@@ -115,7 +115,7 @@ void LIEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
         // mark as irrelevant
         n->get<LIMetaData>()->flag(FlagType::Irrelevant);
       }
-      spdlog::get("console")->debug(debugString.str());
+      metacg::MCGLogger::instance().getConsole()->debug(debugString.str());
     }
   }
 
@@ -137,7 +137,7 @@ void LIEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
     imbalancedNames << " incl. runtime: " << i->get<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds() << " sec.";
     imbalancedNames << "\n";
   }
-  spdlog::get("console")->info("Load imbalance summary: " + imbalancedNames.str());
+  metacg::MCGLogger::instance().getConsole()->info("Load imbalance summary: " + imbalancedNames.str());
 }
 
 void LIEstimatorPhase::instrumentRelevantChildren(metacg::CgNode *node, pira::Statements statementThreshold,
@@ -282,7 +282,7 @@ void LIEstimatorPhase::findSyncPoints(CgNode *node) {
     }
   }
 
-  spdlog::get("console")->debug(debugString.str());
+  metacg::MCGLogger::instance().getConsole()->debug(debugString.str());
 }
 
 void LIEstimatorPhase::instrumentByPattern(CgNode *startNode, std::function<bool(CgNode *)> pattern,
