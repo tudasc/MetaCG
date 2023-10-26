@@ -7,10 +7,9 @@
 #ifndef PGIS_UTILITY_H
 #define PGIS_UTILITY_H
 
-#include "spdlog/spdlog.h"
-
 #include "Callgraph.h"
 #include "CgNode.h"
+#include "LoggerUtil.h"
 
 #include "MetaData/PGISMetaData.h"
 
@@ -31,9 +30,9 @@ inline bool stringEndsWith(const std::string &s, const std::string &suffix) {
 inline std::string getHostname() {
   char *cName = (char *)malloc(255 * sizeof(char));
   if (!gethostname(cName, 255)) {
-    spdlog::get("errconsole")->error("Unable to determine hostname");
+    metacg::MCGLogger::instance().getErrConsole()->error("Unable to determine hostname");
   } else {
-    spdlog::get("console")->debug("Running on host: {}", cName);
+    metacg::MCGLogger::instance().getConsole()->debug("Running on host: {}", cName);
   }
   std::string name(cName);
   free(cName);

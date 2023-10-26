@@ -1,6 +1,8 @@
-//
-// Created by jp on 29.06.22.
-//
+/**
+ * File: LegacyMCGReader.cpp
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #include "LegacyMCGReader.h"
 #include "CgNode.h"

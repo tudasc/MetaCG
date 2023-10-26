@@ -12,9 +12,8 @@
 #define PGOE_EXTRAPESTIMATORPHASE_H
 
 #include "EstimatorPhase.h"
+#include "LoggerUtil.h"
 #include "MetaData/CgNodeMetaData.h"
-
-#include "spdlog/spdlog.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wextra"
@@ -45,7 +44,7 @@ inline bool isConstant(EXTRAP::SingleParameterFunction *func) { return func->get
 template <typename T>
 inline bool isConstant(T paramCont, const std::unique_ptr<EXTRAP::Function> &func) {
   if (paramCont.size() < 1) {
-    spdlog::get("errconsole")->error("{}: Less than one parameter found.", __FUNCTION__);
+    metacg::MCGLogger::instance().getErrConsole()->error("{}: Less than one parameter found.", __FUNCTION__);
     assert(paramCont.size() > 0 && "There should be at least one parameter stored per function");
   }
 
@@ -118,7 +117,7 @@ auto ExtrapLocalEstimatorPhaseBase::evalModelWValue(metacg::CgNode *n,
 
   std::map<EXTRAP::Parameter, double> evalOps;
 
-  auto console = spdlog::get("console");
+  auto console = metacg::MCGLogger::instance().getConsole();
   for (const auto &p : values) {
     console->debug("EvalModel: Setting {} to {}", p.first, p.second);
     evalOps.insert(std::make_pair(EXTRAP::Parameter(p.first), p.second));

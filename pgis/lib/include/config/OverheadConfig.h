@@ -24,7 +24,7 @@ struct OverheadConfig {
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(OverheadConfig, thresholdHotspotInclusive, thresholdHotspotExclusive,
                                    percentageExplorationBudget, inlineScaleFactor, recursionScaleFactor,
-                                   mpiFunctionsStatementEstimate);
+                                   mpiFunctionsStatementEstimate)
 
 }  // namespace pgis::config
 

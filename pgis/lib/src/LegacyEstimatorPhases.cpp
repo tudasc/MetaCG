@@ -28,7 +28,6 @@ void RemoveUnrelatedNodesEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod)
 
   for (auto node : nodesReachableFromMain) {
     if (graph->hasNode(node)) {
-      //      node->setReachable();
     }
   }
 }
@@ -57,7 +56,7 @@ void RemoveUnrelatedNodesEstimatorPhase::checkLeafNodeForRemoval(metacg::CgNode 
 WLInstrEstimatorPhase::WLInstrEstimatorPhase(const std::string &wlFilePath) : EstimatorPhase("WLInstr", nullptr) {
   std::ifstream ifStream(wlFilePath);
   if (!ifStream.good()) {
-    std::cerr << "Error: can not find whitelist at .. " << wlFilePath << std::endl;
+    metacg::MCGLogger::instance().getErrConsole()->error("Unable to open Wl file {}", wlFilePath);
   }
 
   std::string buff;
@@ -70,7 +69,6 @@ void WLInstrEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
   for (const auto &elem : graph->getNodes()) {
     const auto &node = elem.second.get();
     if (whiteList.find(node->getId()) != whiteList.end()) {
-      //      node->setState(CgNodeState::INSTRUMENT_WITNESS);
       pgis::instrumentNode(node);
     }
   }

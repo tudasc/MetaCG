@@ -7,6 +7,7 @@
 #ifndef CUBEREADER_H_
 #define CUBEREADER_H_
 
+#include "LoggerUtil.h"
 #include "MetaData/CgNodeMetaData.h"
 #include "PiraMCGProcessor.h"
 
@@ -83,13 +84,14 @@ const auto getName = [](const bool mangled, const auto cn) {
 };
 
 const auto attRuntime = [](auto &cube, auto cnode, auto n, auto pNode, auto pn) {
+  auto console = metacg::MCGLogger::instance().getConsole();
   if (has<BaseProfileData>(n)) {
-    spdlog::get("console")->debug("Attaching runtime {} to node {}", impl::time(cube, cnode), n->getFunctionName());
+    console->debug("Attaching runtime {} to node {}", impl::time(cube, cnode), n->getFunctionName());
     const auto runtime = impl::time(cube, cnode);
     const auto &bpd = get<BaseProfileData>(n);
     bpd->addRuntime(runtime);
   } else {
-    spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
+    console->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
   }
   if (has<PiraOneData>(n)) {
     get<PiraOneData>(n)->setComesFromCube();
@@ -97,14 +99,15 @@ const auto attRuntime = [](auto &cube, auto cnode, auto n, auto pNode, auto pn) 
 };
 
 const auto attNrCall = [](auto &cube, auto cnode, auto n, auto pNode, auto pn) {
+  auto console = metacg::MCGLogger::instance().getConsole();
   if (has<BaseProfileData>(n)) {
-    spdlog::get("console")->debug("Attaching visits {} to node {}", impl::visits(cube, cnode), n->getFunctionName());
+    console->debug("Attaching visits {} to node {}", impl::visits(cube, cnode), n->getFunctionName());
     const auto calls = impl::visits(cube, cnode);
     const auto &bpd = get<BaseProfileData>(n);
     bpd->addCalls(calls);
     bpd->addNumberOfCallsFrom(pn, calls);
   } else {
-    spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
+    console->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
   }
 };
 
@@ -131,7 +134,8 @@ const auto attInclRuntime = [](auto &cube, auto cnode, auto n, [[maybe_unused]] 
     }
 
     get<BaseProfileData>(n)->addInclusiveRuntimeInSeconds(cumulatedTime);
-    spdlog::get("console")->debug("Attaching inclusive runtime {} to node {}", cumulatedTime, n->getFunctionName());
+    auto console = metacg::MCGLogger::instance().getConsole();
+    console->debug("Attaching inclusive runtime {} to node {}", cumulatedTime, n->getFunctionName());
   } else if (has<PiraOneData>(n)) {
     get<PiraOneData>(n)->setComesFromCube();
   }
@@ -142,7 +146,7 @@ void build(std::string filePath, metacg::graph::MCGManager &mcgm, Largs... largs
   //  auto &cg = metacg::pgis::PiraMCGProcessor::get();
   bool useMangledNames = true;
 
-  auto console = spdlog::get("console");
+  auto console = metacg::MCGLogger::instance().getConsole();
 
   try {
     cube::Cube cube;

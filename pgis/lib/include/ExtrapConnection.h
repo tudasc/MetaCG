@@ -20,9 +20,11 @@
 #include "EXTRAP_Experiment.hpp"
 #pragma GCC diagnostic pop
 
-#include "spdlog/spdlog.h"
-
 #include "cxxabi.h"
+
+#include "ExtrapAggregatedFunctions.h"
+#include "LoggerUtil.h"
+#include "config/PiraIIConfig.h"
 
 #include <filesystem>
 #include <map>
@@ -31,9 +33,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#include "ExtrapAggregatedFunctions.h"
-#include "config/PiraIIConfig.h"
 
 namespace cube {
 class Cnode;
@@ -47,7 +46,6 @@ struct ExtrapConfig {
   std::string directory;
   std::string prefix;
   std::string postfix;
-  // std::map<std::string, std::vector<int>> params;
   std::vector<std::pair<std::string, std::vector<int>>> params;
   int repetitions;
   int iteration;
@@ -108,7 +106,7 @@ class ExtrapConnector {
  public:
   explicit ExtrapConnector(std::vector<EXTRAP::Model *> models, EXTRAP::ParameterList parameterList)
       : models(models), paramList(parameterList), epolator(ExtrapExtrapolator({})) {
-    spdlog::get("console")->trace("ExtrapConnector: explicit ctor: models {}", models.size());
+    metacg::MCGLogger::instance().getConsole()->trace("ExtrapConnector: explicit ctor: models {}", models.size());
   }
 
   ~ExtrapConnector() = default;
@@ -118,8 +116,8 @@ class ExtrapConnector {
         models(other.models),
         paramList(other.paramList),
         epolator(other.epolator) {
-    spdlog::get("console")->trace("ExtrapConnector: copy ctor\nother.models: {}\nthis.models: {}", other.models.size(),
-                                  this->models.size());
+    metacg::MCGLogger::instance().getConsole()->trace("ExtrapConnector: copy ctor\nother.models: {}\nthis.models: {}",
+                                                      other.models.size(), this->models.size());
   }
 
   ExtrapConnector &operator=(const ExtrapConnector &other) {
@@ -127,8 +125,9 @@ class ExtrapConnector {
     this->models = other.models;
     this->paramList = other.paramList;
     this->epolator = other.epolator;
-    spdlog::get("console")->trace("ExtrapConnector: copy assignment operator\nother.models: {}\nthis.models: {}",
-                                  other.models.size(), this->models.size());
+    metacg::MCGLogger::instance().getConsole()->trace(
+        "ExtrapConnector: copy assignment operator\nother.models: {}\nthis.models: {}", other.models.size(),
+        this->models.size());
     return *this;
   }
 
@@ -206,7 +205,7 @@ class ExtrapModelProvider {
     auto paramList = getParameterList();
 
     auto m = models[functionName];
-    spdlog::get("console")->debug(
+    metacg::MCGLogger::instance().getConsole()->debug(
         "ModelProvider:getModelFor {}: {}\nUsing mangled name: {}", demangledName,
         m.size() > 0 ? m.front()->getModelFunction()->getAsString(getParameterList()) : " NONE ", functionName);
     return ExtrapConnector(m, paramList);
