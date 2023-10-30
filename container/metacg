@@ -12,11 +12,16 @@ RUN mkdir -p deps/install && \
       make -j $(nproc) && \
       make install
 
-COPY . /opt/metacg/metacg
+RUN mkdir metacg
+
+COPY ./build_submodules.sh /opt/metacg/metacg
 
 RUN cd metacg && \
-    PATH=/opt/metacg/extern/install/cubelib/bin:$PATH ./build_submodules.sh $(nproc) && \
-    cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
+    PATH=/opt/metacg/extern/install/cubelib/bin:$PATH ./build_submodules.sh $(nproc)
+
+COPY . /opt/metacg/metacg
+
+RUN cd metacg && cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg \
       -DCUBE_LIB=/opt/metacg/extern/install/cubelib/lib \
       -DCUBE_INCLUDE=/opt/metacg/extern/install/cubelib/include/cubelib \
