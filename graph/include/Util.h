@@ -9,12 +9,20 @@
 
 #include "CgNode.h"
 #include "LoggerUtil.h"
+#include <cstdlib>
 #include <set>
 #include <string>
-
-
+#include <string_view>
 
 namespace metacg::util {
+
+/// Read environment variable, treat all values != 0 as "true"
+inline bool readBooleanEnvVar(std::string_view name, bool defaultValue) {
+  if (const auto ev = std::getenv(name.data())) {
+    return std::atoi(ev) != 0;
+  }
+  return defaultValue;
+}
 
 inline std::set<std::string> getFunctionNames(const std::unordered_set<CgNode *> &nodes) {
   std::set<std::string> names;

@@ -43,3 +43,23 @@ TEST(UtilTest, getMinorVersionNumber) {
   auto verNumber = metacg::util::getMinorVersionFromString(verStr);
   ASSERT_EQ(verNumber, 0);
 }
+
+TEST(UtilTest, getEnvVarEmptyReturnsDefault) {
+  ASSERT_TRUE(metacg::util::readBooleanEnvVar("SOME_TEST_VAR", true));
+  ASSERT_FALSE(metacg::util::readBooleanEnvVar("SOME_TEST_VAR", false));
+}
+
+TEST(UtilTest, getEnvVarGetFalse) {
+  // Make the environment as we'd expect it
+  setenv("SOME_TEST_VAR", "0", 0);
+  ASSERT_FALSE(metacg::util::readBooleanEnvVar("SOME_TEST_VAR", true));
+}
+
+TEST(UtilTest, getEnvVarGetTrue) {
+  // Make the environment as we'd expect it
+  setenv("SOME_TEST_VAR", "1", 1);
+  ASSERT_TRUE(metacg::util::readBooleanEnvVar("SOME_TEST_VAR", false));
+
+  setenv("SOME_TEST_VAR", "42", 1);
+  ASSERT_TRUE(metacg::util::readBooleanEnvVar("SOME_TEST_VAR", false));
+}
