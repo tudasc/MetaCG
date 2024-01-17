@@ -36,7 +36,7 @@ LIEstimatorPhase::LIEstimatorPhase(std::unique_ptr<LIConfig> &&config, metacg::C
 LIEstimatorPhase::~LIEstimatorPhase() { delete this->metric; }
 
 void LIEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
-  double totalRuntime = mainMethod->get<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds();
+  double totalRuntime = mainMethod->getOrCreateMD<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds();
 
   // make sure no node is marked for instrumentation yet
   for (const auto &elem : graph->getNodes()) {
@@ -59,14 +59,14 @@ void LIEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
       spdlog::get("console")->debug("LIEstimatorPhase: Processing node " + n->getFunctionName());
 
       // flag node as visited
-      n->get<LIMetaData>()->flag(FlagType::Visited);
+      n->getOrCreateMD<LIMetaData>()->flag(FlagType::Visited);
 
-      double runtime = n->get<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds();
+      double runtime = n->getOrCreateMD<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds();
 
       std::ostringstream debugString;
 
       debugString << "Visiting node " << n->getFunctionName() << " ("
-                  << n->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << "): ";
+                  << n->getOrCreateMD<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << "): ";
 
       // check whether node is sufficiently important
       if (runtime / totalRuntime >= c->relevanceThreshold) {
@@ -79,12 +79,12 @@ void LIEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
           statementThreshold = c->childConstantThreshold;
         } else if (c->childRelevanceStrategy == ChildRelevanceStrategy::RelativeToParent) {
           statementThreshold =
-              std::max((pira::Statements)(n->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() *
+              std::max((pira::Statements)(n->getOrCreateMD<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() *
                                           c->childFraction),
                        c->childConstantThreshold);
         } else if (c->childRelevanceStrategy == ChildRelevanceStrategy::RelativeToMain) {
           statementThreshold = std::max(
-              (pira::Statements)(mainMethod->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() *
+              (pira::Statements)(mainMethod->getOrCreateMD<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() *
                                  c->childFraction),
               c->childConstantThreshold);
         }
@@ -99,8 +99,8 @@ void LIEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
         debugString << " -> " << m;
         if (m >= c->imbalanceThreshold) {
           debugString << " => imbalanced";
-          n->get<LoadImbalance::LIMetaData>()->setAssessment(m);
-          n->get<LoadImbalance::LIMetaData>()->flag(FlagType::Imbalanced);
+          n->getOrCreateMD<LoadImbalance::LIMetaData>()->setAssessment(m);
+          n->getOrCreateMD<LoadImbalance::LIMetaData>()->flag(FlagType::Imbalanced);
           imbalancedNodeSet.push_back(n);
 
           instrument(n);  // make sure imbalanced functions stays instrumented
@@ -108,12 +108,12 @@ void LIEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
         } else {
           debugString << " => balanced";
           // mark as irrelevant
-          n->get<LIMetaData>()->flag(FlagType::Irrelevant);
+          n->getOrCreateMD<LIMetaData>()->flag(FlagType::Irrelevant);
         }
       } else {
         debugString << "ignored (" << runtime << " / " << totalRuntime << " = " << runtime / totalRuntime << ")";
         // mark as irrelevant
-        n->get<LIMetaData>()->flag(FlagType::Irrelevant);
+        n->getOrCreateMD<LIMetaData>()->flag(FlagType::Irrelevant);
       }
       spdlog::get("console")->debug(debugString.str());
     }
@@ -133,8 +133,8 @@ void LIEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
   std::ostringstream imbalancedNames;
   for (const auto &i : imbalancedNodeSet) {
     imbalancedNames << i->getFunctionName();
-    imbalancedNames << " load imbalance assessment: " << i->get<LoadImbalance::LIMetaData>()->getAssessment().value();
-    imbalancedNames << " incl. runtime: " << i->get<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds() << " sec.";
+    imbalancedNames << " load imbalance assessment: " << i->getOrCreateMD<LoadImbalance::LIMetaData>()->getAssessment().value();
+    imbalancedNames << " incl. runtime: " << i->getOrCreateMD<pira::BaseProfileData>()->getInclusiveRuntimeInSeconds() << " sec.";
     imbalancedNames << "\n";
   }
   spdlog::get("console")->info("Load imbalance summary: " + imbalancedNames.str());
@@ -160,24 +160,24 @@ void LIEstimatorPhase::instrumentRelevantChildren(metacg::CgNode *node, pira::St
     visitedSet.insert(child);
 
     // process grandchilds (as possible implementations of virtual functions are children of those)
-    if (child->get<LoadImbalance::LIMetaData>()->isVirtual()) {
+    if (child->getOrCreateMD<LoadImbalance::LIMetaData>()->isVirtual()) {
       for (metacg::CgNode *gc : graph->getCallees(child)) {
         workQueue.push(gc);
       }
     }
 
-    if (child->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() >= statementThreshold) {
-      if (!child->get<LIMetaData>()->isFlagged(FlagType::Irrelevant)) {
+    if (child->getOrCreateMD<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() >= statementThreshold) {
+      if (!child->getOrCreateMD<LIMetaData>()->isFlagged(FlagType::Irrelevant)) {
         instrument(child);
         debugString << child->getFunctionName() << " ("
-                    << child->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << ") ";
+                    << child->getOrCreateMD<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << ") ";
       } else {
         debugString << "-" << child->getFunctionName() << "- ("
-                    << child->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << ") ";
+                    << child->getOrCreateMD<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << ") ";
       }
     } else {
       debugString << "/" << child->getFunctionName() << "\\ ("
-                  << child->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << ") ";
+                  << child->getOrCreateMD<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements() << ") ";
     }
   }
 }
@@ -205,7 +205,7 @@ void LoadImbalance::LIEstimatorPhase::contextHandling(metacg::CgNode *n, metacg:
   if (c->contextStrategy == ContextStrategy::MajorPathsToMain ||
       c->contextStrategy == ContextStrategy::MajorParentSteps) {
     for (metacg::CgNode *x : nodesOnPathToMain) {
-      if (!x->get<LIMetaData>()->isFlagged(FlagType::Visited)) {
+      if (!x->getOrCreateMD<LIMetaData>()->isFlagged(FlagType::Visited)) {
         relevantPaths.erase(x);
       }
     }
@@ -273,8 +273,8 @@ void LIEstimatorPhase::findSyncPoints(CgNode *node) {
 
   // process all parents which are balanced + visisted
   for (CgNode *parent : graph->getCallers(node)) {
-    if (!parent->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Imbalanced) &&
-        parent->get<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Visited)) {
+    if (!parent->getOrCreateMD<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Imbalanced) &&
+        parent->getOrCreateMD<LoadImbalance::LIMetaData>()->isFlagged(FlagType::Visited)) {
       // instrument all descendant synchronization routines
       instrumentByPattern(
           parent, [](CgNode *nodeInQuestion) { return nodeInQuestion->getFunctionName().rfind("MPI_", 0) == 0; },
