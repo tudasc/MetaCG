@@ -76,13 +76,13 @@ bool isOnCycle(metacg::CgNode *node, const metacg::Callgraph *const graph) {
 Statements visitNodeForInclusiveStatements(metacg::CgNode *node, CgNodeRawPtrUSet *visitedNodes,
                                            const metacg::Callgraph *const graph) {
   if (visitedNodes->find(node) != visitedNodes->end()) {
-    return node->get<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements();
+    return node->getOrCreateMD<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements();
   }
   visitedNodes->insert(node);
 
   CgNodeRawPtrUSet visistedChilds;
 
-  Statements inclusiveStatements = node->get<PiraOneData>()->getNumberOfStatements();
+  Statements inclusiveStatements = node->getOrCreateMD<PiraOneData>()->getNumberOfStatements();
   for (auto childNode : graph->getCallees(node)) {
     // prevent double processing
     if (visistedChilds.find(childNode) != visistedChilds.end())
@@ -90,7 +90,7 @@ Statements visitNodeForInclusiveStatements(metacg::CgNode *node, CgNodeRawPtrUSe
     visistedChilds.insert(childNode);
 
     // approximate statements of a abstract function with maximum of its children (potential call targets)
-    if (node->get<LoadImbalance::LIMetaData>()->isVirtual() && node->get<PiraOneData>()->getNumberOfStatements() == 0) {
+    if (node->getOrCreateMD<LoadImbalance::LIMetaData>()->isVirtual() && node->getOrCreateMD<PiraOneData>()->getNumberOfStatements() == 0) {
       inclusiveStatements =
           std::max(inclusiveStatements, visitNodeForInclusiveStatements(childNode, visitedNodes, graph));
     } else {
@@ -98,7 +98,7 @@ Statements visitNodeForInclusiveStatements(metacg::CgNode *node, CgNodeRawPtrUSe
     }
   }
 
-  node->get<LoadImbalance::LIMetaData>()->setNumberOfInclusiveStatements(inclusiveStatements);
+  node->getOrCreateMD<LoadImbalance::LIMetaData>()->setNumberOfInclusiveStatements(inclusiveStatements);
 
   metacg::MCGLogger::instance().getConsole()->trace("Visiting node " + node->getFunctionName() +
                                                     ". Result = " + std::to_string(inclusiveStatements));
