@@ -68,14 +68,14 @@ void VersionOneMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
     if (opt_f.has_value()) {
       metacg::CgNode *node = opt_f.value();
       node->getOrCreateMD<LoadImbalance::LIMetaData>();
-      node->get<LoadImbalance::LIMetaData>()->setVirtual(pfi.second.isVirtual);
+      node->getOrCreateMD<LoadImbalance::LIMetaData>()->setVirtual(pfi.second.isVirtual);
 
       if (pfi.second.visited) {
-        node->get<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Visited);
+        node->getOrCreateMD<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Visited);
       }
 
       if (pfi.second.irrelevant) {
-        node->get<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Irrelevant);
+        node->getOrCreateMD<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Irrelevant);
       }
     }
   }
