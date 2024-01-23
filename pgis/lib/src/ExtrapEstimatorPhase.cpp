@@ -36,7 +36,7 @@ void ExtrapLocalEstimatorPhaseBase::modifyGraph(metacg::CgNode *mainNode) {
     if (shouldInstr) {
       auto useCSInstr =
           pgis::config::GlobalConfig::get().getAs<bool>(pgis::options::useCallSiteInstrumentation.cliName);
-      if (useCSInstr && !n->get<PiraOneData>()->getHasBody()) {
+      if (useCSInstr && !n->getOrCreateMD<PiraOneData>()->getHasBody()) {
         // If no definition, use call-site instrumentation
         pgis::instrumentPathNode(n);
         //        n->setState(CgNodeState::INSTRUMENT_PATH);
@@ -141,7 +141,7 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(metacg::CgNode *m
     console->trace("Running ExtrapLocalEstimatorPhaseExpander::modifyGraph on {}", n->getFunctionName());
     auto [shouldInstr, funcRtVal] = shouldInstrument(n);
     if (shouldInstr) {
-      if (!n->get<PiraOneData>()->getHasBody() && n->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
+      if (!n->getOrCreateMD<PiraOneData>()->getHasBody() && n->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
         // If no definition, use call-site instrumentation
         pgis::instrumentPathNode(n);
       } else {
