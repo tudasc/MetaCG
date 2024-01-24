@@ -21,7 +21,7 @@
  * \author roman
  * \author JPL
  */
-namespace CubeCallgraphBuilder {
+namespace metacg::pgis {
 
 namespace impl {
 
@@ -197,6 +197,6 @@ void build(std::string filepath);
 
 void build(std::string filePath, Config *c, metacg::graph::MCGManager &mcgm);
 void buildFromCube(std::string filePath, Config *c, metacg::graph::MCGManager &mcgm);
-}  // namespace CubeCallgraphBuilder
+}  // namespace metacg::pgis
 
 #endif

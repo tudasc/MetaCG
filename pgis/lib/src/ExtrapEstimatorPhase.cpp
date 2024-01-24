@@ -38,10 +38,10 @@ void ExtrapLocalEstimatorPhaseBase::modifyGraph(metacg::CgNode *mainNode) {
           pgis::config::GlobalConfig::get().getAs<bool>(pgis::options::useCallSiteInstrumentation.cliName);
       if (useCSInstr && !n->getOrCreateMD<PiraOneData>()->getHasBody()) {
         // If no definition, use call-site instrumentation
-        pgis::instrumentPathNode(n);
+        metacg::pgis::instrumentPathNode(n);
         //        n->setState(CgNodeState::INSTRUMENT_PATH);
       } else {
-        pgis::instrumentNode(n);
+        metacg::pgis::instrumentNode(n);
         //        n->setState(CgNodeState::INSTRUMENT_WITNESS);
       }
       kernels.emplace_back(funcRtVal, n);
@@ -50,7 +50,7 @@ void ExtrapLocalEstimatorPhaseBase::modifyGraph(metacg::CgNode *mainNode) {
         auto nodesToMain = CgHelper::allNodesToMain(n, mainNode, graph, ra);
         console->trace("Node {} has {} nodes on paths to main.", n->getFunctionName(), nodesToMain.size());
         for (const auto &ntm : nodesToMain) {
-          pgis::instrumentNode(ntm);
+          metacg::pgis::instrumentNode(ntm);
           //          ntm->setState(CgNodeState::INSTRUMENT_WITNESS);
         }
       }
@@ -143,9 +143,9 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(metacg::CgNode *m
     if (shouldInstr) {
       if (!n->getOrCreateMD<PiraOneData>()->getHasBody() && n->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
         // If no definition, use call-site instrumentation
-        pgis::instrumentPathNode(n);
+        metacg::pgis::instrumentPathNode(n);
       } else {
-        pgis::instrumentNode(n);
+        metacg::pgis::instrumentNode(n);
       }
       kernels.emplace_back(funcRtVal, n);
 
@@ -157,7 +157,7 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(metacg::CgNode *m
         auto nodesToMain = pathsToMain[n];
         console->trace("Found {} nodes to main.", nodesToMain.size());
         for (const auto &ntm : nodesToMain) {
-          pgis::instrumentNode(ntm);
+          metacg::pgis::instrumentNode(ntm);
         }
       }
 

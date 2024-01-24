@@ -11,7 +11,7 @@
 #include "LoggerUtil.h"
 #include "MetaData.h"
 
-namespace pgis {
+namespace metacg::pgis {
 
 /**
  * MetaData to encode if a node is marked for instrumentation (Instrumented, function-level instrumentation) or for path
@@ -73,5 +73,5 @@ inline void instrumentPathNode(metacg::CgNode *node) {
   return md->isInstrumented() || md->isInstrumentedPath();
 }
 
-}  // namespace pgis
+}  // namespace metacg::pgis
 #endif  // METACG_PGISMETADATA_H

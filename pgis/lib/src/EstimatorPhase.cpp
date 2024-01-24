@@ -22,10 +22,10 @@ EstimatorPhase::EstimatorPhase(std::string name, metacg::Callgraph *callgraph)
 void EstimatorPhase::generateIC() {
   for (const auto& elem : graph->getNodes()) {
     const auto& node= elem.second.get();
-    if (pgis::isInstrumented(node)) {
+    if (metacg::pgis::isInstrumented(node)) {
       IC.instrumentedNames.insert(node->getFunctionName());
       IC.instrumentedNodes.insert(node);
-    } else if (pgis::isInstrumentedPath(node)) {
+    } else if (metacg::pgis::isInstrumentedPath(node)) {
       IC.instrumentedPaths.insert({node->getFunctionName(), node});
     }
   }

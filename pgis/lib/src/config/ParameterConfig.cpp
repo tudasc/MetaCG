@@ -6,10 +6,10 @@
 
 #include "config/ParameterConfig.h"
 
-using namespace pgis::config;
+using namespace metacg::pgis::config;
 
 ParameterConfig::ParameterConfig() {
-  auto &gConfig = pgis::config::GlobalConfig::get();
+  auto &gConfig = GlobalConfig::get();
   auto path = gConfig.getAs<std::string>(pgis::options::parameterFileConfig.cliName);
 
   // read file

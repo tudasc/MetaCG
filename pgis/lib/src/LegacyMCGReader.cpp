@@ -11,7 +11,7 @@
 
 #include <loadImbalance/LIMetaData.h>
 
-namespace metacg::io {
+namespace metacg::pgis::io {
 /**
  * Version one Reader
  */
@@ -22,7 +22,7 @@ void VersionOneMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
   console->trace("Reading");
   auto j = source.get();
 
-  for (json::iterator it = j.begin(); it != j.end(); ++it) {
+  for (metacg::io::json::iterator it = j.begin(); it != j.end(); ++it) {
     console->trace("Inserting node for key {}", it.key());
     auto &fi = getOrInsert(it.key());
 
@@ -98,4 +98,4 @@ void VersionOneMetaCGReader::addNumStmts(metacg::graph::MCGManager &cgm) {
   }
 }
 
-}  // namespace metacg::io
+}  // namespace metacg::pgis::io

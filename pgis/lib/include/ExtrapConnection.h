@@ -170,7 +170,7 @@ class ExtrapConnector {
    * Call only once!
    * @param modelAggregationStrategy Aggregration/Selection strategy
    */
-  void modelAggregation(pgis::config::ModelAggregationStrategy modelAggregationStrategy);
+  void modelAggregation(metacg::pgis::config::ModelAggregationStrategy modelAggregationStrategy);
 
  private:
   std::unique_ptr<EXTRAP::Function> epModelFunction = nullptr;

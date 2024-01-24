@@ -3,7 +3,7 @@
 
 #include "nlohmann/json.hpp"
 
-namespace pgis::config {
+namespace metacg::pgis::config {
 struct OverheadConfig {
   double thresholdHotspotInclusive =
       0.2;  // Functions that have an inclusive runtime >= thresholdHotspotInclusive * main inclusive runtime are
@@ -26,6 +26,6 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(OverheadConfig, thresholdHotspotInclusive, th
                                    percentageExplorationBudget, inlineScaleFactor, recursionScaleFactor,
                                    mpiFunctionsStatementEstimate)
 
-}  // namespace pgis::config
+}  // namespace metacg::pgis::config
 
 #endif  // METACG_OVERHEADCONFIG_H

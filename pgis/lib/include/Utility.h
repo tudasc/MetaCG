@@ -83,8 +83,8 @@ inline bool isEligibleForPathInstrumentation(metacg::CgNode *node, metacg::Callg
 
 inline bool isLeafInstrumentationNode(metacg::CgNode *node, metacg::Callgraph *graph) {
   const auto &callees = graph->getCallees(node);
-  return pgis::isAnyInstrumented(node) && std::none_of(callees.begin(), callees.end(), [&node](const auto &p) {
-           return (node != p) && pgis::isAnyInstrumented(p);
+  return metacg::pgis::isAnyInstrumented(node) && std::none_of(callees.begin(), callees.end(), [&node](const auto &p) {
+           return (node != p) && metacg::pgis::isAnyInstrumented(p);
          });
 }
 

@@ -35,7 +35,7 @@ CgNodeRawPtrUSet getInstrumentationPath(metacg::CgNode *start, const metacg::Cal
     workQueue.pop();
     if (path.find(node) == path.end()) {
       path.insert(node);
-      if (pgis::isInstrumented(node) || pgis::isInstrumentedPath(node) ||
+      if (metacg::pgis::isInstrumented(node) || metacg::pgis::isInstrumentedPath(node) ||
           /*node.isRootNode()*/ graph->getCallers(node).empty()) {
         continue;
       }

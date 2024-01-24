@@ -22,9 +22,9 @@ class IPCGEstimatorPhaseBasic : public ::testing::Test {
   }
 
   static void attachAllMetaDataToGraph(metacg::Callgraph *cg) {
-    pgis::attachMetaDataToGraph<pira::BaseProfileData>(cg);
-    pgis::attachMetaDataToGraph<pira::PiraOneData>(cg);
-    pgis::attachMetaDataToGraph<pira::PiraTwoData>(cg);
+    metacg::pgis::attachMetaDataToGraph<pira::BaseProfileData>(cg);
+    metacg::pgis::attachMetaDataToGraph<pira::PiraOneData>(cg);
+    metacg::pgis::attachMetaDataToGraph<pira::PiraTwoData>(cg);
   }
 };
 
@@ -425,9 +425,9 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
   }
 
   static void attachAllMetaDataToGraph(metacg::Callgraph *cg) {
-    pgis::attachMetaDataToGraph<pira::BaseProfileData>(cg);
-    pgis::attachMetaDataToGraph<pira::PiraOneData>(cg);
-    pgis::attachMetaDataToGraph<pira::PiraTwoData>(cg);
+    metacg::pgis::attachMetaDataToGraph<pira::BaseProfileData>(cg);
+    metacg::pgis::attachMetaDataToGraph<pira::PiraOneData>(cg);
+    metacg::pgis::attachMetaDataToGraph<pira::PiraTwoData>(cg);
   }
 
   void SetUp() override {

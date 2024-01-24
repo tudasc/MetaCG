@@ -19,10 +19,10 @@ class LIEstimatorPhaseTest : public ::testing::Test {
   void SetUp() override { metacg::loggerutil::getLogger(); }
 
   static void attachAllMetaDataToGraph(metacg::Callgraph *cg) {
-    pgis::attachMetaDataToGraph<pira::BaseProfileData>(cg);
-    pgis::attachMetaDataToGraph<pira::PiraOneData>(cg);
-    pgis::attachMetaDataToGraph<pira::PiraTwoData>(cg);
-    pgis::attachMetaDataToGraph<LoadImbalance::LIMetaData>(cg);
+    metacg::pgis::attachMetaDataToGraph<pira::BaseProfileData>(cg);
+    metacg::pgis::attachMetaDataToGraph<pira::PiraOneData>(cg);
+    metacg::pgis::attachMetaDataToGraph<pira::PiraTwoData>(cg);
+    metacg::pgis::attachMetaDataToGraph<LoadImbalance::LIMetaData>(cg);
   }
 };
 
@@ -150,18 +150,18 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
 
   ASSERT_EQ(graph->getMain(), mainNode);
 
-  ASSERT_EQ(pgis::isInstrumented(graph->getMain()), true);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("child1")), false);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("child2")), false);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("child3")), false);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("child4")), true);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("child5")), false);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getMain()), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("child1")), false);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("child2")), false);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("child3")), false);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("child4")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("child5")), false);
 
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("gc1")), false);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("gc2")), false);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("gc3")), true);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("gc4")), true);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("gc5")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("gc1")), false);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("gc2")), false);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("gc3")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("gc4")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("gc5")), true);
 }
 
 TEST_F(LIEstimatorPhaseTest, Virtual) {
@@ -213,10 +213,10 @@ TEST_F(LIEstimatorPhaseTest, Virtual) {
   auto graph = cm.getCallgraph(&cm);
 
   ASSERT_EQ(graph->getMain(), mainNode);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("main")), true);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("child")), true);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("grandchild")), true);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("grandgrandchild")), false);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("main")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("child")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("grandchild")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("grandgrandchild")), false);
 }
 
 TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
@@ -276,10 +276,10 @@ TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
   auto graph = cm.getCallgraph(&cm);
 
   ASSERT_EQ(graph->getMain(), mainNode);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("main")), true);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("child1")), true);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("child2")), true);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("grandchild")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("main")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("child1")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("child2")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("grandchild")), true);
 }
 
 TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
@@ -336,10 +336,10 @@ TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
   auto graph = cm.getCallgraph(&cm);
 
   ASSERT_EQ(graph->getMain(), mainNode);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("main")), true);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("child1")), true);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("child2")), false);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("grandchild")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("main")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("child1")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("child2")), false);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("grandchild")), true);
 }
 
 TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
@@ -392,8 +392,8 @@ TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
   auto graph = cm.getCallgraph(&cm);
 
   ASSERT_EQ(graph->getMain(), mainNode);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("main")), true);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("child1")), false);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("child2")), true);
-  ASSERT_EQ(pgis::isInstrumented(graph->getNode("child3")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("main")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("child1")), false);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("child2")), true);
+  ASSERT_EQ(metacg::pgis::isInstrumented(graph->getNode("child3")), true);
 }
