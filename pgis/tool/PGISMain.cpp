@@ -9,7 +9,6 @@
 
 #include "CubeReader.h"
 #include "DotIO.h"
-#include "DotReader.h"
 #include "ErrorCodes.h"
 #include "ExtrapEstimatorPhase.h"
 #include "IPCGEstimatorPhase.h"
