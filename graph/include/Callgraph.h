@@ -8,6 +8,7 @@
 
 #include "CgNode.h"
 #include "CgNodePtr.h"
+#include "Util.h"
 
 template <>
 struct std::hash<std::pair<size_t, size_t>> {
@@ -28,7 +29,18 @@ class Callgraph {
   typedef std::unordered_map<size_t, std::vector<size_t>> CallerList;
   typedef std::unordered_map<size_t, std::vector<size_t>> CalleeList;
 
-  Callgraph() : nodes(), nameIdMap(), edges(), mainNode(nullptr), lastSearched(nullptr) {}
+  Callgraph()
+      : nodes(),
+        nameIdMap(),
+        edges(),
+        mainNode(nullptr),
+        lastSearched(nullptr),
+        empiricalCollisionCounting(util::readBooleanEnvVar("METACG_EMPIRICAL_COLLISION_TRACKING", false)) {}
+
+  /**
+   * Destructor. Prints call graph stats.
+   */
+  ~Callgraph() { dumpCGStats(); }
 
   /**
    * @brief getMain
@@ -196,6 +208,8 @@ class Callgraph {
     return hasEdgeMetaData<T>({nameIdMap.at(func1), nameIdMap.at(func2)});
   }
 
+  void dumpCGStats() const;
+
  private:
   // this set represents the call graph during the actual computation
   NodeContainer nodes;
@@ -209,6 +223,10 @@ class Callgraph {
 
   // Temporary storage for hasNode/getLastSearchedNode combination
   CgNode *lastSearched;
+
+  // Flag to determine if we want to run empirical collision counting
+  bool empiricalCollisionCounting;
+  int nodeHashCollisionCounter{0};
 };
 
 [[maybe_unused]] static Callgraph &getEmptyGraph() {

@@ -5,6 +5,7 @@
  */
 #include "Callgraph.h"
 #include "LoggerUtil.h"
+#include <string>
 
 using namespace metacg;
 
@@ -29,16 +30,20 @@ size_t Callgraph::insert(const std::string &nodeName) { return insert(std::make_
  * @param node
  * @return the id of the inserted node
  */
-
 size_t Callgraph::insert(CgNodePtr node) {
   size_t nodeId = node->getId();
   if (auto n = nameIdMap.find(node->getFunctionName()); n != nameIdMap.end()) {
     if (n->first != node->getFunctionName()) {
-      MCGLogger::instance().getErrConsole()->error(
+      MCGLogger::instance().getErrConsole()->warn(
           "There already exists a mapping from {} to {}, but the newly inserted node {} generates the same ID ({}) "
-          "this probably is a hash function collision, and is unrecoverable",
+          "this probably is a hash function collision.",
           n->first, n->second, node->getFunctionName(), node->getId());
-      abort();
+      ++nodeHashCollisionCounter;
+      if (!empiricalCollisionCounting) {
+        MCGLogger::instance().getErrConsole()->error(
+            "Collisions are treated as errors. Stopping.\nExport METACG_EMPIRICAL_COLLISION_TRACKING=1 to override.");
+        abort();
+      }
     } else {
       MCGLogger::instance().getErrConsole()->warn(
           "A Node with ID {} and name {} allready exists in the Map: Skipping insertion into Map", n->second, n->first);
@@ -274,4 +279,17 @@ bool Callgraph::hasEdgeMetaData(const std::pair<size_t, size_t> id, const std::s
 bool Callgraph::hasEdgeMetaData(const std::string &func1, const std::string &func2,
                                 const std::string &metadataName) const {
   return hasEdgeMetaData({nameIdMap.at(func1), nameIdMap.at(func2)}, metadataName);
+}
+
+void Callgraph::dumpCGStats() const {
+  auto console = MCGLogger::instance().getConsole();
+  std::string statStr;
+
+  // TODO: Can we use the FMT stuff that comes with spdlog for the to_string here?
+  if (empiricalCollisionCounting) {
+    statStr += "Node hash collisions: " + std::to_string(nodeHashCollisionCounter);
+  }
+
+  console->info(" == Callgraph stats == \n");
+  console->info(statStr);
 }
