@@ -151,9 +151,7 @@ class PiraOneData : public metacg::MetaData::Registrar<PiraOneData> {
   }
 
   nlohmann::json to_json() const final {
-    nlohmann::json j;
-    j["numStatements"] = getNumberOfStatements();
-    return j;
+    return getNumberOfStatements();
   };
 
   virtual const char *getKey() const final { return key; }
@@ -187,10 +185,6 @@ inline void setPiraOneData(T node, int numStmts = 0, bool hasBody = false, bool 
   } else {
     assert_pira_one_data();
   }
-}
-
-inline void to_json(nlohmann::json &j, const PiraOneData &data) {
-  j = nlohmann::json{{"numStatements", data.getNumberOfStatements()}};
 }
 
 /**

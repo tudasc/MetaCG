@@ -46,12 +46,11 @@ TEST(PIRAPGISMetadataTest, PiraOneData) {
   const auto &j = origMetadata->to_json();
 
   // Compare all exported values
-  EXPECT_TRUE(j.contains("numStatements"));
-  EXPECT_EQ(j.at("numStatements"), origMetadata->getNumberOfStatements());
+  EXPECT_EQ(j.get<long long int>(), origMetadata->getNumberOfStatements());
 
   // Import Json Object
   // Note: due to historical reasons, PiraOne Data is not a json object, but only a single value
-  const auto &jsonMetadata = new pira::PiraOneData(j.at("numStatements"));
+  const auto &jsonMetadata = new pira::PiraOneData(j);
 
   // Compare all imported values
   EXPECT_EQ(jsonMetadata->getNumberOfStatements(), origMetadata->getNumberOfStatements());
