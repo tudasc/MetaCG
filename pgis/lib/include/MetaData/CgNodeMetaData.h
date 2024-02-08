@@ -44,7 +44,7 @@ class BaseProfileData : public metacg::MetaData::Registrar<BaseProfileData> {
   BaseProfileData(const nlohmann::json &j) {
     metacg::MCGLogger::instance().getConsole()->trace("Running BaseProfileDataHandler::read");
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve metadata for {}", key);
+      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve metadata for {}", key);
       return;
     }
     auto jsonNumCalls = j["numCalls"].get<unsigned long long int>();
@@ -142,7 +142,7 @@ class PiraOneData : public metacg::MetaData::Registrar<PiraOneData> {
   explicit PiraOneData(const nlohmann::json &j) {
     metacg::MCGLogger::instance().getConsole()->trace("Running PiraOneMetaDataRetriever::read from json");
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
     }
     auto jsonNumStmts = j.get<long long int>();
@@ -272,7 +272,7 @@ class FilePropertiesMetaData : public metacg::MetaData::Registrar<FileProperties
   FilePropertiesMetaData() : origin("INVALID"), fromSystemInclude(false), lineNumber(0) {}
   explicit FilePropertiesMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
     }
 
@@ -302,7 +302,7 @@ class CodeStatisticsMetaData : public metacg::MetaData::Registrar<CodeStatistics
   CodeStatisticsMetaData() = default;
   explicit CodeStatisticsMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
     }
     int jNumVars = j["numVars"].get<int>();
@@ -326,7 +326,7 @@ class NumConditionalBranchMetaData : public metacg::MetaData::Registrar<NumCondi
   NumConditionalBranchMetaData() = default;
   explicit NumConditionalBranchMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
     }
     int numberOfConditionalBranches = j.get<int>();
@@ -347,7 +347,7 @@ class NumOperationsMetaData : public metacg::MetaData::Registrar<NumOperationsMe
 
   explicit NumOperationsMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
     }
     int jNumberOfIntOps = j["numberOfIntOps"].get<int>();
@@ -382,7 +382,7 @@ class LoopDepthMetaData : public metacg::MetaData::Registrar<LoopDepthMetaData> 
   LoopDepthMetaData() = default;
   explicit LoopDepthMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
     }
     loopDepth = j.get<int>();
@@ -402,7 +402,7 @@ class GlobalLoopDepthMetaData : public metacg::MetaData::Registrar<GlobalLoopDep
 
   explicit GlobalLoopDepthMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
     }
     globalLoopDepth = j.get<int>();
@@ -422,6 +422,7 @@ class InlineMetaData : public metacg::MetaData::Registrar<InlineMetaData> {
   explicit InlineMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
+      return;
     }
     markedInline = j["markedInline"].get<bool>();
     likelyInline = j["likelyInline"].get<bool>();
@@ -463,6 +464,7 @@ class CallCountEstimationMetaData : public metacg::MetaData::Registrar<CallCount
   explicit CallCountEstimationMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
+      return;
     }
     calledFunctions = j["calls"].get<pira::CalledFunctionType>();
     codeRegions = j["codeRegions"].get<pira::CodeRegionsType>();
@@ -536,6 +538,7 @@ class InstrumentationResultMetaData : public metacg::MetaData::Registrar<Instrum
   explicit InstrumentationResultMetaData(const nlohmann::json &j) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
+      return;
     }
     callCount = j["calls"];
     runtime = j["runtime"];
