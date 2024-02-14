@@ -16,6 +16,7 @@ namespace metacg::analysis {
 
 /**
  * Provides reachability analysis information for graph.
+ * TODO: What does "path between A and A" mean in our analysis?
  */
 class ReachabilityAnalysis {
  public:
