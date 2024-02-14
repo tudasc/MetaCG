@@ -36,7 +36,6 @@ void FirstNLevelsEstimatorPhase::instrumentLevel(metacg::CgNode *parentNode, int
     return;
   }
 
-  //  parentNode->setState(CgNodeState::INSTRUMENT_WITNESS);
   pgis::instrumentNode(parentNode);
 
   for (auto childNode : graph->getCallees(parentNode)) {
@@ -64,8 +63,6 @@ void StatementCountEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
 
   if (pSEP) {
     numberOfStatementsThreshold = pSEP->getCuttoffNumInclStmts();
-    // numberOfStatementsThreshold = pSEP->getMaxNumInclStmts() * .5;
-    // numberOfStatementsThreshold = pSEP->getMedianNumInclStmts();
     console->debug("Changed count: now using {} as threshold", numberOfStatementsThreshold);
   }
 
@@ -235,7 +232,6 @@ void RuntimeEstimatorPhase::doInstrumentation(metacg::CgNode *startNode, metacg:
     // Add new nodes according to
   } else if (runTime >= runTimeThreshold) {
     // keep the nodes on the paths in the profile, when they expose sufficient runtime.
-    // startNode->setState(CgNodeState::INSTRUMENT_WITNESS);
     pgis::instrumentNode(startNode);
     console->info("Instrumenting {} because of its runtime", startNode->getFunctionName());
     int instrChildren = 0;
@@ -248,7 +244,6 @@ void RuntimeEstimatorPhase::doInstrumentation(metacg::CgNode *startNode, metacg:
 
     for (auto childNode : graph->getCallees(startNode)) {
       StatementCountEstimatorPhase scep(999999999, graph);  // prevent pass from instrumentation
-      // scep.setGraph(graph);
       scep.estimateStatementCount(childNode, ra);
       childStmts[childNode] = scep.getNumStatements(childNode);
 
@@ -318,7 +313,6 @@ void RuntimeEstimatorPhase::doInstrumentation(metacg::CgNode *startNode, metacg:
     }
     if (maxRtChild) {
       console->debug("This is the dominant runtime path");
-      //      maxRtChild->setState(CgNodeState::INSTRUMENT_WITNESS);
       pgis::instrumentNode(maxRtChild);
       maxRtChild->getOrCreateMD<PiraOneData>()->setDominantRuntime();
     } else {
@@ -530,7 +524,6 @@ void RuntimeEstimatorPhase::modifyGraphOverhead(metacg::CgNode *mainMethod) {
       } else {
         pgis::instrumentPathNode(nti);
       }
-      // spdlog::get("console")->info("Adding node to instrumentation: {}", nti->getFunctionName());
       for (const auto &C : graph->getCallees(nti)) {
         if (!pgis::isAnyInstrumented(C)) {
           childsToPotentialInstrumentCollection[C].push_back(nti);
@@ -623,8 +616,6 @@ std::pair<std::vector<CgNode *>, double> RuntimeEstimatorPhase::getNodesToInstru
 
   std::vector<CgNode *> ret;
   double curCost = 0;
-  // unsigned long long curProfit = 0;
-  // unsigned long long maxValue = 0;
   double maxCost = 0;
   CgNode *maxProfitNode = nullptr;
   for (const auto I : nodes) {
@@ -636,7 +627,6 @@ std::pair<std::vector<CgNode *>, double> RuntimeEstimatorPhase::getNodesToInstru
         ret.push_back(I);
       }
       if (!maxProfitNode || NodeValueComparator::compare(I, maxProfitNode)) {
-        //        maxValue = value;
         maxProfitNode = I;
         maxCost = cost;
       }
@@ -863,7 +853,6 @@ void StatisticsEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
   numFunctions = graph->getNodes().size();
   // Threshold irrelevant, only building incl aggregation of interest
   StatementCountEstimatorPhase sce(999999999, graph);
-  // sce.setGraph(graph);
   sce.modifyGraph(mainMethod);
 
   const auto heuristicMode = pgis::config::getSelectedHeuristic();
@@ -873,27 +862,22 @@ void StatisticsEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
       break;
     case pgis::options::HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES: {
       ConditionalBranchesEstimatorPhase cbe(ConditionalBranchesEstimatorPhase::limitThreshold, graph);
-      // cbe.setGraph(graph);
       cbe.modifyGraph(mainMethod);
     } break;
     case pgis::options::HeuristicSelection::HeuristicSelectionEnum::CONDITIONALBRANCHES_REVERSE: {
       ConditionalBranchesReverseEstimatorPhase cbre(ConditionalBranchesReverseEstimatorPhase::limitThreshold, graph);
-      // cbre.setGraph(graph);
       cbre.modifyGraph(mainMethod);
     } break;
     case pgis::options::HeuristicSelection::HeuristicSelectionEnum::FP_MEM_OPS: {
       FPAndMemOpsEstimatorPhase re(FPAndMemOpsEstimatorPhase::limitThreshold, graph);
-      // re.setGraph(graph);
       re.modifyGraph(mainMethod);
     } break;
     case pgis::options::HeuristicSelection::HeuristicSelectionEnum::LOOPDEPTH: {
       LoopDepthEstimatorPhase lde(LoopDepthEstimatorPhase::limitThreshold, graph);
-      // lde.setGraph(graph);
       lde.modifyGraph(mainMethod);
     } break;
     case pgis::options::HeuristicSelection::HeuristicSelectionEnum::GlOBAL_LOOPDEPTH: {
       GlobalLoopDepthEstimatorPhase glde(GlobalLoopDepthEstimatorPhase::limitThreshold, graph);
-      // glde.setGraph(graph);
       glde.modifyGraph(mainMethod);
     } break;
   }
@@ -1124,7 +1108,6 @@ void WLCallpathDifferentiationEstimatorPhase::modifyGraph(metacg::CgNode *mainMe
     const auto &node = elem.second.get();
     if (CgHelper::isConjunction(node, graph) && (whitelist.find(node) != whitelist.end())) {
       for (const auto &parentNode : graph->getCallers(node)) {
-        //        parentNode->setState(CgNodeState::INSTRUMENT_WITNESS);
         pgis::instrumentNode(parentNode);
       }
     }

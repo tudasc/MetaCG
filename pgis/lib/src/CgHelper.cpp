@@ -13,8 +13,6 @@
 
 using namespace metacg;
 
-int CgConfig::samplesPerSecond = 10000;
-
 namespace CgHelper {
 
 using namespace pira;
@@ -49,28 +47,6 @@ CgNodeRawPtrUSet getInstrumentationPath(metacg::CgNode *start, const metacg::Cal
   }
 
   return CgNodeRawPtrUSet(path.begin(), path.end());
-}
-
-bool isOnCycle(metacg::CgNode *node, const metacg::Callgraph *const graph) {
-  CgNodeRawPtrUSet visitedNodes;
-  std::queue<metacg::CgNode *> workQueue;
-  workQueue.push(node);
-  while (!workQueue.empty()) {
-    auto currentNode = workQueue.front();
-    workQueue.pop();
-
-    if (visitedNodes.find(currentNode) == visitedNodes.end()) {
-      visitedNodes.insert(currentNode);
-
-      for (auto child : graph->getCallees(currentNode)) {
-        if (child == node) {
-          return true;
-        }
-        workQueue.push(child);
-      }
-    }
-  }
-  return false;
 }
 
 Statements visitNodeForInclusiveStatements(metacg::CgNode *node, CgNodeRawPtrUSet *visitedNodes,
@@ -240,6 +216,7 @@ double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef) {
   // Returns the median of the data
   return rt[lastIndex];
 }
+
 double getEstimatedCallsFromNode(metacg::Callgraph *graph, metacg::CgNode *node,
                                  const std::string &calledFunctionName) {
   const auto pCCMD = node->get<CallCountEstimationMetaData>();

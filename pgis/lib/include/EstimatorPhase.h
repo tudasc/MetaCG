@@ -47,7 +47,6 @@ class EstimatorPhase {
 
   void generateIC();
 
-  [[deprecated]] void setGraph(metacg::Callgraph *graph);
   void injectConfig(Config *config) { this->config = config; }
 
   InstrumentationConfiguration getIC();
@@ -72,33 +71,6 @@ class NopEstimatorPhase : public EstimatorPhase {
   NopEstimatorPhase(metacg::Callgraph* cg) : EstimatorPhase("NopEstimator", cg), didRun(false) {}
   void modifyGraph(metacg::CgNode *mainMethod) final { didRun = true; }
   bool didRun;
-};
-
-/**
- * Remove nodes from the graph that are not connected to the main() method.
- *
- * TODO: I guess this can be removed by now...?
- */
-class RemoveUnrelatedNodesEstimatorPhase : public EstimatorPhase {
- public:
-  explicit RemoveUnrelatedNodesEstimatorPhase(metacg::Callgraph *cg, bool onlyRemoveUnrelatedNodes = true,
-                                              bool aggressiveReduction = false);
-  ~RemoveUnrelatedNodesEstimatorPhase() override;
-
-  void modifyGraph(metacg::CgNode *mainMethod) override;
-
- private:
-  void checkLeafNodeForRemoval(metacg::CgNode *node);
-
-  int numUnconnectedRemoved;
-  int numLeafsRemoved;
-  int numChainsRemoved;
-  int numAdvancedOptimizations;
-
-  bool aggressiveReduction;
-  bool onlyRemoveUnrelatedNodes;
-
-  CgNodeRawPtrUSet nodesToRemove;
 };
 
 /**

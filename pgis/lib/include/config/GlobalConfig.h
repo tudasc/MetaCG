@@ -210,7 +210,6 @@ static const IntOpt prevOverhead{"prev-overhead", "0"};
 
 static const HeuristicSelectionOpt heuristicSelection{"heuristic-selection", "statements"};
 static const CuttoffSelectionOpt cuttoffSelection{"cuttoff-selection", "unique_median"};
-static const BoolOpt keepUnreachable{"keep-unreachable", "false"};
 static const BoolOpt fillGaps{"fill-gaps", "false"};
 
 static const OverheadSelectionOpt overheadSelection{"overhead-selection", "none"};

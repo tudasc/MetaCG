@@ -21,44 +21,13 @@ namespace metacg {
 class Callgraph;
 }
 
-// XXX These numbers probably go away.
-namespace CgConfig {
-const unsigned long long nanosPerInstrumentedCall = 7;
-
-const unsigned long long nanosPerUnwindSample = 0;
-const unsigned long long nanosPerUnwindStep = 1000;
-
-const unsigned long long nanosPerNormalProbe = 220;
-const unsigned long long nanosPerMPIProbe = 200;
-
-const unsigned long long nanosPerSample = 4500;  // PAPI timers
-//	const unsigned long long nanosPerSample
-//= 2000;	// itimers
-
-const unsigned long long nanosPerHalfProbe = 105;
-
-extern int samplesPerSecond;
-}  // namespace CgConfig
-
 struct Config {
-  double referenceRuntime = .0;
   double actualRuntime = .0;
   double totalRuntime = .0;
-  std::string otherPath = "";
   bool useMangledNames = true;
-  int nanosPerHalfProbe = CgConfig::nanosPerHalfProbe;
   std::string appName = "";
-  bool tinyReport = false;
-  bool ignoreSamplingOv = false;
 
-  std::string fastestPhaseName = "NO_PHASE";
-  double fastestPhaseOvPercent = 1e9;
-  double fastestPhaseOvSeconds = 1e9;
-
-  bool greedyUnwind = false;
-  std::string samplesFile = "";
   std::string outputFile{"out"};
-  bool showAllThreads = false;
   std::string whitelist = "";
 };
 
@@ -67,9 +36,6 @@ namespace CgHelper {
 bool isConjunction(const metacg::CgNode *node, const metacg::Callgraph *const graph);
 
 CgNodeRawPtrUSet getInstrumentationPath(metacg::CgNode *start, const metacg::Callgraph *const graph);
-
-// Graph Stats
-bool isOnCycle(metacg::CgNode *node, const metacg::Callgraph *const graph);
 
 /**
  * Calculates the inclusive statement count for every node which is reachable from mainNode and saves in the node field

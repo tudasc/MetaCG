@@ -30,19 +30,22 @@ using PiraOneData = pira::PiraOneData;
 using PiraTwoData = pira::PiraTwoData;
 
 template <typename N, typename... Largs>
-void applyOne(cube::Cube &cu, cube::Cnode *cnode, N cgNode, cube::Cnode *pnode, N pCgNode, Largs... largs) {
+void applyOne(cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, [[maybe_unused]] N cgNode,
+              [[maybe_unused]] cube::Cnode *pnode, [[maybe_unused]] N pCgNode, Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
     applyOne(cu, cnode, cgNode, pnode, pCgNode, largs...);
   }
 }
 template <typename N, typename L, typename... Largs>
-void applyOne(cube::Cube &cu, cube::Cnode *cnode, N cgNode, cube::Cnode *pnode, N pCgNode, L lam, Largs... largs) {
+void applyOne(cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, [[maybe_unused]] N cgNode,
+              [[maybe_unused]] cube::Cnode *pnode, [[maybe_unused]] N pCgNode, L lam, Largs... largs) {
   lam(cu, cnode, cgNode, pnode, pCgNode);
   applyOne(cu, cnode, cgNode, pnode, pCgNode, largs...);
 }
 template <typename... Largs>
-void apply(metacg::graph::MCGManager &mcgm, cube::Cube &cu, cube::Cnode *cnode, const std::string &cNodeName,
-           cube::Cnode *pnode, const std::string &pNodeName, Largs... largs) {
+void apply(metacg::graph::MCGManager &mcgm, [[maybe_unused]] cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode,
+           const std::string &cNodeName, [[maybe_unused]] cube::Cnode *pnode, const std::string &pNodeName,
+           Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
     auto target = mcgm.getCallgraph()->getOrInsertNode(cNodeName);
     auto parent = mcgm.getCallgraph()->hasNode(pNodeName) ? mcgm.getCallgraph()->getNode(pNodeName) : nullptr;
