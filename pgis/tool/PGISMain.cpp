@@ -51,7 +51,7 @@ static pgis::ErrorCode readFromCubeFile(const std::filesystem::path &cubeFilePat
 
   auto &mcgm = graph::MCGManager::get();
   // TODO: Change to std::filesystem
-  pgis::buildFromCube(cubeFilePath.string(), cfgPtr, mcgm);
+  pgis::buildFromCube(cubeFilePath, cfgPtr, mcgm);
   return pgis::SUCCESS;
 }
 
@@ -255,13 +255,15 @@ int main(int argc, char **argv) {
    */
 
   // Use the filesystem STL functions for all of the path bits
-  std::filesystem::path p(argv[argc - 1]);
-  auto mcgExtension = p.extension();
-  c.appName = p.stem().string();
-  // TODO: Replace occurrences of this string with fileystem::path
-  std::string mcgFullPath = p.string();
+  std::filesystem::path metacgFile(argv[argc - 1]);
+  if (!std::filesystem::exists(metacgFile)) {
+    errconsole->error("The file {} does not exist", metacgFile.string());
+    exit(pgis::FileDoesNotExist);
+  }
+  auto mcgExtension = metacgFile.extension();
+  c.appName = metacgFile.stem().string();
 
-  console->info("MetaCG file: {}", p.string());
+  console->info("MetaCG file: {}", metacgFile.string());
   console->info("Using AppName: {}", c.appName);
 
   float runTimeThreshold = .0f;
@@ -271,13 +273,13 @@ int main(int argc, char **argv) {
   consumer.setConfig(&c);
 
   if (!gConfig.getVal(extrapConfig).empty()) {
-    std::filesystem::path p(gConfig.getVal(extrapConfig));
-    if (!std::filesystem::exists(p)) {
-      errconsole->error("The provided Extra-P configuration file does not exist.\nFile given: {}", p.string());
+    std::filesystem::path extrapConfigFile(gConfig.getVal(extrapConfig));
+    if (!std::filesystem::exists(extrapConfigFile)) {
+      errconsole->error("Extra-P configuration file does not exist: {}", extrapConfigFile.string());
       exit(metacg::pgis::FileDoesNotExist);
     }
-    console->info("Reading Extra-P configuration from {}", p.string());
-    consumer.setExtrapConfig(extrapconnection::getExtrapConfigFromJSON(p));
+    console->info("Reading Extra-P configuration from {}", extrapConfigFile.string());
+    consumer.setExtrapConfig(extrapconnection::getExtrapConfigFromJSON(extrapConfigFile));
   }
 
   /* To briefly inspect a CUBE profile for inclusive runtime of main */
@@ -291,8 +293,8 @@ int main(int argc, char **argv) {
     return metacg::pgis::SUCCESS;
   }
 
-  if (utils::string::stringEndsWith(mcgFullPath, ".ipcg") || utils::string::stringEndsWith(mcgFullPath, ".mcg")) {
-    metacg::io::FileSource fs(mcgFullPath);
+  if (metacgFile.extension() == ".ipcg" || metacgFile.extension() == ".mcg") {
+    metacg::io::FileSource fs(metacgFile);
     if (mcgVersion == 1) {
       metacg::pgis::io::VersionOneMetaCGReader mcgReader(fs);
       mcgReader.read(mcgm);
@@ -355,7 +357,7 @@ int main(int argc, char **argv) {
 
       // should be set for working load imbalance detection
       if (result.count("export")) {
-        console->info("Exporting load imbalance data to IPCG file {}.", mcgFullPath);
+        console->info("Exporting load imbalance data to IPCG file {}.", metacgFile.string());
         console->warn(
             "The old annotate mechanism has been removed and this functionality has not been tested with MCGWriter.");
 
@@ -363,7 +365,7 @@ int main(int argc, char **argv) {
         metacg::io::JsonSink jsonSink;
         mcgWriter.write(jsonSink);
         {
-          std::ofstream out(mcgFullPath);
+          std::ofstream out(metacgFile);
           out << jsonSink.getJson().dump(4) << std::endl;
         }
 
@@ -413,7 +415,7 @@ int main(int argc, char **argv) {
       metacg::io::JsonSink jsonSink;
       mcgWriter.write(jsonSink);
       {
-        std::ofstream out(mcgFullPath);
+        std::ofstream out(metacgFile);
         out << jsonSink.getJson().dump(4) << std::endl;
       }
     }

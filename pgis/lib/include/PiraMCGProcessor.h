@@ -40,6 +40,7 @@ class PiraMCGProcessor {
     return instance;
   }
 
+  // TODO: Implement init/deinit paradigm.
   void setConfig(Config *cfg) { configPtr = cfg; }
 
   void setExtrapConfig(extrapconnection::ExtrapConfig epCfg) {

@@ -11,10 +11,12 @@
 #include "CgHelper.h"
 #include "CgNode.h"
 
+#include <filesystem>
 #include <map>
 #include <queue>
-#include <set>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 /**
  * Helper struct that creates a temporary IC from the CG
@@ -78,13 +80,17 @@ class NopEstimatorPhase : public EstimatorPhase {
  */
 class WLInstrEstimatorPhase : public EstimatorPhase {
  public:
-  explicit WLInstrEstimatorPhase(const std::string &wlFilePath);
+  explicit WLInstrEstimatorPhase(const std::filesystem::path &wlFilePath);
   ~WLInstrEstimatorPhase() override = default;
 
   void modifyGraph(metacg::CgNode *mainMethod) override;
 
  private:
-  std::set<size_t> whiteList;
+  void init();
+
+  bool isInitialized;
+  std::filesystem::path wlFilePath;
+  std::unordered_set<size_t> whiteList;
 };
 
 #endif
