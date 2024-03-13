@@ -6,9 +6,11 @@
 
 #include "ExtrapConnection.h"
 #include "CubeReader.h"
+#include "ErrorCodes.h"
 
 #include "nlohmann/json.hpp"
 #include "spdlog/spdlog.h"
+#include <filesystem>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wextra"
@@ -146,6 +148,9 @@ void ExtrapModelProvider::buildModels() {
     paramValues.push_back(pv.second);
   }
 
+  auto console = metacg::MCGLogger::instance().getConsole();
+  auto errConsole = metacg::MCGLogger::instance().getErrConsole();
+
   // We always access the previous iteration.
   std::string finalDir = config.directory + '/' + 'i' + std::to_string(config.iteration - 1);
 
@@ -153,9 +158,6 @@ void ExtrapModelProvider::buildModels() {
                                paramPrefixes, paramValues, config.repetitions);
 
   int dimensions = extrapParams.size();  // The Extra-P API awaits int instead of size_t
-  auto console = metacg::MCGLogger::instance().getConsole();
-  auto errConsole = metacg::MCGLogger::instance().getErrConsole();
-  auto cubeFiles = reader.getFileNames(dimensions);
   auto fns = reader.getFileNames(dimensions);
 
   const auto &printDbgInfos = [&]() {
@@ -171,16 +173,16 @@ void ExtrapModelProvider::buildModels() {
       }
     }
     std::string dbgOut("Reading cube files:\n");
-    for (const auto &f : cubeFiles) {
+    for (const auto &f : fns) {
       dbgOut += "- " + f + "\n";
     }
     console->debug(dbgOut);
   };
 
+  // XXX why is that here?
   printDbgInfos();
 
   for (size_t i = 0; i < fns.size(); ++i) {
-    //    if (i % configPtr.repetitions == 0) {
     const auto attEpData = [&](auto &cube, auto cnode, auto n, [[maybe_unused]] auto pnode, [[maybe_unused]] auto pn) {
       console->debug("Attaching Cube info from file {}", fns.at(i));
       auto ptd = n->template getOrCreateMD<pira::PiraTwoData>(ExtrapConnector({}, {}));

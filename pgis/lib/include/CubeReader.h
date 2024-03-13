@@ -15,6 +15,7 @@
 #include <CubeMetric.h>
 
 #include <MCGManager.h>
+#include <filesystem>
 #include <string>
 
 /**
@@ -145,7 +146,7 @@ const auto attInclRuntime = [](auto &cube, auto cnode, auto n, [[maybe_unused]] 
 };
 
 template <typename... Largs>
-void build(std::string filePath, metacg::graph::MCGManager &mcgm, Largs... largs) {
+void build(const std::filesystem::path &filePath, metacg::graph::MCGManager &mcgm, Largs... largs) {
   //  auto &cg = metacg::pgis::PiraMCGProcessor::get();
   bool useMangledNames = true;
 
@@ -154,8 +155,8 @@ void build(std::string filePath, metacg::graph::MCGManager &mcgm, Largs... largs
   try {
     cube::Cube cube;
     // Read our cube file
-    console->info("Reading cube file {}", filePath);
-    cube.openCubeReport(filePath);
+    console->info("Reading cube file {}", filePath.string());
+    cube.openCubeReport(filePath.string());
     // Get the cube nodes
     const auto &cnodes = cube.get_cnodev();
 
@@ -192,11 +193,11 @@ void build(std::string filePath, metacg::graph::MCGManager &mcgm, Largs... largs
   }
 }
 
-void build(std::string filepath);
+void build(const std::filesystem::path &filepath);
 }  // namespace impl
 
-void build(std::string filePath, Config *c, metacg::graph::MCGManager &mcgm);
-void buildFromCube(std::string filePath, Config *c, metacg::graph::MCGManager &mcgm);
+void build(const std::filesystem::path &filePath, Config *c, metacg::graph::MCGManager &mcgm);
+void buildFromCube(const std::filesystem::path &filePath, Config *c, metacg::graph::MCGManager &mcgm);
 }  // namespace metacg::pgis
 
 #endif

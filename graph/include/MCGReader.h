@@ -11,6 +11,7 @@
 
 #include "nlohmann/json.hpp"
 
+#include <filesystem>
 #include <fstream>
 #include <string>
 #include <unordered_map>
@@ -36,16 +37,17 @@ struct ReaderSource {
  * If the file does not exists, prints error and exits the program.
  */
 struct FileSource : ReaderSource {
-  explicit FileSource(std::string filename) : filename(std::move(filename)) {}
+  explicit FileSource(const std::filesystem::path &filepath) : filepath(filepath) {}
   /**
    * Reads the json file with filename (provided at object construction)
    * and returns the json object.
    */
   virtual nlohmann::json get() const override {
-    metacg::MCGLogger::instance().getConsole()->info("Reading metacg file from: {}", filename);
+    const std::string filename = filepath.string();
+    metacg::MCGLogger::instance().getConsole()->debug("Reading metacg file from: {}", filename);
     nlohmann::json j;
     {
-      std::ifstream in(filename);
+      std::ifstream in(filepath);
       if (!in.is_open()) {
         const std::string errorMsg = "Opening file " + filename + " failed.";
         metacg::MCGLogger::instance().getErrConsole()->error(errorMsg);
@@ -56,7 +58,7 @@ struct FileSource : ReaderSource {
 
     return j;
   };
-  const std::string filename;
+  std::filesystem::path filepath;
 };
 
 /**
