@@ -15,5 +15,5 @@ OnlyMainEstimatorPhase::OnlyMainEstimatorPhase(Callgraph *callgraph)
 
 void OnlyMainEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
   //  mainMethod->setState(CgNodeState::INSTRUMENT_WITNESS);
-  pgis::instrumentNode(mainMethod);
+  metacg::pgis::instrumentNode(mainMethod);
 }

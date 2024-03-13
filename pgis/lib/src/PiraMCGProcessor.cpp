@@ -39,7 +39,7 @@ void metacg::pgis::PiraMCGProcessor::finalizeGraph(bool buildMarker) {
   auto errConsole = metacg::MCGLogger::instance().getErrConsole();
   if (graph->isEmpty()) {
     errConsole->error("Running the processor on empty graph. Need to construct graph.");
-    exit(::pgis::ErrorCode::NoGraphConstructed);
+    exit(metacg::pgis::ErrorCode::NoGraphConstructed);
   }
 
   // XXX We should double-check if this is still required, with the reachability now
@@ -49,7 +49,7 @@ void metacg::pgis::PiraMCGProcessor::finalizeGraph(bool buildMarker) {
     auto mainNode = graph->getMain();
     if (mainNode == nullptr) {
       errConsole->error("PiraMCGProcessor: Cannot find main function");
-      exit(::pgis::ErrorCode::NoMainFunctionFound);
+      exit(metacg::pgis::ErrorCode::NoMainFunctionFound);
     }
   }
 }
@@ -60,7 +60,7 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
 
   if (mainFunction == nullptr) {
     metacg::MCGLogger::instance().getErrConsole()->error("PiraMCGProcessor: Cannot find main function.");
-    exit(::pgis::ErrorCode::NoMainFunctionFound);
+    exit(metacg::pgis::ErrorCode::NoMainFunctionFound);
   }
 
   while (!phases.empty()) {
@@ -165,7 +165,7 @@ void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(InstrumentationConfig
   const auto ret = getcwd(buff, PATH_MAX);
   if (ret == nullptr) {
     metacg::MCGLogger::instance().getErrConsole()->error("Cannot get current working directory");
-    exit(::pgis::ErrorCode::CouldNotGetCWD);
+    exit(metacg::pgis::ErrorCode::CouldNotGetCWD);
   }
   std::string curCwd(buff);
   console->info("Writing to {}. Current cwd {}", filename, curCwd);

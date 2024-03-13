@@ -29,15 +29,16 @@
 
 #include <filesystem>
 
-namespace pgis::options {
+namespace metacg::pgis::options {
 template <typename T>
 auto optType(T &obj) {
   return cxxopts::value<arg_t<decltype(obj)>>();
 }
-}  // namespace pgis::options
+}  // namespace metacg::pgis::options
 
+using namespace metacg;
 using namespace pira;
-using namespace ::pgis::options;
+using namespace metacg::pgis::options;
 
 static pgis::ErrorCode readFromCubeFile(const std::filesystem::path &cubeFilePath, Config *cfgPtr) {
   if (!std::filesystem::exists(cubeFilePath)) {
@@ -48,9 +49,9 @@ static pgis::ErrorCode readFromCubeFile(const std::filesystem::path &cubeFilePat
     return pgis::UnknownFileFormat;
   }
 
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto &mcgm = graph::MCGManager::get();
   // TODO: Change to std::filesystem
-  CubeCallgraphBuilder::buildFromCube(cubeFilePath.string(), cfgPtr, mcgm);
+  pgis::buildFromCube(cubeFilePath.string(), cfgPtr, mcgm);
   return pgis::SUCCESS;
 }
 
@@ -176,7 +177,7 @@ int main(int argc, char **argv) {
 
   if (result.count("help")) {
     std::cout << opts.help() << "\n";
-    return pgis::SUCCESS;
+    return metacg::pgis::SUCCESS;
   }
 
   /* Initialize the debug level */
@@ -273,7 +274,7 @@ int main(int argc, char **argv) {
     std::filesystem::path p(gConfig.getVal(extrapConfig));
     if (!std::filesystem::exists(p)) {
       errconsole->error("The provided Extra-P configuration file does not exist.\nFile given: {}", p.string());
-      exit(pgis::FileDoesNotExist);
+      exit(metacg::pgis::FileDoesNotExist);
     }
     console->info("Reading Extra-P configuration from {}", p.string());
     consumer.setExtrapConfig(extrapconnection::getExtrapConfigFromJSON(p));
@@ -282,18 +283,18 @@ int main(int argc, char **argv) {
   /* To briefly inspect a CUBE profile for inclusive runtime of main */
   if (storeOpt(cubeShowOnly, result)) {
     std::filesystem::path cubeFile(gConfig.getVal(cubeFilePath));
-    if (auto ret = readFromCubeFile(cubeFile, &c); ret != pgis::SUCCESS) {
+    if (auto ret = readFromCubeFile(cubeFile, &c); ret != metacg::pgis::SUCCESS) {
       exit(ret);
     }
 
     consumer.printMainRuntime();
-    return pgis::SUCCESS;
+    return metacg::pgis::SUCCESS;
   }
 
   if (utils::string::stringEndsWith(mcgFullPath, ".ipcg") || utils::string::stringEndsWith(mcgFullPath, ".mcg")) {
     metacg::io::FileSource fs(mcgFullPath);
     if (mcgVersion == 1) {
-      metacg::io::VersionOneMetaCGReader mcgReader(fs);
+      metacg::pgis::io::VersionOneMetaCGReader mcgReader(fs);
       mcgReader.read(mcgm);
     } else if (mcgVersion == 2) {
       metacg::io::VersionTwoMetaCGReader mcgReader(fs);
@@ -318,7 +319,7 @@ int main(int argc, char **argv) {
           consumer.registerEstimatorPhase(new LoadImbalance::OnlyMainEstimatorPhase(consumer.getCallgraph()));
           consumer.applyRegisteredPhases();
 
-          return pgis::SUCCESS;
+          return metacg::pgis::SUCCESS;
         }
       } else {
         registerEstimatorPhases(consumer, &c, true, 0, fillInstrumentationGaps);
@@ -330,7 +331,7 @@ int main(int argc, char **argv) {
   consumer.registerEstimatorPhase(new AttachInstrumentationResultsEstimatorPhase(consumer.getCallgraph()));
   if (result.count("cube")) {
     std::filesystem::path cubeFile(gConfig.getVal(cubeFilePath));
-    if (auto ret = readFromCubeFile(cubeFile, &c); ret != pgis::SUCCESS) {
+    if (auto ret = readFromCubeFile(cubeFile, &c); ret != metacg::pgis::SUCCESS) {
       exit(ret);
     }
 
@@ -370,7 +371,7 @@ int main(int argc, char **argv) {
         console->warn("--export flag is highly recommended for load imbalance detection");
       }
 
-      return pgis::SUCCESS;
+      return metacg::pgis::SUCCESS;
     } else {
       c.totalRuntime = c.actualRuntime;
       /* This runtime threshold currently unused */
@@ -450,5 +451,5 @@ int main(int argc, char **argv) {
     jsSink.output(ofile);
   }
 
-  return pgis::SUCCESS;
+  return metacg::pgis::SUCCESS;
 }

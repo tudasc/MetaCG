@@ -23,7 +23,7 @@ TEST(VersionOneMCGReaderTest, EmptyJSON) {
   mcgm.resetManager();
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   metacg::io::JsonSource js(j);
-  metacg::io::VersionOneMetaCGReader mcgReader(js);
+  metacg::pgis::io::VersionOneMetaCGReader mcgReader(js);
   mcgReader.read(mcgm);
 
   const Callgraph &graph = *mcgm.getCallgraph();
@@ -43,7 +43,7 @@ TEST(VersionOneMCGReaderTest, SimpleJSON) {
   mcgm.resetManager();
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   metacg::io::JsonSource js(j);
-  metacg::io::VersionOneMetaCGReader mcgReader(js);
+  metacg::pgis::io::VersionOneMetaCGReader mcgReader(js);
   mcgReader.read(mcgm);
 
   Callgraph &graph = *mcgm.getCallgraph();
@@ -84,7 +84,7 @@ TEST(VersionOneMCGReaderTest, MultiNodeJSON) {
   mcgm.resetManager();
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   metacg::io::JsonSource js(j);
-  metacg::io::VersionOneMetaCGReader mcgReader(js);
+  metacg::pgis::io::VersionOneMetaCGReader mcgReader(js);
   mcgReader.read(mcgm);
 
   Callgraph &graph = *mcgm.getCallgraph();

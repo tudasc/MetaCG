@@ -25,7 +25,7 @@ void WLInstrEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
   for (const auto &elem : graph->getNodes()) {
     const auto &node = elem.second.get();
     if (whiteList.find(node->getId()) != whiteList.end()) {
-      pgis::instrumentNode(node);
+      metacg::pgis::instrumentNode(node);
     }
   }
 }

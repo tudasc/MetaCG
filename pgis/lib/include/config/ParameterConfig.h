@@ -12,7 +12,7 @@
 #include "loadImbalance/LIConfig.h"
 #include <optional>
 
-namespace pgis::config {
+namespace metacg::pgis::config {
 
 /**
  * Singleton structure containing analysis parameters (e.g. for PIRA II or PIRA LIDe)
@@ -73,5 +73,5 @@ class ParameterConfig {
     return this->overheadConfig;
   }
 };
-}  // namespace pgis::config
+}  // namespace metacg::pgis::config
 #endif  // PGIS_PARAMETERCONFIG_H

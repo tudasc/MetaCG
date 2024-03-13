@@ -185,11 +185,11 @@ void ExtrapModelProvider::buildModels() {
       console->debug("Attaching Cube info from file {}", fns.at(i));
       auto ptd = n->template getOrCreateMD<pira::PiraTwoData>(ExtrapConnector({}, {}));
       ptd->setExtrapParameters(config.params);
-      ptd->addToRuntimeVec(CubeCallgraphBuilder::impl::time(cube, cnode));
+      ptd->addToRuntimeVec(metacg::pgis::impl::time(cube, cnode));
     };
 
     auto &mcgManager = metacg::graph::MCGManager::get();
-    CubeCallgraphBuilder::impl::build(std::string(fns.at(i)), mcgManager, attEpData);
+    metacg::pgis::impl::build(std::string(fns.at(i)), mcgManager, attEpData);
     //   }
   }
 
@@ -197,7 +197,7 @@ void ExtrapModelProvider::buildModels() {
     const auto &n = elem.second.get();
     console->trace("No PiraTwoData meta data");
     if (n->has<pira::PiraTwoData>()) {
-      auto ptd = CubeCallgraphBuilder::impl::get<pira::PiraTwoData>(n);
+      auto ptd = metacg::pgis::impl::get<pira::PiraTwoData>(n);
       const auto la = [&]() {
         std::string s;
         for (auto rtv : ptd->getRuntimeVec()) {
@@ -275,14 +275,14 @@ void ExtrapModelProvider::buildModels() {
   console->info("Finished model creation.");
 }
 
-void ExtrapConnector::modelAggregation(pgis::config::ModelAggregationStrategy modelAggregationStrategy) {
-  if (modelAggregationStrategy == pgis::config::ModelAggregationStrategy::Sum) {
+void ExtrapConnector::modelAggregation(metacg::pgis::config::ModelAggregationStrategy modelAggregationStrategy) {
+  if (modelAggregationStrategy == metacg::pgis::config::ModelAggregationStrategy::Sum) {
     epModelFunction = std::make_unique<SumFunction>(models);
-  } else if (modelAggregationStrategy == pgis::config::ModelAggregationStrategy::FirstModel) {
+  } else if (modelAggregationStrategy == metacg::pgis::config::ModelAggregationStrategy::FirstModel) {
     epModelFunction = std::make_unique<FirstModelFunction>(models);
-  } else if (modelAggregationStrategy == pgis::config::ModelAggregationStrategy::Average) {
+  } else if (modelAggregationStrategy == metacg::pgis::config::ModelAggregationStrategy::Average) {
     epModelFunction = std::make_unique<AvgFunction>(models);
-  } else if (modelAggregationStrategy == pgis::config::ModelAggregationStrategy::Maximum) {
+  } else if (modelAggregationStrategy == metacg::pgis::config::ModelAggregationStrategy::Maximum) {
     epModelFunction = std::make_unique<MaxFunction>(models);
   }
 }

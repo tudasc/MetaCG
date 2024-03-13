@@ -15,7 +15,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace pgis {
+namespace metacg::pgis {
 namespace options {
 
 template <typename OptValT>
@@ -318,6 +318,6 @@ inline options::OverheadSelection::OverheadSelectionEnum getSelectedOverheadAlgo
 
 }  // namespace config
 
-}  // namespace pgis
+}  // namespace metacg::pgis
 
 #endif

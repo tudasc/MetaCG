@@ -220,7 +220,7 @@ class PiraTwoData : public metacg::MetaData::Registrar<PiraTwoData> {
           "PiraTwoData can not be exported, no connected ExtraP model exists");
       return j;
     }
-    auto &gOpts = ::pgis::config::GlobalConfig::get();
+    auto &gOpts = metacg::pgis::config::GlobalConfig::get();
     auto rtOnly = gOpts.getAs<bool>("runtime-only");
 
     auto rtAndParams = utils::valTup(getRuntimeVec(), getExtrapParameters(), getNumReps());

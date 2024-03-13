@@ -93,7 +93,7 @@ double getEstimatedCallsFromNode(metacg::Callgraph *graph, metacg::CgNode *node,
 
 }  // namespace CgHelper
 
-namespace pgis {
+namespace metacg::pgis {
 
 using Callgraph = metacg::Callgraph;
 
@@ -105,5 +105,5 @@ void attachMetaDataToGraph(Callgraph *cg, const Args &...args) {
     }
   }
 }
-}  // namespace pgis
+}  // namespace metacg::pgis
 #endif

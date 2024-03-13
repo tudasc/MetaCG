@@ -9,20 +9,20 @@
 
 #include "MCGReader.h"
 
-namespace metacg::io {
+namespace metacg::pgis::io {
 
 /**
  * Class to read metacg files in file format v1.0.
  * The file format is also typically referred to as IPCG files.
  */
-class VersionOneMetaCGReader : public MetaCGReader {
+class VersionOneMetaCGReader : public metacg::io::MetaCGReader {
  public:
-  explicit VersionOneMetaCGReader(ReaderSource &source) : MetaCGReader(source) {}
+  explicit VersionOneMetaCGReader(metacg::io::ReaderSource &source) : MetaCGReader(source) {}
   void read(metacg::graph::MCGManager &cgManager) override;
 
  private:
   void addNumStmts(metacg::graph::MCGManager &cgm);
 };
-}  // namespace metacg::io
+}  // namespace metacg::pgis::io
 
 #endif
