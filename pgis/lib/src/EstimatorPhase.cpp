@@ -31,8 +31,6 @@ void EstimatorPhase::generateIC() {
   }
 }
 
-void EstimatorPhase::setGraph(Callgraph* graph) { this->graph = graph; }
-
 InstrumentationConfiguration EstimatorPhase::getIC() { return IC; }
 
 void EstimatorPhase::printReport() {}

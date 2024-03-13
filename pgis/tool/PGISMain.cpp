@@ -30,12 +30,10 @@
 #include <filesystem>
 
 namespace pgis::options {
-
 template <typename T>
 auto optType(T &obj) {
   return cxxopts::value<arg_t<decltype(obj)>>();
 }
-
 }  // namespace pgis::options
 
 using namespace pira;
@@ -57,11 +55,9 @@ static pgis::ErrorCode readFromCubeFile(const std::filesystem::path &cubeFilePat
 }
 
 void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &consumer, Config *c, bool isIPCG, float runtimeThreshold,
-                             bool keepNotReachable, bool fillInstrumentationGaps) {
+                             bool fillInstrumentationGaps) {
+  // XXX: Does this somehow add vital functionality that always has to run, or so?
   auto statEstimator = new StatisticsEstimatorPhase(false, consumer.getCallgraph());
-  if (!keepNotReachable) {
-    consumer.registerEstimatorPhase(new RemoveUnrelatedNodesEstimatorPhase(consumer.getCallgraph(), true, false));
-  }
   consumer.registerEstimatorPhase(statEstimator);
 
   // Actually do the selection
@@ -154,7 +150,6 @@ int main(int argc, char **argv) {
     (extrapConfig.cliName, "File to read Extra-P info from", optType(extrapConfig)->default_value(""))
     (modelFilter.cliName, "Use Extra-P models to filter only.", optType(modelFilter)->default_value("false"))
     (runtimeOnly.cliName, "Do not use model, but multiple runtimes", optType(runtimeOnly)->default_value("false"))
-    //("a,all-threads","Show all Threads even if unused.", cxxopts::value<bool>()->default_value("false"))
     ("w, whitelist", "Filter nodes through given whitelist", cxxopts::value<std::string>()->default_value(""))
     (debugLevel.cliName, "Whether debug messages should be printed", optType(debugLevel)->default_value("0"))
     (scorepOut.cliName, "Write instrumentation file with Score-P syntax", optType(scorepOut)->default_value("false"))
@@ -170,7 +165,6 @@ int main(int argc, char **argv) {
     (onlyInstrumentEligibleNodes.cliName, "Only select nodes for instrumentation that can be instrumented", optType(onlyInstrumentEligibleNodes)->default_value(onlyInstrumentEligibleNodes.defaultValue))
     (heuristicSelection.cliName, "Select the heuristic to use for node selection", optType(heuristicSelection)->default_value(heuristicSelection.defaultValue))
     (cuttoffSelection.cliName, "Select the algorithm to determine the cutoff for node selection", optType(cuttoffSelection)->default_value(cuttoffSelection.defaultValue))
-    (keepUnreachable.cliName, "Also consider functions which seem to be unreachable from main", optType(keepUnreachable)->default_value("false"))
     (fillGaps.cliName, "Fills gaps in the cg of instrumented functions", optType(fillGaps)->default_value(fillGaps.defaultValue))
     (overheadSelection.cliName, "Algorithm to deal with to high overheads", optType(overheadSelection)->default_value(overheadSelection.defaultValue))
     (sortDotEdges.cliName, "Sort edges in DOT graph lexicographically", optType(sortDotEdges)->default_value(sortDotEdges.defaultValue));
@@ -228,9 +222,6 @@ int main(int argc, char **argv) {
 
   /* Only select nodes for instrumentation that can actually be instrumented */
   storeOpt(onlyInstrumentEligibleNodes, result);
-
-  /* Keep unreachable nodes in the call graph */
-  bool keepNotReachable = storeOpt(keepUnreachable, result);
 
   /* Select algorithms to use in the static selection */
   storeOpt(heuristicSelection, result);
@@ -330,7 +321,7 @@ int main(int argc, char **argv) {
           return pgis::SUCCESS;
         }
       } else {
-        registerEstimatorPhases(consumer, &c, true, 0, keepNotReachable, fillInstrumentationGaps);
+        registerEstimatorPhases(consumer, &c, true, 0, fillInstrumentationGaps);
         consumer.applyRegisteredPhases();
         consumer.removeAllEstimatorPhases();
       }
@@ -383,7 +374,7 @@ int main(int argc, char **argv) {
     } else {
       c.totalRuntime = c.actualRuntime;
       /* This runtime threshold currently unused */
-      registerEstimatorPhases(consumer, &c, false, runTimeThreshold, keepNotReachable, fillInstrumentationGaps);
+      registerEstimatorPhases(consumer, &c, false, runTimeThreshold, fillInstrumentationGaps);
       console->info("Registered estimator phases");
     }
   }
@@ -404,10 +395,6 @@ int main(int argc, char **argv) {
           new pira::ExtrapLocalEstimatorPhaseSingleValueFilter(consumer.getCallgraph(), true, extrapRuntimeOnly));
     } else {
       console->info("Applying model expander");
-      if (!keepNotReachable) {
-        consumer.registerEstimatorPhase(
-            new RemoveUnrelatedNodesEstimatorPhase(consumer.getCallgraph(), true, false));  // remove unrelated
-      }
       consumer.registerEstimatorPhase(
           new pira::ExtrapLocalEstimatorPhaseSingleValueExpander(consumer.getCallgraph(), true, extrapRuntimeOnly));
     }
@@ -437,7 +424,6 @@ int main(int argc, char **argv) {
     metacg::io::dot::DotGenerator dotGenerator(consumer.getCallgraph(&consumer), sortedDot);
     dotGenerator.generate();
     dotGenerator.output({"./DotOutput", "PGIS-Dot", "begin"});
-    //    consumer.printDOT("begin");
   }
   if (consumer.hasPassesRegistered()) {
     if (enableDotExport.mode == DotExportSelection::DotExportEnum::ALL) {
@@ -452,7 +438,6 @@ int main(int argc, char **argv) {
     metacg::io::dot::DotGenerator dotGenerator(consumer.getCallgraph(&consumer), sortedDot);
     dotGenerator.generate();
     dotGenerator.output({"./DotOutput", "PGIS-Dot", "end"});
-    //    consumer.printDOT("end");
   }
 
   // Serialize the cg

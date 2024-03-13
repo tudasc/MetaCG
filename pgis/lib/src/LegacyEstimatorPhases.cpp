@@ -7,50 +7,6 @@
 #include <fstream>
 #include <iostream>
 
-//// REMOVE UNRELATED NODES ESTIMATOR PHASE
-
-RemoveUnrelatedNodesEstimatorPhase::RemoveUnrelatedNodesEstimatorPhase(metacg::Callgraph *cg,
-                                                                       bool onlyRemoveUnrelatedNodes,
-                                                                       bool aggressiveReduction)
-    : EstimatorPhase("RemoveUnrelated", cg),
-      numUnconnectedRemoved(0),
-      numLeafsRemoved(0),
-      numChainsRemoved(0),
-      numAdvancedOptimizations(0),
-      aggressiveReduction(aggressiveReduction),
-      onlyRemoveUnrelatedNodes(onlyRemoveUnrelatedNodes) {}
-
-RemoveUnrelatedNodesEstimatorPhase::~RemoveUnrelatedNodesEstimatorPhase() { nodesToRemove.clear(); }
-
-void RemoveUnrelatedNodesEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
-  /* remove unrelated nodes (not reachable from main) */
-  CgNodeRawPtrUSet nodesReachableFromMain = CgHelper::getDescendants(mainMethod, graph);
-
-  for (auto node : nodesReachableFromMain) {
-    if (graph->hasNode(node)) {
-    }
-  }
-}
-
-void RemoveUnrelatedNodesEstimatorPhase::checkLeafNodeForRemoval(metacg::CgNode *potentialLeaf) {
-  if (CgHelper::isConjunction(potentialLeaf, graph)) {
-    return;  // conjunctions are never removed
-  }
-
-  for (auto child : graph->getCallees(potentialLeaf)) {
-    if (nodesToRemove.find(child) == nodesToRemove.end()) {
-      return;
-    }
-  }
-
-  nodesToRemove.insert(potentialLeaf);
-  numLeafsRemoved++;
-
-  for (auto parentNode : graph->getCallers(potentialLeaf)) {
-    checkLeafNodeForRemoval(parentNode);
-  }
-}
-
 //// WL INSTR ESTIMATOR PHASE
 
 WLInstrEstimatorPhase::WLInstrEstimatorPhase(const std::string &wlFilePath) : EstimatorPhase("WLInstr", nullptr) {
