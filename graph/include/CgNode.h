@@ -183,10 +183,6 @@ class CgNode {
    */
   std::string getFunctionName() const;
 
-  void dumpToDot(std::ofstream &outputStream, int procNum);
-
-  void print();
-
   /**
    * Get the id of the function node
    *
