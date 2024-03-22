@@ -42,10 +42,12 @@ using namespace metacg::pgis::options;
 
 static pgis::ErrorCode readFromCubeFile(const std::filesystem::path &cubeFilePath, Config *cfgPtr) {
   if (!std::filesystem::exists(cubeFilePath)) {
+    metacg::MCGLogger::instance().getConsole()->error("Cube file does not exist. (" + cubeFilePath.string() + ")");
     return pgis::FileDoesNotExist;
   }
 
   if (const auto ext = cubeFilePath.extension(); ext.string() != ".cubex") {
+    metacg::MCGLogger::instance().getConsole()->error("Unknown file format. (" + cubeFilePath.string() + ")");
     return pgis::UnknownFileFormat;
   }
 
