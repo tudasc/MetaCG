@@ -197,6 +197,12 @@ double calcRuntimeThreshold(const Callgraph &cg, bool useLongAsRef) {
   metacg::MCGLogger::instance().getConsole()->info("The number of elements for runtime threshold calculation: {}",
                                                    rt.size());
 
+  if (rt.size() == 0) {
+    const char* errorMsg = "There was no function with runtime data found in profile, so we are unable to compute a runtime threshold.";
+    metacg::MCGLogger::instance().getErrConsole()->error(errorMsg);
+    throw std::runtime_error(errorMsg);
+  }
+
   std::sort(rt.begin(), rt.end());
   {  // raii
     std::string runtimeStr;
