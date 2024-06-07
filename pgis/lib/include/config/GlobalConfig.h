@@ -14,6 +14,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <sstream>
 
 namespace metacg::pgis {
 namespace options {
