@@ -11,7 +11,116 @@
 
 #include <loadImbalance/LIMetaData.h>
 
+#include <queue>
+
 namespace metacg::pgis::io {
+
+
+VersionOneMetaCGReader::FuncMapT::mapped_type &VersionOneMetaCGReader::getOrInsert(const std::string &key) {
+  if (functions.find(key) != functions.end()) {
+    auto &fi = functions[key];
+    return fi;
+  } else {
+    FunctionInfo fi;
+    fi.functionName = key;
+    functions.insert({key, fi});
+    auto &rfi = functions[key];
+    return rfi;
+  }
+}
+
+void VersionOneMetaCGReader::buildGraph(metacg::graph::MCGManager &cgManager,
+                                        VersionOneMetaCGReader::StrStrMap &potentialTargets) {
+  metacg::RuntimeTimer rtt("buildGraph");
+  auto console = metacg::MCGLogger::instance().getConsole();
+  // Register nodes in the actual graph
+  for (const auto &[k, fi] : functions) {
+    console->trace("Inserting MetaCG node for function {}", k);
+    auto node = cgManager.getCallgraph()->getOrInsertNode(k);  // node pointer currently unused
+    assert(node && "node is present in call graph");
+    node->setIsVirtual(fi.isVirtual);
+    node->setHasBody(fi.hasBody);
+    for (const auto &c : fi.callees) {
+      auto calleeNode = cgManager.getCallgraph()->getOrInsertNode(c);
+      assert(calleeNode && "calleeNode is present in call graph");
+      cgManager.getCallgraph()->addEdge(node, calleeNode);
+      auto &potTargets = potentialTargets[c];
+      for (const auto &pt : potTargets) {
+        auto potentialCallee = cgManager.getCallgraph()->getOrInsertNode(pt);
+        assert(potentialCallee && "potentialCallee is present in call graph");
+        cgManager.getCallgraph()->addEdge(node, potentialCallee);
+      }
+    }
+
+    std::unordered_map<std::string, metacg::MetaData *> metadataContainer;
+    for (const auto &elem : fi.namedMetadata) {
+      if (auto obj = metacg::MetaData::create(elem.first, elem.second); obj != nullptr)
+        metadataContainer[elem.first] = obj;
+    }
+    node->setMetaDataContainer(metadataContainer);
+  }
+}
+
+VersionOneMetaCGReader::StrStrMap VersionOneMetaCGReader::buildVirtualFunctionHierarchy(
+    metacg::graph::MCGManager &cgManager) {
+  metacg::RuntimeTimer rtt("buildVirtualFunctionHierarchy");
+  auto console = metacg::MCGLogger::instance().getConsole();
+  // Now the functions map holds all the information
+  std::unordered_map<std::string, std::unordered_set<std::string>> potentialTargets;
+  for (const auto &[k, funcInfo] : functions) {
+    if (!funcInfo.isVirtual) {
+      // No virtual function, continue
+      continue;
+    }
+
+    /*
+     * The current function can: 1. override a function, or, 2. be overridden by a function
+     *
+     * (1) Add this function as potential target for any overridden function
+     * (2) Add the overriding function as potential target for this function
+     *
+     */
+    if (funcInfo.doesOverride) {
+      for (const auto &overriddenFunction : funcInfo.overriddenFunctions) {
+        // Adds this function as potential target to all overridden functions
+        potentialTargets[overriddenFunction].insert(k);
+
+        // In IPCG files, only the immediate overridden functions are stored currently.
+        std::queue<std::string> workQ;
+        std::set<std::string> visited;
+        workQ.push(overriddenFunction);
+        // Add this function as a potential target for all overridden functions
+        while (!workQ.empty()) {
+          const auto next = workQ.front();
+          workQ.pop();
+
+          const auto fi = functions[next];
+          visited.insert(next);
+          console->debug("In while: working on {}", next);
+
+          potentialTargets[next].insert(k);
+          for (const auto &om : fi.overriddenFunctions) {
+            if (visited.find(om) == visited.end()) {
+              console->debug("Adding {} to the list to process", om);
+              workQ.push(om);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  for (const auto &[k, s] : potentialTargets) {
+    std::string targets;
+    for (const auto t : s) {
+      targets += t + ", ";
+    }
+    console->debug("Potential call targets for {}: {}", k, targets);
+  }
+
+  return potentialTargets;
+}
+
 /**
  * Version one Reader
  */

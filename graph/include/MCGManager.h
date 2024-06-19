@@ -64,6 +64,9 @@ class MCGManager {
   // Todo: write a test for this
   bool addToManagedGraphs(const std::string &name, std::unique_ptr<Callgraph> callgraph, bool setActive = true);
 
+  std::unordered_set<std::string> getAllManagedGraphNames();
+  std::string getActiveGraphName();
+
   ~MCGManager();
 
  private:
@@ -79,7 +82,6 @@ class MCGManager {
 
   std::unordered_map<std::string, std::unique_ptr<Callgraph>> managedGraphs;
   Callgraph *activeGraph = nullptr;
-  std::unordered_set<std::string> getAllManagedGraphNames();
 };
 
 }  // namespace graph

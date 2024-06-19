@@ -8,8 +8,118 @@ It uses the json file format and separates structure from information, i.e., cal
 The package contains an experimental Clang-based tool for call-graph construction, and a converter for the output files of [Phasar](https://github.com/secure-software-engineering/phasar).
 Also, the package contains the PGIS analysis tool, which is used as the analysis backend in [PIRA](https://github.com/tudasc/pira).
 
-Once constructed, the graph can be serialized into a JSON format, which contains the following information:
+Once constructed, the graph can be serialized into JSON.
 
+The JSON structure follows either the version two (MetaCGV2) or version three (MetaCGV3) specification.  
+MetaCGV3 is more suitable for a wider range of applications due to having less necessary attributes. 
+For any given function it requires the name and origin of the function and whether its definition is available.
+It is also usually more space efficient compared to MetaCGV2 due to hashed function names and allows to export metadata not only to nodes but also to edges  
+The MetaCGV3 specification also includes a more human-readable representation for debugging purposes.  
+It forgoes the hashing of names and explicitly lists caller and callees in exchange for increased filesize.  
+<table>
+<tr>
+<td>
+MetaCGV3 format
+<td>
+MetaCGV3 debug format
+</td>
+</tr>
+<tr>
+<td>
+<pre>
+{
+ "_MetaCG":{
+    "version":"3.0",
+    "generator":{```
+      "name":"ToolName",
+      "sha":"GitSHA",
+      "version":"ToolVersion"
+    }
+  },
+  "_CG":{
+    "edges":[
+      [
+        [11868120863286193964,9631199822919835226],
+        {"EdgeMetadata":{"isHotEdge":true}}"
+      ]
+    ],
+    "nodes":[
+      [ 9631199822919835226,{
+        <br>
+        "functionName":" foo",
+        "hasBody":true,
+        "meta":{
+          "NumInstructionsMetadata":{"instructions":5}
+        },
+        "origin":"main.cpp"
+        }
+      ],
+      [11868120863286193964,{
+        <br>
+        "functionName":"main",
+        "hasBody":true,
+        "meta":{
+          "NumInstructionsMetadata":{"instructions":8}
+        },
+        "origin":"main.cpp"
+        }
+      ]
+    ]
+  }
+}
+</pre>
+</td>
+<td>
+<pre>
+{
+  "_MetaCG":{
+    "version":"3.0",
+    "generator":{
+      "name":"ToolName",
+      "sha":"GitSHA",
+      "version":"ToolVersion"
+    }
+  },
+  "_CG":{
+    "edges":[
+      [
+        [11868120863286193964,9631199822919835226],
+        {"EdgeMetadata":{"isHotEdge":true}}"
+      ]
+    ],
+    "nodes":[
+      [ "foo",{
+        "callees":[],
+        "callers":["main"],
+        "functionName":" foo",
+        "hasBody":true,
+        "meta":{
+          "NumInstructionsMetadata":{"instructions":5}
+        },
+        "origin":"main.cpp"
+        }
+      ],
+      [ "main",{
+        "callees":["foo"],
+        "callers":[],
+        "functionName":"main",
+        "hasBody":true,
+        "meta":{
+          "NumInstructionsMetadata":{"instructions":8}
+        },
+        "origin":"main.cpp"
+        }
+      ]
+    ]
+  }
+}
+</pre>
+</td>
+</tr>
+
+</table>
+
+The version-two specification (MetaCGV2) contains the following information:
 ```{.json}
 {
  "_MetaCG": {
@@ -47,8 +157,8 @@ Once constructed, the graph can be serialized into a JSON format, which contains
   - *overriddenBy*: A set of functions that this function is overridden by.
   - *meta*: A special field into which a tool can export its (intermediate) results.
 
-This allows, e.g., the PIRA profiler, to export various additional information about the program's functions into the MetaCG file.
-Examples are empirically determined performance models, runtime measurements, or loop nesting depth per function.
+The version two specification is mainly used for the PIRA profiler, to export various additional information about the program's functions into the MetaCG file.
+It uses the meta field to export e.g. empirically determined performance models, runtime measurements, or loop nesting depth per function.
 
 ## Requirements and Building
 

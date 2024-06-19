@@ -14,11 +14,11 @@
 #include "IPCGEstimatorPhase.h"
 #include "LegacyMCGReader.h"
 #include "LoggerUtil.h"
-#include "MCGReader.h"
-#include "MCGWriter.h"
 #include "MetaData/PGISMetaData.h"
 #include "PiraMCGProcessor.h"
 #include "Utility.h"
+#include "io/VersionTwoMCGReader.h"
+#include "io/VersionTwoMCGWriter.h"
 #include <loadImbalance/LIEstimatorPhase.h>
 #include <loadImbalance/LIMetaData.h>
 #include <loadImbalance/OnlyMainEstimatorPhase.h>
@@ -363,7 +363,7 @@ int main(int argc, char **argv) {
         console->warn(
             "The old annotate mechanism has been removed and this functionality has not been tested with MCGWriter.");
 
-        metacg::io::MCGWriter mcgWriter{mcgm};
+        metacg::io::VersionTwoMCGWriter mcgWriter{mcgm};
         metacg::io::JsonSink jsonSink;
         mcgWriter.write(jsonSink);
         {
@@ -413,7 +413,7 @@ int main(int argc, char **argv) {
       console->warn(
           "The old annotate mechanism has been removed and this functionality has not been tested with MCGWriter.");
 
-      metacg::io::MCGWriter mcgWriter{mcgm};
+      metacg::io::VersionTwoMCGWriter mcgWriter{mcgm};
       metacg::io::JsonSink jsonSink;
       mcgWriter.write(jsonSink);
       {
@@ -448,7 +448,7 @@ int main(int argc, char **argv) {
   // Serialize the cg
   {
     metacg::io::JsonSink jsSink;
-    metacg::io::MCGWriter mcgw(mcgm);
+    metacg::io::VersionTwoMCGWriter mcgw(mcgm);
     mcgw.write(jsSink);
     std::string filename = c.outputFile + "/instrumented-" + c.appName + ".mcg";
     std::ofstream ofile(filename);

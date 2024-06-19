@@ -21,7 +21,9 @@ CgNode *Callgraph::getMain() {
   }
 }
 
-size_t Callgraph::insert(const std::string &nodeName) { return insert(std::make_unique<CgNode>(nodeName)); }
+size_t Callgraph::insert(const std::string &nodeName, const std::string &origin) {
+  return insert(std::make_unique<CgNode>(nodeName, origin));
+}
 
 /**
  * This function takes ownership of the passed node,
@@ -86,11 +88,11 @@ void Callgraph::addEdge(const CgNode &parentNode, const CgNode &childNode) {
 void Callgraph::addEdge(const std::string &parentName, const std::string &childName) {
   if (nameIdMap.find(parentName) == nameIdMap.end()) {
     MCGLogger::instance().getErrConsole()->warn("Source node: {} does not exist in graph: Inserting Node", parentName);
-    insert(parentName);
+    insert(parentName, "unknownOrigin");
   }
   if (nameIdMap.find(childName) == nameIdMap.end()) {
     MCGLogger::instance().getErrConsole()->warn("Target node: {} does not exist in graph: Inserting Node", childName);
-    insert(childName);
+    insert(childName, "unknownOrigin");
   }
   addEdge(nameIdMap[parentName], nameIdMap[childName]);
 }
@@ -154,11 +156,12 @@ CgNode *Callgraph::getNode(size_t id) const {
 size_t Callgraph::size() const { return nodes.size(); }
 
 bool Callgraph::isEmpty() const { return nodes.empty(); }
-CgNode *Callgraph::getOrInsertNode(const std::string &name) {
+
+CgNode *Callgraph::getOrInsertNode(const std::string &name, const std::string &origin) {
   if (hasNode(name)) {
     return lastSearched;
   } else {
-    auto node_id = insert(name);
+    auto node_id = insert(name, origin);
     assert(nodes.find(node_id) != nodes.end());
     return nodes[node_id].get();
   }

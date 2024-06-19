@@ -12,7 +12,7 @@
 #include "CgNodePtr.h"
 #include "CgNode.h"
 #include "Utility.h"
-#include "MetaData.h"
+#include "metadata/MetaData.h"
 #include "LoggerUtil.h"
 
 // PGIS library

@@ -11,6 +11,8 @@ using namespace metacg;
 
 std::string CgNode::getFunctionName() const { return functionName; }
 
+std::string CgNode::getOrigin() const { return origin; }
+
 bool CgNode::operator==(const CgNode &otherNode) const { return id == otherNode.id; }
 
 bool CgNode::isSameFunction(const CgNode &otherNode) const { return id == otherNode.getId(); }

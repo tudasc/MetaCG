@@ -40,21 +40,22 @@ class JsonSink {
 
 /**
  * Class to serialize the CG.
+ * This class is intended to be subclassed for every file format version
  */
 class MCGWriter {
  public:
   explicit MCGWriter(graph::MCGManager &mcgm,
-                     MCGFileInfo fileInfo = getVersionTwoFileInfo(getCGCollectorGeneratorInfo()))
+                     MCGFileInfo fileInfo)
       : mcgManager(mcgm), fileInfo(std::move(fileInfo)) {}
 
-  void write(JsonSink &js);
+  virtual void write(JsonSink &js) = 0;
 
- private:
+ protected:
   /**
    * Adds the CG version data to the MetaCG in json Format.
    * @param j
    */
-  inline void attachMCGFormatHeader(nlohmann::json &j) {
+  void attachMCGFormatHeader(nlohmann::json &j) {
     const auto formatInfo = fileInfo.formatInfo;
     const auto generatorInfo = fileInfo.generatorInfo;
     j = {{formatInfo.metaInfoFieldName, {}}, {formatInfo.cgFieldName, {}}};
@@ -64,12 +65,6 @@ class MCGWriter {
                                          {generatorInfo.getJsonVersionIdentifier(), generatorInfo.getVersionStr()},
                                          {generatorInfo.getJsonShaIdentifier(), generatorInfo.sha}}}};
   }
-
-  /**
-   * General construction of node data, e.g., function name.
-   * @param node
-   */
-  void createNodeData(const CgNode *node, nlohmann::json &j) const;
 
   graph::MCGManager &mcgManager;
   MCGFileInfo fileInfo;
