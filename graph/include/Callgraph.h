@@ -42,6 +42,12 @@ class Callgraph {
    */
   ~Callgraph() { dumpCGStats(); }
 
+  Callgraph(const Callgraph& other)= delete; //No copy constructor
+  Callgraph& operator=(const Callgraph& other)=delete; //No copy assign constructor
+
+  Callgraph(Callgraph&& other) = default; //Use default move constructor
+  Callgraph& operator=(Callgraph&& other)=default; //Use default move assign constructor
+
   /**
    * @brief getMain
    * @return main function CgNodePtr
@@ -71,14 +77,15 @@ class Callgraph {
    * @param node
    */
   size_t insert(CgNodePtr node);
-  size_t insert(const std::string &nodeName);
+  size_t insert(const std::string &nodeName, const std::string &origin = "unknownOrigin");
+
   /**
    * Returns the node with the given name\n
    * If no node exists yet, it creates a new one.
    * @param name to identify the node by
    * @return CgNodePtr to the identified node
    */
-  CgNode *getOrInsertNode(const std::string &name);
+  CgNode *getOrInsertNode(const std::string &name, const std::string &origin = "unknownOrigin");
 
   /**
    * Clears the graph to an empty graph with no main node and no lastSearched node.
@@ -234,4 +241,32 @@ class Callgraph {
   return graph;
 }
 }  // namespace metacg
+
+namespace nlohmann {
+template <>
+struct adl_serializer<metacg::Callgraph> {
+  // note: the return type is no longer 'void', and the method only takes
+  // one argument
+  static metacg::Callgraph from_json(const json &j) {
+    metacg::Callgraph cg;
+    if (j.is_null())
+      return cg;
+
+    cg.setNodes(j.at("nodes").get<metacg::Callgraph::NodeContainer>());
+    cg.setEdges(j.at("edges").get<metacg::Callgraph::EdgeContainer>());
+    cg.recomputeCache();
+    return cg;
+  }
+
+  // Here's the catch! You must provide a to_json method! Otherwise, you
+  // will not be able to convert move_only_type to json, since you fully
+  // specialized adl_serializer on that type
+  static void to_json(json &j, const metacg::Callgraph &cg) {
+    nlohmann::json e = cg.getEdges();
+    nlohmann::json n = cg.getNodes();
+    j = {{"edges", cg.getEdges()}, {"nodes", cg.getNodes()}};
+  }
+};
+}  // namespace nlohmann
+
 #endif

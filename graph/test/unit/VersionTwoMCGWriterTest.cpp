@@ -1,5 +1,5 @@
 /**
- * File: DotIOTest.cpp
+ * File: VersionTwoMCGWriterTest.cpp
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
@@ -9,7 +9,7 @@
 
 #include "MCGBaseInfo.h"
 #include "MCGManager.h"
-#include "MCGWriter.h"
+#include "io/VersionTwoMCGWriter.h"
 
 class V2MCGWriterTest : public ::testing::Test {
  protected:
@@ -50,7 +50,7 @@ TEST_F(V2MCGWriterTest, DifferentMetaInformation) {
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   auto &mcgm = metacg::graph::MCGManager::get();
-  metacg::io::MCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgm, mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
@@ -67,7 +67,7 @@ TEST_F(V2MCGWriterTest, OneNodeCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::MCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgm, mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -90,7 +90,7 @@ TEST_F(V2MCGWriterTest, TwoNodeCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::MCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgm, mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
   EXPECT_EQ(
@@ -116,7 +116,7 @@ TEST_F(V2MCGWriterTest, TwoNodeOneEdgeCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::MCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgm, mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -147,7 +147,7 @@ TEST_F(V2MCGWriterTest, ThreeNodeOneEdgeCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::MCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgm, mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -173,7 +173,7 @@ TEST_F(V2MCGWriterTest, MetadataCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::MCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgm, mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 

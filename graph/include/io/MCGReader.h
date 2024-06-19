@@ -16,7 +16,6 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-
 namespace metacg::io {
 
 using json = nlohmann::json;
@@ -78,31 +77,7 @@ struct JsonSource : ReaderSource {
  * This class implements basic functionality and is meant to be subclassed for different file versions.
  */
 class MetaCGReader {
-  /**
-   * Internal data structure to create the metacg structure
-   */
-  struct FunctionInfo {
-    FunctionInfo()
-        : functionName("_UNDEF_"), isVirtual(false), doesOverride(false), numStatements(-1), hasBody(false) {}
-    std::string functionName;
-    bool isVirtual;
-    bool doesOverride;
-    int numStatements;
-    bool hasBody;
-    std::unordered_set<std::string> callees;
-    std::unordered_set<std::string> parents;
-    std::unordered_set<std::string> overriddenFunctions;
-    std::unordered_set<std::string> overriddenBy;
-    std::unordered_map<std::string, json> namedMetadata;
-    // load imbalance detection data
-    bool visited = false;
-    bool irrelevant = false;
-  };
-
  public:
-  typedef std::unordered_map<std::string, FunctionInfo> FuncMapT;
-  typedef std::unordered_map<std::string, std::unordered_set<std::string>> StrStrMap;
-  // using json = nlohmann::json;
   /**
    * filename path to file
    */
@@ -114,38 +89,6 @@ class MetaCGReader {
 
  protected:
   /**
-   * Gets or inserts new node into the functions LUT
-   */
-  FuncMapT::mapped_type &getOrInsert(const std::string &key);
-
-  /**
-   * Checks if the jsonValue contains a value for key and sets field accordingly
-   */
-  template <typename FieldTy, typename JsonTy>
-  void setIfNotNull(FieldTy &field, const JsonTy &jsonValue, const std::string &key) {
-    auto jsonField = jsonValue.value()[key];
-    if (!jsonField.is_null()) {
-      field = jsonField.template get<typename std::remove_reference<FieldTy>::type>();
-    } else {
-      metacg::MCGLogger::instance().getErrConsole()->warn("Tried to read non-existing field {} for node.", key);
-    }
-  }
-
-  /**
-   * Build the virtual function hierarchy in PGIS using the functions map
-   */
-  StrStrMap buildVirtualFunctionHierarchy(metacg::graph::MCGManager &cgManager);
-
-  /**
-   * Inserts all nodes in the function map into the final call-graph.
-   * Uses potentialTargets to include all potential virtual call targets for virtual functions.
-   */
-  void buildGraph(metacg::graph::MCGManager &cgManager, StrStrMap &potentialTargets);
-
-  /* Functions LUT: needed for construction of metacg */
-  FuncMapT functions;
-
-  /**
    * Abstraction from where to read-in the JSON.
    */
   const ReaderSource &source;
@@ -153,16 +96,6 @@ class MetaCGReader {
  private:
   // filename of the metacg this instance parses
   const std::string filename;
-};
-
-/**
- * Class to read metacg files in file format v2.0.
- * The format contains the 'meta' field for tools to export information.
- */
-class VersionTwoMetaCGReader : public MetaCGReader {
- public:
-  explicit VersionTwoMetaCGReader(ReaderSource &source) : MetaCGReader(source) {}
-  void read(metacg::graph::MCGManager &cgManager) override;
 };
 
 }  // namespace metacg::io

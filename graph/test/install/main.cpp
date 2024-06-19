@@ -5,9 +5,9 @@
  */
 
 #include "Callgraph.h"
-#include "MCGReader.h"
+#include "io/VersionTwoMCGReader.h"
 #include "MCGManager.h"
-#include "MCGWriter.h"
+#include "io/VersionTwoMCGWriter.h"
 
 #include <string>
 #include <fstream>
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
   metacg::io::VersionTwoMetaCGReader reader(fSource);
   reader.read(manager);
 
-  metacg::io::MCGWriter writer(manager);
+  metacg::io::VersionTwoMCGWriter writer(manager);
   metacg::io::JsonSink js;
   writer.write(js);
   {

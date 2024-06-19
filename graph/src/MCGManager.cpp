@@ -60,6 +60,7 @@ metacg::Callgraph *MCGManager::getOrCreateCallgraph(const std::string &name, boo
     return managedGraphs[name].get();
   }
 }
+
 bool MCGManager::setActive(const std::string &callgraph) {
   // I think this is the best way to do it
   // until map::contains comes with c++20
@@ -101,6 +102,17 @@ std::unordered_set<std::string> MCGManager::getAllManagedGraphNames() {
     retSet.insert(elem.first);
   }
   return retSet;
+}
+
+std::string MCGManager::getActiveGraphName() {
+  assert(activeGraph);
+  for (const auto &elem : managedGraphs) {
+    if (activeGraph == elem.second.get()) {
+      return elem.first;
+    }
+  }
+  assert(false);
+  return "";
 }
 
 MCGManager::~MCGManager() = default;

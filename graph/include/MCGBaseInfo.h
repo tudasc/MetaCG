@@ -8,6 +8,7 @@
 #define METACG_MCGBASEINFO_H
 
 #include <string>
+#include <utility>
 
 namespace metacg {
 
@@ -31,8 +32,10 @@ struct MCGFileFormatVersion {
 };
 
 struct MCGGeneratorVersionInfo {
-  MCGGeneratorVersionInfo(std::string &name, int versionMajor, int versionMinor, std::string gitSHA = {})
-      : name(name), versionMajor(versionMajor), versionMinor(versionMinor), sha(std::move(gitSHA)) {}
+
+  MCGGeneratorVersionInfo(std::string name, int major, int minor, std::string gitSHA = {})
+      : name(std::move(name)), versionMajor(major), versionMinor(minor), sha(std::move(gitSHA)) {}
+
   MCGGeneratorVersionInfo(const MCGGeneratorVersionInfo &other) = default;
   MCGGeneratorVersionInfo(MCGGeneratorVersionInfo &&other) = default;
 
@@ -84,10 +87,15 @@ struct MCGFileInfo {
   MCGFileNodeInfo nodeInfo;
 };
 
-MCGFileInfo getVersionTwoFileInfo(MCGGeneratorVersionInfo mcgGenInfo);
+// Fixme: inlining this to omit ODR, move to own file
+inline metacg::MCGFileInfo getVersionTwoFileInfo(MCGGeneratorVersionInfo mcgGenInfo) {
+  return {MCGFileFormatInfo(2, 0), std::move(mcgGenInfo)};
+}
 
+// Fixme: inlining this to omit ODR, move to own file
+// Fixme These are the wrong defaults
+[[deprecated("Use brace initialization to create info instead")]]
 MCGGeneratorVersionInfo getCGCollectorGeneratorInfo();
-
 }  // namespace metacg
 
 #endif  // METACG_MCGBASEINFO_H

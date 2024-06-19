@@ -8,7 +8,7 @@
 
 // clang-format off
 // Graph library
-#include "MetaData.h"
+#include "metadata/OverrideMD.h"
 #include "CgNodePtr.h"
 
 // System library
@@ -117,11 +117,16 @@ class CgNode {
    * TODO: Currently sets isVirtual and hasBody per default to false. This should be refactored.
    * @param function
    */
-  explicit CgNode(std::string function, bool isVirtual = false, bool hasBody = false)
-      : id(std::hash<std::string>()(function)),
+  explicit CgNode(std::string function, std::string origin = "unknownOrigin", bool isVirtual = false,
+                  bool hasBody = false)
+      : id(std::hash<std::string>()(function+origin)),
         functionName(std::move(function)),
-        isMarkedVirtual(isVirtual),
-        hasBody(hasBody){};
+        origin(std::move(origin)),
+        hasBody(hasBody) {
+    if (isVirtual) {
+      this->getOrCreateMD<OverrideMetadata>();
+    }
+  };
 
   /**
    * CgNode destructs all attached meta data when destructed.
@@ -151,20 +156,6 @@ class CgNode {
   bool isSameFunctionName(const CgNode &otherNode) const;
 
   /**
-   * Check whether the function is marked virtual.
-   * @param
-   * @return the virtuality status
-   */
-  bool isVirtual() const { return isMarkedVirtual; }
-
-  /**
-   * Set the virtuality for the function.
-   * @param virtuality - the new status of the function
-   * @return
-   */
-  void setIsVirtual(bool virtuality) { isMarkedVirtual = virtuality; }
-
-  /**
    * Check whether a function body has been found.
    * @param
    * @return
@@ -182,6 +173,24 @@ class CgNode {
    * @return the nameIdMap of the function
    */
   std::string getFunctionName() const;
+
+  [[deprecated("Attach \"OverrideMetadata\" instead")]] void setIsVirtual(bool virtualness) {
+    if (virtualness) {
+      this->getOrCreateMD<OverrideMetadata>();
+    } else {
+      this->metaFields.erase(OverrideMetadata::key);
+    }
+  }
+
+  [[deprecated("Check with has<OverrideMetadata>() instead")]] bool isVirtual() {
+    return this->has<OverrideMetadata>();
+  }
+
+  std::string getOrigin() const;
+
+  void dumpToDot(std::ofstream &outputStream, int procNum);
+
+  void print();
 
   /**
    * Get the id of the function node
@@ -209,8 +218,8 @@ class CgNode {
  private:
   size_t id = -1;
   std::string functionName;
+  std::string origin;
   std::unordered_map<std::string, MetaData *> metaFields;
-  bool isMarkedVirtual;
   bool hasBody;
 };
 
@@ -242,7 +251,6 @@ struct adl_serializer<std::unique_ptr<T>> {
 
 template <>
 struct adl_serializer<std::unordered_map<std::string, metacg::MetaData *>> {
-  // interestingly enough, j.dump returns an empty string, but this function gets called and works
   static std::unordered_map<std::string, metacg::MetaData *> from_json(const json &j) {
     // use compound type serialization instead of metadata serialization,
     // because we need access to key and value for metadata creation
@@ -273,7 +281,7 @@ struct adl_serializer<std::unordered_map<std::string, metacg::MetaData *>> {
 };
 
 // place CgNodePtr de/serialization here instead of CgNodePtr.h
-// because we need full access underlying datastructure CgNode
+// because we need full access to underlying datastructure CgNode
 template <>
 struct adl_serializer<CgNodePtr> {
   static CgNodePtr from_json(const json &j) {
@@ -281,17 +289,18 @@ struct adl_serializer<CgNodePtr> {
     if (j.is_null()) {
       return cgNode;
     }
-    cgNode = std::make_unique<metacg::CgNode>(j.at("FunctionName"));
-    cgNode->setIsVirtual(j.at("IsVirtual").get<bool>());
-    cgNode->setHasBody(j.at("HasBody").get<bool>());
-    cgNode->setMetaDataContainer(j.at("MetaData"));
+    cgNode =
+        std::make_unique<metacg::CgNode>(j.at("functionName"), j.contains("origin") ? j.at("origin") : "unknownOrigin");
+    cgNode->setHasBody(j.at("hasBody").get<bool>());
+    cgNode->setMetaDataContainer(j.at("meta"));
     return cgNode;
   }
+
   static void to_json(json &j, const CgNodePtr &t) {
-    j = {{"FunctionName", t->getFunctionName()},
-         {"IsVirtual", t->isVirtual()},
-         {"HasBody", t->getHasBody()},
-         {"MetaData", t->getMetaDataContainer()}};
+    j = {{"functionName", t->getFunctionName()},
+         {"origin", t->getOrigin()},
+         {"hasBody", t->getHasBody()},
+         {"meta", t->getMetaDataContainer()}};
   }
 };
 
