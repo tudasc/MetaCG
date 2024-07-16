@@ -16,7 +16,6 @@ class V2MCGReaderTest : public ::testing::Test {
     metacg::loggerutil::getLogger();
     auto &mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
-    mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   }
 };
 
@@ -51,7 +50,7 @@ TEST_F(V2MCGReaderTest, NullCG) {
   metacg::io::JsonSource jsonSource(j);
   metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
   try {
-    mcgReader.read(mcgm);
+    mcgReader.read();
     EXPECT_TRUE(false);  // should not reach here
   } catch (std::exception &e) {
     EXPECT_TRUE(strcmp(e.what(), "JSON source did not contain any data.") == 0);
@@ -69,7 +68,7 @@ TEST_F(V2MCGReaderTest, BrokenMetaInformation) {
   auto &mcgm = metacg::graph::MCGManager::get();
 
   try {
-    mcgReader.read(mcgm);
+    mcgReader.read();
     EXPECT_TRUE(false);  // should not reach here
   } catch (std::exception &e) {
     EXPECT_TRUE(strcmp(e.what(), "Could not read version info from metacg file.") == 0);
@@ -94,7 +93,7 @@ TEST_F(V2MCGReaderTest, WrongVersionInformation) {
   auto &mcgm = metacg::graph::MCGManager::get();
 
   try {
-    mcgReader.read(mcgm);
+    mcgReader.read();
     EXPECT_TRUE(false);  // should not reach here
   } catch (std::exception &e) {
     EXPECT_TRUE(strcmp(e.what(), "File is of version 3.0, this reader handles version 2.x") == 0);
@@ -119,7 +118,7 @@ TEST_F(V2MCGReaderTest, BrokenCG) {
   metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
   auto &mcgm = metacg::graph::MCGManager::get();
   try {
-    mcgReader.read(mcgm);
+    mcgReader.read();
     EXPECT_TRUE(false);  // should not reach here
   } catch (std::exception &e) {
     EXPECT_TRUE(strcmp(e.what(), "The call graph in the metacg file was not found or null.") == 0);
@@ -142,7 +141,7 @@ TEST_F(V2MCGReaderTest, EmptyCGRead) {
   metacg::io::JsonSource jsonSource(j);
   metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgReader.read(mcgm);
+  mcgm.addToManagedGraphs( "newGraph", mcgReader.read());
   EXPECT_EQ(mcgm.graphs_size(), 1);
   const auto &cg = mcgm.getCallgraph();
   EXPECT_EQ(cg->size(), 0);
@@ -175,7 +174,7 @@ TEST_F(V2MCGReaderTest, OneNodeCGRead) {
   metacg::io::JsonSource jsonSource(j);
   metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgReader.read(mcgm);
+  mcgm.addToManagedGraphs( "newGraph", mcgReader.read());
   EXPECT_EQ(mcgm.graphs_size(), 1);
   const auto &cg = mcgm.getCallgraph();
   EXPECT_EQ(cg->size(), 1);
@@ -230,7 +229,7 @@ TEST_F(V2MCGReaderTest, TwoNodeCGRead) {
   metacg::io::JsonSource jsonSource(j);
   metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgReader.read(mcgm);
+  mcgm.addToManagedGraphs( "newGraph", mcgReader.read());
   EXPECT_EQ(mcgm.graphs_size(), 1);
   const auto &cg = mcgm.getCallgraph();
   EXPECT_EQ(cg->size(), 2);
@@ -295,7 +294,7 @@ TEST_F(V2MCGReaderTest, TwoNodeOneEdgeCGRead) {
   metacg::io::JsonSource jsonSource(j);
   metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgReader.read(mcgm);
+  mcgm.addToManagedGraphs( "newGraph", mcgReader.read());
   EXPECT_EQ(mcgm.graphs_size(), 1);
   const auto &cg = mcgm.getCallgraph();
   EXPECT_EQ(cg->size(), 2);
@@ -380,7 +379,7 @@ TEST_F(V2MCGReaderTest, ThreeNodeOneEdgeCGRead) {
   metacg::io::JsonSource jsonSource(j);
   metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgReader.read(mcgm);
+  mcgm.addToManagedGraphs( "newGraph", mcgReader.read());
   EXPECT_EQ(mcgm.graphs_size(), 1);
   const auto &cg = mcgm.getCallgraph();
   EXPECT_EQ(cg->size(), 3);
@@ -457,7 +456,7 @@ TEST_F(V2MCGReaderTest, MetadataCGRead) {
   metacg::io::JsonSource jsonSource(j);
   metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgReader.read(mcgm);
+  mcgm.addToManagedGraphs( "newGraph", mcgReader.read());
   EXPECT_EQ(mcgm.graphs_size(), 1);
   const auto &cg = mcgm.getCallgraph();
   EXPECT_EQ(cg->size(), 1);
@@ -505,8 +504,7 @@ TEST_F(V2MCGReaderTest, OneNodeWithOriginCGRead) {
   metacg::io::JsonSource jsonSource(j);
   metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgReader.read(mcgm);
-  EXPECT_EQ(mcgm.graphs_size(), 1);
+  mcgm.addToManagedGraphs( "newGraph", mcgReader.read());  EXPECT_EQ(mcgm.graphs_size(), 1);
   const auto &cg = mcgm.getCallgraph();
   EXPECT_EQ(cg->size(), 1);
   EXPECT_TRUE(cg->hasNode("main"));

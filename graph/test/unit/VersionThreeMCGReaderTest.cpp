@@ -50,7 +50,6 @@ class V3MCGReaderTest : public ::testing::Test {
     metacg::loggerutil::getLogger();
     auto &mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
-    mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   }
 };
 
@@ -71,7 +70,7 @@ TEST(V3MCGReaderTest, EmptyJSON) {
 
   metacg::io::JsonSource source(j);
   metacg::io::VersionThreeMetaCGReader reader(source);
-  reader.read(mcgm);
+  mcgm.addToManagedGraphs("newCallgraph",reader.read());
   const Callgraph &graph = *mcgm.getCallgraph();
   ASSERT_EQ(graph.size(), 0);
 }
@@ -102,7 +101,7 @@ TEST(V3MCGReaderTest, SingleNode) {
 
   metacg::io::JsonSource source(j);
   metacg::io::VersionThreeMetaCGReader reader(source);
-  reader.read(mcgm);
+  mcgm.addToManagedGraphs("newCallgraph",reader.read());
   Callgraph &graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 1);
   EXPECT_NE(graph.getMain(), nullptr);
@@ -164,7 +163,7 @@ TEST(V3MCGReaderTest, NodesAndSingleEdge) {
   mcgm.resetManager();
   metacg::io::JsonSource source(j);
   metacg::io::VersionThreeMetaCGReader reader(source);
-  reader.read(mcgm);
+  mcgm.addToManagedGraphs("newCallgraph",reader.read());
 
   const Callgraph &graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 3);
@@ -239,7 +238,7 @@ TEST(V3MCGReaderTest, NodeMetaData) {
   mcgm.resetManager();
   metacg::io::JsonSource source(j);
   metacg::io::VersionThreeMetaCGReader reader(source);
-  reader.read(mcgm);
+  mcgm.addToManagedGraphs("newCallgraph",reader.read());
   const Callgraph &graph = *mcgm.getCallgraph();
 
   EXPECT_EQ(graph.getNode("main")->getMetaDataContainer().size(), 1);

@@ -9,7 +9,8 @@
 #include "Timing.h"
 #include "Util.h"
 #include <iostream>
-void metacg::io::VersionThreeMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
+
+std::unique_ptr<metacg::Callgraph> metacg::io::VersionThreeMetaCGReader::read() {
   metacg::RuntimeTimer rtt("VersionThreeMetaCGReader::read");
   MCGFileFormatInfo ffInfo{3, 0};
   auto console = metacg::MCGLogger::instance().getConsole();
@@ -47,7 +48,7 @@ void metacg::io::VersionThreeMetaCGReader::read(metacg::graph::MCGManager &cgMan
   if (isV3DebugFormat(jsonCG)) {
     convertFromDebug(jsonCG);
   }
-  cgManager.addToManagedGraphs("newGraph", std::make_unique<Callgraph>(jsonCG));
+  return std::make_unique<Callgraph>(jsonCG);
 }
 
 void metacg::io::VersionThreeMetaCGReader::convertFromDebug(json &j) {

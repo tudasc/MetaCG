@@ -18,10 +18,9 @@ int main(int argc, char **argv) {
   std::string outFile(argv[2]);
 
   auto &manager = metacg::graph::MCGManager::get();
-  auto *graph = manager.getOrCreateCallgraph("testG", true);
   metacg::io::FileSource fSource(inFile);
   metacg::io::VersionTwoMetaCGReader reader(fSource);
-  reader.read(manager);
+  manager.addToManagedGraphs("testG",   reader.read());
 
   metacg::io::VersionTwoMCGWriter writer(manager);
   metacg::io::JsonSink js;

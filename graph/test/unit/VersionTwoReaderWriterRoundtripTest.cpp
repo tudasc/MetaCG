@@ -17,7 +17,6 @@ class VersionTwoReaderWriterRoundtripTest : public ::testing::Test {
     metacg::loggerutil::getLogger();
     auto &mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
-    mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   }
 };
 
@@ -71,9 +70,9 @@ TEST_F(VersionTwoReaderWriterRoundtripTest, TextGraphText) {
       "}"_json;
 
   metacg::io::JsonSource jsonSource(jsonCG);
-  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionTwoMetaCGReader reader(jsonSource);
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgReader.read(mcgm);
+  mcgm.addToManagedGraphs("newCallgraph", reader.read());
   std::string generatorName="Test";
   metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgm, mcgFileInfo);

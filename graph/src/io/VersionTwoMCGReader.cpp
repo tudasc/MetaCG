@@ -10,7 +10,7 @@
 #include "Timing.h"
 #include "Util.h"
 
-void metacg::io::VersionTwoMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
+std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
   metacg::RuntimeTimer rtt("VersionTwoMetaCGReader::read");
   metacg::MCGFileFormatInfo ffInfo{2, 0};
   auto console = metacg::MCGLogger::instance().getConsole();
@@ -58,8 +58,7 @@ void metacg::io::VersionTwoMetaCGReader::read(metacg::graph::MCGManager &cgManag
 
   auto &jsonCG = j[ffInfo.cgFieldName];
   upgradeV2FormatToV3Format(jsonCG);
-  // Fixme: this should generate a new name, or be given as a parameter?
-  cgManager.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>(jsonCG));
+  return std::make_unique<metacg::Callgraph>(jsonCG);
 }
 
 void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV3Format(nlohmann::json &j) {
