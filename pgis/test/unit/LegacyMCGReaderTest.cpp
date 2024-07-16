@@ -15,16 +15,25 @@
 using namespace metacg;
 using json = nlohmann::json;
 
+class VersionOneMCGReaderTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    metacg::loggerutil::getLogger();
+    auto &mcgm = metacg::graph::MCGManager::get();
+    mcgm.resetManager();
+  }
+};
+
 TEST(VersionOneMCGReaderTest, EmptyJSON) {
   json j;
   metacg::loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
+  //mcgm.resetManager();
   metacg::io::JsonSource js(j);
   metacg::pgis::io::VersionOneMetaCGReader mcgReader(js);
-  mcgReader.read(mcgm);
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<Callgraph>());
+  mcgReader.read();
 
   const Callgraph &graph = *mcgm.getCallgraph();
   ASSERT_EQ(graph.size(), 0);
@@ -40,11 +49,11 @@ TEST(VersionOneMCGReaderTest, SimpleJSON) {
   };
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
+  //mcgm.resetManager();
   metacg::io::JsonSource js(j);
   metacg::pgis::io::VersionOneMetaCGReader mcgReader(js);
-  mcgReader.read(mcgm);
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<Callgraph>());
+  mcgReader.read();
 
   Callgraph &graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 1);
@@ -81,11 +90,12 @@ TEST(VersionOneMCGReaderTest, MultiNodeJSON) {
   };
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.resetManager();
-  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
+  //mcgm.resetManager();
   metacg::io::JsonSource js(j);
   metacg::pgis::io::VersionOneMetaCGReader mcgReader(js);
-  mcgReader.read(mcgm);
+  mcgm.addToManagedGraphs("emptyGraph", std::make_unique<Callgraph>());
+  mcgReader.read();
+
 
   Callgraph &graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 2);

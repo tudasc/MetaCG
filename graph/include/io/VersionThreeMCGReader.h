@@ -14,7 +14,7 @@ namespace metacg::io {
 class VersionThreeMetaCGReader : public metacg::io::MetaCGReader {
  public:
   explicit VersionThreeMetaCGReader(metacg::io::ReaderSource &source) : MetaCGReader(source) {}
-  void read(metacg::graph::MCGManager &cgManager) override;
+  std::unique_ptr<Callgraph> read() override;
   void convertFromDebug(json &j);
   bool isV3DebugFormat(const json &j);
 };

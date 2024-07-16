@@ -17,7 +17,6 @@ class V3ReaderWriterRoundtripTest : public ::testing::Test {
     metacg::loggerutil::getLogger();
     auto &mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
-    mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   }
 };
 
@@ -37,7 +36,8 @@ TEST_F(V3ReaderWriterRoundtripTest, TextGraphText) {
   metacg::io::JsonSource jsonSource(jsonCG);
   metacg::io::VersionThreeMetaCGReader mcgReader(jsonSource);
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgReader.read(mcgm);
+  mcgm.addToManagedGraphs("newGraph",mcgReader.read());
+
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, false, true);
@@ -63,7 +63,7 @@ TEST_F(V3ReaderWriterRoundtripTest, DebugTextGraphDebugText) {
   metacg::io::JsonSource jsonSource(jsonCG);
   metacg::io::VersionThreeMetaCGReader mcgReader(jsonSource);
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgReader.read(mcgm);
+  mcgm.addToManagedGraphs("newGraph",mcgReader.read());
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, true, true);
@@ -89,7 +89,7 @@ TEST_F(V3ReaderWriterRoundtripTest, DebugTextGraphText) {
   metacg::io::JsonSource jsonSource(jsonDbgCG);
   metacg::io::VersionThreeMetaCGReader mcgReader(jsonSource);
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgReader.read(mcgm);
+  mcgm.addToManagedGraphs("newGraph",mcgReader.read());
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, false, true);
@@ -127,7 +127,7 @@ TEST_F(V3ReaderWriterRoundtripTest, TextGraphDebugText) {
   metacg::io::JsonSource jsonSource(jsonCG);
   metacg::io::VersionThreeMetaCGReader mcgReader(jsonSource);
   auto &mcgm = metacg::graph::MCGManager::get();
-  mcgReader.read(mcgm);
+  mcgm.addToManagedGraphs("newGraph",mcgReader.read());
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, true, true);

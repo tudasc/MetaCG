@@ -44,7 +44,7 @@ class VersionOneMetaCGReader : public metacg::io::MetaCGReader {
   typedef std::unordered_map<std::string, FunctionInfo> FuncMapT;
   typedef std::unordered_map<std::string, std::unordered_set<std::string>> StrStrMap;
 
-  void read(metacg::graph::MCGManager &cgManager) override;
+  std::unique_ptr<Callgraph> read() override;
 
  protected:
   /**

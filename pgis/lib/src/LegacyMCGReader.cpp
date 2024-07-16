@@ -124,7 +124,11 @@ VersionOneMetaCGReader::StrStrMap VersionOneMetaCGReader::buildVirtualFunctionHi
 /**
  * Version one Reader
  */
-void VersionOneMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
+std::unique_ptr<Callgraph> VersionOneMetaCGReader::read() {
+  //This version of the reader is the only one, that actually requires access to the MCGManager.
+  //Manually get the cgManager via the singleton, to retain backwards compatibility
+  auto& cgManager=metacg::graph::MCGManager::get();
+
   metacg::RuntimeTimer rtt("Version One Reader");
   auto console = metacg::MCGLogger::instance().getConsole();
 
@@ -188,6 +192,7 @@ void VersionOneMetaCGReader::read(metacg::graph::MCGManager &cgManager) {
       }
     }
   }
+  return nullptr;
 }
 
 void VersionOneMetaCGReader::addNumStmts(metacg::graph::MCGManager &cgm) {

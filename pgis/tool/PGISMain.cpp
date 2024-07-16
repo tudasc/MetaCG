@@ -299,10 +299,11 @@ int main(int argc, char **argv) {
     metacg::io::FileSource fs(metacgFile);
     if (mcgVersion == 1) {
       metacg::pgis::io::VersionOneMetaCGReader mcgReader(fs);
-      mcgReader.read(mcgm);
+      metacg::graph::MCGManager::get().addToManagedGraphs("newGraph", std::make_unique<Callgraph>());
+      mcgReader.read();
     } else if (mcgVersion == 2) {
       metacg::io::VersionTwoMetaCGReader mcgReader(fs);
-      mcgReader.read(mcgm);
+      metacg::graph::MCGManager::get().addToManagedGraphs("newGraph", mcgReader.read());
       // XXX Find better way to do this: both conceptually and complexity-wise
       pgis::attachMetaDataToGraph<pira::PiraOneData>(mcgm.getCallgraph());
       pgis::attachMetaDataToGraph<pira::BaseProfileData>(mcgm.getCallgraph());
