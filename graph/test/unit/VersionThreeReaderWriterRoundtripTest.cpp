@@ -40,7 +40,7 @@ TEST_F(V3ReaderWriterRoundtripTest, TextGraphText) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, false, true);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, false, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -66,7 +66,7 @@ TEST_F(V3ReaderWriterRoundtripTest, DebugTextGraphDebugText) {
   mcgm.addToManagedGraphs("newGraph",mcgReader.read());
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, true, true);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, true, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -92,7 +92,7 @@ TEST_F(V3ReaderWriterRoundtripTest, DebugTextGraphText) {
   mcgm.addToManagedGraphs("newGraph",mcgReader.read());
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, false, true);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, false, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -130,7 +130,7 @@ TEST_F(V3ReaderWriterRoundtripTest, TextGraphDebugText) {
   mcgm.addToManagedGraphs("newGraph",mcgReader.read());
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, true, true);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, true, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 

@@ -50,7 +50,7 @@ TEST_F(V2MCGWriterTest, DifferentMetaInformation) {
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   auto &mcgm = metacg::graph::MCGManager::get();
-  metacg::io::VersionTwoMCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
@@ -67,7 +67,7 @@ TEST_F(V2MCGWriterTest, OneNodeCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionTwoMCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -90,7 +90,7 @@ TEST_F(V2MCGWriterTest, TwoNodeCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionTwoMCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
   EXPECT_EQ(
@@ -116,7 +116,7 @@ TEST_F(V2MCGWriterTest, TwoNodeOneEdgeCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionTwoMCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -147,7 +147,7 @@ TEST_F(V2MCGWriterTest, ThreeNodeOneEdgeCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionTwoMCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -173,7 +173,7 @@ TEST_F(V2MCGWriterTest, MetadataCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionTwoMCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -182,4 +182,109 @@ TEST_F(V2MCGWriterTest, MetadataCGWrite) {
             "false,\"meta\":{\"TestMetaData\":{\"metadataFloat\":0.0,\"metadataInt\":0,\"metadataString\":\"\"}},"
             "\"overriddenBy\":[],\"overrides\":[]}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
             "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
+}
+
+TEST_F(V2MCGWriterTest, WriteByName) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
+  const auto &cg = mcgm.getCallgraph();
+  EXPECT_EQ(mcgm.graphs_size(),2);
+  EXPECT_EQ(mcgm.getActiveGraphName(),"newGraph");
+  cg->insert("main");
+  cg->getMain()->setIsVirtual(false);
+  cg->getMain()->setHasBody(true);
+  // metadata does not need to be freed,
+  // it is now owned by the node
+  auto testMetaData = new TestMetaData();
+  cg->getMain()->addMetaData(testMetaData);
+
+  std::string generatorName = "Test";
+  metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
+  metacg::io::JsonSink jsonSink;
+  mcgWriter.write("newGraph",jsonSink);
+  EXPECT_EQ(jsonSink.getJson().dump(),
+            "{\"_CG\":{\"main\":{\"callees\":[],\"callers\":[],\"doesOverride\":false,\"hasBody\":true,\"isVirtual\":"
+            "false,\"meta\":{\"TestMetaData\":{\"metadataFloat\":0.0,\"metadataInt\":0,\"metadataString\":\"\"}},"
+            "\"overriddenBy\":[],\"overrides\":[]}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
+            "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
+
+  mcgWriter.write("emptyGraph",jsonSink);
+  EXPECT_EQ(jsonSink.getJson().dump(),
+            "{\"_CG\":null,"
+            "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
+            "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
+  mcgm.resetManager();
+}
+
+TEST_F(V2MCGWriterTest, WritePointer) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
+  const auto &cg = mcgm.getCallgraph();
+  EXPECT_EQ(mcgm.graphs_size(),2);
+  EXPECT_EQ(mcgm.getActiveGraphName(),"newGraph");
+  cg->insert("main");
+  cg->getMain()->setIsVirtual(false);
+  cg->getMain()->setHasBody(true);
+  // metadata does not need to be freed,
+  // it is now owned by the node
+  auto testMetaData = new TestMetaData();
+  cg->getMain()->addMetaData(testMetaData);
+
+  std::string generatorName = "Test";
+  metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
+  metacg::io::JsonSink jsonSink;
+  mcgWriter.write(mcgm.getCallgraph("newGraph"),jsonSink);
+  EXPECT_EQ(jsonSink.getJson().dump(),
+            "{\"_CG\":{\"main\":{\"callees\":[],\"callers\":[],\"doesOverride\":false,\"hasBody\":true,\"isVirtual\":"
+            "false,\"meta\":{\"TestMetaData\":{\"metadataFloat\":0.0,\"metadataInt\":0,\"metadataString\":\"\"}},"
+            "\"overriddenBy\":[],\"overrides\":[]}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
+            "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
+
+  mcgWriter.write(mcgm.getCallgraph("emptyGraph"),jsonSink);
+  EXPECT_EQ(jsonSink.getJson().dump(),
+            "{\"_CG\":null,"
+            "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
+            "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
+  mcgm.resetManager();
+}
+
+TEST_F(V2MCGWriterTest, SwitchBeforeWrite) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
+  const auto &cg = mcgm.getCallgraph();
+  EXPECT_EQ(mcgm.graphs_size(),2);
+  EXPECT_EQ(mcgm.getActiveGraphName(),"newGraph");
+  cg->insert("main");
+  cg->getMain()->setIsVirtual(false);
+  cg->getMain()->setHasBody(true);
+  // metadata does not need to be freed,
+  // it is now owned by the node
+  auto testMetaData = new TestMetaData();
+  cg->getMain()->addMetaData(testMetaData);
+
+  std::string generatorName = "Test";
+  metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
+  metacg::io::JsonSink jsonSink;
+
+  mcgm.setActive("newGraph");
+  mcgm.setActive("emptyGraph");
+  mcgm.setActive("newGraph");
+
+  mcgWriter.write(jsonSink);
+  EXPECT_EQ(jsonSink.getJson().dump(),
+            "{\"_CG\":{\"main\":{\"callees\":[],\"callers\":[],\"doesOverride\":false,\"hasBody\":true,\"isVirtual\":"
+            "false,\"meta\":{\"TestMetaData\":{\"metadataFloat\":0.0,\"metadataInt\":0,\"metadataString\":\"\"}},"
+            "\"overriddenBy\":[],\"overrides\":[]}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
+            "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
+
+  mcgm.setActive("emptyGraph");
+  mcgWriter.write(jsonSink);
+  EXPECT_EQ(jsonSink.getJson().dump(),
+            "{\"_CG\":null,"
+            "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
+            "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
+  mcgm.resetManager();
 }

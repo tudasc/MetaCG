@@ -10,9 +10,13 @@
 #include <iostream>
 
 void metacg::io::VersionThreeMCGWriter::write(metacg::io::JsonSink &js) {
+  write(metacg::graph::MCGManager::get().getCallgraph(), js);
+}
+
+void metacg::io::VersionThreeMCGWriter::write(metacg::Callgraph *cg, metacg::io::JsonSink &js) {
   nlohmann::json j;
   attachMCGFormatHeader(j);
-  j["_CG"] = *mcgManager.getCallgraph();
+  j["_CG"] = *cg;
   if (exportSorted) {
     sortCallgraph(j);
   }
@@ -20,6 +24,10 @@ void metacg::io::VersionThreeMCGWriter::write(metacg::io::JsonSink &js) {
     convertToDebug(j);
   }
   js.setJson(j);
+}
+
+void metacg::io::VersionThreeMCGWriter::write(const std::string &CGName, metacg::io::JsonSink &js) {
+  write(metacg::graph::MCGManager::get().getCallgraph(CGName), js);
 }
 
 void metacg::io::VersionThreeMCGWriter::sortCallgraph(nlohmann::json &j) const {

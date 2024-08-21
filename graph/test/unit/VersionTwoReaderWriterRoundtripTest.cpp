@@ -75,7 +75,7 @@ TEST_F(VersionTwoReaderWriterRoundtripTest, TextGraphText) {
   mcgm.addToManagedGraphs("newCallgraph", reader.read());
   std::string generatorName="Test";
   metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionTwoMCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 

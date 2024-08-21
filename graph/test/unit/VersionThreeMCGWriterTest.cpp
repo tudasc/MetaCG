@@ -50,7 +50,7 @@ TEST_F(V3MCGWriterTest, DifferentMetaInformation) {
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
   auto &mcgm = metacg::graph::MCGManager::get();
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
@@ -62,7 +62,7 @@ TEST_F(V3MCGWriterTest, DifferentMetaInformationDebug) {
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
   auto &mcgm = metacg::graph::MCGManager::get();
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, true);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
@@ -78,7 +78,7 @@ TEST_F(V3MCGWriterTest, OneNodeCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -97,7 +97,7 @@ TEST_F(V3MCGWriterTest, OneNodeCGWriteDebug) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, true);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -120,7 +120,7 @@ TEST_F(V3MCGWriterTest, TwoNodeCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
@@ -142,7 +142,7 @@ TEST_F(V3MCGWriterTest, TwoNodeCGWriteDebug) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, true);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
@@ -168,7 +168,7 @@ TEST_F(V3MCGWriterTest, TwoNodeOneEdgeCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -193,7 +193,7 @@ TEST_F(V3MCGWriterTest, TwoNodeOneEdgeCGWriteDebug) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, true);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -223,7 +223,7 @@ TEST_F(V3MCGWriterTest, ThreeNodeOneEdgeCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -252,7 +252,7 @@ TEST_F(V3MCGWriterTest, ThreeNodeOneEdgeCGWriteDebug) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, true);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -283,7 +283,7 @@ TEST_F(V3MCGWriterTest, GraphMetadataCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -312,7 +312,7 @@ TEST_F(V3MCGWriterTest, GraphMetadataCGWriteDebug) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, true);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -346,7 +346,7 @@ TEST_F(V3MCGWriterTest, EdgeMetadataCGWrite) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, false);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, false);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
   // clang-format off
@@ -385,7 +385,7 @@ TEST_F(V3MCGWriterTest, EdgeMetadataCGWriteDebug) {
 
   std::string generatorName = "Test";
   metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
-  metacg::io::VersionThreeMCGWriter mcgWriter(mcgm, mcgFileInfo, true);
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
@@ -403,4 +403,140 @@ TEST_F(V3MCGWriterTest, EdgeMetadataCGWriteDebug) {
       "]},"
       "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"3.0\"}}");
   // clang-format on
+}
+
+TEST_F(V3MCGWriterTest, WriteByName) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newGraph",std::make_unique<metacg::Callgraph>());
+  const auto &cg = mcgm.getCallgraph();
+  cg->insert("main", "main.cpp");
+  cg->getMain()->setHasBody(true);
+
+  std::string generatorName = "Test";
+  metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo);
+  metacg::io::JsonSink jsonSink;
+  mcgWriter.write("emptyGraph",jsonSink);
+  EXPECT_EQ(jsonSink.getJson().dump(),
+            "{\"_CG\":{\"edges\":[],\"nodes\":[]},"
+            "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"3."
+            "0\"}}");
+
+  mcgWriter.write("newGraph",jsonSink);
+  EXPECT_EQ(jsonSink.getJson().dump(),
+            "{\"_CG\":{\"edges\":[],\"nodes\":["
+            "[13570296075836900426,{\"functionName\":\"main\",\"hasBody\":true,\"meta\":null,\"origin\":\"main.cpp\"}]"
+            "]},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"3."
+            "0\"}}");
+}
+
+TEST_F(V3MCGWriterTest, WriteByNameDebug) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newGraph",std::make_unique<metacg::Callgraph>());
+  const auto &cg = mcgm.getCallgraph();
+  cg->insert("main", "main.cpp");
+  cg->getMain()->setHasBody(true);
+
+  std::string generatorName = "Test";
+  metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo,true);
+  metacg::io::JsonSink jsonSink;
+  mcgWriter.write("emptyGraph",jsonSink);
+  EXPECT_EQ(jsonSink.getJson().dump(),
+            "{\"_CG\":{\"edges\":[],\"nodes\":[]},"
+            "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"3."
+            "0\"}}");
+
+  mcgWriter.write("newGraph",jsonSink);
+  EXPECT_EQ(jsonSink.getJson().dump(),
+            "{\"_CG\":{\"edges\":[],\"nodes\":["
+            "[\"main\",{\"callees\":[],\"callers\":[],\"functionName\":\"main\",\"hasBody\":true,\"meta\":null,"
+            "\"origin\":\"main.cpp\"}]"
+            "]},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"3."
+            "0\"}}");
+}
+
+TEST_F(V3MCGWriterTest, WritePointer) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newGraph",std::make_unique<metacg::Callgraph>());
+  const auto &cg = mcgm.getCallgraph();
+  cg->insert("main", "main.cpp");
+  cg->getMain()->setHasBody(true);
+
+  std::string generatorName = "Test";
+  metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo);
+  metacg::io::JsonSink jsonSink;
+  mcgWriter.write(mcgm.getCallgraph("emptyGraph"),jsonSink);
+  EXPECT_EQ(jsonSink.getJson().dump(),
+            "{\"_CG\":{\"edges\":[],\"nodes\":[]},"
+            "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"3."
+            "0\"}}");
+
+  mcgWriter.write(mcgm.getCallgraph("newGraph"),jsonSink);
+  EXPECT_EQ(jsonSink.getJson().dump(),
+            "{\"_CG\":{\"edges\":[],\"nodes\":["
+            "[13570296075836900426,{\"functionName\":\"main\",\"hasBody\":true,\"meta\":null,\"origin\":\"main.cpp\"}]"
+            "]},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"3."
+            "0\"}}");
+}
+
+TEST_F(V3MCGWriterTest, WritePointerDebug) {
+  auto &mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newGraph",std::make_unique<metacg::Callgraph>());
+  const auto &cg = mcgm.getCallgraph();
+  cg->insert("main", "main.cpp");
+  cg->getMain()->setHasBody(true);
+
+  std::string generatorName = "Test";
+  metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
+  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo,true);
+  metacg::io::JsonSink jsonSink;
+  mcgWriter.write(mcgm.getCallgraph("emptyGraph"),jsonSink);
+  EXPECT_EQ(jsonSink.getJson().dump(),
+            "{\"_CG\":{\"edges\":[],\"nodes\":[]},"
+            "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"3."
+            "0\"}}");
+
+  mcgWriter.write(mcgm.getCallgraph("newGraph"),jsonSink);
+  EXPECT_EQ(jsonSink.getJson().dump(),
+            "{\"_CG\":{\"edges\":[],\"nodes\":["
+            "[\"main\",{\"callees\":[],\"callers\":[],\"functionName\":\"main\",\"hasBody\":true,\"meta\":null,"
+            "\"origin\":\"main.cpp\"}]"
+            "]},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"3."
+            "0\"}}");
+}
+
+TEST_F(V3MCGWriterTest, SwitchBeforeWrite) {
+    auto &mcgm = metacg::graph::MCGManager::get();
+    mcgm.addToManagedGraphs("newGraph",std::make_unique<metacg::Callgraph>());
+    const auto &cg = mcgm.getCallgraph();
+    cg->insert("main", "main.cpp");
+    cg->getMain()->setHasBody(true);
+
+    std::string generatorName = "Test";
+    metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
+    metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo);
+    metacg::io::JsonSink jsonSink;
+
+    mcgm.setActive("emptyGraph");
+    mcgm.setActive("newGraph");
+    mcgm.setActive("emptyGraph");
+
+    mcgWriter.write(jsonSink);
+    EXPECT_EQ(jsonSink.getJson().dump(),
+              "{\"_CG\":{\"edges\":[],\"nodes\":[]},"
+              "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"3."
+              "0\"}}");
+
+
+    mcgm.setActive("newGraph");
+
+    mcgWriter.write(jsonSink);
+    EXPECT_EQ(jsonSink.getJson().dump(),
+              "{\"_CG\":{\"edges\":[],\"nodes\":["
+              "[13570296075836900426,{\"functionName\":\"main\",\"hasBody\":true,\"meta\":null,\"origin\":\"main.cpp\"}]"
+              "]},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"3."
+              "0\"}}");
+
 }
