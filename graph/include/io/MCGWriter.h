@@ -44,11 +44,17 @@ class JsonSink {
  */
 class MCGWriter {
  public:
-  explicit MCGWriter(graph::MCGManager &mcgm,
-                     MCGFileInfo fileInfo)
-      : mcgManager(mcgm), fileInfo(std::move(fileInfo)) {}
+  explicit MCGWriter(MCGFileInfo fileInfo)
+      : fileInfo(std::move(fileInfo)) {}
 
-  virtual void write(JsonSink &js) = 0;
+  /**
+   *
+   * Writes a specified callgraph to a specified JsonSink
+   *
+   * @param graph which graph to write out
+   * @param js which sink to write to
+   */
+  virtual void write(Callgraph* graph, JsonSink &js) = 0;
 
  protected:
   /**
@@ -66,7 +72,6 @@ class MCGWriter {
                                          {generatorInfo.getJsonShaIdentifier(), generatorInfo.sha}}}};
   }
 
-  graph::MCGManager &mcgManager;
   MCGFileInfo fileInfo;
 };
 

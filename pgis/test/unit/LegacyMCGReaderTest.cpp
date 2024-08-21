@@ -29,7 +29,6 @@ TEST(VersionOneMCGReaderTest, EmptyJSON) {
   metacg::loggerutil::getLogger();
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  //mcgm.resetManager();
   metacg::io::JsonSource js(j);
   metacg::pgis::io::VersionOneMetaCGReader mcgReader(js);
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<Callgraph>());
@@ -49,7 +48,6 @@ TEST(VersionOneMCGReaderTest, SimpleJSON) {
   };
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  //mcgm.resetManager();
   metacg::io::JsonSource js(j);
   metacg::pgis::io::VersionOneMetaCGReader mcgReader(js);
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<Callgraph>());
@@ -90,7 +88,6 @@ TEST(VersionOneMCGReaderTest, MultiNodeJSON) {
   };
 
   auto &mcgm = metacg::graph::MCGManager::get();
-  //mcgm.resetManager();
   metacg::io::JsonSource js(j);
   metacg::pgis::io::VersionOneMetaCGReader mcgReader(js);
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<Callgraph>());

@@ -15,12 +15,37 @@ class VersionThreeMCGWriter : public MCGWriter {
  public:
   // Fixme: Make the MetaCG versions, not CGCollector versions
   explicit VersionThreeMCGWriter(
-      graph::MCGManager &mcgm,
       MCGFileInfo fileInfo = {{3, 0}, {"MetaCG", CGCollector_VERSION_MAJOR, CGCollector_VERSION_MINOR, MetaCG_GIT_SHA}},
       bool debug = false, bool exportSorted=false)
-      : MCGWriter(mcgm, std::move(fileInfo)), outputDebug(debug), exportSorted(exportSorted) {}
+      : MCGWriter(std::move(fileInfo)), outputDebug(debug), exportSorted(exportSorted) {}
 
-  void write(metacg::io::JsonSink &js) override;
+
+  /**
+   *
+   * Writes the current active graph from the Callgraph-manager to a specified JsonSink
+   *
+   * @param js which sink to write to
+   */
+  void write(metacg::io::JsonSink &js);
+
+  /**
+   *
+   * Writes a specified callgraph to a specified JsonSink
+   *
+   * @param graph which graph to write out
+   * @param js which sink to write to
+   */
+  void write(metacg::Callgraph* cg, metacg::io::JsonSink &js) override;
+
+  /**
+   *
+   * Retrieves the callgraph with the given name from the Callgraph Manager
+   * and writes to a specified JsonSink
+   *
+   * @param CGName the name of the graph to write out
+   * @param js which sink to write to
+   */
+  void write(const std::string& CGName, metacg::io::JsonSink &js);
 
  private:
   bool outputDebug;

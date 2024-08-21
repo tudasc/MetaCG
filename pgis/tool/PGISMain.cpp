@@ -364,7 +364,7 @@ int main(int argc, char **argv) {
         console->warn(
             "The old annotate mechanism has been removed and this functionality has not been tested with MCGWriter.");
 
-        metacg::io::VersionTwoMCGWriter mcgWriter{mcgm};
+        metacg::io::VersionTwoMCGWriter mcgWriter{};
         metacg::io::JsonSink jsonSink;
         mcgWriter.write(jsonSink);
         {
@@ -414,7 +414,7 @@ int main(int argc, char **argv) {
       console->warn(
           "The old annotate mechanism has been removed and this functionality has not been tested with MCGWriter.");
 
-      metacg::io::VersionTwoMCGWriter mcgWriter{mcgm};
+      metacg::io::VersionTwoMCGWriter mcgWriter;
       metacg::io::JsonSink jsonSink;
       mcgWriter.write(jsonSink);
       {
@@ -449,7 +449,7 @@ int main(int argc, char **argv) {
   // Serialize the cg
   {
     metacg::io::JsonSink jsSink;
-    metacg::io::VersionTwoMCGWriter mcgw(mcgm);
+    metacg::io::VersionTwoMCGWriter mcgw;
     mcgw.write(jsSink);
     std::string filename = c.outputFile + "/instrumented-" + c.appName + ".mcg";
     std::ofstream ofile(filename);
