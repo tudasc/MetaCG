@@ -184,7 +184,6 @@ TEST_F(V2MCGReaderTest, OneNodeCGRead) {
   EXPECT_TRUE(cg->getMain()->getOrigin() == "unknownOrigin");
   EXPECT_TRUE(cg->getMain()->getId() ==
               std::hash<std::string>()(cg->getMain()->getFunctionName() + cg->getMain()->getOrigin()));
-  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "main");
   EXPECT_TRUE(cg->getMain()->getHasBody());
   EXPECT_FALSE(cg->getMain()->isVirtual());
   EXPECT_TRUE(cg->getCallees("main").empty());
@@ -239,14 +238,12 @@ TEST_F(V2MCGReaderTest, TwoNodeCGRead) {
   EXPECT_TRUE(cg->getMain()->getOrigin() == "unknownOrigin");
   EXPECT_TRUE(cg->getMain()->getId() ==
               std::hash<std::string>()(cg->getMain()->getFunctionName() + cg->getMain()->getOrigin()));
-  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "main");
   EXPECT_TRUE(cg->getMain()->getHasBody());
   EXPECT_FALSE(cg->getMain()->isVirtual());
   EXPECT_TRUE(cg->getCallees("main").empty());
   EXPECT_TRUE(cg->getCallers("main").empty());
 
   EXPECT_TRUE(cg->hasNode("foo"));
-  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "foo");
   EXPECT_EQ(cg->getNode("foo")->getOrigin(), "unknownOrigin");
   EXPECT_TRUE(cg->getNode("foo")->getId() ==
               std::hash<std::string>()(cg->getNode("foo")->getFunctionName() + cg->getNode("foo")->getOrigin()));
@@ -301,7 +298,6 @@ TEST_F(V2MCGReaderTest, TwoNodeOneEdgeCGRead) {
   EXPECT_TRUE(cg->hasNode("main"));
   EXPECT_TRUE(cg->getMain() != nullptr);
   EXPECT_TRUE(cg->getMain()->getFunctionName() == "main");
-  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "main");
   EXPECT_TRUE(cg->getMain()->getOrigin() == "unknownOrigin");
   EXPECT_TRUE(cg->getMain()->getId() ==
               std::hash<std::string>()(cg->getMain()->getFunctionName() + cg->getMain()->getOrigin()));
@@ -314,7 +310,6 @@ TEST_F(V2MCGReaderTest, TwoNodeOneEdgeCGRead) {
   EXPECT_TRUE(cg->getCallers("main").empty());
 
   EXPECT_TRUE(cg->hasNode("foo"));
-  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "foo");
   EXPECT_TRUE(cg->getNode("foo")->getOrigin() == "unknownOrigin");
   EXPECT_TRUE(cg->getNode("foo")->getId() ==
               std::hash<std::string>()(cg->getNode("foo")->getFunctionName() + cg->getNode("foo")->getOrigin()));
@@ -389,7 +384,6 @@ TEST_F(V2MCGReaderTest, ThreeNodeOneEdgeCGRead) {
   EXPECT_TRUE(cg->getMain()->getOrigin() == "unknownOrigin");
   EXPECT_TRUE(cg->getMain()->getId() ==
               std::hash<std::string>()(cg->getMain()->getFunctionName() + cg->getMain()->getOrigin()));
-  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "main");
   EXPECT_TRUE(cg->getMain()->getHasBody());
   EXPECT_FALSE(cg->getMain()->isVirtual());
   EXPECT_TRUE(cg->getCallees("main").size() == 1);
@@ -399,7 +393,6 @@ TEST_F(V2MCGReaderTest, ThreeNodeOneEdgeCGRead) {
   EXPECT_TRUE(cg->getCallers("main").empty());
 
   EXPECT_TRUE(cg->hasNode("foo"));
-  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "foo");
   EXPECT_TRUE(cg->getNode("foo")->getOrigin() == "unknownOrigin");
   EXPECT_TRUE(cg->getNode("foo")->getId() ==
               std::hash<std::string>()(cg->getNode("foo")->getFunctionName() + cg->getNode("foo")->getOrigin()));
@@ -412,7 +405,6 @@ TEST_F(V2MCGReaderTest, ThreeNodeOneEdgeCGRead) {
   }
 
   EXPECT_TRUE(cg->hasNode("bar"));
-  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "bar");
   EXPECT_TRUE(cg->getNode("bar")->getOrigin() == "unknownOrigin");
   EXPECT_TRUE(cg->getNode("bar")->getId() ==
               std::hash<std::string>()(cg->getNode("bar")->getFunctionName() + cg->getNode("bar")->getOrigin()));
@@ -466,7 +458,6 @@ TEST_F(V2MCGReaderTest, MetadataCGRead) {
   EXPECT_TRUE(cg->getMain()->getOrigin() == "unknownOrigin");
   EXPECT_TRUE(cg->getMain()->getId() ==
               std::hash<std::string>()(cg->getMain()->getFunctionName() + cg->getMain()->getOrigin()));
-  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "main");
   EXPECT_TRUE(cg->getMain()->getHasBody());
   EXPECT_FALSE(cg->getMain()->isVirtual());
   EXPECT_TRUE(cg->getMain()->has<TestMetaData>());
@@ -513,7 +504,6 @@ TEST_F(V2MCGReaderTest, OneNodeWithOriginCGRead) {
   EXPECT_TRUE(cg->getMain()->getOrigin() == "main.cpp");
   EXPECT_TRUE(cg->getMain()->getId() ==
               std::hash<std::string>()(cg->getMain()->getFunctionName() + cg->getMain()->getOrigin()));
-  EXPECT_TRUE(cg->getLastSearchedNode()->getFunctionName() == "main");
   EXPECT_TRUE(cg->getMain()->getHasBody());
   EXPECT_FALSE(cg->getMain()->isVirtual());
   EXPECT_TRUE(cg->getCallees("main").empty());

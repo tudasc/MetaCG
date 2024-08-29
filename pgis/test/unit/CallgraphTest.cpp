@@ -48,7 +48,6 @@ TEST_F(CallgraphTest, ClearEmptiesGraph) {
   c.clear();
   ASSERT_TRUE(c.isEmpty());
   ASSERT_EQ(nullptr, c.getMain());
-  ASSERT_EQ(nullptr, c.getLastSearchedNode());
 }
 
 TEST_F(CallgraphTest, TwoNodeConnectedCG) {
@@ -62,16 +61,6 @@ TEST_F(CallgraphTest, TwoNodeConnectedCG) {
   ASSERT_EQ(main, c.getMain()->getId());
   auto foundMain = c.getMain();
   ASSERT_EQ(child, (*c.getCallees(foundMain).begin())->getId());
-}
-
-TEST_F(CallgraphTest, HasNodeGetLastSearchedTest) {
-  Callgraph c;
-  auto child = std::make_unique<CgNode>("child");
-  c.insert(std::move(child));
-  ASSERT_EQ(nullptr, c.getLastSearchedNode());
-  c.hasNode("child");
-  ASSERT_NE(nullptr, c.getLastSearchedNode());
-  ASSERT_EQ(c.getLastSearchedNode()->getFunctionName(), "child");
 }
 
 TEST_F(CallgraphTest, InsertTwiceTest) {
@@ -88,5 +77,4 @@ TEST_F(CallgraphTest, SearchNodes) {
   ASSERT_EQ(nullptr, c.getMain());
   ASSERT_EQ(false, c.hasNode("main"));
   ASSERT_EQ(false, c.hasNode("nodeee"));
-  ASSERT_EQ(nullptr, c.getLastSearchedNode());
 }

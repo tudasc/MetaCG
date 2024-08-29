@@ -11,13 +11,12 @@ using namespace metacg;
 
 CgNode *Callgraph::getMain() {
   if (mainNode) {
-    lastSearched = mainNode;
     return mainNode;
   } else {
-    if (hasNode("main") || hasNode("_Z4main") || hasNode("_ZSt4mainiPPc")) {
-      mainNode = lastSearched;
+    if ((mainNode = getNode("main")) || (mainNode = getNode("_Z4main")) || (mainNode = getNode("_ZSt4mainiPPc"))) {
+      return mainNode;
     }
-    return mainNode;
+    return nullptr;
   }
 }
 
@@ -70,7 +69,6 @@ void Callgraph::clear() {
   edges.clear();
   callerList.clear();
   calleeList.clear();
-  lastSearched = nullptr;
   mainNode = nullptr;
 }
 
@@ -116,40 +114,39 @@ void Callgraph::addEdge(const CgNode *parent, const CgNode *child) {
   addEdge(parent->getId(), child->getId());
 }
 
-bool Callgraph::hasNode(const std::string &name) {
-  if (auto r = nameIdMap.find(name); r == nameIdMap.end()) {
-    lastSearched = nullptr;
-    return false;
-  } else {
-    lastSearched = nodes.at(r->second).get();
-    return true;
-  }
+bool Callgraph::hasNode(const std::string &name) const {
+  auto r = nameIdMap.find(name);
+  return r != nameIdMap.end();
 }
 
-bool Callgraph::hasNode(const CgNode &n) { return hasNode(n.getId()); }
+bool Callgraph::hasNode(const CgNode &n) const { return hasNode(n.getId()); }
 
-bool Callgraph::hasNode(const CgNode *n) { return hasNode(n->getId()); }
+bool Callgraph::hasNode(const CgNode *n) const { return hasNode(n->getId()); }
 
-bool Callgraph::hasNode(size_t id) {
-  if (auto r = nodes.find(id); r == nodes.end()) {
-    lastSearched = nullptr;
-    return false;
-  } else {
-    lastSearched = r->second.get();
-    return true;
-  }
+bool Callgraph::hasNode(size_t id) const {
+  auto r = nodes.find(id);
+  return r != nodes.end();
 }
-
-CgNode *Callgraph::getLastSearchedNode() const { return lastSearched; }
 
 CgNode *Callgraph::getNode(const std::string &name) const {
-  assert(nameIdMap.find(name) != nameIdMap.end());
-  assert(nodes.find(nameIdMap.at(name)) != nodes.end());
-  return nodes.at(nameIdMap.at(name)).get();
+  if (nameIdMap.find(name) == nameIdMap.end()) {
+    return nullptr;
+  }
+
+  auto nodeId = nameIdMap.at(name);
+
+  if (nodes.find(nodeId) == nodes.end()) {
+    return nullptr;
+  }
+
+  return nodes.at(nodeId).get();
 }
 
 CgNode *Callgraph::getNode(size_t id) const {
-  assert(nodes.find(id) != nodes.end());
+  if (nodes.find(id) == nodes.end()) {
+    return nullptr;
+  }
+
   return nodes.at(id).get();
 }
 
@@ -158,8 +155,8 @@ size_t Callgraph::size() const { return nodes.size(); }
 bool Callgraph::isEmpty() const { return nodes.empty(); }
 
 CgNode *Callgraph::getOrInsertNode(const std::string &name, const std::string &origin) {
-  if (hasNode(name)) {
-    return lastSearched;
+  if (auto node = getNode(name); node != nullptr) {
+    return node;
   } else {
     auto node_id = insert(name, origin);
     assert(nodes.find(node_id) != nodes.end());
