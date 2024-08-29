@@ -34,7 +34,6 @@ class Callgraph {
         nameIdMap(),
         edges(),
         mainNode(nullptr),
-        lastSearched(nullptr),
         empiricalCollisionCounting(util::readBooleanEnvVar("METACG_EMPIRICAL_COLLISION_TRACKING", false)) {}
 
   /**
@@ -88,7 +87,7 @@ class Callgraph {
   CgNode *getOrInsertNode(const std::string &name, const std::string &origin = "unknownOrigin");
 
   /**
-   * Clears the graph to an empty graph with no main node and no lastSearched node.
+   * Clears the graph to an empty graph with no main node.
    */
   void clear();
 
@@ -97,23 +96,17 @@ class Callgraph {
    * @param name
    * @return true iff exists, false otherwise
    */
-  bool hasNode(const std::string &name);
+  bool hasNode(const std::string &name) const;
 
   /**
    * @brief hasNode checks whether a node exists in the graph mapping
    * @param node
    * @return true iff exists, false otherwise
    */
-  bool hasNode(const CgNode &n);
+  bool hasNode(const CgNode &n) const;
 
-  bool hasNode(const CgNode *n);
-  bool hasNode(const size_t n);
-
-  /**
-   * @brief getLastSearchedNode - only call after hasNode returned True
-   * @return node found by #hasNode - nullptr otherwise
-   */
-  CgNode *getLastSearchedNode() const;
+  bool hasNode(const CgNode *n) const;
+  bool hasNode(const size_t n) const;
 
   /**
    * @brief getNode searches the node in the graph and returns it
@@ -227,9 +220,6 @@ class Callgraph {
 
   // Dedicated node pointer to main function
   CgNode *mainNode;
-
-  // Temporary storage for hasNode/getLastSearchedNode combination
-  CgNode *lastSearched;
 
   // Flag to determine if we want to run empirical collision counting
   bool empiricalCollisionCounting;
