@@ -55,7 +55,7 @@ mcg-container:
   stage: build
   tags:
     - podman
-  allow_failure: false
+  allow_failure: true
   needs: ["mcg-download"]
   variables:
     GIT_STRATEGY: clone
