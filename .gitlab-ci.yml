@@ -80,7 +80,7 @@ build-mcg-no-tests:
         -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
         -DEXTRAP_INCLUDE=./extern/install/extrap/include 
         -DEXTRAP_LIB=./extern/install/extrap/lib 
-        -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
         -DMETACG_BUILD_UNIT_TESTS=OFF
     - cmake --build $MCG_BUILD-no-tests --parallel
     - module purge
@@ -97,7 +97,7 @@ build-mcg-stripped-all:
         -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
         -DEXTRAP_INCLUDE=./extern/install/extrap/include 
         -DEXTRAP_LIB=./extern/install/extrap/lib 
-        -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
     - cmake --build $MCG_BUILD-no-all --parallel
     - module purge
 
@@ -114,7 +114,7 @@ build-mcg-stripped-pgis:
       -DEXTRAP_INCLUDE=./extern/install/extrap/include
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_PGIS=ON
-      -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
     - cmake --build $MCG_BUILD-no-cgcollector --parallel
     - module purge
 
@@ -131,7 +131,7 @@ build-mcg-stripped-cgcollector:
       -DEXTRAP_INCLUDE=./extern/install/extrap/include
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_CGCOLLECTOR=ON
-      -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
     - cmake --build $MCG_BUILD-no-pgis --parallel
     - module purge
 
@@ -149,7 +149,7 @@ build-mcg:
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_PGIS=ON
       -DMETACG_BUILD_CGCOLLECTOR=ON
-      -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
     - cmake --build $MCG_BUILD --parallel
     - module purge
 
