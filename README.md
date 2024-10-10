@@ -227,7 +227,6 @@ These options are common for the MetaCG package.
 - Bool `METACG_BUILD_CGCOLLECTOR`: Whether to build call-graph construction tool <default=OFF>
 - Bool `METACG_BUILD_PGIS`: Whether to build demo-analysis tool <default=OFF>
 - Bool `METACG_USE_EXTERNAL_JSON`: Search for installed version of nlohmann-json <default=OFF>
-- Bool `METACG_USE_EXTERNAL_SPDLOG`: Search for installed version of spdlog <default=OFF>
 
 #### PGIS CMake Options
 

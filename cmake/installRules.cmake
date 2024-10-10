@@ -62,6 +62,13 @@ install(
   COMPONENT metacg_Development
 )
 
+# Install config.h
+install(
+  FILES "${PROJECT_BINARY_DIR}/config.h"
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+  COMPONENT metacg_Development
+)
+
 # Install the MetaCG graph library
 install(
   EXPORT metacgTargets

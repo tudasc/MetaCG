@@ -283,13 +283,10 @@ bool Callgraph::hasEdgeMetaData(const std::string &func1, const std::string &fun
 
 void Callgraph::dumpCGStats() const {
   auto console = MCGLogger::instance().getConsole();
-  std::string statStr;
 
   // TODO: Can we use the FMT stuff that comes with spdlog for the to_string here?
   if (empiricalCollisionCounting) {
-    statStr += "Node hash collisions: " + std::to_string(nodeHashCollisionCounter);
+    console->info(" == Callgraph stats == \n");
+    console->info("Node hash collisions: " + std::to_string(nodeHashCollisionCounter));
   }
-
-  console->info(" == Callgraph stats == \n");
-  console->info(statStr);
 }

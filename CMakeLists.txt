@@ -1,6 +1,9 @@
 # This ships with Ubuntu 20.04 and supports C++20
 cmake_minimum_required(VERSION 3.16)
 
+# Choose modern CMake behavior when extracting archives
+cmake_policy(SET CMP0135 NEW)
+
 # Require out-of-source builds (taken from
 # https://hsf-training.github.io/hsf-training-cmake-webpage/07-commonproblems/index.html)
 file(
@@ -101,13 +104,6 @@ endif()
 # If set to on, CMake looks for installed nlohmann::json
 option(
   METACG_USE_EXTERNAL_JSON
-  "On or off"
-  OFF
-)
-
-# if set to on, CMake looks for installed spdlog
-option(
-  METACG_USE_EXTERNAL_SPDLOG
   "On or off"
   OFF
 )
