@@ -52,7 +52,6 @@ option(
   ON
 )
 
-# This also downloads and builds googletest
 include(ToolchainOptions)
 # Making packaging easier
 include(CMakePackageConfigHelpers)
@@ -73,6 +72,9 @@ endif()
 
 # Configure the file that holds version information
 configure_file(Config.h.in config.h)
+
+# Provide googletest library
+include(GoogleTest)
 
 # Component options MetaCG graph library will always be built. The actual graph implementation
 add_subdirectory(graph)

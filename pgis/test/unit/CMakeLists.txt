@@ -11,7 +11,7 @@ add_executable(
   PIRAPGISMetadataTest.cpp
 )
 
-target_link_libraries(pgistests PUBLIC gtest_main)
+add_googletest_libraries(pgistests)
 add_pgis(pgistests)
 add_metacg(pgistests)
 add_json(pgistests)
