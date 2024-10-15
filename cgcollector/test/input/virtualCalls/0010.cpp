@@ -15,9 +15,9 @@ class MyClassDerive : public MyClass {
 void MyClassDerive::foo() {}
 int MyClassDerive::bar() { return 1; }
 
-void callsBar(MyClassDerive &mcd) { mcd.bar(); }
+void callsBar(MyClassDerive& mcd) { mcd.bar(); }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   MyClass mc;
   MyClassDerive mcd;
   mc.foo();

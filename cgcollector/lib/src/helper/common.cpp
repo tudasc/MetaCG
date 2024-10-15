@@ -6,11 +6,11 @@
 
 #include <iostream>
 
-std::vector<std::string> mangleCtorDtor(const clang::FunctionDecl *const nd, clang::MangleContext *mc) {
+std::vector<std::string> mangleCtorDtor(const clang::FunctionDecl* const nd, clang::MangleContext* mc) {
   if (llvm::isa<clang::CXXConstructorDecl>(nd) || llvm::isa<clang::CXXDestructorDecl>(nd)) {
     std::vector<std::string> manglings;
 
-    const auto mangleCXXCtorAs = [&](clang::CXXCtorType type, const clang::CXXConstructorDecl *nd) {
+    const auto mangleCXXCtorAs = [&](clang::CXXCtorType type, const clang::CXXConstructorDecl* nd) {
       std::string functionName;
       llvm::raw_string_ostream out(functionName);
 #if LLVM_VERSION_MAJOR == 10
@@ -22,7 +22,7 @@ std::vector<std::string> mangleCtorDtor(const clang::FunctionDecl *const nd, cla
       return out.str();
     };
 
-    const auto mangleCXXDtorAs = [&](clang::CXXDtorType type, const clang::CXXDestructorDecl *nd) {
+    const auto mangleCXXDtorAs = [&](clang::CXXDtorType type, const clang::CXXDestructorDecl* nd) {
       std::string functionName;
       llvm::raw_string_ostream out(functionName);
 #if LLVM_VERSION_MAJOR == 10
@@ -54,7 +54,7 @@ std::vector<std::string> mangleCtorDtor(const clang::FunctionDecl *const nd, cla
   return {};
 }
 
-std::vector<std::string> getMangledName(clang::NamedDecl const *const nd) {
+std::vector<std::string> getMangledName(clang::NamedDecl const* const nd) {
   if (!nd) {
     std::cerr << "NamedDecl was nullptr" << std::endl;
     assert(nd && "NamedDecl and MangleContext must not be nullptr");
@@ -69,32 +69,33 @@ std::vector<std::string> getMangledName(clang::NamedDecl const *const nd) {
   return {NG.getName(nd)};
 }
 
-clang::Stmt *getCalledStmtFromCXXMemberCall(clang::CXXMemberCallExpr *MCE) {
-  clang::Expr *Callee = MCE->getCallee()->IgnoreParens();
-  if (auto *MemExpr = llvm::dyn_cast<clang::MemberExpr>(Callee)) {
+clang::Stmt* getCalledStmtFromCXXMemberCall(clang::CXXMemberCallExpr* MCE) {
+  clang::Expr* Callee = MCE->getCallee()->IgnoreParens();
+  if (auto* MemExpr = llvm::dyn_cast<clang::MemberExpr>(Callee)) {
     return MemExpr;
   }
-  if (auto *BO = llvm::dyn_cast<clang::BinaryOperator>(Callee)) {
+  if (auto* BO = llvm::dyn_cast<clang::BinaryOperator>(Callee)) {
     if (BO->getOpcode() == clang::BO_PtrMemD || BO->getOpcode() == clang::BO_PtrMemI) {
       return BO->getRHS();
     }
   }
   return nullptr;
 }
-clang::FunctionDecl *getCalledFunctionFromCXXOperatorCallExpr(clang::CXXOperatorCallExpr *OCE) {
+clang::FunctionDecl* getCalledFunctionFromCXXOperatorCallExpr(clang::CXXOperatorCallExpr* OCE) {
   auto Called = OCE->getCallee()->IgnoreParenCasts();
-  if (auto *DeclRefExpr = llvm::dyn_cast<clang::DeclRefExpr>(Called)) {
-    if (auto *FunctionDecl = llvm::dyn_cast<clang::FunctionDecl>(DeclRefExpr->getDecl())) {
+  if (auto* DeclRefExpr = llvm::dyn_cast<clang::DeclRefExpr>(Called)) {
+    if (auto* FunctionDecl = llvm::dyn_cast<clang::FunctionDecl>(DeclRefExpr->getDecl())) {
       return FunctionDecl;
     }
   }
   return nullptr;
 }
-std::pair<clang::Stmt *, bool> getImplicitObjectFromCXXMemberCall(clang::CXXMemberCallExpr *MCE) {
-  clang::Expr *Callee = MCE->getCallee()->IgnoreParens();
-  if (const auto *MemExpr = llvm::dyn_cast<clang::MemberExpr>(Callee))
+std::pair<clang::Stmt*, bool> getImplicitObjectFromCXXMemberCall(clang::CXXMemberCallExpr* MCE) {
+  clang::Expr* Callee = MCE->getCallee()->IgnoreParens();
+  if (const auto* MemExpr = llvm::dyn_cast<clang::MemberExpr>(Callee)) {
     return {MemExpr->getBase(), MemExpr->isArrow()};
-  if (const auto *BO = llvm::dyn_cast<clang::BinaryOperator>(Callee)) {
+  }
+  if (const auto* BO = llvm::dyn_cast<clang::BinaryOperator>(Callee)) {
     if (BO->getOpcode() == clang::BO_PtrMemD) {
       return {BO->getLHS(), false};
     } else if (BO->getOpcode() == clang::BO_PtrMemI) {

@@ -22,15 +22,15 @@ namespace LoadImbalance {
  */
 class LIEstimatorPhase : public EstimatorPhase {
  public:
-  explicit LIEstimatorPhase(std::unique_ptr<LIConfig> &&config, metacg::Callgraph *cg);
+  explicit LIEstimatorPhase(std::unique_ptr<LIConfig>&& config, metacg::Callgraph* cg);
   ~LIEstimatorPhase() override;
 
-  void modifyGraph(metacg::CgNode *mainMethod) override;
+  void modifyGraph(metacg::CgNode* mainMethod) override;
 
   void doPrerequisites() override { CgHelper::calculateInclusiveStatementCounts(graph->getMain(), graph); }
 
  private:
-  AbstractMetric *metric;
+  AbstractMetric* metric;
 
   /**
    * LIConfig used for this run of load imbalance detection
@@ -42,28 +42,28 @@ class LIEstimatorPhase : public EstimatorPhase {
   /**
    * Instrument all children which have not been marked as irrelevant
    */
-  void instrumentRelevantChildren(metacg::CgNode *node, pira::Statements statementThreshold,
-                                  std::ostringstream &debugString);
+  void instrumentRelevantChildren(metacg::CgNode* node, pira::Statements statementThreshold,
+                                  std::ostringstream& debugString);
 
-  void contextHandling(metacg::CgNode *n, metacg::CgNode *mainNode, metacg::analysis::ReachabilityAnalysis &ra);
+  void contextHandling(metacg::CgNode* n, metacg::CgNode* mainNode, metacg::analysis::ReachabilityAnalysis& ra);
 
   /**
    * check whether there is a path from start to end with steps as maximum length
    */
-  bool reachableInNSteps(metacg::CgNode *start, metacg::CgNode *end, int steps);
+  bool reachableInNSteps(metacg::CgNode* start, metacg::CgNode* end, int steps);
 
-  void findSyncPoints(metacg::CgNode *node);
+  void findSyncPoints(metacg::CgNode* node);
 
   /**
    * mark a node for instrumentation
    */
-  static void instrument(metacg::CgNode *node);
+  static void instrument(metacg::CgNode* node);
 
   /**
    * Instrument all descendants of start node if they correspond the a pattern
    */
-  void instrumentByPattern(metacg::CgNode *startNode, std::function<bool(metacg::CgNode *)> pattern,
-                           std::ostringstream &debugString);
+  void instrumentByPattern(metacg::CgNode* startNode, const std::function<bool(metacg::CgNode*)>& pattern,
+                           std::ostringstream& debugString);
 };
 }  // namespace LoadImbalance
 

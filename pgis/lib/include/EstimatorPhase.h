@@ -11,10 +11,12 @@
 #include "CgHelper.h"
 #include "CgNode.h"
 
+#include <filesystem>
 #include <map>
 #include <queue>
-#include <set>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 /**
  * Helper struct that creates a temporary IC from the CG
@@ -25,9 +27,9 @@
 struct InstrumentationConfiguration {
   std::string phaseName;
   std::unordered_set<std::string> instrumentedNames;
-  std::unordered_set<metacg::CgNode *> instrumentedNodes;
-  std::unordered_map<std::string, metacg::CgNode *> instrumentedPaths;
-  std::unordered_map<metacg::CgNode *, metacg::CgNode *> instrumentedEdges;
+  std::unordered_set<metacg::CgNode*> instrumentedNodes;
+  std::unordered_map<std::string, metacg::CgNode*> instrumentedPaths;
+  std::unordered_map<metacg::CgNode*, metacg::CgNode*> instrumentedEdges;
 };
 
 /**
@@ -39,16 +41,15 @@ struct InstrumentationConfiguration {
  */
 class EstimatorPhase {
  public:
-  explicit EstimatorPhase(std::string name, metacg::Callgraph *callgraph);
+  explicit EstimatorPhase(std::string name, metacg::Callgraph* callgraph);
   virtual ~EstimatorPhase() = default;
 
   virtual void doPrerequisites() {}
-  virtual void modifyGraph(metacg::CgNode *mainMethod) = 0;
+  virtual void modifyGraph(metacg::CgNode* mainMethod) = 0;
 
   void generateIC();
 
-  [[deprecated]] void setGraph(metacg::Callgraph *graph);
-  void injectConfig(Config *config) { this->config = config; }
+  void injectConfig(Config* config) { this->config = config; }
 
   InstrumentationConfiguration getIC();
   virtual void printReport();
@@ -58,47 +59,20 @@ class EstimatorPhase {
   std::string getName() { return name; }
 
  protected:
-  metacg::Callgraph *graph;
+  metacg::Callgraph* graph;
 
   InstrumentationConfiguration IC;
   std::string name;
 
-  Config *config;
+  Config* config;
   bool noReportRequired;
 };
 
 class NopEstimatorPhase : public EstimatorPhase {
  public:
-  NopEstimatorPhase(metacg::Callgraph* cg) : EstimatorPhase("NopEstimator", cg), didRun(false) {}
-  void modifyGraph(metacg::CgNode *mainMethod) final { didRun = true; }
+  explicit NopEstimatorPhase(metacg::Callgraph* cg) : EstimatorPhase("NopEstimator", cg), didRun(false) {}
+  void modifyGraph(metacg::CgNode* mainMethod) final { didRun = true; }
   bool didRun;
-};
-
-/**
- * Remove nodes from the graph that are not connected to the main() method.
- *
- * TODO: I guess this can be removed by now...?
- */
-class RemoveUnrelatedNodesEstimatorPhase : public EstimatorPhase {
- public:
-  explicit RemoveUnrelatedNodesEstimatorPhase(metacg::Callgraph *cg, bool onlyRemoveUnrelatedNodes = true,
-                                              bool aggressiveReduction = false);
-  ~RemoveUnrelatedNodesEstimatorPhase() override;
-
-  void modifyGraph(metacg::CgNode *mainMethod) override;
-
- private:
-  void checkLeafNodeForRemoval(metacg::CgNode *node);
-
-  int numUnconnectedRemoved;
-  int numLeafsRemoved;
-  int numChainsRemoved;
-  int numAdvancedOptimizations;
-
-  bool aggressiveReduction;
-  bool onlyRemoveUnrelatedNodes;
-
-  CgNodeRawPtrUSet nodesToRemove;
 };
 
 /**
@@ -106,13 +80,17 @@ class RemoveUnrelatedNodesEstimatorPhase : public EstimatorPhase {
  */
 class WLInstrEstimatorPhase : public EstimatorPhase {
  public:
-  explicit WLInstrEstimatorPhase(const std::string &wlFilePath);
+  explicit WLInstrEstimatorPhase(const std::filesystem::path& wlFilePath);
   ~WLInstrEstimatorPhase() override = default;
 
-  void modifyGraph(metacg::CgNode *mainMethod) override;
+  void modifyGraph(metacg::CgNode* mainMethod) override;
 
  private:
-  std::set<size_t> whiteList;
+  void init();
+
+  bool isInitialized;
+  std::filesystem::path wlFilePath;
+  std::unordered_set<size_t> whiteList;
 };
 
 #endif

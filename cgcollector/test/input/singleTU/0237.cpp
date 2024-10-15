@@ -5,14 +5,14 @@ using FType = decltype(foo);
 
 class B {
  public:
-  B(FType *arg) { f1 = arg; };
-  FType *f1;
+  B(FType* arg) { f1 = arg; };
+  FType* f1;
 };
 
 class C : B {
  public:
-  C(FType *arg1, FType *arg2) : B(arg1), f2(arg2) {}
-  FType *f2;
+  C(FType* arg1, FType* arg2) : B(arg1), f2(arg2) {}
+  FType* f2;
   void work() {
     f1();
     f2();

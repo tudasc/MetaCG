@@ -14,12 +14,12 @@
  */
 class AggregatedFunction : public EXTRAP::Function {
  public:
-  explicit AggregatedFunction(std::vector<EXTRAP::Model *> submodels) : submodels(std::move(submodels)) {}
+  explicit AggregatedFunction(std::vector<EXTRAP::Model*> submodels) : submodels(std::move(submodels)) {}
 
  protected:
-  std::vector<EXTRAP::Model *> submodels;
-  std::string buildString(const EXTRAP::ParameterList &parameterNames, std::string &&prefix, std::string &&seperator,
-                          std::string &&postfix) const {
+  std::vector<EXTRAP::Model*> submodels;
+  std::string buildString(const EXTRAP::ParameterList& parameterNames, std::string&& prefix, std::string&& seperator,
+                          std::string&& postfix) const {
     std::stringstream ss;
     ss << prefix;
     for (size_t i = 0; i < submodels.size(); i++) {
@@ -32,7 +32,7 @@ class AggregatedFunction : public EXTRAP::Function {
     return ss.str();
   }
 
-  EXTRAP::Value sum(const EXTRAP::ParameterValueList &parameterValues) const {
+  EXTRAP::Value sum(const EXTRAP::ParameterValueList& parameterValues) const {
     EXTRAP::Value sum = 0.0;
     for (auto model : submodels) {
       EXTRAP::Value v = model->getModelFunction()->evaluate(parameterValues);
@@ -42,7 +42,7 @@ class AggregatedFunction : public EXTRAP::Function {
     return sum;
   }
 
-  EXTRAP::Value max(const EXTRAP::ParameterValueList &parameterValues) const {
+  EXTRAP::Value max(const EXTRAP::ParameterValueList& parameterValues) const {
     EXTRAP::Value max = 0.0;
     for (auto model : submodels) {
       EXTRAP::Value local = model->getModelFunction()->evaluate(parameterValues);
@@ -60,13 +60,13 @@ class AggregatedFunction : public EXTRAP::Function {
  */
 class FirstModelFunction : public AggregatedFunction {
  public:
-  FirstModelFunction(std::vector<EXTRAP::Model *> submodels) : AggregatedFunction(submodels) {}
+  FirstModelFunction(std::vector<EXTRAP::Model*> submodels) : AggregatedFunction(submodels) {}
 
-  EXTRAP::Value evaluate(const EXTRAP::ParameterValueList &parameterValues) const override {
+  EXTRAP::Value evaluate(const EXTRAP::ParameterValueList& parameterValues) const override {
     return submodels.front()->getModelFunction()->evaluate(parameterValues);
   }
 
-  std::string getAsString(const EXTRAP::ParameterList &parameterNames) const override {
+  std::string getAsString(const EXTRAP::ParameterList& parameterNames) const override {
     return submodels.front()->getModelFunction()->getAsString(parameterNames);
   }
 };
@@ -76,13 +76,13 @@ class FirstModelFunction : public AggregatedFunction {
  */
 class SumFunction : public AggregatedFunction {
  public:
-  SumFunction(std::vector<EXTRAP::Model *> submodels) : AggregatedFunction(submodels) {}
+  SumFunction(std::vector<EXTRAP::Model*> submodels) : AggregatedFunction(submodels) {}
 
-  EXTRAP::Value evaluate(const EXTRAP::ParameterValueList &parameterValues) const override {
+  EXTRAP::Value evaluate(const EXTRAP::ParameterValueList& parameterValues) const override {
     return sum(parameterValues);
   }
 
-  std::string getAsString(const EXTRAP::ParameterList &parameterNames) const override {
+  std::string getAsString(const EXTRAP::ParameterList& parameterNames) const override {
     return buildString(parameterNames, "", " + ", "");
   }
 };
@@ -92,13 +92,13 @@ class SumFunction : public AggregatedFunction {
  */
 class AvgFunction : public AggregatedFunction {
  public:
-  AvgFunction(std::vector<EXTRAP::Model *> submodels) : AggregatedFunction(submodels) {}
+  AvgFunction(std::vector<EXTRAP::Model*> submodels) : AggregatedFunction(submodels) {}
 
-  EXTRAP::Value evaluate(const EXTRAP::ParameterValueList &parameterValues) const override {
+  EXTRAP::Value evaluate(const EXTRAP::ParameterValueList& parameterValues) const override {
     return sum(parameterValues) / (double)submodels.size();
   }
 
-  std::string getAsString(const EXTRAP::ParameterList &parameterNames) const override {
+  std::string getAsString(const EXTRAP::ParameterList& parameterNames) const override {
     return buildString(parameterNames, "AVG(", ", ", ")");
   }
 };
@@ -108,13 +108,13 @@ class AvgFunction : public AggregatedFunction {
  */
 class MaxFunction : public AggregatedFunction {
  public:
-  MaxFunction(std::vector<EXTRAP::Model *> submodels) : AggregatedFunction(submodels) {}
+  MaxFunction(std::vector<EXTRAP::Model*> submodels) : AggregatedFunction(submodels) {}
 
-  EXTRAP::Value evaluate(const EXTRAP::ParameterValueList &parameterValues) const override {
+  EXTRAP::Value evaluate(const EXTRAP::ParameterValueList& parameterValues) const override {
     return max(parameterValues);
   }
 
-  std::string getAsString(const EXTRAP::ParameterList &parameterNames) const override {
+  std::string getAsString(const EXTRAP::ParameterList& parameterNames) const override {
     return buildString(parameterNames, "MAX(", ", ", ")");
   }
 };

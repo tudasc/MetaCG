@@ -35,18 +35,19 @@ class PiraMCGProcessor {
    * Get the current call graph instance
    * @return
    */
-  static PiraMCGProcessor &get() {
+  static PiraMCGProcessor& get() {
     static PiraMCGProcessor instance;
     return instance;
   }
 
-  void setConfig(Config *cfg) { configPtr = cfg; }
+  // TODO: Implement init/deinit paradigm.
+  void setConfig(Config* cfg) { configPtr = cfg; }
 
   void setExtrapConfig(extrapconnection::ExtrapConfig epCfg) {
     epModelProvider = extrapconnection::ExtrapModelProvider(epCfg);
   }
 
-  extrapconnection::ExtrapModelProvider &getModelProvider() { return epModelProvider; }
+  extrapconnection::ExtrapModelProvider& getModelProvider() { return epModelProvider; }
 
   void printMainRuntime() {
     const auto mainNode = graph->getMain();
@@ -56,18 +57,18 @@ class PiraMCGProcessor {
 
  private:
   PiraMCGProcessor() : graph(&getEmptyGraph()), configPtr(nullptr), epModelProvider({}){};
-  explicit PiraMCGProcessor(Config *config, extrapconnection::ExtrapConfig epCfg = {});
+  explicit PiraMCGProcessor(Config* config, extrapconnection::ExtrapConfig epCfg = {});
 
-  PiraMCGProcessor(const PiraMCGProcessor &other) = default;
-  PiraMCGProcessor(PiraMCGProcessor &&other) = default;
+  PiraMCGProcessor(const PiraMCGProcessor& other) = default;
+  PiraMCGProcessor(PiraMCGProcessor&& other) = default;
 
-  PiraMCGProcessor &operator=(const PiraMCGProcessor &other) = delete;
-  PiraMCGProcessor &operator=(PiraMCGProcessor &&other) = delete;
+  PiraMCGProcessor& operator=(const PiraMCGProcessor& other) = delete;
+  PiraMCGProcessor& operator=(PiraMCGProcessor&& other) = delete;
 
  public:
   ~PiraMCGProcessor() = default;
 
-  void registerEstimatorPhase(EstimatorPhase *phase, bool noReport = false);
+  void registerEstimatorPhase(EstimatorPhase* phase, bool noReport = false);
   void removeAllEstimatorPhases() {
     while (!phases.empty()) {
       phases.pop();
@@ -88,21 +89,21 @@ class PiraMCGProcessor {
   size_t size() { return graph->size(); }
 
   int getNumProcs();
-  bool readWhitelist(std::vector<std::string> &whiteNodes);
-  bool isNodeListed(std::vector<std::string> whiteNodes, std::string node);
-  Callgraph *getCallgraph(PiraMCGProcessor *cg = nullptr);
+  bool readWhitelist(std::vector<std::string>& whiteNodes);
+  bool isNodeListed(const std::vector<std::string>& whiteNodes, const std::string& node);
+  Callgraph* getCallgraph(PiraMCGProcessor* cg = nullptr);
   void setNoOutput() { noOutputRequired = true; }
   void setOutputDotBetweenPhases(bool val = true) { outputDotBetweenPhases = val; }
   bool getOutputDotBetweenPhases() { return outputDotBetweenPhases; }
 
   void attachExtrapModels();
 
-  void setCG(Callgraph *newGraph) { graph = newGraph; }
+  void setCG(Callgraph* newGraph) { graph = newGraph; }
 
  private:
   // this set represents the call graph during the actual computation
-  Callgraph *graph = nullptr;
-  Config *configPtr;
+  Callgraph* graph = nullptr;
+  Config* configPtr;
   bool noOutputRequired{false};
   bool outputDotBetweenPhases{false};
 
@@ -110,10 +111,10 @@ class PiraMCGProcessor {
   extrapconnection::ExtrapModelProvider epModelProvider;
 
   // estimator phases run in a defined order
-  std::queue<EstimatorPhase *> phases;
+  std::queue<EstimatorPhase*> phases;
   std::vector<std::shared_ptr<EstimatorPhase>> donePhases;
 
-  void finalizeGraph(bool finalizeGraph = false);
+  void finalizeGraph();
 
   void dumpInstrumentedNames(InstrumentationConfiguration IC);
 };

@@ -9,7 +9,7 @@
 
 #include "nlohmann/json.hpp"
 
-namespace pgis::config {
+namespace metacg::pgis::config {
 /**
  * Strategies to aggregate multiple models for a single function into one
  */
@@ -40,6 +40,6 @@ NLOHMANN_JSON_SERIALIZE_ENUM(ModelAggregationStrategy, {
                                                            {ModelAggregationStrategy::Average, "Average"},
                                                            {ModelAggregationStrategy::Maximum, "Maximum"},
                                                        })
-}  // namespace pgis::config
+}  // namespace metacg::pgis::config
 
 #endif  // PGIS_PIRAIICONFIG_H

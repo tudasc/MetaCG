@@ -6,7 +6,7 @@ int middle() { return lastChild(); }
 
 int middle2() { return lastChild(); }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   middle();
   return 0;
 }

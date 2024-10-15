@@ -18,9 +18,9 @@ stages:
     matrix:
       - GCC: 10
         #LLVM: [10.0.1, 11.1.0, 12.0.1, 13.0.0, 14.0.0]
-        LLVM: [10.0.1, 14.0.0]
+        LLVM: [10.0.1, 14.0.6]
       - GCC: 11
-        LLVM: [13.0.0, 14.0.0]
+        LLVM: [13.0.1, 14.0.6]
   variables:
     MCG_BUILD: build-GCC-$GCC-LLVM-$LLVM
 
@@ -38,6 +38,7 @@ mcg-download:
 # Stage: lint
 mcg-cmake-lint:
   stage: lint
+  needs: ["mcg-download"]
   script:
     - for f in $(find . -name "CMakeLists.txt"); do cmake-format --check $f || exit 1; done
     - for f in $(find ./cmake -type f); do cmake-format --check $f || exit 1; done
@@ -46,29 +47,31 @@ mcg-cmake-lint:
 # Stage: build-deps
 build-dependencies:
   stage: build-deps
+  needs: ["mcg-download"]
   script:
     - ./build_submodules.sh
 
-      # mcg-container:
-      #   stage: build
-      #   tags:
-      #     - podman
-      #   allow_failure: true
-      #   variables:
-      #     GIT_STRATEGY: clone
-      #     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
-      #   script:
-      #     - podman login ${CI_REGISTRY} -u ${CI_CONTAINER_REG_USER} -p ${CONTAINER_REGISTRY_READ_TOKEN}
-      #     - podman build -t registry.git.rwth-aachen.de/tuda-sc/projects/metacg/metacg:$CI_COMMIT_SHA -f container/metacg .
-      #     - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/pgis/test/unit/pgistests
-      #     - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/graph/test/unit/libtests
-      #     - podman image rm metacg:$CI_COMMIT_SHA
-      # 
+mcg-container:
+  stage: build
+  tags:
+    - podman
+  allow_failure: true
+  needs: ["mcg-download"]
+  variables:
+    GIT_STRATEGY: clone
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+  script:
+    - podman login ${CI_REGISTRY} -u ${CI_CONTAINER_REG_USER} -p ${CONTAINER_REGISTRY_READ_TOKEN}
+    - podman build -t metacg:$CI_COMMIT_SHA -f container/metacg .
+    - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/pgis/test/unit/pgistests
+    - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/graph/test/unit/libtests
+
 
 # Stage: build
 build-mcg-no-tests:
   <<: *job-setup
   stage: build
+  needs: ["build-dependencies"]
   script:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-tests -G Ninja -DCMAKE_BUILD_TYPE=Debug 
@@ -77,7 +80,7 @@ build-mcg-no-tests:
         -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
         -DEXTRAP_INCLUDE=./extern/install/extrap/include 
         -DEXTRAP_LIB=./extern/install/extrap/lib 
-        -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
         -DMETACG_BUILD_UNIT_TESTS=OFF
     - cmake --build $MCG_BUILD-no-tests --parallel
     - module purge
@@ -85,6 +88,7 @@ build-mcg-no-tests:
 build-mcg-stripped-all:
   <<: *job-setup
   stage: build
+  needs: ["build-dependencies"]
   script:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-all -G Ninja -DCMAKE_BUILD_TYPE=Debug 
@@ -93,13 +97,14 @@ build-mcg-stripped-all:
         -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
         -DEXTRAP_INCLUDE=./extern/install/extrap/include 
         -DEXTRAP_LIB=./extern/install/extrap/lib 
-        -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
     - cmake --build $MCG_BUILD-no-all --parallel
     - module purge
 
 build-mcg-stripped-pgis:
   <<: *job-setup
   stage: build
+  needs: ["build-dependencies"]
   script:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-cgcollector -G Ninja -DCMAKE_BUILD_TYPE=Debug
@@ -109,13 +114,14 @@ build-mcg-stripped-pgis:
       -DEXTRAP_INCLUDE=./extern/install/extrap/include
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_PGIS=ON
-      -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
     - cmake --build $MCG_BUILD-no-cgcollector --parallel
     - module purge
 
 build-mcg-stripped-cgcollector:
   <<: *job-setup
   stage: build
+  needs: ["build-dependencies"]
   script:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-pgis -G Ninja -DCMAKE_BUILD_TYPE=Debug
@@ -125,13 +131,14 @@ build-mcg-stripped-cgcollector:
       -DEXTRAP_INCLUDE=./extern/install/extrap/include
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_CGCOLLECTOR=ON
-      -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
     - cmake --build $MCG_BUILD-no-pgis --parallel
     - module purge
 
 build-mcg:
   <<: *job-setup
   stage: build
+  needs: ["build-dependencies"]
   script:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD -G Ninja -DCMAKE_BUILD_TYPE=Debug
@@ -142,7 +149,7 @@ build-mcg:
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_PGIS=ON
       -DMETACG_BUILD_CGCOLLECTOR=ON
-      -DSPDLOG_BUILD_SHARED=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
     - cmake --build $MCG_BUILD --parallel
     - module purge
 
@@ -151,6 +158,7 @@ build-mcg:
 test-cgc:
   <<: *job-setup
   stage: test
+  needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
     - cd cgcollector/test
@@ -162,6 +170,7 @@ test-cgc:
 test-graphlib:
   <<: *job-setup
   stage: test
+  needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
     - cd $MCG_BUILD/graph/test/unit && ./libtests --gtest_output=xml:gcc-$GCC-llvm-$LLVM.xml
@@ -176,6 +185,7 @@ test-graphlib:
 test-pgis:
   <<: *job-setup
   stage: test
+  needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
     - cd $MCG_BUILD/pgis/test/unit && ./pgistests --gtest_output=xml:gcc-$GCC-llvm-$LLVM.xml
@@ -192,6 +202,7 @@ test-pgis:
 test-cgvalidate:
   <<: *job-setup
   stage: integration-test
+  needs: ["build-mcg"]
   script:
     - cd cgcollector/test/integration
     - ./runner.sh $MCG_BUILD
@@ -199,6 +210,7 @@ test-cgvalidate:
 test-basic-pgis:
   <<: *job-setup
   stage: integration-test
+  needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
     - cd pgis
@@ -209,6 +221,7 @@ test-basic-pgis:
 test-static-pgis:
   <<: *job-setup
   stage: integration-test
+  needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
     - cd pgis
@@ -219,6 +232,7 @@ test-static-pgis:
 test-modeling-pgis:
   <<: *job-setup
   stage: integration-test
+  needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
     - cd pgis
@@ -229,6 +243,7 @@ test-modeling-pgis:
 test-dynamic-pgis:
   <<: *job-setup
   stage: integration-test
+  needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
     - cd pgis
@@ -239,6 +254,7 @@ test-dynamic-pgis:
 test-imbalance-pgis:
   <<: *job-setup
   stage: integration-test
+  needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
     - cd pgis
@@ -249,6 +265,7 @@ test-imbalance-pgis:
 test-target-collector:
   <<: *job-setup
   stage: integration-test
+  needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
     - cd graph/test/integration/TargetCollector
@@ -258,6 +275,7 @@ test-target-collector:
 install-mcg:
   <<: *job-setup
   stage: install
+  needs: ["build-mcg"]
   script:
     - cmake --install $MCG_BUILD-no-all
     - cd graph/test/install
@@ -269,6 +287,7 @@ install-mcg:
 install-pgis:
   <<: *job-setup
   stage: install
+  needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
     - export LD_LIBRARY_PATH=$PWD/extern/install/extrap/lib:$LD_LIBRARY_PATH
@@ -281,6 +300,7 @@ install-pgis:
 install-cgcollector:
   <<: *job-setup
   stage: install
+  needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
     - export LD_LIBRARY_PATH=$PWD/extern/install/extrap/lib:$LD_LIBRARY_PATH

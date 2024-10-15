@@ -6,7 +6,7 @@ struct A {
 };
 
 void foo() {}
-func_t get_f(const A &a) { return a.f; }
+func_t get_f(const A& a) { return a.f; }
 
 int main() {
   A a;

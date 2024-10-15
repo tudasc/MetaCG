@@ -3,21 +3,21 @@
 
 struct _chunk {};
 struct obstack {
-  struct _chunk *chunk;
-  struct _chunk *(*chunkfun)();
+  struct _chunk* chunk;
+  struct _chunk* (*chunkfun)();
   void (*freefun)();
 };
-void set_fun(struct obstack *h, void *f, void *free) {
+void set_fun(struct obstack* h, void* f, void* free) {
   h->chunkfun = (struct _chunk * (*)()) f;
   h->freefun = (void (*)())free;
 }
 
 extern void xfree();
-extern struct _chunk *xmalloc();
+extern struct _chunk* xmalloc();
 
 int main() {
   struct obstack h;
-  set_fun(&h, (void *)&xmalloc, (void *)&xfree);
+  set_fun(&h, (void*)&xmalloc, (void*)&xfree);
   h.chunkfun();
   h.freefun();
 }

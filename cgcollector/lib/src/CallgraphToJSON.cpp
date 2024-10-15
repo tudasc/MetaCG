@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j, const int version) {
+void convertCallGraphToJSON(const CallGraph& cg, nlohmann::json& j, const int version) {
   // Attach meta information
   if (version == 2) {
     attachFormatTwoHeader(j);
@@ -18,7 +18,7 @@ void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j, const int ve
 
       // We can get multiple mangled names, as Ctor/Dtor can encode dofferent things
       auto mNames = getMangledName(f_decl);
-      for (auto &it : *(it->getSecond())) {
+      for (auto& it : *(it->getSecond())) {
         if (auto calleeDecl = llvm::dyn_cast<clang::FunctionDecl>(it->getDecl())) {
           auto calleeNames = getMangledName(calleeDecl);
           //          for (const auto &n : calleeNames) {
@@ -56,10 +56,10 @@ void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j, const int ve
         }
       }
 
-      bool hasBody = f_decl->hasBody();
+      const bool hasBody = f_decl->hasBody();
 
       // TODO names of fields
-      for (const auto &n : mNames) {
+      for (const auto& n : mNames) {
         insertNode(j, n, callees, callers, overriddenBy, overriddenFunctions, isVirtual, doesOverride, hasBody,
                    version);
       }
@@ -67,11 +67,11 @@ void convertCallGraphToJSON(const CallGraph &cg, nlohmann::json &j, const int ve
   }
 }
 
-void addMetaInformationToJSON(nlohmann::json &j, const std::string &metaInformationName,
-                              const std::map<std::string, std::unique_ptr<MetaInformation>> &meta,
+void addMetaInformationToJSON(nlohmann::json& j, const std::string& metaInformationName,
+                              const std::map<std::string, std::unique_ptr<MetaInformation>>& meta,
                               int mcgFormatVersion) {
-  for (auto &m : meta) {
-    auto &functionJSON = (mcgFormatVersion == 1) ? j[m.first] : j["_CG"][m.first];
+  for (auto& m : meta) {
+    auto& functionJSON = (mcgFormatVersion == 1) ? j[m.first] : j["_CG"][m.first];
     if (functionJSON.is_null()) {
       std::cerr << "[Warning] No JSON entry for function " << m.first << std::endl;
     }

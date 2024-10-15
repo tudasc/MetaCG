@@ -2,76 +2,41 @@
 // Created by jp on 12.07.22.
 //
 
+#include "ErrorCodes.h"
 #include "EstimatorPhase.h"
 #include "MetaData/PGISMetaData.h"
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 
-//// REMOVE UNRELATED NODES ESTIMATOR PHASE
-
-RemoveUnrelatedNodesEstimatorPhase::RemoveUnrelatedNodesEstimatorPhase(metacg::Callgraph *cg,
-                                                                       bool onlyRemoveUnrelatedNodes,
-                                                                       bool aggressiveReduction)
-    : EstimatorPhase("RemoveUnrelated", cg),
-      numUnconnectedRemoved(0),
-      numLeafsRemoved(0),
-      numChainsRemoved(0),
-      numAdvancedOptimizations(0),
-      aggressiveReduction(aggressiveReduction),
-      onlyRemoveUnrelatedNodes(onlyRemoveUnrelatedNodes) {}
-
-RemoveUnrelatedNodesEstimatorPhase::~RemoveUnrelatedNodesEstimatorPhase() { nodesToRemove.clear(); }
-
-void RemoveUnrelatedNodesEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
-  /* remove unrelated nodes (not reachable from main) */
-  CgNodeRawPtrUSet nodesReachableFromMain = CgHelper::getDescendants(mainMethod, graph);
-
-  for (auto node : nodesReachableFromMain) {
-    if (graph->hasNode(node)) {
-      //      node->setReachable();
-    }
-  }
-}
-
-void RemoveUnrelatedNodesEstimatorPhase::checkLeafNodeForRemoval(metacg::CgNode *potentialLeaf) {
-  if (CgHelper::isConjunction(potentialLeaf, graph)) {
-    return;  // conjunctions are never removed
-  }
-
-  for (auto child : graph->getCallees(potentialLeaf)) {
-    if (nodesToRemove.find(child) == nodesToRemove.end()) {
-      return;
-    }
-  }
-
-  nodesToRemove.insert(potentialLeaf);
-  numLeafsRemoved++;
-
-  for (auto parentNode : graph->getCallers(potentialLeaf)) {
-    checkLeafNodeForRemoval(parentNode);
-  }
-}
-
 //// WL INSTR ESTIMATOR PHASE
 
-WLInstrEstimatorPhase::WLInstrEstimatorPhase(const std::string &wlFilePath) : EstimatorPhase("WLInstr", nullptr) {
+WLInstrEstimatorPhase::WLInstrEstimatorPhase(const std::filesystem::path& wlFilePath)
+    : EstimatorPhase("WLInstr", nullptr), wlFilePath(wlFilePath) {}
+
+void WLInstrEstimatorPhase::init() {
+  if (isInitialized) {
+    return;
+  }
+
   std::ifstream ifStream(wlFilePath);
   if (!ifStream.good()) {
-    std::cerr << "Error: can not find whitelist at .. " << wlFilePath << std::endl;
+    metacg::MCGLogger::instance().getErrConsole()->error("Unable to open Wl file {}", wlFilePath.string());
+    exit(metacg::pgis::ErrorCode::FileDoesNotExist);
   }
 
   std::string buff;
   while (getline(ifStream, buff)) {
     whiteList.insert(std::hash<std::string>()(buff));
   }
+  isInitialized = true;
 }
 
-void WLInstrEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
-  for (const auto &elem : graph->getNodes()) {
-    const auto &node = elem.second.get();
+void WLInstrEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
+  for (const auto& elem : graph->getNodes()) {
+    const auto& node = elem.second.get();
     if (whiteList.find(node->getId()) != whiteList.end()) {
-      //      node->setState(CgNodeState::INSTRUMENT_WITNESS);
-      pgis::instrumentNode(node);
+      metacg::pgis::instrumentNode(node);
     }
   }
 }

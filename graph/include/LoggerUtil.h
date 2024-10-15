@@ -15,7 +15,7 @@ namespace metacg {
  */
 class MCGLogger {
  public:
-  static MCGLogger &instance() {
+  static MCGLogger& instance() {
     static MCGLogger instance;
     return instance;
   }

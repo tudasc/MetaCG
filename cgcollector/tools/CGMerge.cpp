@@ -9,29 +9,29 @@
 
 #include <iostream>
 
-void mergeEquivalenceClasses(implementation::EquivClassContainer &File1Data, const nlohmann::json &File2,
-                             nlohmann::json &wholeCG);
-nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::string> inputFiles) {
-  const auto toSet = [&](auto &jsonObj, std::string id) {
-    const auto &obj = jsonObj[id];
+void mergeEquivalenceClasses(implementation::EquivClassContainer& File1Data, const nlohmann::json& File2,
+                             nlohmann::json& wholeCG);
+nlohmann::json mergeFileFormatTwo(const std::string& wholeCGFilename, const std::vector<std::string>& inputFiles) {
+  const auto toSet = [&](auto& jsonObj, const std::string& id) {
+    const auto& obj = jsonObj[id];
     std::set<std::string> target;
-    for (const auto e : obj) {
+    for (const auto& e : obj) {
       target.insert(e.template get<std::string>());
     }
     return target;
   };
 
-  const auto doMerge = [&](auto &t, const auto &s) {
-    auto &callees = s["callees"];
+  const auto doMerge = [&](auto& t, const auto& s) {
+    auto& callees = s["callees"];
     std::set<std::string> tCallees{toSet(t, "callees")};
-    for (auto c : callees) {
+    for (const auto& c : callees) {
       tCallees.insert(c.template get<std::string>());
     }
     t["callees"] = tCallees;
 
-    auto &overriddenFuncs = s["overrides"];
+    auto& overriddenFuncs = s["overrides"];
     std::set<std::string> tOverriddenFuncs{toSet(t, "overrides")};
-    for (auto of : overriddenFuncs) {
+    for (const auto& of : overriddenFuncs) {
       tOverriddenFuncs.insert(of.template get<std::string>());
     }
 
@@ -61,7 +61,7 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
   implementation::EquivClassContainer File1Data;
 
   std::cout << "Now starting merge of " << inputFiles.size() << " files." << std::endl;
-  for (const auto &filename : inputFiles) {
+  for (const auto& filename : inputFiles) {
     // std::cout << "[Info] Processing " << filename << std::endl;
 
     nlohmann::json CompleteJson;
@@ -71,8 +71,8 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
       if (wholeCG[it.key()].empty()) {
         wholeCG[it.key()] = it.value();
       } else {
-        auto &c = wholeCG[it.key()];
-        auto &v = it.value();
+        auto& c = wholeCG[it.key()];
+        auto& v = it.value();
         // TODO multiple bodies possible, if the body is in header?
         // TODO separate merge of meta information
         if (v["hasBody"].get<bool>() && c["hasBody"].get<bool>()) {
@@ -85,10 +85,6 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
             // std::cout << "[WARNING] Number of statements for function " << it.key() << " differ." << std::endl;
             // std::cout << "[WholeCG]: " << c["numStatements"].get<int>()
             //          << "\n[MergeCG]: " << v["numStatements"].get<int>() << std::endl;
-            bool shouldAbort = false;
-            if (shouldAbort) {
-              abort();
-            }
             c["meta"]["numStatements"] = c["meta"]["numStatements"].get<int>() + v["meta"]["numStatements"].get<int>();
           }
           // assert(c["meta"]["numConditionalBranches"].get<int>() == v["meta"]["numConditionalBranches"].get<int>());
@@ -115,11 +111,11 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
         if (!c["meta"].contains("estimateCallCount") && v["meta"].contains("estimateCallCount")) {
           c["meta"]["estimateCallCount"] = v["meta"]["estimateCallCount"];
         } else if (c["meta"].contains("estimateCallCount") && v["meta"].contains("estimateCallCount")) {
-          auto &ccalls = c["meta"]["estimateCallCount"]["calls"];
-          const auto &vcalls = v["meta"]["estimateCallCount"]["calls"];
-          auto &ccodeRegions = c["meta"]["estimateCallCount"]["codeRegions"];
-          const auto &vcodeRegions = v["meta"]["estimateCallCount"]["codeRegions"];
-          for (const auto &[regionName, region] : vcodeRegions.items()) {
+          auto& ccalls = c["meta"]["estimateCallCount"]["calls"];
+          const auto& vcalls = v["meta"]["estimateCallCount"]["calls"];
+          auto& ccodeRegions = c["meta"]["estimateCallCount"]["codeRegions"];
+          const auto& vcodeRegions = v["meta"]["estimateCallCount"]["codeRegions"];
+          for (const auto& [regionName, region] : vcodeRegions.items()) {
             auto iter = ccodeRegions.find(regionName);
             if (iter == ccodeRegions.end()) {
               ccodeRegions[regionName] = region;
@@ -131,7 +127,7 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
             }
           }
 
-          for (const auto &[functionName, functionInfo] : vcalls.items()) {
+          for (const auto& [functionName, functionInfo] : vcalls.items()) {
             auto iter = ccalls.find(functionName);
             if (iter == ccalls.end()) {
               ccalls[functionName] = functionInfo;
@@ -149,8 +145,8 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
             c["meta"]["loopCallDepth"] = v["meta"]["loopCallDepth"];
           } else if (c["meta"].contains("loopCallDepth") && v["meta"].contains("loopCallDepth")) {
             const auto vd = v["meta"]["loopCallDepth"];
-            auto &vc = c["meta"]["loopCallDepth"];
-            for (auto &[calledFunction, callDepths] : vc.items()) {
+            auto& vc = c["meta"]["loopCallDepth"];
+            for (const auto& [calledFunction, callDepths] : vc.items()) {
               const auto other = vd.find(calledFunction);
               if (other != vd.end()) {
                 const int otherv = *other;
@@ -159,7 +155,7 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
                 }
               }
             }
-            for (const auto &[calledFunction, callDepths] : vd.items()) {
+            for (const auto& [calledFunction, callDepths] : vd.items()) {
               if (!vc.contains(calledFunction)) {
                 vc[calledFunction] = callDepths;
               }
@@ -187,7 +183,7 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
   for (auto it = wholeCG.begin(); it != wholeCG.end(); ++it) {
     auto curFunc = it.key();
     if (functionInfoMap.find(curFunc) != functionInfoMap.end()) {
-      auto &jsonFunc = it.value();
+      auto& jsonFunc = it.value();
       jsonFunc["overriddenBy"] = functionInfoMap[curFunc].overriddenBy;
       jsonFunc["overrides"] = functionInfoMap[curFunc].overriddenFunctions;
     }
@@ -213,18 +209,18 @@ nlohmann::json mergeFileFormatTwo(std::string wholeCGFilename, std::vector<std::
   return wholeCGFinal;
 }
 
-void addCallToCallGraph(const implementation::EquivClassContainer &Data, const StringType &CallingFunctionName,
-                        const StringType &CalledFunctionName, nlohmann::json &Json) {
+void addCallToCallGraph(const implementation::EquivClassContainer& Data, const StringType& CallingFunctionName,
+                        const StringType& CalledFunctionName, nlohmann::json& Json) {
   const auto ItCalling = Data.FunctionInfoMap.find(CallingFunctionName);
   assert(ItCalling != Data.FunctionInfoMap.end());
   const auto CallingFunctionNamesMangled = ItCalling->second.MangledNames;
   const auto ItCalled = Data.FunctionInfoMap.find(CalledFunctionName);
   assert(ItCalled != Data.FunctionInfoMap.end());
   const auto CalledFunctionNamesMangled = ItCalled->second.MangledNames;
-  for (const auto &CallingFunctionNameMangled : CallingFunctionNamesMangled) {
+  for (const auto& CallingFunctionNameMangled : CallingFunctionNamesMangled) {
     auto Callees = Json.at(CallingFunctionNameMangled).at("callees").get<std::set<std::string>>();
     auto Inserted = false;
-    for (const auto &CalledFunctionNameMangled : CalledFunctionNamesMangled) {
+    for (const auto& CalledFunctionNameMangled : CalledFunctionNamesMangled) {
       Inserted |= Callees.insert(CalledFunctionNameMangled).second;
     }
 #ifdef DEBUG_TEST_AA
@@ -234,7 +230,7 @@ void addCallToCallGraph(const implementation::EquivClassContainer &Data, const S
 #endif
     Json[CallingFunctionNameMangled]["callees"] = Callees;
 
-    for (const auto &CalledFunctionNameMangled : CalledFunctionNamesMangled) {
+    for (const auto& CalledFunctionNameMangled : CalledFunctionNamesMangled) {
       const auto It = Json.find(CalledFunctionNameMangled);
       if (It != Json.end()) {
         auto Parents = It->at("callers").get<std::set<std::string>>();
@@ -248,12 +244,12 @@ void addCallToCallGraph(const implementation::EquivClassContainer &Data, const S
   }
 }
 
-void mergeFunctionCall(implementation::EquivClassContainer &Data, const StringType &CalledObj,
-                       implementation::CallInfoConstIterType CE, nlohmann::json &Json) {
+void mergeFunctionCall(implementation::EquivClassContainer& Data, const StringType& CalledObj,
+                       implementation::CallInfoConstIterType CE, nlohmann::json& Json) {
   auto Ret = implementation::mergeFunctionCall(Data, CalledObj, CE);
   if (Ret) {
     addCallToCallGraph(Data, Ret->second.first, Ret->second.second, Json);
-    for (const auto &ToMerge : Ret->first) {
+    for (const auto& ToMerge : Ret->first) {
       mergeFunctionCall(Data, ToMerge.first, ToMerge.second, Json);
     }
   }
@@ -265,19 +261,19 @@ void mergeFunctionCall(implementation::EquivClassContainer &Data, const StringTy
  * @param File2 Equivalence Information Container of file 2
  * @param wholeCG Output to the _CG json. Only used for adding edges to the callgraph
  */
-void mergeEquivalenceClasses(implementation::EquivClassContainer &File1Data, const nlohmann::json &File2,
-                             nlohmann::json &wholeCG) {
+void mergeEquivalenceClasses(implementation::EquivClassContainer& File1Data, const nlohmann::json& File2,
+                             nlohmann::json& wholeCG) {
   const implementation::EquivClassContainer File2Data = File2;
 
   // FunctionMap
-  for (const auto &Function : File2Data.FunctionMap) {
+  for (const auto& Function : File2Data.FunctionMap) {
     File1Data.FunctionMap.emplace(Function);
   }
 
   VectorType<std::pair<StringType, StringType>> ParamsToMerge;
 
   // FunctionInfoMap
-  for (const auto &FunctionInfo : File2Data.FunctionInfoMap) {
+  for (const auto& FunctionInfo : File2Data.FunctionInfoMap) {
     const auto Iter = File1Data.FunctionInfoMap.find(FunctionInfo.first);
     if (Iter == File1Data.FunctionInfoMap.end()) {
       File1Data.FunctionInfoMap.emplace(FunctionInfo);
@@ -286,8 +282,8 @@ void mergeEquivalenceClasses(implementation::EquivClassContainer &File1Data, con
       assert(Iter->second.IsVariadic == FunctionInfo.second.IsVariadic);
       assert(Iter->second.MangledNames == FunctionInfo.second.MangledNames);
       for (std::size_t I = 0; I < Iter->second.Parameters.size(); I++) {
-        const auto &Name1 = Iter->second.Parameters[I];
-        const auto &Name2 = FunctionInfo.second.Parameters[I];
+        const auto& Name1 = Iter->second.Parameters[I];
+        const auto& Name2 = FunctionInfo.second.Parameters[I];
         if (Name1 != Name2) {
           ParamsToMerge.emplace_back(Name1, Name2);
         }
@@ -300,14 +296,14 @@ void mergeEquivalenceClasses(implementation::EquivClassContainer &File1Data, con
   }
 
   // CallInfoMap
-  for (const auto &CallInfo : File2Data.CallInfoMap) {
+  for (const auto& CallInfo : File2Data.CallInfoMap) {
     File1Data.CallInfoMap.emplace(CallInfo);
   }
   // ReferencedInCalls
   File1Data.InitReferencedInCalls();
 
   // CallExprParentMap
-  for (const auto &CallExpr : File2Data.CallExprParentMap) {
+  for (const auto& CallExpr : File2Data.CallExprParentMap) {
     File1Data.CallExprParentMap.emplace(CallExpr);
   }
 
@@ -315,7 +311,7 @@ void mergeEquivalenceClasses(implementation::EquivClassContainer &File1Data, con
   VectorType<std::pair<StringType, StringType>> ObjectsToMerge;
   // EquivClasses
   // FindMap
-  for (const auto &Equiv : File2Data.EquivClasses) {
+  for (const auto& Equiv : File2Data.EquivClasses) {
     /*  Here we need to handle three different cases:
      *  1. The complete equiv class only exists on the right side:
      *  copy to the left
@@ -370,7 +366,7 @@ void mergeEquivalenceClasses(implementation::EquivClassContainer &File1Data, con
       if (AllNew) {
         // Case 1:
         File1Data.EquivClasses.emplace_front(Equiv);
-        for (const auto &E : Equiv.Objects) {
+        for (const auto& E : Equiv.Objects) {
           File1Data.FindMap.emplace(E, File1Data.EquivClasses.begin());
         }
       } else {
@@ -386,14 +382,14 @@ void mergeEquivalenceClasses(implementation::EquivClassContainer &File1Data, con
         ItFirstInner->Prefixes.erase(std::unique(ItFirstInner->Prefixes.begin(), ItFirstInner->Prefixes.end()),
                                      ItFirstInner->Prefixes.end());
 
-        for (const auto &E : Equiv.Objects) {
+        for (const auto& E : Equiv.Objects) {
           File1Data.FindMap.emplace(E, ItFirstInner);
         }
       }
     }
   }
 
-  for (const auto &Object : ObjectsToMerge) {
+  for (const auto& Object : ObjectsToMerge) {
     const auto It1 = File1Data.FindMap.find(Object.first);
     const auto It2 = File1Data.FindMap.find(Object.second);
     if (It1->second != It2->second) {
@@ -401,7 +397,7 @@ void mergeEquivalenceClasses(implementation::EquivClassContainer &File1Data, con
     }
   }
 
-  for (const auto &Params : ParamsToMerge) {
+  for (const auto& Params : ParamsToMerge) {
     const auto Iter1 = File1Data.FindMap.find(Params.first);
     const auto Iter2 = File1Data.FindMap.find(Params.second);
     if (Iter1->second != Iter2->second) {
@@ -410,36 +406,36 @@ void mergeEquivalenceClasses(implementation::EquivClassContainer &File1Data, con
     }
   }
 
-  for (const auto &E : File1Data.EquivClasses) {
+  for (const auto& E : File1Data.EquivClasses) {
     implementation::GetFunctionsToMerge(File1Data, FunctionsToMerge, E);
   }
 
-  for (const auto &ToMerge : FunctionsToMerge) {
+  for (const auto& ToMerge : FunctionsToMerge) {
     mergeFunctionCall(File1Data, ToMerge.first, ToMerge.second, wholeCG);
   }
 }
 
-nlohmann::json mergeFileFormatOne(std::string wholeCGFilename, std::vector<std::string> inputFiles) {
-  const auto toSet = [&](auto &jsonObj, std::string id) {
-    const auto &obj = jsonObj[id];
+nlohmann::json mergeFileFormatOne(const std::string& wholeCGFilename, const std::vector<std::string>& inputFiles) {
+  const auto toSet = [&](auto& jsonObj, std::string id) {
+    const auto& obj = jsonObj[id];
     std::set<std::string> target;
-    for (const auto e : obj) {
+    for (const auto& e : obj) {
       target.insert(e.template get<std::string>());
     }
     return target;
   };
 
-  const auto doMerge = [&](auto &t, const auto &s) {
-    auto &callees = s["callees"];
+  const auto doMerge = [&](auto& t, const auto& s) {
+    auto& callees = s["callees"];
     std::set<std::string> tCallees{toSet(t, "callees")};
-    for (auto c : callees) {
+    for (const auto& c : callees) {
       tCallees.insert(c.template get<std::string>());
     }
     t["callees"] = tCallees;
 
-    auto &overriddenFuncs = s["overriddenFunctions"];
+    auto& overriddenFuncs = s["overriddenFunctions"];
     std::set<std::string> tOverriddenFuncs{toSet(t, "overriddenFunctions")};
-    for (auto of : overriddenFuncs) {
+    for (const auto& of : overriddenFuncs) {
       tOverriddenFuncs.insert(of.template get<std::string>());
     }
 
@@ -454,7 +450,7 @@ nlohmann::json mergeFileFormatOne(std::string wholeCGFilename, std::vector<std::
   readIPCG(wholeCGFilename, wholeCG);
 
   std::cout << "Now starting merge of " << inputFiles.size() << " files." << std::endl;
-  for (const auto &filename : inputFiles) {
+  for (const auto& filename : inputFiles) {
     // std::cout << "[Info] Processing " << filename << std::endl;
 
     auto current = buildFromJSON(functionInfoMap, filename);
@@ -463,8 +459,8 @@ nlohmann::json mergeFileFormatOne(std::string wholeCGFilename, std::vector<std::
       if (wholeCG[it.key()].empty()) {
         wholeCG[it.key()] = it.value();
       } else {
-        auto &c = wholeCG[it.key()];
-        auto &v = it.value();
+        auto& c = wholeCG[it.key()];
+        auto& v = it.value();
         // TODO multiple bodies possible, if the body is in header?
         // TODO separate merge of meta information
         if (v["hasBody"].get<bool>() && c["hasBody"].get<bool>()) {
@@ -477,10 +473,6 @@ nlohmann::json mergeFileFormatOne(std::string wholeCGFilename, std::vector<std::
             // std::cout << "[WARNING] Number of statements for function " << it.key() << " differ." << std::endl;
             // std::cout << "[WholeCG]: " << c["numStatements"].get<int>()
             //          << "\n[MergeCG]: " << v["numStatements"].get<int>() << std::endl;
-            bool shouldAbort = false;
-            if (shouldAbort) {
-              abort();
-            }
             c["numStatements"] = c["numStatements"].get<int>() + v["numStatements"].get<int>();
           }
         } else if (v["hasBody"].get<bool>()) {
@@ -506,9 +498,9 @@ nlohmann::json mergeFileFormatOne(std::string wholeCGFilename, std::vector<std::
   }
 
   for (auto it = wholeCG.begin(); it != wholeCG.end(); ++it) {
-    auto curFunc = it.key();
+    const auto& curFunc = it.key();
     if (functionInfoMap.find(curFunc) != functionInfoMap.end()) {
-      auto &jsonFunc = it.value();
+      auto& jsonFunc = it.value();
       jsonFunc["overriddenBy"] = functionInfoMap[curFunc].overriddenBy;
       jsonFunc["overriddenFunctions"] = functionInfoMap[curFunc].overriddenFunctions;
     }
@@ -517,7 +509,7 @@ nlohmann::json mergeFileFormatOne(std::string wholeCGFilename, std::vector<std::
   return wholeCG;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   if (argc < 3) {
     return -1;
   }
@@ -528,14 +520,14 @@ int main(int argc, char **argv) {
   std::vector<std::string> inputFiles;
   // inputFiles.reserve(argc - 2);
   for (int i = 2; i < argc; ++i) {
-    inputFiles.emplace_back(std::string(argv[i]));
+    inputFiles.emplace_back(argv[i]);
   }
 
   nlohmann::json j;
   bool foundValidFile{false};
   bool useFileFormatTwo{false};
 
-  for (auto &inFile : inputFiles) {
+  for (const auto& inFile : inputFiles) {
     readIPCG(inFile, j);
     if (!j.is_null()) {
       foundValidFile = true;

@@ -9,7 +9,7 @@
 #include "LoggerUtil.h"
 
 #include "MCGManager.h"
-#include "MetaData.h"
+#include "metadata/MetaData.h"
 
 using json = nlohmann::json;
 
@@ -17,14 +17,14 @@ class MCGManagerTest : public ::testing::Test {
  protected:
   void SetUp() override {
     metacg::loggerutil::getLogger();
-    auto &mcgm = metacg::graph::MCGManager::get();
+    auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
     mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   }
 };
 
 TEST_F(MCGManagerTest, EmptyCG) {
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   ASSERT_EQ(0, mcgm.size());
 
   auto graph = mcgm.getCallgraph();
@@ -36,25 +36,25 @@ TEST_F(MCGManagerTest, EmptyCG) {
 }
 
 TEST_F(MCGManagerTest, GetOrCreateCGActive) {
-  auto &mcgm = metacg::graph::MCGManager::get();
-  auto *cg = mcgm.getOrCreateCallgraph("newCG", true);
+  auto& mcgm = metacg::graph::MCGManager::get();
+  auto* cg = mcgm.getOrCreateCallgraph("newCG", true);
   ASSERT_NE(nullptr, cg);
   ASSERT_TRUE(mcgm.assertActive("newCG"));
 }
 
 TEST_F(MCGManagerTest, GetOrCreateCGExistingActive) {
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newCG", std::make_unique<metacg::Callgraph>(), false);
   mcgm.addToManagedGraphs("newCG2", std::make_unique<metacg::Callgraph>(), false);
   ASSERT_FALSE(mcgm.assertActive("newCG"));
   ASSERT_FALSE(mcgm.assertActive("newCG2"));
-  auto *cg = mcgm.getOrCreateCallgraph("newCG", true);
+  mcgm.getOrCreateCallgraph("newCG", true);
   ASSERT_TRUE(mcgm.assertActive("newCG"));
   ASSERT_FALSE(mcgm.assertActive("newCG2"));
 }
 
 TEST_F(MCGManagerTest, OneNodeCG) {
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.getCallgraph()->getOrInsertNode("main");
   auto nPtr = mcgm.getCallgraph()->getOrInsertNode("main");
   auto graph = mcgm.getCallgraph();
@@ -64,7 +64,7 @@ TEST_F(MCGManagerTest, OneNodeCG) {
 }
 
 TEST_F(MCGManagerTest, TwoNodeCG) {
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   auto mainNode = mcgm.getCallgraph()->getOrInsertNode("main");
   auto childNode = mcgm.getCallgraph()->getOrInsertNode("child1");
   mcgm.getCallgraph()->addEdge("main", "child1");
@@ -76,7 +76,7 @@ TEST_F(MCGManagerTest, TwoNodeCG) {
 }
 
 TEST_F(MCGManagerTest, ThreeNodeCG) {
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   auto mainNode = mcgm.getCallgraph()->getOrInsertNode("main");
   auto childNode = mcgm.getCallgraph()->getOrInsertNode("child1");
   mcgm.getCallgraph()->addEdge("main", "child1");
@@ -90,7 +90,7 @@ TEST_F(MCGManagerTest, ThreeNodeCG) {
 }
 
 TEST_F(MCGManagerTest, TwoNodeOneEdgeCG) {
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   auto cg = mcgm.getCallgraph();
   cg->addEdge(cg->getOrInsertNode("main"), cg->getOrInsertNode("LC1"));
 
@@ -112,7 +112,7 @@ TEST_F(MCGManagerTest, ComplexCG) {
    *
    */
 
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   auto mainNode = mcgm.getCallgraph()->getOrInsertNode("main");
   auto childNode1 = mcgm.getCallgraph()->getOrInsertNode("child1");
   auto childNode2 = mcgm.getCallgraph()->getOrInsertNode("child2");
@@ -132,17 +132,17 @@ TEST_F(MCGManagerTest, ComplexCG) {
 
   // Main has 2 children: child 1 and 2
   ASSERT_EQ(mcgm.getCallgraph()->getCallees(mainNode->getId()).size(), 2);
-  for (const auto &elem : mcgm.getCallgraph()->getCallees(mainNode->getId())) {
+  for (const auto& elem : mcgm.getCallgraph()->getCallees(mainNode->getId())) {
     ASSERT_TRUE(elem->getFunctionName() == "child1" || elem->getFunctionName() == "child2");
   }
   // Child 1 has 2 children: child 3 and 4
   ASSERT_EQ(mcgm.getCallgraph()->getCallees(childNode1->getId()).size(), 2);
-  for (const auto &elem : mcgm.getCallgraph()->getCallees(childNode1->getId())) {
+  for (const auto& elem : mcgm.getCallgraph()->getCallees(childNode1->getId())) {
     ASSERT_TRUE(elem->getFunctionName() == "child3" || elem->getFunctionName() == "child4");
   }
   // Child 2 has 2 child: child2 and child 5
   ASSERT_EQ(mcgm.getCallgraph()->getCallees(childNode2->getId()).size(), 2);
-  for (const auto &elem : mcgm.getCallgraph()->getCallees(childNode2->getId())) {
+  for (const auto& elem : mcgm.getCallgraph()->getCallees(childNode2->getId())) {
     ASSERT_TRUE(elem->getFunctionName() == "child2" || elem->getFunctionName() == "child5");
   }
   // Child 3 has 1 child: child 4
@@ -164,7 +164,7 @@ TEST_F(MCGManagerTest, ComplexCG) {
   ASSERT_TRUE((*mcgm.getCallgraph()->getCallers(childNode1->getId()).begin())->getFunctionName() == "main");
   // Child 2 has 2 parents: main and child2
   ASSERT_EQ(mcgm.getCallgraph()->getCallers(childNode2->getId()).size(), 2);
-  for (const auto &elem : mcgm.getCallgraph()->getCallers(childNode2->getId())) {
+  for (const auto& elem : mcgm.getCallgraph()->getCallers(childNode2->getId())) {
     ASSERT_TRUE(elem->getFunctionName() == "main" || elem->getFunctionName() == "child2");
   }
   // Child 3 has 1 parent: child 1
@@ -172,7 +172,7 @@ TEST_F(MCGManagerTest, ComplexCG) {
   ASSERT_TRUE((*mcgm.getCallgraph()->getCallers(childNode3->getId()).begin())->getFunctionName() == "child1");
   // Child 4 has 2 parents: child 1 and child 3
   ASSERT_EQ(mcgm.getCallgraph()->getCallers(childNode4->getId()).size(), 2);
-  for (const auto &elem : mcgm.getCallgraph()->getCallers(childNode4->getId())) {
+  for (const auto& elem : mcgm.getCallgraph()->getCallers(childNode4->getId())) {
     ASSERT_TRUE(elem->getFunctionName() == "child1" || elem->getFunctionName() == "child3");
   }
   // Child 5 has 1 parent: child 2
@@ -180,7 +180,7 @@ TEST_F(MCGManagerTest, ComplexCG) {
   ASSERT_TRUE((*mcgm.getCallgraph()->getCallers(childNode5->getId()).begin())->getFunctionName() == "child2");
   // Child 6 has 2 parents: child 4 and child 5
   ASSERT_EQ(mcgm.getCallgraph()->getCallers(childNode6->getId()).size(), 2);
-  for (const auto &elem : mcgm.getCallgraph()->getCallers(childNode6->getId())) {
+  for (const auto& elem : mcgm.getCallgraph()->getCallers(childNode6->getId())) {
     ASSERT_TRUE(elem->getFunctionName() == "child4" || elem->getFunctionName() == "child5");
   }
 }

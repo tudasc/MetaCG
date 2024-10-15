@@ -11,7 +11,7 @@
 
 namespace implementation {
 
-bool ASTInformationExtractor::VisitFunctionDecl(clang::FunctionDecl *FD) {
+bool ASTInformationExtractor::VisitFunctionDecl(clang::FunctionDecl* FD) {
   const auto Definition = FD->getDefinition();
   if (Definition && Definition != FD) {
     // We are going to visit the definition later anyway, but we need to merge the arguments
@@ -24,7 +24,7 @@ bool ASTInformationExtractor::VisitFunctionDecl(clang::FunctionDecl *FD) {
   auto Return = std::make_shared<ObjectName>(generateUSRForSymbolicReturn(FD));
   Objects.emplace(Return);
 
-  clang::CXXMethodDecl *LambdaCallOperator = nullptr;
+  clang::CXXMethodDecl* LambdaCallOperator = nullptr;
   if (auto CXXMethod = llvm::dyn_cast<clang::CXXMethodDecl>(FD)) {
     if (!CXXMethod->isStatic()) {
       // Add the 'this' pointer
@@ -47,10 +47,10 @@ bool ASTInformationExtractor::VisitFunctionDecl(clang::FunctionDecl *FD) {
       // pointers here anyway is limitation that the recursive ast visitor only works with not const pointers
       assert(llvm::isa<clang::CXXMethodDecl>(OverriddenMethod));
       OverridesToMerge.emplace_back(generateUSRForThisExpr(CXXMethod),
-                                    generateUSRForThisExpr(const_cast<clang::CXXMethodDecl *>(OverriddenMethod)));
+                                    generateUSRForThisExpr(const_cast<clang::CXXMethodDecl*>(OverriddenMethod)));
       // Merge return value
       OverridesToMerge.emplace_back(generateUSRForSymbolicReturn(CXXMethod),
-                                    generateUSRForSymbolicReturn(const_cast<clang::CXXMethodDecl *>(OverriddenMethod)));
+                                    generateUSRForSymbolicReturn(const_cast<clang::CXXMethodDecl*>(OverriddenMethod)));
     }
   }
 
@@ -59,7 +59,7 @@ bool ASTInformationExtractor::VisitFunctionDecl(clang::FunctionDecl *FD) {
   return true;
 }
 
-bool ASTInformationExtractor::VisitVarDecl(clang::VarDecl *VD) {
+bool ASTInformationExtractor::VisitVarDecl(clang::VarDecl* VD) {
   // Skip templates
   if (VD->getDeclContext()->isDependentContext()) {
     return true;
@@ -111,7 +111,7 @@ bool ASTInformationExtractor::VisitVarDecl(clang::VarDecl *VD) {
 }
 
 void ASTInformationExtractor::DestructorHelper(ObjectNameDereference ObjDeref,
-                                               const clang::CXXDestructorDecl *Destructor) {
+                                               const clang::CXXDestructorDecl* Destructor) {
   if (CurrentFunctionDecl) {
     // TODO: We need to be able to handle class outside of main too
     const auto FunctionUSR = generateUSRForDecl(CurrentFunctionDecl);
@@ -122,31 +122,31 @@ void ASTInformationExtractor::DestructorHelper(ObjectNameDereference ObjDeref,
   }
 }
 
-bool ASTInformationExtractor::VisitCompoundAssignOperator(clang::CompoundAssignOperator *CAO) {
+bool ASTInformationExtractor::VisitCompoundAssignOperator(clang::CompoundAssignOperator* CAO) {
   Assignments.emplace_back(CAO, CurrentFunctionDecl);
   return RecursiveASTVisitor::VisitCompoundAssignOperator(CAO);
 }
 
-bool ASTInformationExtractor::VisitCallExpr(clang::CallExpr *CE) {
+bool ASTInformationExtractor::VisitCallExpr(clang::CallExpr* CE) {
   if (!CurrentFunctionDecl) {
     // TODO: Calls outside of a function, for example in static variable initialization
     return true;
   }
   const auto CallUSr = generateUSRForCallOrConstructExpr(CE, CTX, CurrentFunctionDecl);
   auto OperatorCallExpr = llvm::dyn_cast<clang::CXXOperatorCallExpr>(CE);
-  clang::FunctionDecl *OperatorCallCalledFunction = nullptr;
+  clang::FunctionDecl* OperatorCallCalledFunction = nullptr;
   if (OperatorCallExpr) {
     OperatorCallCalledFunction = getCalledFunctionFromCXXOperatorCallExpr(OperatorCallExpr);
   }
-  const auto *OperatorCallCalledMember = llvm::dyn_cast_or_null<clang::CXXMethodDecl>(OperatorCallCalledFunction);
-  CallInfo CI(CE, CTX, CurrentFunctionDecl, OperatorCallCalledMember);
+  const auto* OperatorCallCalledMember = llvm::dyn_cast_or_null<clang::CXXMethodDecl>(OperatorCallCalledFunction);
+  const CallInfo CI(CE, CTX, CurrentFunctionDecl, OperatorCallCalledMember);
 
-  if (auto DC = CE->getDirectCallee()) {
+  if (const auto& DC = CE->getDirectCallee()) {
     const auto USR = generateUSRForDecl(DC);
 
     // TODO: This should always be 1, if it is not its an implementation issue. (for example with typeid)
     if (CI.CalledObjects.size() == 1) {
-      DirectCalls.push_back({CI, CurrentFunctionDecl, CallUSr, USR});
+      DirectCalls.emplace_back(CI, CurrentFunctionDecl, CallUSr, USR);
     }
 
   } else {
@@ -165,16 +165,16 @@ bool ASTInformationExtractor::VisitCallExpr(clang::CallExpr *CE) {
     auto ImplicitObject = getImplicitObjectFromCXXMemberCall(MemberCallExpr);
     assert(ImplicitObject.first);
     auto Refs = getReferencedDecls(ImplicitObject.first, CTX, CurrentFunctionDecl);
-    auto CalledStmt = getCalledStmtFromCXXMemberCall(MemberCallExpr);
+    const auto CalledStmt = getCalledStmtFromCXXMemberCall(MemberCallExpr);
     assert(CalledStmt);
-    auto CalledRefs = getReferencedDecls(CalledStmt, CTX, CurrentFunctionDecl);
-    for (auto &Ref : Refs) {
+    const auto CalledRefs = getReferencedDecls(CalledStmt, CTX, CurrentFunctionDecl);
+    for (auto& Ref : Refs) {
       if (!ImplicitObject.second) {
         // If the 'this' pointer is not already dereferenced we need to do it
         Ref.DereferenceLevel--;
       }
       Objects.emplace(Ref);
-      for (auto &CallRef : CalledRefs) {
+      for (const auto& CallRef : CalledRefs) {
         Objects.emplace(CallRef);
         ThisPointersToMerge.emplace_back(Ref.GetStringRepr(), CallRef.GetStringRepr());
       }
@@ -183,7 +183,7 @@ bool ASTInformationExtractor::VisitCallExpr(clang::CallExpr *CE) {
     // If an operatorcall calls a member function we need to merge the 'this' pointer.
     const auto MemberUsr = generateUSRForDecl(OperatorCallCalledMember);
     auto ImplicitObjects = getReferencedDecls(OperatorCallExpr->getArg(0), CTX, CurrentFunctionDecl);
-    for (auto &ImplicitObject : ImplicitObjects) {
+    for (auto& ImplicitObject : ImplicitObjects) {
       ImplicitObject.DereferenceLevel--;
       Objects.emplace(ImplicitObject);
       ThisPointersToMerge.emplace_back(ImplicitObject.GetStringRepr(), MemberUsr);
@@ -192,13 +192,13 @@ bool ASTInformationExtractor::VisitCallExpr(clang::CallExpr *CE) {
   return true;
 }
 
-bool ASTInformationExtractor::VisitMemberExpr(clang::MemberExpr *ME) {
+bool ASTInformationExtractor::VisitMemberExpr(clang::MemberExpr* ME) {
   const auto Referenced = getReferencedDecls(ME->getBase(), CTX, CurrentFunctionDecl);
   auto MemberDecl = ME->getMemberDecl()->getCanonicalDecl();
   const auto MemberUSR = generateUSRForDecl(MemberDecl);
   const bool IsCXXMember = llvm::isa<clang::CXXMethodDecl>(MemberDecl) || llvm::isa<clang::FieldDecl>(MemberDecl);
 
-  for (const auto &R : Referenced) {
+  for (const auto& R : Referenced) {
     auto MR = std::make_shared<ObjectNameMember>();
     MR->Member = MemberUSR;
     MR->DB = R;
@@ -225,24 +225,24 @@ bool ASTInformationExtractor::VisitMemberExpr(clang::MemberExpr *ME) {
 
 void ASTInformationExtractor::dump() {
   llvm::errs() << "Collected Objects:\n";
-  for (const auto &O : Objects) {
+  for (const auto& O : Objects) {
     llvm::errs() << O.GetStringRepr() << "\n";
   }
   llvm::errs() << "Equiv Classes:\n";
-  for (auto &EquivClasse : Data.EquivClasses) {
+  for (auto& EquivClasse : Data.EquivClasses) {
     llvm::errs() << "Class: {";
-    for (const auto &O : EquivClasse.Objects) {
+    for (const auto& O : EquivClasse.Objects) {
       llvm::errs() << O << ", ";
     }
     llvm::errs() << "}\n Prefixes: {";
-    for (auto P : EquivClasse.Prefixes) {
+    for (const auto& P : EquivClasse.Prefixes) {
       llvm::errs() << P.GetStringRepr() << ", ";
     }
     llvm::errs() << "}\n";
   }
 }
 
-bool ASTInformationExtractor::VisitDeclRefExpr(clang::DeclRefExpr *DE) {
+bool ASTInformationExtractor::VisitDeclRefExpr(clang::DeclRefExpr* DE) {
   auto Obj = std::make_shared<ObjectName>(DE->getDecl());
   Objects.emplace(Obj);
   if (DereferenceLevel != 0) {
@@ -251,7 +251,7 @@ bool ASTInformationExtractor::VisitDeclRefExpr(clang::DeclRefExpr *DE) {
   return true;
 }
 
-bool ASTInformationExtractor::VisitCXXThisExpr(clang::CXXThisExpr *TE) {
+bool ASTInformationExtractor::VisitCXXThisExpr(clang::CXXThisExpr* TE) {
   auto Obj = std::make_shared<ObjectName>(TE, CurrentFunctionDecl);
   Objects.emplace(Obj);
   if (DereferenceLevel != 0) {
@@ -260,7 +260,7 @@ bool ASTInformationExtractor::VisitCXXThisExpr(clang::CXXThisExpr *TE) {
   return true;
 }
 
-bool ASTInformationExtractor::VisitCXXNewExpr(clang::CXXNewExpr *NE) {
+bool ASTInformationExtractor::VisitCXXNewExpr(clang::CXXNewExpr* NE) {
   auto Obj = std::make_shared<ObjectName>(NE, CurrentFunctionDecl);
   // A new expression needs to be able to both represent the allocated object and the returned pointer
   Objects.emplace(Obj);
@@ -304,31 +304,31 @@ bool ASTInformationExtractor::VisitCXXNewExpr(clang::CXXNewExpr *NE) {
 }
 
 #if LLVM_VERSION_MAJOR < 11
-bool ASTInformationExtractor::TraverseUnaryDeref(clang::UnaryOperator *UO, [[maybe_unused]] DataRecursionQueue *Queue) {
+bool ASTInformationExtractor::TraverseUnaryDeref(clang::UnaryOperator* UO, [[maybe_unused]] DataRecursionQueue* Queue) {
   if (!WalkUpFromUnaryDeref(UO)) {
     return false;
   }
   DereferenceLevel += 1;
   // No queue to force an immediate visit
-  bool RetValue = TraverseStmt(UO->getSubExpr());
+  const bool RetValue = TraverseStmt(UO->getSubExpr());
   DereferenceLevel -= 1;
   return RetValue;
 }
 
-bool ASTInformationExtractor::TraverseUnaryAddrOf(clang::UnaryOperator *UO,
-                                                  [[maybe_unused]] DataRecursionQueue *Queue) {
+bool ASTInformationExtractor::TraverseUnaryAddrOf(clang::UnaryOperator* UO,
+                                                  [[maybe_unused]] DataRecursionQueue* Queue) {
   if (!WalkUpFromUnaryAddrOf(UO)) {
     return false;
   }
   DereferenceLevel -= 1;
   // No queue here to force an immediate visit
-  bool RetValue = TraverseStmt(UO->getSubExpr());
+  const bool RetValue = TraverseStmt(UO->getSubExpr());
   DereferenceLevel += 1;
   return RetValue;
 }
 #else
-bool ASTInformationExtractor::TraverseUnaryOperator(clang::UnaryOperator *UO,
-                                                    [[maybe_unused]] DataRecursionQueue *Queue) {
+bool ASTInformationExtractor::TraverseUnaryOperator(clang::UnaryOperator* UO,
+                                                    [[maybe_unused]] DataRecursionQueue* Queue) {
   const auto Opcode = UO->getOpcode();
   if (Opcode == clang::UnaryOperatorKind::UO_AddrOf || Opcode == clang::UnaryOperatorKind::UO_Deref) {
     if (!WalkUpFromUnaryOperator(UO)) {
@@ -340,7 +340,7 @@ bool ASTInformationExtractor::TraverseUnaryOperator(clang::UnaryOperator *UO,
       DereferenceLevel += 1;
     }
     // No queue here to force an immediate visit
-    bool RetValue = TraverseStmt(UO->getSubExpr());
+    const bool RetValue = TraverseStmt(UO->getSubExpr());
     if (Opcode == clang::UnaryOperatorKind::UO_AddrOf) {
       DereferenceLevel += 1;
     } else /* UO_Deref */ {
@@ -352,8 +352,8 @@ bool ASTInformationExtractor::TraverseUnaryOperator(clang::UnaryOperator *UO,
 }
 #endif
 
-bool ASTInformationExtractor::TraverseArraySubscriptExpr(clang::ArraySubscriptExpr *Expr,
-                                                         [[maybe_unused]] DataRecursionQueue *Queue) {
+bool ASTInformationExtractor::TraverseArraySubscriptExpr(clang::ArraySubscriptExpr* Expr,
+                                                         [[maybe_unused]] DataRecursionQueue* Queue) {
   if (!WalkUpFromArraySubscriptExpr(Expr)) {
     return false;
   }
@@ -367,8 +367,8 @@ bool ASTInformationExtractor::TraverseArraySubscriptExpr(clang::ArraySubscriptEx
   return Ret;
 }
 
-bool ASTInformationExtractor::TraverseBinaryOperator(clang::BinaryOperator *BO,
-                                                     [[maybe_unused]] DataRecursionQueue *Queue) {
+bool ASTInformationExtractor::TraverseBinaryOperator(clang::BinaryOperator* BO,
+                                                     [[maybe_unused]] DataRecursionQueue* Queue) {
   if (!WalkUpFromBinaryOperator(BO)) {
     return false;
   }
@@ -383,12 +383,12 @@ bool ASTInformationExtractor::TraverseBinaryOperator(clang::BinaryOperator *BO,
 }
 
 #if LLVM_VERSION_MAJOR < 11
-bool ASTInformationExtractor::VisitBinAssign(clang::BinaryOperator *BO) {
+bool ASTInformationExtractor::VisitBinAssign(clang::BinaryOperator* BO) {
   Assignments.emplace_back(BO, CurrentFunctionDecl);
   return true;
 }
 #else
-bool ASTInformationExtractor::VisitBinaryOperator(clang::BinaryOperator *BO) {
+bool ASTInformationExtractor::VisitBinaryOperator(clang::BinaryOperator* BO) {
   if (BO->getOpcode() == clang::BinaryOperatorKind::BO_Assign) {
     Assignments.emplace_back(BO, CurrentFunctionDecl);
     return true;
@@ -398,7 +398,7 @@ bool ASTInformationExtractor::VisitBinaryOperator(clang::BinaryOperator *BO) {
 #endif
 
 void ASTInformationExtractor::initEquivClasses() {
-  for (const auto &Object : Objects) {
+  for (const auto& Object : Objects) {
     const auto StringRepr = Object.GetStringRepr();
     Data.EquivClasses.emplace_front(StringRepr);
     Data.FindMap.emplace(StringRepr, Data.EquivClasses.begin());
@@ -409,13 +409,13 @@ void ASTInformationExtractor::initEquivClasses() {
 }
 
 void ASTInformationExtractor::initPrefixClasses() {
-  for (const auto &Object : Objects) {
+  for (const auto& Object : Objects) {
     // Line 5 - 6
     auto Tmp = Object;
     Tmp.DereferenceLevel += 1;
     auto TmpObject = Objects.find(Tmp);
     if (TmpObject != Objects.end()) {
-      auto &Pre = Data.FindMap[Object.GetStringRepr()]->Prefixes;
+      auto& Pre = Data.FindMap[Object.GetStringRepr()]->Prefixes;
       Pre.emplace_back((*TmpObject));
     } else {
       // Line 7 - 8 These lines are in the original algorithm description, but I don't really see how they differ from
@@ -432,7 +432,7 @@ void ASTInformationExtractor::initPrefixClasses() {
       const auto Tmp = Object.getMb()->DB;
       const auto TmpObject = Objects.find(Tmp);
       if (TmpObject != Objects.end()) {
-        auto &Pre = Data.FindMap[TmpObject->GetStringRepr()]->Prefixes;
+        auto& Pre = Data.FindMap[TmpObject->GetStringRepr()]->Prefixes;
         Pre.emplace_back(Object, Object.getMb()->Member);
       }
     }
@@ -458,20 +458,20 @@ void ASTInformationExtractor::calculatePERelation() {
 
 void ASTInformationExtractor::merge(EquivClassesIterator E1, EquivClassesIterator E2) {
   const auto Ret = ::implementation::mergeRecurisve(Data, E1, E2);
-  for (const auto &[Obj, CE] : Ret.first) {
+  for (const auto& [Obj, CE] : Ret.first) {
     mergeFunctionCall(Obj, CE);
   }
 }
 
 void ASTInformationExtractor::handleAssignments() {
-  for (const auto &Assignment : Assignments) {
+  for (const auto& Assignment : Assignments) {
     const auto LHS = getReferencedDeclsStr(Assignment.first->getLHS(), CTX, Assignment.second);
     const auto RHS = getReferencedDeclsStr(Assignment.first->getRHS(), CTX, Assignment.second);
     assert(!LHS.empty());
-    for (const auto &L : LHS) {
+    for (const auto& L : LHS) {
       const auto ItL = Data.FindMap.find(L);
       assert(ItL != Data.FindMap.end());
-      for (const auto &R : RHS) {
+      for (const auto& R : RHS) {
         const auto ItR = Data.FindMap.find(R);
         assert(ItR != Data.FindMap.end());
         if (ItL->second != ItR->second) {
@@ -483,7 +483,7 @@ void ASTInformationExtractor::handleAssignments() {
 }
 
 void ASTInformationExtractor::handleInits() {
-  for (const auto &Decl : Initalizers) {
+  for (const auto& Decl : Initalizers) {
     if (const auto ConstructExpr = llvm::dyn_cast<clang::CXXConstructExpr>(Decl.Init)) {
       llvm_unreachable("Construct expressions need to be handled before");
     } else {
@@ -499,8 +499,8 @@ void ASTInformationExtractor::handleInits() {
   }
 }
 
-void ASTInformationExtractor::handleInitExpr(const ObjectNameDereference *ObjDeref, clang::Stmt *InitExpr,
-                                             const clang::Type *VarType, clang::FunctionDecl *ParentFunctionDecl) {
+void ASTInformationExtractor::handleInitExpr(const ObjectNameDereference* ObjDeref, clang::Stmt* InitExpr,
+                                             const clang::Type* VarType, clang::FunctionDecl* ParentFunctionDecl) {
   if (const auto ArrayType = llvm::dyn_cast<clang::ArrayType>(VarType)) {
     if (const auto InitListExpr = llvm::dyn_cast<clang::InitListExpr>(InitExpr)) {
       const auto TmpType = ArrayType->getElementType()->getUnqualifiedDesugaredType();
@@ -533,7 +533,7 @@ void ASTInformationExtractor::handleInitExpr(const ObjectNameDereference *ObjDer
         for (const auto Field : StructDecl->fields()) {
           assert(InitIter != InitListExpr->end());
           auto ObjMember = std::make_shared<ObjectNameMember>(*ObjDeref, generateUSRForDecl(Field->getCanonicalDecl()));
-          ObjectNameDereference Tmp(ObjMember);
+          const ObjectNameDereference Tmp(ObjMember);
           handleInitExpr(&Tmp, *InitIter, Field->getType()->getUnqualifiedDesugaredType(), ParentFunctionDecl);
           InitIter++;
         }
@@ -542,7 +542,7 @@ void ASTInformationExtractor::handleInitExpr(const ObjectNameDereference *ObjDer
         const auto Referenced = getReferencedDeclsStr(InitExpr, CTX, ParentFunctionDecl);
         const auto LHS = Data.FindMap.find(ObjDeref->GetStringRepr());
         assert(LHS != Data.FindMap.end());
-        for (const auto &R : Referenced) {
+        for (const auto& R : Referenced) {
           const auto RHS = Data.FindMap.find(R);
           assert(RHS != Data.FindMap.end());
           if (LHS->second != RHS->second) {
@@ -557,7 +557,7 @@ void ASTInformationExtractor::handleInitExpr(const ObjectNameDereference *ObjDer
     // Ref can be empty, for example if a variable is initialized with a literal expression
     const auto ItObj = Data.FindMap.find(ObjDeref->GetStringRepr());
     assert(ItObj != Data.FindMap.end());
-    for (const auto &Ref : Refs) {
+    for (const auto& Ref : Refs) {
       const auto ItRef = Data.FindMap.find(Ref);
       assert(ItRef != Data.FindMap.end());
       if (ItObj->second != ItRef->second) {
@@ -567,7 +567,7 @@ void ASTInformationExtractor::handleInitExpr(const ObjectNameDereference *ObjDer
   }
 }
 
-const clang::Type *ASTInformationExtractor::stripArrayType(const clang::Type *Type) const {
+const clang::Type* ASTInformationExtractor::stripArrayType(const clang::Type* Type) const {
   Type = Type->getUnqualifiedDesugaredType();
   while (const auto AType = llvm::dyn_cast<clang::ArrayType>(Type)) {
     Type = AType->getElementType()->getUnqualifiedDesugaredType();
@@ -575,7 +575,7 @@ const clang::Type *ASTInformationExtractor::stripArrayType(const clang::Type *Ty
   return Type;
 }
 
-void ASTInformationExtractor::mergeFunctionCall(const StringType &CalledObj, CallInfoConstIterType CE) {
+void ASTInformationExtractor::mergeFunctionCall(const StringType& CalledObj, CallInfoConstIterType CE) {
   static std::unordered_set<std::pair<StringType, CallInfoConstIterType>> Cache;
   if (!Cache.emplace(std::make_pair(CalledObj, CE)).second) {
     return;
@@ -583,20 +583,20 @@ void ASTInformationExtractor::mergeFunctionCall(const StringType &CalledObj, Cal
   auto Ret = ::implementation::mergeFunctionCall(Data, CalledObj, CE);
   if (Ret) {
     addCallToCallGraph(Ret->second.first, Ret->second.second);
-    for (const auto &ToMerge : Ret->first) {
+    for (const auto& ToMerge : Ret->first) {
       mergeFunctionCall(ToMerge.first, ToMerge.second);
     }
   }
 }
 
-ASTInformationExtractor::ASTInformationExtractor(const clang::ASTContext *CTX, CallGraph *CG, bool CaptureCtorsDtors,
+ASTInformationExtractor::ASTInformationExtractor(const clang::ASTContext* CTX, CallGraph* CG, bool CaptureCtorsDtors,
                                                  bool CaptureStackCtorsDtors)
     : CTX(CTX), CG(CG), CaptureCtorsDtors(CaptureCtorsDtors), CaptureStackCtorsDtors(CaptureStackCtorsDtors) {}
 
-const EquivClassContainer &ASTInformationExtractor::getData() const { return Data; }
+const EquivClassContainer& ASTInformationExtractor::getData() const { return Data; }
 
-void ASTInformationExtractor::addCallToCallGraph(const StringType &CallingFunctionName,
-                                                 const StringType &CalledFunctionName) {
+void ASTInformationExtractor::addCallToCallGraph(const StringType& CallingFunctionName,
+                                                 const StringType& CalledFunctionName) {
   auto CallingFunction = FuncDeclMap.find(CallingFunctionName);
   assert(CallingFunction != FuncDeclMap.end());
   auto CalledFunction = FuncDeclMap.find(CalledFunctionName);
@@ -610,14 +610,14 @@ void ASTInformationExtractor::addCallToCallGraph(const StringType &CallingFuncti
   }
 }
 
-bool ASTInformationExtractor::TraverseTypedefDecl(clang::TypedefDecl *TDD) {
+bool ASTInformationExtractor::TraverseTypedefDecl(clang::TypedefDecl* TDD) {
   // This is needed to reach the decls of builtin structs
   if (TDD->isImplicit()) {
     const bool Prev = TraverseTypeLocs;
     TraverseTypeLocs = true;
     TraverseTypesOfTypeLocs = true;
     InTypededDecl = true;
-    bool Ret = RecursiveASTVisitor::TraverseTypedefDecl(TDD);
+    const bool Ret = RecursiveASTVisitor::TraverseTypedefDecl(TDD);
     InTypededDecl = false;
     TraverseTypesOfTypeLocs = false;
     TraverseTypeLocs = Prev;
@@ -626,17 +626,17 @@ bool ASTInformationExtractor::TraverseTypedefDecl(clang::TypedefDecl *TDD) {
   return true;
 }
 
-bool ASTInformationExtractor::TraverseTypeAliasDecl(clang::TypeAliasDecl *) { return true; };
+bool ASTInformationExtractor::TraverseTypeAliasDecl(clang::TypeAliasDecl*) { return true; };
 
 void ASTInformationExtractor::handleMergeFunctionParameters() {
-  for (const auto &[F1, F2] : ParamsToMerge) {
-    const auto &F1Params = F1->parameters();
-    const auto &F2Params = F2->parameters();
-    unsigned int NumParams = F1->getNumParams();
-    for (unsigned I = 0; I < NumParams; I++) {
-      const auto Decls1 = getDecls(F1Params[I], &F1->getASTContext());
+  for (const auto& [F1, F2] : ParamsToMerge) {
+    const auto& F1Params = F1->parameters();
+    const auto& F2Params = F2->parameters();
+    const unsigned int NumParams = F1->getNumParams();
+    for (unsigned i = 0; i < NumParams; i++) {
+      const auto Decls1 = getDecls(F1Params[i], &F1->getASTContext());
       assert(Decls1.size() == 1);
-      const auto Decls2 = getDecls(F2Params[I], &F2->getASTContext());
+      const auto Decls2 = getDecls(F2Params[i], &F2->getASTContext());
       assert(Decls2.size() == 1);
       const auto Iter1 = Data.FindMap.find(Decls1[0]);
       assert(Iter1 != Data.FindMap.end());
@@ -649,7 +649,7 @@ void ASTInformationExtractor::handleMergeFunctionParameters() {
   }
 }
 
-bool ASTInformationExtractor::TraverseParmVarDecl(clang::ParmVarDecl *PD) {
+bool ASTInformationExtractor::TraverseParmVarDecl(clang::ParmVarDecl* PD) {
   const bool PreviousShouldVisitType = TraverseTypeLocs;
   TraverseTypeLocs = false;
   const auto Ret = RecursiveASTVisitor::TraverseParmVarDecl(PD);
@@ -664,32 +664,32 @@ bool ASTInformationExtractor::TraverseTypeLoc(clang::TypeLoc TL) {
   return RecursiveASTVisitor::TraverseTypeLoc(TL);
 }
 
-bool ASTInformationExtractor::TraverseCXXMethodDecl(clang::CXXMethodDecl *MD) {
+bool ASTInformationExtractor::TraverseCXXMethodDecl(clang::CXXMethodDecl* MD) {
   return TraverseFunctionLikeHelper(MD, &RecursiveASTVisitor::TraverseCXXMethodDecl);
 }
 
-bool ASTInformationExtractor::TraverseFunctionDecl(clang::FunctionDecl *FD) {
+bool ASTInformationExtractor::TraverseFunctionDecl(clang::FunctionDecl* FD) {
   return TraverseFunctionLikeHelper(FD, &RecursiveASTVisitor::TraverseFunctionDecl);
 }
 
-bool ASTInformationExtractor::TraverseCXXDeductionGuideDecl(clang::CXXDeductionGuideDecl *DD) {
+bool ASTInformationExtractor::TraverseCXXDeductionGuideDecl(clang::CXXDeductionGuideDecl* DD) {
   return TraverseFunctionLikeHelper(DD, &RecursiveASTVisitor::TraverseCXXDeductionGuideDecl);
 }
 
-bool ASTInformationExtractor::TraverseCXXConstructorDecl(clang::CXXConstructorDecl *CD) {
+bool ASTInformationExtractor::TraverseCXXConstructorDecl(clang::CXXConstructorDecl* CD) {
   return TraverseFunctionLikeHelper(CD, &RecursiveASTVisitor::TraverseCXXConstructorDecl);
 }
 
-bool ASTInformationExtractor::TraverseCXXConversionDecl(clang::CXXConversionDecl *CD) {
+bool ASTInformationExtractor::TraverseCXXConversionDecl(clang::CXXConversionDecl* CD) {
   return TraverseFunctionLikeHelper(CD, &RecursiveASTVisitor::TraverseCXXConversionDecl);
 }
 
-bool ASTInformationExtractor::TraverseCXXDestructorDecl(clang::CXXDestructorDecl *DD) {
+bool ASTInformationExtractor::TraverseCXXDestructorDecl(clang::CXXDestructorDecl* DD) {
   return TraverseFunctionLikeHelper(DD, &RecursiveASTVisitor::TraverseCXXDestructorDecl);
 }
 
 void ASTInformationExtractor::handleMergeCXXMembers() {
-  for (const auto &MethodsToMerge : CXXMemberMergeList) {
+  for (const auto& MethodsToMerge : CXXMemberMergeList) {
     const auto It1 = Data.FindMap.find(MethodsToMerge.first);
     assert(It1 != Data.FindMap.end());
     const auto It2 = Data.FindMap.find(MethodsToMerge.second);
@@ -701,11 +701,11 @@ void ASTInformationExtractor::handleMergeCXXMembers() {
 }
 
 void ASTInformationExtractor::handleMergeCXXThisPointers() {
-  for (const auto &ToMerge : ThisPointersToMerge) {
+  for (const auto& ToMerge : ThisPointersToMerge) {
     // We need to check all methods that share an EquivalenceClass with the called method
     const auto CalledEquivClassIter = Data.FindMap.find(ToMerge.second);
     assert(CalledEquivClassIter != Data.FindMap.end());
-    for (const auto &PotentialMethod : CalledEquivClassIter->second->Objects) {
+    for (const auto& PotentialMethod : CalledEquivClassIter->second->Objects) {
       const auto FoundMethodIter = Data.FunctionMap.find(PotentialMethod);
       if (FoundMethodIter != Data.FunctionMap.end()) {
         const auto ActuallyCalledMethod = FoundMethodIter->second;
@@ -725,7 +725,7 @@ void ASTInformationExtractor::handleMergeCXXThisPointers() {
   }
 }
 
-bool ASTInformationExtractor::TraverseCompoundStmt(clang::CompoundStmt *CS) {
+bool ASTInformationExtractor::TraverseCompoundStmt(clang::CompoundStmt* CS) {
   const auto PrevTraverseTypeLocs = TraverseTypeLocs;
   TraverseTypeLocs = false;
   const auto Ret = RecursiveASTVisitor::TraverseCompoundStmt(CS);
@@ -734,30 +734,30 @@ bool ASTInformationExtractor::TraverseCompoundStmt(clang::CompoundStmt *CS) {
 }
 
 void ASTInformationExtractor::handleDestructorCalls() {
-  for (const auto &Destructor : Destructors) {
+  for (const auto& Destructor : Destructors) {
     addCallToCallGraph(Destructor.first, Destructor.second);
   }
 }
 
-void ASTInformationExtractor::ConstructExprHelper(clang::CXXConstructExpr *CE, ObjectNameDereference ThisDeref) {
+void ASTInformationExtractor::ConstructExprHelper(clang::CXXConstructExpr* CE, const ObjectNameDereference& ThisDeref) {
   Objects.emplace(ThisDeref);
   ConstructExprHelper(CE, ThisDeref.GetStringRepr());
 }
 
-void ASTInformationExtractor::ConstructExprHelper(clang::CXXConstructExpr *CE, StringType ThisDeref) {
+void ASTInformationExtractor::ConstructExprHelper(clang::CXXConstructExpr* CE, const StringType& ThisDeref) {
   // Constructor calls are handled similar to direct calls. The main differences are that they have a 'this' pointer and
   // that constructors can not have a return value. The third field in the 'DirectCalls' list is used to assign the
   // return value of a function to the result of calling it, but because constructors can not have a return value we
   // instead pass just 'none'. (This field is not read later anyway if the called function does not return anything)
   assert(CurrentFunctionDecl);
-  CallInfo CI(CE, CTX, CurrentFunctionDecl);
+  const CallInfo CI(CE, CTX, CurrentFunctionDecl);
   const auto CalledUSR = generateUSRForDecl(CE->getConstructor());
-  DirectCalls.push_back({CI, CurrentFunctionDecl, "none", CalledUSR});
+  DirectCalls.emplace_back(CI, CurrentFunctionDecl, "none", CalledUSR);
 
   ThisPointersToMerge.emplace_back(ThisDeref, generateUSRForDecl(CE->getConstructor()));
 }
 
-bool ASTInformationExtractor::VisitCXXDeleteExpr(clang::CXXDeleteExpr *DE) {
+bool ASTInformationExtractor::VisitCXXDeleteExpr(clang::CXXDeleteExpr* DE) {
   if (!CaptureCtorsDtors) {
     return true;
   }
@@ -767,7 +767,7 @@ bool ASTInformationExtractor::VisitCXXDeleteExpr(clang::CXXDeleteExpr *DE) {
       const auto Destructor = CXXClass->getDestructor();
       if (Destructor) {
         auto Referenced = getReferencedDecls(DE->getArgument(), CTX, CurrentFunctionDecl);
-        for (auto &Ref : Referenced) {
+        for (auto& Ref : Referenced) {
           Ref.DereferenceLevel--;
           DestructorHelper(Ref, Destructor);
         }
@@ -779,7 +779,7 @@ bool ASTInformationExtractor::VisitCXXDeleteExpr(clang::CXXDeleteExpr *DE) {
 
 // There is no VisitConstructorInitializer function, so we need to do everything we would have done in the visit method
 // here, but still call the original travers
-bool ASTInformationExtractor::TraverseConstructorInitializer(clang::CXXCtorInitializer *CtorInit) {
+bool ASTInformationExtractor::TraverseConstructorInitializer(clang::CXXCtorInitializer* CtorInit) {
   if (CtorInit->isAnyMemberInitializer()) {
     // TODO Code duplication with var init
     const auto ConstructExpr = llvm::dyn_cast<clang::CXXConstructExpr>(CtorInit->getInit());
@@ -796,22 +796,22 @@ bool ASTInformationExtractor::TraverseConstructorInitializer(clang::CXXCtorIniti
       }
     } else {
       const auto ReferencedUSR = generateUSRForDecl(CtorInit->getAnyMember());
-      ObjectNameDereference Deref(std::make_shared<ObjectName>(ReferencedUSR));
+      const ObjectNameDereference Deref(std::make_shared<ObjectName>(ReferencedUSR));
       Initalizers.emplace_back(Deref, CtorInit->getInit(), CurrentFunctionDecl);
     }
   } else {
     // Base initializer
     if (CaptureStackCtorsDtors) {
-      auto Init = CtorInit->getInit();
-      if (auto ExprClean = llvm::dyn_cast<clang::ExprWithCleanups>(Init)) {
-        Init = ExprClean->getSubExpr();
-      }
-      const auto ConstructExpr = llvm::dyn_cast<clang::CXXConstructExpr>(CtorInit->getInit());
       //  TODO: Base initialisers are not always just CXXConstructExpr, they can also contain ExprWithCleanups and
       //  possible other expressions. See std::system_error for an example
+      // auto Init = CtorInit->getInit();
+      // if (auto ExprClean = llvm::dyn_cast<clang::ExprWithCleanups>(Init)) {
+      //  Init = ExprClean->getSubExpr();
+      //}
+      const auto ConstructExpr = llvm::dyn_cast<clang::CXXConstructExpr>(CtorInit->getInit());
       if (ConstructExpr) {
-        StringType ThisUSR(generateUSRForThisExpr(CurrentFunctionDecl));
-        StringType ThisUSRRHS(generateUSRForThisExpr(ConstructExpr->getConstructor()));
+        const StringType ThisUSR(generateUSRForThisExpr(CurrentFunctionDecl));
+        const StringType ThisUSRRHS(generateUSRForThisExpr(ConstructExpr->getConstructor()));
         VectorType<StringType> RHS;
         RHS.push_back(ThisUSRRHS);
         ConstructorMergeList.push_back({ThisUSR, RHS});
@@ -822,7 +822,7 @@ bool ASTInformationExtractor::TraverseConstructorInitializer(clang::CXXCtorIniti
   return RecursiveASTVisitor::TraverseConstructorInitializer(CtorInit);
 }
 
-bool ASTInformationExtractor::VisitFieldDecl(clang::FieldDecl *FD) {
+bool ASTInformationExtractor::VisitFieldDecl(clang::FieldDecl* FD) {
   if (FD->isUnnamedBitfield()) {
     // Unnamed bitfields can not be referenced
     return true;
@@ -833,7 +833,7 @@ bool ASTInformationExtractor::VisitFieldDecl(clang::FieldDecl *FD) {
 }
 
 void ASTInformationExtractor::handleMergeOverrides() {
-  for (const auto &ToMerge : OverridesToMerge) {
+  for (const auto& ToMerge : OverridesToMerge) {
     const auto ItFirst = Data.FindMap.find(ToMerge.first);
     assert(ItFirst != Data.FindMap.end());
     const auto ItSecond = Data.FindMap.find(ToMerge.second);
@@ -845,24 +845,24 @@ void ASTInformationExtractor::handleMergeOverrides() {
 }
 
 void ASTInformationExtractor::handleDirectCalls() {
-  for (const auto &Call : DirectCalls) {
+  for (const auto& Call : DirectCalls) {
     const auto CallInfo = std::get<0>(Call);
     const auto ParentDecl = std::get<1>(Call);
     const auto CallerUSR = generateUSRForDecl(ParentDecl);
-    const auto &CallExprUSR = std::get<2>(Call);
-    const auto &CalledUSR = std::get<3>(Call);
+    const auto& CallExprUSR = std::get<2>(Call);
+    const auto& CalledUSR = std::get<3>(Call);
     assert(CallInfo.CalledObjects.size() == 1);
     auto Ret = ::implementation::mergeFunctionCallImpl(Data, CalledUSR, CallerUSR, CallInfo, CallExprUSR);
     if (Ret) {
       addCallToCallGraph(Ret->second.first, Ret->second.second);
-      for (const auto &ToMerge : Ret->first) {
+      for (const auto& ToMerge : Ret->first) {
         mergeFunctionCall(ToMerge.first, ToMerge.second);
       }
     }
   }
 }
 
-bool ASTInformationExtractor::VisitCXXConstructExpr(clang::CXXConstructExpr *CE) {
+bool ASTInformationExtractor::VisitCXXConstructExpr(clang::CXXConstructExpr* CE) {
   if (InNew && !CaptureCtorsDtors) {
     return true;
   }
@@ -873,7 +873,7 @@ bool ASTInformationExtractor::VisitCXXConstructExpr(clang::CXXConstructExpr *CE)
       // duplication
       const auto ReferencedUSR = generateUSRForCallOrConstructExpr(CE, CTX, CurrentFunctionDecl);
       const auto Tmp = std::make_shared<ObjectName>(ReferencedUSR);
-      ObjectNameDereference TmpDeref(Tmp, -1);
+      const ObjectNameDereference TmpDeref(Tmp, -1);
       Objects.emplace(TmpDeref);
       ConstructExprHelper(CE, TmpDeref);
     }
@@ -891,7 +891,7 @@ bool ASTInformationExtractor::VisitCXXConstructExpr(clang::CXXConstructExpr *CE)
   return true;
 }
 
-bool ASTInformationExtractor::VisitMaterializeTemporaryExpr(clang::MaterializeTemporaryExpr *MTE) {
+bool ASTInformationExtractor::VisitMaterializeTemporaryExpr(clang::MaterializeTemporaryExpr* MTE) {
   if (!CurrentFunctionDecl) {
     // TODO: MaterializeTemporaryExpr can be outside of functions
     return true;
@@ -908,13 +908,13 @@ bool ASTInformationExtractor::VisitMaterializeTemporaryExpr(clang::MaterializeTe
 }
 
 void ASTInformationExtractor::handleMergeConstructorAssignments() {
-  for (const auto &Assignment : ConstructorMergeList) {
-    const auto &LHS = Assignment.first;
-    const auto &RHS = Assignment.second;
+  for (const auto& Assignment : ConstructorMergeList) {
+    const auto& LHS = Assignment.first;
+    const auto& RHS = Assignment.second;
     assert(!LHS.empty());
     const auto ItL = Data.FindMap.find(LHS);
     assert(ItL != Data.FindMap.end());
-    for (const auto &R : RHS) {
+    for (const auto& R : RHS) {
       const auto ItR = Data.FindMap.find(R);
       assert(ItR != Data.FindMap.end());
       if (ItL->second != ItR->second) {
@@ -924,14 +924,14 @@ void ASTInformationExtractor::handleMergeConstructorAssignments() {
   }
 }
 
-bool ASTInformationExtractor::VisitCXXBindTemporaryExpr(clang::CXXBindTemporaryExpr *BTE) {
+bool ASTInformationExtractor::VisitCXXBindTemporaryExpr(clang::CXXBindTemporaryExpr* BTE) {
   if (!CaptureCtorsDtors) {
     return true;
   }
   const auto Destructor = BTE->getTemporary()->getDestructor();
   if (Destructor) {
     auto Referenced = getReferencedDecls(BTE->getSubExpr(), CTX, CurrentFunctionDecl);
-    for (auto &Ref : Referenced) {
+    for (auto& Ref : Referenced) {
       Ref.DereferenceLevel--;
       DestructorHelper(Ref, Destructor);
     }
@@ -940,16 +940,16 @@ bool ASTInformationExtractor::VisitCXXBindTemporaryExpr(clang::CXXBindTemporaryE
   return true;
 }
 
-bool ASTInformationExtractor::TraverseCXXNewExpr(clang::CXXNewExpr *NE, [[maybe_unused]] DataRecursionQueue *Queue) {
+bool ASTInformationExtractor::TraverseCXXNewExpr(clang::CXXNewExpr* NE, [[maybe_unused]] DataRecursionQueue* Queue) {
   InNew = true;
   const bool Ret = RecursiveASTVisitor::TraverseCXXNewExpr(NE, nullptr);
   InNew = false;
   return Ret;
 }
 
-bool ASTInformationExtractor::TraverseStaticAssertDecl(clang::StaticAssertDecl *) { return true; }
+bool ASTInformationExtractor::TraverseStaticAssertDecl(clang::StaticAssertDecl*) { return true; }
 bool ASTInformationExtractor::TraverseDeclarationNameInfo(clang::DeclarationNameInfo) { return true; }
-bool ASTInformationExtractor::TraverseRecordDecl(clang::RecordDecl *RD) {
+bool ASTInformationExtractor::TraverseRecordDecl(clang::RecordDecl* RD) {
   if (RD->getDeclContext()->isDependentContext()) {
     return true;
   }
@@ -957,14 +957,14 @@ bool ASTInformationExtractor::TraverseRecordDecl(clang::RecordDecl *RD) {
   return Ret;
 }
 
-bool ASTInformationExtractor::TraverseCXXRecordDecl(clang::CXXRecordDecl *RD) {
+bool ASTInformationExtractor::TraverseCXXRecordDecl(clang::CXXRecordDecl* RD) {
   if (RD->getDeclContext()->isDependentContext()) {
     return true;
   }
   const auto Ret = RecursiveASTVisitor::TraverseCXXRecordDecl(RD);
   return Ret;
 }
-bool ASTInformationExtractor::VisitRecordType(clang::RecordType *RT) {
+bool ASTInformationExtractor::VisitRecordType(clang::RecordType* RT) {
   // We need to be careful not to run into infinite recursions here
   if ((!InTypededDecl) || (RT == CurrentRecordType)) {
     return true;
@@ -977,79 +977,67 @@ bool ASTInformationExtractor::VisitRecordType(clang::RecordType *RT) {
   CurrentRecordType = nullptr;
   return Ret;
 }
-bool ASTInformationExtractor::TraverseCXXNoexceptExpr(clang::CXXNoexceptExpr *, DataRecursionQueue *) { return true; }
+bool ASTInformationExtractor::TraverseCXXNoexceptExpr(clang::CXXNoexceptExpr*, DataRecursionQueue*) { return true; }
 
 // This is the expanded code from clangs AST visitor, modified to skip exception specifieres and similar
 bool ASTInformationExtractor::TraverseFunctionProtoTypeLoc(clang::FunctionProtoTypeLoc TL) {
   if (!getDerived().shouldTraversePostOrder()) {
-    do {
-      if (!getDerived().WalkUpFromFunctionProtoTypeLoc(TL))
+    if (!getDerived().WalkUpFromFunctionProtoTypeLoc(TL))
+      return false;
+    if (getDerived().shouldWalkTypesOfTypeLocs()) {
+      if (!getDerived().WalkUpFromFunctionProtoType(const_cast<clang::FunctionProtoType*>(TL.getTypePtr()))) {
         return false;
-    } while (false);
-    if (getDerived().shouldWalkTypesOfTypeLocs())
-      do {
-        if (!getDerived().WalkUpFromFunctionProtoType(const_cast<clang::FunctionProtoType *>(TL.getTypePtr())))
-          return false;
-      } while (false);
-  }
-  {
-    {
-      do {
-        if (!getDerived().TraverseTypeLoc(TL.getReturnLoc()))
-          return false;
-      } while (false);
-      const clang::FunctionProtoType *T = TL.getTypePtr();
-      for (unsigned I = 0, E = TL.getNumParams(); I != E; ++I) {
-        if (TL.getParam(I)) {
-          do {
-            if (!getDerived().TraverseDecl(TL.getParam(I)))
-              return false;
-          } while (false);
-        } else if (I < T->getNumParams()) {
-          do {
-            if (!getDerived().TraverseType(T->getParamType(I)))
-              return false;
-          } while (false);
-        }
       }
-    };
+    }
+  }
+  if (!getDerived().TraverseTypeLoc(TL.getReturnLoc()))
+    return false;
+  const clang::FunctionProtoType* T = TL.getTypePtr();
+  for (unsigned i = 0, E = TL.getNumParams(); i != E; ++i) {
+    if (TL.getParam(i)) {
+      if (!getDerived().TraverseDecl(TL.getParam(i))) {
+        return false;
+      }
+    } else if (i < T->getNumParams()) {
+      if (!getDerived().TraverseType(T->getParamType(i))) {
+        return false;
+      }
+    }
   }
   if (getDerived().shouldTraversePostOrder()) {
-    do {
-      if (!getDerived().WalkUpFromFunctionProtoTypeLoc(TL))
-        return false;
-    } while (false);
+    if (!getDerived().WalkUpFromFunctionProtoTypeLoc(TL)) {
+      return false;
+    }
     if (getDerived().shouldWalkTypesOfTypeLocs())
-      do {
-        if (!getDerived().WalkUpFromFunctionProtoType(const_cast<clang::FunctionProtoType *>(TL.getTypePtr())))
-          return false;
-      } while (false);
+      if (!getDerived().WalkUpFromFunctionProtoType(const_cast<clang::FunctionProtoType*>(TL.getTypePtr()))) {
+        return false;
+      }
   }
   return true;
 }
 
-bool ObjectName::operator<(const ObjectName &rhs) const { return Object < rhs.Object; }
+bool ObjectName::operator<(const ObjectName& rhs) const { return Object < rhs.Object; }
 
-bool ObjectName::operator>(const ObjectName &rhs) const { return rhs < *this; }
+bool ObjectName::operator>(const ObjectName& rhs) const { return rhs < *this; }
 
-bool ObjectName::operator<=(const ObjectName &rhs) const { return !(rhs < *this); }
+bool ObjectName::operator<=(const ObjectName& rhs) const { return !(rhs < *this); }
 
-bool ObjectName::operator>=(const ObjectName &rhs) const { return !(*this < rhs); }
+bool ObjectName::operator>=(const ObjectName& rhs) const { return !(*this < rhs); }
 
-bool ObjectName::operator==(const ObjectName &rhs) const { return Object == rhs.Object; }
+bool ObjectName::operator==(const ObjectName& rhs) const { return Object == rhs.Object; }
 
-bool ObjectName::operator!=(const ObjectName &rhs) const { return !(rhs == *this); }
+bool ObjectName::operator!=(const ObjectName& rhs) const { return !(rhs == *this); }
 
 StringType ObjectName::getStringRepr() const { return Object; }
 
-ObjectName::ObjectName(clang::NamedDecl *Decl) {
+ObjectName::ObjectName(clang::NamedDecl* Decl) {
   Object = generateUSRForDecl(Decl);
   if (llvm::isa<clang::FunctionDecl>(Decl)) {
     Function = true;
   }
 }
 
-ObjectName::ObjectName(clang::CallExpr *CE, const clang::ASTContext *CTX, clang::FunctionDecl *ParentFunctionDecl) {
+ObjectName::ObjectName(clang::CallExpr* CE, const clang::ASTContext* CTX, clang::FunctionDecl* ParentFunctionDecl) {
   Object = generateUSRForCallOrConstructExpr(CE, CTX, ParentFunctionDecl);
 }
 
@@ -1062,29 +1050,29 @@ std::optional<StringType> ObjectName::GetFunctionName() const {
 
 ObjectName::ObjectName(StringType Name) : Object(std::move(Name)) {}
 
-ObjectName::ObjectName(const clang::CXXThisExpr *, clang::FunctionDecl *ParentFunctionDecl) {
+ObjectName::ObjectName(const clang::CXXThisExpr*, clang::FunctionDecl* ParentFunctionDecl) {
   Object = generateUSRForThisExpr(ParentFunctionDecl);
 }
 
-ObjectName::ObjectName(clang::CXXNewExpr *NE, clang::FunctionDecl *ParentFunctionDecl) {
+ObjectName::ObjectName(clang::CXXNewExpr* NE, clang::FunctionDecl* ParentFunctionDecl) {
   Object = generateUSRForNewExpr(NE, ParentFunctionDecl);
 }
 
-ObjectName::ObjectName(clang::MaterializeTemporaryExpr *MTE, clang::FunctionDecl *ParentFunctionDecl) {
+ObjectName::ObjectName(clang::MaterializeTemporaryExpr* MTE, clang::FunctionDecl* ParentFunctionDecl) {
   Object = generateUSRForMaterializeTemporaryExpr(MTE, ParentFunctionDecl);
 }
 
-ObjectName::ObjectName(clang::CXXConstructExpr *CE, const clang::ASTContext *CTX,
-                       clang::FunctionDecl *ParentFunctionDecl) {
+ObjectName::ObjectName(clang::CXXConstructExpr* CE, const clang::ASTContext* CTX,
+                       clang::FunctionDecl* ParentFunctionDecl) {
   Object = generateUSRForCallOrConstructExpr(CE, CTX, ParentFunctionDecl);
 }
 
 // TODO: Typeid
 // ObjectName::ObjectName(const clang::CXXTypeidExpr *TE) { Object = generateUSRForTypeidExpr(TE); }
+// TODO: This check for equality is recursive, is this intended?
+bool ObjectNameMember::operator==(const ObjectNameMember& Rhs) const { return DB == Rhs.DB && Member == Rhs.Member; }
 
-bool ObjectNameMember::operator==(const ObjectNameMember &Rhs) const { return DB == Rhs.DB && Member == Rhs.Member; }
-
-bool ObjectNameMember::operator!=(const ObjectNameMember &rhs) const { return !(rhs == *this); }
+bool ObjectNameMember::operator!=(const ObjectNameMember& rhs) const { return !(rhs == *this); }
 
 StringType ObjectNameMember::GetStringRepr() const {
   StringType Output;
@@ -1095,7 +1083,7 @@ StringType ObjectNameMember::GetStringRepr() const {
   return Output;
 }
 
-bool ObjectNameMember::operator<(const ObjectNameMember &Rhs) const {
+bool ObjectNameMember::operator<(const ObjectNameMember& Rhs) const {
   if (DB < Rhs.DB) {
     return true;
   }
@@ -1105,15 +1093,16 @@ bool ObjectNameMember::operator<(const ObjectNameMember &Rhs) const {
   return Member < Rhs.Member;
 }
 
-bool ObjectNameMember::operator>(const ObjectNameMember &rhs) const { return rhs < *this; }
+bool ObjectNameMember::operator>(const ObjectNameMember& rhs) const { return rhs < *this; }
 
-bool ObjectNameMember::operator<=(const ObjectNameMember &rhs) const { return !(rhs < *this); }
+bool ObjectNameMember::operator<=(const ObjectNameMember& rhs) const { return !(rhs < *this); }
 
-bool ObjectNameMember::operator>=(const ObjectNameMember &rhs) const { return !(*this < rhs); }
+bool ObjectNameMember::operator>=(const ObjectNameMember& rhs) const { return !(*this < rhs); }
 
-ObjectNameMember::ObjectNameMember(ObjectNameDereference DB, StringType Member) : DB(DB), Member(std::move(Member)) {}
+ObjectNameMember::ObjectNameMember(ObjectNameDereference DB, StringType Member)
+    : DB(std::move(DB)), Member(std::move(Member)) {}
 
-bool ObjectNameDereference::operator==(const ObjectNameDereference &Rhs) const {
+bool ObjectNameDereference::operator==(const ObjectNameDereference& Rhs) const {
   assert(getOb() || getMb());
   assert(Rhs.getOb() || Rhs.getMb());
   if (getOb() && Rhs.getOb()) {
@@ -1125,7 +1114,7 @@ bool ObjectNameDereference::operator==(const ObjectNameDereference &Rhs) const {
   return false;
 }
 
-bool ObjectNameDereference::operator!=(const ObjectNameDereference &rhs) const { return !(rhs == *this); }
+bool ObjectNameDereference::operator!=(const ObjectNameDereference& rhs) const { return !(rhs == *this); }
 
 StringType ObjectNameDereference::GetStringRepr() const {
   StringType Output;
@@ -1145,7 +1134,7 @@ StringType ObjectNameDereference::GetStringRepr() const {
   return Output;
 }
 
-bool ObjectNameDereference::operator<(const ObjectNameDereference &Rhs) const {
+bool ObjectNameDereference::operator<(const ObjectNameDereference& Rhs) const {
   assert(getOb() || getMb());
   assert(Rhs.getOb() || Rhs.getMb());
   if (getOb() && Rhs.getOb()) {
@@ -1173,11 +1162,11 @@ bool ObjectNameDereference::operator<(const ObjectNameDereference &Rhs) const {
   return std::tie(LOB, LMB, DereferenceLevel) < std::tie(ROB, RMB, Rhs.DereferenceLevel);
 }
 
-bool ObjectNameDereference::operator>(const ObjectNameDereference &rhs) const { return rhs < *this; }
+bool ObjectNameDereference::operator>(const ObjectNameDereference& rhs) const { return rhs < *this; }
 
-bool ObjectNameDereference::operator<=(const ObjectNameDereference &rhs) const { return !(rhs < *this); }
+bool ObjectNameDereference::operator<=(const ObjectNameDereference& rhs) const { return !(rhs < *this); }
 
-bool ObjectNameDereference::operator>=(const ObjectNameDereference &rhs) const { return !(*this < rhs); }
+bool ObjectNameDereference::operator>=(const ObjectNameDereference& rhs) const { return !(*this < rhs); }
 
 std::optional<StringType> ObjectNameDereference::GetFunctionName() const {
   if (DereferenceLevel != 0 && !(DereferenceLevel == -1 && getOb())) {
@@ -1199,7 +1188,7 @@ ObjectNameDereference::ObjectNameDereference(std::shared_ptr<ObjectNameMember> M
   assert(this->MB);
 }
 
-Prefix::Prefix(const ObjectNameDereference &Object, StringType Member)
+Prefix::Prefix(const ObjectNameDereference& Object, StringType Member)
     : Object(Object.GetStringRepr()), Member(std::move(Member)) {}
 
 StringType Prefix::GetStringRepr() const {
@@ -1215,11 +1204,11 @@ StringType Prefix::GetStringRepr() const {
   return Output;
 }
 
-bool Prefix::operator==(const Prefix &rhs) const { return Object == rhs.Object && Member == rhs.Member; }
+bool Prefix::operator==(const Prefix& rhs) const { return Object == rhs.Object && Member == rhs.Member; }
 
-bool Prefix::operator!=(const Prefix &rhs) const { return !(rhs == *this); }
+bool Prefix::operator!=(const Prefix& rhs) const { return !(rhs == *this); }
 
-bool Prefix::operator<(const Prefix &rhs) const {
+bool Prefix::operator<(const Prefix& rhs) const {
   if (Object < rhs.Object)
     return true;
   if (rhs.Object < Object)
@@ -1229,22 +1218,23 @@ bool Prefix::operator<(const Prefix &rhs) const {
   return !Member.empty();
 }
 
-bool Prefix::operator>(const Prefix &rhs) const { return rhs < *this; }
+bool Prefix::operator>(const Prefix& rhs) const { return rhs < *this; }
 
-bool Prefix::operator<=(const Prefix &rhs) const { return !(rhs < *this); }
+bool Prefix::operator<=(const Prefix& rhs) const { return !(rhs < *this); }
 
-bool Prefix::operator>=(const Prefix &rhs) const { return !(*this < rhs); }
+bool Prefix::operator>=(const Prefix& rhs) const { return !(*this < rhs); }
 
-Prefix::Prefix(const ObjectNameDereference &Object) : Object(Object.GetStringRepr()) {}
+Prefix::Prefix(const ObjectNameDereference& Object) : Object(Object.GetStringRepr()) {}
 
-Prefix::Prefix(StringType Object, StringType Member) : Object(Object), Member(Member) {}
+Prefix::Prefix(const StringType& Object, const StringType& Member)
+    : Object(std::move(Object)), Member(std::move(Member)) {}
 
-FunctionInfo::FunctionInfo(clang::FunctionDecl *FD, clang::CXXMethodDecl *RealLambdaMethod) {
+FunctionInfo::FunctionInfo(clang::FunctionDecl* FD, clang::CXXMethodDecl* RealLambdaMethod) {
   if (FD->isVariadic()) {
     IsVariadic = true;
   }
   MangledNames = getMangledName(FD);
-  for (auto Param : FD->parameters()) {
+  for (const auto& Param : FD->parameters()) {
     const auto Decls = getDecls(Param, &FD->getASTContext());
     assert(Decls.size() == 1);
     Parameters.push_back(Decls[0]);
@@ -1263,17 +1253,17 @@ FunctionInfo::FunctionInfo(clang::FunctionDecl *FD, clang::CXXMethodDecl *RealLa
   }
 }
 
-CallInfo::CallInfo(clang::CallExpr *CE, const clang::ASTContext *CTX, clang::FunctionDecl *ParentFunctionDecl,
+CallInfo::CallInfo(clang::CallExpr* CE, const clang::ASTContext* CTX, clang::FunctionDecl* ParentFunctionDecl,
                    bool IsOperatorMember) {
   CalledObjects = getReferencedDeclsStr(CE->getCallee(), CTX, ParentFunctionDecl);
   const auto Args = CE->getArgs();
   // Skip this pointer
-  for (unsigned I = (IsOperatorMember ? 1 : 0); I < CE->getNumArgs(); I++) {
-    Arguments.push_back(getReferencedDeclsStr(Args[I], CTX, ParentFunctionDecl));
+  for (unsigned i = (IsOperatorMember ? 1 : 0); i < CE->getNumArgs(); i++) {
+    Arguments.push_back(getReferencedDeclsStr(Args[i], CTX, ParentFunctionDecl));
   }
 }
 
-CallInfo::CallInfo(clang::CXXConstructExpr *CE, const clang::ASTContext *CTX, clang::FunctionDecl *ParentFunctionDecl) {
+CallInfo::CallInfo(clang::CXXConstructExpr* CE, const clang::ASTContext* CTX, clang::FunctionDecl* ParentFunctionDecl) {
   CalledObjects.push_back(generateUSRForDecl(CE->getConstructor()));
   for (const auto Arg : CE->arguments()) {
     Arguments.push_back(getReferencedDeclsStr(Arg, CTX, ParentFunctionDecl));
@@ -1283,8 +1273,8 @@ CallInfo::CallInfo(clang::CXXConstructExpr *CE, const clang::ASTContext *CTX, cl
 void EquivClassContainer::InitReferencedInCalls() {
   ReferencedInCalls.clear();
   for (auto CallInfo = CallInfoMap.cbegin(); CallInfo != CallInfoMap.cend(); CallInfo++) {
-    auto Refs = CallInfo->second.CalledObjects;
-    for (auto Ref : Refs) {
+    const auto Refs = CallInfo->second.CalledObjects;
+    for (const auto& Ref : Refs) {
       ReferencedInCalls[Ref].push_back(CallInfo);
     }
   }
@@ -1293,12 +1283,12 @@ void EquivClassContainer::InitReferencedInCalls() {
 EquivClass::EquivClass(StringType Obj) { Objects.emplace_back(std::move(Obj)); }
 
 std::pair<VectorType<std::pair<StringType, CallInfoConstIterType>>, EquivClassesIterator> mergeRecurisve(
-    EquivClassContainer &Data, EquivClassesIterator E1, EquivClassesIterator E2) {
+    EquivClassContainer& Data, EquivClassesIterator E1, EquivClassesIterator E2) {
   const auto MergeResult = merge(Data, E1, E2);
   VectorType<std::pair<StringType, CallInfoConstIterType>> Ret;
 
   // Merge function calls
-  for (const auto &Entry : MergeResult.ObjectsToMerge) {
+  for (const auto& Entry : MergeResult.ObjectsToMerge) {
     auto F = Data.FindMap.find(Entry.first);
     auto F1 = Data.FindMap.find(Entry.second);
     assert(F != Data.FindMap.end());
@@ -1315,7 +1305,7 @@ std::pair<VectorType<std::pair<StringType, CallInfoConstIterType>>, EquivClasses
 }
 
 std::optional<std::pair<VectorType<std::pair<StringType, CallInfoConstIterType>>, std::pair<StringType, StringType>>>
-mergeFunctionCall(EquivClassContainer &Data, const StringType &CalledObj, CallInfoConstIterType CE) {
+mergeFunctionCall(EquivClassContainer& Data, const StringType& CalledObj, CallInfoConstIterType CE) {
   // TODO: A cache of already merged functions could be very useful here
   //  if (MergedCalls.find({CalledObj, CE}) != MergedCalls.end()) {
   //    return;
@@ -1329,16 +1319,16 @@ mergeFunctionCall(EquivClassContainer &Data, const StringType &CalledObj, CallIn
 }
 
 std::optional<std::pair<VectorType<std::pair<StringType, CallInfoConstIterType>>, std::pair<StringType, StringType>>>
-mergeFunctionCallImpl(EquivClassContainer &Data, const StringType &CalledFunctionName,
-                      const StringType &CallingFunctionName, const CallInfo &CI, const StringType &CallExprUSR) {
+mergeFunctionCallImpl(EquivClassContainer& Data, const StringType& CalledFunctionName,
+                      const StringType& CallingFunctionName, const CallInfo& CI, const StringType& CallExprUSR) {
   VectorType<std::pair<StringType, CallInfoConstIterType>> Ret;
   assert(Data.FunctionInfoMap.find(CalledFunctionName) != Data.FunctionInfoMap.end());
-  auto &CalledFunction = Data.FunctionInfoMap[CalledFunctionName];
+  auto& CalledFunction = Data.FunctionInfoMap[CalledFunctionName];
 
   // Arguments
   unsigned int I = 0;
-  unsigned int NumArguments = CI.Arguments.size();
-  for (const auto &Arg : CalledFunction.Parameters) {
+  const unsigned int NumArguments = CI.Arguments.size();
+  for (const auto& Arg : CalledFunction.Parameters) {
     VectorType<StringType> RHS;
     if (I < NumArguments) {
       RHS = CI.Arguments[I];
@@ -1350,7 +1340,7 @@ mergeFunctionCallImpl(EquivClassContainer &Data, const StringType &CalledFunctio
 
     const auto ItL = Data.FindMap.find(Arg);
     assert(ItL != Data.FindMap.end());
-    for (const auto &R : RHS) {
+    for (const auto& R : RHS) {
       const auto ItR = Data.FindMap.find(R);
 
       assert(ItR != Data.FindMap.end());
@@ -1366,10 +1356,10 @@ mergeFunctionCallImpl(EquivClassContainer &Data, const StringType &CalledFunctio
   // Returns
   const auto RHSObjects = CalledFunction.ReferencedInReturnStmts;
   if (!RHSObjects.empty()) {
-    ObjectName RetObj(CallExprUSR);
+    const ObjectName RetObj(CallExprUSR);
     const auto ItL = Data.FindMap.find(RetObj.getStringRepr());
     assert(ItL != Data.FindMap.end());
-    for (const auto &R : RHSObjects) {
+    for (const auto& R : RHSObjects) {
       const auto ItR = Data.FindMap.find(R);
       assert(ItR != Data.FindMap.end());
       if (ItL->second != ItR->second) {
@@ -1382,11 +1372,11 @@ mergeFunctionCallImpl(EquivClassContainer &Data, const StringType &CalledFunctio
   return std::make_pair(Ret, std::make_pair(CallingFunctionName, CalledFunctionName));
 }
 
-void GetFunctionsToMerge(const EquivClassContainer &Data, VectorType<std::pair<StringType, CallInfoConstIterType>> &Ret,
-                         const EquivClass &E) {
+void GetFunctionsToMerge(const EquivClassContainer& Data, VectorType<std::pair<StringType, CallInfoConstIterType>>& Ret,
+                         const EquivClass& E) {
   VectorType<StringType> FunctionDecls;
   VectorType<CallInfoConstIterType> UsedInCall;
-  for (const auto &Obj : E.Objects) {
+  for (const auto& Obj : E.Objects) {
     if (Data.FunctionMap.find(Obj) != Data.FunctionMap.end()) {
       FunctionDecls.emplace_back(Obj);
     }
@@ -1402,7 +1392,7 @@ void GetFunctionsToMerge(const EquivClassContainer &Data, VectorType<std::pair<S
   }
 }
 
-MergeResult merge(EquivClassContainer &Data, EquivClassesIterator E1, EquivClassesIterator E2) {
+MergeResult merge(EquivClassContainer& Data, EquivClassesIterator E1, EquivClassesIterator E2) {
   assert(E1 != E2);
   assert(!E1->Objects.empty());
   assert(!E2->Objects.empty());
@@ -1414,14 +1404,14 @@ MergeResult merge(EquivClassContainer &Data, EquivClassesIterator E1, EquivClass
   E.Objects.insert(E.Objects.end(), E1->Objects.begin(), E1->Objects.end());
   E.Objects.insert(E.Objects.end(), E2->Objects.begin(), E2->Objects.end());
   E.Prefixes = E1->Prefixes;
-  VectorType<Prefix> Prefix2 = E2->Prefixes;
+  const VectorType<Prefix> Prefix2 = E2->Prefixes;
   GetPrefixesToMerge(E, Prefix2, ObjectsToMerge);
 
   const auto Iter = Data.EquivClasses.insert(Data.EquivClasses.end(), E);
-  for (const auto &Entry : E1->Objects) {
+  for (const auto& Entry : E1->Objects) {
     Data.FindMap[Entry] = Iter;
   }
-  for (const auto &Entry : E2->Objects) {
+  for (const auto& Entry : E2->Objects) {
     Data.FindMap[Entry] = Iter;
   }
 
@@ -1436,11 +1426,11 @@ MergeResult merge(EquivClassContainer &Data, EquivClassesIterator E1, EquivClass
   return {Data.FindMap.find(E.Objects.front()), ObjectsToMerge};
 }
 
-void GetPrefixesToMerge(EquivClass &EquivClassToMergeInto, const VectorType<Prefix> &PrefixToMerge,
-                        VectorType<std::pair<StringType, StringType>> &ObjectsToMerge) {
-  for (const auto &P : PrefixToMerge) {
+void GetPrefixesToMerge(EquivClass& EquivClassToMergeInto, const VectorType<Prefix>& PrefixToMerge,
+                        VectorType<std::pair<StringType, StringType>>& ObjectsToMerge) {
+  for (const auto& P : PrefixToMerge) {
     const auto O1 = std::find_if(
-        EquivClassToMergeInto.Prefixes.begin(), EquivClassToMergeInto.Prefixes.end(), [P](Prefix foundPrefix) {
+        EquivClassToMergeInto.Prefixes.begin(), EquivClassToMergeInto.Prefixes.end(), [P](const Prefix& foundPrefix) {
           return (P.Object != foundPrefix.Object) &&
                  ((P.Member.empty() && foundPrefix.Member.empty()) ||
                   ((!P.Member.empty() && !foundPrefix.Member.empty()) && (P.Member == foundPrefix.Member)));
@@ -1456,11 +1446,11 @@ void GetPrefixesToMerge(EquivClass &EquivClassToMergeInto, const VectorType<Pref
   }
 }
 
-ASTInformationExtractor::InitInfo::InitInfo(const ObjectNameDereference &object, clang::Expr *init,
-                                            clang::FunctionDecl *parentFunction)
-    : Object(object), Init(init), ParentFunction(parentFunction) {}
+ASTInformationExtractor::InitInfo::InitInfo(ObjectNameDereference object, clang::Expr* init,
+                                            clang::FunctionDecl* parentFunction)
+    : Object(std::move(object)), Init(init), ParentFunction(parentFunction) {}
 }  // namespace implementation
-void calculateAliasInfo(clang::TranslationUnitDecl *TD, CallGraph *CG, nlohmann::json &J, int MetacgFormatVersion,
+void calculateAliasInfo(clang::TranslationUnitDecl* TD, CallGraph* CG, nlohmann::json& J, int MetacgFormatVersion,
                         bool captureCtorsDtors, bool captureStackCtorsDtors) {
   assert(TD);
   assert(CG);

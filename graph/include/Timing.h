@@ -7,9 +7,9 @@
 #ifndef METACG_PGIS_TIMING_H
 #define METACG_PGIS_TIMING_H
 
-#include "spdlog/spdlog.h"
-
+#include "LoggerUtil.h"
 #include <chrono>
+#include <utility>
 
 namespace metacg {
 class RuntimeTimer {
@@ -18,13 +18,14 @@ class RuntimeTimer {
   using tp = clock::time_point;
   using duration = clock::duration;
 
-  explicit RuntimeTimer(const std::string &regionName, bool printOnDestruction = true)
-      : region(regionName), printOnDestruct(printOnDestruction), start(clock::now()) {}
+  explicit RuntimeTimer(std::string regionName, bool printOnDestruction = true)
+      : region(std::move(regionName)), printOnDestruct(printOnDestruction), start(clock::now()) {}
   ~RuntimeTimer() {
     if (printOnDestruct) {
       stop();
       auto durInSeconds = getTimePassed();
-      spdlog::get("console")->info("The region \"{}\" required {} seconds to finish.", region, durInSeconds.count());
+      MCGLogger::instance().getConsole()->info("The region \"{}\" required {} seconds to finish.", region,
+                                               durInSeconds.count());
     }
   }
 

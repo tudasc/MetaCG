@@ -5,18 +5,21 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(MetacgGraphLibSources
     src/CgNode.cpp
     src/Callgraph.cpp
-    src/MCGReader.cpp
+    src/io/VersionTwoMCGReader.cpp
+    src/io/VersionThreeMCGReader.cpp
     src/MCGManager.cpp
-    src/MCGWriter.cpp
+    src/io/VersionTwoMCGWriter.cpp
+    src/io/VersionThreeMCGWriter.cpp
     src/DotIO.cpp
+    src/MCGBaseInfo.cpp
     src/ReachabilityAnalysis.cpp
-    include/MCGReader.h
+    include/io/MCGReader.h
     include/CgNode.h
     include/Callgraph.h
     include/CgNodePtr.h
-    include/MetaData.h
+    include/metadata/MetaData.h
     include/MCGManager.h
-    include/MCGWriter.h
+    include/io/MCGWriter.h
     include/Util.h
     include/MCGBaseInfo.h
     include/LoggerUtil.h

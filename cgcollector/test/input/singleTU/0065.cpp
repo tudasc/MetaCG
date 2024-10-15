@@ -19,7 +19,7 @@ Fn get_func_ptr(int i) {
 /**
  * Main function
  */
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   // function pointer test
   Fn func = get_func_ptr(0);
   func();

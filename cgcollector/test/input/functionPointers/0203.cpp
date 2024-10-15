@@ -1,7 +1,7 @@
 
 using func_t = void (*)();
 
-void get_func2(func_t *out, func_t in) {
+void get_func2(func_t* out, func_t in) {
   *out = in;
   in();
 }

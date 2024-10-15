@@ -9,14 +9,22 @@
 
 #include "CgNode.h"
 #include "LoggerUtil.h"
+#include <cstdlib>
 #include <set>
 #include <string>
-
-
+#include <string_view>
 
 namespace metacg::util {
 
-inline std::set<std::string> getFunctionNames(const std::unordered_set<CgNode *> &nodes) {
+/// Read environment variable, treat all values != 0 as "true"
+inline bool readBooleanEnvVar(std::string_view name, bool defaultValue) {
+  if (const auto ev = std::getenv(name.data())) {
+    return std::atoi(ev) != 0;
+  }
+  return defaultValue;
+}
+
+inline std::set<std::string> getFunctionNames(const std::unordered_set<CgNode*>& nodes) {
   std::set<std::string> names;
   for (const auto n : nodes) {
     names.emplace(n->getFunctionName());
@@ -24,7 +32,7 @@ inline std::set<std::string> getFunctionNames(const std::unordered_set<CgNode *>
   return names;
 }
 
-inline std::vector<std::string> string_split(const std::string &in, const char c = '.') {
+inline std::vector<std::string> string_split(const std::string& in, const char c = '.') {
   std::vector<std::string::size_type> positions;
   positions.emplace_back(0);
   while (auto pos = in.find(c, positions.back() + 1)) {
@@ -44,7 +52,7 @@ inline std::vector<std::string> string_split(const std::string &in, const char c
   return vec;
 }
 
-inline std::string extract_between(const std::string &s, const std::string &pattern, size_t &start) {
+inline std::string extract_between(const std::string& s, const std::string& pattern, size_t& start) {
   size_t first = s.find(pattern, start) + pattern.size();
   size_t second = s.find(pattern, first);
 
@@ -52,7 +60,7 @@ inline std::string extract_between(const std::string &s, const std::string &patt
   return s.substr(first, second - first);
 }
 
-inline int getVersionNoAtPosition(const std::string &versionStr, int index) {
+inline int getVersionNoAtPosition(const std::string& versionStr, int index) {
   auto numOccurrences = std::count(versionStr.begin(), versionStr.end(), '.');
   if (numOccurrences < 1) {
     metacg::MCGLogger::instance().getErrConsole()->error("Could not interpret version string");
@@ -63,9 +71,9 @@ inline int getVersionNoAtPosition(const std::string &versionStr, int index) {
   return version;
 }
 
-inline int getMajorVersionFromString(const std::string &versionStr) { return getVersionNoAtPosition(versionStr, 0); }
+inline int getMajorVersionFromString(const std::string& versionStr) { return getVersionNoAtPosition(versionStr, 0); }
 
-inline int getMinorVersionFromString(const std::string &versionStr) { return getVersionNoAtPosition(versionStr, 1); }
+inline int getMinorVersionFromString(const std::string& versionStr) { return getVersionNoAtPosition(versionStr, 1); }
 
 }  // namespace metacg::util
 

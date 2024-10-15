@@ -13,10 +13,10 @@
 
 using namespace pira;
 
-void CubeCallgraphBuilder::build(std::string filepath, Config *c, metacg::graph::MCGManager &mcgm) {
+void metacg::pgis::build(const std::filesystem::path& filepath, Config* c, metacg::graph::MCGManager& mcgm) {
   impl::build(filepath, mcgm, impl::attRuntime);
 }
 
-void CubeCallgraphBuilder::buildFromCube(std::string filePath, Config *c, metacg::graph::MCGManager &mcgm) {
+void metacg::pgis::buildFromCube(const std::filesystem::path& filePath, Config* c, metacg::graph::MCGManager& mcgm) {
   impl::build(filePath, mcgm, impl::attRuntime, impl::attNrCall, impl::attInclRuntime);
 }

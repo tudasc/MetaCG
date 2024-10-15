@@ -18,7 +18,7 @@ namespace graph {
  */
 class MCGManager {
  public:
-  static MCGManager &get();
+  static MCGManager& get();
 
   /**
    * Resets the the whole manager
@@ -34,9 +34,9 @@ class MCGManager {
 
   size_t graphs_size() const;
 
-  [[nodiscard]] Callgraph *getCallgraph(const std::string &name = "", bool setActive = false);
+  [[nodiscard]] Callgraph* getCallgraph(const std::string& name = "", bool setActive = false);
 
-  [[nodiscard]] Callgraph *getOrCreateCallgraph(const std::string &name, bool setActive = false);
+  [[nodiscard]] Callgraph* getOrCreateCallgraph(const std::string& name, bool setActive = false);
 
   /**
    * Sets a callgraph to be the currently active one
@@ -45,7 +45,7 @@ class MCGManager {
    *
    **/
   // Todo: write a test for this
-  bool setActive(const std::string &callgraph);
+  bool setActive(const std::string& callgraph);
 
   /**
    * Checks if a callgraph is the currently active one
@@ -53,7 +53,7 @@ class MCGManager {
    * @returns true if the callgraph is the active one \n false if the callgraph is inactive or doesn't exist
    **/
   // TODO: write a test for this
-  bool assertActive(const std::string &callgraph);
+  bool assertActive(const std::string& callgraph);
 
   /**
    * Transfers ownership of a graph to the graph manager
@@ -62,24 +62,26 @@ class MCGManager {
    * @param setActive optional flag to set the newly added graph as the active one
    **/
   // Todo: write a test for this
-  bool addToManagedGraphs(const std::string &name, std::unique_ptr<Callgraph> callgraph, bool setActive = true);
+  bool addToManagedGraphs(const std::string& name, std::unique_ptr<Callgraph> callgraph, bool setActive = true);
+
+  std::unordered_set<std::string> getAllManagedGraphNames();
+  std::string getActiveGraphName();
 
   ~MCGManager();
 
  private:
   MCGManager() = default;
 
-  MCGManager(const MCGManager &other) = default;
+  MCGManager(const MCGManager& other) = default;
 
-  MCGManager(MCGManager &&other) = default;
+  MCGManager(MCGManager&& other) = default;
 
-  MCGManager &operator=(const MCGManager &other) = delete;
+  MCGManager& operator=(const MCGManager& other) = delete;
 
-  MCGManager &operator=(MCGManager &&other) = delete;
+  MCGManager& operator=(MCGManager&& other) = delete;
 
   std::unordered_map<std::string, std::unique_ptr<Callgraph>> managedGraphs;
-  Callgraph *activeGraph = nullptr;
-  std::unordered_set<std::string> getAllManagedGraphNames();
+  Callgraph* activeGraph = nullptr;
 };
 
 }  // namespace graph

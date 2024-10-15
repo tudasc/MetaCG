@@ -22,8 +22,8 @@ class AbstractMetric {
   AbstractMetric();
   virtual ~AbstractMetric() = default;
 
-  void setNode(metacg::CgNode *newNode, std::ostringstream &debugString);
-  void setNode(metacg::CgNode *newNode);
+  void setNode(metacg::CgNode* newNode, std::ostringstream& debugString);
+  void setNode(metacg::CgNode* newNode);
 
   /**
    * calculate metric for node which has been last set by setNode
@@ -31,7 +31,7 @@ class AbstractMetric {
   virtual double calc() const = 0;
 
  protected:
-  metacg::CgNode *node;
+  metacg::CgNode* node;
 
   double max;
   double min;
@@ -42,7 +42,7 @@ class AbstractMetric {
   int count;
 
  private:
-  void calcIndicators(std::ostringstream &debugString);
+  void calcIndicators(std::ostringstream& debugString);
 };
 }  // namespace LoadImbalance
 

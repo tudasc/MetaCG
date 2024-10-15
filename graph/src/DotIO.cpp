@@ -16,8 +16,8 @@
 
 namespace metacg::io::dot {
 
-void Tokenizer::stripWhitespaceAndInsert(const std::string &line, std::string::size_type curPos,
-                                         std::string::size_type startPos, std::vector<std::string> &tokenStrs) {
+void Tokenizer::stripWhitespaceAndInsert(const std::string& line, std::string::size_type curPos,
+                                         std::string::size_type startPos, std::vector<std::string>& tokenStrs) {
   const auto strCp = line.substr(startPos, (curPos - startPos));
   std::string strippedStr;
   std::copy_if(strCp.begin(), strCp.end(), std::back_inserter(strippedStr), [](char c) { return !std::isspace(c); });
@@ -27,7 +27,7 @@ void Tokenizer::stripWhitespaceAndInsert(const std::string &line, std::string::s
   tokenStrs.emplace_back(strippedStr);
 }
 
-std::vector<std::string> Tokenizer::splitToTokenStrings(const std::string &line) {
+std::vector<std::string> Tokenizer::splitToTokenStrings(const std::string& line) {
   std::string::size_type startPos, curPos;
   std::vector<std::string> tokenStrs;
   startPos = curPos = 0;
@@ -55,11 +55,11 @@ std::vector<std::string> Tokenizer::splitToTokenStrings(const std::string &line)
   return tokenStrs;
 }
 
-std::vector<ParsedToken> Tokenizer::tokenize(const std::string &line) {
+std::vector<ParsedToken> Tokenizer::tokenize(const std::string& line) {
   const auto strings = splitToTokenStrings(line);
   std::vector<ParsedToken> tokens;
   tokens.reserve(strings.size());
-  for (const auto &str : strings) {
+  for (const auto& str : strings) {
     if (std::isalnum(str.front())) {
       // This is an entity
       tokens.emplace_back(ParsedToken::TokenType::ENTITY, str);
@@ -76,10 +76,10 @@ std::vector<ParsedToken> Tokenizer::tokenize(const std::string &line) {
   return tokens;
 }
 
-void DotParser::parse(const std::string &line) {
+void DotParser::parse(const std::string& line) {
   using TokenType = dot::ParsedToken::TokenType;
   dot::Tokenizer tokenizer;
-  for (const auto &token : tokenizer.tokenize(line)) {
+  for (const auto& token : tokenizer.tokenize(line)) {
     switch (token.type) {
       case TokenType::IGNORE:
         reduceStack();
@@ -96,7 +96,7 @@ void DotParser::parse(const std::string &line) {
   }
 }
 
-void DotParser::handleEntity(const dot::ParsedToken &token) {
+void DotParser::handleEntity(const dot::ParsedToken& token) {
   // Account for graph type
   if (state == ParseState::INIT && token.spelling == "digraph") {
     state = ParseState::NAME;
@@ -130,7 +130,7 @@ void DotParser::handleEntity(const dot::ParsedToken &token) {
   }
 }
 
-void DotParser::handleConnector(const dot::ParsedToken &token) { seenTokens.push(token); }
+void DotParser::handleConnector(const dot::ParsedToken& token) { seenTokens.push(token); }
 
 void DotParser::reduceStack() {
   if (seenTokens.size() < 3) {
@@ -156,11 +156,11 @@ void DotParser::reduceStack() {
   }
 }
 
-bool DotReader::readAndManage(const std::string &cgName) {
+bool DotReader::readAndManage(const std::string& cgName) {
   auto graph = std::make_unique<metacg::Callgraph>();
   auto console = metacg::MCGLogger::instance().getConsole();
 
-  auto &sourceStream = source.getDotString();
+  auto& sourceStream = source.getDotString();
   std::string line;
 
   DotParser parser(graph.get());
@@ -181,33 +181,33 @@ void DotGenerator::output(DotOutputLocation outputLocation) {
 namespace impl {
 /** Lexicographical sorting within the edge container for easier testing */
 struct CGDotEdgeComparator {
-  explicit CGDotEdgeComparator(const Callgraph *cg) : cg(cg) {}
+  explicit CGDotEdgeComparator(const Callgraph* cg) : cg(cg) {}
 
-  bool operator()(const std::pair<size_t, size_t> &l, const std::pair<size_t, size_t> &r) const {
+  bool operator()(const std::pair<size_t, size_t>& l, const std::pair<size_t, size_t>& r) const {
     const auto lName = cg->getNode(l.first)->getFunctionName() + cg->getNode(l.second)->getFunctionName();
     const auto rName = cg->getNode(r.first)->getFunctionName() + cg->getNode(r.second)->getFunctionName();
     return lName < rName;
   }
 
-  const Callgraph *cg;
+  const Callgraph* cg;
 };
 
 /**
  * Iterates the call graph to populate edge and node sets.
  */
 template <typename EdgeContainerTy, typename NodeContainerTy>
-void fillNodesAndEdges(const Callgraph *cg, NodeContainerTy &nodeNames, EdgeContainerTy &edges) {
-  for (const auto &node : cg->getNodes()) {
+void fillNodesAndEdges(const Callgraph* cg, NodeContainerTy& nodeNames, EdgeContainerTy& edges) {
+  for (const auto& node : cg->getNodes()) {
     nodeNames.insert(node.second->getFunctionName());
 
     const auto childNodes = cg->getCallees(node.first);
     const auto parentNodes = cg->getCallers(node.first);
 
-    for (const auto &c : childNodes) {
+    for (const auto& c : childNodes) {
       edges.emplace(std::make_pair(node.first, c->getId()));
     }
 
-    for (const auto &p : parentNodes) {
+    for (const auto& p : parentNodes) {
       edges.emplace(std::make_pair(p->getId(), node.first));
     }
   }
@@ -217,8 +217,8 @@ void fillNodesAndEdges(const Callgraph *cg, NodeContainerTy &nodeNames, EdgeCont
  * Outputs the node set into the out stream, appending new lines.
  */
 template <typename NodeContainerTy>
-void getNodesStringStream(NodeContainerTy &nodes, std::stringstream &outStr) {
-  for (const auto &nodeName : nodes) {
+void getNodesStringStream(NodeContainerTy& nodes, std::stringstream& outStr) {
+  for (const auto& nodeName : nodes) {
     const std::string nodeLabel{"  \"" + nodeName + '\"'};
     outStr << nodeLabel << '\n';
   }
@@ -228,7 +228,7 @@ void getNodesStringStream(NodeContainerTy &nodes, std::stringstream &outStr) {
  * Prepares node and edge sets and outputs the list of nodes into out stream.
  */
 template <typename EdgeSetTy, typename NodeSetTy>
-void generateDotString(const Callgraph *cg, std::stringstream &outStr, EdgeSetTy &edges) {
+void generateDotString(const Callgraph* cg, std::stringstream& outStr, EdgeSetTy& edges) {
   NodeSetTy nodes;
 
   fillNodesAndEdges<EdgeSetTy, NodeSetTy>(cg, nodes, edges);
@@ -247,11 +247,11 @@ void generateDotString(const Callgraph *cg, std::stringstream &outStr, EdgeSetTy
  * for the dot representation of the call graph in outStr.
  */
 template <typename EdgeContainerTy, typename NodeContainerTy>
-void generateDotString(const Callgraph *cg, EdgeContainerTy &edges, std::stringstream &outStr) {
+void generateDotString(const Callgraph* cg, EdgeContainerTy& edges, std::stringstream& outStr) {
   impl::generateDotString<EdgeContainerTy, NodeContainerTy>(cg, outStr, edges);
 
   // Go over edge set to output edges once
-  for (const auto &p : edges) {
+  for (const auto& p : edges) {
     const auto edgeStr =
         (cg->getNode(p.first))->getFunctionName() + " -> " + (cg->getNode(p.second))->getFunctionName();
     outStr << "  " << edgeStr << '\n';

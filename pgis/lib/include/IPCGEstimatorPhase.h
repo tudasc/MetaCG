@@ -18,8 +18,8 @@
 
 class AttachInstrumentationResultsEstimatorPhase : public EstimatorPhase {
  public:
-  AttachInstrumentationResultsEstimatorPhase(metacg::Callgraph *callgraph);
-  void modifyGraph(metacg::CgNode *mainMethod) override;
+  AttachInstrumentationResultsEstimatorPhase(metacg::Callgraph* callgraph);
+  void modifyGraph(metacg::CgNode* mainMethod) override;
 
  protected:
   void printReport() override;
@@ -31,10 +31,10 @@ class FirstNLevelsEstimatorPhase : public EstimatorPhase {
   FirstNLevelsEstimatorPhase(int levels);
   ~FirstNLevelsEstimatorPhase();
 
-  void modifyGraph(metacg::CgNode *mainMethod);
+  void modifyGraph(metacg::CgNode* mainMethod);
 
  private:
-  void instrumentLevel(metacg::CgNode *parentNode, int levelsLeft);
+  void instrumentLevel(metacg::CgNode* parentNode, int levelsLeft);
 
   const int levels;
 };
@@ -45,26 +45,26 @@ class FirstNLevelsEstimatorPhase : public EstimatorPhase {
  */
 class FillInstrumentationGapsPhase : public EstimatorPhase {
  public:
-  FillInstrumentationGapsPhase(metacg::Callgraph *callgraph);
-  void modifyGraph(metacg::CgNode *mainMethod) override;
+  FillInstrumentationGapsPhase(metacg::Callgraph* callgraph);
+  void modifyGraph(metacg::CgNode* mainMethod) override;
 
  protected:
   void printReport() override;
 
  private:
   struct NameComparator {
-    bool operator()(const metacg::CgNode *lhs, const metacg::CgNode *rhs) const {
+    bool operator()(const metacg::CgNode* lhs, const metacg::CgNode* rhs) const {
       return lhs->getFunctionName() < rhs->getFunctionName();
     }
   };
-  std::set<metacg::CgNode *, NameComparator> nodesToFill;
+  std::set<metacg::CgNode*, NameComparator> nodesToFill;
   bool useCSInstrumentation;
   bool onlyEligibleNodes;
 };
 
 class StatisticsEstimatorPhase : public EstimatorPhase {
  public:
-  StatisticsEstimatorPhase(bool shouldPrintReport, metacg::Callgraph *cg)
+  StatisticsEstimatorPhase(bool shouldPrintReport, metacg::Callgraph* cg)
       : EstimatorPhase("StatisticsEstimatorPhase", cg),
         shouldPrintReport(shouldPrintReport),
         numFunctions(0),
@@ -74,7 +74,7 @@ class StatisticsEstimatorPhase : public EstimatorPhase {
         stmtsActuallyCovered(0),
         totalVarDecls(0) {}
 
-  void modifyGraph(metacg::CgNode *mainMethod) override;
+  void modifyGraph(metacg::CgNode* mainMethod) override;
   void printReport() override;
   long int getCuttoffNumInclStmts();
   long int getCuttoffReversesConditionalBranches() const;
@@ -85,11 +85,11 @@ class StatisticsEstimatorPhase : public EstimatorPhase {
 
  private:
   using MapT = std::map<long int, long int>;
-  long int getCuttoffValue(const MapT &hist) const;
-  long int getUniqueMedianFromHist(const MapT &hist) const;
-  long int getMedianFromHist(const MapT &hist) const;
-  long int getHalfMaxFromHist(const MapT &hist) const;
-  std::string printHist(const MapT &hist, const std::string &name);
+  long int getCuttoffValue(const MapT& hist) const;
+  long int getUniqueMedianFromHist(const MapT& hist) const;
+  long int getMedianFromHist(const MapT& hist) const;
+  long int getHalfMaxFromHist(const MapT& hist) const;
+  std::string printHist(const MapT& hist, const std::string& name);
   bool shouldPrintReport;
   long int numFunctions;
   long int numReachableFunctions;
@@ -114,20 +114,20 @@ class StatisticsEstimatorPhase : public EstimatorPhase {
  */
 class StatementCountEstimatorPhase : public EstimatorPhase {
  public:
-  explicit StatementCountEstimatorPhase(int numberOfStatementsThreshold, metacg::Callgraph *callgraph,
-                                        bool inclusiveMetric = true, StatisticsEstimatorPhase *prevStatEP = nullptr);
+  explicit StatementCountEstimatorPhase(int numberOfStatementsThreshold, metacg::Callgraph* callgraph,
+                                        bool inclusiveMetric = true, StatisticsEstimatorPhase* prevStatEP = nullptr);
   ~StatementCountEstimatorPhase() override;
 
-  void modifyGraph(metacg::CgNode *mainMethod) override;
-  void estimateStatementCount(metacg::CgNode *startNode, metacg::analysis::ReachabilityAnalysis &ra);
+  void modifyGraph(metacg::CgNode* mainMethod) override;
+  void estimateStatementCount(metacg::CgNode* startNode, metacg::analysis::ReachabilityAnalysis& ra);
 
-  int getNumStatements(metacg::CgNode *node) { return inclStmtCounts[node]; }
+  int getNumStatements(metacg::CgNode* node) { return inclStmtCounts[node]; }
 
  private:
   int numberOfStatementsThreshold;
   bool inclusiveMetric;
-  std::map<metacg::CgNode *, long int> inclStmtCounts;
-  StatisticsEstimatorPhase *pSEP;
+  std::map<metacg::CgNode*, long int> inclStmtCounts;
+  StatisticsEstimatorPhase* pSEP;
 };
 
 /**
@@ -135,12 +135,12 @@ class StatementCountEstimatorPhase : public EstimatorPhase {
  */
 class RuntimeEstimatorPhase : public EstimatorPhase {
  public:
-  explicit RuntimeEstimatorPhase(metacg::Callgraph *cg, double runTimeThreshold, bool inclusiveMetric = true);
+  explicit RuntimeEstimatorPhase(metacg::Callgraph* cg, double runTimeThreshold, bool inclusiveMetric = true);
   ~RuntimeEstimatorPhase() override;
 
-  void modifyGraph(metacg::CgNode *mainMethod) override;
-  void estimateRuntime(metacg::CgNode *startNode);
-  void doInstrumentation(metacg::CgNode *startNode, metacg::analysis::ReachabilityAnalysis &ra);
+  void modifyGraph(metacg::CgNode* mainMethod) override;
+  void estimateRuntime(metacg::CgNode* startNode);
+  void doInstrumentation(metacg::CgNode* startNode, metacg::analysis::ReachabilityAnalysis& ra);
 
  private:
   // A hotspot is defines as a function with a runtime bigger than the threshold.
@@ -160,11 +160,11 @@ class RuntimeEstimatorPhase : public EstimatorPhase {
    * @param cg
    * @return
    */
-  static bool isSelfRecursive(metacg::CgNode *node, metacg::Callgraph *cg);
-  static bool isLikelyToBeInlined(const metacg::CgNode *md, unsigned long stmtCount);
+  static bool isSelfRecursive(metacg::CgNode* node, metacg::Callgraph* cg);
+  static bool isLikelyToBeInlined(const metacg::CgNode* node, unsigned long stmtCount);
 
   struct NodeProfitComparator {
-    bool operator()(const metacg::CgNode *lhs, const metacg::CgNode *rhs) const {
+    bool operator()(const metacg::CgNode* lhs, const metacg::CgNode* rhs) const {
       const auto lhsNotKicked = !lhs->get<pira::TemporaryInstrumentationDecisionMetadata>()->isKicked;
       const auto rhsNotKicked = !rhs->get<pira::TemporaryInstrumentationDecisionMetadata>()->isKicked;
       const auto lhsPrevData = lhs->checkAndGet<pira::InstrumentationResultMetaData>();
@@ -195,7 +195,7 @@ class RuntimeEstimatorPhase : public EstimatorPhase {
    * Compartor two compare the value of two nodes
    */
   struct NodeValueComparator {
-    static bool compare(const metacg::CgNode *lhs, const metacg::CgNode *rhs) {
+    static bool compare(const metacg::CgNode* lhs, const metacg::CgNode* rhs) {
       assert(lhs);
       assert(rhs);
       const auto lhsNotKicked = !lhs->get<pira::TemporaryInstrumentationDecisionMetadata>()->isKicked;
@@ -225,10 +225,10 @@ class RuntimeEstimatorPhase : public EstimatorPhase {
                                       /*rhsNotInline,*/ rhsInstroInfo.inclusiveStmtCount, rhs);
     }
 
-    bool operator()(const metacg::CgNode *lhs, const metacg::CgNode *rhs) const { return compare(lhs, rhs); }
+    bool operator()(const metacg::CgNode* lhs, const metacg::CgNode* rhs) const { return compare(lhs, rhs); }
   };
 
-  inline static double getCallsToNode(const metacg::CgNode *N) {
+  inline static double getCallsToNode(const metacg::CgNode* N) {
     const auto PrevInfo = N->checkAndGet<pira::InstrumentationResultMetaData>();
     if (PrevInfo.first) {
       return PrevInfo.second->callCount;
@@ -236,24 +236,25 @@ class RuntimeEstimatorPhase : public EstimatorPhase {
     return N->get<pira::TemporaryInstrumentationDecisionMetadata>()->info.callsFromParents;
   }
 
-  std::pair<std::vector<metacg::CgNode *>, double> getNodesToInstrumentGreedyKnapsackOverhead(
-      const std::set<metacg::CgNode *, NodeProfitComparator> &nodes, double costLimit);
+  std::pair<std::vector<metacg::CgNode*>, double> getNodesToInstrumentGreedyKnapsackOverhead(
+      const std::set<metacg::CgNode*, NodeProfitComparator>& nodes, double costLimit);
 
-  void modifyGraphOverhead(metacg::CgNode *mainMethod);
+  void modifyGraphOverhead(metacg::CgNode* mainMethod);
 
   // Calls, and inclusive stmts
-  pira::InstumentationInfo getEstimatedInfoForInstrumentedNode(metacg::CgNode *node);
+  pira::InstumentationInfo getEstimatedInfoForInstrumentedNode(metacg::CgNode* node);
 
   // This only contains direct calls
-  double getEstimatedCallCountForNode(metacg::CgNode *node, std::set<metacg::CgNode *> &blacklist);
-  inline double getEstimatedCallCountForNode(metacg::CgNode *node, unsigned long stmtCount) {
-    std::set<metacg::CgNode *> bl;
+  double getEstimatedCallCountForNode(metacg::CgNode* node, std::set<metacg::CgNode*>& blacklist);
+  inline double getEstimatedCallCountForNode(metacg::CgNode* node, unsigned long stmtCount) {
+    std::set<metacg::CgNode*> bl;
     bool isLikelyInlined = RuntimeEstimatorPhase::isLikelyToBeInlined(node, stmtCount);
     auto result = getEstimatedCallCountForNode(node, bl);
     assert(bl.empty());
     if (isLikelyInlined) {
       // TODO: Maybe special handling for trait classes
-      spdlog::get("console")->debug("Applying inline factor of {} for node {}", inlineFactor, node->getFunctionName());
+      metacg::MCGLogger::instance().getConsole()->debug("Applying inline factor of {} for node {}", inlineFactor,
+                                                        node->getFunctionName());
       result *= inlineFactor;
     }
     return result;
@@ -261,13 +262,13 @@ class RuntimeEstimatorPhase : public EstimatorPhase {
 
   double runTimeThreshold;
   bool inclusiveMetric;
-  std::map<metacg::CgNode *, double> inclRunTime;
+  std::map<metacg::CgNode*, double> inclRunTime;
   double relativeOverhead;
 
   unsigned long long int totalExclusiveCalls = 0;
-  std::set<std::pair<unsigned long long int, metacg::CgNode *>, std::greater<>> exclusiveCalls;
+  std::set<std::pair<unsigned long long int, metacg::CgNode*>, std::greater<>> exclusiveCalls;
 
-  std::set<metacg::CgNode *> kickList;
+  std::set<metacg::CgNode*> kickList;
   bool useCSInstrumentation;
   bool onlyEligibleNodes;
   /**
@@ -278,9 +279,9 @@ class RuntimeEstimatorPhase : public EstimatorPhase {
    * @param callsToKick
    * @return
    */
-  double kickNodesByRuntimePerCall(const metacg::CgNode *mainMethod,
-                                   std::vector<metacg::CgNode *> &nodesSortedByRuntimePerCallNoHotspot,
-                                   std::vector<metacg::CgNode *> &nodesSortedByRuntimePerCallHotspot,
+  double kickNodesByRuntimePerCall(const metacg::CgNode* mainMethod,
+                                   std::vector<metacg::CgNode*>& nodesSortedByRuntimePerCallNoHotspot,
+                                   std::vector<metacg::CgNode*>& nodesSortedByRuntimePerCallHotspot,
                                    double callsToKick) const;
   /**
    * Kick leaf nodes randomly, prioritize non hotspot nodes
@@ -290,15 +291,15 @@ class RuntimeEstimatorPhase : public EstimatorPhase {
    * @param callsToKick
    * @return
    */
-  double kickNodesRandomly(const metacg::CgNode *mainMethod, std::vector<metacg::CgNode *> &nodesNoHotspot,
-                           std::vector<metacg::CgNode *> &nodesHotspot, double callsToKick) const;
-  double kickNodesByRuntimePerCallKeepSmall(const metacg::CgNode *mainMethod,
-                                            std::vector<metacg::CgNode *> &nodesSortedByRuntimePerCallNoHotspot,
-                                            std::vector<metacg::CgNode *> &nodesSortedByRuntimePerCallHotspot,
+  double kickNodesRandomly(const metacg::CgNode* mainMethod, std::vector<metacg::CgNode*>& nodesNoHotspot,
+                           std::vector<metacg::CgNode*>& nodesHotspot, double callsToKick) const;
+  double kickNodesByRuntimePerCallKeepSmall(const metacg::CgNode* mainMethod,
+                                            std::vector<metacg::CgNode*>& nodesSortedByRuntimePerCallNoHotspot,
+                                            std::vector<metacg::CgNode*>& nodesSortedByRuntimePerCallHotspot,
                                             const double callsToKick) const;
-  void kickNodesFromInstrumentation(const metacg::CgNode *mainMethod, const std::vector<metacg::CgNode *> &nodesToKick,
-                                    const double callsToKick, double &kicked) const;
-  void kickSingleNode(metacg::CgNode *node, double &kicked) const;
+  void kickNodesFromInstrumentation(const metacg::CgNode* mainMethod, const std::vector<metacg::CgNode*>& nodesToKick,
+                                    const double callsToKick, double& kicked) const;
+  void kickSingleNode(metacg::CgNode* node, double& kicked) const;
 };
 
 /**
@@ -310,31 +311,31 @@ class WLCallpathDifferentiationEstimatorPhase : public EstimatorPhase {
   explicit WLCallpathDifferentiationEstimatorPhase(std::string whiteListName = "whitelist.txt");
   ~WLCallpathDifferentiationEstimatorPhase() override;
 
-  void modifyGraph(metacg::CgNode *mainMethod) override;
+  void modifyGraph(metacg::CgNode* mainMethod) override;
 
  private:
   CgNodeRawPtrUSet whitelist;  // all whitelisted nodes INCL. their paths to main
   std::string whitelistName;
 
-  void addNodeAndParentsToWhitelist(metacg::CgNode *node);
+  void addNodeAndParentsToWhitelist(metacg::CgNode* node);
 };
 
 class SummingCountPhaseBase : public EstimatorPhase {
  public:
-  SummingCountPhaseBase(long int threshold, const std::string &name, metacg::Callgraph *callgraph,
-                        StatisticsEstimatorPhase *prevStatEP, bool inclusive = true);
+  SummingCountPhaseBase(long int threshold, const std::string& name, metacg::Callgraph* callgraph,
+                        StatisticsEstimatorPhase* prevStatEP, bool inclusive = true);
   ~SummingCountPhaseBase() override;
-  void modifyGraph(metacg::CgNode *mainMethod) override;
+  void modifyGraph(metacg::CgNode* mainMethod) override;
   static const long int limitThreshold = std::numeric_limits<long int>::max();
-  long int getCounted(const metacg::CgNode *node);
+  long int getCounted(const metacg::CgNode* node);
 
  protected:
-  void estimateCount(metacg::CgNode *startNode, metacg::analysis::ReachabilityAnalysis &ra);
+  void estimateCount(metacg::CgNode* startNode, metacg::analysis::ReachabilityAnalysis& ra);
   virtual long int getPreviousThreshold() const = 0;
-  virtual long int getTargetCount(const metacg::CgNode *data) const = 0;
+  virtual long int getTargetCount(const metacg::CgNode* node) const = 0;
   long int threshold;
-  std::map<const metacg::CgNode *, long int> counts;
-  StatisticsEstimatorPhase *pSEP;
+  std::map<const metacg::CgNode*, long int> counts;
+  StatisticsEstimatorPhase* pSEP;
   virtual void runInitialization();
   const bool inclusive;
 };
@@ -342,25 +343,25 @@ class SummingCountPhaseBase : public EstimatorPhase {
 // Inclusive count
 class ConditionalBranchesEstimatorPhase : public SummingCountPhaseBase {
  public:
-  explicit ConditionalBranchesEstimatorPhase(long int threshold, metacg::Callgraph *callgraph,
-                                             StatisticsEstimatorPhase *prevStatEP = nullptr);
+  explicit ConditionalBranchesEstimatorPhase(long int threshold, metacg::Callgraph* callgraph,
+                                             StatisticsEstimatorPhase* prevStatEP = nullptr);
 
  protected:
   long int getPreviousThreshold() const override;
-  long int getTargetCount(const metacg::CgNode *data) const override;
+  long int getTargetCount(const metacg::CgNode* node) const override;
 };
 
 // Calculates the target count by subtracting the conditional branches from the max amount of conditional branches
 // Inclusive count
 class ConditionalBranchesReverseEstimatorPhase : public SummingCountPhaseBase {
  public:
-  explicit ConditionalBranchesReverseEstimatorPhase(long int threshold, metacg::Callgraph *callgraph,
-                                                    StatisticsEstimatorPhase *prevStatEP = nullptr);
+  explicit ConditionalBranchesReverseEstimatorPhase(long int threshold, metacg::Callgraph* callgraph,
+                                                    StatisticsEstimatorPhase* prevStatEP = nullptr);
 
  protected:
-  long int maxBranches;
+  long int maxBranches = 0;
   long int getPreviousThreshold() const override;
-  long int getTargetCount(const metacg::CgNode *data) const override;
+  long int getTargetCount(const metacg::CgNode* node) const override;
   void runInitialization() override;
 };
 
@@ -368,34 +369,34 @@ class ConditionalBranchesReverseEstimatorPhase : public SummingCountPhaseBase {
 // Inclusive count
 class FPAndMemOpsEstimatorPhase : public SummingCountPhaseBase {
  public:
-  explicit FPAndMemOpsEstimatorPhase(long int threshold, metacg::Callgraph *callgraph,
-                                     StatisticsEstimatorPhase *prevStatEP = nullptr);
+  explicit FPAndMemOpsEstimatorPhase(long int threshold, metacg::Callgraph* callgraph,
+                                     StatisticsEstimatorPhase* prevStatEP = nullptr);
 
  protected:
   long int getPreviousThreshold() const override;
-  long int getTargetCount(const metacg::CgNode *data) const override;
+  long int getTargetCount(const metacg::CgNode* node) const override;
 };
 
 // Exclusive count
 class LoopDepthEstimatorPhase : public SummingCountPhaseBase {
  public:
-  explicit LoopDepthEstimatorPhase(long int threshold, metacg::Callgraph *callgraph,
-                                   StatisticsEstimatorPhase *prevStatEP = nullptr);
+  explicit LoopDepthEstimatorPhase(long int threshold, metacg::Callgraph* callgraph,
+                                   StatisticsEstimatorPhase* prevStatEP = nullptr);
 
  protected:
   long int getPreviousThreshold() const override;
-  long int getTargetCount(const metacg::CgNode *data) const override;
+  long int getTargetCount(const metacg::CgNode* node) const override;
 };
 
 // Exclusive count
 class GlobalLoopDepthEstimatorPhase : public SummingCountPhaseBase {
  public:
-  explicit GlobalLoopDepthEstimatorPhase(long int threshold, metacg::Callgraph *callgraph,
-                                         StatisticsEstimatorPhase *prevStatEP = nullptr);
+  explicit GlobalLoopDepthEstimatorPhase(long int threshold, metacg::Callgraph* callgraph,
+                                         StatisticsEstimatorPhase* prevStatEP = nullptr);
 
  protected:
   long int getPreviousThreshold() const override;
-  long int getTargetCount(const metacg::CgNode *data) const override;
+  long int getTargetCount(const metacg::CgNode* node) const override;
 };
 
 /**
@@ -407,8 +408,8 @@ class GlobalLoopDepthEstimatorPhase : public SummingCountPhaseBase {
  */
 class StoreInstrumentationDecisionsPhase : public EstimatorPhase {
  public:
-  explicit StoreInstrumentationDecisionsPhase(metacg::Callgraph *callgraph);
-  void modifyGraph(metacg::CgNode * /*mainMethod*/) override;
+  explicit StoreInstrumentationDecisionsPhase(metacg::Callgraph* callgraph);
+  void modifyGraph(metacg::CgNode* /*mainMethod*/) override;
   ~StoreInstrumentationDecisionsPhase() override = default;
 };
 

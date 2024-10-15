@@ -1,7 +1,7 @@
 /**
-* File: DotIOTest.cpp
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: DotIOTest.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "LoggerUtil.h"
@@ -14,7 +14,7 @@ class DotIOTest : public ::testing::Test {
  protected:
   void SetUp() override {
     metacg::loggerutil::getLogger();
-    auto &mcgm = metacg::graph::MCGManager::get();
+    auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
     mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   }
@@ -29,7 +29,7 @@ TEST_F(DotIOTest, EmptyCGExport) {
 }
 
 TEST_F(DotIOTest, OneNodeCGExport) {
-  const auto &cg = metacg::graph::MCGManager::get().getCallgraph();
+  const auto& cg = metacg::graph::MCGManager::get().getCallgraph();
   cg->getOrInsertNode("main");
   metacg::io::dot::DotGenerator generator(cg);
   generator.generate();
@@ -64,7 +64,7 @@ TEST_F(DotIOTest, TwoNodeOneEdgeCGExport) {
 
 TEST_F(DotIOTest, ThreeNodeOneEdgeCGExport) {
   const auto cg = metacg::graph::MCGManager::get().getCallgraph();
-  auto unreachableChild = cg->getOrInsertNode("unreachable");
+  cg->getOrInsertNode("unreachable");
   auto parent = cg->getOrInsertNode("foo");
   auto child = cg->getOrInsertNode("bar");
   cg->addEdge(parent, child);
@@ -140,7 +140,7 @@ TEST_F(DotIOTest, ReadEmptyDot) {
 TEST_F(DotIOTest, ReadOneNodeDot) {
   const std::string dotStr{"digraph callgraph {\n\"node_one\"}\n"};
   auto readerSrc = metacg::io::dot::DotStringSource(dotStr);
-  auto &manager = metacg::graph::MCGManager::get();
+  auto& manager = metacg::graph::MCGManager::get();
   metacg::io::dot::DotReader reader(manager, readerSrc);
   auto created = reader.readAndManage("empty");
   EXPECT_EQ(created, true);
@@ -151,7 +151,7 @@ TEST_F(DotIOTest, ReadOneNodeDot) {
 TEST_F(DotIOTest, ReadOneNodeDotWithLeadingSpaces) {
   const std::string dotStr{"digraph callgraph {\n   \"node_one\"}\n"};
   auto readerSrc = metacg::io::dot::DotStringSource(dotStr);
-  auto &manager = metacg::graph::MCGManager::get();
+  auto& manager = metacg::graph::MCGManager::get();
   metacg::io::dot::DotReader reader(manager, readerSrc);
   auto created = reader.readAndManage("empty");
   EXPECT_EQ(created, true);
@@ -162,7 +162,7 @@ TEST_F(DotIOTest, ReadOneNodeDotWithLeadingSpaces) {
 TEST_F(DotIOTest, ReadTwoNodeDotNoEdge) {
   const std::string dotStr{"digraph callgraph {\n\"node_one\"\n    \"node_two\"\n}\n"};
   auto readerSrc = metacg::io::dot::DotStringSource(dotStr);
-  auto &manager = metacg::graph::MCGManager::get();
+  auto& manager = metacg::graph::MCGManager::get();
   metacg::io::dot::DotReader reader(manager, readerSrc);
   auto created = reader.readAndManage("empty");
   EXPECT_EQ(created, true);
@@ -179,7 +179,7 @@ TEST_F(DotIOTest, ReadTwoNodeDotNoEdge) {
 TEST_F(DotIOTest, ReadTwoNodeDotWithEdge) {
   const std::string dotStr{"digraph callgraph {\n\"node_one\"\n    \"node_two\"\n\n \"node_one\" -> \"node_two\"\n}\n"};
   auto readerSrc = metacg::io::dot::DotStringSource(dotStr);
-  auto &manager = metacg::graph::MCGManager::get();
+  auto& manager = metacg::graph::MCGManager::get();
   metacg::io::dot::DotReader reader(manager, readerSrc);
   auto created = reader.readAndManage("empty");
   EXPECT_EQ(created, true);
@@ -198,7 +198,7 @@ TEST(DotTokenizerTest, InitialTest) {
   const std::string initialStr{"digraph callgraph {\nn\n1\n}\n"};
   metacg::io::dot::Tokenizer tok;
   auto strV = tok.splitToTokenStrings(initialStr);
-  std::vector<std::string> cmpV{"digraph", "callgraph", "{", "n", "1", "}"};
+  const std::vector<std::string> cmpV{"digraph", "callgraph", "{", "n", "1", "}"};
   EXPECT_EQ(cmpV, strV);
 }
 
@@ -206,7 +206,7 @@ TEST(DotTokenizerTest, InitialTestOne) {
   const std::string initialStr{"digraph callgraph {\nnode\n1\n}\n"};
   metacg::io::dot::Tokenizer tok;
   auto strV = tok.splitToTokenStrings(initialStr);
-  std::vector<std::string> cmpV{"digraph", "callgraph", "{", "node", "1", "}"};
+  const std::vector<std::string> cmpV{"digraph", "callgraph", "{", "node", "1", "}"};
   EXPECT_EQ(cmpV, strV);
 }
 
@@ -214,7 +214,7 @@ TEST(DotTokenizerTest, InitialTestTwo) {
   const std::string initialStr{"digraph callgraph {\nn\n1\n1n\nn1\n}\n"};
   metacg::io::dot::Tokenizer tok;
   auto strV = tok.splitToTokenStrings(initialStr);
-  std::vector<std::string> cmpV{"digraph", "callgraph", "{", "n", "1", "1", "n", "n1", "}"};
+  const std::vector<std::string> cmpV{"digraph", "callgraph", "{", "n", "1", "1", "n", "n1", "}"};
   EXPECT_EQ(cmpV, strV);
 }
 
@@ -222,7 +222,8 @@ TEST(DotTokenizerTest, InitialTestThree) {
   const std::string initialStr{"digraph callgraph {\nn [attribute=\"asdf\"]\n}\n"};
   metacg::io::dot::Tokenizer tok;
   auto strV = tok.splitToTokenStrings(initialStr);
-  std::vector<std::string> cmpV{"digraph", "callgraph", "{", "n", "[", "attribute", "=", "\"", "asdf", "\"", "]", "}"};
+  const std::vector<std::string> cmpV{"digraph", "callgraph", "{",    "n",  "[", "attribute",
+                                      "=",       "\"",        "asdf", "\"", "]", "}"};
   EXPECT_EQ(cmpV, strV);
 }
 
@@ -230,7 +231,8 @@ TEST(DotTokenizerTest, InitialTestFour) {
   const std::string initialStr{"digraph callgraph {n [attribute=\"asdf\"]\n}\n"};
   metacg::io::dot::Tokenizer tok;
   auto strV = tok.splitToTokenStrings(initialStr);
-  std::vector<std::string> cmpV{"digraph", "callgraph", "{", "n", "[", "attribute", "=", "\"", "asdf", "\"", "]", "}"};
+  const std::vector<std::string> cmpV{"digraph", "callgraph", "{",    "n",  "[", "attribute",
+                                      "=",       "\"",        "asdf", "\"", "]", "}"};
   EXPECT_EQ(cmpV, strV);
 }
 
@@ -238,7 +240,7 @@ TEST(DotTokenizerTest, InitialTestFive) {
   const std::string initialStr{"digraph callgraph {\n1n\n112\n}\n"};
   metacg::io::dot::Tokenizer tok;
   auto strV = tok.splitToTokenStrings(initialStr);
-  std::vector<std::string> cmpV{"digraph", "callgraph", "{", "1", "n", "112", "}"};
+  const std::vector<std::string> cmpV{"digraph", "callgraph", "{", "1", "n", "112", "}"};
   EXPECT_EQ(cmpV, strV);
 }
 
@@ -246,7 +248,7 @@ TEST(DotTokenizerTest, InitialTestSix) {
   const std::string initialStr{"digraph callgraph {\n1\n1n\n112\n}\n"};
   metacg::io::dot::Tokenizer tok;
   auto strV = tok.splitToTokenStrings(initialStr);
-  std::vector<std::string> cmpV{"digraph", "callgraph", "{", "1", "1", "n", "112", "}"};
+  const std::vector<std::string> cmpV{"digraph", "callgraph", "{", "1", "1", "n", "112", "}"};
   EXPECT_EQ(cmpV, strV);
 }
 
@@ -254,7 +256,7 @@ TEST(DotTokenizerTest, InitialTestSeven) {
   const std::string initialStr{"digraph callgraph {a -> b}\n"};
   metacg::io::dot::Tokenizer tok;
   auto strV = tok.splitToTokenStrings(initialStr);
-  std::vector<std::string> cmpV{"digraph", "callgraph", "{", "a", "->", "b", "}"};
+  const std::vector<std::string> cmpV{"digraph", "callgraph", "{", "a", "->", "b", "}"};
   EXPECT_EQ(cmpV, strV);
 }
 
@@ -262,7 +264,7 @@ TEST(DotTokenizerTest, InitialTestEight) {
   const std::string initialStr{"digraph callgraph {a -> b -> c}\n"};
   metacg::io::dot::Tokenizer tok;
   auto strV = tok.splitToTokenStrings(initialStr);
-  std::vector<std::string> cmpV{"digraph", "callgraph", "{", "a", "->", "b", "->", "c", "}"};
+  const std::vector<std::string> cmpV{"digraph", "callgraph", "{", "a", "->", "b", "->", "c", "}"};
   EXPECT_EQ(cmpV, strV);
 }
 
@@ -271,7 +273,7 @@ TEST(DotTokenizerTest, TokenStreamTest) {
   metacg::io::dot::Tokenizer tok;
   auto tokStream = tok.tokenize(initialStr);
   using TT = metacg::io::dot::ParsedToken::TokenType;
-  std::vector<metacg::io::dot::ParsedToken> expectedToks{
+  const std::vector<metacg::io::dot::ParsedToken> expectedToks{
       {TT::ENTITY, "digraph"}, {TT::ENTITY, "callgraph"}, {TT::IGNORE, "{"}, {TT::ENTITY, "a"}, {TT::CONNECTOR, "->"},
       {TT::ENTITY, "b"},       {TT::CONNECTOR, "->"},     {TT::ENTITY, "c"}, {TT::IGNORE, "}"}};
   EXPECT_EQ(tokStream, expectedToks);

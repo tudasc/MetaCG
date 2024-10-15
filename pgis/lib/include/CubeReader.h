@@ -7,6 +7,7 @@
 #ifndef CUBEREADER_H_
 #define CUBEREADER_H_
 
+#include "LoggerUtil.h"
 #include "MetaData/CgNodeMetaData.h"
 #include "PiraMCGProcessor.h"
 
@@ -14,13 +15,14 @@
 #include <CubeMetric.h>
 
 #include <MCGManager.h>
+#include <filesystem>
 #include <string>
 
 /**
  * \author roman
  * \author JPL
  */
-namespace CubeCallgraphBuilder {
+namespace metacg::pgis {
 
 namespace impl {
 
@@ -29,19 +31,22 @@ using PiraOneData = pira::PiraOneData;
 using PiraTwoData = pira::PiraTwoData;
 
 template <typename N, typename... Largs>
-void applyOne(cube::Cube &cu, cube::Cnode *cnode, N cgNode, cube::Cnode *pnode, N pCgNode, Largs... largs) {
+void applyOne(cube::Cube& cu, [[maybe_unused]] cube::Cnode* cnode, [[maybe_unused]] N cgNode,
+              [[maybe_unused]] cube::Cnode* pnode, [[maybe_unused]] N pCgNode, Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
     applyOne(cu, cnode, cgNode, pnode, pCgNode, largs...);
   }
 }
 template <typename N, typename L, typename... Largs>
-void applyOne(cube::Cube &cu, cube::Cnode *cnode, N cgNode, cube::Cnode *pnode, N pCgNode, L lam, Largs... largs) {
+void applyOne(cube::Cube& cu, [[maybe_unused]] cube::Cnode* cnode, [[maybe_unused]] N cgNode,
+              [[maybe_unused]] cube::Cnode* pnode, [[maybe_unused]] N pCgNode, L lam, Largs... largs) {
   lam(cu, cnode, cgNode, pnode, pCgNode);
   applyOne(cu, cnode, cgNode, pnode, pCgNode, largs...);
 }
 template <typename... Largs>
-void apply(metacg::graph::MCGManager &mcgm, cube::Cube &cu, cube::Cnode *cnode, const std::string &cNodeName,
-           cube::Cnode *pnode, const std::string &pNodeName, Largs... largs) {
+void apply(metacg::graph::MCGManager& mcgm, [[maybe_unused]] cube::Cube& cu, [[maybe_unused]] cube::Cnode* cnode,
+           const std::string& cNodeName, [[maybe_unused]] cube::Cnode* pnode, const std::string& pNodeName,
+           Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
     auto target = mcgm.getCallgraph()->getOrInsertNode(cNodeName);
     auto parent = mcgm.getCallgraph()->hasNode(pNodeName) ? mcgm.getCallgraph()->getNode(pNodeName) : nullptr;
@@ -60,7 +65,7 @@ inline auto get(U u) {
 
 const auto mangledName = [](const auto cn) { return cn->get_callee()->get_mangled_name(); };
 const auto demangledName = [](const auto cn) { return cn->get_callee()->get_name(); };
-const auto cMetric = [](std::string &&name, auto &&cube, auto cn) {
+const auto cMetric = [](std::string&& name, auto&& cube, auto cn) {
   if constexpr (std::is_pointer_v<decltype(cn)>) {
     typedef decltype(cube.get_sev(cube.get_met(name.c_str()), cn, cube.get_thrdv().at(0))) RetType;
     RetType metric{};
@@ -72,8 +77,8 @@ const auto cMetric = [](std::string &&name, auto &&cube, auto cn) {
     assert(false);
   }
 };
-const auto time = [](auto &&cube, auto cn) { return cMetric(std::string("time"), cube, cn); };
-const auto visits = [](auto &&cube, auto cn) { return cMetric(std::string("visits"), cube, cn); };
+const auto time = [](auto&& cube, auto cn) { return cMetric(std::string("time"), cube, cn); };
+const auto visits = [](auto&& cube, auto cn) { return cMetric(std::string("visits"), cube, cn); };
 const auto getName = [](const bool mangled, const auto cn) {
   if (mangled) {
     return mangledName(cn);
@@ -82,38 +87,40 @@ const auto getName = [](const bool mangled, const auto cn) {
   }
 };
 
-const auto attRuntime = [](auto &cube, auto cnode, auto n, auto pNode, auto pn) {
+const auto attRuntime = [](auto& cube, auto cnode, auto n, auto pNode, auto pn) {
+  auto console = metacg::MCGLogger::instance().getConsole();
   if (has<BaseProfileData>(n)) {
-    spdlog::get("console")->debug("Attaching runtime {} to node {}", impl::time(cube, cnode), n->getFunctionName());
+    console->debug("Attaching runtime {} to node {}", impl::time(cube, cnode), n->getFunctionName());
     const auto runtime = impl::time(cube, cnode);
-    const auto &bpd = get<BaseProfileData>(n);
+    const auto& bpd = get<BaseProfileData>(n);
     bpd->addRuntime(runtime);
   } else {
-    spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
+    console->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
   }
   if (has<PiraOneData>(n)) {
     get<PiraOneData>(n)->setComesFromCube();
   }
 };
 
-const auto attNrCall = [](auto &cube, auto cnode, auto n, auto pNode, auto pn) {
+const auto attNrCall = [](auto& cube, auto cnode, auto n, auto pNode, auto pn) {
+  auto console = metacg::MCGLogger::instance().getConsole();
   if (has<BaseProfileData>(n)) {
-    spdlog::get("console")->debug("Attaching visits {} to node {}", impl::visits(cube, cnode), n->getFunctionName());
+    console->debug("Attaching visits {} to node {}", impl::visits(cube, cnode), n->getFunctionName());
     const auto calls = impl::visits(cube, cnode);
-    const auto &bpd = get<BaseProfileData>(n);
+    const auto& bpd = get<BaseProfileData>(n);
     bpd->addCalls(calls);
     bpd->addNumberOfCallsFrom(pn, calls);
   } else {
-    spdlog::get("console")->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
+    console->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
   }
 };
 
-const auto attInclRuntime = [](auto &cube, auto cnode, auto n, [[maybe_unused]] auto pNode,
+const auto attInclRuntime = [](auto& cube, auto cnode, auto n, [[maybe_unused]] auto pNode,
                                [[maybe_unused]] auto pName) {
   if (has<BaseProfileData>(n)) {
     // fill CgLocations and calculate inclusive runtime
     double cumulatedTime = 0;
-    for (cube::Thread *thread : cube.get_thrdv()) {
+    for (cube::Thread* thread : cube.get_thrdv()) {
       int threadId = thread->get_id();
       int procId = thread->get_parent()->get_id();
 
@@ -131,26 +138,27 @@ const auto attInclRuntime = [](auto &cube, auto cnode, auto n, [[maybe_unused]] 
     }
 
     get<BaseProfileData>(n)->addInclusiveRuntimeInSeconds(cumulatedTime);
-    spdlog::get("console")->debug("Attaching inclusive runtime {} to node {}", cumulatedTime, n->getFunctionName());
+    auto console = metacg::MCGLogger::instance().getConsole();
+    console->debug("Attaching inclusive runtime {} to node {}", cumulatedTime, n->getFunctionName());
   } else if (has<PiraOneData>(n)) {
     get<PiraOneData>(n)->setComesFromCube();
   }
 };
 
 template <typename... Largs>
-void build(std::string filePath, metacg::graph::MCGManager &mcgm, Largs... largs) {
+void build(const std::filesystem::path& filePath, metacg::graph::MCGManager& mcgm, Largs... largs) {
   //  auto &cg = metacg::pgis::PiraMCGProcessor::get();
   bool useMangledNames = true;
 
-  auto console = spdlog::get("console");
+  auto console = metacg::MCGLogger::instance().getConsole();
 
   try {
     cube::Cube cube;
     // Read our cube file
-    console->info("Reading cube file {}", filePath);
-    cube.openCubeReport(filePath);
+    console->info("Reading cube file {}", filePath.string());
+    cube.openCubeReport(filePath.string());
     // Get the cube nodes
-    const auto &cnodes = cube.get_cnodev();
+    const auto& cnodes = cube.get_cnodev();
 
     console->trace("Cube contains: {} nodes", cnodes.size());
     for (const auto cnode : cnodes) {
@@ -180,16 +188,16 @@ void build(std::string filePath, metacg::graph::MCGManager &mcgm, Largs... largs
       apply(mcgm, cube, cnode, cName, pNode, pName, largs...);
     }
 
-  } catch (std::exception &e) {
+  } catch (std::exception& e) {
     console->warn("Exception caught.\n{}", e.what());
   }
 }
 
-void build(std::string filepath);
+void build(const std::filesystem::path& filepath);
 }  // namespace impl
 
-void build(std::string filePath, Config *c, metacg::graph::MCGManager &mcgm);
-void buildFromCube(std::string filePath, Config *c, metacg::graph::MCGManager &mcgm);
-}  // namespace CubeCallgraphBuilder
+void build(const std::filesystem::path& filePath, Config* c, metacg::graph::MCGManager& mcgm);
+void buildFromCube(const std::filesystem::path& filePath, Config* c, metacg::graph::MCGManager& mcgm);
+}  // namespace metacg::pgis
 
 #endif

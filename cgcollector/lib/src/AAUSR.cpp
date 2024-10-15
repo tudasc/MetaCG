@@ -32,17 +32,17 @@ using namespace clang::index;
  * @param SM
  * @return
  */
-bool implementation::printLoc(llvm::raw_ostream &OS, SourceLocation BeginLoc, SourceLocation EndLoc,
-                              const SourceManager &SM, bool PrintFilename) {
+bool implementation::printLoc(llvm::raw_ostream& OS, SourceLocation BeginLoc, SourceLocation EndLoc,
+                              const SourceManager& SM, bool PrintFilename) {
   if (BeginLoc.isInvalid() || EndLoc.isInvalid()) {
     return true;
   }
   const auto BeginLocExpansion = SM.getExpansionLoc(BeginLoc);
   const auto EndLocExpansion = SM.getExpansionLoc(EndLoc);
   const auto EndLocOffset = SM.getDecomposedLoc(EndLocExpansion).second;
-  const std::pair<FileID, unsigned> &Decomposed = SM.getDecomposedLoc(BeginLocExpansion);
+  const std::pair<FileID, unsigned>& Decomposed = SM.getDecomposedLoc(BeginLocExpansion);
   if (PrintFilename) {
-    const FileEntry *FE = SM.getFileEntryForID(Decomposed.first);
+    const FileEntry* FE = SM.getFileEntryForID(Decomposed.first);
     if (FE) {
       OS << llvm::sys::path::filename(FE->getName());
     } else {
@@ -68,29 +68,30 @@ bool implementation::printLoc(llvm::raw_ostream &OS, SourceLocation BeginLoc, So
   return false;
 }
 
-void implementation::generateUSRForCallOrConstructExpr(const Expr *CE, const clang::ASTContext *Context,
-                                                       SmallVectorImpl<char> &Buf,
-                                                       clang::FunctionDecl *ParentFunctionDecl) {
+void implementation::generateUSRForCallOrConstructExpr(const Expr* CE, const clang::ASTContext* Context,
+                                                       SmallVectorImpl<char>& Buf,
+                                                       clang::FunctionDecl* ParentFunctionDecl) {
   assert(llvm::isa<clang::CallExpr>(CE) || llvm::isa<clang::CXXConstructExpr>(CE));
   assert(ParentFunctionDecl);
   llvm::raw_svector_ostream Out(Buf);
   Out << generateUSRForDecl(ParentFunctionDecl);
   Out << "@CALL_EXPR@";
-  [[maybe_unused]] bool Error = printLoc(Out, CE->getBeginLoc(), CE->getEndLoc(), Context->getSourceManager(), false);
+  [[maybe_unused]] const bool Error =
+      printLoc(Out, CE->getBeginLoc(), CE->getEndLoc(), Context->getSourceManager(), false);
   assert(!Error);
 }
 
-StringType implementation::generateUSRForCallOrConstructExpr(const Expr *CE, const clang::ASTContext *Context,
-                                                             clang::FunctionDecl *ParentFunctionDecl) {
+StringType implementation::generateUSRForCallOrConstructExpr(const Expr* CE, const clang::ASTContext* Context,
+                                                             clang::FunctionDecl* ParentFunctionDecl) {
   llvm::SmallString<64> Buffer;
   generateUSRForCallOrConstructExpr(CE, Context, Buffer, ParentFunctionDecl);
   return {Buffer.str().str()};
 }
 
-StringType implementation::generateUSRForDecl(const clang::Decl *DE) {
+StringType implementation::generateUSRForDecl(const clang::Decl* DE) {
   assert(DE);
   llvm::SmallString<64> Buffer;
-  bool Ignore = clang::index::generateUSRForDecl(DE, Buffer);
+  const bool Ignore = clang::index::generateUSRForDecl(DE, Buffer);
   if (Ignore) {
     if (auto VD = llvm::dyn_cast<clang::ParmVarDecl>(DE)) {
       return generateUSRForUnnamedParamVarDecl(VD);
@@ -108,51 +109,51 @@ StringType implementation::generateUSRForDecl(const clang::Decl *DE) {
   return {Buffer.str().str()};
 }
 
-StringType implementation::generateUSRForUnnamedParamVarDecl(const clang::ParmVarDecl *VD) {
+StringType implementation::generateUSRForUnnamedParamVarDecl(const clang::ParmVarDecl* VD) {
   const auto Context = VD->getParentFunctionOrMethod();
   const auto F = llvm::dyn_cast_or_null<clang::FunctionDecl>(Context);
   assert(F);
   StringType Ret = generateUSRForDecl(F);
   Ret += "@UNNAMED_PARAM@";
   const auto Parameters = F->parameters();
-  for (unsigned I = 0; I < F->getNumParams(); I++) {
-    if (Parameters[I] == VD) {
-      Ret += std::to_string(I);
+  for (unsigned i = 0; i < F->getNumParams(); i++) {
+    if (Parameters[i] == VD) {
+      Ret += std::to_string(i);
       break;
     }
   }
   return Ret;
 }
 
-StringType implementation::generateUSRForUnnamedUnion(const clang::FieldDecl *FD) {
+StringType implementation::generateUSRForUnnamedUnion(const clang::FieldDecl* FD) {
   const auto Parent = FD->getParent();
   assert(Parent);
   StringType Ret = generateUSRForDecl(Parent);
   Ret += "@UNNAMED_UNION";
   llvm::SmallString<64> Buffer;
   llvm::raw_svector_ostream Out(Buffer);
-  [[maybe_unused]] bool Error =
+  [[maybe_unused]] const bool Error =
       printLoc(Out, Parent->getBeginLoc(), Parent->getEndLoc(), Parent->getASTContext().getSourceManager(), false);
   assert(!Error);
   Ret += Buffer.str();
   return Ret;
 }
 
-StringType implementation::generateUSRForUnnamedField(const clang::FieldDecl *FD) {
+StringType implementation::generateUSRForUnnamedField(const clang::FieldDecl* FD) {
   const auto Parent = FD->getParent();
   assert(Parent);
   StringType Ret = generateUSRForDecl(Parent);
   Ret += "@UNNAMED_FIELD";
   llvm::SmallString<64> Buffer;
   llvm::raw_svector_ostream Out(Buffer);
-  [[maybe_unused]] bool Error =
+  [[maybe_unused]] const bool Error =
       printLoc(Out, Parent->getBeginLoc(), Parent->getEndLoc(), Parent->getASTContext().getSourceManager(), false);
   assert(!Error);
   Ret += Buffer.str();
   return Ret;
 }
 
-StringType implementation::generateUSRForThisExpr(clang::FunctionDecl *ParentFunctionDecl) {
+StringType implementation::generateUSRForThisExpr(clang::FunctionDecl* ParentFunctionDecl) {
   assert(ParentFunctionDecl);
   auto USR = generateUSRForDecl(ParentFunctionDecl);
   USR += "@THIS";
@@ -164,34 +165,34 @@ StringType implementation::generateUSRForThisExpr(StringType ParentFunctionUSR) 
   return ParentFunctionUSR;
 }
 
-StringType implementation::generateUSRForNewExpr(clang::CXXNewExpr *NE, clang::FunctionDecl *ParentFunctionDecl) {
+StringType implementation::generateUSRForNewExpr(clang::CXXNewExpr* NE, clang::FunctionDecl* ParentFunctionDecl) {
   assert(ParentFunctionDecl);
   auto USR = generateUSRForDecl(ParentFunctionDecl);
   USR += "@NEW";
   llvm::SmallString<64> Buf;
   llvm::raw_svector_ostream Out(Buf);
-  [[maybe_unused]] bool Error =
+  [[maybe_unused]] const bool Error =
       printLoc(Out, NE->getBeginLoc(), NE->getEndLoc(), ParentFunctionDecl->getASTContext().getSourceManager(), false);
   assert(!Error);
   USR += Buf.str();
   return USR;
 }
 
-StringType implementation::generateUSRForMaterializeTemporaryExpr(clang::MaterializeTemporaryExpr *MTE,
-                                                                  clang::FunctionDecl *ParentFunctionDecl) {
+StringType implementation::generateUSRForMaterializeTemporaryExpr(clang::MaterializeTemporaryExpr* MTE,
+                                                                  clang::FunctionDecl* ParentFunctionDecl) {
   assert(ParentFunctionDecl);
   auto USR = generateUSRForDecl(ParentFunctionDecl);
   USR += "@MTE";
   llvm::SmallString<64> Buf;
   llvm::raw_svector_ostream Out(Buf);
-  [[maybe_unused]] bool Error = printLoc(Out, MTE->getBeginLoc(), MTE->getEndLoc(),
-                                         ParentFunctionDecl->getASTContext().getSourceManager(), false);
+  [[maybe_unused]] const bool Error = printLoc(Out, MTE->getBeginLoc(), MTE->getEndLoc(),
+                                               ParentFunctionDecl->getASTContext().getSourceManager(), false);
   assert(!Error);
   USR += Buf.str();
   return USR;
 }
 
-StringType implementation::generateUSRForSymbolicReturn(clang::FunctionDecl *ParentFunctionDecl) {
+StringType implementation::generateUSRForSymbolicReturn(clang::FunctionDecl* ParentFunctionDecl) {
   assert(ParentFunctionDecl);
   auto USR = generateUSRForDecl(ParentFunctionDecl);
   USR += "@SRETURN";

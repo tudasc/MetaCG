@@ -20,9 +20,11 @@
 #include "EXTRAP_Experiment.hpp"
 #pragma GCC diagnostic pop
 
-#include "spdlog/spdlog.h"
-
 #include "cxxabi.h"
+
+#include "ExtrapAggregatedFunctions.h"
+#include "LoggerUtil.h"
+#include "config/PiraIIConfig.h"
 
 #include <filesystem>
 #include <map>
@@ -31,9 +33,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#include "ExtrapAggregatedFunctions.h"
-#include "config/PiraIIConfig.h"
 
 namespace cube {
 class Cnode;
@@ -47,7 +46,6 @@ struct ExtrapConfig {
   std::string directory;
   std::string prefix;
   std::string postfix;
-  // std::map<std::string, std::vector<int>> params;
   std::vector<std::pair<std::string, std::vector<int>>> params;
   int repetitions;
   int iteration;
@@ -63,7 +61,7 @@ class ExtrapExtrapolator {
   auto getExtrapolationValue(double alpha = 1.0) {
     std::vector<std::pair<std::string, double>> result;
     // We need to compute extrapolation values for all params
-    for (const auto &param_pair : values) {
+    for (const auto& param_pair : values) {
       std::vector<double> steps;
       auto it1 = param_pair.second.begin();
       auto it2 = param_pair.second.begin();
@@ -88,12 +86,12 @@ class ExtrapExtrapolator {
 };
 
 /* Utility functions to read in configuration and print it */
-ExtrapConfig getExtrapConfigFromJSON(const std::filesystem::path &filePath);
+ExtrapConfig getExtrapConfigFromJSON(const std::filesystem::path& filePath);
 
-void printConfig(ExtrapConfig &cfg);
+void printConfig(ExtrapConfig& cfg);
 
 inline std::string demangle(std::string input) {
-  char *res;
+  char* res;
   int st;
   res = abi::__cxa_demangle(input.c_str(), nullptr, nullptr, &st);
   if (st < 0) {
@@ -106,29 +104,30 @@ inline std::string demangle(std::string input) {
 
 class ExtrapConnector {
  public:
-  explicit ExtrapConnector(std::vector<EXTRAP::Model *> models, EXTRAP::ParameterList parameterList)
+  explicit ExtrapConnector(std::vector<EXTRAP::Model*> models, EXTRAP::ParameterList parameterList)
       : models(models), paramList(parameterList), epolator(ExtrapExtrapolator({})) {
-    spdlog::get("console")->trace("ExtrapConnector: explicit ctor: models {}", models.size());
+    metacg::MCGLogger::instance().getConsole()->trace("ExtrapConnector: explicit ctor: models {}", models.size());
   }
 
   ~ExtrapConnector() = default;
 
-  ExtrapConnector(const ExtrapConnector &other)
+  ExtrapConnector(const ExtrapConnector& other)
       : epModelFunction(std::make_unique<EXTRAP::Function>(*other.epModelFunction)),
         models(other.models),
         paramList(other.paramList),
         epolator(other.epolator) {
-    spdlog::get("console")->trace("ExtrapConnector: copy ctor\nother.models: {}\nthis.models: {}", other.models.size(),
-                                  this->models.size());
+    metacg::MCGLogger::instance().getConsole()->trace("ExtrapConnector: copy ctor\nother.models: {}\nthis.models: {}",
+                                                      other.models.size(), this->models.size());
   }
 
-  ExtrapConnector &operator=(const ExtrapConnector &other) {
+  ExtrapConnector& operator=(const ExtrapConnector& other) {
     this->epModelFunction = std::make_unique<EXTRAP::Function>(*other.epModelFunction);
     this->models = other.models;
     this->paramList = other.paramList;
     this->epolator = other.epolator;
-    spdlog::get("console")->trace("ExtrapConnector: copy assignment operator\nother.models: {}\nthis.models: {}",
-                                  other.models.size(), this->models.size());
+    metacg::MCGLogger::instance().getConsole()->trace(
+        "ExtrapConnector: copy assignment operator\nother.models: {}\nthis.models: {}", other.models.size(),
+        this->models.size());
     return *this;
   }
 
@@ -152,7 +151,7 @@ class ExtrapConnector {
   }
 
   /* Get the specific model set */
-  auto &getEPModelFunction() const { return epModelFunction; }
+  auto& getEPModelFunction() const { return epModelFunction; }
   std::string getEPModelFunctionAsString() const {
     if (isModelSet()) {
       return epModelFunction->getAsString(paramList);
@@ -171,12 +170,12 @@ class ExtrapConnector {
    * Call only once!
    * @param modelAggregationStrategy Aggregration/Selection strategy
    */
-  void modelAggregation(pgis::config::ModelAggregationStrategy modelAggregationStrategy);
+  void modelAggregation(metacg::pgis::config::ModelAggregationStrategy modelAggregationStrategy);
 
  private:
   std::unique_ptr<EXTRAP::Function> epModelFunction = nullptr;
 
-  std::vector<EXTRAP::Model *> models;
+  std::vector<EXTRAP::Model*> models;
   EXTRAP::ParameterList paramList;
 
   ExtrapExtrapolator epolator;
@@ -188,13 +187,13 @@ class ExtrapModelProvider {
   ~ExtrapModelProvider() {
     if (experiment) {
       auto generators = experiment->getModelGenerators();
-      for (const auto &gen : generators) {
+      for (const auto& gen : generators) {
         delete gen;  // clean up what we allocated
       }
     }
   }
   // Needs to be defined in header, so deduction works correctly in usages.
-  auto getModelFor(const std::string &functionName) {
+  auto getModelFor(const std::string& functionName) {
     if (models.empty()) {
       buildModels();
     }
@@ -206,7 +205,7 @@ class ExtrapModelProvider {
     auto paramList = getParameterList();
 
     auto m = models[functionName];
-    spdlog::get("console")->debug(
+    metacg::MCGLogger::instance().getConsole()->debug(
         "ModelProvider:getModelFor {}: {}\nUsing mangled name: {}", demangledName,
         m.size() > 0 ? m.front()->getModelFunction()->getAsString(getParameterList()) : " NONE ", functionName);
     return ExtrapConnector(m, paramList);
@@ -214,11 +213,11 @@ class ExtrapModelProvider {
 
   std::vector<EXTRAP::Parameter> getParameterList();
 
-  std::vector<double> getConfigValues(const std::string &key) {
+  std::vector<double> getConfigValues(const std::string& key) {
     std::vector<double> vals;
     vals.reserve(config.params.size());
     // FIXME for now we assume only a single parameter!!
-    for (const auto &p : config.params) {
+    for (const auto& p : config.params) {
       if (key == p.first) {
         for (const auto v : p.second) {
           vals.emplace_back(v);
@@ -235,8 +234,8 @@ class ExtrapModelProvider {
  private:
   ExtrapConfig config;
   // Hold mapping mangled_name -> Models
-  std::unordered_map<std::string, std::vector<EXTRAP::Model *>> models;
-  EXTRAP::Experiment *experiment;
+  std::unordered_map<std::string, std::vector<EXTRAP::Model*>> models;
+  EXTRAP::Experiment* experiment;
 };
 
 }  // namespace extrapconnection

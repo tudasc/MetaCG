@@ -12,8 +12,6 @@
 #include <map>
 #include <utility>
 
-#define DEBUG 1
-
 LoadImbalance::AbstractMetric::AbstractMetric()
     : node(nullptr), max(.0), min(std::numeric_limits<double>::max()), mean(.0), stdev(.0), count(.0) {}
 
@@ -22,8 +20,8 @@ LoadImbalance::AbstractMetric::AbstractMetric()
  * see
  *  - https://stackoverflow.com/a/7616783/3473012
  */
-double calcStddev(std::vector<double> &v) {
-  assert(v.size() > 0 &&
+double calcStddev(std::vector<double>& v) {
+  assert(!v.empty() &&
          "AbstractMetric.cpp: calcStddev: Can only calculate the standard deviation of a non-empty vector.");
 
   double sum = std::accumulate(v.begin(), v.end(), 0.0);
@@ -37,7 +35,7 @@ double calcStddev(std::vector<double> &v) {
   return stdev;
 }
 
-void LoadImbalance::AbstractMetric::calcIndicators(std::ostringstream &debugString) {
+void LoadImbalance::AbstractMetric::calcIndicators(std::ostringstream& debugString) {
   const auto n = this->node;
 
   // associate execution times to their processing unit (process, thread) and accumulate if necessary
@@ -90,13 +88,13 @@ void LoadImbalance::AbstractMetric::calcIndicators(std::ostringstream &debugStri
   }
 }
 
-void LoadImbalance::AbstractMetric::setNode(metacg::CgNode *newNode, std::ostringstream &debugString) {
+void LoadImbalance::AbstractMetric::setNode(metacg::CgNode* newNode, std::ostringstream& debugString) {
   this->node = newNode;
 
   this->calcIndicators(debugString);
 }
 
-void LoadImbalance::AbstractMetric::setNode(metacg::CgNode *newNode) {
+void LoadImbalance::AbstractMetric::setNode(metacg::CgNode* newNode) {
   std::ostringstream dummy;
 
   this->setNode(newNode, dummy);

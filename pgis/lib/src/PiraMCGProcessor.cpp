@@ -16,19 +16,18 @@
 
 #include "loadImbalance/LIMetaData.h"
 
-#include "spdlog/spdlog.h"
-
 #include <climits>
 #include <iomanip>  //  std::setw()
+#include <utility>
 
 using namespace metacg;
 using namespace pira;
 using namespace ::pgis::options;
 
-metacg::pgis::PiraMCGProcessor::PiraMCGProcessor(Config *config, extrapconnection::ExtrapConfig epCfg)
-    : graph(&getEmptyGraph()), configPtr(config), epModelProvider(epCfg) {}
+metacg::pgis::PiraMCGProcessor::PiraMCGProcessor(Config* config, extrapconnection::ExtrapConfig epCfg)
+    : graph(&getEmptyGraph()), configPtr(config), epModelProvider(std::move(epCfg)) {}
 
-void metacg::pgis::PiraMCGProcessor::registerEstimatorPhase(EstimatorPhase *phase, bool noReport) {
+void metacg::pgis::PiraMCGProcessor::registerEstimatorPhase(EstimatorPhase* phase, bool noReport) {
   phases.push(phase);
   phase->injectConfig(configPtr);
 
@@ -37,10 +36,11 @@ void metacg::pgis::PiraMCGProcessor::registerEstimatorPhase(EstimatorPhase *phas
   }
 }
 
-void metacg::pgis::PiraMCGProcessor::finalizeGraph(bool buildMarker) {
+void metacg::pgis::PiraMCGProcessor::finalizeGraph() {
+  auto errConsole = metacg::MCGLogger::instance().getErrConsole();
   if (graph->isEmpty()) {
-    spdlog::get("errconsole")->error("Running the processor on empty graph. Need to construct graph.");
-    exit(::pgis::ErrorCode::NoGraphConstructed);
+    errConsole->error("Running the processor on empty graph. Need to construct graph.");
+    exit(metacg::pgis::ErrorCode::NoGraphConstructed);
   }
 
   // XXX We should double-check if this is still required, with the reachability now
@@ -49,8 +49,8 @@ void metacg::pgis::PiraMCGProcessor::finalizeGraph(bool buildMarker) {
     // We assume that 'main' is always reachable.
     auto mainNode = graph->getMain();
     if (mainNode == nullptr) {
-      spdlog::get("errconsole")->error("PiraMCGProcessor: Cannot find main function");
-      exit(::pgis::ErrorCode::NoMainFunctionFound);
+      errConsole->error("PiraMCGProcessor: Cannot find main function");
+      exit(metacg::pgis::ErrorCode::NoMainFunctionFound);
     }
   }
 }
@@ -60,30 +60,30 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
   auto mainFunction = graph->getMain();
 
   if (mainFunction == nullptr) {
-    spdlog::get("errconsole")->error("PiraMCGProcessor: Cannot find main function.");
-    exit(::pgis::ErrorCode::NoMainFunctionFound);
+    metacg::MCGLogger::instance().getErrConsole()->error("PiraMCGProcessor: Cannot find main function.");
+    exit(metacg::pgis::ErrorCode::NoMainFunctionFound);
   }
 
   while (!phases.empty()) {
-    EstimatorPhase *phase = phases.front();
+    EstimatorPhase* phase = phases.front();
 
     {  // RAII
       const std::string curPhase = phase->getName();
-      metacg::RuntimeTimer rtt("Running Prerequisites for " + curPhase);
+      const metacg::RuntimeTimer rtt("Running Prerequisites for " + curPhase);
       phase->doPrerequisites();
     }
 
     {  // RAII
       const std::string curPhase = phase->getName();
-      metacg::RuntimeTimer rtt("Running " + curPhase);
+      const metacg::RuntimeTimer rtt("Running " + curPhase);
       phase->modifyGraph(mainFunction);
       phase->generateIC();
 
-      spdlog::get("console")->info("Print phase report");
+      metacg::MCGLogger::instance().getConsole()->info("Print phase report");
       phase->printReport();
 
-      InstrumentationConfiguration IC = phase->getIC();
-      [[maybe_unused]] auto &gOpts = ::pgis::config::GlobalConfig::get();
+      const InstrumentationConfiguration& IC = phase->getIC();
+      [[maybe_unused]] auto& gOpts = ::pgis::config::GlobalConfig::get();
 
       dumpInstrumentedNames(IC);  // outputs the instrumentation
 
@@ -104,10 +104,10 @@ void metacg::pgis::PiraMCGProcessor::applyRegisteredPhases() {
 int metacg::pgis::PiraMCGProcessor::getNumProcs() {
   int numProcs = 1;
   int prevNum = 0;
-  for (const auto &elem : graph->getNodes()) {
-    const auto &node = elem.second.get();
+  for (const auto& elem : graph->getNodes()) {
+    const auto& node = elem.second.get();
     if (!node->get<BaseProfileData>()->getCgLocation().empty()) {
-      for (CgLocation cgLoc : node->get<BaseProfileData>()->getCgLocation()) {
+      for (const CgLocation& cgLoc : node->get<BaseProfileData>()->getCgLocation()) {
         if (cgLoc.getProcId() != prevNum) {
           prevNum = cgLoc.getProcId();
           numProcs++;
@@ -121,11 +121,11 @@ int metacg::pgis::PiraMCGProcessor::getNumProcs() {
   return numProcs;
 }
 
-bool metacg::pgis::PiraMCGProcessor::readWhitelist(std::vector<std::string> &whiteNodes) {
+bool metacg::pgis::PiraMCGProcessor::readWhitelist(std::vector<std::string>& whiteNodes) {
   std::ifstream in(configPtr->whitelist.c_str());
 
   if (!in) {
-    spdlog::get("errconsole")->error("Cannot open file {}", configPtr->whitelist);
+    metacg::MCGLogger::instance().getErrConsole()->error("Cannot open file {}", configPtr->whitelist);
     return false;
   }
 
@@ -140,8 +140,8 @@ bool metacg::pgis::PiraMCGProcessor::readWhitelist(std::vector<std::string> &whi
   return true;
 }
 
-bool metacg::pgis::PiraMCGProcessor::isNodeListed(std::vector<std::string> whiteNodes, std::string node) {
-  for (auto wNode : whiteNodes) {
+bool metacg::pgis::PiraMCGProcessor::isNodeListed(const std::vector<std::string>& whiteNodes, const std::string& node) {
+  for (const auto& wNode : whiteNodes) {
     if (node == wNode) {
       return true;
     }
@@ -153,6 +153,7 @@ void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(InstrumentationConfig
   if (noOutputRequired) {
     return;
   }
+  auto console = metacg::MCGLogger::instance().getConsole();
 
   //  std::string filename =
   //      configPtr->outputFile + "/instrumented-" + configPtr->appName + "-" + IC.phaseName + ".txt";
@@ -160,30 +161,30 @@ void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(InstrumentationConfig
   //  if (found != std::string::npos) {
   //    filename = configPtr->outputFile + "/instrumented-" + configPtr->appName + ".txt";
   //  }
-  std::string filename = configPtr->outputFile + "/instrumented-" + configPtr->appName + ".txt";
+  const std::string filename = configPtr->outputFile + "/instrumented-" + configPtr->appName + ".txt";
   char buff[PATH_MAX];
   const auto ret = getcwd(buff, PATH_MAX);
   if (ret == nullptr) {
-    spdlog::get("errconsole")->error("Cannot get current working directory");
-    exit(::pgis::ErrorCode::CouldNotGetCWD);
+    metacg::MCGLogger::instance().getErrConsole()->error("Cannot get current working directory");
+    exit(metacg::pgis::ErrorCode::CouldNotGetCWD);
   }
-  std::string curCwd(buff);
-  spdlog::get("console")->info("Writing to {}. Current cwd {}", filename, curCwd);
+  const std::string curCwd(buff);
+  console->info("Writing to {}. Current cwd {}", filename, curCwd);
   std::ofstream outfile(filename, std::ofstream::out);
 
   // The simple whitelist used so far in PIRA
-  bool scorepOutput = ::pgis::config::GlobalConfig::get().getAs<bool>("scorep-out");
+  const bool scorepOutput = ::pgis::config::GlobalConfig::get().getAs<bool>("scorep-out");
   if (!scorepOutput) {
-    spdlog::get("console")->debug("Using plain whitelist format");
+    console->debug("Using plain whitelist format");
     if (IC.instrumentedNodes.empty()) {
       outfile << "aFunctionThatDoesNotExist" << std::endl;
     } else {
-      for (const auto &name : IC.instrumentedNames) {
+      for (const auto& name : IC.instrumentedNames) {
         outfile << name << std::endl;
       }
     }
   } else {
-    spdlog::get("console")->debug("Using score-p format");
+    console->debug("Using score-p format");
     const std::string scorepBegin{"SCOREP_REGION_NAMES_BEGIN"};
     const std::string scorepEnd{"SCOREP_REGION_NAMES_END"};
     const std::string mangled{"MANGLED"};
@@ -192,11 +193,11 @@ void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(InstrumentationConfig
 
     std::stringstream ss;
     ss << scorepBegin << "\n";
-    for (const auto &name : IC.instrumentedNames) {
+    for (const auto& name : IC.instrumentedNames) {
       ss << include << " " << name << "\n";
     }
-    for (const auto &[name, node] : IC.instrumentedPaths) {
-      for (const auto &parent : graph->getCallers(node)) {
+    for (const auto& [name, node] : IC.instrumentedPaths) {
+      for (const auto& parent : graph->getCallers(node)) {
         ss << include << " " << parent->getFunctionName() << " " << arrow << " " << name << "\n";
       }
     }
@@ -207,7 +208,7 @@ void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(InstrumentationConfig
   }
 }
 
-Callgraph *metacg::pgis::PiraMCGProcessor::getCallgraph(PiraMCGProcessor *cg) {
+Callgraph* metacg::pgis::PiraMCGProcessor::getCallgraph(PiraMCGProcessor* cg) {
   if (cg) {
     return cg->graph;
   }
@@ -215,33 +216,34 @@ Callgraph *metacg::pgis::PiraMCGProcessor::getCallgraph(PiraMCGProcessor *cg) {
 }
 
 void metacg::pgis::PiraMCGProcessor::attachExtrapModels() {
+  auto console = metacg::MCGLogger::instance().getConsole();
   epModelProvider.buildModels();
-  for (const auto &elem : graph->getNodes()) {
-    const auto &n = elem.second.get();
-    spdlog::get("console")->debug("Attaching models for {}", n->getFunctionName());
+  for (const auto& elem : graph->getNodes()) {
+    const auto& n = elem.second.get();
+    console->debug("Attaching models for {}", n->getFunctionName());
     auto ptd = n->getOrCreateMD<PiraTwoData>(epModelProvider.getModelFor(n->getFunctionName()));
     if (!ptd->getExtrapModelConnector().hasModels()) {
-      spdlog::get("console")->trace("attachExtrapModels hasModels == false -> Setting new ModelConnector");
+      console->trace("attachExtrapModels hasModels == false -> Setting new ModelConnector");
       ptd->setExtrapModelConnector(epModelProvider.getModelFor(n->getFunctionName()));
     }
 
     ptd->getExtrapModelConnector().setEpolator(extrapconnection::ExtrapExtrapolator(epModelProvider.getConfigValues()));
 
     if (ptd->getExtrapModelConnector().hasModels()) {
-      spdlog::get("console")->trace("attachExtrapModels for {} hasModels == true -> Use model aggregation strategy.",
-                                    n->getFunctionName());
-      auto &pConfig = ::pgis::config::ParameterConfig::get();
+      console->trace("attachExtrapModels for {} hasModels == true -> Use model aggregation strategy.",
+                     n->getFunctionName());
+      auto& pConfig = ::pgis::config::ParameterConfig::get();
       ptd->getExtrapModelConnector().modelAggregation(pConfig.getPiraIIConfig()->modelAggregationStrategy);
     }
-    spdlog::get("console")->debug("{}: No. of models: {}, model is set {}", n->getFunctionName(),
-                                  n->get<PiraTwoData>()->getExtrapModelConnector().modelCount(),
-                                  n->get<PiraTwoData>()->getExtrapModelConnector().isModelSet());
-    spdlog::get("console")->debug("{}: models: {}", n->getFunctionName(),
-                                  n->get<PiraTwoData>()->getExtrapModelConnector().getModelStrings());
+    console->debug("{}: No. of models: {}, model is set {}", n->getFunctionName(),
+                   n->get<PiraTwoData>()->getExtrapModelConnector().modelCount(),
+                   n->get<PiraTwoData>()->getExtrapModelConnector().isModelSet());
+    console->debug("{}: models: {}", n->getFunctionName(),
+                   n->get<PiraTwoData>()->getExtrapModelConnector().getModelStrings());
     if (n->get<PiraTwoData>()->getExtrapModelConnector().isModelSet()) {
     }
-    spdlog::get("console")->debug("{}: aggregated/selected model: {}", n->getFunctionName(),
-                                  n->get<PiraTwoData>()->getExtrapModelConnector().getEPModelFunctionAsString());
+    console->debug("{}: aggregated/selected model: {}", n->getFunctionName(),
+                   n->get<PiraTwoData>()->getExtrapModelConnector().getEPModelFunctionAsString());
   }
-  spdlog::get("console")->info("Attaching Extra-P models done");
+  console->info("Attaching Extra-P models done");
 }

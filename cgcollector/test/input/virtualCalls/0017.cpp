@@ -20,7 +20,7 @@ class MyClassDerive : public MyClass, public MyClassStep {
 
 void MyClassDerive::foo() {}
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   MyClass mc;
   MyClassDerive mcd;
   mc.foo();

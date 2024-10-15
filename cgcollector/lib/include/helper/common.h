@@ -10,7 +10,7 @@
 /**
  * Returns mangled names for all named decls, including Ctor/Dtor.
  */
-std::vector<std::string> getMangledName(clang::NamedDecl const *const nd);
+std::vector<std::string> getMangledName(clang::NamedDecl const* const nd);
 
 /**
  * Returns the called Statement from a CXXMemberCall
@@ -18,7 +18,7 @@ std::vector<std::string> getMangledName(clang::NamedDecl const *const nd);
  * @param MCE
  * @return The called Statement or a nullptr if it can not be determined
  */
-clang::Stmt *getCalledStmtFromCXXMemberCall(clang::CXXMemberCallExpr *MCE);
+clang::Stmt* getCalledStmtFromCXXMemberCall(clang::CXXMemberCallExpr* MCE);
 
 /**
  * Returns the implicit object from a CXXMemberCall
@@ -27,7 +27,7 @@ clang::Stmt *getCalledStmtFromCXXMemberCall(clang::CXXMemberCallExpr *MCE);
  * @return The implicit object (or a nullptr if it can not be determined) and 'True' if the CXXMemberCall is an arrow
  * operator
  */
-std::pair<clang::Stmt *, bool> getImplicitObjectFromCXXMemberCall(clang::CXXMemberCallExpr *MCE);
+std::pair<clang::Stmt*, bool> getImplicitObjectFromCXXMemberCall(clang::CXXMemberCallExpr* MCE);
 
 /**
  * Returns the declaration of the function that gets ultimately called by a CXXOperatorCallExpr.
@@ -36,6 +36,6 @@ std::pair<clang::Stmt *, bool> getImplicitObjectFromCXXMemberCall(clang::CXXMemb
  * @param OCE
  * @return The called function Decl or a nullptr if it can not be determined
  */
-clang::FunctionDecl *getCalledFunctionFromCXXOperatorCallExpr(clang::CXXOperatorCallExpr *OCE);
+clang::FunctionDecl* getCalledFunctionFromCXXOperatorCallExpr(clang::CXXOperatorCallExpr* OCE);
 
 #endif

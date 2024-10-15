@@ -19,7 +19,7 @@ using FunctionNames = std::set<std::string>;
  * @param filename
  * @param callgraph
  */
-inline void readIPCG(const std::string &filename, nlohmann::json &callgraph) {
+inline void readIPCG(const std::string& filename, nlohmann::json& callgraph) {
   std::ifstream file(filename);
   if (!file.is_open()) {
     std::cerr << "[Error] Unable to open inputfile " << filename << std::endl;
@@ -28,7 +28,7 @@ inline void readIPCG(const std::string &filename, nlohmann::json &callgraph) {
   file >> callgraph;
 }
 
-inline void writeIPCG(const std::string &filename, const nlohmann::json &callgraph) {
+inline void writeIPCG(const std::string& filename, const nlohmann::json& callgraph) {
   std::ofstream file(filename);
   if (!file.is_open()) {
     std::cerr << "[Error] Unable to open outputfile " << filename << std::endl;
@@ -37,7 +37,7 @@ inline void writeIPCG(const std::string &filename, const nlohmann::json &callgra
   file << callgraph;
 }
 
-inline void attachFormatTwoHeader(nlohmann::json &j) {
+inline void attachFormatTwoHeader(nlohmann::json& j) {
   std::string cgcMajorVersion = std::to_string(CGCollector_VERSION_MAJOR);
   std::string cgcMinorVersion = std::to_string(CGCollector_VERSION_MINOR);
   std::string cgcVersion{cgcMajorVersion + '.' + cgcMinorVersion};
@@ -60,9 +60,9 @@ inline void attachFormatTwoHeader(nlohmann::json &j) {
  * @param version
  * @param directInsertWorkaround Workaround to enable CGValidate to work with the metacg version 2 file format
  */
-inline void insertNode(nlohmann::json &callgraph, const std::string &nodeName, const FunctionNames &callees,
-                       const FunctionNames &callers, const FunctionNames &overriddenBy,
-                       const FunctionNames &overriddenFunctions, const bool isVirtual, const bool doesOverride,
+inline void insertNode(nlohmann::json& callgraph, const std::string& nodeName, const FunctionNames& callees,
+                       const FunctionNames& callers, const FunctionNames& overriddenBy,
+                       const FunctionNames& overriddenFunctions, const bool isVirtual, const bool doesOverride,
                        const bool hasBody, int version, const bool directInsertWorkaround = false) {
   if (version == 1) {
     callgraph[nodeName] = {{"callees", callees},
@@ -100,7 +100,7 @@ inline void insertNode(nlohmann::json &callgraph, const std::string &nodeName, c
  * @param version
  * @param directInsertWorkaround Workaround to enable CGValidate to work with the metacg version 2 file format
  */
-inline void insertDefaultNode(nlohmann::json &callgraph, const std::string &nodeName, const int version = 1,
+inline void insertDefaultNode(nlohmann::json& callgraph, const std::string& nodeName, const int version = 1,
                               const bool directInsertWorkaround = false) {
   const FunctionNames empty;
   insertNode(callgraph, nodeName, empty, empty, empty, empty, false, false, false, version, directInsertWorkaround);
@@ -110,7 +110,7 @@ struct FunctionInfo {
   FunctionInfo() : functionName("_UNDEF_"), isVirtual(false), doesOverride(false), numStatements(-1), hasBody(false) {}
   ~FunctionInfo() = default;
 
-  bool compareStructure(const FunctionInfo &other) const {
+  bool compareStructure(const FunctionInfo& other) const {
     bool isEqual = true;
     isEqual &= (isVirtual == other.isVirtual);
     isEqual &= (doesOverride == other.doesOverride);
@@ -132,22 +132,22 @@ struct FunctionInfo {
    * @param strict If strict is set to true, only calls to functions in required are allowed
    * @return
    */
-  bool check_callees(const std::set<std::string> &required, const std::set<std::string> &blacklist, bool strict) const {
+  bool check_callees(const std::set<std::string>& required, const std::set<std::string>& blacklist, bool strict) const {
     if (strict) {
       return callees == required;
     } else {
       bool containsRequired = std::includes(callees.begin(), callees.end(), required.begin(), required.end());
       if (containsRequired) {
         return std::none_of(blacklist.begin(), blacklist.end(),
-                            [this](const auto &be) { return callees.find(be) != callees.end(); });
+                            [this](const auto& be) { return callees.find(be) != callees.end(); });
       }
       return false;
     }
   }
 
-  bool compareMeta(const FunctionInfo &other) const {
+  bool compareMeta(const FunctionInfo& other) const {
     bool isEqual = true;
-    for (const auto &[k, mi] : metaInfo) {
+    for (const auto& [k, mi] : metaInfo) {
       const auto oIt = other.metaInfo.find(k);
       if (oIt != other.metaInfo.end()) {
         auto otherMI = *oIt;
@@ -169,13 +169,13 @@ struct FunctionInfo {
   FunctionNames parents;
   FunctionNames overriddenFunctions;
   FunctionNames overriddenBy;
-  std::unordered_map<std::string, MetaInformation *> metaInfo;
+  std::unordered_map<std::string, MetaInformation*> metaInfo;
 };
 
 typedef std::map<std::string, FunctionInfo> FuncMapT;
 
-nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename);
+nlohmann::json buildFromJSON(FuncMapT& functionMap, const std::string& filename);
 
-nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filename, nlohmann::json *CompleteJsonOut);
+nlohmann::json buildFromJSONv2(FuncMapT& functionMap, const std::string& filename, nlohmann::json* CompleteJsonOut);
 
 #endif /* ifndef CGCOLLECTOR_JSONMANAGER_H */

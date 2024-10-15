@@ -22,8 +22,8 @@ std::map<std::string, double> totalCallCounts;
 std::map<std::string, std::map<std::string, double>> callCounts;
 
 // Parse options
-void handleOptions(int argc, char **argv, std::string &ipcg, std::string &cubex, bool &patch, std::string &output,
-                   bool &useNoBodyDetection, bool &insertNewNodes, bool &useCubeForCallCounts) {
+void handleOptions(int argc, char** argv, std::string& ipcg, std::string& cubex, bool& patch, std::string& output,
+                   bool& useNoBodyDetection, bool& insertNewNodes, bool& useCubeForCallCounts) {
   // clang-format off
   cxxopts::Options options("cgvalidate", "Validation of ipcg files using cubex files");
   options.add_options()("i,ipcg", "ipcg file name", cxxopts::value<std::string>())(
@@ -37,7 +37,7 @@ void handleOptions(int argc, char **argv, std::string &ipcg, std::string &cubex,
             cxxopts::value<bool>()->default_value("false"))(
       "h,help", "Print help");
   // clang-format on
-  cxxopts::ParseResult result = options.parse(argc, argv);
+  const cxxopts::ParseResult result = options.parse(argc, argv);
 
   if (result.count("help")) {
     std::cout << options.help({""}) << std::endl;
@@ -48,7 +48,7 @@ void handleOptions(int argc, char **argv, std::string &ipcg, std::string &cubex,
   cubex = result["cubex"].as<std::string>();
   patch = result["patch"].as<bool>();
   output = result["output"].as<std::string>();
-  if (patch && output.compare("") == 0) {
+  if (patch && output.empty()) {
     output = ipcg + ".patched";
   }
   useNoBodyDetection = result["useNoBodyDetection"].as<bool>();
@@ -59,11 +59,11 @@ void handleOptions(int argc, char **argv, std::string &ipcg, std::string &cubex,
   std::cout << cubex << std::endl;
 }
 
-void readCube(const std::string &filename, cube::Cube &cube) { cube.openCubeReport(filename); }
+void readCube(const std::string& filename, cube::Cube& cube) { cube.openCubeReport(filename); }
 
-bool isMain(const std::string &mangledName) { return mangledName == "main"; }
+bool isMain(const std::string& mangledName) { return mangledName == "main"; }
 
-bool getOrInsert(nlohmann::json &callgraph, const std::string &nodeName, const bool insertNewNodes, const int version) {
+bool getOrInsert(nlohmann::json& callgraph, const std::string& nodeName, const bool insertNewNodes, const int version) {
   if (callgraph.contains(nodeName)) {
     return true;
   } else {
@@ -71,7 +71,6 @@ bool getOrInsert(nlohmann::json &callgraph, const std::string &nodeName, const b
       insertDefaultNode(callgraph, nodeName, version, true);
       newNodes.push_back(nodeName);
       if (version == 2) {
-        std::map<std::string, double> callMap;
         CodeRegionsType codeRegions;
         CalledFunctionType calledFunctions;
         callgraph[nodeName]["meta"]["estimateCallCount"]["calls"] = calledFunctions;
@@ -99,8 +98,8 @@ bool getOrInsert(nlohmann::json &callgraph, const std::string &nodeName, const b
  * in a call if "node" or "value" do not exist.
  * @param version IPCG file format version
  */
-void patchCallgraph(nlohmann::json &callgraph, const std::string &nodeName, const std::string &valueName,
-                    const std::string &mode, const std::string &outputFileName, const bool insertNewNodes,
+void patchCallgraph(nlohmann::json& callgraph, const std::string& nodeName, const std::string& valueName,
+                    const std::string& mode, const std::string& outputFileName, const bool insertNewNodes,
                     const int version) {
   auto nodeExists = getOrInsert(callgraph, nodeName, insertNewNodes, version);
   auto valueExists = getOrInsert(callgraph, valueName, insertNewNodes, version);
@@ -139,9 +138,9 @@ void patchCallgraph(nlohmann::json &callgraph, const std::string &nodeName, cons
 std::set<std::pair<std::string, std::string>> edgesChecked;
 
 // Ripped from pgis
-const auto cMetric = [](std::string &&name, auto &&cube, auto cn) {
+const auto cMetric = [](std::string&& name, auto&& cube, auto cn) {
   if constexpr (std::is_pointer_v<decltype(cn)>) {
-    const auto met = cube.get_met(name.c_str());
+    const auto met = cube.get_met(name);
     typedef decltype(cube.get_sev(met, cn, cube.get_thrdv().at(0))) RetType;
     RetType metric{};
     for (auto t : cube.get_thrdv()) {
@@ -152,9 +151,9 @@ const auto cMetric = [](std::string &&name, auto &&cube, auto cn) {
     assert(false);
   }
 };
-const auto getVisits = [](auto &&cube, auto cn) { return cMetric(std::string("visits"), cube, cn); };
+const auto getVisits = [](auto&& cube, auto cn) { return cMetric(std::string("visits"), cube, cn); };
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   std::string ipcg;
   std::string cubex;
   bool patch;
@@ -162,10 +161,11 @@ int main(int argc, char **argv) {
   /**
    * If we don't have a function's definition, we cannot find any edges anyway.
    */
-  bool useNoBodyDetection;
-  bool insertNewNodes;
-  bool useCubeCallCounts;
+  bool useNoBodyDetection = false;
+  bool insertNewNodes = false;
+  bool useCubeCallCounts = false;
 
+  // fixme: why do we use outparameters?
   handleOptions(argc, argv, ipcg, cubex, patch, output, useNoBodyDetection, insertNewNodes, useCubeCallCounts);
 
   std::cout << "Running metacg::CGValidate (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
   nlohmann::json callgraph;
   try {
     readIPCG(ipcg, callgraph);
-  } catch (std::exception e) {
+  } catch (const std::exception& e) {
     std::cerr << "[Error] ipcg file " << ipcg << " not readable" << std::endl;
     return 2;
   }
@@ -191,14 +191,14 @@ int main(int argc, char **argv) {
   cube::Cube cube;
   try {
     readCube(cubex, cube);
-  } catch (std::exception e) {
+  } catch (const std::exception& e) {
     std::cerr << "[Error] cube file " << cubex << " not readable" << std::endl;
     return 3;
   }
 
   // iterate over cube to check if edges are in callgraph
   bool verified = true;
-  const auto &cnodes = cube.get_cnodev();
+  const auto& cnodes = cube.get_cnodev();
 
   for (const auto cnode : cnodes) {
     const auto calledName = cnode->get_callee()->get_mangled_name();
@@ -218,11 +218,11 @@ int main(int argc, char **argv) {
     if (!cnode->get_parent()) {
       continue;
     }
-    std::string nodeName = cnode->get_callee()->get_mangled_name();
+    const std::string nodeName = cnode->get_callee()->get_mangled_name();
     if (isMain(nodeName)) {
       continue;
     }
-    std::string parentName = cnode->get_parent()->get_callee()->get_mangled_name();
+    const std::string parentName = cnode->get_parent()->get_callee()->get_mangled_name();
 
     if (LOGLEVEL > 0) {
       std::cout << "[INFO] edge reached: " << parentName << " --> " << nodeName << std::endl;
@@ -243,19 +243,19 @@ int main(int argc, char **argv) {
 
     // check if parent contains callee and callee contains parent
     auto calleeFound =
-        (std::find(callees.begin(), callees.end(), nodeName) != callees.end());    // doesInclude(callees, nodeName);
+        (std::find(callees.begin(), callees.end(), nodeName) != callees.end());  // doesInclude(callees, nodeName);
     auto parentFound =
         (std::find(parents.begin(), parents.end(), parentName) != parents.end());  // doesInclude(parents, parentName);
     // check polymorphism (currently only first hierarchy level)
     bool overriddenFunctionParentFound = false;
     bool overriddenFunctionCalleeFound = false;
-    const auto &overriddenFunctions = node["overriddenFunctions"];
+    const auto& overriddenFunctions = node["overriddenFunctions"];
     for (const std::string overriddenFunctionName : overriddenFunctions) {
       if (!getOrInsert(callgraph, overriddenFunctionName, insertNewNodes, version)) {
         continue;
       }
-      const auto &overriddenFunction = callgraph[overriddenFunctionName];
-      const auto &parents = overriddenFunction[parentKey];
+      const auto& overriddenFunction = callgraph[overriddenFunctionName];
+      const auto& parents = overriddenFunction[parentKey];
       overriddenFunctionParentFound = (std::find(parents.begin(), parents.end(), parentName) != parents.end());
       if (overriddenFunctionParentFound) {
         break;
@@ -307,7 +307,7 @@ int main(int argc, char **argv) {
     }
   }
   if (useCubeCallCounts) {
-    for (auto &[key, value] : callgraph.items()) {
+    for (auto& [key, value] : callgraph.items()) {
       auto nExists = getOrInsert(callgraph, key, insertNewNodes, version);
       const auto nodeName = key;
       assert(nExists);
@@ -315,7 +315,7 @@ int main(int argc, char **argv) {
       if (callgraph[nodeName].contains("meta") && callgraph[nodeName]["meta"].contains("estimateCallCount")) {
         CalledFunctionType calledFunctions =
             callgraph[nodeName]["meta"]["estimateCallCount"]["calls"].get<CalledFunctionType>();
-        for (const auto &calledFunction : calledFunctions) {
+        for (const auto& calledFunction : calledFunctions) {
           const auto calledFunctionName = calledFunction.first;
           if (edgesChecked.find({nodeName, calledFunctionName}) == edgesChecked.end()) {
             auto functionIter = calledFunctions.find(calledFunctionName);
@@ -341,11 +341,9 @@ int main(int argc, char **argv) {
         callgraph = cgback;
       }
       if (hasCallCount) {
-        for (const auto &node : newNodes) {
+        for (const auto& node : newNodes) {
           if (!callgraph["_CG"][node]["meta"].contains("estimateCallCount")) {
-            std::map<std::string, double> callMap;
-
-            callgraph["_CG"][node]["meta"]["estimateCallCount"] = callMap;
+            callgraph["_CG"][node]["meta"]["estimateCallCount"] = "{}"_json;
           }
         }
       }
