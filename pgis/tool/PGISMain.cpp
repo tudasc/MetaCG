@@ -23,15 +23,13 @@
 #include <loadImbalance/LIMetaData.h>
 #include <loadImbalance/OnlyMainEstimatorPhase.h>
 
-#include "spdlog/spdlog.h"
-
 #include "cxxopts.hpp"
 
 #include <filesystem>
 
 namespace metacg::pgis::options {
 template <typename T>
-auto optType(T &obj) {
+auto optType(T& obj) {
   return cxxopts::value<arg_t<decltype(obj)>>();
 }
 }  // namespace metacg::pgis::options
@@ -40,7 +38,7 @@ using namespace metacg;
 using namespace pira;
 using namespace metacg::pgis::options;
 
-static pgis::ErrorCode readFromCubeFile(const std::filesystem::path &cubeFilePath, Config *cfgPtr) {
+static pgis::ErrorCode readFromCubeFile(const std::filesystem::path& cubeFilePath, Config* cfgPtr) {
   if (!std::filesystem::exists(cubeFilePath)) {
     metacg::MCGLogger::instance().getConsole()->error("Cube file does not exist. (" + cubeFilePath.string() + ")");
     return pgis::FileDoesNotExist;
@@ -51,13 +49,13 @@ static pgis::ErrorCode readFromCubeFile(const std::filesystem::path &cubeFilePat
     return pgis::UnknownFileFormat;
   }
 
-  auto &mcgm = graph::MCGManager::get();
+  auto& mcgm = graph::MCGManager::get();
   // TODO: Change to std::filesystem
   pgis::buildFromCube(cubeFilePath, cfgPtr, mcgm);
   return pgis::SUCCESS;
 }
 
-void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &consumer, Config *c, bool isIPCG, float runtimeThreshold,
+void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor& consumer, Config* c, bool isIPCG, float runtimeThreshold,
                              bool fillInstrumentationGaps) {
   // XXX: Does this somehow add vital functionality that always has to run, or so?
   auto statEstimator = new StatisticsEstimatorPhase(false, consumer.getCallgraph());
@@ -106,7 +104,7 @@ void registerEstimatorPhases(metacg::pgis::PiraMCGProcessor &consumer, Config *c
  * Checks command line option for value, adds it to global config and returns the set value for local use.
  */
 template <typename OptTy, typename ResTy>
-typename OptTy::type storeOpt(const OptTy &opt, const ResTy &res) {
+typename OptTy::type storeOpt(const OptTy& opt, const ResTy& res) {
   using Ty = typename OptTy::type;
   Ty tmp = res[opt.cliName].template as<Ty>();
   pgis::config::GlobalConfig::get().putOption(opt.cliName, tmp);
@@ -117,8 +115,8 @@ typename OptTy::type storeOpt(const OptTy &opt, const ResTy &res) {
  * Template only to use type deduction
  */
 template <typename Opt>
-void setDebugLevel(const Opt &result) {
-  int printDebug = storeOpt(debugLevel, result);
+void setDebugLevel(const Opt& result) {
+  const int printDebug = storeOpt(debugLevel, result);
   if (printDebug == 1) {
     spdlog::set_level(spdlog::level::debug);
   } else if (printDebug == 2) {
@@ -128,7 +126,7 @@ void setDebugLevel(const Opt &result) {
   }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   auto console = metacg::MCGLogger::instance().getConsole();
   auto errconsole = metacg::MCGLogger::instance().getErrConsole();
 
@@ -137,7 +135,7 @@ int main(int argc, char **argv) {
     exit(pgis::TooFewProgramArguments);
   }
 
-  auto &gConfig = pgis::config::GlobalConfig::get();
+  auto& gConfig = pgis::config::GlobalConfig::get();
   cxxopts::Options opts("PGIS", "Generating low-overhead instrumentation selections.");
 
   /* The marked options should go away for the PGIS release */
@@ -186,36 +184,33 @@ int main(int argc, char **argv) {
   setDebugLevel(result);
 
   /* Enable DOT export */
-  DotExportSelection enableDotExport;
+  const DotExportSelection enableDotExport;
   storeOpt(dotExport, result);
   storeOpt(sortDotEdges, result);
 
   /* Enable static, aggregated statement filtering */
-  bool applyStaticFilter = storeOpt(staticSelection, result);
+  const bool applyStaticFilter = storeOpt(staticSelection, result);
 
   /* Store the provided cube file path, if any */
   storeOpt(cubeFilePath, result);
 
   /* Use Extra-P performance-model-based filtering or runtime-based only */
-  bool applyModelFilter = storeOpt(modelFilter, result);
-  bool extrapRuntimeOnly = storeOpt(runtimeOnly, result);
+  const bool applyModelFilter = storeOpt(modelFilter, result);
+  const bool extrapRuntimeOnly = storeOpt(runtimeOnly, result);
   storeOpt(extrapConfig, result);
 
-  /* Whether profiling info should be exported */
-  bool shouldExport = storeOpt(ipcgExport, result);
-
   /* Whether Score-P output file format should be used */
-  bool useScorepFormat = storeOpt(scorepOut, result);
+  const bool useScorepFormat = storeOpt(scorepOut, result);
   if (useScorepFormat) {
     console->info("Setting Score-P Output Format");
   }
 
   /* Enable MPI Load-Imbalance detection */
-  bool enableLide = storeOpt(lideEnabled, result);
+  const bool enableLide = storeOpt(lideEnabled, result);
   storeOpt(parameterFileConfig, result);
 
   /* Whether gaps in the instrumentation should be filled by a separate pass */
-  bool fillInstrumentationGaps = storeOpt(fillGaps, result);
+  const bool fillInstrumentationGaps = storeOpt(fillGaps, result);
 
   /* Which MetaCG file format version to use/expect */
   int mcgVersion = storeOpt(metacgFormat, result);
@@ -231,8 +226,8 @@ int main(int argc, char **argv) {
   storeOpt(cuttoffSelection, result);
 
   /* Select targeted overhead */
-  int targetOverheadArg = storeOpt(targetOverhead, result);
-  int prevOverheadArg = storeOpt(prevOverhead, result);
+  const int targetOverheadArg = storeOpt(targetOverhead, result);
+  const int prevOverheadArg = storeOpt(prevOverhead, result);
   if ((prevOverheadArg != 0 || targetOverheadArg != 0) && targetOverheadArg < 1000) {
     errconsole->error("Target overhead in percent must greater than 100%");
     exit(pgis::ErroneousOverheadConfiguration);
@@ -257,25 +252,25 @@ int main(int argc, char **argv) {
    */
 
   // Use the filesystem STL functions for all of the path bits
-  std::filesystem::path metacgFile(argv[argc - 1]);
+  const std::filesystem::path metacgFile(argv[argc - 1]);
   if (!std::filesystem::exists(metacgFile)) {
     errconsole->error("The file {} does not exist", metacgFile.string());
     exit(pgis::FileDoesNotExist);
   }
-  auto mcgExtension = metacgFile.extension();
+  const auto mcgExtension = metacgFile.extension();
   c.appName = metacgFile.stem().string();
 
   console->info("MetaCG file: {}", metacgFile.string());
   console->info("Using AppName: {}", c.appName);
 
-  float runTimeThreshold = .0f;
-  auto &consumer = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  const float runTimeThreshold = .0f;
+  auto& consumer = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   consumer.setConfig(&c);
 
   if (!gConfig.getVal(extrapConfig).empty()) {
-    std::filesystem::path extrapConfigFile(gConfig.getVal(extrapConfig));
+    const std::filesystem::path extrapConfigFile(gConfig.getVal(extrapConfig));
     if (!std::filesystem::exists(extrapConfigFile)) {
       errconsole->error("Extra-P configuration file does not exist: {}", extrapConfigFile.string());
       exit(metacg::pgis::FileDoesNotExist);
@@ -286,7 +281,7 @@ int main(int argc, char **argv) {
 
   /* To briefly inspect a CUBE profile for inclusive runtime of main */
   if (storeOpt(cubeShowOnly, result)) {
-    std::filesystem::path cubeFile(gConfig.getVal(cubeFilePath));
+    const std::filesystem::path cubeFile(gConfig.getVal(cubeFilePath));
     if (auto ret = readFromCubeFile(cubeFile, &c); ret != metacg::pgis::SUCCESS) {
       exit(ret);
     }
@@ -335,7 +330,7 @@ int main(int argc, char **argv) {
   }
   consumer.registerEstimatorPhase(new AttachInstrumentationResultsEstimatorPhase(consumer.getCallgraph()));
   if (result.count("cube")) {
-    std::filesystem::path cubeFile(gConfig.getVal(cubeFilePath));
+    const std::filesystem::path cubeFile(gConfig.getVal(cubeFilePath));
     if (auto ret = readFromCubeFile(cubeFile, &c); ret != metacg::pgis::SUCCESS) {
       exit(ret);
     }
@@ -344,7 +339,7 @@ int main(int argc, char **argv) {
     // ========================
     if (enableLide) {
       console->info("Using load imbalance detection mode");
-      auto &pConfig = pgis::config::ParameterConfig::get();
+      auto& pConfig = pgis::config::ParameterConfig::get();
 
       if (!pConfig.getLIConfig()) {
         errconsole->error(
@@ -387,7 +382,7 @@ int main(int argc, char **argv) {
 
   if (result["extrap"].count()) {
     // test whether PIRA II configPtr is present
-    auto &pConfig = pgis::config::ParameterConfig::get();
+    auto& pConfig = pgis::config::ParameterConfig::get();
     if (!pConfig.getPiraIIConfig()) {
       console->error("Provide PIRA II configuration in order to use Extra-P estimators.");
       return pgis::ErroneousHeuristicsConfiguration;
@@ -451,7 +446,7 @@ int main(int argc, char **argv) {
     metacg::io::JsonSink jsSink;
     metacg::io::VersionTwoMCGWriter mcgw;
     mcgw.write(jsSink);
-    std::string filename = c.outputFile + "/instrumented-" + c.appName + ".mcg";
+    const std::string filename = c.outputFile + "/instrumented-" + c.appName + ".mcg";
     std::ofstream ofile(filename);
     jsSink.output(ofile);
   }

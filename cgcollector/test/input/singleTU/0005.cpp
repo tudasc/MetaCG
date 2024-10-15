@@ -3,7 +3,7 @@
 void childOne() {}
 void childTwo() {}
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   childOne();
   childTwo();
 

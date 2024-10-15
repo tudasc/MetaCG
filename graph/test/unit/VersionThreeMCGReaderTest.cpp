@@ -18,15 +18,15 @@ using namespace metacg;
 using json = nlohmann::json;
 
 struct TestMetaDataV3 final : metacg::MetaData::Registrar<TestMetaDataV3> {
-  static constexpr const char *key = "TestMetaDataV3";
+  static constexpr const char* key = "TestMetaDataV3";
 
-  explicit TestMetaDataV3(const nlohmann::json &j) {
+  explicit TestMetaDataV3(const nlohmann::json& j) {
     stored_int = j.at("stored_int");
     stored_double = j.at("stored_double");
     stored_string = j.at("stored_string");
   }
 
-  explicit TestMetaDataV3(int storeInt, double storeDouble, const std::string &storeString) {
+  explicit TestMetaDataV3(int storeInt, double storeDouble, const std::string& storeString) {
     stored_int = storeInt;
     stored_double = storeDouble;
     stored_string = storeString;
@@ -36,7 +36,7 @@ struct TestMetaDataV3 final : metacg::MetaData::Registrar<TestMetaDataV3> {
     return {{"stored_int", stored_int}, {"stored_double", stored_double}, {"stored_string", stored_string}};
   };
 
-  const char *getKey() const override { return key; }
+  const char* getKey() const override { return key; }
 
  private:
   int stored_int;
@@ -48,13 +48,13 @@ class V3MCGReaderTest : public ::testing::Test {
  protected:
   void SetUp() override {
     metacg::loggerutil::getLogger();
-    auto &mcgm = metacg::graph::MCGManager::get();
+    auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
   }
 };
 
 TEST(V3MCGReaderTest, EmptyJSON) {
-  json j =
+  const json j =
       "{\"_CG\":"
       "{\n"
       "    \"edges\": [],\n"
@@ -65,18 +65,18 @@ TEST(V3MCGReaderTest, EmptyJSON) {
       "    \"version\":\"3.0\"}"
       "}"_json;
 
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
 
   metacg::io::JsonSource source(j);
   metacg::io::VersionThreeMetaCGReader reader(source);
-  mcgm.addToManagedGraphs("newCallgraph",reader.read());
-  const Callgraph &graph = *mcgm.getCallgraph();
+  mcgm.addToManagedGraphs("newCallgraph", reader.read());
+  const Callgraph& graph = *mcgm.getCallgraph();
   ASSERT_EQ(graph.size(), 0);
 }
 
 TEST(V3MCGReaderTest, SingleNode) {
-  json j =
+  const json j =
       "{\"_CG\":"
       "  {\n"
       "    \"edges\": [],\n"
@@ -96,13 +96,13 @@ TEST(V3MCGReaderTest, SingleNode) {
       "   \"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},"
       "    \"version\":\"3.0\"}"
       "}"_json;
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
 
   metacg::io::JsonSource source(j);
   metacg::io::VersionThreeMetaCGReader reader(source);
-  mcgm.addToManagedGraphs("newCallgraph",reader.read());
-  Callgraph &graph = *mcgm.getCallgraph();
+  mcgm.addToManagedGraphs("newCallgraph", reader.read());
+  Callgraph& graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 1);
   EXPECT_NE(graph.getMain(), nullptr);
   EXPECT_EQ(graph.getMain()->getFunctionName(), "main");
@@ -112,7 +112,7 @@ TEST(V3MCGReaderTest, SingleNode) {
 }
 
 TEST(V3MCGReaderTest, NodesAndSingleEdge) {
-  json j =
+  const json j =
       "{\"_CG\":"
       "{\n"
       "    \"edges\": [\n"
@@ -159,23 +159,23 @@ TEST(V3MCGReaderTest, NodesAndSingleEdge) {
       "    \"version\":\"3.0\"}"
       "}"_json;
 
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   metacg::io::JsonSource source(j);
   metacg::io::VersionThreeMetaCGReader reader(source);
-  mcgm.addToManagedGraphs("newCallgraph",reader.read());
+  mcgm.addToManagedGraphs("newCallgraph", reader.read());
 
-  const Callgraph &graph = *mcgm.getCallgraph();
+  const Callgraph& graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 3);
 
-  metacg::CgNode *function1 = graph.getNode("Function1");
+  metacg::CgNode* function1 = graph.getNode("Function1");
   ASSERT_NE(function1, nullptr);
   EXPECT_EQ(function1->getFunctionName(), "Function1");
   EXPECT_EQ(function1->getHasBody(), true);
   EXPECT_EQ(function1->getOrigin(), "function1and2.cpp");
   EXPECT_EQ(function1->getId(), std::hash<std::string>()(function1->getFunctionName() + function1->getOrigin()));
 
-  metacg::CgNode *function2 = graph.getNode("Function2");
+  metacg::CgNode* function2 = graph.getNode("Function2");
   ASSERT_NE(function2, nullptr);
   EXPECT_EQ(function2->getFunctionName(), "Function2");
   EXPECT_EQ(function2->getHasBody(), false);
@@ -184,7 +184,7 @@ TEST(V3MCGReaderTest, NodesAndSingleEdge) {
 
   EXPECT_EQ(function1->getOrigin(), function2->getOrigin());
 
-  metacg::CgNode *function3 = graph.getNode("Function3");
+  metacg::CgNode* function3 = graph.getNode("Function3");
   ASSERT_NE(function3, nullptr);
   EXPECT_EQ(function3->getFunctionName(), "Function3");
   EXPECT_EQ(function3->getHasBody(), true);
@@ -207,7 +207,7 @@ TEST(V3MCGReaderTest, NodesAndSingleEdge) {
 }
 
 TEST(V3MCGReaderTest, NodeMetaData) {
-  json j =
+  const json j =
       "{\"_CG\":"
       "{\n"
       "    \"edges\": [],\n"
@@ -234,12 +234,12 @@ TEST(V3MCGReaderTest, NodeMetaData) {
       "    \"version\":\"3.0\"}"
       "}"_json;
 
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   metacg::io::JsonSource source(j);
   metacg::io::VersionThreeMetaCGReader reader(source);
-  mcgm.addToManagedGraphs("newCallgraph",reader.read());
-  const Callgraph &graph = *mcgm.getCallgraph();
+  mcgm.addToManagedGraphs("newCallgraph", reader.read());
+  const Callgraph& graph = *mcgm.getCallgraph();
 
   EXPECT_EQ(graph.getNode("main")->getMetaDataContainer().size(), 1);
   EXPECT_NE(graph.getNode("main")->get<TestMetaDataV3>(), nullptr);

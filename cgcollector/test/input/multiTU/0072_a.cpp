@@ -16,7 +16,7 @@ void function_pointer_test() {
 /**
  * Main function
  */
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   function_pointer_test();
   return 0;
 }

@@ -6,8 +6,8 @@
 
 #include "LoggerUtil.h"
 #include "MCGManager.h"
-#include "io/VersionThreeMCGReader.h"
 #include "io/MCGWriter.h"
+#include "io/VersionThreeMCGReader.h"
 #include "io/VersionThreeMCGWriter.h"
 #include "gtest/gtest.h"
 
@@ -15,13 +15,13 @@ class V3ReaderWriterRoundtripTest : public ::testing::Test {
  protected:
   void SetUp() override {
     metacg::loggerutil::getLogger();
-    auto &mcgm = metacg::graph::MCGManager::get();
+    auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
   }
 };
 
 TEST_F(V3ReaderWriterRoundtripTest, TextGraphText) {
-  nlohmann::json jsonCG =
+  const nlohmann::json jsonCG =
       "{\"_CG\":{"
       "\"edges\":["
       "[[11868120863286193964,9631199822919835226],null]"
@@ -35,11 +35,11 @@ TEST_F(V3ReaderWriterRoundtripTest, TextGraphText) {
 
   metacg::io::JsonSource jsonSource(jsonCG);
   metacg::io::VersionThreeMetaCGReader mcgReader(jsonSource);
-  auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.addToManagedGraphs("newGraph",mcgReader.read());
+  auto& mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newGraph", mcgReader.read());
 
-  std::string generatorName = "Test";
-  metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, false, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
@@ -48,7 +48,7 @@ TEST_F(V3ReaderWriterRoundtripTest, TextGraphText) {
 }
 
 TEST_F(V3ReaderWriterRoundtripTest, DebugTextGraphDebugText) {
-  nlohmann::json jsonCG =
+  const nlohmann::json jsonCG =
       "{\"_CG\":{"
       "\"edges\":[[[13570296075836900426,6731461454900136138],null]],"
       "\"nodes\":["
@@ -62,10 +62,11 @@ TEST_F(V3ReaderWriterRoundtripTest, DebugTextGraphDebugText) {
 
   metacg::io::JsonSource jsonSource(jsonCG);
   metacg::io::VersionThreeMetaCGReader mcgReader(jsonSource);
-  auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.addToManagedGraphs("newGraph",mcgReader.read());
-  std::string generatorName = "Test";
-  metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
+  auto& mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newGraph", mcgReader.read());
+
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, true, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
@@ -74,7 +75,7 @@ TEST_F(V3ReaderWriterRoundtripTest, DebugTextGraphDebugText) {
 }
 
 TEST_F(V3ReaderWriterRoundtripTest, DebugTextGraphText) {
-  nlohmann::json jsonDbgCG =
+  const nlohmann::json jsonDbgCG =
       "{\"_CG\":{"
       "\"edges\":[[[13570296075836900426,6731461454900136138],null]],"
       "\"nodes\":["
@@ -88,15 +89,16 @@ TEST_F(V3ReaderWriterRoundtripTest, DebugTextGraphText) {
 
   metacg::io::JsonSource jsonSource(jsonDbgCG);
   metacg::io::VersionThreeMetaCGReader mcgReader(jsonSource);
-  auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.addToManagedGraphs("newGraph",mcgReader.read());
-  std::string generatorName = "Test";
-  metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
+  auto& mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newGraph", mcgReader.read());
+
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, false, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
-  nlohmann::json jsonCG =
+  const nlohmann::json jsonCG =
       "{\"_CG\":{"
       "\"edges\":["
       "[[13570296075836900426,6731461454900136138],null]"
@@ -112,7 +114,7 @@ TEST_F(V3ReaderWriterRoundtripTest, DebugTextGraphText) {
 }
 
 TEST_F(V3ReaderWriterRoundtripTest, TextGraphDebugText) {
-  nlohmann::json jsonCG =
+  const nlohmann::json jsonCG =
       "{\"_CG\":{"
       "\"edges\":["
       "[[11868120863286193964,9631199822919835226],null]"
@@ -126,15 +128,16 @@ TEST_F(V3ReaderWriterRoundtripTest, TextGraphDebugText) {
 
   metacg::io::JsonSource jsonSource(jsonCG);
   metacg::io::VersionThreeMetaCGReader mcgReader(jsonSource);
-  auto &mcgm = metacg::graph::MCGManager::get();
-  mcgm.addToManagedGraphs("newGraph",mcgReader.read());
-  std::string generatorName = "Test";
-  metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
+  auto& mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newGraph", mcgReader.read());
+
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, true, true);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
-  nlohmann::json jsonDbgCG =
+  const nlohmann::json jsonDbgCG =
       "{\"_CG\":{"
       "\"edges\":[[[11868120863286193964,9631199822919835226],null]],"
       "\"nodes\":["

@@ -65,7 +65,7 @@ TEST_F(CallgraphTest, TwoNodeConnectedCG) {
 
 TEST_F(CallgraphTest, InsertTwiceTest) {
   Callgraph c;
-  auto node1 = c.insert("node");
+  c.insert("node");
   ASSERT_EQ(1, c.size());
 }
 

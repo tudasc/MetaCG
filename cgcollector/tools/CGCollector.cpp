@@ -24,7 +24,7 @@ static llvm::cl::opt<bool> captureStackCtorsDtors(
         "Capture calls to Constructors and Destructors of stack allocated variables. (Only works together with AA)"),
     llvm::cl::cat(cgc));
 static llvm::cl::opt<bool> includeUnusedDecl("include-unused-decl", llvm::cl::desc("Includes unused decls into the CG"),
-                                       llvm::cl::cat(cgc));
+                                             llvm::cl::cat(cgc));
 static llvm::cl::opt<int> metacgFormatVersion("metacg-format-version",
                                               llvm::cl::desc("metacg file version to output, values={1,2}, default=1"),
                                               llvm::cl::cat(cgc));
@@ -53,13 +53,13 @@ static llvm::cl::opt<float> exceptionChance(
     "cce-exception-chance", llvm::cl::desc("Chance of an exception block being executed for the call count estimation"),
     llvm::cl::init(0.1), llvm::cl::cat(cgc));
 
-typedef std::vector<MetaCollector *> MetaCollectorVector;
+typedef std::vector<MetaCollector*> MetaCollectorVector;
 
 class CallGraphCollectorConsumer : public clang::ASTConsumer {
  public:
-  CallGraphCollectorConsumer(MetaCollectorVector mcs, nlohmann::json &j) : _mcs(mcs), _json(j) {}
+  CallGraphCollectorConsumer(MetaCollectorVector mcs, nlohmann::json& j) : _mcs(mcs), _json(j) {}
 
-  virtual void HandleTranslationUnit(clang::ASTContext &Context) {
+  virtual void HandleTranslationUnit(clang::ASTContext& Context) {
     callGraph.setCaptureCtorsDtors(captureCtorsDtors);
     callGraph.setIncludeDecl(includeUnusedDecl);
     if (!disableClassicCGConstruction) {
@@ -84,29 +84,29 @@ class CallGraphCollectorConsumer : public clang::ASTConsumer {
  private:
   CallGraph callGraph;
   MetaCollectorVector _mcs;
-  nlohmann::json &_json;
+  nlohmann::json& _json;
 };
 
 class CallGraphCollectorFactory : clang::ASTFrontendAction {
  public:
-  CallGraphCollectorFactory(MetaCollectorVector mcs, nlohmann::json &j) : _mcs(mcs), _json(j) {}
+  CallGraphCollectorFactory(MetaCollectorVector mcs, nlohmann::json& j) : _mcs(mcs), _json(j) {}
 
   std::unique_ptr<clang::ASTConsumer> newASTConsumer() {
     return std::unique_ptr<clang::ASTConsumer>(new CallGraphCollectorConsumer(_mcs, _json));
   }
 
-  std::unique_ptr<clang::ASTConsumer> CreateASTConsumer([[maybe_unused]] clang::CompilerInstance &compiler,
+  std::unique_ptr<clang::ASTConsumer> CreateASTConsumer([[maybe_unused]] clang::CompilerInstance& compiler,
                                                         [[maybe_unused]] llvm::StringRef sr) {
     return std::unique_ptr<clang::ASTConsumer>(new CallGraphCollectorConsumer(_mcs, _json));
   }
 
  private:
   MetaCollectorVector _mcs;
-  nlohmann::json &_json;
+  nlohmann::json& _json;
 };
 
 // TODO handle multiple inputs
-int main(int argc, const char **argv) {
+int main(int argc, const char** argv) {
   if (argc < 2) {
     return -1;
   }
@@ -124,7 +124,7 @@ int main(int argc, const char **argv) {
     std::cerr << toString(ParseResult.takeError()) << "\n";
     return -1;
   }
-  clang::tooling::CommonOptionsParser &OP = ParseResult.get();
+  clang::tooling::CommonOptionsParser& OP = ParseResult.get();
 #endif
   clang::tooling::ClangTool CT(OP.getCompilations(), OP.getSourcePathList());
 

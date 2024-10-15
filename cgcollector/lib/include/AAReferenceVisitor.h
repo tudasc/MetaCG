@@ -10,13 +10,13 @@
 #include "AliasAnalysis.h"
 
 namespace implementation {
-VectorType<ObjectNameDereference> getReferencedDecls(clang::Stmt *Stmt, const clang::ASTContext *CTX,
-                                                     clang::FunctionDecl *ParentFunctionDecl);
-VectorType<StringType> getReferencedDeclsStr(clang::Stmt *Stmt, const clang::ASTContext *CTX,
-                                             clang::FunctionDecl *ParentFunctionDecl);
-VectorType<StringType> getDecls(clang::Decl *Decl, const clang::ASTContext *CTX);
-VectorType<StringType> getReferencedInReturnStmts(clang::Stmt *Stmt, const clang::ASTContext *CTX,
-                                                  clang::FunctionDecl *ParentFunctionDecl);
+VectorType<ObjectNameDereference> getReferencedDecls(clang::Stmt* Stmt, const clang::ASTContext* CTX,
+                                                     clang::FunctionDecl* ParentFunctionDecl);
+VectorType<StringType> getReferencedDeclsStr(clang::Stmt* Stmt, const clang::ASTContext* CTX,
+                                             clang::FunctionDecl* ParentFunctionDecl);
+VectorType<StringType> getDecls(clang::Decl* Decl, const clang::ASTContext* CTX);
+VectorType<StringType> getReferencedInReturnStmts(clang::Stmt* Stmt, const clang::ASTContext* CTX,
+                                                  clang::FunctionDecl* ParentFunctionDecl);
 
 }  // namespace implementation
 

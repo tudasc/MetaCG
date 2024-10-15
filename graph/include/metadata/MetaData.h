@@ -27,7 +27,7 @@ template <class CRTPBase>
 class MetaDataFactory {
  public:
   template <class... T>
-  static CRTPBase *create(const std::string &s, const nlohmann::json &j) {
+  static CRTPBase* create(const std::string& s, const nlohmann::json& j) {
     if (data().find(s) == data().end()) {
       MCGLogger::instance().getErrConsole()->template warn(
           "Could not create: {}, the Metadata is unknown in you application", s);
@@ -43,7 +43,7 @@ class MetaDataFactory {
     static bool registerT() {
       MCGLogger::instance().getConsole()->template trace("Registering {} \n", T::key);
       const auto name = T::key;
-      MetaDataFactory::data()[name] = [](const nlohmann::json &j) -> CRTPBase * { return new T(j); };
+      MetaDataFactory::data()[name] = [](const nlohmann::json& j) -> CRTPBase* { return new T(j); };
       return true;
     }
     static bool registered;
@@ -60,10 +60,10 @@ class MetaDataFactory {
     template <class T>
     friend struct Registrar;
   };
-  using FuncType = CRTPBase *(*)(const nlohmann::json &);
+  using FuncType = CRTPBase* (*)(const nlohmann::json&);
   MetaDataFactory() = default;
 
-  static auto &data() {
+  static auto& data() {
     static std::unordered_map<std::string, FuncType> s;
     return s;
   }
@@ -75,9 +75,9 @@ bool MetaDataFactory<Base>::Registrar<T>::registered = MetaDataFactory<Base>::Re
 
 struct MetaData : MetaDataFactory<MetaData> {
   explicit MetaData(Key) {}
-  static constexpr const char *key = "BaseClass";
+  static constexpr const char* key = "BaseClass";
   virtual nlohmann::json to_json() const = 0;
-  virtual const char *getKey() const = 0;
+  virtual const char* getKey() const = 0;
   virtual ~MetaData() = default;
 };
 

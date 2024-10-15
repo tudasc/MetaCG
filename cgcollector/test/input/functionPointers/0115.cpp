@@ -6,7 +6,7 @@ class C {
  public:
   union {
     int i;
-    FType *f;
+    FType* f;
   };
 };
 

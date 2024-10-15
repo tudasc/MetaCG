@@ -15,7 +15,7 @@ class V2MCGWriterTest : public ::testing::Test {
  protected:
   void SetUp() override {
     metacg::loggerutil::getLogger();
-    auto &mcgm = metacg::graph::MCGManager::get();
+    auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
     mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   }
@@ -23,9 +23,9 @@ class V2MCGWriterTest : public ::testing::Test {
 
 class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
  public:
-  static constexpr const char *key = "TestMetaData";
+  static constexpr const char* key = "TestMetaData";
   TestMetaData() = default;
-  explicit TestMetaData(const nlohmann::json &j) {
+  explicit TestMetaData(const nlohmann::json& j) {
     metadataString = j.at("metadataString");
     metadataInt = j.at("metadataInt");
     metadataFloat = j.at("metadataFloat");
@@ -39,7 +39,7 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
     return j;
   };
 
-  virtual const char *getKey() const final { return key; }
+  const char* getKey() const final { return key; }
 
   std::string metadataString;
   int metadataInt = 0;
@@ -47,9 +47,8 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
 };
 
 TEST_F(V2MCGWriterTest, DifferentMetaInformation) {
-  std::string generatorName = "Test";
-  metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
-  auto &mcgm = metacg::graph::MCGManager::get();
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
@@ -59,14 +58,14 @@ TEST_F(V2MCGWriterTest, DifferentMetaInformation) {
 }
 
 TEST_F(V2MCGWriterTest, OneNodeCGWrite) {
-  auto &mcgm = metacg::graph::MCGManager::get();
-  const auto &cg = mcgm.getCallgraph();
+  auto& mcgm = metacg::graph::MCGManager::get();
+  const auto& cg = mcgm.getCallgraph();
   cg->insert("main");
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
 
-  std::string generatorName = "Test";
-  metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
@@ -78,8 +77,8 @@ TEST_F(V2MCGWriterTest, OneNodeCGWrite) {
 }
 
 TEST_F(V2MCGWriterTest, TwoNodeCGWrite) {
-  auto &mcgm = metacg::graph::MCGManager::get();
-  const auto &cg = mcgm.getCallgraph();
+  auto& mcgm = metacg::graph::MCGManager::get();
+  const auto& cg = mcgm.getCallgraph();
   cg->insert("main");
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
@@ -88,8 +87,8 @@ TEST_F(V2MCGWriterTest, TwoNodeCGWrite) {
   cg->getNode("foo")->setIsVirtual(true);
   cg->getNode("foo")->setHasBody(true);
 
-  std::string generatorName = "Test";
-  metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
@@ -102,8 +101,8 @@ TEST_F(V2MCGWriterTest, TwoNodeCGWrite) {
 }
 
 TEST_F(V2MCGWriterTest, TwoNodeOneEdgeCGWrite) {
-  auto &mcgm = metacg::graph::MCGManager::get();
-  const auto &cg = mcgm.getCallgraph();
+  auto& mcgm = metacg::graph::MCGManager::get();
+  const auto& cg = mcgm.getCallgraph();
   cg->insert("main");
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
@@ -114,8 +113,8 @@ TEST_F(V2MCGWriterTest, TwoNodeOneEdgeCGWrite) {
 
   cg->addEdge("main", "foo");
 
-  std::string generatorName = "Test";
-  metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
@@ -129,8 +128,8 @@ TEST_F(V2MCGWriterTest, TwoNodeOneEdgeCGWrite) {
 }
 
 TEST_F(V2MCGWriterTest, ThreeNodeOneEdgeCGWrite) {
-  auto &mcgm = metacg::graph::MCGManager::get();
-  const auto &cg = mcgm.getCallgraph();
+  auto& mcgm = metacg::graph::MCGManager::get();
+  const auto& cg = mcgm.getCallgraph();
   cg->insert("main");
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
@@ -145,8 +144,8 @@ TEST_F(V2MCGWriterTest, ThreeNodeOneEdgeCGWrite) {
 
   cg->addEdge("main", "foo");
 
-  std::string generatorName = "Test";
-  metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
@@ -161,8 +160,8 @@ TEST_F(V2MCGWriterTest, ThreeNodeOneEdgeCGWrite) {
 }
 
 TEST_F(V2MCGWriterTest, MetadataCGWrite) {
-  auto &mcgm = metacg::graph::MCGManager::get();
-  const auto &cg = mcgm.getCallgraph();
+  auto& mcgm = metacg::graph::MCGManager::get();
+  const auto& cg = mcgm.getCallgraph();
   cg->insert("main");
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
@@ -171,8 +170,8 @@ TEST_F(V2MCGWriterTest, MetadataCGWrite) {
   auto testMetaData = new TestMetaData();
   cg->getMain()->addMetaData(testMetaData);
 
-  std::string generatorName = "Test";
-  metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
@@ -185,11 +184,11 @@ TEST_F(V2MCGWriterTest, MetadataCGWrite) {
 }
 
 TEST_F(V2MCGWriterTest, WriteByName) {
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
-  const auto &cg = mcgm.getCallgraph();
-  EXPECT_EQ(mcgm.graphs_size(),2);
-  EXPECT_EQ(mcgm.getActiveGraphName(),"newGraph");
+  const auto& cg = mcgm.getCallgraph();
+  EXPECT_EQ(mcgm.graphs_size(), 2);
+  EXPECT_EQ(mcgm.getActiveGraphName(), "newGraph");
   cg->insert("main");
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
@@ -198,18 +197,18 @@ TEST_F(V2MCGWriterTest, WriteByName) {
   auto testMetaData = new TestMetaData();
   cg->getMain()->addMetaData(testMetaData);
 
-  std::string generatorName = "Test";
-  metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
-  mcgWriter.write("newGraph",jsonSink);
+  mcgWriter.write("newGraph", jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
             "{\"_CG\":{\"main\":{\"callees\":[],\"callers\":[],\"doesOverride\":false,\"hasBody\":true,\"isVirtual\":"
             "false,\"meta\":{\"TestMetaData\":{\"metadataFloat\":0.0,\"metadataInt\":0,\"metadataString\":\"\"}},"
             "\"overriddenBy\":[],\"overrides\":[]}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
             "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
 
-  mcgWriter.write("emptyGraph",jsonSink);
+  mcgWriter.write("emptyGraph", jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
             "{\"_CG\":null,"
             "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
@@ -218,11 +217,11 @@ TEST_F(V2MCGWriterTest, WriteByName) {
 }
 
 TEST_F(V2MCGWriterTest, WritePointer) {
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
-  const auto &cg = mcgm.getCallgraph();
-  EXPECT_EQ(mcgm.graphs_size(),2);
-  EXPECT_EQ(mcgm.getActiveGraphName(),"newGraph");
+  const auto& cg = mcgm.getCallgraph();
+  EXPECT_EQ(mcgm.graphs_size(), 2);
+  EXPECT_EQ(mcgm.getActiveGraphName(), "newGraph");
   cg->insert("main");
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
@@ -231,18 +230,18 @@ TEST_F(V2MCGWriterTest, WritePointer) {
   auto testMetaData = new TestMetaData();
   cg->getMain()->addMetaData(testMetaData);
 
-  std::string generatorName = "Test";
-  metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
-  mcgWriter.write(mcgm.getCallgraph("newGraph"),jsonSink);
+  mcgWriter.write(mcgm.getCallgraph("newGraph"), jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
             "{\"_CG\":{\"main\":{\"callees\":[],\"callers\":[],\"doesOverride\":false,\"hasBody\":true,\"isVirtual\":"
             "false,\"meta\":{\"TestMetaData\":{\"metadataFloat\":0.0,\"metadataInt\":0,\"metadataString\":\"\"}},"
             "\"overriddenBy\":[],\"overrides\":[]}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
             "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
 
-  mcgWriter.write(mcgm.getCallgraph("emptyGraph"),jsonSink);
+  mcgWriter.write(mcgm.getCallgraph("emptyGraph"), jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
             "{\"_CG\":null,"
             "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
@@ -251,11 +250,11 @@ TEST_F(V2MCGWriterTest, WritePointer) {
 }
 
 TEST_F(V2MCGWriterTest, SwitchBeforeWrite) {
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
-  const auto &cg = mcgm.getCallgraph();
-  EXPECT_EQ(mcgm.graphs_size(),2);
-  EXPECT_EQ(mcgm.getActiveGraphName(),"newGraph");
+  const auto& cg = mcgm.getCallgraph();
+  EXPECT_EQ(mcgm.graphs_size(), 2);
+  EXPECT_EQ(mcgm.getActiveGraphName(), "newGraph");
   cg->insert("main");
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
@@ -264,8 +263,8 @@ TEST_F(V2MCGWriterTest, SwitchBeforeWrite) {
   auto testMetaData = new TestMetaData();
   cg->getMain()->addMetaData(testMetaData);
 
-  std::string generatorName = "Test";
-  metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
 

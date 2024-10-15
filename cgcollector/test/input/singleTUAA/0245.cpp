@@ -5,9 +5,9 @@ int a;
 
 class error_code {
  public:
-  const int &category() const noexcept { return a; }
+  const int& category() const noexcept { return a; }
 };
 
-void foo(const error_code &__e) { (void *)&(__e.category()); }
+void foo(const error_code& __e) { (void*)&(__e.category()); }
 
 int main() {}

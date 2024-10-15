@@ -1,5 +1,5 @@
 
-extern void *functionptr;
+extern void* functionptr;
 
 typedef void (*Ftype)();
 

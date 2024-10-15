@@ -17,7 +17,7 @@ class MyClassDerive : public MyClass, public MyClass2 {
 
 void MyClassDerive::foo() {}
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   MyClass mc;
   MyClassDerive mcd;
   mc.foo();

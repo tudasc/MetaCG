@@ -4,9 +4,9 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
+#include "IPCGEstimatorPhase.h"
 #include "CgHelper.h"
 #include "LoggerUtil.h"
-#include "IPCGEstimatorPhase.h"
 #include "MCGManager.h"
 #include "PiraMCGProcessor.h"
 
@@ -16,12 +16,12 @@ class IPCGEstimatorPhaseBasic : public ::testing::Test {
  protected:
   void SetUp() override {
     metacg::loggerutil::getLogger();
-    auto &mcgm = metacg::graph::MCGManager::get();
+    auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
     mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   }
 
-  static void attachAllMetaDataToGraph(metacg::Callgraph *cg) {
+  static void attachAllMetaDataToGraph(metacg::Callgraph* cg) {
     metacg::pgis::attachMetaDataToGraph<pira::BaseProfileData>(cg);
     metacg::pgis::attachMetaDataToGraph<pira::PiraOneData>(cg);
     metacg::pgis::attachMetaDataToGraph<pira::PiraTwoData>(cg);
@@ -32,8 +32,8 @@ TEST_F(IPCGEstimatorPhaseBasic, EmptyCG) {
   // XXX this is not ideal, but required for the death assert
   LOGGERUTIL_ENABLE_ERRORS_LOCAL
   Config cfg;
-  auto &mcgm = metacg::graph::MCGManager::get();
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   attachAllMetaDataToGraph(mcgm.getCallgraph());
   cm.setCG(mcgm.getCallgraph());
@@ -47,8 +47,8 @@ TEST_F(IPCGEstimatorPhaseBasic, EmptyCG) {
 
 TEST_F(IPCGEstimatorPhaseBasic, OneNodeCG) {
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -70,8 +70,8 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCG) {
 
 TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCG) {
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   cm.setConfig(&cfg);
   cm.setNoOutput();
   mcgm.addToManagedGraphs("graph", std::make_unique<metacg::Callgraph>());
@@ -92,14 +92,14 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCG) {
 
 TEST_F(IPCGEstimatorPhaseBasic, OneNodeCGwStmt) {
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   cm.setConfig(&cfg);
   cm.setNoOutput();
   mcgm.addToManagedGraphs("graph", std::make_unique<metacg::Callgraph>());
   auto mainNode = mcgm.getCallgraph()->getOrInsertNode("main");
   attachAllMetaDataToGraph(mcgm.getCallgraph());
-  const auto &[has, data] = mainNode->checkAndGet<pira::PiraOneData>();
+  const auto& [has, data] = mainNode->checkAndGet<pira::PiraOneData>();
   if (has) {
     data->setNumberOfStatements(12);
     data->setHasBody();
@@ -119,8 +119,8 @@ TEST_F(IPCGEstimatorPhaseBasic, OneNodeCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCGwStmt) {
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   cm.setConfig(&cfg);
   cm.setNoOutput();
 
@@ -149,8 +149,8 @@ TEST_F(IPCGEstimatorPhaseBasic, TwoNodeCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCGwStmt) {
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
 
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -186,8 +186,8 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCycleCGwStmt) {
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
 
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -223,8 +223,8 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeCycleCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeChildCall) {
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
 
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -260,8 +260,8 @@ TEST_F(IPCGEstimatorPhaseBasic, ThreeNodeChildCall) {
 
 TEST_F(IPCGEstimatorPhaseBasic, FourNodeCGwStmt) {
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
 
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -303,8 +303,8 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeCGwStmt) {
 
 TEST_F(IPCGEstimatorPhaseBasic, FourNodeDiamondCGwStmt) {
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
 
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -355,8 +355,8 @@ TEST_F(IPCGEstimatorPhaseBasic, FourNodeDiamondCGwStmt) {
 */
 TEST_F(IPCGEstimatorPhaseBasic, FiveNodeDiamondCGwStmt) {
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
 
   cm.setConfig(&cfg);
   cm.setNoOutput();
@@ -414,9 +414,9 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
    |   |
    o   o
 */
-  static void createCalleeNode(const std::string &name, const std::string &caller, int numStatements, double runtime,
+  static void createCalleeNode(const std::string& name, const std::string& caller, int numStatements, double runtime,
                                int numCalls) {
-    auto &mcgm = metacg::graph::MCGManager::get();
+    auto& mcgm = metacg::graph::MCGManager::get();
     auto nodeCaller = mcgm.getCallgraph()->getOrInsertNode(caller);
     auto nodeCallee = mcgm.getCallgraph()->getOrInsertNode(name);
     attachAllMetaDataToGraph(mcgm.getCallgraph());
@@ -424,7 +424,7 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
     mcgm.getCallgraph()->addEdge(nodeCaller, nodeCallee);
   }
 
-  static void attachAllMetaDataToGraph(metacg::Callgraph *cg) {
+  static void attachAllMetaDataToGraph(metacg::Callgraph* cg) {
     metacg::pgis::attachMetaDataToGraph<pira::BaseProfileData>(cg);
     metacg::pgis::attachMetaDataToGraph<pira::PiraOneData>(cg);
     metacg::pgis::attachMetaDataToGraph<pira::PiraTwoData>(cg);
@@ -432,8 +432,8 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
 
   void SetUp() override {
     metacg::loggerutil::getLogger();
-    auto &cm = metacg::pgis::PiraMCGProcessor::get();
-    auto &mcgm = metacg::graph::MCGManager::get();
+    auto& cm = metacg::pgis::PiraMCGProcessor::get();
+    auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
     mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
 
@@ -457,14 +457,14 @@ class IPCGEstimatorPhaseTest : public ::testing::Test {
 };
 
 TEST_F(IPCGEstimatorPhaseTest, ValidateBasics) {
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
   auto graph = cm.getCallgraph(&cm);
   ASSERT_NE(nullptr, graph->getMain());
 
   auto mainNode = graph->getMain();
   EXPECT_EQ(3, graph->getCallees(mainNode).size());
   auto childNodes = graph->getCallees(mainNode);
-  for (const auto &elem : childNodes) {
+  for (const auto& elem : childNodes) {
     ASSERT_TRUE(elem->getFunctionName() == "child1" || elem->getFunctionName() == "child2" ||
                 elem->getFunctionName() == "child5");
   }
@@ -472,7 +472,7 @@ TEST_F(IPCGEstimatorPhaseTest, ValidateBasics) {
 }
 
 TEST_F(IPCGEstimatorPhaseTest, ApplyPhaseFinalizesGraph) {
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
   auto nep = std::make_unique<NopEstimatorPhase>(cm.getCallgraph());
   ASSERT_EQ(false, nep->didRun);
   cm.registerEstimatorPhase(nep.get());

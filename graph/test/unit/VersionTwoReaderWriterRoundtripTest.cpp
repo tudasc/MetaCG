@@ -6,8 +6,8 @@
 
 #include "LoggerUtil.h"
 #include "MCGManager.h"
-#include "io/VersionTwoMCGReader.h"
 #include "io/MCGWriter.h"
+#include "io/VersionTwoMCGReader.h"
 #include "io/VersionTwoMCGWriter.h"
 #include "gtest/gtest.h"
 
@@ -15,13 +15,13 @@ class VersionTwoReaderWriterRoundtripTest : public ::testing::Test {
  protected:
   void SetUp() override {
     metacg::loggerutil::getLogger();
-    auto &mcgm = metacg::graph::MCGManager::get();
+    auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
   }
 };
 
 TEST_F(VersionTwoReaderWriterRoundtripTest, TextGraphText) {
-  nlohmann::json jsonCG =
+  const nlohmann::json jsonCG =
       "{\n"
       "   \"_CG\":{\n"
       "      \"main\":{\n"
@@ -71,14 +71,13 @@ TEST_F(VersionTwoReaderWriterRoundtripTest, TextGraphText) {
 
   metacg::io::JsonSource jsonSource(jsonCG);
   metacg::io::VersionTwoMetaCGReader reader(jsonSource);
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newCallgraph", reader.read());
-  std::string generatorName="Test";
-  metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(jsonSink);
 
-  EXPECT_EQ(jsonSink.getJson(),jsonCG);
-
+  EXPECT_EQ(jsonSink.getJson(), jsonCG);
 }

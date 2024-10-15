@@ -8,13 +8,12 @@
 #define PGIS_CONFIG_GLOBALCONFIG_H
 
 #include "LoggerUtil.h"
-#include "spdlog/spdlog.h"
 
 #include <any>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <sstream>
 
 namespace metacg::pgis {
 namespace options {
@@ -26,9 +25,9 @@ struct Opt {
   const std::string defaultValue;  // This is std::string to be easy compatible with cxxopts
 };
 
-template<typename To>
-To myCast(const std::string &val) {
-  std::istringstream ss {val};
+template <typename To>
+To myCast(const std::string& val) {
+  std::istringstream ss{val};
   To _t;
   ss >> _t;
   return _t;
@@ -41,7 +40,7 @@ using StringOpt = Opt<std::string>;
 
 class HeuristicSelection {
  public:
-  friend std::istream &operator>>(std::istream &is, HeuristicSelection &out) {
+  friend std::istream& operator>>(std::istream& is, HeuristicSelection& out) {
     std::string name;
     is >> name;
     if (name.empty()) {
@@ -88,7 +87,7 @@ using HeuristicSelectionOpt = Opt<HeuristicSelection>;
 
 class CuttoffSelection {
  public:
-  friend std::istream &operator>>(std::istream &is, CuttoffSelection &out) {
+  friend std::istream& operator>>(std::istream& is, CuttoffSelection& out) {
     std::string name;
     is >> name;
     if (name.empty()) {
@@ -124,7 +123,7 @@ using CuttoffSelectionOpt = Opt<CuttoffSelection>;
 
 class OverheadSelection {
  public:
-  friend std::istream &operator>>(std::istream &is, OverheadSelection &out) {
+  friend std::istream& operator>>(std::istream& is, OverheadSelection& out) {
     std::string name;
     is >> name;
     if (name.empty()) {
@@ -157,7 +156,7 @@ using OverheadSelectionOpt = Opt<OverheadSelection>;
 
 class DotExportSelection {
  public:
-  friend std::istream &operator>>(std::istream &is, DotExportSelection &out) {
+  friend std::istream& operator>>(std::istream& is, DotExportSelection& out) {
     std::string inVal;
     is >> inVal;
     if (inVal.empty()) {
@@ -225,7 +224,7 @@ template <typename T>
 using arg_t = typename OptHelper<T>::type;
 
 template <typename T>
-inline const std::string optKey(const T &obj) {
+inline const std::string optKey(const T& obj) {
   return obj.first;
 }
 }  // namespace options
@@ -236,7 +235,7 @@ namespace config {
  */
 class GlobalConfig {
  public:
-  inline static GlobalConfig &get() {
+  inline static GlobalConfig& get() {
     static GlobalConfig instance;
     return instance;
   }
@@ -245,7 +244,7 @@ class GlobalConfig {
    * Return the stored value for the passed-in option
    */
   template <typename Ty>
-  typename Ty::type getVal(const Ty &opt) const {
+  typename Ty::type getVal(const Ty& opt) const {
     using T = typename Ty::type;
     auto o = getOption(opt.cliName);
     if (o.has_value()) {
@@ -258,7 +257,7 @@ class GlobalConfig {
    * Return the stored value cast explicitly to ReTy
    */
   template <typename ReTy>
-  inline ReTy getAs(const std::string &optionName) const {
+  inline ReTy getAs(const std::string& optionName) const {
     auto opt = getOption(optionName);
     if (opt.has_value()) {
       return std::any_cast<ReTy>(opt);
@@ -269,13 +268,13 @@ class GlobalConfig {
   /**
    * Return the stored std::any object for optionName
    */
-  inline std::any getOption(const std::string &optionName) const {
+  inline std::any getOption(const std::string& optionName) const {
     try {
       auto opt = configOptions.at(optionName);
       return opt;
-    } catch (std::out_of_range &exc) {
+    } catch (std::out_of_range& exc) {
       metacg::MCGLogger::instance().getErrConsole()->warn("No option named {}", optionName);
-      return std::any();
+      return {};
     }
   }
 
@@ -283,7 +282,7 @@ class GlobalConfig {
    * Store value for optionName
    */
   template <typename ValType>
-  bool putOption(const std::string &optionName, ValType &value) {
+  bool putOption(const std::string& optionName, ValType& value) {
     auto exists = (configOptions.find(optionName) != configOptions.end());
     if (exists) {
       metacg::MCGLogger::instance().getErrConsole()->warn("Option named {} already exists.", optionName);
@@ -296,23 +295,25 @@ class GlobalConfig {
  protected:
   GlobalConfig() = default;
   ~GlobalConfig() = default;
-  GlobalConfig(const GlobalConfig &other) = delete;
-  GlobalConfig(const GlobalConfig &&other) = delete;
-  GlobalConfig &operator=(const GlobalConfig &other) = delete;
-  GlobalConfig &operator=(const GlobalConfig &&other) = delete;
+
+ public:
+  GlobalConfig(const GlobalConfig& other) = delete;
+  GlobalConfig(const GlobalConfig&& other) = delete;
+  GlobalConfig& operator=(const GlobalConfig& other) = delete;
+  GlobalConfig& operator=(const GlobalConfig&& other) = delete;
 
  private:
   std::unordered_map<std::string, std::any> configOptions;
 };
 
 inline options::HeuristicSelection::HeuristicSelectionEnum getSelectedHeuristic() {
-  const auto &gConfig = pgis::config::GlobalConfig::get();
+  const auto& gConfig = pgis::config::GlobalConfig::get();
   const auto heuristicMode = gConfig.getAs<options::HeuristicSelection>(pgis::options::heuristicSelection.cliName).mode;
   return heuristicMode;
 }
 
 inline options::OverheadSelection::OverheadSelectionEnum getSelectedOverheadAlgorithm() {
-  const auto &gConfig = pgis::config::GlobalConfig::get();
+  const auto& gConfig = pgis::config::GlobalConfig::get();
   const auto overheadMode = gConfig.getAs<options::OverheadSelection>(pgis::options::overheadSelection.cliName).mode;
   return overheadMode;
 }

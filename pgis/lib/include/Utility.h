@@ -21,14 +21,14 @@
 namespace utils {
 namespace string {
 
-inline bool stringEndsWith(const std::string &s, const std::string &suffix) {
+inline bool stringEndsWith(const std::string& s, const std::string& suffix) {
   return s.size() >= suffix.size() && s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
 }  // namespace string
 
 inline std::string getHostname() {
-  char *cName = (char *)malloc(255 * sizeof(char));
+  char* cName = (char*)malloc(255 * sizeof(char));
   if (!gethostname(cName, 255)) {
     metacg::MCGLogger::instance().getErrConsole()->error("Unable to determine hostname");
   } else {
@@ -72,23 +72,23 @@ auto valTup(C1 co, C2 ct, int numReps) {
 
 }  // namespace utils
 
-inline bool isEligibleForPathInstrumentation(metacg::CgNode *node, metacg::Callgraph *graph,
-                                             std::vector<metacg::CgNode *> parents = {}) {
+inline bool isEligibleForPathInstrumentation(metacg::CgNode* node, metacg::Callgraph* graph,
+                                             std::vector<metacg::CgNode*> parents = {}) {
   if (!parents.empty()) {
-    return std::all_of(parents.begin(), parents.end(), [](const auto &p) { return p->getHasBody(); });
+    return std::all_of(parents.begin(), parents.end(), [](const auto& p) { return p->getHasBody(); });
   }
-  const auto &callers = graph->getCallers(node);
-    return std::any_of(callers.begin(), callers.end(), [](const auto &p) { return p->getHasBody(); });
+  const auto& callers = graph->getCallers(node);
+  return std::any_of(callers.begin(), callers.end(), [](const auto& p) { return p->getHasBody(); });
 }
 
-inline bool isLeafInstrumentationNode(metacg::CgNode *node, metacg::Callgraph *graph) {
-  const auto &callees = graph->getCallees(node);
-  return metacg::pgis::isAnyInstrumented(node) && std::none_of(callees.begin(), callees.end(), [&node](const auto &p) {
+inline bool isLeafInstrumentationNode(metacg::CgNode* node, metacg::Callgraph* graph) {
+  const auto& callees = graph->getCallees(node);
+  return metacg::pgis::isAnyInstrumented(node) && std::none_of(callees.begin(), callees.end(), [&node](const auto& p) {
            return (node != p) && metacg::pgis::isAnyInstrumented(p);
          });
 }
 
-inline bool isMPIFunction(const metacg::CgNode *node) { return node->getFunctionName().rfind("MPI_") == 0; }
+inline bool isMPIFunction(const metacg::CgNode* node) { return node->getFunctionName().rfind("MPI_") == 0; }
 
 // Calculates the median of a container or the average of its two middle elements if it has an even number of elements.
 template <typename T>

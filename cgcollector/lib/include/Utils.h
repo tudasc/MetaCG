@@ -4,7 +4,7 @@
 
 #include <clang/AST/Type.h>
 
-const clang::Type *resolveToUnderlyingType(const clang::Type *ty) {
+const clang::Type* resolveToUnderlyingType(const clang::Type* ty) {
   if (!ty->isPointerType()) {
     return ty;
     // std::cout << "resolveToUnderlyingType: isPointerType" << std::endl;

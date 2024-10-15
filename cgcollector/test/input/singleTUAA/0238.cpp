@@ -9,25 +9,25 @@ using FType = decltype(fooA);
 
 class A {
  public:
-  FType *function;
+  FType* function;
   A() { function = fooA; }
 };
 
 class B {
  public:
-  FType *function;
+  FType* function;
   B() { function = fooB; }
 };
 
 class C {
  public:
-  FType *function;
+  FType* function;
   C() { function = fooC; }
 };
 
 class D {
  public:
-  FType *function;
+  FType* function;
   D() { function = fooD; }
 };
 

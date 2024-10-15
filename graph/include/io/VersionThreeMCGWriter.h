@@ -16,9 +16,8 @@ class VersionThreeMCGWriter : public MCGWriter {
   // Fixme: Make the MetaCG versions, not CGCollector versions
   explicit VersionThreeMCGWriter(
       MCGFileInfo fileInfo = {{3, 0}, {"MetaCG", CGCollector_VERSION_MAJOR, CGCollector_VERSION_MINOR, MetaCG_GIT_SHA}},
-      bool debug = false, bool exportSorted=false)
+      bool debug = false, bool exportSorted = false)
       : MCGWriter(std::move(fileInfo)), outputDebug(debug), exportSorted(exportSorted) {}
-
 
   /**
    *
@@ -26,7 +25,7 @@ class VersionThreeMCGWriter : public MCGWriter {
    *
    * @param js which sink to write to
    */
-  void write(metacg::io::JsonSink &js);
+  void write(metacg::io::JsonSink& js);
 
   /**
    *
@@ -35,7 +34,7 @@ class VersionThreeMCGWriter : public MCGWriter {
    * @param graph which graph to write out
    * @param js which sink to write to
    */
-  void write(metacg::Callgraph* cg, metacg::io::JsonSink &js) override;
+  void write(metacg::Callgraph* cg, metacg::io::JsonSink& js) override;
 
   /**
    *
@@ -45,13 +44,13 @@ class VersionThreeMCGWriter : public MCGWriter {
    * @param CGName the name of the graph to write out
    * @param js which sink to write to
    */
-  void write(const std::string& CGName, metacg::io::JsonSink &js);
+  void write(const std::string& CGName, metacg::io::JsonSink& js);
 
  private:
   bool outputDebug;
   bool exportSorted;
-  void convertToDebug(nlohmann::json &json);
-  void sortCallgraph(nlohmann::json &j) const;
+  void convertToDebug(nlohmann::json& json);
+  void sortCallgraph(nlohmann::json& j) const;
 };
 
 }  // namespace metacg::io

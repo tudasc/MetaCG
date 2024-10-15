@@ -11,8 +11,8 @@
 #include <iostream>
 
 std::unique_ptr<metacg::Callgraph> metacg::io::VersionThreeMetaCGReader::read() {
-  metacg::RuntimeTimer rtt("VersionThreeMetaCGReader::read");
-  MCGFileFormatInfo ffInfo{3, 0};
+  const metacg::RuntimeTimer rtt("VersionThreeMetaCGReader::read");
+  const MCGFileFormatInfo ffInfo{3, 0};
   auto console = metacg::MCGLogger::instance().getConsole();
   auto errConsole = metacg::MCGLogger::instance().getErrConsole();
 
@@ -26,16 +26,16 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionThreeMetaCGReader::read() 
   auto mcgVersion = mcgInfo["version"].get<std::string>();
   auto generatorName = mcgInfo["generator"]["name"].get<std::string>();
   auto generatorVersion = mcgInfo["generator"]["version"].get<std::string>();
-  MCGGeneratorVersionInfo genVersionInfo{generatorName, metacg::util::getMajorVersionFromString(generatorVersion),
-                                         metacg::util::getMinorVersionFromString(generatorVersion), ""};
+  const MCGGeneratorVersionInfo genVersionInfo{generatorName, metacg::util::getMajorVersionFromString(generatorVersion),
+                                               metacg::util::getMinorVersionFromString(generatorVersion), ""};
   console->info("The metacg (version {}) file was generated with {} (version: {})", mcgVersion, generatorName,
                 generatorVersion);
   if (mcgVersion.at(0) != '3') {
     console->info("This reader can only read metacg (version 2) files");
     throw std::runtime_error("Trying to read incompatible file with MCGReader3");
   }
-  MCGFileInfo fileInfo{ffInfo, genVersionInfo};
-  auto &jsonCG = j[ffInfo.cgFieldName];
+  const MCGFileInfo fileInfo{ffInfo, genVersionInfo};
+  auto& jsonCG = j[ffInfo.cgFieldName];
   if (jsonCG.is_null()) {
     errConsole->error("The call graph in the metacg file was null.");
     throw std::runtime_error("CG in metacg file was null.");
@@ -51,24 +51,23 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionThreeMetaCGReader::read() 
   return std::make_unique<Callgraph>(jsonCG);
 }
 
-void metacg::io::VersionThreeMetaCGReader::convertFromDebug(json &j) {
+void metacg::io::VersionThreeMetaCGReader::convertFromDebug(json& j) {
   // replace the identifier strings with their hash
-  for (auto &node : j["nodes"]) {
-    std::string name=node.at(0);
-    if(node.at(1).contains("origin")){
-      name+=node.at(1).at("origin");
-    }else{
+  for (auto& node : j["nodes"]) {
+    std::string name = node.at(0);
+    if (node.at(1).contains("origin")) {
+      name += node.at(1).at("origin");
+    } else {
       assert(false);
-      name+="unknownOrigin";
+      name += "unknownOrigin";
     }
     node.at(0) = std::hash<std::string>()(name);
     node.at(1).erase("callers");
     node.at(1).erase("callees");
   }
-
 }
 
-bool metacg::io::VersionThreeMetaCGReader::isV3DebugFormat(const json &j) {
+bool metacg::io::VersionThreeMetaCGReader::isV3DebugFormat(const json& j) {
   // If no nodes exist, we have no IDs to change, and we also can not have edges
   if (j.at("nodes").is_null() || j.at("nodes").empty()) {
     return false;

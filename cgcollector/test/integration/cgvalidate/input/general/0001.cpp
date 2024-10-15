@@ -7,7 +7,7 @@ int bar() {
 
 void notcalled() { bar(); }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   foo();
   bar();
   return 0;

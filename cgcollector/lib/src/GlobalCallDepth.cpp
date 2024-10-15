@@ -5,9 +5,9 @@
 #include <set>
 #include <string>
 
-int getCallDepth(const std::string &entry, const llvm::StringMap<llvm::StringMap<int>> &callDepths,
-                 const llvm::StringMap<int> &localLoopDepth, llvm::StringMap<int> &globalLoopDepth,
-                 llvm::StringMap<bool> &visited) {
+int getCallDepth(const std::string& entry, const llvm::StringMap<llvm::StringMap<int>>& callDepths,
+                 const llvm::StringMap<int>& localLoopDepth, llvm::StringMap<int>& globalLoopDepth,
+                 llvm::StringMap<bool>& visited) {
   // First mark ourselves as visited, to infinite loops
   visited.insert_or_assign(entry, true);
   int maxChildDepth = 0;
@@ -15,7 +15,7 @@ int getCallDepth(const std::string &entry, const llvm::StringMap<llvm::StringMap
   assert(childrenit != callDepths.end());
   const auto children = childrenit->second;
 
-  for (const auto &child : children) {
+  for (const auto& child : children) {
     if (visited.find(child.first()) == visited.end()) {
       maxChildDepth = std::max(maxChildDepth, child.second + getCallDepth(std::string(child.first()), callDepths,
                                                                           localLoopDepth, globalLoopDepth, visited));
@@ -33,7 +33,7 @@ int getCallDepth(const std::string &entry, const llvm::StringMap<llvm::StringMap
   return loopDepth;
 }
 
-void calculateGlobalCallDepth(nlohmann::json &j, bool useOnlyMainEntry) {
+void calculateGlobalCallDepth(nlohmann::json& j, bool useOnlyMainEntry) {
   // This only works for metadata version 2
   using MapT = llvm::StringMap<int>;
   llvm::StringMap<MapT> callDepths;
@@ -41,20 +41,20 @@ void calculateGlobalCallDepth(nlohmann::json &j, bool useOnlyMainEntry) {
   llvm::StringMap<int> globalLoopDepth;
   llvm::StringMap<bool> visited;
 
-  auto &cg = j["_CG"];
+  auto& cg = j["_CG"];
   // Init the local call depths and the call graph
-  for (const auto &[key, val] : cg.items()) {
-    const auto &metaval = val["meta"];
+  for (const auto& [key, val] : cg.items()) {
+    const auto& metaval = val["meta"];
     assert(metaval.count("loopDepth") == 1);
     [[maybe_unused]] const bool inserted = localLoopDepth.insert({key, metaval["loopDepth"]}).second;
     assert(inserted);
     MapT called;
     assert(val.count("callees") == 1);
-    for (const auto &c : val["callees"]) {
+    for (const auto& c : val["callees"]) {
       called.insert({c.get<std::string>(), 0});
     }
     assert(metaval.count("loopCallDepth") == 1);
-    for (const auto &[calledFunction, callDepth] : metaval["loopCallDepth"].items()) {
+    for (const auto& [calledFunction, callDepth] : metaval["loopCallDepth"].items()) {
       called[calledFunction] = callDepth;
     }
     assert(callDepths.count(key) == 0);
@@ -66,15 +66,15 @@ void calculateGlobalCallDepth(nlohmann::json &j, bool useOnlyMainEntry) {
   // Find entry points
   if (!useOnlyMainEntry) {
     llvm::StringMap<bool> called;
-    for (const auto &caller : callDepths) {
+    for (const auto& caller : callDepths) {
       called.insert({caller.first(), false});
-      for (const auto &callee : caller.second) {
+      for (const auto& callee : caller.second) {
         if (callee.first() != caller.first()) {
           called.insert_or_assign(callee.first(), true);
         }
       }
     }
-    for (const auto &f : called) {
+    for (const auto& f : called) {
       if (!f.second) {
         entryPoints.emplace_back(f.first());
       }
@@ -85,11 +85,11 @@ void calculateGlobalCallDepth(nlohmann::json &j, bool useOnlyMainEntry) {
     }
   }
 
-  for (const auto &entry : entryPoints) {
+  for (const auto& entry : entryPoints) {
     globalLoopDepth.insert_or_assign(entry, getCallDepth(entry, callDepths, localLoopDepth, globalLoopDepth, visited));
   }
 
-  for (auto &[key, val] : cg.items()) {
+  for (auto& [key, val] : cg.items()) {
     const auto gcd = globalLoopDepth.lookup(key);
     val["meta"]["globalLoopDepth"] = std::max(gcd, val["meta"]["loopDepth"].get<int>());
   }

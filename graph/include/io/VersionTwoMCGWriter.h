@@ -13,7 +13,8 @@ namespace metacg::io {
 
 class VersionTwoMCGWriter : public MCGWriter {
  public:
-  explicit VersionTwoMCGWriter(metacg::MCGFileInfo fileInfo = metacg::getVersionTwoFileInfo(metacg::getCGCollectorGeneratorInfo()))
+  explicit VersionTwoMCGWriter(
+      metacg::MCGFileInfo fileInfo = metacg::getVersionTwoFileInfo(metacg::getCGCollectorGeneratorInfo()))
       : MCGWriter(std::move(fileInfo)) {}
   /**
    *
@@ -21,7 +22,7 @@ class VersionTwoMCGWriter : public MCGWriter {
    *
    * @param js which sink to write to
    */
-  void write(metacg::io::JsonSink &js);
+  void write(metacg::io::JsonSink& js);
 
   /**
    *
@@ -30,7 +31,7 @@ class VersionTwoMCGWriter : public MCGWriter {
    * @param graph which graph to write out
    * @param js which sink to write to
    */
-  void write(metacg::Callgraph* cg, metacg::io::JsonSink &js) override;
+  void write(metacg::Callgraph* cg, metacg::io::JsonSink& js) override;
 
   /**
    *
@@ -40,8 +41,8 @@ class VersionTwoMCGWriter : public MCGWriter {
    * @param CGName the name of the graph to write out
    * @param js which sink to write to
    */
-  void write(const std::string& CGName, metacg::io::JsonSink &js);
-  static void downgradeV3FormatToV2Format(nlohmann::json &cg);
+  void write(const std::string& CGName, metacg::io::JsonSink& js);
+  static void downgradeV3FormatToV2Format(nlohmann::json& cg);
 };
 }  // namespace metacg::io
 

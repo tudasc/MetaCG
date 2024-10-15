@@ -9,15 +9,15 @@
 #include "metadata/OverrideMD.h"
 #include <set>
 
-void metacg::io::VersionTwoMCGWriter::write(metacg::io::JsonSink &js) {
-  write(metacg::graph::MCGManager::get().getCallgraph(),js);
+void metacg::io::VersionTwoMCGWriter::write(metacg::io::JsonSink& js) {
+  write(metacg::graph::MCGManager::get().getCallgraph(), js);
 }
 
-void metacg::io::VersionTwoMCGWriter::write(const std::string& CGName, metacg::io::JsonSink &js) {
-  write(metacg::graph::MCGManager::get().getCallgraph(CGName),js);
+void metacg::io::VersionTwoMCGWriter::write(const std::string& CGName, metacg::io::JsonSink& js) {
+  write(metacg::graph::MCGManager::get().getCallgraph(CGName), js);
 }
 
-void metacg::io::VersionTwoMCGWriter::write(metacg::Callgraph *cg, metacg::io::JsonSink &js) {
+void metacg::io::VersionTwoMCGWriter::write(metacg::Callgraph* cg, metacg::io::JsonSink& js) {
   nlohmann::json j;
   attachMCGFormatHeader(j);
   j.at(fileInfo.formatInfo.cgFieldName) = *cg;
@@ -25,8 +25,8 @@ void metacg::io::VersionTwoMCGWriter::write(metacg::Callgraph *cg, metacg::io::J
   js.setJson(j);
 }
 
-void metacg::io::VersionTwoMCGWriter::downgradeV3FormatToV2Format(nlohmann::json &j) {
-  auto &cg = j.at("_CG");
+void metacg::io::VersionTwoMCGWriter::downgradeV3FormatToV2Format(nlohmann::json& j) {
+  auto& cg = j.at("_CG");
 
   // rebuild caller callee maps
   std::unordered_map<size_t, std::string> idNameMap;
@@ -34,30 +34,30 @@ void metacg::io::VersionTwoMCGWriter::downgradeV3FormatToV2Format(nlohmann::json
   std::unordered_map<size_t, std::vector<size_t>> targetSourceEdgeMap;
 
   // rebuild caller callee maps
-  for (auto &node : cg.at("nodes")) {
+  for (auto& node : cg.at("nodes")) {
     idNameMap[node.at(0)] = node.at(1).at("functionName");
     node.at(1).erase("functionName");
   }
 
-  for (auto &edge : cg.at("edges")) {
+  for (auto& edge : cg.at("edges")) {
     sourceTargetEdgeMap[edge.at(0).at(0)].push_back(edge.at(0).at(1));
     targetSourceEdgeMap[edge.at(0).at(1)].push_back(edge.at(0).at(0));
   }
   cg.erase("edges");
   // move edges
-  for (auto &node : cg.at("nodes")) {
+  for (auto& node : cg.at("nodes")) {
     node.at(1)["callees"] = nlohmann::json::array();
-    for (auto &callee : sourceTargetEdgeMap[node.at(0)]) {
+    for (auto& callee : sourceTargetEdgeMap[node.at(0)]) {
       node.at(1).at("callees").push_back(idNameMap.at(callee));
     }
     node.at(1)["callers"] = nlohmann::json::array();
-    for (auto &caller : targetSourceEdgeMap[node.at(0)]) {
+    for (auto& caller : targetSourceEdgeMap[node.at(0)]) {
       node.at(1).at("callers").push_back(idNameMap.at(caller));
     }
   }
 
-  for (auto &node : cg.at("nodes")) {
-    const auto &nodeName = idNameMap.at(node.at(0));
+  for (auto& node : cg.at("nodes")) {
+    const auto& nodeName = idNameMap.at(node.at(0));
     j["CG"][nodeName] = std::move(node.at(1));
 
     // if we have attached origin information move it to Fileproperty data
@@ -72,12 +72,12 @@ void metacg::io::VersionTwoMCGWriter::downgradeV3FormatToV2Format(nlohmann::json
       j["CG"][nodeName]["isVirtual"] = true;
       j["CG"][nodeName]["doesOverride"] = !j["CG"][nodeName].at("meta").at("overrideMD").at("overrides").empty();
       nlohmann::json overrideNames = nlohmann::json::array();
-      for (const auto &n : j["CG"][nodeName].at("meta").at("overrideMD").at("overrides")) {
+      for (const auto& n : j["CG"][nodeName].at("meta").at("overrideMD").at("overrides")) {
         overrideNames.push_back(idNameMap.at(n));
       }
       j["CG"][nodeName]["overrides"] = overrideNames;
       nlohmann::json overriddenByNames = nlohmann::json::array();
-      for (const auto &n : j["CG"][nodeName].at("meta").at("overrideMD").at("overriddenBy")) {
+      for (const auto& n : j["CG"][nodeName].at("meta").at("overrideMD").at("overriddenBy")) {
         overriddenByNames.push_back(idNameMap.at(n));
       }
       j["CG"][nodeName]["overriddenBy"] = overriddenByNames;

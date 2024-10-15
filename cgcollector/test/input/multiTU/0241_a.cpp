@@ -9,7 +9,7 @@ struct Base {
     f = nullptr;
     return 1;
   }
-  Ftype *f;
+  Ftype* f;
 };
 
 struct Child1 : Base {
@@ -26,10 +26,10 @@ struct Child2 : Base {
   }
 };
 
-void calc(Base *arg);
+void calc(Base* arg);
 
 int main() {
-  Base *b = new Base();
+  Base* b = new Base();
   bool test1 = true;
   bool test2 = true;
   if (test1) {

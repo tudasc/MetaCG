@@ -28,21 +28,21 @@ class MetaCollector {
   std::map<std::string, std::unique_ptr<MetaInformation>> values;
 
   virtual std::unique_ptr<MetaInformation> calculateForFunctionDecl(
-      clang::FunctionDecl const *const decl,
-      const llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> &calledDecls) = 0;
+      clang::FunctionDecl const* const decl,
+      const llvm::DenseMap<const clang::CallExpr*, const clang::Decl*>& calledDecls) = 0;
 
  protected:
   MetaCollector(std::string name) : name(name) {}
 
  public:
-  void calculateFor(const CallGraph &cg) {
+  void calculateFor(const CallGraph& cg) {
     // for (auto &node : cg) {
-    for (const auto &node : cg.getInOrderDecls()) {
+    for (const auto& node : cg.getInOrderDecls()) {
       // if (node.first) {
       // if (auto f = llvm::dyn_cast<clang::FunctionDecl>(node.first)) {
       if (auto f = llvm::dyn_cast<clang::FunctionDecl>(node)) {
         auto names = getMangledName(f);
-        for (const auto &n : names) {
+        for (const auto& n : names) {
           values[n] = calculateForFunctionDecl(f, cg.CalledDecls);
         }
         //}
@@ -50,18 +50,18 @@ class MetaCollector {
     }
   }
 
-  virtual void addMetaInformationToCompleteJson([[maybe_unused]] nlohmann::json &j,
+  virtual void addMetaInformationToCompleteJson([[maybe_unused]] nlohmann::json& j,
                                                 [[maybe_unused]] int mcgFormatVersion) {}
 
-  const std::map<std::string, std::unique_ptr<MetaInformation>> &getMetaInformation() { return values; }
+  const std::map<std::string, std::unique_ptr<MetaInformation>>& getMetaInformation() { return values; }
 
   std::string getName() { return name; }
 };
 
 class NumberOfStatementsCollector final : public MetaCollector {
   std::unique_ptr<MetaInformation> calculateForFunctionDecl(
-      clang::FunctionDecl const *const decl,
-      const llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> &) override {
+      clang::FunctionDecl const* const decl,
+      const llvm::DenseMap<const clang::CallExpr*, const clang::Decl*>&) override {
     std::unique_ptr<NumberOfStatementsResult> result = std::make_unique<NumberOfStatementsResult>();
 
     result->numberOfStatements = getNumStmtsInStmt(decl->getBody());
@@ -75,11 +75,11 @@ class NumberOfStatementsCollector final : public MetaCollector {
 
 class FilePropertyCollector : public MetaCollector {
   std::unique_ptr<MetaInformation> calculateForFunctionDecl(
-      clang::FunctionDecl const *const decl,
-      const llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> &) override {
+      clang::FunctionDecl const* const decl,
+      const llvm::DenseMap<const clang::CallExpr*, const clang::Decl*>&) override {
     auto result = std::make_unique<FilePropertyResult>();
     const auto sourceLocation = decl->getLocation();
-    auto &astCtx = decl->getASTContext();
+    auto& astCtx = decl->getASTContext();
     const auto fullSrcLoc = astCtx.getFullLoc(sourceLocation);
     const auto fileEntry = fullSrcLoc.getFileEntry();
     if (!fileEntry) {
@@ -101,8 +101,8 @@ class FilePropertyCollector : public MetaCollector {
 
 class CodeStatisticsCollector : public MetaCollector {
   std::unique_ptr<MetaInformation> calculateForFunctionDecl(
-      clang::FunctionDecl const *const decl,
-      const llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> &) override {
+      clang::FunctionDecl const* const decl,
+      const llvm::DenseMap<const clang::CallExpr*, const clang::Decl*>&) override {
     auto result = std::make_unique<CodeStatisticsMetaInformation>();
     for (auto declIter = decl->decls_begin(); declIter != decl->decls_end(); ++declIter) {
       if (const auto varDecl = llvm::dyn_cast<clang::VarDecl>(*declIter)) {
@@ -119,18 +119,18 @@ class CodeStatisticsCollector : public MetaCollector {
 
 class MallocVariableCollector : public MetaCollector {
   std::unique_ptr<MetaInformation> calculateForFunctionDecl(
-      clang::FunctionDecl const *const decl,
-      const llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> &) override {
+      clang::FunctionDecl const* const decl,
+      const llvm::DenseMap<const clang::CallExpr*, const clang::Decl*>&) override {
     auto result = std::make_unique<MallocVariableInformation>();
     class MallocFinder : public clang::StmtVisitor<MallocFinder> {
-      clang::ASTContext &ctx;
-      std::map<std::string, std::string> &allocs;
+      clang::ASTContext& ctx;
+      std::map<std::string, std::string>& allocs;
 
      public:
-      MallocFinder(clang::ASTContext &ctx, std::map<std::string, std::string> &allocs) : ctx(ctx), allocs(allocs){};
+      MallocFinder(clang::ASTContext& ctx, std::map<std::string, std::string>& allocs) : ctx(ctx), allocs(allocs){};
       ~MallocFinder() = default;
 
-      void VisitStmt(clang::Stmt *stmt) {
+      void VisitStmt(clang::Stmt* stmt) {
         for (auto s : stmt->children()) {
           if (s) {
             this->Visit(s);
@@ -138,7 +138,7 @@ class MallocVariableCollector : public MetaCollector {
         }
       }
 
-      bool handleFuncCallForVar(const clang::CallExpr *ce, const clang::VarDecl *vd) {
+      bool handleFuncCallForVar(const clang::CallExpr* ce, const clang::VarDecl* vd) {
         if (ce->getCalleeDecl()) {
           if (const auto funSym = llvm::dyn_cast<clang::FunctionDecl>(ce->getCalleeDecl())) {
             if (!vd->isLocalVarDecl()) {
@@ -154,7 +154,7 @@ class MallocVariableCollector : public MetaCollector {
       /**
        * Handles (probably) non-existing cases of declarations for globals
        */
-      void VisitDeclStmt(clang::DeclStmt *ds) {
+      void VisitDeclStmt(clang::DeclStmt* ds) {
         // *Probably* non existing case in general...
         if (ds->isSingleDecl()) {
           if (const auto d = llvm::dyn_cast<clang::VarDecl>(ds->getSingleDecl())) {
@@ -185,7 +185,7 @@ class MallocVariableCollector : public MetaCollector {
        * Handles assignment statements with call to, e.g., "malloc".
        * int * k = (int *) malloc(sizeof(int));
        * */
-      void VisitBinaryOperator(clang::BinaryOperator *bo) {
+      void VisitBinaryOperator(clang::BinaryOperator* bo) {
         if (bo->isAssignmentOp()) {
           auto lhs = bo->getLHS();
           auto rhs = bo->getRHS();
@@ -232,22 +232,22 @@ class MallocVariableCollector : public MetaCollector {
 };
 
 class UniqueTypeCollector : public MetaCollector {
-  std::set<const clang::Type *> globalTypes;
+  std::set<const clang::Type*> globalTypes;
 
   virtual std::unique_ptr<MetaInformation> calculateForFunctionDecl(
-      clang::FunctionDecl const *const decl,
-      const llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> &) override {
-    std::set<const clang::Type *> uniqueTypes;
+      clang::FunctionDecl const* const decl,
+      const llvm::DenseMap<const clang::CallExpr*, const clang::Decl*>&) override {
+    std::set<const clang::Type*> uniqueTypes;
 
     std::cout << "Processing function " << decl->getNameAsString() << std::endl;
 
     class DeclRefExprVisitor : public clang::StmtVisitor<DeclRefExprVisitor> {
-      std::set<const clang::Type *> &fTypes;
+      std::set<const clang::Type*>& fTypes;
 
      public:
-      DeclRefExprVisitor(std::set<const clang::Type *> &funcTypes) : fTypes(funcTypes) {}
+      DeclRefExprVisitor(std::set<const clang::Type*>& funcTypes) : fTypes(funcTypes) {}
 
-      void VisitStmt(clang::Stmt *stmt) {
+      void VisitStmt(clang::Stmt* stmt) {
         for (const auto s : stmt->children()) {
           if (s) {
             this->Visit(s);
@@ -255,7 +255,7 @@ class UniqueTypeCollector : public MetaCollector {
         }
       }
 
-      void VisitDeclStmt(clang::DeclStmt *ds) {
+      void VisitDeclStmt(clang::DeclStmt* ds) {
         if (ds->isSingleDecl()) {
           if (const auto decl = llvm::dyn_cast<clang::ValueDecl>(ds->getSingleDecl())) {
             const auto ty = resolveToUnderlyingType(decl->getType().getTypePtr());
@@ -266,7 +266,7 @@ class UniqueTypeCollector : public MetaCollector {
         }
       }
 
-      void VisitDeclRefExpr(clang::DeclRefExpr *dre) {
+      void VisitDeclRefExpr(clang::DeclRefExpr* dre) {
         if (!dre->getDecl()) {
           return;
         }
@@ -305,8 +305,8 @@ class NumConditionalBranchCollector final : public MetaCollector {
 
  private:
   std::unique_ptr<MetaInformation> calculateForFunctionDecl(
-      const clang::FunctionDecl *const decl,
-      const llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> &) override {
+      const clang::FunctionDecl* const decl,
+      const llvm::DenseMap<const clang::CallExpr*, const clang::Decl*>&) override {
     auto result = std::make_unique<NumOfConditionalBranchesResult>();
     result->numberOfConditionalBranches = getNumConditionalBranchesInStmt(decl->getBody());
     return result;
@@ -319,8 +319,8 @@ class NumOperationsCollector final : public MetaCollector {
 
  private:
   std::unique_ptr<MetaInformation> calculateForFunctionDecl(
-      const clang::FunctionDecl *const decl,
-      const llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> &) override {
+      const clang::FunctionDecl* const decl,
+      const llvm::DenseMap<const clang::CallExpr*, const clang::Decl*>&) override {
     assert(decl);
     auto result = std::make_unique<NumOperationsResult>();
     const auto counts = getNumOperationsInStmt(decl->getBody());
@@ -338,8 +338,8 @@ class LoopDepthCollector final : public MetaCollector {
 
  private:
   std::unique_ptr<MetaInformation> calculateForFunctionDecl(
-      const clang::FunctionDecl *const decl,
-      const llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> &) override {
+      const clang::FunctionDecl* const decl,
+      const llvm::DenseMap<const clang::CallExpr*, const clang::Decl*>&) override {
     assert(decl);
     auto result = std::make_unique<LoopDepthResult>();
     result->loopDepth = getLoopDepthInStmt(decl->getBody());
@@ -350,7 +350,7 @@ class LoopDepthCollector final : public MetaCollector {
 class GlobalLoopDepthCollector final : public MetaCollector {
  public:
   GlobalLoopDepthCollector() : MetaCollector("loopCallDepth") {}
-  void addMetaInformationToCompleteJson(nlohmann::json &j, int mcgFormatVersion) override {
+  void addMetaInformationToCompleteJson(nlohmann::json& j, int mcgFormatVersion) override {
     if (mcgFormatVersion > 1) {
       calculateGlobalCallDepth(j, false);
     }
@@ -358,20 +358,20 @@ class GlobalLoopDepthCollector final : public MetaCollector {
 
  private:
   std::unique_ptr<MetaInformation> calculateForFunctionDecl(
-      const clang::FunctionDecl *const decl,
-      const llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> &calledDecls) override {
+      const clang::FunctionDecl* const decl,
+      const llvm::DenseMap<const clang::CallExpr*, const clang::Decl*>& calledDecls) override {
     assert(decl);
     auto result = std::make_unique<GlobalLoopDepthResult>();
     std::map<std::string, int> calledFunctions;
     const auto callDepths = getCallDepthsInStmt(decl->getBody());
-    for (const auto &c : callDepths) {
+    for (const auto& c : callDepths) {
       const auto i = calledDecls.find(c.first);
       // There are unfortunately some cases where we can not map the call to what is called
       if (i != calledDecls.end()) {
         // TODO: Maybe handle constructors
         if (auto fdecl = llvm::dyn_cast<clang::FunctionDecl>(i->getSecond())) {
           const auto fnames = getMangledName(fdecl);
-          for (const auto &fname : fnames) {
+          for (const auto& fname : fnames) {
             auto fi = calledFunctions.find(fname);
             if (fi == calledFunctions.end()) {
               calledFunctions.emplace(fname, c.second);
@@ -393,8 +393,8 @@ class InlineCollector final : public MetaCollector {
 
  private:
   std::unique_ptr<MetaInformation> calculateForFunctionDecl(
-      const clang::FunctionDecl *const decl,
-      [[maybe_unused]] const llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> &calledDecls) override {
+      const clang::FunctionDecl* const decl,
+      [[maybe_unused]] const llvm::DenseMap<const clang::CallExpr*, const clang::Decl*>& calledDecls) override {
     assert(decl);
     auto result = std::make_unique<InlineResult>();
     const auto alwaysInlineAttr = decl->getAttr<clang::AlwaysInlineAttr>();
@@ -449,27 +449,27 @@ class EstimateCallCountCollector final : public MetaCollector {
    * exists, the functions in it are updated if necessary. Otherwise the region is newly inserted
    */
   std::unique_ptr<MetaInformation> calculateForFunctionDecl(
-      const clang::FunctionDecl *const decl,
-      const llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> &calledDecls) override {
+      const clang::FunctionDecl* const decl,
+      const llvm::DenseMap<const clang::CallExpr*, const clang::Decl*>& calledDecls) override {
     assert(decl);
     auto result = std::make_unique<EstimateCallCountResult>();
     std::map<std::string, std::set<std::pair<double, std::string>>> calledFunctions;
     std::map<std::string, CodeRegion> codeRegions;
     const auto callCounts = getEstimatedCallCountInStmt(decl->getBody(), decl->getASTContext().getSourceManager(),
                                                         loopCount, trueChance, falseChance, exceptionChance);
-    for (const auto &callCount : callCounts) {
+    for (const auto& callCount : callCounts) {
       // There are unfortunately some cases where we can not map the call to what is called
       if (const auto calledDeclsIter = calledDecls.find(callCount.first); calledDeclsIter != calledDecls.end()) {
         // TODO: Maybe handle constructors
         if (auto fdecl = llvm::dyn_cast<clang::FunctionDecl>(calledDeclsIter->getSecond())) {
           const auto fnames = getMangledName(fdecl);
-          for (const auto &fname : fnames) {
-            for (const auto &cc : callCount.second) {
+          for (const auto& fname : fnames) {
+            for (const auto& cc : callCount.second) {
               {
-                auto &calledFunction = calledFunctions[fname];
+                auto& calledFunction = calledFunctions[fname];
                 const auto regionName = !cc.first.empty() ? cc.first.back() : "";
                 auto regionIter = std::find_if(calledFunction.begin(), calledFunction.end(),
-                                               [&](const auto &i) { return i.second == regionName; });
+                                               [&](const auto& i) { return i.second == regionName; });
                 if (regionIter != calledFunction.end()) {
                   calledFunctions[fname].emplace(regionIter->first + 1.0, regionName);
                   calledFunction.erase(regionIter);

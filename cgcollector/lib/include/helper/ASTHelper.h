@@ -7,19 +7,19 @@
 #include <string>
 #include <vector>
 
-int getNumStmtsInStmt(clang::Stmt *stmt);
-int getNumStmtsInCompoundStmt(clang::CompoundStmt *cpst);
-int getNumStmtsInIfStmt(clang::IfStmt *is);
-int getNumStmtsInForStmt(clang::ForStmt *fs);
-int getNumStmtsInWhileStmt(clang::WhileStmt *ws);
-int getNumStmtsInCXXForRangeStmt(clang::CXXForRangeStmt *frs);
-int getNumStmtsInDoStmt(clang::DoStmt *ds);
-int getNumStmtsInTryStmt(clang::CXXTryStmt *tryst);
-int getNumStmtsInCatchStmt(clang::CXXCatchStmt *catchst);
-int getNumStmtsInSwitchCase(clang::SwitchStmt *scStmt);
-int getNumStmtsInCaseStmt(clang::CaseStmt *cStmt);
+int getNumStmtsInStmt(clang::Stmt* stmt);
+int getNumStmtsInCompoundStmt(clang::CompoundStmt* cpst);
+int getNumStmtsInIfStmt(clang::IfStmt* is);
+int getNumStmtsInForStmt(clang::ForStmt* fs);
+int getNumStmtsInWhileStmt(clang::WhileStmt* ws);
+int getNumStmtsInCXXForRangeStmt(clang::CXXForRangeStmt* frs);
+int getNumStmtsInDoStmt(clang::DoStmt* ds);
+int getNumStmtsInTryStmt(clang::CXXTryStmt* tryst);
+int getNumStmtsInCatchStmt(clang::CXXCatchStmt* catchst);
+int getNumStmtsInSwitchCase(clang::SwitchStmt* scStmt);
+int getNumStmtsInCaseStmt(clang::CaseStmt* cStmt);
 
-int getNumConditionalBranchesInStmt(clang::Stmt *s);
+int getNumConditionalBranchesInStmt(clang::Stmt* s);
 
 struct NumOperations {
   int numberOfIntOps = 0;
@@ -28,11 +28,11 @@ struct NumOperations {
   int numberOfMemoryAccesses = 0;
 };
 
-NumOperations getNumOperationsInStmt(clang::Stmt *s);
+NumOperations getNumOperationsInStmt(clang::Stmt* s);
 
-int getLoopDepthInStmt(clang::Stmt *s);
+int getLoopDepthInStmt(clang::Stmt* s);
 
-llvm::SmallDenseMap<const clang::CallExpr *, int, 16> getCallDepthsInStmt(clang::Stmt *s);
+llvm::SmallDenseMap<const clang::CallExpr*, int, 16> getCallDepthsInStmt(clang::Stmt* s);
 
 /**
  * Information collected for the call count estimation.
@@ -45,9 +45,9 @@ llvm::SmallDenseMap<const clang::CallExpr *, int, 16> getCallDepthsInStmt(clang:
  * std::vector<double> is the chain of their estimated impact on the call count
  */
 using CallCountEstimation =
-    std::map<const clang::CallExpr *, std::set<std::pair<std::vector<std::string>, std::vector<double>>>>;
+    std::map<const clang::CallExpr*, std::set<std::pair<std::vector<std::string>, std::vector<double>>>>;
 
-CallCountEstimation getEstimatedCallCountInStmt(clang::Stmt *s, const clang::SourceManager &SM, float loopCount,
+CallCountEstimation getEstimatedCallCountInStmt(clang::Stmt* s, const clang::SourceManager& SM, float loopCount,
                                                 float trueChance, float falseChance, float exceptionChance);
 
 #endif

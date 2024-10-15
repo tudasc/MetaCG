@@ -14,16 +14,20 @@ namespace metacg {
 
 struct MCGFileFormatVersion {
   MCGFileFormatVersion(int versionMajor, int versionMinor) : versionMajor(versionMajor), versionMinor(versionMinor) {}
-  MCGFileFormatVersion(const MCGFileFormatVersion &other) = default;
-  MCGFileFormatVersion(MCGFileFormatVersion &&other) = default;
-  bool operator==(const MCGFileFormatVersion &rhs) const { return versionMajor == rhs.versionMajor && versionMinor == rhs.versionMinor; }
-  bool operator!=(const MCGFileFormatVersion &rhs) const { return !(rhs == *this); }
-  bool operator<(const MCGFileFormatVersion &rhs) const {
+  MCGFileFormatVersion(const MCGFileFormatVersion& other) = default;
+  MCGFileFormatVersion(MCGFileFormatVersion&& other) = default;
+  bool operator==(const MCGFileFormatVersion& rhs) const {
+    return versionMajor == rhs.versionMajor && versionMinor == rhs.versionMinor;
+  }
+  bool operator!=(const MCGFileFormatVersion& rhs) const { return !(rhs == *this); }
+  bool operator<(const MCGFileFormatVersion& rhs) const {
     return versionMajor < rhs.versionMajor || (versionMajor == rhs.versionMajor && versionMinor < rhs.versionMinor);
   }
-  bool operator>(const MCGFileFormatVersion &rhs) const { return !this->operator<(rhs); }
+  bool operator>(const MCGFileFormatVersion& rhs) const { return !this->operator<(rhs); }
 
-  [[nodiscard]] std::string getVersionStr() const { return std::to_string(versionMajor) + '.' + std::to_string(versionMinor); }
+  [[nodiscard]] std::string getVersionStr() const {
+    return std::to_string(versionMajor) + '.' + std::to_string(versionMinor);
+  }
 
   [[nodiscard]] std::string getJsonIdentifier() const { return {"version"}; }
 
@@ -32,14 +36,15 @@ struct MCGFileFormatVersion {
 };
 
 struct MCGGeneratorVersionInfo {
-
   MCGGeneratorVersionInfo(std::string name, int major, int minor, std::string gitSHA = {})
       : name(std::move(name)), versionMajor(major), versionMinor(minor), sha(std::move(gitSHA)) {}
 
-  MCGGeneratorVersionInfo(const MCGGeneratorVersionInfo &other) = default;
-  MCGGeneratorVersionInfo(MCGGeneratorVersionInfo &&other) = default;
+  MCGGeneratorVersionInfo(const MCGGeneratorVersionInfo& other) = default;
+  MCGGeneratorVersionInfo(MCGGeneratorVersionInfo&& other) = default;
 
-  [[nodiscard]] std::string getVersionStr() const { return std::to_string(versionMajor) + '.' + std::to_string(versionMinor); }
+  [[nodiscard]] std::string getVersionStr() const {
+    return std::to_string(versionMajor) + '.' + std::to_string(versionMinor);
+  }
 
   [[nodiscard]] std::string getJsonIdentifier() const { return {"generator"}; }
 
@@ -56,9 +61,10 @@ struct MCGGeneratorVersionInfo {
 };
 
 struct MCGFileFormatInfo {
-  MCGFileFormatInfo(int versionMajor, int versionMinor) : version(versionMajor, versionMinor), cgFieldName("_CG"), metaInfoFieldName("_MetaCG") {}
-  MCGFileFormatInfo(const MCGFileFormatInfo &other) = default;
-  MCGFileFormatInfo(MCGFileFormatInfo &&other) = default;
+  MCGFileFormatInfo(int versionMajor, int versionMinor)
+      : version(versionMajor, versionMinor), cgFieldName("_CG"), metaInfoFieldName("_MetaCG") {}
+  MCGFileFormatInfo(const MCGFileFormatInfo& other) = default;
+  MCGFileFormatInfo(MCGFileFormatInfo&& other) = default;
 
   MCGFileFormatVersion version;
   std::string cgFieldName;
@@ -79,8 +85,8 @@ struct MCGFileNodeInfo {
 struct MCGFileInfo {
   MCGFileInfo(MCGFileFormatInfo ffInfo, MCGGeneratorVersionInfo genInfo)
       : formatInfo(std::move(ffInfo)), generatorInfo(std::move(genInfo)) {}
-  MCGFileInfo(const MCGFileInfo &other) = default;
-  MCGFileInfo(MCGFileInfo &&other) = default;
+  MCGFileInfo(const MCGFileInfo& other) = default;
+  MCGFileInfo(MCGFileInfo&& other) = default;
 
   MCGFileFormatInfo formatInfo;
   MCGGeneratorVersionInfo generatorInfo;
@@ -94,8 +100,7 @@ inline metacg::MCGFileInfo getVersionTwoFileInfo(MCGGeneratorVersionInfo mcgGenI
 
 // Fixme: inlining this to omit ODR, move to own file
 // Fixme These are the wrong defaults
-[[deprecated("Use brace initialization to create info instead")]]
-MCGGeneratorVersionInfo getCGCollectorGeneratorInfo();
+[[deprecated("Use brace initialization to create info instead")]] MCGGeneratorVersionInfo getCGCollectorGeneratorInfo();
 }  // namespace metacg
 
 #endif  // METACG_MCGBASEINFO_H

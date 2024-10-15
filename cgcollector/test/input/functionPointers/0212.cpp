@@ -6,7 +6,7 @@ struct A {
 };
 
 void foo() {}
-void call_f(const A &arg) { arg.f(); }
+void call_f(const A& arg) { arg.f(); }
 
 int main() {
   A a;

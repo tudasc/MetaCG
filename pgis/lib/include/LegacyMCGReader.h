@@ -17,7 +17,7 @@ namespace metacg::pgis::io {
  */
 class VersionOneMetaCGReader : public metacg::io::MetaCGReader {
  public:
-  explicit VersionOneMetaCGReader(metacg::io::ReaderSource &source) : MetaCGReader(source) {}
+  explicit VersionOneMetaCGReader(metacg::io::ReaderSource& source) : MetaCGReader(source) {}
 
   /**
    * Internal data structure to create the metacg structure
@@ -50,23 +50,23 @@ class VersionOneMetaCGReader : public metacg::io::MetaCGReader {
   /**
    * Gets or inserts new node into the functions LUT
    */
-  FuncMapT::mapped_type &getOrInsert(const std::string &key);
+  FuncMapT::mapped_type& getOrInsert(const std::string& key);
 
   /**
    * Build the virtual function hierarchy in PGIS using the functions map
    */
-  StrStrMap buildVirtualFunctionHierarchy(metacg::graph::MCGManager &cgManager);
+  StrStrMap buildVirtualFunctionHierarchy(metacg::graph::MCGManager& cgManager);
   /**
    * Inserts all nodes in the function map into the final call-graph.
    * Uses potentialTargets to include all potential virtual call targets for virtual functions.
    */
-  void buildGraph(metacg::graph::MCGManager &cgManager, StrStrMap &potentialTargets);
+  void buildGraph(metacg::graph::MCGManager& cgManager, StrStrMap& potentialTargets);
 
   /**
    * Checks if the jsonValue contains a value for key and sets field accordingly
    */
   template <typename FieldTy, typename JsonTy>
-  void setIfNotNull(FieldTy &field, const JsonTy &jsonValue, const std::string &key) {
+  void setIfNotNull(FieldTy& field, const JsonTy& jsonValue, const std::string& key) {
     auto jsonField = jsonValue.value()[key];
     if (!jsonField.is_null()) {
       field = jsonField.template get<typename std::remove_reference<FieldTy>::type>();
@@ -79,7 +79,7 @@ class VersionOneMetaCGReader : public metacg::io::MetaCGReader {
   FuncMapT functions;
 
  private:
-  void addNumStmts(metacg::graph::MCGManager &cgm);
+  void addNumStmts(metacg::graph::MCGManager& cgm);
 };
 }  // namespace metacg::pgis::io
 

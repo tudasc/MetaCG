@@ -9,8 +9,8 @@
 
 #include <optional>
 
-#include "metadata/MetaData.h"
 #include "MetaData/CgNodeMetaData.h"
+#include "metadata/MetaData.h"
 #include "nlohmann/json.hpp"
 
 namespace LoadImbalance {
@@ -26,9 +26,9 @@ enum class FlagType { Irrelevant, Visited, Imbalanced };
  */
 class LIMetaData : public metacg::MetaData::Registrar<LIMetaData> {
  public:
-  static constexpr const char *key = "LIData";
+  static constexpr const char* key = "LIData";
   LIMetaData() = default;
-  explicit LIMetaData(const nlohmann::json &j) {
+  explicit LIMetaData(const nlohmann::json& j) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", key);
       return;
@@ -49,7 +49,7 @@ class LIMetaData : public metacg::MetaData::Registrar<LIMetaData> {
 
   virtual nlohmann::json to_json() const;
 
-  virtual const char *getKey() const final { return key; }
+  [[nodiscard]] const char* getKey() const final { return key; }
 
   void setNumberOfInclusiveStatements(pira::Statements inclusiveStatements) {
     this->inclusiveStatements = inclusiveStatements;
@@ -80,7 +80,7 @@ class LIMetaData : public metacg::MetaData::Registrar<LIMetaData> {
   std::optional<double> assessment{std::nullopt};
 };
 
-void to_json(nlohmann::json &j, const LoadImbalance::LIMetaData &d);
+void to_json(nlohmann::json& j, const LoadImbalance::LIMetaData& d);
 }  // namespace LoadImbalance
 
 #endif

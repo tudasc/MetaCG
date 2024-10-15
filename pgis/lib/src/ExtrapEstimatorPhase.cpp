@@ -25,13 +25,13 @@ using namespace metacg;
 
 namespace pira {
 
-void ExtrapLocalEstimatorPhaseBase::modifyGraph(metacg::CgNode *mainNode) {
+void ExtrapLocalEstimatorPhaseBase::modifyGraph(metacg::CgNode* mainNode) {
   auto console = metacg::MCGLogger::instance().getConsole();
   console->trace("Running ExtrapLocalEstimatorPhaseBase::modifyGraph");
   metacg::analysis::ReachabilityAnalysis ra(graph);
 
-  for (const auto &elem : graph->getNodes()) {
-    const auto &n = elem.second.get();
+  for (const auto& elem : graph->getNodes()) {
+    const auto& n = elem.second.get();
     auto [shouldInstr, funcRtVal] = shouldInstrument(n);
     if (shouldInstr) {
       auto useCSInstr =
@@ -49,7 +49,7 @@ void ExtrapLocalEstimatorPhaseBase::modifyGraph(metacg::CgNode *mainNode) {
       if (allNodesToMain) {
         auto nodesToMain = CgHelper::allNodesToMain(n, mainNode, graph, ra);
         console->trace("Node {} has {} nodes on paths to main.", n->getFunctionName(), nodesToMain.size());
-        for (const auto &ntm : nodesToMain) {
+        for (const auto& ntm : nodesToMain) {
           metacg::pgis::instrumentNode(ntm);
           //          ntm->setState(CgNodeState::INSTRUMENT_WITNESS);
         }
@@ -63,7 +63,7 @@ void ExtrapLocalEstimatorPhaseBase::printReport() {
 
   std::stringstream ss;
 
-  std::sort(std::begin(kernels), std::end(kernels), [&](auto &e1, auto &e2) { return e1.first > e2.first; });
+  std::sort(std::begin(kernels), std::end(kernels), [&](auto& e1, auto& e2) { return e1.first > e2.first; });
   for (auto [t, k] : kernels) {
     ss << "- " << k->getFunctionName() << "\n  * Time: " << t << "\n";
     auto [has, obj] = k->checkAndGet<pira::FilePropertiesMetaData>();
@@ -75,17 +75,17 @@ void ExtrapLocalEstimatorPhaseBase::printReport() {
   console->info("$$ Identified Kernels (w/ Runtime) $$\n{}$$ End Kernels $$", ss.str());
 }
 
-std::pair<bool, double> ExtrapLocalEstimatorPhaseBase::shouldInstrument(metacg::CgNode *node) const {
+std::pair<bool, double> ExtrapLocalEstimatorPhaseBase::shouldInstrument(metacg::CgNode* node) const {
   assert(false && "Base class should not be instantiated.");
   return {false, -1};
 }
 
-std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(metacg::CgNode *node) const {
+std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstrument(metacg::CgNode* node) const {
   auto console = metacg::MCGLogger::instance().getConsole();
   console->trace("Running {}", __PRETTY_FUNCTION__);
 
   // get extrapolation threshold from parameter configPtr
-  double extrapolationThreshold = pgis::config::ParameterConfig::get().getPiraIIConfig()->extrapolationThreshold;
+  const double extrapolationThreshold = pgis::config::ParameterConfig::get().getPiraIIConfig()->extrapolationThreshold;
 
   if (useRuntimeOnly) {
     auto pdII = node->get<PiraTwoData>();
@@ -100,12 +100,12 @@ std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstru
       }
     };
 
-    if (rtVec.size() == 0) {
+    if (rtVec.empty()) {
       return {false, .0};
     }
 
     auto medianValue = median(rtVec);
-    std::string funcName{__PRETTY_FUNCTION__};
+    const std::string funcName{__PRETTY_FUNCTION__};
     console->debug("{}: No. of RT values: {}, median RT value {}, threshold value {}", funcName, rtVec.size(),
                    medianValue, extrapolationThreshold);
     if (medianValue > extrapolationThreshold) {
@@ -128,15 +128,15 @@ std::pair<bool, double> ExtrapLocalEstimatorPhaseSingleValueFilter::shouldInstru
   return {fVal > extrapolationThreshold, fVal};
 }
 
-void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(metacg::CgNode *mainNode) {
-  std::unordered_map<metacg::CgNode *, CgNodeRawPtrUSet> pathsToMain;
+void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(metacg::CgNode* mainNode) {
+  std::unordered_map<metacg::CgNode*, CgNodeRawPtrUSet> pathsToMain;
   metacg::analysis::ReachabilityAnalysis ra(graph);
 
   // get statement threshold from parameter configPtr
-  int statementThreshold = pgis::config::ParameterConfig::get().getPiraIIConfig()->statementThreshold;
+  const int statementThreshold = pgis::config::ParameterConfig::get().getPiraIIConfig()->statementThreshold;
 
-  for (const auto &elem : graph->getNodes()) {
-    const auto &n = elem.second.get();
+  for (const auto& elem : graph->getNodes()) {
+    const auto& n = elem.second.get();
     auto console = metacg::MCGLogger::instance().getConsole();
     console->trace("Running ExtrapLocalEstimatorPhaseExpander::modifyGraph on {}", n->getFunctionName());
     auto [shouldInstr, funcRtVal] = shouldInstrument(n);
@@ -156,13 +156,13 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(metacg::CgNode *m
         }
         auto nodesToMain = pathsToMain[n];
         console->trace("Found {} nodes to main.", nodesToMain.size());
-        for (const auto &ntm : nodesToMain) {
+        for (const auto& ntm : nodesToMain) {
           metacg::pgis::instrumentNode(ntm);
         }
       }
 
-      std::unordered_set<metacg::CgNode *> totalToMain;
-      for (const auto &c : graph->getCallees(n->getId())) {
+      std::unordered_set<metacg::CgNode*> totalToMain;
+      for (const auto& c : graph->getCallees(n->getId())) {
         if (!c->get<PiraTwoData>()->getExtrapModelConnector().hasModels()) {
           // We use our heuristic to deepen the instrumentation
           StatementCountEstimatorPhase scep(statementThreshold, graph);  // TODO we use some threshold value here?

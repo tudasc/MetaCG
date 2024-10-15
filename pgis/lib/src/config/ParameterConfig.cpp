@@ -9,7 +9,7 @@
 using namespace metacg::pgis::config;
 
 ParameterConfig::ParameterConfig() {
-  auto &gConfig = GlobalConfig::get();
+  auto& gConfig = GlobalConfig::get();
   auto path = gConfig.getAs<std::string>(pgis::options::parameterFileConfig.cliName);
 
   // read file
@@ -43,7 +43,7 @@ ParameterConfig::ParameterConfig() {
     if (json.contains(overheadName)) {
       json.at(overheadName).get_to<OverheadConfig>(*overheadConfig);
     }
-  } catch (nlohmann::json::exception &e) {
+  } catch (nlohmann::json::exception& e) {
     spdlog::get("errconsole")->error("Unable to parse parameter configuration file: {}", e.what());
     exit(EXIT_FAILURE);
   }

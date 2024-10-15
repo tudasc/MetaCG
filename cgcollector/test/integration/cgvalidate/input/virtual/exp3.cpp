@@ -11,7 +11,7 @@ struct Z : public D {
   virtual int foo() override { return 5; }
 };
 
-void someFunc(A *a) { a->foo(); }
+void someFunc(A* a) { a->foo(); }
 
 int main() {
   Z z;

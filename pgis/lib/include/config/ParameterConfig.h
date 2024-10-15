@@ -40,13 +40,13 @@ class ParameterConfig {
   // end of actual configuration objects
 
  public:
-  ParameterConfig(const ParameterConfig &other) = delete;
-  ParameterConfig(const ParameterConfig &&other) = delete;
-  ParameterConfig &operator=(const ParameterConfig &other) = delete;
-  ParameterConfig &operator=(const ParameterConfig &&other) = delete;
+  ParameterConfig(const ParameterConfig& other) = delete;
+  ParameterConfig(const ParameterConfig&& other) = delete;
+  ParameterConfig& operator=(const ParameterConfig& other) = delete;
+  ParameterConfig& operator=(const ParameterConfig&& other) = delete;
 
   // Singleton!
-  inline static ParameterConfig &get() {
+  inline static ParameterConfig& get() {
     static ParameterConfig instance;  // lazy!
     return instance;
   }
@@ -55,19 +55,19 @@ class ParameterConfig {
   //  GETTER
   // ========
 
-  std::unique_ptr<PiraIIConfig> &getPiraIIConfig() {
+  std::unique_ptr<PiraIIConfig>& getPiraIIConfig() {
     assert(this->piraIIconfig != nullptr &&
            "ParameterConfig.h: Tried to read analysis parameters for PIRA II which have not been provided.");
     return this->piraIIconfig;
   }
 
-  std::unique_ptr<LoadImbalance::LIConfig> &getLIConfig() {
+  std::unique_ptr<LoadImbalance::LIConfig>& getLIConfig() {
     assert(this->liConfig != nullptr &&
            "ParameterConfig.h: Tried to read analysis parameters for PIRA LIDe which have not been provided.");
     return this->liConfig;
   }
 
-  std::unique_ptr<OverheadConfig> &getOverheadConfig() {
+  std::unique_ptr<OverheadConfig>& getOverheadConfig() {
     assert(this->overheadConfig != nullptr &&
            "ParameterConfig.h: Tried to read analysis parameters for PIRA Overhead which have not been provided.");
     return this->overheadConfig;

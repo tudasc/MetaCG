@@ -6,7 +6,7 @@ class MyClass {
   virtual ~MyClass() {}
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   MyClass mc;
 
   return 0;
