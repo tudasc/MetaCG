@@ -14,7 +14,7 @@ add_executable(
 )
 
 target_include_directories(libtests PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_link_libraries(libtests PUBLIC gtest_main)
+add_googletest_libraries(libtests)
 target_link_libraries(libtests PUBLIC metacg::metacg)
 
 add_json(libtests)
