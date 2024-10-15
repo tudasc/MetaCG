@@ -40,18 +40,18 @@ class CallGraphNode;
 class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
   friend class CallGraphNode;
 
-  using FunctionMapTy = llvm::DenseMap<const clang::Decl *, std::unique_ptr<CallGraphNode>>;
+  using FunctionMapTy = llvm::DenseMap<const clang::Decl*, std::unique_ptr<CallGraphNode>>;
 
   /// FunctionMap owns all CallGraphNodes.
   FunctionMapTy FunctionMap;
 
   /// This is a virtual root node that has edges to all the functions.
-  CallGraphNode *Root;
+  CallGraphNode* Root;
 
   bool captureCtorsDtors{false};
   bool includeUnusedDecls{false};
 
-  std::vector<const clang::Decl *> inOrderDecls;
+  std::vector<const clang::Decl*> inOrderDecls;
 
   // We store unresolved symbols across function decl traverses
  public:
@@ -59,11 +59,11 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
   ~CallGraph();
 
   /// Maps each call expr to the called decl
-  llvm::DenseMap<const clang::CallExpr *, const clang::Decl *> CalledDecls;
+  llvm::DenseMap<const clang::CallExpr*, const clang::Decl*> CalledDecls;
 
-  const std::vector<const clang::Decl *> getInOrderDecls() const { return inOrderDecls; }
+  const std::vector<const clang::Decl*> getInOrderDecls() const { return inOrderDecls; }
 
-  using UnresolvedMapTy = std::unordered_map<const clang::FunctionDecl *, std::unordered_set<const clang::VarDecl *>>;
+  using UnresolvedMapTy = std::unordered_map<const clang::FunctionDecl*, std::unordered_set<const clang::VarDecl*>>;
 
   void setCaptureCtorsDtors(bool capture) { captureCtorsDtors = capture; }
   void setIncludeDecl(bool include) { includeUnusedDecls = include; }
@@ -72,19 +72,19 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
   /// declaration.
   ///
   /// Recursively walks the declaration to find all the dependent Decls as well.
-  void addToCallGraph(clang::Decl *D) { TraverseDecl(D); }
+  void addToCallGraph(clang::Decl* D) { TraverseDecl(D); }
 
   /// Determine if a declaration should be included in the graph.
-  static bool includeInGraph(const clang::Decl *D);
+  static bool includeInGraph(const clang::Decl* D);
 
   /// Lookup the node for the given declaration.
-  CallGraphNode *getNode(const clang::Decl *) const;
+  CallGraphNode* getNode(const clang::Decl*) const;
 
   /// Lookup the node for the given declaration. If none found, insert
   /// one into the graph.
-  CallGraphNode *getOrInsertNode(const clang::Decl *);
+  CallGraphNode* getOrInsertNode(const clang::Decl*);
 
-  void addDeclToCalledDecls(const clang::CallExpr *, const clang::Decl *);
+  void addDeclToCalledDecls(const clang::CallExpr*, const clang::Decl*);
 
   using iterator = FunctionMapTy::iterator;
   using const_iterator = FunctionMapTy::const_iterator;
@@ -101,27 +101,27 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
 
   /// \ brief Get the virtual root of the graph, all the functions available
   /// externally are represented as callees of the node.
-  CallGraphNode *getRoot() const { return Root; }
+  CallGraphNode* getRoot() const { return Root; }
 
   /// Iterators through all the nodes of the graph that have no parent. These
   /// are the unreachable nodes, which are either unused or are due to us
   /// failing to add a call edge due to the analysis imprecision.
-  using nodes_iterator = llvm::SetVector<CallGraphNode *>::iterator;
-  using const_nodes_iterator = llvm::SetVector<CallGraphNode *>::const_iterator;
+  using nodes_iterator = llvm::SetVector<CallGraphNode*>::iterator;
+  using const_nodes_iterator = llvm::SetVector<CallGraphNode*>::const_iterator;
 
-  void print(llvm::raw_ostream &os) const;
+  void print(llvm::raw_ostream& os) const;
   void dump() const;
   void viewGraph() const;
 
-  void addNodesForBlocks(clang::DeclContext *D);
+  void addNodesForBlocks(clang::DeclContext* D);
 
   /// Part of recursive declaration visitation. We recursively visit all the
   /// declarations to collect the root functions.
-  bool VisitFunctionDecl(clang::FunctionDecl *FD);
-  bool VisitCXXMethodDecl(clang::CXXMethodDecl *MD);
+  bool VisitFunctionDecl(clang::FunctionDecl* FD);
+  bool VisitCXXMethodDecl(clang::CXXMethodDecl* MD);
 
   /// Part of recursive declaration visitation.
-  bool VisitObjCMethodDecl(clang::ObjCMethodDecl *MD) {
+  bool VisitObjCMethodDecl(clang::ObjCMethodDecl* MD) {
     if (includeInGraph(MD)) {
       addNodesForBlocks(MD);
       addNodeForDecl(MD, true);
@@ -130,10 +130,10 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
   }
 
   // We are only collecting the declarations, so do not step into the bodies.
-  bool TraverseStmt([[maybe_unused]] clang::Stmt *S) { return true; }
+  bool TraverseStmt([[maybe_unused]] clang::Stmt* S) { return true; }
 
   // We should not do anything in uninstantiated template classes, so skip them completely.
-  bool TraverseCXXRecordDecl(clang::CXXRecordDecl *RD) {
+  bool TraverseCXXRecordDecl(clang::CXXRecordDecl* RD) {
     if (RD->isDependentContext()) {
       return true;
     }
@@ -146,34 +146,34 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
  private:
   UnresolvedMapTy unresolvedSymbols;
   /// Add the given declaration to the call graph.
-  void addNodeForDecl(clang::Decl *D, bool IsGlobal);
+  void addNodeForDecl(clang::Decl* D, bool IsGlobal);
 
   /// Allocate a new node in the graph.
-  CallGraphNode *allocateNewNode(clang::Decl *);
+  CallGraphNode* allocateNewNode(clang::Decl*);
 };
 
 class CallGraphNode {
  public:
-  using CallRecord = CallGraphNode *;
+  using CallRecord = CallGraphNode*;
 
  private:
   /// The function/method declaration.
-  const clang::Decl *FD;
+  const clang::Decl* FD;
 
   /// The list of functions called from this node.
   llvm::SmallVector<CallRecord, 5> CalledFunctions;
 
-  llvm::SmallVector<const clang::Decl *, 5> OverriddenBy;
-  llvm::SmallVector<const clang::Decl *, 5> OverriddenMethods;
+  llvm::SmallVector<const clang::Decl*, 5> OverriddenBy;
+  llvm::SmallVector<const clang::Decl*, 5> OverriddenMethods;
 
   // TODO parents are not handled correctly for virtual functions
   // (virtual functions are not handled correctly in general)
   // this is currently done in pgis
   // so we dont do this for compatibility but we will change this in the future
-  llvm::SmallVector<const clang::Decl *, 5> Parents;
+  llvm::SmallVector<const clang::Decl*, 5> Parents;
 
  public:
-  CallGraphNode(const clang::Decl *D) : FD(D) {}
+  CallGraphNode(const clang::Decl* D) : FD(D) {}
 
   using iterator = llvm::SmallVectorImpl<CallRecord>::iterator;
   using const_iterator = llvm::SmallVectorImpl<CallRecord>::const_iterator;
@@ -187,82 +187,82 @@ class CallGraphNode {
   bool empty() const { return CalledFunctions.empty(); }
   unsigned size() const { return CalledFunctions.size(); }
 
-  void addCallee(CallGraphNode *N) {
+  void addCallee(CallGraphNode* N) {
     CalledFunctions.push_back(N);
     N->Parents.push_back(this->getDecl());
   }
 
-  void addOverriddenBy(const clang::Decl *N) { OverriddenBy.push_back(N); }
+  void addOverriddenBy(const clang::Decl* N) { OverriddenBy.push_back(N); }
 
-  void addOverriddenMethod(const clang::Decl *N) { OverriddenMethods.push_back(N); }
-  const llvm::SmallVector<const clang::Decl *, 5> &getOverriddenBy() const { return OverriddenBy; }
+  void addOverriddenMethod(const clang::Decl* N) { OverriddenMethods.push_back(N); }
+  const llvm::SmallVector<const clang::Decl*, 5>& getOverriddenBy() const { return OverriddenBy; }
 
-  const llvm::SmallVector<const clang::Decl *, 5> &getOverriddenMethods() const { return OverriddenMethods; }
+  const llvm::SmallVector<const clang::Decl*, 5>& getOverriddenMethods() const { return OverriddenMethods; }
 
-  const llvm::SmallVector<const clang::Decl *, 5> &getParents() const { return Parents; }
+  const llvm::SmallVector<const clang::Decl*, 5>& getParents() const { return Parents; }
 
-  const clang::Decl *getDecl() const { return FD; }
+  const clang::Decl* getDecl() const { return FD; }
 
-  void print(llvm::raw_ostream &os) const;
+  void print(llvm::raw_ostream& os) const;
   void dump() const;
 };
 
 // Graph traits for iteration, viewing.
 
 template <>
-struct llvm::GraphTraits<CallGraphNode *> {
+struct llvm::GraphTraits<CallGraphNode*> {
   using NodeType = CallGraphNode;
-  using NodeRef = CallGraphNode *;
+  using NodeRef = CallGraphNode*;
   using ChildIteratorType = NodeType::iterator;
 
-  static NodeType *getEntryNode(CallGraphNode *CGN) { return CGN; }
-  static ChildIteratorType child_begin(NodeType *N) { return N->begin(); }
-  static ChildIteratorType child_end(NodeType *N) { return N->end(); }
+  static NodeType* getEntryNode(CallGraphNode* CGN) { return CGN; }
+  static ChildIteratorType child_begin(NodeType* N) { return N->begin(); }
+  static ChildIteratorType child_end(NodeType* N) { return N->end(); }
 };
 
 template <>
-struct llvm::GraphTraits<const CallGraphNode *> {
+struct llvm::GraphTraits<const CallGraphNode*> {
   using NodeType = const CallGraphNode;
-  using NodeRef = const CallGraphNode *;
+  using NodeRef = const CallGraphNode*;
   using ChildIteratorType = NodeType::const_iterator;
 
-  static NodeType *getEntryNode(const CallGraphNode *CGN) { return CGN; }
-  static ChildIteratorType child_begin(NodeType *N) { return N->begin(); }
-  static ChildIteratorType child_end(NodeType *N) { return N->end(); }
+  static NodeType* getEntryNode(const CallGraphNode* CGN) { return CGN; }
+  static ChildIteratorType child_begin(NodeType* N) { return N->begin(); }
+  static ChildIteratorType child_end(NodeType* N) { return N->end(); }
 };
 
 template <>
-struct llvm::GraphTraits<CallGraph *> : public llvm::GraphTraits<CallGraphNode *> {
-  static NodeType *getEntryNode(CallGraph *CGN) {
+struct llvm::GraphTraits<CallGraph*> : public llvm::GraphTraits<CallGraphNode*> {
+  static NodeType* getEntryNode(CallGraph* CGN) {
     return CGN->getRoot();  // Start at the external node!
   }
 
-  static CallGraphNode *CGGetValue(CallGraph::const_iterator::value_type &P) { return P.second.get(); }
+  static CallGraphNode* CGGetValue(CallGraph::const_iterator::value_type& P) { return P.second.get(); }
 
   // nodes_iterator/begin/end - Allow iteration over all nodes in the graph
   using nodes_iterator = mapped_iterator<CallGraph::iterator, decltype(&CGGetValue)>;
 
-  static nodes_iterator nodes_begin(CallGraph *CG) { return nodes_iterator(CG->begin(), &CGGetValue); }
+  static nodes_iterator nodes_begin(CallGraph* CG) { return nodes_iterator(CG->begin(), &CGGetValue); }
 
-  static nodes_iterator nodes_end(CallGraph *CG) { return nodes_iterator(CG->end(), &CGGetValue); }
+  static nodes_iterator nodes_end(CallGraph* CG) { return nodes_iterator(CG->end(), &CGGetValue); }
 
-  static unsigned size(CallGraph *CG) { return CG->size(); }
+  static unsigned size(CallGraph* CG) { return CG->size(); }
 };
 
 template <>
-struct llvm::GraphTraits<const CallGraph *> : public llvm::GraphTraits<const CallGraphNode *> {
-  static NodeType *getEntryNode(const CallGraph *CGN) { return CGN->getRoot(); }
+struct llvm::GraphTraits<const CallGraph*> : public llvm::GraphTraits<const CallGraphNode*> {
+  static NodeType* getEntryNode(const CallGraph* CGN) { return CGN->getRoot(); }
 
-  static CallGraphNode *CGGetValue(CallGraph::const_iterator::value_type &P) { return P.second.get(); }
+  static CallGraphNode* CGGetValue(CallGraph::const_iterator::value_type& P) { return P.second.get(); }
 
   // nodes_iterator/begin/end - Allow iteration over all nodes in the graph
   using nodes_iterator = llvm::mapped_iterator<CallGraph::const_iterator, decltype(&CGGetValue)>;
 
-  static nodes_iterator nodes_begin(const CallGraph *CG) { return nodes_iterator(CG->begin(), &CGGetValue); }
+  static nodes_iterator nodes_begin(const CallGraph* CG) { return nodes_iterator(CG->begin(), &CGGetValue); }
 
-  static nodes_iterator nodes_end(const CallGraph *CG) { return nodes_iterator(CG->end(), &CGGetValue); }
+  static nodes_iterator nodes_end(const CallGraph* CG) { return nodes_iterator(CG->end(), &CGGetValue); }
 
-  static unsigned size(const CallGraph *CG) { return CG->size(); }
+  static unsigned size(const CallGraph* CG) { return CG->size(); }
 };
 
 #endif  // CGCOLLECTOR_CALLGRAPH_H

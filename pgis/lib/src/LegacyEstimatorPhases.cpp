@@ -11,7 +11,7 @@
 
 //// WL INSTR ESTIMATOR PHASE
 
-WLInstrEstimatorPhase::WLInstrEstimatorPhase(const std::filesystem::path &wlFilePath)
+WLInstrEstimatorPhase::WLInstrEstimatorPhase(const std::filesystem::path& wlFilePath)
     : EstimatorPhase("WLInstr", nullptr), wlFilePath(wlFilePath) {}
 
 void WLInstrEstimatorPhase::init() {
@@ -32,9 +32,9 @@ void WLInstrEstimatorPhase::init() {
   isInitialized = true;
 }
 
-void WLInstrEstimatorPhase::modifyGraph(metacg::CgNode *mainMethod) {
-  for (const auto &elem : graph->getNodes()) {
-    const auto &node = elem.second.get();
+void WLInstrEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
+  for (const auto& elem : graph->getNodes()) {
+    const auto& node = elem.second.get();
     if (whiteList.find(node->getId()) != whiteList.end()) {
       metacg::pgis::instrumentNode(node);
     }

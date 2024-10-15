@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   if (argc < 3) {
     std::cerr << "Too few argument.\nUsage: ./" << argv[0] << " gt.json result.mcg" << std::endl;
     return -1;
@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
   // std::cout << gt.dump() << std::endl;
   //  Read the generated result
   buildFromJSONv2(genFuncMap, argv[2], nullptr);
-  for (const auto &element : gt.items()) {
+  for (const auto& element : gt.items()) {
     const std::string name = element.key();
     const std::set<std::string> expected = element.value()["required"];
     const bool strict = element.value()["strict"];

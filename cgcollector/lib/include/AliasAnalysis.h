@@ -141,7 +141,7 @@ using StringType = __gnu_debug::string;
  *
  * @param TD
  */
-void calculateAliasInfo(clang::TranslationUnitDecl *TD, CallGraph *CG, nlohmann::json &J, int MetacgFormatVersion,
+void calculateAliasInfo(clang::TranslationUnitDecl* TD, CallGraph* CG, nlohmann::json& J, int MetacgFormatVersion,
                         bool captureCtorsDtors, bool captureStackCtorsDtors);
 
 namespace implementation {
@@ -150,24 +150,24 @@ struct ObjectNameMember;
 struct ObjectNameDereference;
 
 struct ObjectName {
-  explicit ObjectName(clang::NamedDecl *Decl);
-  ObjectName(clang::CallExpr *CE, const clang::ASTContext *CTX, clang::FunctionDecl *ParentFunctionDecl);
-  ObjectName(clang::CXXConstructExpr *CE, const clang::ASTContext *CTX, clang::FunctionDecl *ParentFunctionDecl);
-  ObjectName(const clang::CXXThisExpr *, clang::FunctionDecl *ParentFunctionDecl);
+  explicit ObjectName(clang::NamedDecl* Decl);
+  ObjectName(clang::CallExpr* CE, const clang::ASTContext* CTX, clang::FunctionDecl* ParentFunctionDecl);
+  ObjectName(clang::CXXConstructExpr* CE, const clang::ASTContext* CTX, clang::FunctionDecl* ParentFunctionDecl);
+  ObjectName(const clang::CXXThisExpr*, clang::FunctionDecl* ParentFunctionDecl);
   // TODO: TypeId
   // ObjectName(const clang::CXXTypeidExpr *TE);
-  ObjectName(clang::CXXNewExpr *NE, clang::FunctionDecl *ParentFunctionDecl);
+  ObjectName(clang::CXXNewExpr* NE, clang::FunctionDecl* ParentFunctionDecl);
   explicit ObjectName(StringType Name);
   ObjectName() = default;
-  ObjectName(clang::MaterializeTemporaryExpr *MTE, clang::FunctionDecl *ParentFunctionDecl);
+  ObjectName(clang::MaterializeTemporaryExpr* MTE, clang::FunctionDecl* ParentFunctionDecl);
   StringType Object;
   StringType getStringRepr() const;
-  bool operator<(const ObjectName &rhs) const;
-  bool operator>(const ObjectName &rhs) const;
-  bool operator<=(const ObjectName &rhs) const;
-  bool operator>=(const ObjectName &rhs) const;
-  bool operator==(const ObjectName &rhs) const;
-  bool operator!=(const ObjectName &rhs) const;
+  bool operator<(const ObjectName& rhs) const;
+  bool operator>(const ObjectName& rhs) const;
+  bool operator<=(const ObjectName& rhs) const;
+  bool operator>=(const ObjectName& rhs) const;
+  bool operator==(const ObjectName& rhs) const;
+  bool operator!=(const ObjectName& rhs) const;
   /**
    * Return null if it is not a function
    * @return
@@ -195,21 +195,21 @@ struct ObjectNameDereference {
   ObjectNameDereference(std::shared_ptr<ObjectNameMember> MB, short DereferenceLevel = 0);
   ObjectNameDereference() = default;
 
-  inline ObjectName *getOb() const { return OB.get(); }
+  inline ObjectName* getOb() const { return OB.get(); }
   inline void setOb(std::shared_ptr<ObjectName> Ob) { OB = std::move(Ob); }
-  inline ObjectNameMember *getMb() const { return MB.get(); }
+  inline ObjectNameMember* getMb() const { return MB.get(); }
   inline void setMb(std::shared_ptr<ObjectNameMember> Mb) { MB = std::move(Mb); }
 
   // See class documentation
   int DereferenceLevel = 0;
 
   StringType GetStringRepr() const;
-  bool operator==(const ObjectNameDereference &rhs) const;
-  bool operator!=(const ObjectNameDereference &rhs) const;
-  bool operator<(const ObjectNameDereference &rhs) const;
-  bool operator>(const ObjectNameDereference &rhs) const;
-  bool operator<=(const ObjectNameDereference &rhs) const;
-  bool operator>=(const ObjectNameDereference &rhs) const;
+  bool operator==(const ObjectNameDereference& rhs) const;
+  bool operator!=(const ObjectNameDereference& rhs) const;
+  bool operator<(const ObjectNameDereference& rhs) const;
+  bool operator>(const ObjectNameDereference& rhs) const;
+  bool operator<=(const ObjectNameDereference& rhs) const;
+  bool operator>=(const ObjectNameDereference& rhs) const;
   /**
    * Return null if it is not a function
    * @return
@@ -224,31 +224,31 @@ struct ObjectNameMember {
   ObjectNameDereference DB;
   StringType Member;
   StringType GetStringRepr() const;
-  bool operator==(const ObjectNameMember &rhs) const;
-  bool operator!=(const ObjectNameMember &rhs) const;
-  bool operator<(const ObjectNameMember &rhs) const;
-  bool operator>(const ObjectNameMember &rhs) const;
-  bool operator<=(const ObjectNameMember &rhs) const;
-  bool operator>=(const ObjectNameMember &rhs) const;
+  bool operator==(const ObjectNameMember& rhs) const;
+  bool operator!=(const ObjectNameMember& rhs) const;
+  bool operator<(const ObjectNameMember& rhs) const;
+  bool operator>(const ObjectNameMember& rhs) const;
+  bool operator<=(const ObjectNameMember& rhs) const;
+  bool operator>=(const ObjectNameMember& rhs) const;
 };
 
 struct Prefix {
   Prefix() = default;
-  Prefix(const ObjectNameDereference &Object);
-  Prefix(const ObjectNameDereference &Object, StringType Member);
-  Prefix(StringType Object, StringType Member);
-  bool operator==(const Prefix &rhs) const;
-  bool operator!=(const Prefix &rhs) const;
+  Prefix(const ObjectNameDereference& Object);
+  Prefix(const ObjectNameDereference& Object, StringType Member);
+  Prefix(const StringType& Object, const StringType& Member);
+  bool operator==(const Prefix& rhs) const;
+  bool operator!=(const Prefix& rhs) const;
   StringType Object;
   /**
    * empty means this is a * operator
    */
   StringType Member;
   StringType GetStringRepr() const;
-  bool operator<(const Prefix &rhs) const;
-  bool operator>(const Prefix &rhs) const;
-  bool operator<=(const Prefix &rhs) const;
-  bool operator>=(const Prefix &rhs) const;
+  bool operator<(const Prefix& rhs) const;
+  bool operator>(const Prefix& rhs) const;
+  bool operator<=(const Prefix& rhs) const;
+  bool operator>=(const Prefix& rhs) const;
 };
 
 struct EquivClass {
@@ -270,7 +270,7 @@ struct FunctionInfo {
    * @param FD The function decl to generate the info for
    * @param RealLambdaMethod If FD is a lambda static invoker, this needs to point to the lambda call operator
    */
-  explicit FunctionInfo(clang::FunctionDecl *FD, clang::CXXMethodDecl *RealLambdaMethod = nullptr);
+  explicit FunctionInfo(clang::FunctionDecl* FD, clang::CXXMethodDecl* RealLambdaMethod = nullptr);
   std::vector<std::string> MangledNames;
   VectorType<StringType> Parameters;
   /**
@@ -284,9 +284,9 @@ struct FunctionInfo {
 
 struct CallInfo {
   CallInfo() = default;
-  CallInfo(clang::CallExpr *CE, const clang::ASTContext *CTX, clang::FunctionDecl *ParentFunctionDecl,
+  CallInfo(clang::CallExpr* CE, const clang::ASTContext* CTX, clang::FunctionDecl* ParentFunctionDecl,
            bool IsOperatorMember);
-  CallInfo(clang::CXXConstructExpr *CE, const clang::ASTContext *CTX, clang::FunctionDecl *ParentFunctionDecl);
+  CallInfo(clang::CXXConstructExpr* CE, const clang::ASTContext* CTX, clang::FunctionDecl* ParentFunctionDecl);
   VectorType<StringType> CalledObjects;
   VectorType<VectorType<StringType>> Arguments;
 };
@@ -300,7 +300,7 @@ using CallInfoConstIterType = MapType<StringType, CallInfo>::const_iterator;
 struct EquivClassContainer {
   EquivClassContainer() = default;
 
-  ListType<EquivClass> EquivClasses;            // std::list for stable iterators
+  ListType<EquivClass> EquivClasses;  // std::list for stable iterators
 
   MapType<StringType, StringType> FunctionMap;  // Maps an equivalence class to a function name if it is one
   // map to keep element order consistent
@@ -328,14 +328,14 @@ struct EquivClassContainer {
  * Classes
  */
 std::pair<VectorType<std::pair<StringType, CallInfoConstIterType>>, EquivClassesIterator> mergeRecurisve(
-    EquivClassContainer &Data, EquivClassesIterator E1, EquivClassesIterator E2);
+    EquivClassContainer& Data, EquivClassesIterator E1, EquivClassesIterator E2);
 
 struct MergeResult {
   MapType<StringType, EquivClassesIterator>::const_iterator Iter;
   VectorType<std::pair<StringType, StringType>> ObjectsToMerge;
 };
 
-MergeResult merge(EquivClassContainer &Data, EquivClassesIterator E1, EquivClassesIterator E2);
+MergeResult merge(EquivClassContainer& Data, EquivClassesIterator E1, EquivClassesIterator E2);
 
 /**
  *
@@ -343,8 +343,8 @@ MergeResult merge(EquivClassContainer &Data, EquivClassesIterator E1, EquivClass
  * @param Ret All function merges resulting from the creation of class E
  * @param E
  */
-void GetFunctionsToMerge(const EquivClassContainer &Data, VectorType<std::pair<StringType, CallInfoConstIterType>> &Ret,
-                         const EquivClass &E);
+void GetFunctionsToMerge(const EquivClassContainer& Data, VectorType<std::pair<StringType, CallInfoConstIterType>>& Ret,
+                         const EquivClass& E);
 
 /**
  *
@@ -355,14 +355,14 @@ void GetFunctionsToMerge(const EquivClassContainer &Data, VectorType<std::pair<S
  * the called function (second)
  */
 std::optional<std::pair<VectorType<std::pair<StringType, CallInfoConstIterType>>, std::pair<StringType, StringType>>>
-mergeFunctionCall(EquivClassContainer &Data, const StringType &CalledObj, CallInfoConstIterType CE);
+mergeFunctionCall(EquivClassContainer& Data, const StringType& CalledObj, CallInfoConstIterType CE);
 
 std::optional<std::pair<VectorType<std::pair<StringType, CallInfoConstIterType>>, std::pair<StringType, StringType>>>
-mergeFunctionCallImpl(EquivClassContainer &Data, const StringType &CalledFunctionName,
-                      const StringType &CallingFunctionName, const CallInfo &CI, const StringType &CallExprUSR);
+mergeFunctionCallImpl(EquivClassContainer& Data, const StringType& CalledFunctionName,
+                      const StringType& CallingFunctionName, const CallInfo& CI, const StringType& CallExprUSR);
 
-void GetPrefixesToMerge(EquivClass &EquivClassToMergeInto, const VectorType<Prefix> &PrefixToMerge,
-                        VectorType<std::pair<StringType, StringType>> &ObjectsToMerge);
+void GetPrefixesToMerge(EquivClass& EquivClassToMergeInto, const VectorType<Prefix>& PrefixToMerge,
+                        VectorType<std::pair<StringType, StringType>>& ObjectsToMerge);
 
 /**
  * Class to extract information required by the alias analysis from the given AST
@@ -374,7 +374,7 @@ void GetPrefixesToMerge(EquivClass &EquivClassToMergeInto, const VectorType<Pref
  */
 class ASTInformationExtractor : public clang::RecursiveASTVisitor<ASTInformationExtractor> {
  public:
-  ASTInformationExtractor(const clang::ASTContext *CTX, CallGraph *CG, bool CaptureCtorsDtors,
+  ASTInformationExtractor(const clang::ASTContext* CTX, CallGraph* CG, bool CaptureCtorsDtors,
                           bool CaptureStackCtorsDtors);
   bool shouldVisitTemplateInstantiations() const { return true; }
   bool shouldWalkTypesOfTypeLocs() const { return TraverseTypesOfTypeLocs; }
@@ -403,7 +403,7 @@ class ASTInformationExtractor : public clang::RecursiveASTVisitor<ASTInformation
     // visits the parameters of the call operator. I am not sure if this is caused by the RecursiveASTVisitor itself or
     // if it is a bug caused by how we are using it. The workaround for this is to traverse the parameters of the invoke
     // functions manually
-    if constexpr (std::is_same_v<std::remove_cv_t<DeclT>, clang::CXXMethodDecl *>) {
+    if constexpr (std::is_same_v<std::remove_cv_t<DeclT>, clang::CXXMethodDecl*>) {
       if (Decl->isLambdaStaticInvoker()) {
         for (auto Param : Decl->parameters()) {
           Ret &= TraverseParmVarDecl(Param);
@@ -421,57 +421,57 @@ class ASTInformationExtractor : public clang::RecursiveASTVisitor<ASTInformation
     return Ret;
   }
 
-  bool VisitFunctionDecl(clang::FunctionDecl *FD);
-  bool VisitVarDecl(clang::VarDecl *VD);
-  bool VisitFieldDecl(clang::FieldDecl *FD);
+  bool VisitFunctionDecl(clang::FunctionDecl* FD);
+  bool VisitVarDecl(clang::VarDecl* VD);
+  bool VisitFieldDecl(clang::FieldDecl* FD);
   // There does not exist a visit method for CXXCtorInitializers
-  bool TraverseConstructorInitializer(clang::CXXCtorInitializer *CtorInit);
-  bool VisitCompoundAssignOperator(clang::CompoundAssignOperator *CAO);
+  bool TraverseConstructorInitializer(clang::CXXCtorInitializer* CtorInit);
+  bool VisitCompoundAssignOperator(clang::CompoundAssignOperator* CAO);
 
   // These function only exists in clang versions less than 11
 #if LLVM_VERSION_MAJOR < 11
-  bool VisitBinAssign(clang::BinaryOperator *BO);
+  bool VisitBinAssign(clang::BinaryOperator* BO);
 #else
-  bool VisitBinaryOperator(clang::BinaryOperator *BO);
+  bool VisitBinaryOperator(clang::BinaryOperator* BO);
 #endif
 
-  bool VisitCallExpr(clang::CallExpr *CE);
-  void ConstructExprHelper(clang::CXXConstructExpr *CE, ObjectNameDereference ThisDeref);
-  void ConstructExprHelper(clang::CXXConstructExpr *CE, StringType ThisDeref);
-  bool VisitMemberExpr(clang::MemberExpr *ME);
+  bool VisitCallExpr(clang::CallExpr* CE);
+  void ConstructExprHelper(clang::CXXConstructExpr* CE, const ObjectNameDereference& ThisDeref);
+  void ConstructExprHelper(clang::CXXConstructExpr* CE, const StringType& ThisDeref);
+  bool VisitMemberExpr(clang::MemberExpr* ME);
 
   // These functions only exists in clang versions less than 11
 #if LLVM_VERSION_MAJOR < 11
-  bool TraverseUnaryDeref(clang::UnaryOperator *UO, DataRecursionQueue *Queue = nullptr);
-  bool TraverseUnaryAddrOf(clang::UnaryOperator *UO, DataRecursionQueue *Queue = nullptr);
+  bool TraverseUnaryDeref(clang::UnaryOperator* UO, DataRecursionQueue* Queue = nullptr);
+  bool TraverseUnaryAddrOf(clang::UnaryOperator* UO, DataRecursionQueue* Queue = nullptr);
 #else
-  bool TraverseUnaryOperator(clang::UnaryOperator *UO, DataRecursionQueue *Queue = nullptr);
+  bool TraverseUnaryOperator(clang::UnaryOperator* UO, DataRecursionQueue* Queue = nullptr);
 #endif
 
-  bool VisitDeclRefExpr(clang::DeclRefExpr *DE);
-  bool VisitCXXThisExpr(clang::CXXThisExpr *TE);
-  bool VisitCXXNewExpr(clang::CXXNewExpr *NE);
-  bool VisitCXXDeleteExpr(clang::CXXDeleteExpr *DE);
-  bool TraverseArraySubscriptExpr(clang::ArraySubscriptExpr *Expr, DataRecursionQueue *Queue = nullptr);
-  bool TraverseBinaryOperator(clang::BinaryOperator *BO, DataRecursionQueue *Queue = nullptr);
+  bool VisitDeclRefExpr(clang::DeclRefExpr* DE);
+  bool VisitCXXThisExpr(clang::CXXThisExpr* TE);
+  bool VisitCXXNewExpr(clang::CXXNewExpr* NE);
+  bool VisitCXXDeleteExpr(clang::CXXDeleteExpr* DE);
+  bool TraverseArraySubscriptExpr(clang::ArraySubscriptExpr* Expr, DataRecursionQueue* Queue = nullptr);
+  bool TraverseBinaryOperator(clang::BinaryOperator* BO, DataRecursionQueue* Queue = nullptr);
 
-  bool TraverseFunctionDecl(clang::FunctionDecl *FD);
-  bool TraverseCXXDeductionGuideDecl(clang::CXXDeductionGuideDecl *DD);
-  bool TraverseCXXMethodDecl(clang::CXXMethodDecl *MD);
-  bool TraverseCXXConstructorDecl(clang::CXXConstructorDecl *CD);
-  bool TraverseCXXConversionDecl(clang::CXXConversionDecl *CD);
-  bool TraverseCXXDestructorDecl(clang::CXXDestructorDecl *DD);
+  bool TraverseFunctionDecl(clang::FunctionDecl* FD);
+  bool TraverseCXXDeductionGuideDecl(clang::CXXDeductionGuideDecl* DD);
+  bool TraverseCXXMethodDecl(clang::CXXMethodDecl* MD);
+  bool TraverseCXXConstructorDecl(clang::CXXConstructorDecl* CD);
+  bool TraverseCXXConversionDecl(clang::CXXConversionDecl* CD);
+  bool TraverseCXXDestructorDecl(clang::CXXDestructorDecl* DD);
 
-  bool TraverseCXXNewExpr(clang::CXXNewExpr *NE, [[maybe_unused]] DataRecursionQueue *Queue = nullptr);
-  bool VisitCXXConstructExpr(clang::CXXConstructExpr *CE);
-  bool VisitMaterializeTemporaryExpr(clang::MaterializeTemporaryExpr *MTE);
+  bool TraverseCXXNewExpr(clang::CXXNewExpr* NE, [[maybe_unused]] DataRecursionQueue* Queue = nullptr);
+  bool VisitCXXConstructExpr(clang::CXXConstructExpr* CE);
+  bool VisitMaterializeTemporaryExpr(clang::MaterializeTemporaryExpr* MTE);
   // Destruction of Temporary expressions is handled here
-  bool VisitCXXBindTemporaryExpr(clang::CXXBindTemporaryExpr *BTE);
+  bool VisitCXXBindTemporaryExpr(clang::CXXBindTemporaryExpr* BTE);
 
   // Skip code that we are not interested in
-  bool TraverseStaticAssertDecl(clang::StaticAssertDecl *SAD);
+  bool TraverseStaticAssertDecl(clang::StaticAssertDecl* SAD);
   bool TraverseDeclarationNameInfo(clang::DeclarationNameInfo);
-  bool TraverseCXXNoexceptExpr(clang::CXXNoexceptExpr *, [[maybe_unused]] DataRecursionQueue *Queue = nullptr);
+  bool TraverseCXXNoexceptExpr(clang::CXXNoexceptExpr*, [[maybe_unused]] DataRecursionQueue* Queue = nullptr);
 
   // Extracted from the recursive ast visitor because by default it always visits noexcept specifiers
   bool TraverseFunctionProtoTypeLoc(clang::FunctionProtoTypeLoc TL);
@@ -481,31 +481,31 @@ class ASTInformationExtractor : public clang::RecursiveASTVisitor<ASTInformation
    * @param CS
    * @return
    */
-  bool TraverseCompoundStmt(clang::CompoundStmt *CS);
+  bool TraverseCompoundStmt(clang::CompoundStmt* CS);
 
-  bool TraverseTypedefDecl(clang::TypedefDecl *TDD);
-  bool TraverseTypeAliasDecl(clang::TypeAliasDecl *);
-  bool TraverseParmVarDecl(clang::ParmVarDecl *PD);
+  bool TraverseTypedefDecl(clang::TypedefDecl* TDD);
+  bool TraverseTypeAliasDecl(clang::TypeAliasDecl*);
+  bool TraverseParmVarDecl(clang::ParmVarDecl* PD);
 
-  bool VisitRecordType(clang::RecordType *RT);
+  bool VisitRecordType(clang::RecordType* RT);
 
   // bool TraverseTypeDecl(clang::TypeDecl *TD);
   bool TraverseTypeLoc(clang::TypeLoc TL);
-  bool TraverseRecordDecl(clang::RecordDecl *RD);
-  bool TraverseCXXRecordDecl(clang::CXXRecordDecl *RD);
+  bool TraverseRecordDecl(clang::RecordDecl* RD);
+  bool TraverseCXXRecordDecl(clang::CXXRecordDecl* RD);
 
   // Skip template parameters
-  bool TraverseTemplateTypeParmDecl(clang::TemplateTypeParmDecl *) { return true; }
-  bool TraverseNonTypeTemplateParmDecl(clang::NonTypeTemplateParmDecl *) { return true; }
+  bool TraverseTemplateTypeParmDecl(clang::TemplateTypeParmDecl*) { return true; }
+  bool TraverseNonTypeTemplateParmDecl(clang::NonTypeTemplateParmDecl*) { return true; }
 
   void calculatePERelation();
 
   [[maybe_unused]] void dump();
-  const EquivClassContainer &getData() const;
+  const EquivClassContainer& getData() const;
 
  private:
-  const clang::ASTContext *CTX;
-  CallGraph *CG;
+  const clang::ASTContext* CTX;
+  CallGraph* CG;
   bool CaptureCtorsDtors;
   bool CaptureStackCtorsDtors;
 
@@ -517,21 +517,21 @@ class ASTInformationExtractor : public clang::RecursiveASTVisitor<ASTInformation
   bool InTypededDecl = false;
   bool InNew = false;
 
-  clang::FunctionDecl *CurrentFunctionDecl = nullptr;
-  const clang::RecordType *CurrentRecordType = nullptr;
+  clang::FunctionDecl* CurrentFunctionDecl = nullptr;
+  const clang::RecordType* CurrentRecordType = nullptr;
 
   SetType<ObjectNameDereference> Objects;
 
   struct InitInfo {
-    InitInfo(const ObjectNameDereference &object, clang::Expr *init, clang::FunctionDecl *parentFunction);
+    InitInfo(ObjectNameDereference object, clang::Expr* init, clang::FunctionDecl* parentFunction);
     ObjectNameDereference Object;
-    clang::Expr *Init;
-    clang::FunctionDecl *ParentFunction;
+    clang::Expr* Init;
+    clang::FunctionDecl* ParentFunction;
   };
 
   VectorType<InitInfo> Initalizers;
-  VectorType<std::pair<clang::BinaryOperator *, clang::FunctionDecl *>> Assignments;
-  MapType<StringType, clang::FunctionDecl *> FuncDeclMap;  // Maps each function to its clang decl
+  VectorType<std::pair<clang::BinaryOperator*, clang::FunctionDecl*>> Assignments;
+  MapType<StringType, clang::FunctionDecl*> FuncDeclMap;  // Maps each function to its clang decl
   VectorType<std::pair<StringType, VectorType<StringType>>>
       ConstructorMergeList;  // List of merges that need to happen because of a constructor, first is lhs, second are
                              // possible rhs
@@ -547,7 +547,7 @@ class ASTInformationExtractor : public clang::RecursiveASTVisitor<ASTInformation
 
   // List containing direct calls in the code, for example construct expressions. second is the parent function, third
   // is the callexpr USR, fourth is the called function USR
-  VectorType<std::tuple<CallInfo, clang::FunctionDecl *, StringType, StringType>> DirectCalls;
+  VectorType<std::tuple<CallInfo, clang::FunctionDecl*, StringType, StringType>> DirectCalls;
 
   /**
    * Sets up the data structures for the equivalence classes
@@ -570,9 +570,9 @@ class ASTInformationExtractor : public clang::RecursiveASTVisitor<ASTInformation
    * Handle variable inits and merges resulting from them.
    */
   void handleInits();
-  void handleInitExpr(const ObjectNameDereference *ObjDeref, clang::Stmt *InitExpr, const clang::Type *VarType,
-                      clang::FunctionDecl *ParentFunctionDecl);
-  const clang::Type *stripArrayType(const clang::Type *Type) const;
+  void handleInitExpr(const ObjectNameDereference* ObjDeref, clang::Stmt* InitExpr, const clang::Type* VarType,
+                      clang::FunctionDecl* ParentFunctionDecl);
+  const clang::Type* stripArrayType(const clang::Type* Type) const;
 
   /**
    * Handle merges resulting from assigning of constructed objects to a variable or similar
@@ -614,21 +614,21 @@ class ASTInformationExtractor : public clang::RecursiveASTVisitor<ASTInformation
    * @param CalledObj
    * @param CE
    */
-  void mergeFunctionCall(const StringType &CalledObj, CallInfoConstIterType CE);
+  void mergeFunctionCall(const StringType& CalledObj, CallInfoConstIterType CE);
 
-  void addCallToCallGraph(const StringType &CallingFunctionName, const StringType &CalledFunctionName);
+  void addCallToCallGraph(const StringType& CallingFunctionName, const StringType& CalledFunctionName);
 
   void merge(EquivClassesIterator E1, EquivClassesIterator E2);
 
   EquivClassContainer Data;
 
-  VectorType<std::pair<const clang::FunctionDecl *, const clang::FunctionDecl *>> ParamsToMerge;
+  VectorType<std::pair<const clang::FunctionDecl*, const clang::FunctionDecl*>> ParamsToMerge;
 
   /**
    * Implicit destructor calls that we need to merge. First is the calling function, second the called destructor
    */
   VectorType<std::pair<StringType, StringType>> Destructors;
-  void DestructorHelper(ObjectNameDereference ObjDeref, const clang::CXXDestructorDecl *Destructor);
+  void DestructorHelper(ObjectNameDereference ObjDeref, const clang::CXXDestructorDecl* Destructor);
 };
 
 // Json stuff
@@ -638,14 +638,14 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CallInfo, CalledObjects, Arguments)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Prefix, Object, Member)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(EquivClass, Objects, Prefixes)
 
-inline void to_json(nlohmann::json &J, const EquivClassContainer &C) {
+inline void to_json(nlohmann::json& J, const EquivClassContainer& C) {
   J["EquivClasses"] = C.EquivClasses;
   J["FunctionMap"] = C.FunctionMap;
   J["FunctionInfoMap"] = C.FunctionInfoMap;
   J["CallInfoMap"] = C.CallInfoMap;
   J["CallExprParentMap"] = C.CallExprParentMap;
 }
-inline void from_json(const nlohmann::json &J, EquivClassContainer &C) {
+inline void from_json(const nlohmann::json& J, EquivClassContainer& C) {
   J.at("EquivClasses").get_to(C.EquivClasses);
   J.at("FunctionMap").get_to(C.FunctionMap);
   J.at("FunctionInfoMap").get_to(C.FunctionInfoMap);
@@ -653,7 +653,7 @@ inline void from_json(const nlohmann::json &J, EquivClassContainer &C) {
   J.at("CallExprParentMap").get_to(C.CallExprParentMap);
 
   for (auto It = C.EquivClasses.begin(); It != C.EquivClasses.end(); ++It) {
-    for (const auto &Obj : It->Objects) {
+    for (const auto& Obj : It->Objects) {
       C.FindMap.emplace(Obj, It);
     }
   }
@@ -666,7 +666,7 @@ inline void from_json(const nlohmann::json &J, EquivClassContainer &C) {
 // std::hash specializations
 template <typename T1, typename T2>
 struct std::hash<std::pair<T1, T2>> {
-  std::size_t operator()(std::pair<T1, T2> const &O) const noexcept {
+  std::size_t operator()(std::pair<T1, T2> const& O) const noexcept {
     const auto H1 = std::hash<T1>{}(O.first);
     const auto H2 = std::hash<T2>{}(O.second);
     return H1 ^ (H2 + 0x9e3779b9 + (H1 << 6) + (H1 > 2));  // method used by boost::hash_combine

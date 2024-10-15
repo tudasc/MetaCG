@@ -4,31 +4,31 @@
 #include <set>
 #include <string>
 
-FuncMapT::mapped_type &getOrInsert(std::string function, FuncMapT &functions) {
+FuncMapT::mapped_type& getOrInsert(const std::string& function, FuncMapT& functions) {
   if (functions.find(function) != functions.end()) {
-    auto &fi = functions[function];
+    auto& fi = functions[function];
     return fi;
   } else {
     FunctionInfo fi;
     fi.functionName = function;
     functions.insert({function, fi});
-    auto &rfi = functions[function];
+    auto& rfi = functions[function];
     return rfi;
   }
 }
 
-nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename) {
+nlohmann::json buildFromJSON(FuncMapT& functionMap, const std::string& filename) {
   using json = nlohmann::json;
 
   json j;
   readIPCG(filename, j);
 
   for (json::iterator it = j.begin(); it != j.end(); ++it) {
-    auto &fi = getOrInsert(it.key(), functionMap);
+    auto& fi = getOrInsert(it.key(), functionMap);
 
     fi.functionName = it.key();
-    int ns = it.value()["numStatements"].get<int>();
-    bool hasBody = it.value()["hasBody"].get<bool>();
+    const int ns = it.value()["numStatements"].get<int>();
+    const bool hasBody = it.value()["hasBody"].get<bool>();
     fi.hasBody = hasBody;
     // ns == -1 means that there was no definition.
     if (ns > -1) {
@@ -36,16 +36,16 @@ nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename)
       fi.isVirtual = it.value()["isVirtual"].get<bool>();
       fi.doesOverride = it.value()["doesOverride"].get<bool>();
     }
-    auto callees = it.value()["callees"].get<std::set<std::string>>();
+    const auto callees = it.value()["callees"].get<std::set<std::string>>();
     fi.callees.insert(callees.begin(), callees.end());
 
-    auto ofs = it.value()["overriddenFunctions"].get<std::set<std::string>>();
+    const auto ofs = it.value()["overriddenFunctions"].get<std::set<std::string>>();
     fi.overriddenFunctions.insert(ofs.begin(), ofs.end());
 
-    auto overriddenBy = it.value()["overriddenBy"].get<std::set<std::string>>();
+    const auto overriddenBy = it.value()["overriddenBy"].get<std::set<std::string>>();
     fi.overriddenBy.insert(overriddenBy.begin(), overriddenBy.end());
 
-    auto ps = it.value()["parents"].get<std::set<std::string>>();
+    const auto ps = it.value()["parents"].get<std::set<std::string>>();
     fi.parents.insert(ps.begin(), ps.end());
   }
 
@@ -67,7 +67,7 @@ nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename)
      *
      */
     if (funcInfo.doesOverride) {
-      for (const auto &overriddenFunction : funcInfo.overriddenFunctions) {
+      for (const auto& overriddenFunction : funcInfo.overriddenFunctions) {
         // Adds this function as potential target to all overridden functions
         potentialTargets[overriddenFunction].insert(k);
 
@@ -85,7 +85,7 @@ nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename)
           visited.insert(next);
 
           potentialTargets[next].insert(k);
-          for (const auto &om : fi.overriddenFunctions) {
+          for (const auto& om : fi.overriddenFunctions) {
             if (visited.find(om) == visited.end()) {
               workQ.push(om);
             }
@@ -104,7 +104,7 @@ nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename)
   //  }
   //}
 
-  for (auto &[k, funcInfo] : functionMap) {
+  for (auto& [k, funcInfo] : functionMap) {
     funcInfo.overriddenBy.insert(potentialTargets[k].begin(), potentialTargets[k].end());
     funcInfo.overriddenFunctions.insert(overrides[k].begin(), overrides[k].end());
     // std::cout << "Targets for " << k << " are: ";
@@ -116,21 +116,21 @@ nlohmann::json buildFromJSON(FuncMapT &functionMap, const std::string &filename)
   return j;
 }
 
-nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filename, nlohmann::json *CompleteJsonOut) {
+nlohmann::json buildFromJSONv2(FuncMapT& functionMap, const std::string& filename, nlohmann::json* CompleteJsonOut) {
   using json = nlohmann::json;
 
   std::cout << "Reading " << filename << std::endl;
 
-  const auto readNumStmts = [](auto &jsonElem, auto &funcItem) {
+  const auto readNumStmts = [](auto& jsonElem, auto& funcItem) {
     auto metaInfo = jsonElem["meta"]["numStatements"];
     funcItem.numStatements = metaInfo;
   };
-  const auto readFileOrigin = [](auto &jsonElem, auto &funcItem) {
+  const auto readFileOrigin = [](auto& jsonElem, auto& funcItem) {
     auto foJson = jsonElem["meta"]["fileProperties"];
     if (foJson.is_null()) {
       exit(-1);
     }
-    FilePropertyResult *fpMetaInfo = new FilePropertyResult();
+    FilePropertyResult* fpMetaInfo = new FilePropertyResult();
     fpMetaInfo->fileOrigin = foJson["origin"].template get<std::string>();
     fpMetaInfo->isFromSystemInclude = foJson["systemInclude"].template get<bool>();
     funcItem.metaInfo["fileProperty"] = fpMetaInfo;
@@ -149,7 +149,7 @@ nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filenam
   }
 
   for (json::iterator it = j.begin(); it != j.end(); ++it) {
-    auto &fi = getOrInsert(it.key(), functionMap);
+    auto& fi = getOrInsert(it.key(), functionMap);
 
     fi.functionName = it.key();
     bool hasBody = it.value()["hasBody"].get<bool>();
@@ -192,7 +192,7 @@ nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filenam
      *
      */
     if (funcInfo.doesOverride) {
-      for (const auto &overriddenFunction : funcInfo.overriddenFunctions) {
+      for (const auto& overriddenFunction : funcInfo.overriddenFunctions) {
         // Adds this function as potential target to all overridden functions
         potentialTargets[overriddenFunction].insert(k);
 
@@ -210,7 +210,7 @@ nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filenam
           visited.insert(next);
 
           potentialTargets[next].insert(k);
-          for (const auto &om : fi.overriddenFunctions) {
+          for (const auto& om : fi.overriddenFunctions) {
             if (visited.find(om) == visited.end()) {
               workQ.push(om);
             }
@@ -220,7 +220,7 @@ nlohmann::json buildFromJSONv2(FuncMapT &functionMap, const std::string &filenam
     }
   }
 
-  for (auto &[k, funcInfo] : functionMap) {
+  for (auto& [k, funcInfo] : functionMap) {
     funcInfo.overriddenBy.insert(potentialTargets[k].begin(), potentialTargets[k].end());
     funcInfo.overriddenFunctions.insert(overrides[k].begin(), overrides[k].end());
   }

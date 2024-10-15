@@ -27,9 +27,9 @@
 struct InstrumentationConfiguration {
   std::string phaseName;
   std::unordered_set<std::string> instrumentedNames;
-  std::unordered_set<metacg::CgNode *> instrumentedNodes;
-  std::unordered_map<std::string, metacg::CgNode *> instrumentedPaths;
-  std::unordered_map<metacg::CgNode *, metacg::CgNode *> instrumentedEdges;
+  std::unordered_set<metacg::CgNode*> instrumentedNodes;
+  std::unordered_map<std::string, metacg::CgNode*> instrumentedPaths;
+  std::unordered_map<metacg::CgNode*, metacg::CgNode*> instrumentedEdges;
 };
 
 /**
@@ -41,15 +41,15 @@ struct InstrumentationConfiguration {
  */
 class EstimatorPhase {
  public:
-  explicit EstimatorPhase(std::string name, metacg::Callgraph *callgraph);
+  explicit EstimatorPhase(std::string name, metacg::Callgraph* callgraph);
   virtual ~EstimatorPhase() = default;
 
   virtual void doPrerequisites() {}
-  virtual void modifyGraph(metacg::CgNode *mainMethod) = 0;
+  virtual void modifyGraph(metacg::CgNode* mainMethod) = 0;
 
   void generateIC();
 
-  void injectConfig(Config *config) { this->config = config; }
+  void injectConfig(Config* config) { this->config = config; }
 
   InstrumentationConfiguration getIC();
   virtual void printReport();
@@ -59,19 +59,19 @@ class EstimatorPhase {
   std::string getName() { return name; }
 
  protected:
-  metacg::Callgraph *graph;
+  metacg::Callgraph* graph;
 
   InstrumentationConfiguration IC;
   std::string name;
 
-  Config *config;
+  Config* config;
   bool noReportRequired;
 };
 
 class NopEstimatorPhase : public EstimatorPhase {
  public:
-  NopEstimatorPhase(metacg::Callgraph* cg) : EstimatorPhase("NopEstimator", cg), didRun(false) {}
-  void modifyGraph(metacg::CgNode *mainMethod) final { didRun = true; }
+  explicit NopEstimatorPhase(metacg::Callgraph* cg) : EstimatorPhase("NopEstimator", cg), didRun(false) {}
+  void modifyGraph(metacg::CgNode* mainMethod) final { didRun = true; }
   bool didRun;
 };
 
@@ -80,10 +80,10 @@ class NopEstimatorPhase : public EstimatorPhase {
  */
 class WLInstrEstimatorPhase : public EstimatorPhase {
  public:
-  explicit WLInstrEstimatorPhase(const std::filesystem::path &wlFilePath);
+  explicit WLInstrEstimatorPhase(const std::filesystem::path& wlFilePath);
   ~WLInstrEstimatorPhase() override = default;
 
-  void modifyGraph(metacg::CgNode *mainMethod) override;
+  void modifyGraph(metacg::CgNode* mainMethod) override;
 
  private:
   void init();

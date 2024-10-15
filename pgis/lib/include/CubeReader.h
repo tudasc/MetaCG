@@ -31,21 +31,21 @@ using PiraOneData = pira::PiraOneData;
 using PiraTwoData = pira::PiraTwoData;
 
 template <typename N, typename... Largs>
-void applyOne(cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, [[maybe_unused]] N cgNode,
-              [[maybe_unused]] cube::Cnode *pnode, [[maybe_unused]] N pCgNode, Largs... largs) {
+void applyOne(cube::Cube& cu, [[maybe_unused]] cube::Cnode* cnode, [[maybe_unused]] N cgNode,
+              [[maybe_unused]] cube::Cnode* pnode, [[maybe_unused]] N pCgNode, Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
     applyOne(cu, cnode, cgNode, pnode, pCgNode, largs...);
   }
 }
 template <typename N, typename L, typename... Largs>
-void applyOne(cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode, [[maybe_unused]] N cgNode,
-              [[maybe_unused]] cube::Cnode *pnode, [[maybe_unused]] N pCgNode, L lam, Largs... largs) {
+void applyOne(cube::Cube& cu, [[maybe_unused]] cube::Cnode* cnode, [[maybe_unused]] N cgNode,
+              [[maybe_unused]] cube::Cnode* pnode, [[maybe_unused]] N pCgNode, L lam, Largs... largs) {
   lam(cu, cnode, cgNode, pnode, pCgNode);
   applyOne(cu, cnode, cgNode, pnode, pCgNode, largs...);
 }
 template <typename... Largs>
-void apply(metacg::graph::MCGManager &mcgm, [[maybe_unused]] cube::Cube &cu, [[maybe_unused]] cube::Cnode *cnode,
-           const std::string &cNodeName, [[maybe_unused]] cube::Cnode *pnode, const std::string &pNodeName,
+void apply(metacg::graph::MCGManager& mcgm, [[maybe_unused]] cube::Cube& cu, [[maybe_unused]] cube::Cnode* cnode,
+           const std::string& cNodeName, [[maybe_unused]] cube::Cnode* pnode, const std::string& pNodeName,
            Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
     auto target = mcgm.getCallgraph()->getOrInsertNode(cNodeName);
@@ -65,7 +65,7 @@ inline auto get(U u) {
 
 const auto mangledName = [](const auto cn) { return cn->get_callee()->get_mangled_name(); };
 const auto demangledName = [](const auto cn) { return cn->get_callee()->get_name(); };
-const auto cMetric = [](std::string &&name, auto &&cube, auto cn) {
+const auto cMetric = [](std::string&& name, auto&& cube, auto cn) {
   if constexpr (std::is_pointer_v<decltype(cn)>) {
     typedef decltype(cube.get_sev(cube.get_met(name.c_str()), cn, cube.get_thrdv().at(0))) RetType;
     RetType metric{};
@@ -77,8 +77,8 @@ const auto cMetric = [](std::string &&name, auto &&cube, auto cn) {
     assert(false);
   }
 };
-const auto time = [](auto &&cube, auto cn) { return cMetric(std::string("time"), cube, cn); };
-const auto visits = [](auto &&cube, auto cn) { return cMetric(std::string("visits"), cube, cn); };
+const auto time = [](auto&& cube, auto cn) { return cMetric(std::string("time"), cube, cn); };
+const auto visits = [](auto&& cube, auto cn) { return cMetric(std::string("visits"), cube, cn); };
 const auto getName = [](const bool mangled, const auto cn) {
   if (mangled) {
     return mangledName(cn);
@@ -87,12 +87,12 @@ const auto getName = [](const bool mangled, const auto cn) {
   }
 };
 
-const auto attRuntime = [](auto &cube, auto cnode, auto n, auto pNode, auto pn) {
+const auto attRuntime = [](auto& cube, auto cnode, auto n, auto pNode, auto pn) {
   auto console = metacg::MCGLogger::instance().getConsole();
   if (has<BaseProfileData>(n)) {
     console->debug("Attaching runtime {} to node {}", impl::time(cube, cnode), n->getFunctionName());
     const auto runtime = impl::time(cube, cnode);
-    const auto &bpd = get<BaseProfileData>(n);
+    const auto& bpd = get<BaseProfileData>(n);
     bpd->addRuntime(runtime);
   } else {
     console->warn("No BaseProfileData found for {}. This should not happen.", n->getFunctionName());
@@ -102,12 +102,12 @@ const auto attRuntime = [](auto &cube, auto cnode, auto n, auto pNode, auto pn) 
   }
 };
 
-const auto attNrCall = [](auto &cube, auto cnode, auto n, auto pNode, auto pn) {
+const auto attNrCall = [](auto& cube, auto cnode, auto n, auto pNode, auto pn) {
   auto console = metacg::MCGLogger::instance().getConsole();
   if (has<BaseProfileData>(n)) {
     console->debug("Attaching visits {} to node {}", impl::visits(cube, cnode), n->getFunctionName());
     const auto calls = impl::visits(cube, cnode);
-    const auto &bpd = get<BaseProfileData>(n);
+    const auto& bpd = get<BaseProfileData>(n);
     bpd->addCalls(calls);
     bpd->addNumberOfCallsFrom(pn, calls);
   } else {
@@ -115,12 +115,12 @@ const auto attNrCall = [](auto &cube, auto cnode, auto n, auto pNode, auto pn) {
   }
 };
 
-const auto attInclRuntime = [](auto &cube, auto cnode, auto n, [[maybe_unused]] auto pNode,
+const auto attInclRuntime = [](auto& cube, auto cnode, auto n, [[maybe_unused]] auto pNode,
                                [[maybe_unused]] auto pName) {
   if (has<BaseProfileData>(n)) {
     // fill CgLocations and calculate inclusive runtime
     double cumulatedTime = 0;
-    for (cube::Thread *thread : cube.get_thrdv()) {
+    for (cube::Thread* thread : cube.get_thrdv()) {
       int threadId = thread->get_id();
       int procId = thread->get_parent()->get_id();
 
@@ -146,7 +146,7 @@ const auto attInclRuntime = [](auto &cube, auto cnode, auto n, [[maybe_unused]] 
 };
 
 template <typename... Largs>
-void build(const std::filesystem::path &filePath, metacg::graph::MCGManager &mcgm, Largs... largs) {
+void build(const std::filesystem::path& filePath, metacg::graph::MCGManager& mcgm, Largs... largs) {
   //  auto &cg = metacg::pgis::PiraMCGProcessor::get();
   bool useMangledNames = true;
 
@@ -158,7 +158,7 @@ void build(const std::filesystem::path &filePath, metacg::graph::MCGManager &mcg
     console->info("Reading cube file {}", filePath.string());
     cube.openCubeReport(filePath.string());
     // Get the cube nodes
-    const auto &cnodes = cube.get_cnodev();
+    const auto& cnodes = cube.get_cnodev();
 
     console->trace("Cube contains: {} nodes", cnodes.size());
     for (const auto cnode : cnodes) {
@@ -188,16 +188,16 @@ void build(const std::filesystem::path &filePath, metacg::graph::MCGManager &mcg
       apply(mcgm, cube, cnode, cName, pNode, pName, largs...);
     }
 
-  } catch (std::exception &e) {
+  } catch (std::exception& e) {
     console->warn("Exception caught.\n{}", e.what());
   }
 }
 
-void build(const std::filesystem::path &filepath);
+void build(const std::filesystem::path& filepath);
 }  // namespace impl
 
-void build(const std::filesystem::path &filePath, Config *c, metacg::graph::MCGManager &mcgm);
-void buildFromCube(const std::filesystem::path &filePath, Config *c, metacg::graph::MCGManager &mcgm);
+void build(const std::filesystem::path& filePath, Config* c, metacg::graph::MCGManager& mcgm);
+void buildFromCube(const std::filesystem::path& filePath, Config* c, metacg::graph::MCGManager& mcgm);
 }  // namespace metacg::pgis
 
 #endif

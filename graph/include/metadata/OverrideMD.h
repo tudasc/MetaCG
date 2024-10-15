@@ -6,10 +6,8 @@
 
 #ifndef METACG_OVERRIDEMD_H
 #define METACG_OVERRIDEMD_H
-#include "../LoggerUtil.h"
 #include "MetaData.h"
 #include <vector>
-
 
 /**
  *  This is first-party metadata that allows a user to attach override data to function nodes
@@ -20,17 +18,17 @@
  */
 struct OverrideMetadata final : metacg::MetaData::Registrar<OverrideMetadata> {
  public:
-  static constexpr const char *key = "overrideMD";
+  static constexpr const char* key = "overrideMD";
   OverrideMetadata() = default;
 
-  explicit OverrideMetadata(const nlohmann::json &j) {
+  explicit OverrideMetadata(const nlohmann::json& j) {
     overrides = j.at("overrides").get<std::vector<size_t>>();
     overriddenBy = j.at("overriddenBy").get<std::vector<size_t>>();
   }
 
   nlohmann::json to_json() const final { return {{"overrides", overrides}, {"overriddenBy", overriddenBy}}; };
 
-  virtual const char *getKey() const { return key; }
+  const char* getKey() const final { return key; }
 
   std::vector<size_t> overrides;
   std::vector<size_t> overriddenBy;

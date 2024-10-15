@@ -5,22 +5,21 @@
  */
 
 #include "Callgraph.h"
-#include "io/VersionTwoMCGReader.h"
 #include "MCGManager.h"
+#include "io/VersionTwoMCGReader.h"
 #include "io/VersionTwoMCGWriter.h"
 
-#include <string>
 #include <fstream>
+#include <string>
 
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv) {
   std::string inFile(argv[1]);
   std::string outFile(argv[2]);
 
-  auto &manager = metacg::graph::MCGManager::get();
+  auto& manager = metacg::graph::MCGManager::get();
   metacg::io::FileSource fSource(inFile);
   metacg::io::VersionTwoMetaCGReader reader(fSource);
-  manager.addToManagedGraphs("testG",   reader.read());
+  manager.addToManagedGraphs("testG", reader.read());
 
   metacg::io::VersionTwoMCGWriter writer;
   metacg::io::JsonSink js;

@@ -7,7 +7,7 @@ struct A {
 void foo(A a) {}
 
 // Needs to call destructor for A
-void boo(A &a) { foo(a); }
+void boo(A& a) { foo(a); }
 
 int main() {
   A o;

@@ -4,15 +4,15 @@ struct B;
 struct D;
 
 struct D {
-  struct D *SelfP;
-  struct B *BaseP;
-  void *Fptr;
+  struct D* SelfP;
+  struct B* BaseP;
+  void* Fptr;
 };
 
 struct C {
   struct D Other;
-  struct D *OtherPtr;
-  void *Fptr;
+  struct D* OtherPtr;
+  void* Fptr;
 };
 
 struct A {
@@ -20,10 +20,10 @@ struct A {
 };
 
 struct B {
-  struct B *SelfP;
+  struct B* SelfP;
   struct A Other;
-  struct A *OtherP;
-  struct A *OtherArrayPtr[5];
+  struct A* OtherP;
+  struct A* OtherArrayPtr[5];
 };
 
 extern void fooA();
@@ -49,7 +49,7 @@ int main() {
   // A2 is empty
   A3.OtherArray[0] = C3;
 
-  C4.Fptr = (void *)&fooC;
+  C4.Fptr = (void*)&fooC;
 
   struct D D1, D2, D3, D4;
 
@@ -59,8 +59,8 @@ int main() {
 
   C3.Other = D4;
 
-  D2.Fptr = (void *)&fooA;
-  D3.Fptr = (void *)&fooB;
+  D2.Fptr = (void*)&fooA;
+  D3.Fptr = (void*)&fooB;
   D4.BaseP = &Base;
   D4.SelfP = &D4;
 

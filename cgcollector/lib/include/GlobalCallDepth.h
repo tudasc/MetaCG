@@ -3,6 +3,6 @@
 
 #include <nlohmann/json.hpp>
 
-void calculateGlobalCallDepth(nlohmann::json &j, bool useOnlyMainEntry);
+void calculateGlobalCallDepth(nlohmann::json& j, bool useOnlyMainEntry);
 
 #endif  // CGCOLLECTOR_GLOBALCALLDEPTH_H

@@ -12,7 +12,7 @@ class MyClassDeriveD : public MyClassDerive {
   int foo() { return 1; }
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   MyClassDeriveD mcdd;
   mcdd.foo();
 

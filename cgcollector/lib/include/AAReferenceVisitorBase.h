@@ -22,10 +22,10 @@ template <typename Derived>
 class ReferenceVisitorBase : public clang::RecursiveASTVisitor<Derived> {
  public:
   using DataRecursionQueue = typename clang::RecursiveASTVisitor<Derived>::DataRecursionQueue;
-  const clang::ASTContext *CTX;
+  const clang::ASTContext* CTX;
   int DereferenceLevel = 0;
 
-  explicit ReferenceVisitorBase(const clang::ASTContext *ctx) : CTX(ctx) { assert(CTX); }
+  explicit ReferenceVisitorBase(const clang::ASTContext* ctx) : CTX(ctx) { assert(CTX); }
 
   // This flag should not matter, as we do not run the derived classes on the complete AST, instead directly over the
   // expressions we are interested in
@@ -34,7 +34,7 @@ class ReferenceVisitorBase : public clang::RecursiveASTVisitor<Derived> {
   bool shouldVisitImplicitCode() const { return true; }
 
 #if LLVM_VERSION_MAJOR < 11
-  bool TraverseUnaryDeref(clang::UnaryOperator *UO, [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+  bool TraverseUnaryDeref(clang::UnaryOperator* UO, [[maybe_unused]] DataRecursionQueue* Queue = nullptr) {
     if (!this->WalkUpFromUnaryDeref(UO)) {
       return false;
     }
@@ -45,7 +45,7 @@ class ReferenceVisitorBase : public clang::RecursiveASTVisitor<Derived> {
     return RetValue;
   }
 
-  bool TraverseUnaryAddrOf(clang::UnaryOperator *UO, [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+  bool TraverseUnaryAddrOf(clang::UnaryOperator* UO, [[maybe_unused]] DataRecursionQueue* Queue = nullptr) {
     if (!this->WalkUpFromUnaryAddrOf(UO)) {
       return false;
     }
@@ -56,7 +56,7 @@ class ReferenceVisitorBase : public clang::RecursiveASTVisitor<Derived> {
     return RetValue;
   }
 #else
-  bool TraverseUnaryOperator(clang::UnaryOperator *UO, [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+  bool TraverseUnaryOperator(clang::UnaryOperator* UO, [[maybe_unused]] DataRecursionQueue* Queue = nullptr) {
     const auto Opcode = UO->getOpcode();
     if (Opcode == clang::UnaryOperatorKind::UO_AddrOf || Opcode == clang::UnaryOperatorKind::UO_Deref) {
       if (!this->WalkUpFromUnaryOperator(UO)) {
@@ -80,50 +80,50 @@ class ReferenceVisitorBase : public clang::RecursiveASTVisitor<Derived> {
   }
 #endif
 
-  bool TraverseArraySubscriptExpr(clang::ArraySubscriptExpr *Expr, DataRecursionQueue *Queue = nullptr) {
+  bool TraverseArraySubscriptExpr(clang::ArraySubscriptExpr* Expr, DataRecursionQueue* Queue = nullptr) {
     if (!this->WalkUpFromArraySubscriptExpr(Expr)) {
       return false;
     }
     return this->TraverseStmt(Expr->getBase(), Queue);
   }
 
-  bool TraverseMemberExpr(clang::MemberExpr *Expr, [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+  bool TraverseMemberExpr(clang::MemberExpr* Expr, [[maybe_unused]] DataRecursionQueue* Queue = nullptr) {
     return this->WalkUpFromMemberExpr(Expr);
   }
 
-  bool TraverseBinaryOperator(clang::BinaryOperator *BO, [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+  bool TraverseBinaryOperator(clang::BinaryOperator* BO, [[maybe_unused]] DataRecursionQueue* Queue = nullptr) {
     if (!this->WalkUpFromBinaryOperator(BO)) {
       return false;
     }
     return this->TraverseStmt(BO->getLHS(), Queue);
   }
 
-  bool TraverseCallExpr(clang::CallExpr *CE, [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+  bool TraverseCallExpr(clang::CallExpr* CE, [[maybe_unused]] DataRecursionQueue* Queue = nullptr) {
     return this->WalkUpFromCallExpr(CE);
   }
 
-  bool TraverseCXXOperatorCallExpr(clang::CXXOperatorCallExpr *CE,
-                                   [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+  bool TraverseCXXOperatorCallExpr(clang::CXXOperatorCallExpr* CE,
+                                   [[maybe_unused]] DataRecursionQueue* Queue = nullptr) {
     return this->WalkUpFromCXXOperatorCallExpr(CE);
   }
 
-  bool TraverseCXXMemberCallExpr(clang::CXXMemberCallExpr *CE, [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+  bool TraverseCXXMemberCallExpr(clang::CXXMemberCallExpr* CE, [[maybe_unused]] DataRecursionQueue* Queue = nullptr) {
     return this->WalkUpFromCXXMemberCallExpr(CE);
   }
 
-  bool TraverseCXXConstructExpr(clang::CXXConstructExpr *CE, [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+  bool TraverseCXXConstructExpr(clang::CXXConstructExpr* CE, [[maybe_unused]] DataRecursionQueue* Queue = nullptr) {
     return this->WalkUpFromCXXConstructExpr(CE);
   }
 
-  bool TraverseCXXNewExpr(clang::CXXNewExpr *NE, [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+  bool TraverseCXXNewExpr(clang::CXXNewExpr* NE, [[maybe_unused]] DataRecursionQueue* Queue = nullptr) {
     return this->WalkUpFromCXXNewExpr(NE);
   }
 
-  bool TraverseCXXDeleteExpr(clang::CXXDeleteExpr *DE, [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+  bool TraverseCXXDeleteExpr(clang::CXXDeleteExpr* DE, [[maybe_unused]] DataRecursionQueue* Queue = nullptr) {
     return this->WalkUpFromCXXDeleteExpr(DE);
   }
 
-  bool TraverseConditionalOperator(clang::ConditionalOperator *CO, DataRecursionQueue *Queue = nullptr) {
+  bool TraverseConditionalOperator(clang::ConditionalOperator* CO, DataRecursionQueue* Queue = nullptr) {
     if (!this->WalkUpFromConditionalOperator(CO)) {
       return false;
     }
@@ -137,19 +137,19 @@ class ReferenceVisitorBase : public clang::RecursiveASTVisitor<Derived> {
   }
 
   // We are not interested in types
-  bool TraverseTypedefDecl(clang::TypedefDecl *) { return true; }
-  bool TraverseTypeAliasDecl(clang::TypeAliasDecl *) { return true; }
+  bool TraverseTypedefDecl(clang::TypedefDecl*) { return true; }
+  bool TraverseTypeAliasDecl(clang::TypeAliasDecl*) { return true; }
   bool TraverseNestedNameSpecifierLoc(clang::NestedNameSpecifierLoc) { return true; }
-  bool TraverseTemplateArgumentLoc(const clang::TemplateArgumentLoc &) { return true; }
+  bool TraverseTemplateArgumentLoc(const clang::TemplateArgumentLoc&) { return true; }
   bool TraverseDeclarationNameInfo(clang::DeclarationNameInfo) { return true; }
-  bool TraverseCXXNoexceptExpr(clang::CXXNoexceptExpr *, DataRecursionQueue * = nullptr) { return true; }
+  bool TraverseCXXNoexceptExpr(clang::CXXNoexceptExpr*, DataRecursionQueue* = nullptr) { return true; }
 
   // We are not interested in nested functions or similar
-  bool TraverseCXXRecordDecl(clang::CXXRecordDecl *) { return true; }
-  bool TraverseRecordDecl(clang::RecordDecl *) { return true; }
+  bool TraverseCXXRecordDecl(clang::CXXRecordDecl*) { return true; }
+  bool TraverseRecordDecl(clang::RecordDecl*) { return true; }
 
-  bool TraverseMaterializeTemporaryExpr(clang::MaterializeTemporaryExpr *MTE,
-                                        [[maybe_unused]] DataRecursionQueue *Queue = nullptr) {
+  bool TraverseMaterializeTemporaryExpr(clang::MaterializeTemporaryExpr* MTE,
+                                        [[maybe_unused]] DataRecursionQueue* Queue = nullptr) {
     return this->WalkUpFromMaterializeTemporaryExpr(MTE);
   }
 };

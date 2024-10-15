@@ -16,12 +16,12 @@ using namespace pira;
 
 #define NO_DEBUG
 
-EstimatorPhase::EstimatorPhase(std::string name, metacg::Callgraph *callgraph)
+EstimatorPhase::EstimatorPhase(std::string name, metacg::Callgraph* callgraph)
     : graph(callgraph), IC(), name(std::move(name)), config(nullptr), noReportRequired(false) {}
 
 void EstimatorPhase::generateIC() {
   for (const auto& elem : graph->getNodes()) {
-    const auto& node= elem.second.get();
+    const auto& node = elem.second.get();
     if (metacg::pgis::isInstrumented(node)) {
       IC.instrumentedNames.insert(node->getFunctionName());
       IC.instrumentedNodes.insert(node);

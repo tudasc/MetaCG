@@ -4,7 +4,7 @@ struct A {
 
 struct D : public A {};
 
-void someFunc(D *d) { d->foo(); }
+void someFunc(D* d) { d->foo(); }
 
 int main() {
   D d;

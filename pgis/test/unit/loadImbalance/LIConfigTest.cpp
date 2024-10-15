@@ -19,14 +19,14 @@ class LIConfigTest : public ::testing::Test {
 };
 
 TEST_F(LIConfigTest, SimpleTest) {
-  json j = {
+  const json j = {
       {"metricType", "Efficiency"},  {"imbalanceThreshold", 1.0},
       {"relevanceThreshold", 1.0},   {"contextStrategy", "AllPathsToMain"},
       {"contextStepCount", 5},       {"childRelevanceStrategy", "ConstantThreshold"},
       {"childConstantThreshold", 5}, {"childFraction", 0.5},
   };
 
-  LoadImbalance::LIConfig c = j;
+  const LoadImbalance::LIConfig c = j;
 
   ASSERT_EQ(c.metricType, MetricType::Efficiency);
   ASSERT_EQ(c.contextStrategy, ContextStrategy::AllPathsToMain);
@@ -39,13 +39,13 @@ TEST_F(LIConfigTest, SimpleTest) {
 }
 
 TEST_F(LIConfigTest, Empty) {
-  json j = {};
+  const json j = {};
 
   ASSERT_THROW(LoadImbalance::LIConfig c = j, json::exception);
 }
 
 TEST_F(LIConfigTest, Missing) {
-  json j = {
+  const json j = {
       {"metricType", "Efficiency"},
       {"imbalanceThreshold", 1.0},
       // {"relevanceThreshold", 1.0},

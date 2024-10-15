@@ -1,7 +1,7 @@
 /**
-* File: ReachabilityAnalysis.cpp
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: ReachabilityAnalysis.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #include "ReachabilityAnalysis.h"
@@ -13,7 +13,7 @@ namespace metacg::analysis {
 void ReachabilityAnalysis::runForNode(const CgNode* const n) {
   computedFor.insert(n);
 
-  auto &reachableSet = reachableNodes[n];
+  auto& reachableSet = reachableNodes[n];
   // Compute the information as it is not available
   std::unordered_set<const CgNode*> visitedNodes;
   std::queue<const CgNode*> workQueue;
@@ -53,7 +53,7 @@ bool ReachabilityAnalysis::isReachableFromMain(const CgNode* const node, bool fo
 }
 
 bool ReachabilityAnalysis::existsPathBetween(const CgNode* const src, const CgNode* const dest, bool forceUpdate) {
-  auto &reachableSet = reachableNodes[src];
+  auto& reachableSet = reachableNodes[src];
   // Check if we already computed for src and return if we found that a path exists
   if (!forceUpdate && computedFor.find(src) != computedFor.end()) {
     return reachableSet.find(dest) != reachableSet.end();
@@ -65,4 +65,4 @@ bool ReachabilityAnalysis::existsPathBetween(const CgNode* const src, const CgNo
   return reachableSet.find(dest) != reachableSet.end();
 }
 
-}
+}  // namespace metacg::analysis

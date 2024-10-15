@@ -13,33 +13,7 @@ namespace metacg {
 class CgNode;
 }
 
-/*
-namespace std {
-template <>
-struct less<std::shared_ptr<metacg::CgNode>> {
-  bool operator()(const std::shared_ptr<metacg::CgNode> &a, const std::shared_ptr<metacg::CgNode> &b) const;
-};
-template <>
-struct less_equal<std::shared_ptr<metacg::CgNode>> {
-  bool operator()(const std::shared_ptr<metacg::CgNode> &a, const std::shared_ptr<metacg::CgNode> &b) const;
-};
-
-template <>
-struct equal_to<std::shared_ptr<metacg::CgNode>> {
-  bool operator()(const std::shared_ptr<metacg::CgNode> &a, const std::shared_ptr<metacg::CgNode> &b) const;
-};
-template <>
-struct greater<std::shared_ptr<metacg::CgNode>> {
-  bool operator()(const std::shared_ptr<metacg::CgNode> &a, const std::shared_ptr<metacg::CgNode> &b) const;
-};
-
-template <>
-struct greater_equal<std::shared_ptr<metacg::CgNode>> {
-  bool operator()(const std::shared_ptr<metacg::CgNode> &a, const std::shared_ptr<metacg::CgNode> &b) const;
-};
-}  // namespace std
-*/
 typedef std::unique_ptr<metacg::CgNode> CgNodePtr;  // hopefully this typedef helps readability
-typedef std::unordered_set<metacg::CgNode *> CgNodeRawPtrUSet;
+typedef std::unordered_set<metacg::CgNode*> CgNodeRawPtrUSet;
 
 #endif

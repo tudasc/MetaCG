@@ -9,7 +9,7 @@
 
 using namespace metacg::graph;
 
-MCGManager &MCGManager::get() {
+MCGManager& MCGManager::get() {
   static MCGManager instance;
   return instance;
 }
@@ -33,7 +33,7 @@ size_t MCGManager::size() const { return activeGraph->size(); }
 
 size_t MCGManager::graphs_size() const { return managedGraphs.size(); }
 
-metacg::Callgraph *MCGManager::getCallgraph(const std::string &name, bool setActive) {
+metacg::Callgraph* MCGManager::getCallgraph(const std::string& name, bool setActive) {
   if (name.empty()) {
     return activeGraph;
   }
@@ -46,7 +46,7 @@ metacg::Callgraph *MCGManager::getCallgraph(const std::string &name, bool setAct
   return nullptr;
 }
 
-metacg::Callgraph *MCGManager::getOrCreateCallgraph(const std::string &name, bool setActive) {
+metacg::Callgraph* MCGManager::getOrCreateCallgraph(const std::string& name, bool setActive) {
   if (auto graph = managedGraphs.find(name); graph != managedGraphs.end()) {
     if (setActive) {
       activeGraph = graph->second.get();
@@ -61,7 +61,7 @@ metacg::Callgraph *MCGManager::getOrCreateCallgraph(const std::string &name, boo
   }
 }
 
-bool MCGManager::setActive(const std::string &callgraph) {
+bool MCGManager::setActive(const std::string& callgraph) {
   // I think this is the best way to do it
   // until map::contains comes with c++20
   // another implementation would be to
@@ -70,23 +70,23 @@ bool MCGManager::setActive(const std::string &callgraph) {
   // once it has been added, so the exception should be rare
   try {
     activeGraph = managedGraphs.at(callgraph).get();
-  } catch (const std::out_of_range &ex) {
+  } catch (const std::out_of_range& ex) {
     assert(false && "Could not set graph to active, graph does not exist");
     return false;
   }
   return true;
 }
 
-bool MCGManager::assertActive(const std::string &callgraph) {
+bool MCGManager::assertActive(const std::string& callgraph) {
   try {
     return managedGraphs.at(callgraph).get() == activeGraph;
-  } catch (const std::out_of_range &ex) {
+  } catch (const std::out_of_range& ex) {
     assert(false && "Graph is not part of managed graphs");
     return false;
   }
 }
 
-bool MCGManager::addToManagedGraphs(const std::string &name, std::unique_ptr<Callgraph> callgraph, bool setActive) {
+bool MCGManager::addToManagedGraphs(const std::string& name, std::unique_ptr<Callgraph> callgraph, bool setActive) {
   assert(callgraph.get() != nullptr && "Could not add to managed graphs, given graph was null");
   managedGraphs[name] = std::move(callgraph);
   if (setActive) {
@@ -98,7 +98,7 @@ bool MCGManager::addToManagedGraphs(const std::string &name, std::unique_ptr<Cal
 std::unordered_set<std::string> MCGManager::getAllManagedGraphNames() {
   std::unordered_set<std::string> retSet;
   retSet.reserve(managedGraphs.size());
-  for (auto &elem : managedGraphs) {
+  for (auto& elem : managedGraphs) {
     retSet.insert(elem.first);
   }
   return retSet;
@@ -106,7 +106,7 @@ std::unordered_set<std::string> MCGManager::getAllManagedGraphNames() {
 
 std::string MCGManager::getActiveGraphName() {
   assert(activeGraph);
-  for (const auto &elem : managedGraphs) {
+  for (const auto& elem : managedGraphs) {
     if (activeGraph == elem.second.get()) {
       return elem.first;
     }

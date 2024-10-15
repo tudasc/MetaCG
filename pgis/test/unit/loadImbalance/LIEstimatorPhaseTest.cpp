@@ -18,7 +18,7 @@ class LIEstimatorPhaseTest : public ::testing::Test {
  protected:
   void SetUp() override { metacg::loggerutil::getLogger(); }
 
-  static void attachAllMetaDataToGraph(metacg::Callgraph *cg) {
+  static void attachAllMetaDataToGraph(metacg::Callgraph* cg) {
     metacg::pgis::attachMetaDataToGraph<pira::BaseProfileData>(cg);
     metacg::pgis::attachMetaDataToGraph<pira::PiraOneData>(cg);
     metacg::pgis::attachMetaDataToGraph<pira::PiraTwoData>(cg);
@@ -36,8 +36,8 @@ TEST_F(LIEstimatorPhaseTest, EmptyCG) {
   LOGGERUTIL_ENABLE_ERRORS_LOCAL
 
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
@@ -58,8 +58,8 @@ TEST_F(LIEstimatorPhaseTest, EmptyCG) {
 TEST_F(LIEstimatorPhaseTest, AllCases) {
   Config cfg;
 
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
@@ -131,8 +131,8 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
   childNode4->get<pira::PiraOneData>()->setComesFromCube();
   childNode5->get<pira::PiraOneData>()->setComesFromCube();
 
-  for (const auto &elem : mcgm.getCallgraph()->getNodes()) {
-    const auto &n = elem.second.get();
+  for (const auto& elem : mcgm.getCallgraph()->getNodes()) {
+    const auto& n = elem.second.get();
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
 
@@ -166,8 +166,8 @@ TEST_F(LIEstimatorPhaseTest, AllCases) {
 
 TEST_F(LIEstimatorPhaseTest, Virtual) {
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
@@ -196,8 +196,8 @@ TEST_F(LIEstimatorPhaseTest, Virtual) {
   mcgm.getCallgraph()->addEdge(child, grandchild);
   mcgm.getCallgraph()->addEdge(grandchild, grandgrandchild);
   attachAllMetaDataToGraph(mcgm.getCallgraph());
-  for (const auto &elem : mcgm.getCallgraph()->getNodes()) {
-    const auto &n = elem.second.get();
+  for (const auto& elem : mcgm.getCallgraph()->getNodes()) {
+    const auto& n = elem.second.get();
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
   cm.setCG(mcgm.getCallgraph());
@@ -221,8 +221,8 @@ TEST_F(LIEstimatorPhaseTest, Virtual) {
 
 TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
@@ -252,8 +252,8 @@ TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
   mcgm.getCallgraph()->addEdge(child2, grandchild);
 
   attachAllMetaDataToGraph(mcgm.getCallgraph());
-  for (const auto &elem : mcgm.getCallgraph()->getNodes()) {
-    const auto &n = elem.second.get();
+  for (const auto& elem : mcgm.getCallgraph()->getNodes()) {
+    const auto& n = elem.second.get();
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
 
@@ -284,8 +284,8 @@ TEST_F(LIEstimatorPhaseTest, AllPathsToMain) {
 
 TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();
@@ -312,8 +312,8 @@ TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
   mcgm.getCallgraph()->addEdge(child1, grandchild);
   mcgm.getCallgraph()->addEdge(child2, grandchild);
   attachAllMetaDataToGraph(mcgm.getCallgraph());
-  for (const auto &elem : mcgm.getCallgraph()->getNodes()) {
-    const auto &n = elem.second.get();
+  for (const auto& elem : mcgm.getCallgraph()->getNodes()) {
+    const auto& n = elem.second.get();
     n->get<pira::PiraOneData>()->setNumberOfStatements(100);
   }
 
@@ -344,8 +344,8 @@ TEST_F(LIEstimatorPhaseTest, MajorPathsToMain) {
 
 TEST_F(LIEstimatorPhaseTest, MajorParentSteps) {
   Config cfg;
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
   cm.removeAllEstimatorPhases();

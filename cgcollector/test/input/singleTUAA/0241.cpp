@@ -5,7 +5,7 @@ extern int foo();
 using FType = decltype(foo);
 
 struct Storage {
-  FType *fptr;
+  FType* fptr;
 };
 
 int main() {

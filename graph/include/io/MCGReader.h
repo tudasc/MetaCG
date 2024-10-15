@@ -36,7 +36,7 @@ struct ReaderSource {
  * If the file does not exists, prints error and exits the program.
  */
 struct FileSource : ReaderSource {
-  explicit FileSource(const std::filesystem::path &filepath) : filepath(filepath) {}
+  explicit FileSource(const std::filesystem::path& filepath) : filepath(filepath) {}
   /**
    * Reads the json file with filename (provided at object construction)
    * and returns the json object.
@@ -81,7 +81,7 @@ class MetaCGReader {
   /**
    * filename path to file
    */
-  explicit MetaCGReader(ReaderSource &src) : source(src) {}
+  explicit MetaCGReader(ReaderSource& src) : source(src) {}
   /**
    * PiraMCGProcessor object to be filled with the CG
    */
@@ -91,7 +91,7 @@ class MetaCGReader {
   /**
    * Abstraction from where to read-in the JSON.
    */
-  const ReaderSource &source;
+  const ReaderSource& source;
 
  private:
   // filename of the metacg this instance parses

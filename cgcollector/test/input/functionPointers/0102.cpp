@@ -6,7 +6,7 @@ int hit1() { return 0; }
 
 int hit2() { return 5; }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   int (*function)();
 
   function();

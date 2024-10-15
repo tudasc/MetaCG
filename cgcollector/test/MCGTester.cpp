@@ -3,8 +3,7 @@
 
 #include <iostream>
 
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv) {
   if (argc < 3) {
     std::cerr << "Too few argument.\nUsage: ./" << argv[0] << " groundtruth.mcg result.mcg" << std::endl;
     return -1;
@@ -24,7 +23,7 @@ int main(int argc, char **argv) {
   // Test for equality of result and groundtruth
   // Test same functions in both [set of keys equal]
   std::unordered_set<std::string> unfound;
-  for (const auto &[k, v] : gtFuncMap) {
+  for (const auto& [k, v] : gtFuncMap) {
     if (genFuncMap.find(k) == genFuncMap.end()) {
       unfound.insert(k);
     }
@@ -34,7 +33,7 @@ int main(int argc, char **argv) {
     return -2;
   }
   // Test that entries for keys are equal w.r.t. structure
-  for (const auto &[k, v] : gtFuncMap) {
+  for (const auto& [k, v] : gtFuncMap) {
     const auto genValue = genFuncMap[k];
     if (!v.compareStructure(genValue)) {
       std::cerr << "Structural difference for " << k << std::endl;

@@ -19,22 +19,21 @@ class VersionOneMCGReaderTest : public ::testing::Test {
  protected:
   void SetUp() override {
     metacg::loggerutil::getLogger();
-    auto &mcgm = metacg::graph::MCGManager::get();
+    auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
   }
 };
 
 TEST(VersionOneMCGReaderTest, EmptyJSON) {
-  json j;
+  const json j;
   metacg::loggerutil::getLogger();
-
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   metacg::io::JsonSource js(j);
   metacg::pgis::io::VersionOneMetaCGReader mcgReader(js);
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<Callgraph>());
   mcgReader.read();
 
-  const Callgraph &graph = *mcgm.getCallgraph();
+  const Callgraph& graph = *mcgm.getCallgraph();
   ASSERT_EQ(graph.size(), 0);
 }
 
@@ -47,16 +46,16 @@ TEST(VersionOneMCGReaderTest, SimpleJSON) {
 
   };
 
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   metacg::io::JsonSource js(j);
   metacg::pgis::io::VersionOneMetaCGReader mcgReader(js);
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<Callgraph>());
   mcgReader.read();
 
-  Callgraph &graph = *mcgm.getCallgraph();
+  const Callgraph& graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 1);
 
-  metacg::CgNode *mainNode = graph.getNode("main");
+  metacg::CgNode* mainNode = graph.getNode("main");
   mainNode->getOrCreateMD<pira::PiraOneData>();
   mainNode->getOrCreateMD<pira::PiraTwoData>();
   mainNode->getOrCreateMD<LoadImbalance::LIMetaData>();
@@ -87,17 +86,16 @@ TEST(VersionOneMCGReaderTest, MultiNodeJSON) {
       {"parents", {"main"}}, {"callees", json::array()},
   };
 
-  auto &mcgm = metacg::graph::MCGManager::get();
+  auto& mcgm = metacg::graph::MCGManager::get();
   metacg::io::JsonSource js(j);
   metacg::pgis::io::VersionOneMetaCGReader mcgReader(js);
   mcgm.addToManagedGraphs("emptyGraph", std::make_unique<Callgraph>());
   mcgReader.read();
 
-
-  Callgraph &graph = *mcgm.getCallgraph();
+  const Callgraph& graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 2);
 
-  metacg::CgNode *mainNode = graph.getNode("main");
+  metacg::CgNode* mainNode = graph.getNode("main");
   ASSERT_NE(mainNode, nullptr);
   mainNode->getOrCreateMD<pira::PiraOneData>();
   mainNode->getOrCreateMD<pira::PiraTwoData>();
@@ -112,7 +110,7 @@ TEST(VersionOneMCGReaderTest, MultiNodeJSON) {
     EXPECT_EQ(cn->getFunctionName(), "foo");
   }
 
-  metacg::CgNode *fooNode = graph.getNode("foo");
+  metacg::CgNode* fooNode = graph.getNode("foo");
   ASSERT_NE(fooNode, nullptr);
 
   fooNode->getOrCreateMD<pira::PiraOneData>();

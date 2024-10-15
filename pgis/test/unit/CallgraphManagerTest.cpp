@@ -20,7 +20,7 @@ class CallgraphManagerTest : public ::testing::Test {
 TEST_F(CallgraphManagerTest, EmptyCG) {
   Config cfg;
   // PiraMCGProcessor cm(&cfg);
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
   cm.setConfig(&cfg);
   ASSERT_EQ(0, cm.size());
   auto graph = cm.getCallgraph(&cm);
@@ -32,7 +32,7 @@ TEST_F(CallgraphManagerTest, EmptyCG) {
 TEST_F(CallgraphManagerTest, OneNodeCG) {
   Config cfg;
   // PiraMCGProcessor cm(&cfg);
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
   cm.clear();
   cm.setConfig(&cfg);
   cm.getCallgraph()->getOrInsertNode("main");
@@ -51,7 +51,7 @@ TEST_F(CallgraphManagerTest, OneNodeCG) {
 TEST_F(CallgraphManagerTest, TwoNodeCG) {
   Config cfg;
   // PiraMCGProcessor cm(&cfg);
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
   cm.setConfig(&cfg);
   int mainLineNumber = 1;
   auto mainNode = cm.getCallgraph()->getOrInsertNode("main");
@@ -69,7 +69,7 @@ TEST_F(CallgraphManagerTest, TwoNodeCG) {
 TEST_F(CallgraphManagerTest, ThreeNodeCG) {
   Config cfg;
   // PiraMCGProcessor cm(&cfg);
-  auto &cm = metacg::pgis::PiraMCGProcessor::get();
+  auto& cm = metacg::pgis::PiraMCGProcessor::get();
   cm.setConfig(&cfg);
   int mainLineNumber = 1;
   auto mainNode = cm.getCallgraph()->getOrInsertNode("main");

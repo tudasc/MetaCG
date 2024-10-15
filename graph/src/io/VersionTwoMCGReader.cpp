@@ -11,8 +11,8 @@
 #include "Util.h"
 
 std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
-  metacg::RuntimeTimer rtt("VersionTwoMetaCGReader::read");
-  metacg::MCGFileFormatInfo ffInfo{2, 0};
+  const metacg::RuntimeTimer rtt("VersionTwoMetaCGReader::read");
+  const metacg::MCGFileFormatInfo ffInfo{2, 0};
   auto console = metacg::MCGLogger::instance().getConsole();
   auto errConsole = metacg::MCGLogger::instance().getErrConsole();
 
@@ -44,8 +44,8 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
 
   auto generatorName = mcgInfo.at("generator").at("name").get<std::string>();
   auto generatorVersion = mcgInfo.at("generator").at("version").get<std::string>();
-  MCGGeneratorVersionInfo genVersionInfo{generatorName, metacg::util::getMajorVersionFromString(generatorVersion),
-                                         metacg::util::getMinorVersionFromString(generatorVersion), ""};
+  const MCGGeneratorVersionInfo genVersionInfo{generatorName, metacg::util::getMajorVersionFromString(generatorVersion),
+                                               metacg::util::getMinorVersionFromString(generatorVersion), ""};
   console->info("The metacg (version {}) file was generated with {} (version: {})", mcgVersion, generatorName,
                 generatorVersion);
 
@@ -56,12 +56,12 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
     throw std::runtime_error(errorMsg);
   }
 
-  auto &jsonCG = j[ffInfo.cgFieldName];
+  auto& jsonCG = j[ffInfo.cgFieldName];
   upgradeV2FormatToV3Format(jsonCG);
   return std::make_unique<metacg::Callgraph>(jsonCG);
 }
 
-void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV3Format(nlohmann::json &j) {
+void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV3Format(nlohmann::json& j) {
   // Add empty node container
   j["nodes"] = nlohmann::json::array();
   // Move nodes one layer deeper into node container
@@ -79,68 +79,76 @@ void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV3Format(nlohmann::jso
   j["edges"] = nlohmann::json::array();
 
   // Swap function name with hash id
-  for (auto &node : j["nodes"]) {
-    std::string functionName = node.at(0);
+  for (auto& node : j["nodes"]) {
+    const std::string functionName = node.at(0);
 
-
-    if(node.at(1).at("meta").contains("fileProperties")){//if by chance the V2 format contained origin data calculate the hash with known origin
-      node.at(0) = std::hash<std::string>()(functionName+node.at(1).at("meta").at("fileProperties").at("origin").get<std::string>());
-    }else{//if the V2 format did not contain origin data use unknownOrigin keyword
-      node.at(0) = std::hash<std::string>()(functionName+"unknownOrigin");
+    if (node.at(1).at("meta").contains("fileProperties")) {  // if by chance the V2 format contained origin data
+                                                             // calculate the hash with known origin
+      node.at(0) = std::hash<std::string>()(functionName +
+                                            node.at(1).at("meta").at("fileProperties").at("origin").get<std::string>());
+    } else {  // if the V2 format did not contain origin data use unknownOrigin keyword
+      node.at(0) = std::hash<std::string>()(functionName + "unknownOrigin");
     }
 
     node.at(1)["functionName"] = functionName;
 
-    //add empty overrideMD to indicate virtualness
-    if(node.at(1).at("isVirtual")){
-      node.at(1)["meta"]["overrideMD"]={{"overrides", nlohmann::json::array()}, {"overriddenBy", nlohmann::json::array()}};
+    // add empty overrideMD to indicate virtualness
+    if (node.at(1).at("isVirtual")) {
+      node.at(1)["meta"]["overrideMD"] = {{"overrides", nlohmann::json::array()},
+                                          {"overriddenBy", nlohmann::json::array()}};
     }
     node.at(1).erase("isVirtual");
-    //if by chance the V2 format contained origin data, we use this to populate the origin field
-    if(node.at(1).at("meta").contains("fileProperties")){
-      node.at(1)["origin"]=node.at(1).at("meta").at("fileProperties").at("origin");
-    }else{
-      node.at(1)["origin"]="unknownOrigin";
+    // if by chance the V2 format contained origin data, we use this to populate the origin field
+    if (node.at(1).at("meta").contains("fileProperties")) {
+      node.at(1)["origin"] = node.at(1).at("meta").at("fileProperties").at("origin");
+    } else {
+      node.at(1)["origin"] = "unknownOrigin";
     }
   }
   // populate edge container and overwrites
-  for (auto &node : j["nodes"]) {
-    //edges
-    for (const auto &callee : node.at(1).at("callees")) {
-      for(const auto& calleeNode : j["nodes"]){
-        if(calleeNode.at(1).at("functionName")==callee){
+  for (auto& node : j["nodes"]) {
+    // edges
+    for (const auto& callee : node.at(1).at("callees")) {
+      for (const auto& calleeNode : j["nodes"]) {
+        if (calleeNode.at(1).at("functionName") == callee) {
           assert(!calleeNode.at(1).at("origin").get<std::string>().empty());
-          j["edges"].push_back({{node.at(0), std::hash<std::string>()(calleeNode.at(1).at("functionName").get<std::string>()+calleeNode.at(1).at("origin").get<std::string>())}, {}});
+          j["edges"].push_back(
+              {{node.at(0), std::hash<std::string>()(calleeNode.at(1).at("functionName").get<std::string>() +
+                                                     calleeNode.at(1).at("origin").get<std::string>())},
+               {}});
           break;
         }
       }
     }
     node.at(1).erase("callees");
     node.at(1).erase("callers");
-    //if the V2 format node was virtual, we add override metadata
-    //Fixme: These loops can probably be merged
-    if(node.at(1)["meta"].contains("overrideMD")){
-      nlohmann::json overrideHashes=nlohmann::json::array();
-      for(const auto& n : node.at(1).at("overrides")){
-        for(const auto& calleeNode : j["nodes"]){
-          if(calleeNode.at(1).at("functionName")==n){
+    // if the V2 format node was virtual, we add override metadata
+    // Fixme: These loops can probably be merged
+    if (node.at(1)["meta"].contains("overrideMD")) {
+      nlohmann::json overrideHashes = nlohmann::json::array();
+      for (const auto& n : node.at(1).at("overrides")) {
+        for (const auto& calleeNode : j["nodes"]) {
+          if (calleeNode.at(1).at("functionName") == n) {
             assert(!calleeNode.at(1).at("origin").get<std::string>().empty());
-            overrideHashes.push_back(std::hash<std::string>()(calleeNode.at(1).at("functionName").get<std::string>()+calleeNode.at(1).at("origin").get<std::string>()));
+            overrideHashes.push_back(std::hash<std::string>()(calleeNode.at(1).at("functionName").get<std::string>() +
+                                                              calleeNode.at(1).at("origin").get<std::string>()));
             break;
           }
         }
       }
-      nlohmann::json overriddenByHashes=nlohmann::json::array();
-      for(const auto& n : node.at(1).at("overriddenBy")){
-        for(const auto& calleeNode : j["nodes"]){
-          if(calleeNode.at(1).at("functionName")==n){
+      nlohmann::json overriddenByHashes = nlohmann::json::array();
+      for (const auto& n : node.at(1).at("overriddenBy")) {
+        for (const auto& calleeNode : j["nodes"]) {
+          if (calleeNode.at(1).at("functionName") == n) {
             assert(!calleeNode.at(1).at("origin").get<std::string>().empty());
-            overriddenByHashes.push_back(std::hash<std::string>()(calleeNode.at(1).at("functionName").get<std::string>()+calleeNode.at(1).at("origin").get<std::string>()));
+            overriddenByHashes.push_back(
+                std::hash<std::string>()(calleeNode.at(1).at("functionName").get<std::string>() +
+                                         calleeNode.at(1).at("origin").get<std::string>()));
             break;
           }
         }
       }
-      node.at(1)["meta"]["overrideMD"]={{"overrides", overrideHashes}, {"overriddenBy", overriddenByHashes}};
+      node.at(1)["meta"]["overrideMD"] = {{"overrides", overrideHashes}, {"overriddenBy", overriddenByHashes}};
     }
     node.at(1).erase("doesOverride");
     node.at(1).erase("overrides");
