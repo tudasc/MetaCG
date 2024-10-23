@@ -2,7 +2,9 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Choose modern CMake behavior when extracting archives
-cmake_policy(SET CMP0135 NEW)
+if(POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif()
 
 # Require out-of-source builds (taken from
 # https://hsf-training.github.io/hsf-training-cmake-webpage/07-commonproblems/index.html)
