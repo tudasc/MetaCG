@@ -3,9 +3,9 @@
 # MetaCG
 
 MetaCG provides a common whole-program call-graph representation to exchange information between different tools built on top of LLVM/Clang.
-It uses the json file format and separates structure from information, i.e., caller/callee relation and *meta* information.
+It uses the JSON file format and separates structure from information, i.e., caller/callee relation and *meta* information.
 
-The package contains an experimental Clang-based tool for call-graph construction, and a converter for the output files of [Phasar](https://github.com/secure-software-engineering/phasar).
+The package contains an experimental Clang-based tool for call-graph construction.
 Also, the package contains the PGIS analysis tool, which is used as the analysis backend in [PIRA](https://github.com/tudasc/pira).
 
 Once constructed, the graph can be serialized into JSON.
