@@ -1,0 +1,14 @@
+name: MetaCG CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: cmake
+      run: cmake -B build -S .
+    - name: build
+      run: cmake --build build --parallel
