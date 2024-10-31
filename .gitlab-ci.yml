@@ -30,7 +30,7 @@ mcg-download:
   stage: download
   variables:
     GIT_STRATEGY: clone
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PIPELINE_ID
   script:
     - echo 'Done.'
 
@@ -59,12 +59,12 @@ mcg-container:
   needs: ["mcg-download"]
   variables:
     GIT_STRATEGY: clone
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PIPELINE_ID
   script:
     - podman login ${CI_REGISTRY} -u ${CI_CONTAINER_REG_USER} -p ${CONTAINER_REGISTRY_READ_TOKEN}
-    - podman build -t metacg:$CI_COMMIT_SHA -f container/metacg .
-    - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/pgis/test/unit/pgistests
-    - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/graph/test/unit/libtests
+    - podman build -t metacg:$CI_PIPELINE_ID -f container/metacg .
+    - podman run --rm -t metacg:$CI_PIPELINE_ID /opt/metacg/metacg/build/pgis/test/unit/pgistests
+    - podman run --rm -t metacg:$CI_PIPELINE_ID /opt/metacg/metacg/build/graph/test/unit/libtests
 
 
 # Stage: build
