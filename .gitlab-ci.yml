@@ -40,7 +40,7 @@ mcg-cmake-lint:
   stage: lint
   needs: ["mcg-download"]
   script:
-    - for f in $(find . -name "CMakeLists.txt"); do cmake-format --check $f || exit 1; done
+    - for f in $(find {cgcollector,graph,pgis} -name "CMakeLists.txt"); do cmake-format --check $f || exit 1; done ; cmake-format --check CMakeLists.txt
     - for f in $(find ./cmake -type f); do cmake-format --check $f || exit 1; done
 
 

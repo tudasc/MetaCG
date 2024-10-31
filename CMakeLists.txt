@@ -1,10 +1,15 @@
 # This ships with Ubuntu 20.04 and supports C++20
 cmake_minimum_required(VERSION 3.16)
 
-# Choose modern CMake behavior when extracting archives
-if(POLICY CMP0135)
-  cmake_policy(SET CMP0135 NEW)
-endif()
+list(
+  APPEND
+  CMAKE_MODULE_PATH
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake
+)
+
+include(Policies)
+
+set_policies()
 
 # Require out-of-source builds (taken from
 # https://hsf-training.github.io/hsf-training-cmake-webpage/07-commonproblems/index.html)
@@ -37,12 +42,6 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-list(
-  APPEND
-  CMAKE_MODULE_PATH
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake
-)
 
 set(METACG_Directory ${CMAKE_CURRENT_SOURCE_DIR})
 
