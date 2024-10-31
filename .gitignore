@@ -1,8 +1,10 @@
 .vscode
 build/
+install/
 extern/
 
 .idea/
+.cache/
 
 cmake-build-debug-metacg-container/
 
