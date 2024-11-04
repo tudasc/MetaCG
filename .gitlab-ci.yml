@@ -57,9 +57,6 @@ mcg-container:
     - podman
   allow_failure: true
   needs: ["mcg-download"]
-  variables:
-    GIT_STRATEGY: clone
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PIPELINE_ID
   script:
     - podman login ${CI_REGISTRY} -u ${CI_CONTAINER_REG_USER} -p ${CONTAINER_REGISTRY_READ_TOKEN}
     - podman build -t metacg:$CI_PIPELINE_ID -f container/metacg .
