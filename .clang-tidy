@@ -20,7 +20,9 @@ Checks: '*,
 -readability-uppercase-literal-suffix,
 -readability-identifier-length,
 -readability-qualified-auto,
--readability-function-cognitive-complexity,'
+-readability-function-cognitive-complexity,
+-llvm-else-ater-return,
+-readability-else-ater-return,'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
@@ -124,7 +126,6 @@ CheckOptions:
   google-readability-braces-around-statements.ShortStatementLines: '1'
   bugprone-reserved-identifier.AllowedIdentifiers: ''
   cppcoreguidelines-pro-type-member-init.IgnoreArrays: 'false'
-  readability-else-after-return.WarnOnUnfixable: 'true'
   cppcoreguidelines-avoid-magic-numbers.IgnoredFloatingPointValues: '1.0;100.0;'
   modernize-use-emplace.IgnoreImplicitConstructors: 'false'
   cppcoreguidelines-macro-usage.IgnoreCommandLineMacros: 'true'
@@ -251,7 +252,6 @@ CheckOptions:
   bugprone-argument-comment.CommentFloatLiterals: '0'
   bugprone-too-small-loop-variable.MagnitudeBitsUpperLimit: '16'
   readability-simplify-boolean-expr.ChainedConditionalReturn: 'false'
-  readability-else-after-return.WarnOnConditionVariables: 'true'
   modernize-use-nullptr.NullMacros: 'NULL'
   readability-suspicious-call-argument.SuffixDissimilarBelow: '25'
   bugprone-argument-comment.CommentCharacterLiterals: '0'
@@ -322,7 +322,6 @@ CheckOptions:
   llvm-qualified-auto.AddConstToQualified: 'false'
   bugprone-argument-comment.IgnoreSingleArgument: '0'
   cert-str34-c.CharTypdefsToIgnore: ''
-  llvm-else-after-return.WarnOnConditionVariables: 'false'
   bugprone-sizeof-expression.WarnOnSizeOfCompareToConstant: 'true'
   modernize-raw-string-literal.DelimiterStem: lit
   readability-suspicious-call-argument.Dice: 'true'
@@ -337,5 +336,4 @@ CheckOptions:
   readability-redundant-member-init.IgnoreBaseInCopyConstructors: 'false'
   modernize-replace-disallow-copy-and-assign-macro.MacroName: DISALLOW_COPY_AND_ASSIGN
   performance-unnecessary-value-param.IncludeStyle: llvm
-  llvm-else-after-return.WarnOnUnfixable: 'false'
   cert-msc32-c.DisallowedSeedTypes: 'time_t,std::time_t'

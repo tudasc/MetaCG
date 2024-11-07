@@ -15,7 +15,6 @@
 #include <map>
 #include <string>
 #include <utility>
-#include <vector>
 // clang-format on
 
 namespace metacg {
@@ -104,11 +103,11 @@ class CgNode {
     auto [has, md] = this->template checkAndGet<T>();
     if (has) {
       return md;
-    } else {
-      auto nmd = new T(args...);
-      this->template addMetaData(nmd);
-      return nmd;
     }
+
+    auto nmd = new T(args...);
+    this->template addMetaData(nmd);
+    return nmd;
   }
 
   /**

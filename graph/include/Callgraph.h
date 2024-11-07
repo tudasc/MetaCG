@@ -22,12 +22,12 @@ namespace metacg {
 class Callgraph {
  public:
   // TODO: Can NodeContainer be a set if nameIdMap maps to CgNodePtr?
-  typedef std::unordered_map<size_t, CgNodePtr> NodeContainer;
-  typedef std::unordered_map<std::string, size_t> NameIdMap;
-  typedef std::unordered_map<std::string, MetaData*> NamedMetadata;
-  typedef std::unordered_map<std::pair<size_t, size_t>, NamedMetadata> EdgeContainer;
-  typedef std::unordered_map<size_t, std::vector<size_t>> CallerList;
-  typedef std::unordered_map<size_t, std::vector<size_t>> CalleeList;
+  using NodeContainer = std::unordered_map<size_t, CgNodePtr>;
+  using NameIdMap = std::unordered_map<std::string, size_t>;
+  using NamedMetadata = std::unordered_map<std::string, MetaData*>;
+  using EdgeContainer = std::unordered_map<std::pair<size_t, size_t>, NamedMetadata>;
+  using CallerList = std::unordered_map<size_t, std::vector<size_t>>;
+  using CalleeList = std::unordered_map<size_t, std::vector<size_t>>;
 
   Callgraph()
       : nodes(),
