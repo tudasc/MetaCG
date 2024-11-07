@@ -12,12 +12,13 @@ using namespace metacg;
 CgNode* Callgraph::getMain() {
   if (mainNode) {
     return mainNode;
-  } else {
-    if ((mainNode = getNode("main")) || (mainNode = getNode("_Z4main")) || (mainNode = getNode("_ZSt4mainiPPc"))) {
-      return mainNode;
-    }
-    return nullptr;
   }
+
+  if ((mainNode = getNode("main")) || (mainNode = getNode("_Z4main")) || (mainNode = getNode("_ZSt4mainiPPc"))) {
+    return mainNode;
+  }
+
+  return nullptr;
 }
 
 size_t Callgraph::insert(const std::string& nodeName, const std::string& origin) {
@@ -156,11 +157,11 @@ bool Callgraph::isEmpty() const { return nodes.empty(); }
 CgNode* Callgraph::getOrInsertNode(const std::string& name, const std::string& origin) {
   if (auto node = getNode(name); node != nullptr) {
     return node;
-  } else {
-    auto node_id = insert(name, origin);
-    assert(nodes.find(node_id) != nodes.end());
-    return nodes[node_id].get();
   }
+
+  auto node_id = insert(name, origin);
+  assert(nodes.find(node_id) != nodes.end());
+  return nodes[node_id].get();
 }
 const metacg::Callgraph::NodeContainer& Callgraph::getNodes() const { return nodes; }
 
@@ -179,8 +180,9 @@ bool Callgraph::existEdgeFromTo(size_t source, size_t target) const {
 }
 
 bool Callgraph::existEdgeFromTo(const std::string& source, const std::string& target) const {
-  if (nameIdMap.find(source) == nameIdMap.end() || nameIdMap.find(target) == nameIdMap.end())
+  if (nameIdMap.find(source) == nameIdMap.end() || nameIdMap.find(target) == nameIdMap.end()) {
     return false;
+  }
 
   return existEdgeFromTo(nameIdMap.at(source), nameIdMap.at(target));
 }

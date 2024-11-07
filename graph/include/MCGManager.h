@@ -7,7 +7,6 @@
 #define METACG_GRAPH_MCGMANAGER_H
 
 #include "Callgraph.h"
-#include <vector>
 
 namespace metacg {
 // This is part of the core graph library
