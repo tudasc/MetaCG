@@ -187,6 +187,7 @@ int main(int argc, char** argv) {
     callgraph = callgraph["_CG"];
   }
   const std::string parentKey = (version == 2) ? "callers" : "parents";
+  const std::string overridesKey = (version == 2) ? "overrides" : "overriddenFunctions";
 
   cube::Cube cube;
   try {
@@ -249,7 +250,7 @@ int main(int argc, char** argv) {
     // check polymorphism (currently only first hierarchy level)
     bool overriddenFunctionParentFound = false;
     bool overriddenFunctionCalleeFound = false;
-    const auto& overriddenFunctions = node["overriddenFunctions"];
+    const auto& overriddenFunctions = node[overridesKey];
     for (const std::string overriddenFunctionName : overriddenFunctions) {
       if (!getOrInsert(callgraph, overriddenFunctionName, insertNewNodes, version)) {
         continue;
