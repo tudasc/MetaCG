@@ -42,6 +42,7 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DEXTRAP_LIB=$EXTINSTALLDIR/extrap/lib \
       -DMETACG_BUILD_PGIS=ON \
       -DMETACG_BUILD_CGCOLLECTOR=ON \
+	  -DMETACG_BUILD_CGPATCH=ON \
       -DMETACG_BUILD_PYMETACG=ON \
       -DPython_ROOT_DIR=/opt/metacg/.venv \
       -DPYTEST_EXECUTABLE=/opt/metacg/.venv/bin/pytest \

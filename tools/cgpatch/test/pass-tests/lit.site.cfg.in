@@ -1,0 +1,10 @@
+@LIT_SITE_CFG_IN_HEADER@
+
+config.filecheck_exe = "@FILECHECK_EXE@"
+config.binary_dir = "@CMAKE_BINARY_DIR@"
+config.cppargs = "@TEST_CPP_ARGS@"
+config.cgpatch_exe = "@CGPATCHCXX_EXE@"
+
+# Let the main config do the real work.
+config.loaded_site_config = True
+lit_config.load_config(config, "@CMAKE_CURRENT_SOURCE_DIR@/lit.cfg")

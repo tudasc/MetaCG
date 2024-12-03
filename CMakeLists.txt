@@ -104,6 +104,25 @@ if(METACG_BUILD_CGCOLLECTOR)
   add_subdirectory(cgcollector)
 endif()
 
+# Build CGPatch: cgpatch-pass, cgpatch-runtime, wrappers, tests
+option(
+  METACG_BUILD_CGPATCH
+  "On or off"
+  OFF
+)
+if(METACG_BUILD_CGPATCH)
+  if(NOT METACG_BUILD_CGCOLLECTOR)
+    message(FATAL_ERROR "CGPatch requires to build with METACG_BUILD_CGCOLLECTOR")
+  endif()
+  if(${LLVM_PACKAGE_VERSION}
+     GREATER
+     14
+  )
+    add_subdirectory(tools/cgpatch/)
+  else()
+    message(FATAL_ERROR "CGPatch requires LLVM version 15 or higher")
+  endif()
+endif()
 # PIRA analyzer Should PGIS be built
 option(
   METACG_BUILD_PGIS
@@ -128,6 +147,13 @@ option(
   METACG_USE_EXTERNAL_CXXOPTS
   "On or Off"
   OFF
+)
+
+# Enable MPI for CGPatch
+option(
+  CGPATCH_USE_MPI
+  "On or Of"
+  ON
 )
 
 # Build MetaCG's Python interface
