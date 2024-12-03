@@ -2,6 +2,7 @@
 
 LLVM_FLAGS=`llvm-config --cflags --ldflags --libs --system-libs`
 INST_PASS=@METACG_INSTALL_DIR@/lib/
+RUNTIME=@METACG_INSTALL_DIR@/lib/lib-cgpatchruntime.a
 LIB_DIR=@METACG_INSTALL_DIR@/lib/
 
 # Check if linking is enabled
@@ -65,7 +66,7 @@ shift
 if [[ "$linking" == yes ]]
 then
   echo "[patchcc] Linking"
-  LD_LIBRARY_PATH="$LIB_DIR:$LD_LIBRARY_PATH" $COMPILER $CLI_FLAGS $CLI_FLAGS_LINK "$@" -lstdc++ $LLVM_FLAGS
+  LD_LIBRARY_PATH="$LIB_DIR:$LD_LIBRARY_PATH" $COMPILER $CLI_FLAGS $CLI_FLAGS_LINK "$@" -lstdc++ -Wl,-rpath,@METACG_INSTALL_DIR@/lib -L@METACG_INSTALL_DIR@/lib -lmetacg -Wl,-whole-archive $RUNTIME -Wl,-no-whole-archive -Wl,--rpath,@GRAPH_LIB@ $LLVM_FLAGS
 else
   echo "[patchcc] Compiling"
   LD_LIBRARY_PATH="$LIB_DIR:$LD_LIBRARY_PATH" $COMPILER $CLI_FLAGS "$@"

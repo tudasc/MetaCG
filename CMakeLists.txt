@@ -146,6 +146,13 @@ option(
   OFF
 )
 
+# Enable MPI for CGPatch
+option(
+  CGPATCH_USE_MPI
+  "On or Of"
+  ON
+)
+
 # Build MetaCG's Python interface
 option(
   METACG_BUILD_PYMETACG

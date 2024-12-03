@@ -301,6 +301,14 @@ test-target-collector:
     - cd graph/test/integration/TargetCollector
     - ./TestRunner.sh -b $MCG_BUILD
 
+test-cgpatch-integration:
+  <<: *job-setup
+  needs: ["build-mcg"]
+  script:
+    - module load clang/$LLVM
+    - cd tools/cgpatch/test/integration/
+    - ./CGPIntegrationRunner.sh -b $MCG_BUILD
+
 # Stage: install
 install-mcg:
   <<: *job-setup

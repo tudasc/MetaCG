@@ -1,0 +1,36 @@
+{
+    "_CG": {
+        "_Z6secreti": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": null,
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z6secreti"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": null,
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "bc73297b72f9c884cc0eaefbf1a6f2f9bc681209",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}

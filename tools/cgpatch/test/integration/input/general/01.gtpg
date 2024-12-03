@@ -1,0 +1,60 @@
+{
+    "_CG": {
+        "_Z12bar_with_argi": {
+            "callees": [],
+            "callers": [
+                "_Z12foo_with_argIFviEEvRT_i"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": null,
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z12foo_with_argIFviEEvRT_i": {
+            "callees": [
+                "_Z12bar_with_argi"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": null,
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z3barv": {
+            "callees": [],
+            "callers": [
+                "_Z3fooIFvvEEvRT_"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": null,
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z3fooIFvvEEvRT_": {
+            "callees": [
+                "_Z3barv"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": null,
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "1bd9c2683da0b31ccaccda10a03cd06f74154737",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}
