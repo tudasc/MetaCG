@@ -85,7 +85,7 @@ class MetaCGReader {
   /**
    * PiraMCGProcessor object to be filled with the CG
    */
-  virtual std::unique_ptr<Callgraph> read() = 0;
+  [[nodiscard]] virtual std::unique_ptr<Callgraph> read() = 0;
 
  protected:
   /**

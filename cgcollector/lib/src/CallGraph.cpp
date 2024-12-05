@@ -24,6 +24,7 @@
 #include <clang/Basic/LLVM.h>
 #include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/ADT/STLExtras.h>
+#include <llvm/ADT/SmallSet.h>
 #include <llvm/ADT/Statistic.h>
 #include <llvm/Support/Casting.h>
 #include <llvm/Support/Compiler.h>
@@ -450,7 +451,7 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
  private:
   // add a called decl to another function
   void addCalledDecl(const Decl* caller, const Decl* callee, const CallExpr* C) {
-    if (!G->includeInGraph(callee)) {
+    if (!CallGraph::includeInGraph(callee) || !CallGraph::includeInGraph(caller)) {
       return;
     }
     G->getOrInsertNode(caller)->addCallee(G->getOrInsertNode(callee));
@@ -773,7 +774,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
 
   // add a called decl to the current function
   void addCalledDecl(const Decl* D, const CallExpr* C) {
-    if (!G->includeInGraph(D))
+    if (!CallGraph::includeInGraph(D))
       return;
 
     CallGraphNode* CalleeNode = G->getOrInsertNode(D);
@@ -785,7 +786,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
 
   // add a called decl to another function
   void addCalledDecl(Decl* Caller, Decl* Callee, CallExpr* C) {
-    if (!G->includeInGraph(Callee))
+    if (!CallGraph::includeInGraph(Caller) || !CallGraph::includeInGraph(Callee))
       return;
     G->getOrInsertNode(Caller)->addCallee(G->getOrInsertNode(Callee));
     if (C) {
@@ -1160,6 +1161,13 @@ CallGraph::~CallGraph() = default;
 
 bool CallGraph::includeInGraph(const Decl* D) {
   assert(D);
+
+  // We decided that the lambda static invoker is not to be manifested as a CG node
+  // as it is not explicitly part of the source code and also absent in the IR representation
+  if (const auto& invoke = dyn_cast<CXXMethodDecl>(D); invoke && invoke->isLambdaStaticInvoker()) {
+    return false;
+  }
+
   // NOTE: It could make sense to check here that only FunctionDecls are included. Right now this function also returns
   // true for VarDecls/ParmVarDecls that are called because they contain a function pointer
   if (const FunctionDecl* FD = dyn_cast<FunctionDecl>(D)) {

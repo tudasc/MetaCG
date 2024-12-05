@@ -82,8 +82,11 @@ void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV3Format(nlohmann::jso
   for (auto& node : j["nodes"]) {
     const std::string functionName = node.at(0);
 
-    if (node.at(1).at("meta").contains("fileProperties")) {  // if by chance the V2 format contained origin data
-                                                             // calculate the hash with known origin
+    // if by chance the V2 format contained origin data
+    // calculate the hash with known origin
+    // if the origin metadata exists, but is empty use unknownOrigin instead
+    if (node.at(1).at("meta").contains("fileProperties") &&
+        !node.at(1).at("meta").at("fileProperties").at("origin").empty()) {
       node.at(0) = std::hash<std::string>()(functionName +
                                             node.at(1).at("meta").at("fileProperties").at("origin").get<std::string>());
     } else {  // if the V2 format did not contain origin data use unknownOrigin keyword
@@ -99,7 +102,8 @@ void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV3Format(nlohmann::jso
     }
     node.at(1).erase("isVirtual");
     // if by chance the V2 format contained origin data, we use this to populate the origin field
-    if (node.at(1).at("meta").contains("fileProperties")) {
+    if (node.at(1).at("meta").contains("fileProperties") &&
+        !node.at(1).at("meta").at("fileProperties").at("origin").empty()) {
       node.at(1)["origin"] = node.at(1).at("meta").at("fileProperties").at("origin");
     } else {
       node.at(1)["origin"] = "unknownOrigin";
