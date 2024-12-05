@@ -20,6 +20,9 @@ function(test_llvm_major_version version_string)
       13
       14
       15
+      16
+      17
+      18
   )
   # Set to indicate after loop if supported version was found
   set(valid_version FALSE)
@@ -32,7 +35,7 @@ function(test_llvm_major_version version_string)
   endif()
 
   if(NOT ${valid_version})
-    message(SEND_ERROR "LLVM/Clang version 10, 13, 14, and 15 are supported and tested")
+    message(SEND_ERROR "LLVM/Clang version 10, 13, 14, 15, 16, 17, and 18 are supported and tested")
   endif()
 endfunction()
 

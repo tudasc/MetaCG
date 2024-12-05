@@ -1,34 +1,6 @@
 {
-    "_ZZ4mainEN3$_08__invokeEi": {
-        "callees": [
-            "_ZZ4mainENK3$_0clEi"
-        ],
-        "doesOverride": false,
-        "hasBody": true,
-        "isVirtual": false,
-        "numStatements": 0,
-        "overriddenBy": [],
-        "overriddenFunctions": [],
-        "parents": [
-            "_ZZ4mainENK3$_0cvPFiiEEv"
-        ]
-    },
-    "_ZZ4mainENK3$_0clEi": {
-        "callees": [],
-        "doesOverride": false,
-        "hasBody": true,
-        "isVirtual": false,
-        "numStatements": 2,
-        "overriddenBy": [],
-        "overriddenFunctions": [],
-        "parents": [
-            "_ZZ4mainEN3$_08__invokeEi"
-        ]
-    },
     "_ZZ4mainENK3$_0cvPFiiEEv": {
-        "callees": [
-            "_ZZ4mainEN3$_08__invokeEi"
-        ],
+        "callees": [ ],
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
