@@ -5,160 +5,12 @@
 MetaCG provides a common whole-program call-graph representation to exchange information between different tools built on top of LLVM/Clang.
 It uses the JSON file format and separates structure from information, i.e., caller/callee relation and *meta* information.
 
-The package contains an experimental Clang-based tool for call-graph construction.
-Also, the package contains the PGIS analysis tool, which is used as the analysis backend in [PIRA](https://github.com/tudasc/pira).
+The MetaCG graph library is the fundamental component, together with, e.g., I/O facilities.
+The repository also contains an experimental Clang-based tool for call-graph construction at the source-code level.
+As an example tool, the repository contains the PGIS analysis tool, which is used as the analysis backend in [PIRA](https://github.com/tudasc/pira).
 
-Once constructed, the graph can be serialized into JSON.
-
-The JSON structure follows either the version two (MetaCGV2) or version three (MetaCGV3) specification.  
-MetaCGV3 is more suitable for a wider range of applications due to having less necessary attributes. 
-For any given function it requires the name and origin of the function and whether its definition is available.
-It is also usually more space efficient compared to MetaCGV2 due to hashed function names and allows to export metadata not only to nodes but also to edges  
-The MetaCGV3 specification also includes a more human-readable representation for debugging purposes.  
-It forgoes the hashing of names and explicitly lists caller and callees in exchange for increased filesize.  
-<table>
-<tr>
-<td>
-MetaCGV3 format
-<td>
-MetaCGV3 debug format
-</td>
-</tr>
-<tr>
-<td>
-<pre>
-{
- "_MetaCG":{
-    "version":"3.0",
-    "generator":{```
-      "name":"ToolName",
-      "sha":"GitSHA",
-      "version":"ToolVersion"
-    }
-  },
-  "_CG":{
-    "edges":[
-      [
-        [11868120863286193964,9631199822919835226],
-        {"EdgeMetadata":{"isHotEdge":true}}"
-      ]
-    ],
-    "nodes":[
-      [ 9631199822919835226,{
-        <br>
-        "functionName":" foo",
-        "hasBody":true,
-        "meta":{
-          "NumInstructionsMetadata":{"instructions":5}
-        },
-        "origin":"main.cpp"
-        }
-      ],
-      [11868120863286193964,{
-        <br>
-        "functionName":"main",
-        "hasBody":true,
-        "meta":{
-          "NumInstructionsMetadata":{"instructions":8}
-        },
-        "origin":"main.cpp"
-        }
-      ]
-    ]
-  }
-}
-</pre>
-</td>
-<td>
-<pre>
-{
-  "_MetaCG":{
-    "version":"3.0",
-    "generator":{
-      "name":"ToolName",
-      "sha":"GitSHA",
-      "version":"ToolVersion"
-    }
-  },
-  "_CG":{
-    "edges":[
-      [
-        [11868120863286193964,9631199822919835226],
-        {"EdgeMetadata":{"isHotEdge":true}}"
-      ]
-    ],
-    "nodes":[
-      [ "foo",{
-        "callees":[],
-        "callers":["main"],
-        "functionName":" foo",
-        "hasBody":true,
-        "meta":{
-          "NumInstructionsMetadata":{"instructions":5}
-        },
-        "origin":"main.cpp"
-        }
-      ],
-      [ "main",{
-        "callees":["foo"],
-        "callers":[],
-        "functionName":"main",
-        "hasBody":true,
-        "meta":{
-          "NumInstructionsMetadata":{"instructions":8}
-        },
-        "origin":"main.cpp"
-        }
-      ]
-    ]
-  }
-}
-</pre>
-</td>
-</tr>
-
-</table>
-
-The version-two specification (MetaCGV2) contains the following information:
-```{.json}
-{
- "_MetaCG": {
-   "version": "2.0",
-   "generator": {
-    "name": "ToolName",
-    "version": "ToolVersion"
-    }
-  },
-  "_CG": {
-   "main": {
-    "callers": [],
-    "callees": ["foo"],
-    "hasBody": true,
-    "isVirtual": false,
-    "doesOverride": false,
-    "overrides": [],
-    "overriddenBy": [],
-    "meta": {
-     "MetaTool": {}
-    }
-   }
-  }
-}
-```
-
-- *_MetaCG* contains information about the file itself, such as the file format version.
-- *_CG* contains the actual serialized call graph. For each function, it lists
-  - *callers*: A set of functions that this function may be called from.
-  - *callees*: A set of functions that this function may call.
-  - *hasBody*: Whether a definition of the function was found in the processed source files.
-  - *isVirtual*: Whether the function is marked as virtual.
-  - *doesOverride*: Whether this function overrides another function.
-  - *overrides*: A set of functions that this function overrides.
-  - *overriddenBy*: A set of functions that this function is overridden by.
-  - *meta*: A special field into which a tool can export its (intermediate) results.
-
-The version two specification is mainly used for the PIRA profiler, to export various additional information about the program's functions into the MetaCG file.
-It uses the meta field to export e.g. empirically determined performance models, runtime measurements, or loop nesting depth per function.
+The current default file format is MetaCG format version 3.
+More info on the different formats can be found in the [graph README](graph/README.md).
 
 ## Requirements and Building
 
@@ -256,37 +108,7 @@ target_link_library(MainApp metacg::metacg)
 Clang-based call-graph generation tool for MetaCG.
 It has the components CGCollector, CGMerge and CGValidate to construct the partial MCG per translation unit, merge the partial MCGs into the final whole-program MCG and validate edges against a full Score-P profile, respectively.
 
-
-#### Using CGCollector
-
-It is easiest to apply CGCollector, when a compilation database (`compile_commands.json`) is present.
-Then, CGCollector can be applied to a single source file using
-
-```{.sh}
-$> cgc target.cpp
-```
-
-`cgc` is a wrapper script that (tries to) determines the paths to the Clang standard includes.
-
-Subsequently, the resulting partial MCGs are merged using `CGMerge` to create the final, whole-program call-graph of the application.
-
-```{.sh}
-$> echo "null" > $IPCG_FILENAME
-$> find ./src -name "*.mcg" -exec cgmerge $IPCG_FILENAME $IPCG_FILENAME {} +
-```
-
-##### CGCollector / CGMerge on Multi-File Projects
-
-The easiest approch to apply the CGCollector / CGMerge toolchain to a multi-file project is using the `TargetCollector.py` tool.
-It is a convenience tool around CMake's file API that allows to configure the target project and apply the CGCollector / CGMerge to only the source files required for a given CMake target.
-Check out the `graph/test/integration/TargetCollector/TestRunner.sh` script for an example invocation.
-
-In case you want to apply the CGCollector / CGMerge toolchain to a non-CMake project, you need to resort to manually finding the files that need to be processed and merged for the given use case.
-
-#### Validation of Generated Callgraph
-
-Optionally, you can test the call graph for missing edges, by providing an *unfiltered* application profile that was recorded using [Score-P](https://www.vi-hps.org/projects/score-p) in the [Cube](https://www.scalasca.org/scalasca/software/cube-4.x/download.html) library format.
-This is done using the CGValidate tool, which also allows to patch all missing edges and nodes.
+See its [README](cgcollector/README.md) for details.
 
 
 ### PGIS (The PIRA Analyzer)
@@ -294,49 +116,4 @@ This is done using the CGValidate tool, which also allows to patch all missing e
 This tool is part of the [PIRA](https://github.com/tudasc/pira) toolchain.
 It is used as analysis engine and constructs instrumentation selections guided by both static and dynamic information from a target application.
 
-#### Using PGIS
-
-The PGIS tool offers a variety of modes to operate.
-A list of all modes and options can be found with `pgis_pira --help`.
-Currently, the user needs to provide any `parameter-file`, as required by the performance model guided instrumentation or the load imbalance detection.
-Examples of such files can be found in the heuristics respective integration test directory.
-
-
-1. Construct overview instrumentation configurations for Score-P from a MetaCG file.
-
-```{.sh}
-$> pgis_pira --metacg-format 2 --static mcg-file
-```
-
-2. Construct hot-spot instrumentation using raw runtime values.
-
-```{.sh}
-$> pgis_pira --metacg-format 2 --cube cube-file mcg-file
-```
-
-3. Construct performance model guided instrumentation configurations for Score-P using Extra-P.
-The Extra-P configuration lists where to find the experiment series.
-Its content follows what is expected by Extra-P.
-
-```{.json}
-{
- "dir": "./002",
- "prefix": "t",
- "postfix": "postfix",
- "reps": 5,
- "iter": 1,
- "params" : {
-  "X": ["3", "5", "7", "9", "11"]
- }
-}
-```
-
-```{.sh}
-$> pgis_pira --metacg-format 2 --parameter-file <parameter-file> --extrap extrap-file mcg-file
-```
-
-4. Evaluate and construct load-imbalance instrumentation configuration.
-
-```{.sh}
-$> pgis_pira --metacg-format 2 --parameter-file <parameter-file> --lide 1 --cube cube-file mcg-file
-```
+See its [README](pgis/README.md) for details.
