@@ -5,6 +5,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(MetacgGraphLibSources
     src/CgNode.cpp
     src/Callgraph.cpp
+    src/io/MCGWriter.cpp
     src/io/VersionTwoMCGReader.cpp
     src/io/VersionThreeMCGReader.cpp
     src/MCGManager.cpp
