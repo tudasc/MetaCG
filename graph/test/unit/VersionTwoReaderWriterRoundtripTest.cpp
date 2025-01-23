@@ -77,7 +77,7 @@ TEST_F(VersionTwoReaderWriterRoundtripTest, TextGraphText) {
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
-  mcgWriter.write(jsonSink);
+  mcgWriter.writeActiveGraph(jsonSink);
 
   EXPECT_EQ(jsonSink.getJson(), jsonCG);
 }

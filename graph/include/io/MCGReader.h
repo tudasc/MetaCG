@@ -28,7 +28,7 @@ struct ReaderSource {
   /**
    * Returns a json object of the call graph.
    */
-  virtual nlohmann::json get() const = 0;
+  virtual nlohmann::json get() = 0;
 };
 
 /**
@@ -36,15 +36,18 @@ struct ReaderSource {
  * If the file does not exists, prints error and exits the program.
  */
 struct FileSource : ReaderSource {
-  explicit FileSource(const std::filesystem::path& filepath) : filepath(filepath) {}
+  explicit FileSource(std::filesystem::path filepath) : filepath(std::move(filepath)) {}
   /**
    * Reads the json file with filename (provided at object construction)
    * and returns the json object.
    */
-  virtual nlohmann::json get() const override {
+  nlohmann::json get() override {
+    if (!jsonContent.empty()) {
+      return jsonContent;
+    }
+
     const std::string filename = filepath.string();
     metacg::MCGLogger::instance().getConsole()->debug("Reading metacg file from: {}", filename);
-    nlohmann::json j;
     {
       std::ifstream in(filepath);
       if (!in.is_open()) {
@@ -52,12 +55,16 @@ struct FileSource : ReaderSource {
         metacg::MCGLogger::instance().getErrConsole()->error(errorMsg);
         throw std::runtime_error(errorMsg);
       }
-      in >> j;
+      in >> jsonContent;
     }
-
-    return j;
+    return jsonContent;
   };
+
+  virtual ~FileSource() = default;
+
+ private:
   std::filesystem::path filepath;
+  nlohmann::json jsonContent;
 };
 
 /**
@@ -66,7 +73,10 @@ struct FileSource : ReaderSource {
  */
 struct JsonSource : ReaderSource {
   explicit JsonSource(nlohmann::json j) : json(std::move(j)) {}
-  virtual nlohmann::json get() const override { return json; }
+  virtual ~JsonSource() = default;
+  nlohmann::json get() override { return json; }
+
+ private:
   nlohmann::json json;
 };
 
@@ -91,7 +101,7 @@ class MetaCGReader {
   /**
    * Abstraction from where to read-in the JSON.
    */
-  const ReaderSource& source;
+  ReaderSource& source;
 
  private:
   // filename of the metacg this instance parses
