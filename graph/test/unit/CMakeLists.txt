@@ -5,6 +5,7 @@ add_executable(
   DotIOTest.cpp
   MCGManagerTest.cpp
   ReachabilityAnalysisTest.cpp
+  ReaderFactoryTest.cpp
   UtilTest.cpp
   VersionThreeMCGReaderTest.cpp
   VersionThreeMCGWriterTest.cpp
