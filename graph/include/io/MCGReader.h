@@ -16,6 +16,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+
 namespace metacg::io {
 
 using json = nlohmann::json;
@@ -29,6 +30,19 @@ struct ReaderSource {
    * Returns a json object of the call graph.
    */
   virtual nlohmann::json get() = 0;
+
+  /**
+   * Reads the format version string. May be overwritten by format specific readers.
+   * @return The version string.
+   */
+  virtual std::string getFormatVersion() {
+    auto j = get();
+    if (!j.contains("_MetaCG") || !j.at("_MetaCG").contains("version")) {
+      metacg::MCGLogger::instance().getErrConsole()->error("Unable to read version information from JSON source.");
+      return "unknown";
+    }
+    return j.at("_MetaCG").at("version");
+  }
 };
 
 /**
@@ -92,6 +106,9 @@ class MetaCGReader {
    * filename path to file
    */
   explicit MetaCGReader(ReaderSource& src) : source(src) {}
+
+  virtual ~MetaCGReader() = default;
+
   /**
    * PiraMCGProcessor object to be filled with the CG
    */
@@ -107,6 +124,13 @@ class MetaCGReader {
   // filename of the metacg this instance parses
   const std::string filename;
 };
+
+/**
+ * Factory function to instantiate the correct reader implementation for the given source.
+ * @param src The source
+ * @return A unique pointer to the instantiated reader. Empty, if there is no reader matching the format version.
+ */
+std::unique_ptr<MetaCGReader> createReader(ReaderSource& src);
 
 }  // namespace metacg::io
 
