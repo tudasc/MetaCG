@@ -80,6 +80,18 @@ include(GoogleTest)
 # Component options MetaCG graph library will always be built. The actual graph implementation
 add_subdirectory(graph)
 
+option(
+  METACG_BUILD_GRAPH_TOOLS
+  "Build new graphlib-based tools (cgcollector2, cgmerge2)"
+  OFF
+)
+
+if(METACG_BUILD_GRAPH_TOOLS)
+  # New MetaCG tools based on the graphlib
+  include(ClangLLVM)
+  add_subdirectory(tools)
+endif()
+
 # Build the collector toolchain: CGCollector, CGMerge, and CGValidate
 option(
   METACG_BUILD_CGCOLLECTOR
