@@ -1,6 +1,6 @@
 // Test for the handling of constructors and destructors when passing arguments
 struct A {
-  ~A(){};
+  ~A() {};
 };
 
 // Should not call destructors

@@ -56,7 +56,7 @@ class PiraMCGProcessor {
   }
 
  private:
-  PiraMCGProcessor() : graph(&getEmptyGraph()), configPtr(nullptr), epModelProvider({}){};
+  PiraMCGProcessor() : graph(&getEmptyGraph()), configPtr(nullptr), epModelProvider({}) {};
   explicit PiraMCGProcessor(Config* config, extrapconnection::ExtrapConfig epCfg = {});
 
   PiraMCGProcessor(const PiraMCGProcessor& other) = default;

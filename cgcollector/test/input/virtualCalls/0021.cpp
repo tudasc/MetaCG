@@ -12,7 +12,7 @@ class MyClassDerive : public MyClass {
 
 class MyClassDeriveDerive : public MyClassDerive {
  public:
-  void foo() override{};
+  void foo() override {};
 };
 
 void MyClassDerive::foo() {}
