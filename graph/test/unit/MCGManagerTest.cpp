@@ -184,3 +184,62 @@ TEST_F(MCGManagerTest, ComplexCG) {
     ASSERT_TRUE(elem->getFunctionName() == "child4" || elem->getFunctionName() == "child5");
   }
 }
+
+// Callgraph merge functionality from here on out. Exclusively structure checks
+
+TEST_F(MCGManagerTest, EmptyCallgraphMerge) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newCG", std::make_unique<metacg::Callgraph>(), true);
+  mcgm.addToManagedGraphs("newCG2", std::make_unique<metacg::Callgraph>(), false);
+  mcgm.mergeIntoActiveGraph();
+  ASSERT_TRUE(mcgm.getCallgraph()->isEmpty());
+}
+
+TEST_F(MCGManagerTest, FullIntoEmptyCallgraphMerge) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newCG", std::make_unique<metacg::Callgraph>(), true);
+  mcgm.addToManagedGraphs("newCG2", std::make_unique<metacg::Callgraph>(), false);
+
+  mcgm.getCallgraph("newCG2", false)->insert("main");
+  mcgm.getCallgraph("newCG2", false)->insert("child1");
+  mcgm.getCallgraph("newCG2", false)->getNode("main")->setHasBody(true);
+  mcgm.getCallgraph("newCG2", false)->getNode("child1")->setHasBody(true);
+  mcgm.getCallgraph("newCG2", false)->addEdge("main", "child1");
+
+  mcgm.mergeIntoActiveGraph();
+
+  ASSERT_TRUE(mcgm.getCallgraph()->hasNode("main"));
+  ASSERT_TRUE(mcgm.getCallgraph()->hasNode("child1"));
+  ASSERT_TRUE(mcgm.getCallgraph()->getNode("main")->getHasBody());
+  ASSERT_TRUE(mcgm.getCallgraph()->getNode("child1")->getHasBody());
+  ASSERT_TRUE(mcgm.getCallgraph()->existEdgeFromTo("main", "child1"));
+}
+
+TEST_F(MCGManagerTest, FullIntoFullCallgraphMerge) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newCG", std::make_unique<metacg::Callgraph>(), true);
+  mcgm.addToManagedGraphs("newCG2", std::make_unique<metacg::Callgraph>(), false);
+
+  mcgm.getCallgraph()->insert("child2");
+  mcgm.getCallgraph()->insert("child1");
+  mcgm.getCallgraph()->getNode("child2")->setHasBody(true);
+  mcgm.getCallgraph()->getNode("child1")->setHasBody(true);
+  mcgm.getCallgraph()->addEdge("child1", "child2");
+
+  mcgm.getCallgraph("newCG2", false)->insert("main");
+  mcgm.getCallgraph("newCG2", false)->insert("child1");
+  mcgm.getCallgraph("newCG2", false)->getNode("main")->setHasBody(true);
+  mcgm.getCallgraph("newCG2", false)->getNode("child1")->setHasBody(true);
+  mcgm.getCallgraph("newCG2", false)->addEdge("main", "child1");
+
+  mcgm.mergeIntoActiveGraph();
+
+  ASSERT_TRUE(mcgm.getCallgraph()->hasNode("main"));
+  ASSERT_TRUE(mcgm.getCallgraph()->hasNode("child1"));
+  ASSERT_TRUE(mcgm.getCallgraph()->hasNode("child2"));
+  ASSERT_TRUE(mcgm.getCallgraph()->getNode("main")->getHasBody());
+  ASSERT_TRUE(mcgm.getCallgraph()->getNode("child1")->getHasBody());
+  ASSERT_TRUE(mcgm.getCallgraph()->getNode("child2")->getHasBody());
+  ASSERT_TRUE(mcgm.getCallgraph()->existEdgeFromTo("main", "child1"));
+  ASSERT_TRUE(mcgm.getCallgraph()->existEdgeFromTo("child1", "child2"));
+}

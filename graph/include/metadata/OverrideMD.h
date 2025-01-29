@@ -6,8 +6,25 @@
 
 #ifndef METACG_OVERRIDEMD_H
 #define METACG_OVERRIDEMD_H
-#include "MetaData.h"
+
+#include "LoggerUtil.h"
+#include "metadata/MetaData.h"
 #include <vector>
+
+/**
+ * Copies items from the source vector into the destination vector. Removes duplicates.
+ * @tparam T Vector type
+ * @param dst Destination vector
+ * @param src Source vector
+ */
+template <typename T>
+void mergeVectors(std::vector<T>& dst, const std::vector<T>& src) {
+  for (const auto& entry : src) {
+    if (auto it = std::find(dst.begin(), dst.end(), entry); it == dst.end()) {
+      dst.push_back(entry);
+    }
+  }
+}
 
 /**
  *  This is first-party metadata that allows a user to attach override data to function nodes
@@ -16,17 +33,32 @@
  *  and which function it overrides or gets overridden by
  *  The deprecated setIsVirtual and IsVirtual use this metadata to achieve compatibility with older API calls
  */
-struct OverrideMetadata final : metacg::MetaData::Registrar<OverrideMetadata> {
+struct OverrideMD final : metacg::MetaData::Registrar<OverrideMD> {
  public:
   static constexpr const char* key = "overrideMD";
-  OverrideMetadata() = default;
+  OverrideMD() = default;
 
-  explicit OverrideMetadata(const nlohmann::json& j) {
+  explicit OverrideMD(const nlohmann::json& j) {
     overrides = j.at("overrides").get<std::vector<size_t>>();
     overriddenBy = j.at("overriddenBy").get<std::vector<size_t>>();
   }
 
-  nlohmann::json to_json() const final { return {{"overrides", overrides}, {"overriddenBy", overriddenBy}}; };
+  nlohmann::json to_json() const final { return {{"overrides", overrides}, {"overriddenBy", overriddenBy}}; }
+
+ private:
+  OverrideMD(const OverrideMD& other) : overrides(other.overrides), overriddenBy(other.overriddenBy) {}
+
+ public:
+  void merge(const MetaData& toMerge) final {
+    assert(toMerge.getKey() == getKey() && "Trying to merge OverrideMD with meta data of different types");
+
+    const OverrideMD* toMergeDerived = static_cast<const OverrideMD*>(&toMerge);
+
+    mergeVectors(overriddenBy, toMergeDerived->overriddenBy);
+    mergeVectors(overrides, toMergeDerived->overrides);
+  }
+
+  MetaData* clone() const final { return new OverrideMD(*this); }
 
   const char* getKey() const final { return key; }
 

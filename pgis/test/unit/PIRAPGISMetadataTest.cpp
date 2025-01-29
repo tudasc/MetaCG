@@ -101,9 +101,9 @@ TEST(PIRAPGISMetadataTest, FilePropertiesMetaData) {
   delete jsonMetadata;
 }
 
-TEST(PIRAPGISMetadataTest, CodeStatisticsMetaData) {
+TEST(PIRAPGISMetadataTest, CodeStatisticsMD) {
   // Generate "Real" Object
-  const auto& origMetadata = new pira::CodeStatisticsMetaData();
+  const auto& origMetadata = new CodeStatisticsMD();
 
   // Export "Real" Object
   const auto& j = origMetadata->to_json();
@@ -112,7 +112,7 @@ TEST(PIRAPGISMetadataTest, CodeStatisticsMetaData) {
   EXPECT_EQ(j.at("numVars"), origMetadata->numVars);
 
   // Import Json into new Object
-  const auto& jsonMetadata = new pira::CodeStatisticsMetaData(j);
+  const auto& jsonMetadata = new CodeStatisticsMD(j);
 
   // Compare all imported values
   EXPECT_EQ(jsonMetadata->numVars, origMetadata->numVars);
@@ -122,16 +122,16 @@ TEST(PIRAPGISMetadataTest, CodeStatisticsMetaData) {
 
 TEST(PIRAPGISMetadataTest, NumConditionalBranchMetaData) {
   // Generate "Real" Object
-  const auto& origMetadata = new pira::NumConditionalBranchMetaData();
+  const auto& origMetadata = new NumConditionalBranchMD();
 
   // Export "Real" Object
   const auto& j = origMetadata->to_json();
   // Compare all exported values
-  // Note: due to historical reasons, NumConditionalBranchMetaData is not a json object, but only a single value
+  // Note: due to historical reasons, NumConditionalBranchMD is not a json object, but only a single value
   EXPECT_EQ(j.get<int>(), origMetadata->numConditionalBranches);
 
   // Import Json into new Object
-  const auto& jsonMetadata = new pira::NumConditionalBranchMetaData(j);
+  const auto& jsonMetadata = new NumConditionalBranchMD(j);
 
   // Compare all imported values
   EXPECT_EQ(jsonMetadata->numConditionalBranches, origMetadata->numConditionalBranches);
@@ -141,8 +141,7 @@ TEST(PIRAPGISMetadataTest, NumConditionalBranchMetaData) {
 
 TEST(PIRAPGISMetadataTest, NumOperationsMetaData) {
   // Generate "Real" Object
-  const auto& origMetadata = new pira::NumOperationsMetaData();
-
+  const auto& origMetadata = new NumOperationsMD();
   // Export "Real" Object
   const auto& j = origMetadata->to_json();
   // Compare all exported values
@@ -156,7 +155,7 @@ TEST(PIRAPGISMetadataTest, NumOperationsMetaData) {
   EXPECT_EQ(j.at("numberOfMemoryAccesses"), origMetadata->numberOfMemoryAccesses);
 
   // Import Json into new Object
-  const auto& jsonMetadata = new pira::NumOperationsMetaData(j);
+  const auto& jsonMetadata = new NumOperationsMD(j);
 
   // Compare all imported values
   EXPECT_EQ(jsonMetadata->numberOfIntOps, origMetadata->numberOfIntOps);
@@ -167,18 +166,18 @@ TEST(PIRAPGISMetadataTest, NumOperationsMetaData) {
   delete jsonMetadata;
 }
 
-TEST(PIRAPGISMetadataTest, LoopDepthMetaData) {
+TEST(PIRAPGISMetadataTest, LoopDepthMD) {
   // Generate "Real" Object
-  const auto& origMetadata = new pira::LoopDepthMetaData();
+  const auto& origMetadata = new LoopDepthMD();
 
   // Export "Real" Object
   const auto& j = origMetadata->to_json();
   // Compare all exported values
-  // Note: due to historical reasons, LoopDepthMetaData is not a json object, but only a single value
+  // Note: due to historical reasons, LoopDepthMD is not a json object, but only a single value
   EXPECT_EQ(j.get<int>(), origMetadata->loopDepth);
 
   // Import Json into new Object
-  const auto& jsonMetadata = new pira::LoopDepthMetaData(j);
+  const auto& jsonMetadata = new LoopDepthMD(j);
 
   // Compare all imported values
   EXPECT_EQ(jsonMetadata->loopDepth, origMetadata->loopDepth);
@@ -186,19 +185,19 @@ TEST(PIRAPGISMetadataTest, LoopDepthMetaData) {
   delete jsonMetadata;
 }
 
-TEST(PIRAPGISMetadataTest, GlobalLoopDepthMetaData) {
+TEST(PIRAPGISMetadataTest, GlobalLoopDepthMD) {
   // Generate "Real" Object
-  const auto& origMetadata = new pira::GlobalLoopDepthMetaData();
+  const auto& origMetadata = new GlobalLoopDepthMD();
 
   // Export "Real" Object
   const auto& j = origMetadata->to_json();
   // Compare all exported values
-  // Note: due to historical reasons, GlobalLoopDepthMetaData is not a json object, but only a single value
+  // Note: due to historical reasons, GlobalLoopDepthMD is not a json object, but only a single value
   EXPECT_EQ(j.get<int>(), origMetadata->globalLoopDepth);
 
   // Import Json into new Object
 
-  const auto& jsonMetadata = new pira::GlobalLoopDepthMetaData(j);
+  const auto& jsonMetadata = new GlobalLoopDepthMD(j);
 
   // Compare all imported values
   EXPECT_EQ(jsonMetadata->globalLoopDepth, origMetadata->globalLoopDepth);

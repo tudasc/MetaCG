@@ -29,6 +29,11 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
     metadataFloat = j.at("metadataFloat");
   }
 
+ private:
+  TestMetaData(const TestMetaData& other)
+      : metadataString(other.metadataString), metadataInt(other.metadataInt), metadataFloat(other.metadataFloat) {}
+
+ public:
   nlohmann::json to_json() const final {
     nlohmann::json j;
     j["metadataString"] = metadataString;
@@ -38,6 +43,18 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
   };
 
   const char* getKey() const final { return key; }
+
+  void merge(const MetaData& toMerge) final {
+    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
+      metacg::MCGLogger::instance().getErrConsole()->error(
+          "The MetaData which was tried to merge with TestMetaData was of a different MetaData type");
+      abort();
+    }
+
+    // const TestMetaData* toMergeDerived = static_cast<const TestMetaData*>(&toMerge);
+  }
+
+  MetaData* clone() const final { return new TestMetaData(*this); }
 
   std::string metadataString;
   int metadataInt = 0;

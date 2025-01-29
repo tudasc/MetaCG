@@ -123,7 +123,7 @@ class CgNode {
         origin(std::move(origin)),
         hasBody(hasBody) {
     if (isVirtual) {
-      this->getOrCreateMD<OverrideMetadata>();
+      this->getOrCreateMD<OverrideMD>();
     }
   };
 
@@ -173,16 +173,16 @@ class CgNode {
    */
   std::string getFunctionName() const;
 
-  [[deprecated("Attach \"OverrideMetadata\" instead")]] void setIsVirtual(bool virtualness) {
+  [[deprecated("Attach \"OverrideMD\" instead")]] void setIsVirtual(bool virtualness) {
     if (virtualness) {
-      this->getOrCreateMD<OverrideMetadata>();
+      this->getOrCreateMD<OverrideMD>();
     } else {
-      this->metaFields.erase(OverrideMetadata::key);
+      this->metaFields.erase(OverrideMD::key);
     }
   }
 
-  [[deprecated("Check with has<OverrideMetadata>() instead")]] bool isVirtual() {
-    return this->has<OverrideMetadata>();
+  [[deprecated("Check with has<OverrideMD>() instead")]] bool isVirtual() {
+    return this->has<OverrideMD>();
   }
 
   std::string getOrigin() const;

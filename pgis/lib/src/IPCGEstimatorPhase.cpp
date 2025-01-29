@@ -907,11 +907,11 @@ void StatisticsEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
     auto& inclHistElem = stmtInclHist[sce.getNumStatements(node)];
     inclHistElem++;
 
-    if (node->has<CodeStatisticsMetaData>()) {
-      const auto csMD = node->get<CodeStatisticsMetaData>();
+    if (node->has<CodeStatisticsMD>()) {
+      const auto csMD = node->get<CodeStatisticsMD>();
       totalVarDecls += csMD->numVars;
     } else {
-      metacg::MCGLogger::instance().getConsole()->warn("Node does not have CodeStatisticsMetaData");
+      metacg::MCGLogger::instance().getConsole()->warn("Node does not have CodeStatisticsMD");
     }
   }
 }
@@ -1199,11 +1199,11 @@ long int ConditionalBranchesEstimatorPhase::getPreviousThreshold() const {
   return pSEP->getCuttoffConditionalBranches();
 }
 long int ConditionalBranchesEstimatorPhase::getTargetCount(const CgNode* node) const {
-  if (node->has<NumConditionalBranchMetaData>()) {
-    const auto md = node->get<NumConditionalBranchMetaData>();
+  if (node->has<NumConditionalBranchMD>()) {
+    const auto md = node->get<NumConditionalBranchMD>();
     return md->numConditionalBranches;
   } else {
-    metacg::MCGLogger::instance().getConsole()->warn("Node does not have NumConditionalBranchMetaData");
+    metacg::MCGLogger::instance().getConsole()->warn("Node does not have NumConditionalBranchMD");
     return 0;
   }
 }
@@ -1220,11 +1220,11 @@ long int ConditionalBranchesReverseEstimatorPhase::getPreviousThreshold() const 
   return pSEP->getCuttoffReversesConditionalBranches();
 }
 long int ConditionalBranchesReverseEstimatorPhase::getTargetCount(const CgNode* node) const {
-  if (node->has<NumConditionalBranchMetaData>()) {
-    const auto md = node->get<NumConditionalBranchMetaData>();
+  if (node->has<NumConditionalBranchMD>()) {
+    const auto md = node->get<NumConditionalBranchMD>();
     return maxBranches - md->numConditionalBranches;
   } else {
-    metacg::MCGLogger::instance().getConsole()->warn("Node does not have NumConditionalBranchMetaData");
+    metacg::MCGLogger::instance().getConsole()->warn("Node does not have NumConditionalBranchMD");
     return maxBranches;
   }
 }
@@ -1232,11 +1232,11 @@ void ConditionalBranchesReverseEstimatorPhase::runInitialization() {
   maxBranches = 0;
   for (const auto& elem : graph->getNodes()) {
     const auto& node = elem.second.get();
-    if (node->has<NumConditionalBranchMetaData>()) {
-      const auto md = node->get<NumConditionalBranchMetaData>();
+    if (node->has<NumConditionalBranchMD>()) {
+      const auto md = node->get<NumConditionalBranchMD>();
       maxBranches = std::max(maxBranches, static_cast<long int>(md->numConditionalBranches));
     } else {
-      metacg::MCGLogger::instance().getConsole()->warn("Node does not have NumConditionalBranchMetaData");
+      metacg::MCGLogger::instance().getConsole()->warn("Node does not have NumConditionalBranchMD");
     }
   }
 }
@@ -1246,11 +1246,11 @@ FPAndMemOpsEstimatorPhase::FPAndMemOpsEstimatorPhase(long int threshold, metacg:
     : SummingCountPhaseBase(threshold, "IntMemoryAccesses", callgraph, prevStatEP) {}
 long int FPAndMemOpsEstimatorPhase::getPreviousThreshold() const { return pSEP->getCuttoffRoofline(); }
 long int FPAndMemOpsEstimatorPhase::getTargetCount(const CgNode* node) const {
-  if (node->has<NumOperationsMetaData>()) {
-    const auto md = node->get<NumOperationsMetaData>();
+  if (node->has<NumOperationsMD>()) {
+    const auto md = node->get<NumOperationsMD>();
     return md->numberOfFloatOps + md->numberOfMemoryAccesses;
   } else {
-    metacg::MCGLogger::instance().getConsole()->warn("Node does not have NumOperationsMetaData");
+    metacg::MCGLogger::instance().getConsole()->warn("Node does not have NumOperationsMD");
     return 0;
   }
 }
@@ -1260,11 +1260,11 @@ LoopDepthEstimatorPhase::LoopDepthEstimatorPhase(long int threshold, metacg::Cal
     : SummingCountPhaseBase(threshold, "LoopDepth", callgraph, prevStatEP, false) {}
 long int LoopDepthEstimatorPhase::getPreviousThreshold() const { return pSEP->getCuttoffLoopDepth(); }
 long int LoopDepthEstimatorPhase::getTargetCount(const CgNode* node) const {
-  if (node->has<LoopDepthMetaData>()) {
-    const auto md = node->get<LoopDepthMetaData>();
+  if (node->has<LoopDepthMD>()) {
+    const auto md = node->get<LoopDepthMD>();
     return md->loopDepth;
   } else {
-    metacg::MCGLogger::instance().getConsole()->warn("Node does not have LoopDepthMetaData");
+    metacg::MCGLogger::instance().getConsole()->warn("Node does not have LoopDepthMD");
     return 0;
   }
 }
@@ -1274,11 +1274,11 @@ GlobalLoopDepthEstimatorPhase::GlobalLoopDepthEstimatorPhase(long int threshold,
     : SummingCountPhaseBase(threshold, "GlobalLoopDepth", callgraph, prevStatEP, false) {}
 long int GlobalLoopDepthEstimatorPhase::getPreviousThreshold() const { return pSEP->getCuttoffGlobalLoopDepth(); }
 long int GlobalLoopDepthEstimatorPhase::getTargetCount(const CgNode* node) const {
-  if (node->has<GlobalLoopDepthMetaData>()) {
-    const auto md = node->get<GlobalLoopDepthMetaData>();
+  if (node->has<GlobalLoopDepthMD>()) {
+    const auto md = node->get<GlobalLoopDepthMD>();
     return md->globalLoopDepth;
   } else {
-    metacg::MCGLogger::instance().getConsole()->warn("Node does not have GlobalLoopDepthMetaData");
+    metacg::MCGLogger::instance().getConsole()->warn("Node does not have GlobalLoopDepthMD");
     return 0;
   }
 }

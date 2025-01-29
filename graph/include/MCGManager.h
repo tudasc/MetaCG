@@ -66,6 +66,11 @@ class MCGManager {
   std::unordered_set<std::string> getAllManagedGraphNames();
   std::string getActiveGraphName();
 
+  /**
+   * Merges all managed graphs into the active graph
+   */
+  void mergeIntoActiveGraph();
+
   ~MCGManager();
 
  private:
