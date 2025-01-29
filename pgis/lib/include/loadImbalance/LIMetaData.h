@@ -47,9 +47,31 @@ class LIMetaData : public metacg::MetaData::Registrar<LIMetaData> {
     }
   };
 
+ private:
+  LIMetaData(const LIMetaData& other)
+      : inclusiveStatements(other.inclusiveStatements),
+        isVirtualFunction(other.isVirtualFunction),
+        flags(other.flags),
+        assessment(other.assessment) {}
+
+ public:
   virtual nlohmann::json to_json() const;
 
   [[nodiscard]] const char* getKey() const final { return key; }
+
+  void merge(const MetaData& toMerge) final {
+    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
+      metacg::MCGLogger::instance().getErrConsole()->error(
+          "The MetaData which was tried to merge with LIMetaData was of a different MetaData type");
+      abort();
+    }
+
+    // const LIMetaData* toMergeDerived = static_cast<const LIMetaData*>(&toMerge);
+
+    // TODO: Merge semantics?
+  }
+
+  MetaData* clone() const final { return new LIMetaData(*this); }
 
   void setNumberOfInclusiveStatements(pira::Statements inclusiveStatements) {
     this->inclusiveStatements = inclusiveStatements;

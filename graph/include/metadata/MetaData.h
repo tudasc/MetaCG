@@ -78,6 +78,8 @@ struct MetaData : MetaDataFactory<MetaData> {
   static constexpr const char* key = "BaseClass";
   virtual nlohmann::json to_json() const = 0;
   virtual const char* getKey() const = 0;
+  virtual void merge(const MetaData&) = 0;
+  [[nodiscard]] virtual MetaData* clone() const = 0;
   virtual ~MetaData() = default;
 };
 

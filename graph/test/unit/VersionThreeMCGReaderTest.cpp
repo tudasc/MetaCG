@@ -32,11 +32,28 @@ struct TestMetaDataV3 final : metacg::MetaData::Registrar<TestMetaDataV3> {
     stored_string = storeString;
   }
 
+ private:
+  TestMetaDataV3(const TestMetaDataV3& other)
+      : stored_int(other.stored_int), stored_double(other.stored_double), stored_string(other.stored_string) {}
+
+ public:
   nlohmann::json to_json() const final {
     return {{"stored_int", stored_int}, {"stored_double", stored_double}, {"stored_string", stored_string}};
   };
 
   const char* getKey() const override { return key; }
+
+  void merge(const MetaData& toMerge) final {
+    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
+      metacg::MCGLogger::instance().getErrConsole()->error(
+          "The MetaData which was tried to merge with TestMetaDataV3 was of a different MetaData type");
+      abort();
+    }
+
+    // const TestMetaDataV3* toMergeDerived = static_cast<const TestMetaDataV3*>(&toMerge);
+  }
+
+  MetaData* clone() const final { return new TestMetaDataV3(*this); }
 
  private:
   int stored_int;
