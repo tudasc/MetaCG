@@ -82,6 +82,9 @@ checkErrorCode 0
 echo "Invocation: $executable -i $inputDir/virtual/exp3.ipcg -c $inputDir/virtual/exp3.cubex" >> $logFile
 $executable -i $inputDir/virtual/exp3.ipcg -c $inputDir/virtual/exp3.cubex >> $logFile  2>&1
 checkErrorCode 0
+echo "Invocation $executable -i $inputDir/general/0001.ipcg -c $inputDir/general/0001.cubex" >> $logFile
+$executable -i $inputDir/virtual/testcase.ipcg -c $inputDir/virtual/testcase.cubex >> $logFile 2>&1
+checkErrorCode 0
 
 #fix
 echo "Invocation: $executable -i $inputDir/fix/miss.ipcg -c $inputDir/fix/0001.cubex -p" >> $logFile
