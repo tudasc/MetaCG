@@ -1,7 +1,7 @@
 
 using func_t = void (*)();
 
-void foo(){};
+void foo() {};
 
 func_t get_f(func_t f) { return f; }
 

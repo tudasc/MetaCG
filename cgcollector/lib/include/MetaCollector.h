@@ -127,7 +127,7 @@ class MallocVariableCollector : public MetaCollector {
       std::map<std::string, std::string>& allocs;
 
      public:
-      MallocFinder(clang::ASTContext& ctx, std::map<std::string, std::string>& allocs) : ctx(ctx), allocs(allocs){};
+      MallocFinder(clang::ASTContext& ctx, std::map<std::string, std::string>& allocs) : ctx(ctx), allocs(allocs) {};
       ~MallocFinder() = default;
 
       void VisitStmt(clang::Stmt* stmt) {
