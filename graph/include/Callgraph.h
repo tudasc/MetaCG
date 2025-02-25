@@ -87,6 +87,13 @@ class Callgraph {
   CgNode* getOrInsertNode(const std::string& name, const std::string& origin = "unknownOrigin");
 
   /**
+   * Merges the given call graph into this one.
+   * The other call graph remains unchanged.
+   * @param other The call graph to merge.
+   */
+  void merge(const Callgraph& other);
+
+  /**
    * Clears the graph to an empty graph with no main node.
    */
   void clear();

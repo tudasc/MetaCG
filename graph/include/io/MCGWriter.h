@@ -69,6 +69,8 @@ class MCGWriter {
    */
   void writeActiveGraph(JsonSink& js);
 
+  virtual ~MCGWriter() = default;
+
  protected:
   /**
    * Adds the CG version data to the MetaCG in json Format.
@@ -86,6 +88,13 @@ class MCGWriter {
   }
   MCGFileInfo fileInfo;
 };
+
+/**
+ * Factory function to instantiate the correct writer implementation for the given format.
+ * @param version The format version.
+ * @return A unique pointer to the instantiated writer. Empty, if there is no writer matching the format version.
+ */
+std::unique_ptr<MCGWriter> createWriter(int version);
 
 }  // namespace metacg::io
 

@@ -1,0 +1,201 @@
+{
+    "_CG": {
+        "_ZN13MyClassDerive3fooEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": true,
+            "hasBody": true,
+            "isVirtual": true,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0053.h",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopDepth": 0,
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [
+                "_ZN14MyClassDeriveD3fooEv"
+            ],
+            "overrides": [
+                "_ZN7MyClass3fooEv"
+            ]
+        },
+        "_ZN14MyClassDeriveD3fooEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": true,
+            "hasBody": true,
+            "isVirtual": true,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0053_b.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopDepth": 0,
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": [
+                "_ZN13MyClassDerive3fooEv"
+            ]
+        },
+        "_ZN14MyClassDeriveDC1Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0053_b.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopDepth": 0,
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN14MyClassDeriveDC2Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0053_b.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopDepth": 0,
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN7MyClass3fooEv": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": true,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0053.h",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopDepth": 0,
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [
+                "_ZN13MyClassDerive3fooEv"
+            ],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_ZN7MyClass3fooEv",
+                "_ZN14MyClassDeriveDC2Ev",
+                "_ZN14MyClassDeriveDC1Ev"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 3
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0053_b.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "_ZN7MyClass3fooEv": 0
+                },
+                "loopDepth": 0,
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 6,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 1
+                },
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "GITDIR-NOTFOUND",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}
