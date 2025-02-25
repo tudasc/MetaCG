@@ -98,38 +98,6 @@ bool MCGManager::addToManagedGraphs(const std::string& name, std::unique_ptr<Cal
 void MCGManager::mergeIntoActiveGraph() {
   assert(activeGraph && "Graph manager could not merge into active Graph, no active graph exists");
 
-  std::function<void(metacg::Callgraph*, metacg::Callgraph*, metacg::CgNode*)> copyNode =
-      [&](metacg::Callgraph* destination, metacg::Callgraph* source, metacg::CgNode* node) {
-        std::string functionName = node->getFunctionName();
-        metacg::CgNode* mergeNode = destination->getOrInsertNode(functionName, node->getOrigin());
-
-        if (node->getHasBody()) {
-          auto callees = source->getCallees(node);
-
-          for (auto* c : callees) {
-            std::string calleeName = c->getFunctionName();
-            if (!destination->hasNode(calleeName)) {
-              copyNode(destination, source, c);
-            }
-
-            if (!destination->existEdgeFromTo(functionName, calleeName)) {
-              destination->addEdge(functionName, calleeName);
-            }
-          }
-
-          mergeNode->setHasBody(node->getHasBody());
-          mergeNode->setIsVirtual(node->isVirtual());
-        }
-
-        for (const auto& it : node->getMetaDataContainer()) {
-          if (mergeNode->has(it.first)) {
-            mergeNode->get(it.first)->merge(*(it.second));
-          } else {
-            mergeNode->addMetaData(it.second->clone());
-          }
-        }
-      };
-
   // We merge into whatever the active callgraph is
   auto* activeCallgraph = getCallgraph();
   for (const auto& callgraphName : getAllManagedGraphNames()) {
@@ -137,11 +105,9 @@ void MCGManager::mergeIntoActiveGraph() {
       continue;
 
     auto* currentCallgraph = getCallgraph(callgraphName);
+    assert(currentCallgraph && "Callgraph is null!");
 
-    for (auto it = currentCallgraph->getNodes().begin(); it != currentCallgraph->getNodes().end(); ++it) {
-      auto& currentNode = it->second;
-      copyNode(activeCallgraph, currentCallgraph, currentNode.get());
-    }
+    activeCallgraph->merge(*currentCallgraph);
   }
 }
 

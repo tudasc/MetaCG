@@ -196,6 +196,14 @@ test-pgis:
 
 
 # Stage: integration-test
+test-graphlib-merge:
+  <<: *job-setup
+  stage: integration-test
+  script:
+    - module load clang/$LLVM
+    - cd graph/test/integration/CallgraphMerge
+    - ./MergeTestRunner.sh -b $MCG_BUILD
+
 test-cgvalidate:
   <<: *job-setup
   stage: integration-test

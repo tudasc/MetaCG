@@ -1,1 +1,1 @@
-# Graph-based tools will be added here
+add_subdirectory(cgmerge2)

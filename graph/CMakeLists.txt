@@ -71,3 +71,5 @@ add_spdlog_libraries(metacg)
 if(METACG_BUILD_UNIT_TESTS)
   add_subdirectory(test/unit)
 endif()
+
+add_subdirectory(test/integration/CallgraphMerge)

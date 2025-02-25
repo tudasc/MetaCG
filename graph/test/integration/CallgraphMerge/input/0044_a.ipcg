@@ -1,0 +1,114 @@
+{
+    "_CG": {
+        "_Z3barv": {
+            "callees": [
+                "_Z3foov"
+            ],
+            "callers": [
+                "_Z3harv"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0044_a.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "_Z3foov": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z3foov": {
+            "callees": [],
+            "callers": [
+                "_Z3barv"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0044_a.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z3harv": {
+            "callees": [
+                "_Z3barv"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0044_a.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "_Z3barv": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "05981c57fa438972b164ec3b164e256a00495637",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}

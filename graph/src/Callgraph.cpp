@@ -163,6 +163,48 @@ CgNode* Callgraph::getOrInsertNode(const std::string& name, const std::string& o
   assert(nodes.find(node_id) != nodes.end());
   return nodes[node_id].get();
 }
+
+void metacg::Callgraph::merge(const metacg::Callgraph& other) {
+  // Lambda function to clone nodes from the other call graph
+  std::function<void(metacg::Callgraph*, const metacg::Callgraph&, metacg::CgNode*)> copyNode =
+      [&](metacg::Callgraph* destination, const metacg::Callgraph& source, metacg::CgNode* node) {
+        std::string functionName = node->getFunctionName();
+        metacg::CgNode* mergeNode = destination->getOrInsertNode(functionName, node->getOrigin());
+
+        if (node->getHasBody()) {
+          auto callees = source.getCallees(node);
+
+          for (auto* c : callees) {
+            std::string calleeName = c->getFunctionName();
+            if (!destination->hasNode(calleeName)) {
+              copyNode(destination, source, c);
+            }
+
+            if (!destination->existEdgeFromTo(functionName, calleeName)) {
+              destination->addEdge(functionName, calleeName);
+            }
+          }
+
+          mergeNode->setHasBody(node->getHasBody());
+          mergeNode->setIsVirtual(node->isVirtual());
+        }
+
+        for (const auto& it : node->getMetaDataContainer()) {
+          if (mergeNode->has(it.first)) {
+            mergeNode->get(it.first)->merge(*(it.second));
+          } else {
+            mergeNode->addMetaData(it.second->clone());
+          }
+        }
+      };
+
+  // Iterate over all nodes and merge them into this graph
+  for (auto it = other.nodes.begin(); it != other.nodes.end(); ++it) {
+    auto& currentNode = it->second;
+    copyNode(this, other, currentNode.get());
+  }
+}
+
 const metacg::Callgraph::NodeContainer& Callgraph::getNodes() const { return nodes; }
 
 const metacg::Callgraph::EdgeContainer& Callgraph::getEdges() const { return edges; }

@@ -1,0 +1,78 @@
+{
+    "_CG": {
+        "_Z4loopv": {
+            "callees": [
+                "_Z5splitv"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0060_b.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 1,
+                "loopCallDepth": {
+                    "_Z5splitv": 1
+                },
+                "loopDepth": 1,
+                "mallocCollector": [],
+                "numConditionalBranches": 1,
+                "numOperations": {
+                    "numberOfControlFlowOps": 4,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z5splitv": {
+            "callees": [],
+            "callers": [
+                "_Z4loopv"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0060_b.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "05981c57fa438972b164ec3b164e256a00495637",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}
