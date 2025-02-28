@@ -4,8 +4,8 @@ struct A {
   ~A() {}
 };
 
-struct B: A {
-  ~B() { };
+struct B : A {
+  ~B(){};
 };
 
 void foo() {
@@ -13,4 +13,3 @@ void foo() {
   // This should only call the destructor of A
   delete b;
 }
-

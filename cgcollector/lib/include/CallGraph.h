@@ -119,8 +119,7 @@ class CallGraph : public clang::RecursiveASTVisitor<CallGraph> {
   /// declarations to collect the root functions.
   bool VisitFunctionDecl(clang::FunctionDecl* FD);
   bool VisitCXXMethodDecl(clang::CXXMethodDecl* MD);
-  bool VisitCXXDestructorDecl(clang::CXXDestructorDecl *Destructor);
-
+  bool VisitCXXDestructorDecl(clang::CXXDestructorDecl* Destructor);
 
   /// Part of recursive declaration visitation.
   bool VisitObjCMethodDecl(clang::ObjCMethodDecl* MD) {

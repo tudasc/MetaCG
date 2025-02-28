@@ -4,11 +4,8 @@ struct A {
   ~A() {}
 };
 
-struct B: A {
-  ~B() { };
+struct B : A {
+  ~B(){};
 };
 
-void foo() {
-  B b;
-}
-
+void foo() { B b; }

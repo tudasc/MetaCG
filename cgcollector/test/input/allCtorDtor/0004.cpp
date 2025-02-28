@@ -4,12 +4,11 @@ struct A {
   ~A() {}
 };
 
-struct B: A {
-  ~B() { };
+struct B : A {
+  ~B(){};
 };
 
 void foo() {
   B* b = new B;
   delete b;
 }
-
