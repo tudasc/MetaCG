@@ -1,3 +1,5 @@
+// Tests if implicit destruction of member variables is properly captured.
+
 struct A {
   ~A() {}
 };

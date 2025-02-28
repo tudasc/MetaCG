@@ -1,3 +1,5 @@
+// Tests if non-virtual destructors are handled correclty.
+
 struct A {
   ~A() {}
 };

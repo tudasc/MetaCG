@@ -1,4 +1,4 @@
-// The destructor call of B must be inferred
+// Tests if the destruction of local variables is properly captured.
 
 struct A {
   ~A() {}

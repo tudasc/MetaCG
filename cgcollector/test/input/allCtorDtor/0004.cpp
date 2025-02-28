@@ -1,4 +1,4 @@
-// The destructor ~A() does not appear as a callee of ~B().
+// The destructor ~A() should appear an (implicit) callee of ~B().
 
 struct A {
   ~A() {}

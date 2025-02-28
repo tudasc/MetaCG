@@ -13,11 +13,21 @@
                 "codeStatistics": {
                     "numVars": 0
                 },
+                "estimateCallCount": {
+                    "calls": {},
+                    "codeRegions": {}
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0666.cpp",
+                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0003.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
                 "loopCallDepth": {},
                 "loopDepth": 0,
                 "mallocCollector": [],
@@ -46,11 +56,21 @@
                 "codeStatistics": {
                     "numVars": 0
                 },
+                "estimateCallCount": {
+                    "calls": {},
+                    "codeRegions": {}
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0666.cpp",
+                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0003.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": true,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
                 "loopCallDepth": {},
                 "loopDepth": 0,
                 "mallocCollector": [],
@@ -79,11 +99,21 @@
                 "codeStatistics": {
                     "numVars": 0
                 },
+                "estimateCallCount": {
+                    "calls": {},
+                    "codeRegions": {}
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0666.cpp",
+                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0003.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": true,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
                 "loopCallDepth": {},
                 "loopDepth": 0,
                 "mallocCollector": [],
@@ -114,8 +144,19 @@
                 "codeStatistics": {
                     "numVars": 0
                 },
+                "estimateCallCount": {
+                    "calls": {
+                        "_Z6hiddenv": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ]
+                    },
+                    "codeRegions": {}
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0666.cpp",
+                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0003.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -157,8 +198,19 @@
                 "codeStatistics": {
                     "numVars": 0
                 },
+                "estimateCallCount": {
+                    "calls": {
+                        "_Z6hiddenv": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ]
+                    },
+                    "codeRegions": {}
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0666.cpp",
+                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0003.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -189,7 +241,7 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "GITDIR-NOTFOUND",
+            "sha": "de5748d537c1e79cf1ea786deeb1830c325a5ad3",
             "version": "0.7"
         },
         "version": "2.0"
