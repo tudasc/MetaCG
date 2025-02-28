@@ -799,7 +799,8 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       return;
     }
 
-    if (auto ctor = CE->getConstructor()) {
+    // Ignoring elidable constructor calls here
+    if (auto ctor = CE->getConstructor(); ctor && !CE->isElidable()) {
       addCalledDecl(ctor, nullptr);
     }
 

@@ -55,9 +55,7 @@
         },
         "_Z5makeBv": {
             "callees": [
-                "_ZN1BC1ERKS_",
                 "_ZN1BC1Ev",
-                "_ZN1BC2ERKS_",
                 "_ZN1BC2Ev",
                 "_ZN1BD1Ev",
                 "_ZN1BD2Ev"
@@ -188,48 +186,6 @@
             "overriddenBy": [],
             "overrides": []
         },
-        "_ZN1BC1ERKS_": {
-            "callees": [],
-            "callers": [
-                "_Z5makeBv"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": false,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 0
-                },
-                "estimateCallCount": {
-                    "calls": {},
-                    "codeRegions": {}
-                },
-                "fileProperties": {
-                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0669.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "inlineInfo": {
-                    "isTemplate": false,
-                    "likelyInline": true,
-                    "markedAlwaysInline": false,
-                    "markedInline": true
-                },
-                "loopCallDepth": {},
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 0,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
         "_ZN1BC1Ev": {
             "callees": [],
             "callers": [
@@ -237,48 +193,6 @@
             ],
             "doesOverride": false,
             "hasBody": false,
-            "isVirtual": false,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 0
-                },
-                "estimateCallCount": {
-                    "calls": {},
-                    "codeRegions": {}
-                },
-                "fileProperties": {
-                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0669.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "inlineInfo": {
-                    "isTemplate": false,
-                    "likelyInline": true,
-                    "markedAlwaysInline": false,
-                    "markedInline": true
-                },
-                "loopCallDepth": {},
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 0,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "_ZN1BC2ERKS_": {
-            "callees": [],
-            "callers": [
-                "_Z5makeBv"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
             "isVirtual": false,
             "meta": {
                 "codeStatistics": {
