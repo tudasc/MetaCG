@@ -1000,6 +1000,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       // std::cout << "VarDeclInit not a DeclRefExpr" << std::endl;
     }
   }
+
   FunctionDecl* getFunctionDecl(DeclRefExpr* dre) {
     auto decl = dre->getDecl();
     if (decl && isa<FunctionDecl>(*decl)) {
@@ -1007,6 +1008,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     }
     return dyn_cast<FunctionDecl>(decl);
   }
+
   void insertFuncAlias(VarDecl* vDecl, DeclRefExpr* dre) {
     if (auto fd = getFunctionDecl(dre)) {
       aliases[vDecl].insert(fd);
@@ -1014,6 +1016,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       // std::endl;
     }
   }
+
   VarDecl* getVarDecl(DeclRefExpr* dre) {
     auto decl = dre->getDecl();
     if (decl && isa<VarDecl>(*decl)) {
@@ -1021,6 +1024,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     }
     return dyn_cast<VarDecl>(decl);
   }
+
   void VisitBinaryOperator(BinaryOperator* bo) {
     if (bo->isAssignmentOp()) {
       auto lhs = bo->getLHS();
@@ -1080,6 +1084,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     }
     return {};
   }
+
   std::unordered_set<Expr*> resolveToDeclRefExpr(ConditionalOperator* co) {
     auto trueExpr = co->getTrueExpr();
     auto falseExpr = co->getFalseExpr();
@@ -1136,6 +1141,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     }
     VisitChildren(ds);
   }
+
   void VisitCXXNewExpr(CXXNewExpr* new_expr) {
     if (auto* rd = new_expr->getAllocatedType()->getAsCXXRecordDecl()) {
       vtaInstances.push_back(rd->getQualifiedNameAsString());
@@ -1197,6 +1203,12 @@ void CallGraph::addNodeForDecl(Decl* D, bool IsGlobal) {
   // Process all the calls by this function as well.
   if (Stmt* Body = D->getBody()) {
     CGBuilder builder(this, Node, captureCtorsDtors, unresolvedSymbols);
+    if(auto cxx = dyn_cast<clang::CXXConstructorDecl>(D);cxx){
+      for(auto ini : cxx->inits()){
+        builder.Visit(ini->getInit());
+      }
+    }
+
     builder.Visit(Body);
     // builder.printAliases();
     unresolvedSymbols.insert(builder.getUnresolvedSymbols().begin(), builder.getUnresolvedSymbols().end());
