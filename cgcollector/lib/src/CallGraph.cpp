@@ -1139,6 +1139,27 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       // std::cerr << "Decl groups are currently unsupported" << std::endl;
       // exit(-1);
     }
+
+    if (captureCtorsDtors) {
+      // Check for implicit destruction of local variables
+      for (Decl* D : ds->decls()) {
+        if (VarDecl* VD = dyn_cast<VarDecl>(D)) {
+          if (!VD->hasLocalStorage())
+            return;  // Only check local variables
+
+          // Infer destructor calls of local variables
+          QualType VarType = VD->getType();
+          if (const CXXRecordDecl* RD = VarType->getAsCXXRecordDecl()) {
+            if (RD->hasDefinition() && RD->hasNonTrivialDestructor()) {
+              if (auto Dtor = RD->getDestructor()) {
+                addCalledDecl(Dtor, nullptr);
+              }
+            }
+          }
+        }
+      }
+    }
+
     VisitChildren(ds);
   }
 
@@ -1267,6 +1288,41 @@ bool CallGraph::VisitFunctionDecl(clang::FunctionDecl* FD) {
   }
   return true;
 }
+
+bool CallGraph::VisitCXXDestructorDecl(clang::CXXDestructorDecl *Destructor) {
+  if (!includeInGraph(Destructor)) {
+    return true;
+  }
+
+  // Get class name
+  const CXXRecordDecl *ClassDecl = Destructor->getParent();
+  if (!ClassDecl) return true;
+
+  auto DtorNode = getOrInsertNode(Destructor);
+  assert(DtorNode);
+
+  llvm::outs() << "Destructor found: " << ClassDecl->getNameAsString() << "\n";
+
+  if (captureCtorsDtors) {
+    // Check for base class destructors
+    for (const auto &Base : ClassDecl->bases()) {
+      const CXXRecordDecl *BaseDecl = Base.getType()->getAsCXXRecordDecl();
+      if (BaseDecl && BaseDecl->hasDefinition()) {
+        if (CXXDestructorDecl *BaseDestructor = BaseDecl->getDestructor()) {
+
+          llvm::outs() << "  -> Implicitly calls base destructor: ~"
+                       << BaseDecl->getNameAsString() << "()\n";
+          CallGraphNode* CalleeNode = getOrInsertNode(BaseDestructor);
+          assert(CalleeNode);
+          DtorNode->addCallee(CalleeNode);
+
+        }
+      }
+    }
+  }
+  return true;
+}
+
 
 bool CallGraph::VisitCXXMethodDecl(clang::CXXMethodDecl* MD) {
   if (!MD->isVirtual() || !includeInGraph(MD)) {
