@@ -1,0 +1,97 @@
+{
+    "_Z3foov": {
+        "callees": [
+            "_ZN1BC1Ev",
+            "_ZN1BC2Ev",
+            "_ZN1BD1Ev",
+            "_ZN1BD2Ev"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 2,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": []
+    },
+    "_ZN1AD1Ev": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_ZN1BD1Ev",
+            "_ZN1BD2Ev"
+        ]
+    },
+    "_ZN1AD2Ev": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_ZN1BD1Ev",
+            "_ZN1BD2Ev"
+        ]
+    },
+    "_ZN1BC1Ev": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z3foov"
+        ]
+    },
+    "_ZN1BC2Ev": {
+        "callees": [],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z3foov"
+        ]
+    },
+    "_ZN1BD1Ev": {
+        "callees": [
+            "_ZN1AD1Ev",
+            "_ZN1AD2Ev"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z3foov"
+        ]
+    },
+    "_ZN1BD2Ev": {
+        "callees": [
+            "_ZN1AD1Ev",
+            "_ZN1AD2Ev"
+        ],
+        "doesOverride": false,
+        "hasBody": true,
+        "isVirtual": false,
+        "numStatements": 0,
+        "overriddenBy": [],
+        "overriddenFunctions": [],
+        "parents": [
+            "_Z3foov"
+        ]
+    }
+}

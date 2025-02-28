@@ -1294,7 +1294,6 @@ bool CallGraph::VisitCXXDestructorDecl(clang::CXXDestructorDecl *Destructor) {
     return true;
   }
 
-  // Get class name
   const CXXRecordDecl *ClassDecl = Destructor->getParent();
   if (!ClassDecl) return true;
 
@@ -1310,10 +1309,23 @@ bool CallGraph::VisitCXXDestructorDecl(clang::CXXDestructorDecl *Destructor) {
           CallGraphNode* CalleeNode = getOrInsertNode(BaseDestructor);
           assert(CalleeNode);
           DtorNode->addCallee(CalleeNode);
-
         }
       }
     }
+    // Detect member variable destruction
+    for (const FieldDecl *Field : ClassDecl->fields()) {
+      QualType FieldType = Field->getType();
+      if (const CXXRecordDecl *MemberClass = FieldType->getAsCXXRecordDecl()) {
+        if (MemberClass->hasDefinition() && MemberClass->hasNonTrivialDestructor()) {
+          if (CXXDestructorDecl *MemberDestructor = MemberClass->getDestructor()) {
+            CallGraphNode* CalleeNode = getOrInsertNode(MemberDestructor);
+            assert(CalleeNode);
+            DtorNode->addCallee(CalleeNode);
+          }
+        }
+      }
+    }
+
   }
   return true;
 }
