@@ -58,10 +58,10 @@ mcg-container:
   allow_failure: true
   needs: ["mcg-download"]
   script:
-    - podman login ${CI_REGISTRY} -u ${CI_CONTAINER_REG_USER} -p ${CONTAINER_REGISTRY_READ_TOKEN}
+    - podman login ${CI_REGISTRY} -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD}
     - podman build -t metacg:$CI_PIPELINE_ID -f container/metacg .
-    - podman run --rm -t metacg:$CI_PIPELINE_ID /opt/metacg/metacg/build/pgis/test/unit/pgistests
-    - podman run --rm -t metacg:$CI_PIPELINE_ID /opt/metacg/metacg/build/graph/test/unit/libtests
+    - podman run --cgroupns=host --rm -t metacg:$CI_PIPELINE_ID /opt/metacg/metacg/build/pgis/test/unit/pgistests
+    - podman run --cgroupns=host --rm -t metacg:$CI_PIPELINE_ID /opt/metacg/metacg/build/graph/test/unit/libtests
 
 
 # Stage: build
