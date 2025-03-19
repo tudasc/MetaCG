@@ -25,7 +25,7 @@ echo "[MetaCG] Getting prerequisites ..."
 pip3 install PyQt5 >/dev/null 2>&1
 pip3 install matplotlib >/dev/null 2>&1
 if [ $? -ne 0 ]; then
-  echo "[MetaCG] Installting Extra-P dependencies failed."
+  echo "[MetaCG] Installing Extra-P dependencies failed."
   exit 1
 fi
 
