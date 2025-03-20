@@ -11,18 +11,19 @@ generate_gt=0
 function merge {
   fail=0
   tc=$1
+  suffix="$2"
   
-  ipcgTaFile="${tc}_a.ipcg"
-  ipcgTbFile="${tc}_b.ipcg"
-  gtCombFile="${tc}_both.gtmcg"
+  ipcgTaFile="${tc}_a${suffix}.ipcg"
+  ipcgTbFile="${tc}_b${suffix}.ipcg"
+  gtCombFile="${tc}_both${suffix}.gtmcg"
 
-  combFile=${tc}_both-${CI_CONCURRENT_ID}.ipcg
+  combFile=${tc}_both${suffix}-${CI_CONCURRENT_ID}.ipcg
 
   ${PWD}/../../../../${build_dir}/graph/test/integration/CallgraphMerge/mergetester ./input/${ipcgTaFile} ./input/${ipcgTbFile} ./input/${gtCombFile} ./input/${combFile} >>log/testrun.log 2>&1
   mErr=$?
 
   if [ ${generate_gt} -eq 1 ]; then
-    mv combFile gtCombFile
+    mv ./input/${combFile} ./input/${gtCombFile}
   fi
 
   if [ ${mErr} -ne 0 ]; then
@@ -33,7 +34,7 @@ function merge {
   return $fail
 }
 
-while getopts ":b:h" opt; do
+while getopts ":b:h:g" opt; do
   case $opt in
     b)
       if [ -z $OPTARG ]; then
@@ -65,9 +66,21 @@ fails=0
 for tc in "${tests[@]}"; do
   echo "Running test ${tc}"
   # Input files
-  merge ${tc}
+  merge ${tc} ""
+  fail=$?
+  fails=$((fails + fail))
+done
+
+echo "Running integration test for CallgraphMerge with preloaded metadata"
+
+for tc in "${tests[@]}"; do
+  echo "Running test ${tc} (preload)"
+  # Input files
+  LD_PRELOAD="${PWD}/../../../../${build_dir}/graph/test/integration/CallgraphMerge/libMergeMD.so" merge "${tc}" "_preload"
   fail=$?
   fails=$((fails + fail))
 done
 echo "Test failures: $fails"
+
+
 exit $fails
