@@ -66,7 +66,7 @@ Change the `CMAKE_INSTALL_PREFIX` to where you want your MetaCG installation to 
 
 ```{.sh}
 # To build the MetaCG library w/ PGIS and CGCollector
-$> cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/where/to/install -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=./extern/src/extrap/extrap-3.0/include -DEXTRAP_LIB=./extern/install/extrap/lib
+$> cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/where/to/install -DMETACG_BUILD_CGCOLLECTOR=ON -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=./extern/src/extrap/extrap-3.0/include -DEXTRAP_LIB=./extern/install/extrap/lib
 $> cmake --build build --parallel
 # Installation installs CGCollector, CGMerge, CGValidate, PGIS
 $> cmake --install build
