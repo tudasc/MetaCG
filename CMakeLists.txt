@@ -129,3 +129,21 @@ option(
   "On or Off"
   OFF
 )
+
+# Build MetaCG's Python interface
+option(
+  METACG_BUILD_PYMETACG
+  "On or off"
+  OFF
+)
+
+# If set to on, CMake looks for installed cxxopts
+option(
+  METACG_USE_EXTERNAL_NANOBIND
+  "On or Off"
+  OFF
+)
+
+if (METACG_BUILD_PYMETACG)
+  add_subdirectory(pymetacg)
+endif()
