@@ -7,6 +7,8 @@
 #include "LoggerUtil.h"
 #include <string>
 
+int metacg_RegistryInstanceCounter{0};
+
 using namespace metacg;
 
 CgNode* Callgraph::getMain() {
