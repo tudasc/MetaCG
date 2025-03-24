@@ -52,22 +52,10 @@ build-dependencies:
   script:
     - ./build_submodules.sh
 
-mcg-container:
-  stage: build
-  tags:
-    - podman
-  allow_failure: true
-  needs: ["mcg-download"]
-  script:
-    - podman login ${CI_REGISTRY} -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD}
-    - podman build -t metacg:$CI_PIPELINE_ID -f container/metacg .
-    - podman run --cgroupns=host --rm -t metacg:$CI_PIPELINE_ID /opt/metacg/metacg/build/pgis/test/unit/pgistests
-    - podman run --cgroupns=host --rm -t metacg:$CI_PIPELINE_ID /opt/metacg/metacg/build/graph/test/unit/libtests
-
 # Stage: configure-test
 configure-custom-md:
   stage: configure-test
-  needs: ["build-dependencies"]
+  needs: ["mcg-download"]
   script:
     - test -d graph/include/metadata/custom || exit 1
     - echo "// Empty test header" > graph/include/metadata/custom/TestHeader.h
@@ -79,11 +67,24 @@ configure-custom-md:
     - grep "TestHeader.h" "build-configure-md/graph/include/metadata/CustomMD.h" || exit 1
     - rm -f graph/include/metadata/custom/TestHeader.h
 
+mcg-container:
+  stage: build
+  tags:
+    - podman
+  allow_failure: true
+  needs: ["mcg-download", "configure-custom-md"]
+  script:
+    - podman login ${CI_REGISTRY} -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD}
+    - podman build -t metacg:$CI_PIPELINE_ID -f container/metacg .
+    - podman run --cgroupns=host --rm -t metacg:$CI_PIPELINE_ID /opt/metacg/metacg/build/pgis/test/unit/pgistests
+    - podman run --cgroupns=host --rm -t metacg:$CI_PIPELINE_ID /opt/metacg/metacg/build/graph/test/unit/libtests
+
+
 # Stage: build
 build-mcg-no-tests:
   <<: *job-setup
   stage: build
-  needs: ["build-dependencies"]
+  needs: ["build-dependencies", "configure-custom-md"]
   script:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-tests -G Ninja -DCMAKE_BUILD_TYPE=Debug 
@@ -100,7 +101,7 @@ build-mcg-no-tests:
 build-mcg-stripped-all:
   <<: *job-setup
   stage: build
-  needs: ["build-dependencies"]
+  needs: ["build-dependencies", "configure-custom-md"]
   script:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-all -G Ninja -DCMAKE_BUILD_TYPE=Debug 
@@ -116,7 +117,7 @@ build-mcg-stripped-all:
 build-mcg-stripped-pgis:
   <<: *job-setup
   stage: build
-  needs: ["build-dependencies"]
+  needs: ["build-dependencies", "configure-custom-md"]
   script:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-cgcollector -G Ninja -DCMAKE_BUILD_TYPE=Debug
@@ -133,7 +134,7 @@ build-mcg-stripped-pgis:
 build-mcg-stripped-cgcollector:
   <<: *job-setup
   stage: build
-  needs: ["build-dependencies"]
+  needs: ["build-dependencies", "configure-custom-md"]
   script:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-pgis -G Ninja -DCMAKE_BUILD_TYPE=Debug
@@ -150,7 +151,7 @@ build-mcg-stripped-cgcollector:
 build-mcg:
   <<: *job-setup
   stage: build
-  needs: ["build-dependencies"]
+  needs: ["build-dependencies", "configure-custom-md"]
   script:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD -G Ninja -DCMAKE_BUILD_TYPE=Debug
