@@ -15,11 +15,8 @@ namespace metacg {
  */
 class MCGLogger {
  public:
-  static MCGLogger& instance() {
-    static MCGLogger instance;
-    return instance;
-  }
-
+  static MCGLogger& instance();
+  
   /**
    * Get non-owning raw pointer to underlying spdlog logger
    * @return

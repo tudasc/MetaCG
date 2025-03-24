@@ -15,6 +15,7 @@ set(MetacgGraphLibSources
     src/DotIO.cpp
     src/MCGBaseInfo.cpp
     src/ReachabilityAnalysis.cpp
+    src/LoggerUtil.cpp
     include/io/MCGReader.h
     include/CgNode.h
     include/Callgraph.h
