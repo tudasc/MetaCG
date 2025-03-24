@@ -11,6 +11,13 @@
 #include "LoggerUtil.h"
 #include "nlohmann/json.hpp"
 
+// Instance counter to protect meta-data registry against ABI incompatibilities
+// Used in `ABICheckedStaticData`.
+// Is extern "C" to guarantee identical mangling.
+extern "C" {
+extern int metacg_RegistryInstanceCounter;
+};
+
 namespace metacg {
 namespace graph {
 class MCGManager;
@@ -63,9 +70,28 @@ class MetaDataFactory {
   using FuncType = CRTPBase* (*)(const nlohmann::json&);
   MetaDataFactory() = default;
 
+  /**
+   * Helper type to create static data (basically, a singleton) that is protected against ABI mismatches.
+   * When not using this, ABI incompatibilities (e.g., due to mismatching compilers) can lead to the
+   * creation of more than one instances.
+   */
+  template <typename T>
+  struct ABICheckedStaticData {
+    T data;
+
+    ABICheckedStaticData(int& instanceCtr) {
+      if ((++instanceCtr) != 1) {
+        MCGLogger::instance().getErrConsole()->error(
+            "Detected multiple instances of the global metadata registry, likely due to ABI compatibility. Custom "
+            "metadata will not work properly. To fix this, ensure that the metadata library is build with the same "
+            "compiler as the rest of MetaCG.");
+      }
+    }
+  };
+
   static auto& data() {
-    static std::unordered_map<std::string, FuncType> s;
-    return s;
+    static ABICheckedStaticData<std::unordered_map<std::string, FuncType>> s(metacg_RegistryInstanceCounter);
+    return s.data;
   }
 };
 
