@@ -30,6 +30,49 @@ set(MetacgGraphLibSources
     include/ReachabilityAnalysis.h
 )
 
+# Custom in-tree metadata
+file(
+  GLOB
+  CUSTOM_METADATA
+  "include/metadata/custom/*.h"
+)
+if(NOT
+   CUSTOM_METADATA
+   STREQUAL
+   ""
+)
+  message(STATUS "Found custom metadata: ${CUSTOM_METADATA}")
+endif()
+# Prepare a string to store the new includes
+set(INCLUDE_DIRECTIVES "")
+# Loop through all collected files and create #include lines
+foreach(file ${CUSTOM_METADATA})
+  get_filename_component(
+    filename
+    ${file}
+    NAME
+  )
+  # Append the #include directive to the INCLUDE_DIRECTIVES variable
+  list(
+    APPEND
+    INCLUDE_DIRECTIVES
+    "#include \"${filename}\""
+  )
+endforeach()
+# Join the list of #include directives into a single string
+string(
+  REPLACE ";"
+          "\n"
+          INCLUDE_DIRECTIVES
+          "${INCLUDE_DIRECTIVES}"
+)
+
+configure_file(
+  include/metadata/CustomMD.h.in
+  ${CMAKE_CURRENT_BINARY_DIR}/include/metadata/CustomMD.h
+  @ONLY
+)
+
 add_library(metacg SHARED ${MetacgGraphLibSources})
 add_library(
   metacg::metacg
@@ -57,7 +100,10 @@ set_target_properties(
              OUTPUT_NAME metacg
 )
 
-target_include_directories(metacg PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_include_directories(
+  metacg PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+)
 
 if(NOT CMAKE_SKIP_INSTALL_RULES)
   include(installRules)

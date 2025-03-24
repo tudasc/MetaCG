@@ -8,6 +8,7 @@ stages:
   - download
   - lint
   - build-deps
+  - configure-test
   - build
   - test
   - integration-test
@@ -63,6 +64,20 @@ mcg-container:
     - podman run --cgroupns=host --rm -t metacg:$CI_PIPELINE_ID /opt/metacg/metacg/build/pgis/test/unit/pgistests
     - podman run --cgroupns=host --rm -t metacg:$CI_PIPELINE_ID /opt/metacg/metacg/build/graph/test/unit/libtests
 
+# Stage: configure-test
+configure-custom-md:
+  stage: configure-test
+  needs: ["build-dependencies"]
+  script:
+    - test -d graph/include/metadata/custom || exit 1
+    - echo "// Empty test header" > graph/include/metadata/custom/TestHeader.h
+    - cmake -S . -B build-configure-md -G Ninja -DCMAKE_BUILD_TYPE=Debug
+      -DMETACG_BUILD_PGIS=OFF
+      -DMETACG_BUILD_CGCOLLECTOR=OFF
+      -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      -DMETACG_BUILD_UNIT_TESTS=OFF
+    - grep "TestHeader.h" "build-configure-md/graph/include/metadata/CustomMD.h" || exit 1
+    - rm -f graph/include/metadata/custom/TestHeader.h
 
 # Stage: build
 build-mcg-no-tests:
