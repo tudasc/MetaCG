@@ -1,49 +1,71 @@
-#include <string>
-#include <fstream>
 
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/unique_ptr.h>
+#include <nanobind/stl/unordered_map.h>
+#include <nanobind/stl/unordered_set.h>
+#include <nanobind/make_iterator.h>
+#include "nanobind_json.h" // IWYU pragma: keep
 
 #include <MCGManager.h>
 #include <Callgraph.h>
 #include <CgNode.h>
+#include <CgNodePtr.h>
 
 #include <io/MCGReader.h>
 #include <io/VersionThreeMCGReader.h>
 #include <io/MCGWriter.h>
+#include <metadata/MetaData.h>
+
+#include <string>
+
+#include "util.h"
 
 namespace nb = nanobind;
-using namespace nb::literals;
+using namespace metacg;
 
 NB_MODULE(pymetacg, m) {
-    // nb::class_<metacg::graph::MCGManager>(m, "MCGManager");
+    nb::class_<MetaData>(m, "MetaData")
+        .def_prop_ro("key", &MetaData::getKey)
+        .def_prop_ro("data", [](const MetaData& self){
+            return self.to_json();
+        });
 
-    nb::class_<metacg::CgNode>(m, "CgNode")
-        .def_prop_ro("function_name", &metacg::CgNode::getFunctionName);
+    nb::class_<CgNodeWrapper>(m, "CgNode")
+        .def_prop_ro("function_name", [](const CgNodeWrapper& self) {return self.node->getFunctionName();})
+        .def_prop_ro("meta_data", [](const CgNodeWrapper& self) {return self.node->getMetaDataContainer();})
+        .def("__repr__", [](const CgNodeWrapper& self) {return std::string("CgNode(") + self.node->getFunctionName() + ")";})
+        .def_prop_ro("callers", [](const CgNodeWrapper& self) {
+            return attachGraphPointerToNodes(self.graph.getCallers(self.node), self.graph);
+        })
+        .def_prop_ro("callees", [](const CgNodeWrapper& self) {
+            return attachGraphPointerToNodes(self.graph.getCallees(self.node), self.graph);
+        });
 
-    nb::class_<metacg::Callgraph>(m, "Callgraph")
+    nb::class_<Callgraph>(m, "Callgraph")
         .def_static("from_file", [](std::string& path) {
-            metacg::io::FileSource fs(path);
+            io::FileSource fs(path);
 
-            auto mcgReader = metacg::io::createReader(fs);
+            auto mcgReader = io::createReader(fs);
             auto graph = mcgReader->read();
             return graph;
         })
-        .def("write_to_file", [](const metacg::Callgraph& self, const std::string& path) {
-            auto mcgWriter = metacg::io::createWriter(3);
-            metacg::io::JsonSink jsonSink;
-            mcgWriter->write(&self, jsonSink);
-            std::ofstream os(path);
-            os << jsonSink.getJson() << std::endl;
+        .def("__iter__", [](const Callgraph& self) {
+            return nb::make_iterator(
+                nb::type<CgNodeWrapper>(),
+                "nodes", 
+                UniquePtrValueIterator(self.getNodes().begin(), self),
+                UniquePtrValueIterator(self.getNodes().end(), self));
         })
-        .def("has_node", [](const metacg::Callgraph& self, const std::string& name) {
-            return self.hasNode(name);
+        .def("__getitem__", [](const Callgraph& self, const std::string& key) {
+            CgNode* node = self.getNode(key);
+            if (node != nullptr) {
+                return CgNodeWrapper{node, self};
+            } else {
+                throw nb::key_error("Node not found in call graph.");
+            }
         })
-        .def("get_node", [](const metacg::Callgraph& self, const std::string& name) {
-            return self.getNode(name);
-        })
-        .def("clear", [](metacg::Callgraph& self) {
-            self.clear();
+        .def("__contains__", [](const Callgraph& self, const std::string& key){
+            return self.hasNode(key);
         });
 }
