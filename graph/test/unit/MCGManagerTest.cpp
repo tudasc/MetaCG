@@ -48,7 +48,7 @@ TEST_F(MCGManagerTest, GetOrCreateCGExistingActive) {
   mcgm.addToManagedGraphs("newCG2", std::make_unique<metacg::Callgraph>(), false);
   ASSERT_FALSE(mcgm.assertActive("newCG"));
   ASSERT_FALSE(mcgm.assertActive("newCG2"));
-  mcgm.getOrCreateCallgraph("newCG", true);
+  mcgm.addToManagedGraphs("newCG",std::make_unique<metacg::Callgraph>(), true);
   ASSERT_TRUE(mcgm.assertActive("newCG"));
   ASSERT_FALSE(mcgm.assertActive("newCG2"));
 }
