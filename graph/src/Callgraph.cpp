@@ -188,7 +188,9 @@ void metacg::Callgraph::merge(const metacg::Callgraph& other) {
           }
 
           mergeNode->setHasBody(node->getHasBody());
-          mergeNode->setIsVirtual(node->isVirtual());
+          if(node->has<OverrideMD>()){
+            mergeNode->addMetaData(node->get<OverrideMD>());
+          }
         }
 
         for (const auto& it : node->getMetaDataContainer()) {
