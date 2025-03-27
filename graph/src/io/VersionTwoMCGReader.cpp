@@ -86,75 +86,53 @@ void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV3Format(nlohmann::jso
     // if the origin metadata exists, but is empty use unknownOrigin instead
     if (node.at(1).at("meta").contains("fileProperties") &&
         !node.at(1).at("meta").at("fileProperties").at("origin").get<std::string>().empty()) {
-      node.at(0) = std::hash<std::string>()(functionName +
-                                            node.at(1).at("meta").at("fileProperties").at("origin").get<std::string>());
-    } else {  // if the V2 format did not contain origin data use unknownOrigin keyword
-      node.at(0) = std::hash<std::string>()(functionName + "unknownOrigin");
-    }
-
-    node.at(1)["functionName"] = functionName;
-
-    // add empty overrideMD to indicate virtualness
-    if (node.at(1).at("isVirtual")) {
-      node.at(1)["meta"]["overrideMD"] = {{"overrides", nlohmann::json::array()},
-                                          {"overriddenBy", nlohmann::json::array()}};
-    }
-    node.at(1).erase("isVirtual");
-    // if by chance the V2 format contained origin data, we use this to populate the origin field
-    if (node.at(1).at("meta").contains("fileProperties") &&
-        !node.at(1).at("meta").at("fileProperties").at("origin").get<std::string>().empty()) {
       node.at(1)["origin"] = node.at(1).at("meta").at("fileProperties").at("origin");
-    } else {
+    } else {  // if the V2 format did not contain origin data use unknownOrigin keyword
       node.at(1)["origin"] = "unknownOrigin";
     }
+    node.at(0) = std::hash<std::string>()(functionName + node.at(1)["origin"].get<std::string>());
+    node.at(1)["functionName"] = functionName;
   }
 
   // populate edge container and overwrites
   for (auto& node : j["nodes"]) {
-
     // edges
     for (const auto& callee : node.at(1).at("callees")) {
       for (const auto& calleeNode : j["nodes"]) {
         if (calleeNode.at(1).at("functionName") == callee) {
           assert(!calleeNode.at(1).at("origin").get<std::string>().empty());
-          j["edges"].push_back(
-              {{node.at(0), std::hash<std::string>()(calleeNode.at(1).at("functionName").get<std::string>() +
-                                                     calleeNode.at(1).at("origin").get<std::string>())},
-               {}});
+          j["edges"].push_back({{node.at(0), calleeNode.at(0)},{}});
           break;
         }
       }
     }
     node.at(1).erase("callees");
     node.at(1).erase("callers");
+
     // if the V2 format node was virtual, we add override metadata
-    // Fixme: These loops can probably be merged
-    if (node.at(1)["meta"].contains("overrideMD")) {
+    if (node.at(1).at("isVirtual")) {
       nlohmann::json overrideHashes = nlohmann::json::array();
-      for (const auto& n : node.at(1).at("overrides")) {
-        for (const auto& calleeNode : j["nodes"]) {
-          if (calleeNode.at(1).at("functionName") == n) {
-            assert(!calleeNode.at(1).at("origin").get<std::string>().empty());
-            overrideHashes.push_back(std::hash<std::string>()(calleeNode.at(1).at("functionName").get<std::string>() +
-                                                              calleeNode.at(1).at("origin").get<std::string>()));
+      nlohmann::json overriddenByHashes = nlohmann::json::array();
+      for (const auto& nodeCandidate : j["nodes"]) {
+        for (const auto& overriddenNodeName : node.at(1).at("overrides")) {
+          //Format V2 can not handle duplicate node names
+          //We therefore assume functionName to be unique in a V2 file
+          //This means we can break after finding the first correctly named entry
+          if (nodeCandidate.at(1).at("functionName") == overriddenNodeName) {
+            overrideHashes.push_back(nodeCandidate.at(0));
             break;
           }
         }
-      }
-      nlohmann::json overriddenByHashes = nlohmann::json::array();
-      for (const auto& n : node.at(1).at("overriddenBy")) {
-        for (const auto& calleeNode : j["nodes"]) {
-          if (calleeNode.at(1).at("functionName") == n) {
-            assert(!calleeNode.at(1).at("origin").get<std::string>().empty());
-            overriddenByHashes.push_back(
-                std::hash<std::string>()(calleeNode.at(1).at("functionName").get<std::string>() +
-                                         calleeNode.at(1).at("origin").get<std::string>()));
+        for (const auto& n : node.at(1).at("overriddenBy")) {
+          if (nodeCandidate.at(1).at("functionName") == n) {
+            overriddenByHashes.push_back(nodeCandidate.at(0));
             break;
           }
         }
       }
       node.at(1)["meta"]["overrideMD"] = {{"overrides", overrideHashes}, {"overriddenBy", overriddenByHashes}};
     }
+    node.at(1).erase("isVirtual");
     node.at(1).erase("doesOverride");
     node.at(1).erase("overrides");
     node.at(1).erase("overriddenBy");
