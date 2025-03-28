@@ -1,6 +1,11 @@
 name: MetaCG CI
 
-on: [push]
+on: 
+  push:
+  pull_request: 
+    types:
+      - opened
+      - synchronized
 
 jobs:
   build:
@@ -38,3 +43,32 @@ jobs:
         with: 
           image: metacg-devel:latest
           run: /opt/metacg/metacg/build/pgis/test/unit/pgistests
+      - name: Run target collector tests 
+        uses: addnab/docker-run-action@v3
+        with: 
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/metacg/graph/test/integration/TargetCollector
+            ./TestRunner.sh
+      - name: Run call graph merge tests
+        uses: addnab/docker-run-action@v3
+        with: 
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/metacg/graph/test/integration/CallgraphMerge
+            ./MergeTestRunner.sh
+      - name: Run cgcollector tests
+        uses: addnab/docker-run-action@v3
+        with: 
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/metacg/cgcollector/test
+            bash run_format_one_test.sh 
+            bash run_format_two_test.sh 
+      - name: Run cgvalidate tests
+        uses: addnab/docker-run-action@v3
+        with: 
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/metacg/cgcollector/test/integration
+            ./runner.sh build
