@@ -16,6 +16,8 @@ install(
   DIRECTORY include/ "${PROJECT_BINARY_DIR}/graph/export/"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
   COMPONENT metacg_Development
+  FILES_MATCHING
+  PATTERN "*.h"
 )
 
 # Installation rule for the metacg library. Honestly, not sure what all this does. Following the example here:
@@ -74,6 +76,13 @@ install(
   EXPORT metacgTargets
   NAMESPACE metacg::
   DESTINATION "${metacg_INSTALL_CMAKEDIR}"
+  COMPONENT metacg_Development
+)
+
+# Install the generated CustomMD.h header
+install(
+  FILES ${PROJECT_BINARY_DIR}/graph/include/metadata/CustomMD.h
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/metadata
   COMPONENT metacg_Development
 )
 
