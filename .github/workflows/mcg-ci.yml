@@ -17,6 +17,11 @@ jobs:
       run: cmake -B build -S .
     - name: build
       run: cmake --build build --parallel
+    - name: install
+      run: |
+        cmake --install build --prefix install
+        stat install/lib/libmetacg.so
+        stat install/include/metadata/CustomMD.h
 
   build-container:
     runs-on: ubuntu-latest
