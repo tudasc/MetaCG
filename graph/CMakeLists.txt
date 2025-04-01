@@ -86,7 +86,7 @@ generate_export_header(
   BASE_NAME
   metacg
   EXPORT_FILE_NAME
-  export/metacg/metacg_export.hpp
+  export/metacg_export.hpp
 )
 
 set_target_properties(
