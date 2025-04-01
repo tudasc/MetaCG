@@ -18,7 +18,7 @@ install(
   COMPONENT metacg_Development
   FILES_MATCHING
   PATTERN "*.h"
-        PATTERN "*.hpp"
+  PATTERN "*.hpp"
 )
 
 # Installation rule for the metacg library. Honestly, not sure what all this does. Following the example here:
