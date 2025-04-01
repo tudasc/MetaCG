@@ -33,7 +33,7 @@ install(
   ARCHIVE #
           COMPONENT metacg_Development
   INCLUDES #
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/metacg"
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 
 # Call helper function to "generate" a metacgConfigVersion file
