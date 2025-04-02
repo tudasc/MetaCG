@@ -1,7 +1,7 @@
 /**
-* File: FileMD.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: FileMD.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #ifndef METACG_FILEMD_H
@@ -11,9 +11,9 @@
 
 class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
  public:
-  static constexpr const char *key = "fileProperties";
+  static constexpr const char* key = "fileProperties";
   FilePropertiesMD() : origin("INVALID"), fromSystemInclude(false), lineNumber(0) {}
-  explicit FilePropertiesMD(const nlohmann::json &j) {
+  explicit FilePropertiesMD(const nlohmann::json& j) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
@@ -26,8 +26,8 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
   }
 
  private:
-  FilePropertiesMD(const FilePropertiesMD& other) : origin(other.origin), fromSystemInclude(other.fromSystemInclude),
-                                                                lineNumber(other.lineNumber) {}
+  FilePropertiesMD(const FilePropertiesMD& other)
+      : origin(other.origin), fromSystemInclude(other.fromSystemInclude), lineNumber(other.lineNumber) {}
 
  public:
   nlohmann::json to_json() const final {
@@ -37,7 +37,7 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
     return j;
   };
 
-  virtual const char *getKey() const final { return key; }
+  virtual const char* getKey() const final { return key; }
 
   void merge(const MetaData& toMerge) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
@@ -53,9 +53,7 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
     // TODO: Save all paths, if multiple definitions? For now, just keep the current data.
   }
 
-  MetaData* clone() const final {
-    return new FilePropertiesMD(*this);
-  }
+  MetaData* clone() const final { return new FilePropertiesMD(*this); }
 
   std::string origin;
   bool fromSystemInclude;

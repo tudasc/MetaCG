@@ -1,7 +1,7 @@
 /**
-* File: InlineMD.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: InlineMD.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #ifndef METACG_INLINEMD_H
 #define METACG_INLINEMD_H
@@ -57,21 +57,13 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
 
   MetaData* clone() const final { return new InlineMD(*this); }
 
-  bool isMarkedInline() const {
-    return markedInline;
-  }
+  bool isMarkedInline() const { return markedInline; }
 
-  bool isLikelyInline() const {
-    return likelyInline;
-  }
+  bool isLikelyInline() const { return likelyInline; }
 
-  bool isMarkedAlwaysInline() const {
-    return markedAlwaysInline;
-  }
+  bool isMarkedAlwaysInline() const { return markedAlwaysInline; }
 
-  bool isTemplate() const {
-    return isTemplateFunction;
-  }
+  bool isTemplate() const { return isTemplateFunction; }
 
  private:
   bool markedInline = false;
