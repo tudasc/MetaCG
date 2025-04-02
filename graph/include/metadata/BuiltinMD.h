@@ -9,7 +9,7 @@
 #include "metadata/CustomMD.h"
 
 #include "metadata/CodeStatisticsMD.h"
-#include "metadata/FileMD.h"
+#include "metadata/FilePropertiesMD.h"
 #include "metadata/InlineMD.h"
 #include "metadata/LoopMD.h"
 #include "metadata/MallocVariableMD.h"

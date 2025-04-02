@@ -12,27 +12,22 @@
 class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
  public:
   static constexpr const char* key = "fileProperties";
-  FilePropertiesMD() : origin("INVALID"), fromSystemInclude(false), lineNumber(0) {}
+  FilePropertiesMD() : fromSystemInclude(false) {}
   explicit FilePropertiesMD(const nlohmann::json& j) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
     }
-
-    std::string fileOrigin = j["origin"].get<std::string>();
-    bool isFromSystemInclude = j["systemInclude"].get<bool>();
-    origin = fileOrigin;
-    fromSystemInclude = isFromSystemInclude;
+    fromSystemInclude = j["systemInclude"];
   }
 
  private:
   FilePropertiesMD(const FilePropertiesMD& other)
-      : origin(other.origin), fromSystemInclude(other.fromSystemInclude), lineNumber(other.lineNumber) {}
+      : fromSystemInclude(other.fromSystemInclude) {}
 
  public:
   nlohmann::json to_json() const final {
     nlohmann::json j;
-    j["origin"] = origin;
     j["systemInclude"] = fromSystemInclude;
     return j;
   };
@@ -46,18 +41,13 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
       abort();
     }
     const FilePropertiesMD* toMergeDerived = static_cast<const FilePropertiesMD*>(&toMerge);
-    if (this->origin.empty()) {
-      this->origin = toMergeDerived->origin;
-      this->fromSystemInclude = toMergeDerived->fromSystemInclude;
-    }
-    // TODO: Save all paths, if multiple definitions? For now, just keep the current data.
+
+    this->fromSystemInclude |= toMergeDerived->fromSystemInclude;
   }
 
   MetaData* clone() const final { return new FilePropertiesMD(*this); }
 
-  std::string origin;
   bool fromSystemInclude;
-  int lineNumber;
 };
 
 #endif  // METACG_FILEMD_H
