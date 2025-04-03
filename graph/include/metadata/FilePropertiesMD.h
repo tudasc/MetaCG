@@ -1,11 +1,11 @@
 /**
- * File: FileMD.h
+ * File: FilePropertiesMD.h
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#ifndef METACG_FILEMD_H
-#define METACG_FILEMD_H
+#ifndef METACG_FILEPROPERTIESMD_H
+#define METACG_FILEPROPERTIESMD_H
 
 #include "metadata/MetaData.h"
 
@@ -30,16 +30,13 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
     nlohmann::json j;
     j["systemInclude"] = fromSystemInclude;
     return j;
-  };
+  }
 
   virtual const char* getKey() const final { return key; }
 
   void merge(const MetaData& toMerge) final {
-    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
-      metacg::MCGLogger::instance().getErrConsole()->error(
-          "The MetaData which was tried to merge with FilePropertiesMD was of a different MetaData type");
-      abort();
-    }
+    assert(toMerge.getKey() == getKey() && "Trying to merge FilePropertiesMD with metadata of different types");
+   
     const FilePropertiesMD* toMergeDerived = static_cast<const FilePropertiesMD*>(&toMerge);
 
     this->fromSystemInclude |= toMergeDerived->fromSystemInclude;
@@ -50,4 +47,4 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
   bool fromSystemInclude;
 };
 
-#endif  // METACG_FILEMD_H
+#endif  // METACG_FILEPROPERTIESMD_H

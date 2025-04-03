@@ -40,14 +40,11 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
   const char* getKey() const override { return key; }
 
   void merge(const MetaData& toMerge) final {
-    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
-      metacg::MCGLogger::instance().getErrConsole()->error(
-          "The MetaData which was tried to merge with NumStatementMetaData was of a different MetaData type");
-      abort();
-    }
+    assert(toMerge.getKey() == getKey() && "Trying to merge InlineMD with metadata of different types");
+
     const InlineMD* toMergeDerived = static_cast<const InlineMD*>(&toMerge);
     if (this->isTemplateFunction != toMergeDerived->isTemplateFunction) {
-      metacg::MCGLogger::instance().getErrConsole()->error("Merging functions with mismatched 'isTemplate' metadata");
+      metacg::MCGLogger::instance().getErrConsole()->warn("Merging functions with mismatched 'isTemplate' metadata");
     }
     // For the rest of the metrics, adopt the stronger attributes
     markedInline |= toMergeDerived->markedInline;
