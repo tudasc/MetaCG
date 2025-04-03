@@ -56,11 +56,11 @@ void apply(metacg::graph::MCGManager& mcgm, [[maybe_unused]] cube::Cube& cu, [[m
 
 template <typename T, typename U>
 inline auto has(U u) {
-  return u->has<T>();
+  return u->template has<T>();
 }
 template <typename T, typename U>
 inline auto get(U u) {
-  return u->get<T>();
+  return u->template get<T>();
 }
 
 const auto mangledName = [](const auto cn) { return cn->get_callee()->get_mangled_name(); };

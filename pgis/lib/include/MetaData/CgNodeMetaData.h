@@ -240,7 +240,7 @@ private:
 template <typename T>
 inline void setPiraOneData(T node, int numStmts = 0, bool hasBody = false, bool dominantRuntime = false,
                           bool inPrevProfile = false) {
-  const auto& [has, data] = node->checkAndGet<PiraOneData>();
+  const auto& [has, data] = node->template checkAndGet<PiraOneData>();
   if (has) {
     data->setNumberOfStatements(numStmts);
     data->setHasBody(hasBody);
