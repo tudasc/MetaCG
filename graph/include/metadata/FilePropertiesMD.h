@@ -22,8 +22,7 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
   }
 
  private:
-  FilePropertiesMD(const FilePropertiesMD& other)
-      : fromSystemInclude(other.fromSystemInclude) {}
+  FilePropertiesMD(const FilePropertiesMD& other) : fromSystemInclude(other.fromSystemInclude) {}
 
  public:
   nlohmann::json to_json() const final {
@@ -36,7 +35,7 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
 
   void merge(const MetaData& toMerge) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge FilePropertiesMD with metadata of different types");
-   
+
     const FilePropertiesMD* toMergeDerived = static_cast<const FilePropertiesMD*>(&toMerge);
 
     this->fromSystemInclude |= toMergeDerived->fromSystemInclude;
