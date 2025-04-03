@@ -213,7 +213,7 @@ void RuntimeEstimatorPhase::estimateRuntime(metacg::CgNode* startNode) {
     // Skip not leave nodes
     const auto& childs = graph->getCallees(startNode);
     if (calls > 0 && std::none_of(childs.begin(), childs.end(), [](const auto cnode) {
-          return cnode->template getOrCreateMD<PiraOneData>()->comesFromCube();
+          return cnode->getOrCreateMD<PiraOneData>()->comesFromCube();
         })) {
       exclusiveCalls.emplace(calls, startNode);
     }
@@ -1316,7 +1316,7 @@ void AttachInstrumentationResultsEstimatorPhase::modifyGraph(CgNode* mainMethod)
       const auto callsFromParents = node->get<BaseProfileData>()->getCallsFromParents();
       const auto& childs = graph->getCallees(node);
       const bool isExclusive = std::none_of(childs.begin(), childs.end(), [](const auto& child) {
-        return !child->template getOrCreateMD<PiraOneData>()->comesFromCube();
+        return !child->getOrCreateMD<PiraOneData>()->comesFromCube();
       });
       // Calculate the summing inclusive runtime
       std::queue<CgNode*> workQueue;

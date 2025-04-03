@@ -100,7 +100,7 @@ using Callgraph = metacg::Callgraph;
 template <typename MD, typename... Args>
 void attachMetaDataToGraph(Callgraph* cg, const Args&... args) {
   for (const auto& n : cg->getNodes()) {
-    if (!n.second->template getOrCreateMD<MD>(args...)) {
+    if (!n.second->getOrCreateMD<MD>(args...)) {
       assert(false && MD::key != "" && "Could not create MetaData with key");
     }
   }

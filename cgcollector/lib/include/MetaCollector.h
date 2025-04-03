@@ -81,7 +81,11 @@ class FilePropertyCollector : public MetaCollector {
     const auto sourceLocation = decl->getLocation();
     auto& astCtx = decl->getASTContext();
     const auto fullSrcLoc = astCtx.getFullLoc(sourceLocation);
+#if LLVM_VERSION_MAJOR >= 18
+    const auto fileEntry = fullSrcLoc.getFileEntryRef();
+#else
     const auto fileEntry = fullSrcLoc.getFileEntry();
+#endif
     if (!fileEntry) {
       return result;
     }

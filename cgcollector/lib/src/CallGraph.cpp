@@ -1165,6 +1165,14 @@ CallGraph::CallGraph() : Root(getOrInsertNode(nullptr)) {}
 
 CallGraph::~CallGraph() = default;
 
+[[nodiscard]] inline bool starts_with(llvm::StringRef Str, llvm::StringRef Prefix) {
+#if LLVM_VERSION_MAJOR < 17
+  return Str.startswith(Prefix);
+#else
+  return Str.starts_with(Prefix);
+#endif
+}
+
 bool CallGraph::includeInGraph(const Decl* D) {
   assert(D);
 
@@ -1184,7 +1192,7 @@ bool CallGraph::includeInGraph(const Decl* D) {
 
     IdentifierInfo* II = FD->getIdentifier();
     // TODO not sure whether we want to include __inline marked functions
-    if (II && II->getName().startswith("__inline")) {
+    if (II && starts_with(II->getName(), "__inline")) {
       return true;
     }
   }

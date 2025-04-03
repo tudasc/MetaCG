@@ -100,13 +100,13 @@ class CgNode {
    */
   template <typename T, typename... Args>
   T* getOrCreateMD(const Args&... args) {
-    auto [has, md] = this->template checkAndGet<T>();
+    auto [has, md] = this->checkAndGet<T>();
     if (has) {
       return md;
     }
 
     auto nmd = new T(args...);
-    this->template addMetaData(nmd);
+    this->addMetaData(nmd);
     return nmd;
   }
 
