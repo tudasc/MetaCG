@@ -1316,7 +1316,7 @@ void AttachInstrumentationResultsEstimatorPhase::modifyGraph(CgNode* mainMethod)
       const auto callsFromParents = node->get<BaseProfileData>()->getCallsFromParents();
       const auto& childs = graph->getCallees(node);
       const bool isExclusive = std::none_of(childs.begin(), childs.end(), [](const auto& child) {
-        return !child->getOrCreateMD<PiraOneData>()->comesFromCube();
+        return !child->template getOrCreateMD<PiraOneData>()->comesFromCube();
       });
       // Calculate the summing inclusive runtime
       std::queue<CgNode*> workQueue;
