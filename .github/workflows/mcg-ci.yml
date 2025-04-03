@@ -3,9 +3,6 @@ name: MetaCG CI
 on: 
   push:
   pull_request: 
-    types:
-      - opened
-      - synchronized
 
 jobs:
   build:
