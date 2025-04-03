@@ -185,7 +185,7 @@ void ExtrapModelProvider::buildModels() {
   for (auto& fn : fns) {
     const auto attEpData = [&](auto& cube, auto cnode, auto n, [[maybe_unused]] auto pnode, [[maybe_unused]] auto pn) {
       console->debug("Attaching Cube info from file {}", fn);
-      auto ptd = n->getOrCreateMD<pira::PiraTwoData>(ExtrapConnector({}, {}));
+      auto ptd = n->template getOrCreateMD<pira::PiraTwoData>(ExtrapConnector({}, {}));
       ptd->setExtrapParameters(config.params);
       ptd->addToRuntimeVec(metacg::pgis::impl::time(cube, cnode));
     };

@@ -213,7 +213,7 @@ void RuntimeEstimatorPhase::estimateRuntime(metacg::CgNode* startNode) {
     // Skip not leave nodes
     const auto& childs = graph->getCallees(startNode);
     if (calls > 0 && std::none_of(childs.begin(), childs.end(), [](const auto cnode) {
-          return cnode->getOrCreateMD<PiraOneData>()->comesFromCube();
+          return cnode->template getOrCreateMD<PiraOneData>()->comesFromCube();
         })) {
       exclusiveCalls.emplace(calls, startNode);
     }
