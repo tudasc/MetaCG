@@ -3,6 +3,7 @@ add_executable(
   libtests
   CGNodeTests.cpp
   DotIOTest.cpp
+  LoggingTest.cpp
   MCGManagerTest.cpp
   ReachabilityAnalysisTest.cpp
   ReaderFactoryTest.cpp

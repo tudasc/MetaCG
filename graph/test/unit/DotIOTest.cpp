@@ -4,7 +4,6 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "LoggerUtil.h"
 #include "gtest/gtest.h"
 
 #include "DotIO.h"
