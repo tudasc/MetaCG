@@ -87,7 +87,8 @@ void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV3Format(nlohmann::jso
     if (node.at(1).at("meta").contains("fileProperties") &&
         !node.at(1).at("meta").at("fileProperties").at("origin").get<std::string>().empty()) {
       node.at(1)["origin"] = node.at(1).at("meta").at("fileProperties").at("origin");
-    } else {  // if the V2 format did not contain origin data use unknownOrigin keyword
+      node.at(1).at("meta").at("fileProperties").erase("origin");
+    } else { // if the V2 format did not contain origin data use unknownOrigin keyword
       node.at(1)["origin"] = "unknownOrigin";
     }
     node.at(0) = std::hash<std::string>()(functionName + node.at(1)["origin"].get<std::string>());

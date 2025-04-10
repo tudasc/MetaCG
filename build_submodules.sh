@@ -22,8 +22,16 @@ add_flags="$2"
 # Extra-P (https://www.scalasca.org/software/extra-p/download.html)
 echo "[MetaCG] Building Extra-P (for PIRA II modeling)"
 echo "[MetaCG] Getting prerequisites ..."
-pip3 install PyQt5 >/dev/null 2>&1
-pip3 install matplotlib >/dev/null 2>&1
+pip3 show PyQt5
+PYQT5_INSTALLED=$?
+if [ $PYQT5_INSTALLED -eq 1 ]; then
+  pip3 install --user PyQt5
+fi
+pip3 show matplotlib
+MATPLOTLIB_INSTALLED=$?
+if [ $MATPLOTLIB_INSTALLED -eq 1 ]; then
+  pip3 install --user matplotlib
+fi
 if [ $? -ne 0 ]; then
   echo "[MetaCG] Installing Extra-P dependencies failed."
   exit 1
