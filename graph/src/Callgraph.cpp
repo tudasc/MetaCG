@@ -5,6 +5,7 @@
  */
 #include "Callgraph.h"
 #include "LoggerUtil.h"
+#include <iostream>
 #include <string>
 
 int metacg_RegistryInstanceCounter{0};
@@ -188,8 +189,9 @@ void metacg::Callgraph::merge(const metacg::Callgraph& other) {
           }
 
           mergeNode->setHasBody(node->getHasBody());
-          if(node->has<OverrideMD>()){
-            mergeNode->addMetaData(node->get<OverrideMD>());
+
+          if (!mergeNode->has<OverrideMD>() && node->has<OverrideMD>()) {
+              mergeNode->addMetaData<OverrideMD>(new OverrideMD());
           }
         }
 

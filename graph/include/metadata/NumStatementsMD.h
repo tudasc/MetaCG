@@ -1,7 +1,7 @@
 /**
-* File: NumStatementsMD.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: NumStatementsMD.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #ifndef CGCOLLECTOR2_NUMSTATEMENTSMD_H
 #define CGCOLLECTOR2_NUMSTATEMENTSMD_H
@@ -27,9 +27,7 @@ class NumStatementsMD : public metacg::MetaData::Registrar<NumStatementsMD> {
   NumStatementsMD(const NumStatementsMD& other) : numStmts(other.numStmts) {}
 
  public:
-  nlohmann::json to_json() const final {
-    return getNumberOfStatements();
-  }
+  nlohmann::json to_json() const final { return getNumberOfStatements(); }
 
   const char* getKey() const override { return key; }
 
@@ -38,14 +36,15 @@ class NumStatementsMD : public metacg::MetaData::Registrar<NumStatementsMD> {
 
     const NumStatementsMD* toMergeDerived = static_cast<const NumStatementsMD*>(&toMerge);
 
-    if (numStmts != toMergeDerived->getNumberOfStatements()) {
-      numStmts += toMergeDerived->getNumberOfStatements();
+    int a = toMergeDerived->getNumberOfStatements();
+    int b = numStmts;
 
-      if (numStmts != 0 && toMergeDerived->getNumberOfStatements() != 0) {
-        metacg::MCGLogger::instance().getErrConsole()->warn(
-            "Same function defined with different number of statements found on merge.");
-      }
+    if (numStmts != 0 && toMergeDerived->getNumberOfStatements() != 0 &&
+        numStmts != toMergeDerived->getNumberOfStatements()) {
+      metacg::MCGLogger::instance().getErrConsole()->warn(
+          "Same function defined with different number of statements found on merge.");
     }
+    numStmts = std::max(numStmts, toMergeDerived->getNumberOfStatements());
   }
 
   MetaData* clone() const final { return new NumStatementsMD(*this); }
