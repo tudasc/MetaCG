@@ -5,7 +5,6 @@
  */
 #include "Callgraph.h"
 #include "LoggerUtil.h"
-#include <iostream>
 #include <string>
 
 int metacg_RegistryInstanceCounter{0};

@@ -36,9 +36,6 @@ class NumStatementsMD : public metacg::MetaData::Registrar<NumStatementsMD> {
 
     const NumStatementsMD* toMergeDerived = static_cast<const NumStatementsMD*>(&toMerge);
 
-    int a = toMergeDerived->getNumberOfStatements();
-    int b = numStmts;
-
     if (numStmts != 0 && toMergeDerived->getNumberOfStatements() != 0 &&
         numStmts != toMergeDerived->getNumberOfStatements()) {
       metacg::MCGLogger::instance().getErrConsole()->warn(
