@@ -1,6 +1,6 @@
 function report {
   echo -e "\n[ --------------------------------- ] \n" >> "$logFile"
-  echo "Running cgverify Integration Test $testNo | $failStr"
+  echo "Running cgvalidate Integration Test $testNo | $failStr"
 }
 
 function failed {
