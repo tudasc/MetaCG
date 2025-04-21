@@ -2,6 +2,7 @@
 build/
 install/
 extern/
+.venv/
 
 .idea/
 .cache/
