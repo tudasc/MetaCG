@@ -53,9 +53,9 @@ $> cmake --install build
 
 You can configure MetaCG to also build CGCollector and PGIS.
 This requires additional dependencies.
-Clang/LLVM (in a supported version) and the Cube library are assumed to be available on the system.
-Extra-P can be built using the `build_submodules.sh` script provided in the repository, though the script is not tested outside of our CI system.
-It builds and installs Extra-P into `./deps/src` and `./deps/install`, respectively.
+Clang/LLVM (in a supported version) are assumed to be available on the system.
+Extra-P and Cube library can be built using the `build_submodules.sh` script provided in the repository, though the script is not tested outside of our CI system.
+It builds and installs the dependencies into `./extern`.
 
 ```{.sh}
 $> ./build_submodules.sh
@@ -66,7 +66,14 @@ Change the `CMAKE_INSTALL_PREFIX` to where you want your MetaCG installation to 
 
 ```{.sh}
 # To build the MetaCG library w/ PGIS and CGCollector
-$> cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/where/to/install -DMETACG_BUILD_CGCOLLECTOR=ON -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=./extern/src/extrap/extrap-3.0/include -DEXTRAP_LIB=./extern/install/extrap/lib
+$> extinstalldir=./extern cmake -S . -B build \
+  -DCMAKE_INSTALL_PREFIX=/where/to/install \
+  -DCMAKE_INSTALL_PREFIX="$extinstalldir/metacg" \
+  -DCUBE_LIB="$extinstalldir/cubelib/lib" \
+  -DCUBE_INCLUDE="$extinstalldir/cubelib/include/cubelib" \
+  -DEXTRAP_INCLUDE="$extinstalldir/extrap/include" \
+  -DEXTRAP_LIB="$extinstalldir/extrap/lib" \
+  -DMETACG_BUILD_CGCOLLECTOR=ON
 $> cmake --build build --parallel
 # Installation installs CGCollector, CGMerge, CGValidate, PGIS
 $> cmake --install build

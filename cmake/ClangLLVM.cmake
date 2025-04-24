@@ -50,15 +50,26 @@ function(add_clang target)
   # clang specified as system lib to suppress all warnings from clang headers
   target_include_directories(${target} SYSTEM PUBLIC ${CLANG_INCLUDE_DIRS})
 
-  target_link_libraries(
-    ${target}
-    PUBLIC clangTooling
-           clangFrontend
-           clangSerialization
-           clangAST
-           clangBasic
-           clangIndex
+  # Try clang-cpp first, fallback to individual libs
+  find_library(
+    CLANG_CPP_LIB clang-cpp
+    PATHS ${LLVM_LIBRARY_DIR}
+    NO_DEFAULT_PATH
   )
+  if(CLANG_CPP_LIB)
+    target_link_libraries(${target} PUBLIC clang-cpp)
+  else()
+    target_link_libraries(
+      ${target}
+      PUBLIC clangTooling
+             clangFrontend
+             clangSerialization
+             clangAST
+             clangBasic
+             clangIndex
+    )
+  endif()
+
   if(LLVM_LINK_LLVM_DYLIB)
     target_link_libraries(${target} PUBLIC LLVM)
   else()

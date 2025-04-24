@@ -4,7 +4,7 @@ WORKDIR /opt/metacg
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update -y && apt-get upgrade -y && apt-get install -y gcc g++ gdb cmake python3 apt-utils wget gnupg qt5-default git autoconf automake libtool zlib1g-dev zlib1g vim unzip python3-pip python3-pytest python3-pytest-cov openmpi-bin openmpi-common bison flex python2 bear
+RUN apt-get update -y && apt-get upgrade -y && apt-get install -y gcc g++ gdb cmake python3 apt-utils wget gnupg qt5-default git autoconf automake libtool zlib1g-dev zlib1g vim unzip python3-pip python3-pytest python3-pytest-cov python3-venv openmpi-bin openmpi-common bison flex python2 bear
 
 RUN pip3 install -U pip
 

@@ -52,32 +52,32 @@ jobs:
         uses: addnab/docker-run-action@v3
         with: 
           image: metacg-devel:latest
-          run: /opt/metacg/metacg/build/graph/test/unit/libtests
+          run: /opt/metacg/build/graph/test/unit/libtests
       - name: Run PGIS library tests 
         uses: addnab/docker-run-action@v3
         with: 
           image: metacg-devel:latest
-          run: /opt/metacg/metacg/build/pgis/test/unit/pgistests
+          run: /opt/metacg/build/pgis/test/unit/pgistests
       - name: Run target collector tests 
         uses: addnab/docker-run-action@v3
         with: 
           image: metacg-devel:latest
           run: |
-            cd /opt/metacg/metacg/graph/test/integration/TargetCollector
+            cd /opt/metacg/graph/test/integration/TargetCollector
             ./TestRunner.sh
       - name: Run call graph merge tests
         uses: addnab/docker-run-action@v3
         with: 
           image: metacg-devel:latest
           run: |
-            cd /opt/metacg/metacg/graph/test/integration/CallgraphMerge
+            cd /opt/metacg/graph/test/integration/CallgraphMerge
             ./MergeTestRunner.sh
       - name: Run cgcollector tests
         uses: addnab/docker-run-action@v3
         with: 
           image: metacg-devel:latest
           run: |
-            cd /opt/metacg/metacg/cgcollector/test
+            cd /opt/metacg/cgcollector/test
             bash run_format_one_test.sh 
             bash run_format_two_test.sh 
       - name: Run cgvalidate tests
@@ -85,5 +85,5 @@ jobs:
         with: 
           image: metacg-devel:latest
           run: |
-            cd /opt/metacg/metacg/cgcollector/test/integration
+            cd /opt/metacg/cgcollector/test/integration
             ./runner.sh build
