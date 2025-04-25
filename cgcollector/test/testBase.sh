@@ -15,14 +15,20 @@ mkdir -p log
 function applyFileFormatOneToSingleTU {
   testCaseFile=$1
   addFlags=$2
+  gtvariant=$3
   fail=0
+
+  local infix=""
+  if [[ -n "$gtvariant" ]]; then
+    infix="${gtvariant}."
+  fi
 
   # Set up the different data files, we need:
   # - The test case
   # - Tehe groundtruth data for reconciling the CG constructed by MetaCG
   tfile=$testCaseFile
-  gfile=${testCaseFile/cpp/ipcg}-${CI_CONCURRENT_ID}
-  tgt=${testCaseFile/cpp/gtipcg}
+  gfile=${testCaseFile/cpp/${infix}ipcg}-${CI_CONCURRENT_ID}
+  tgt=${testCaseFile/cpp/${infix}gtipcg}
 
   echo "Running ${testerExe} on ${tfile}"
   $cgcollectorExe --metacg-format-version=1 ${addFlags} --output ${gfile} $tfile -- >>log/testrun.log 2>&1
@@ -46,14 +52,20 @@ function applyFileFormatOneToSingleTU {
 function applyFileFormatTwoToSingleTU {
   testCaseFile=$1
   addFlags=$2
+  gtvariant=$3
   fail=0
+
+  local infix=""
+  if [[ -n "$gtvariant" ]]; then
+    infix="${gtvariant}."
+  fi
 
   # Set up the different data files, we need:
   # - The test case
   # - Tehe groundtruth data for reconciling the CG constructed by MetaCG
   tfile=$testCaseFile
-  gfile=${testCaseFile/cpp/ipcg}-${CI_CONCURRENT_ID}
-  tgt=${testCaseFile/cpp/gtmcg}
+  gfile=${testCaseFile/cpp/${infix}ipcg}-${CI_CONCURRENT_ID}
+  tgt=${testCaseFile/cpp/${infix}gtmcg}
 
  echo "Running tester on ${tfile}"
   $cgcollectorExe --metacg-format-version=2 ${addFlags} --output ${gfile} $tfile -- >>log/testrun.log 2>&1

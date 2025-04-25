@@ -2,8 +2,7 @@
     "_CG": {
         "_Z3foov": {
             "callees": [
-                "_ZN1BC1Ev",
-                "_ZN1BC2Ev",
+                "_Z5makeBv",
                 "_ZN1BD1Ev",
                 "_ZN1BD2Ev"
             ],
@@ -13,14 +12,70 @@
             "isVirtual": false,
             "meta": {
                 "codeStatistics": {
-                    "numVars": 1
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {
+                        "_Z5makeBv": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ]
+                    },
+                    "codeRegions": {}
+                },
+                "fileProperties": {
+                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0006.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {
+                    "_Z5makeBv": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z5makeBv": {
+            "callees": [
+                "_ZN1BC1Ev",
+                "_ZN1BC2Ev",
+                "_ZN1BD1Ev",
+                "_ZN1BD2Ev"
+            ],
+            "callers": [
+                "_Z3foov"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
                 },
                 "estimateCallCount": {
                     "calls": {},
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0008.cpp",
+                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0006.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -37,10 +92,10 @@
                 "numOperations": {
                     "numberOfControlFlowOps": 5,
                     "numberOfFloatOps": 0,
-                    "numberOfIntOps": 1,
+                    "numberOfIntOps": 0,
                     "numberOfMemoryAccesses": 0
                 },
-                "numStatements": 2
+                "numStatements": 1
             },
             "overriddenBy": [],
             "overrides": []
@@ -60,7 +115,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0008.cpp",
+                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0006.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -100,7 +155,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0008.cpp",
+                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0006.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -128,10 +183,10 @@
         "_ZN1BC1Ev": {
             "callees": [],
             "callers": [
-                "_Z3foov"
+                "_Z5makeBv"
             ],
             "doesOverride": false,
-            "hasBody": true,
+            "hasBody": false,
             "isVirtual": false,
             "meta": {
                 "codeStatistics": {
@@ -142,7 +197,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0008.cpp",
+                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0006.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -170,10 +225,10 @@
         "_ZN1BC2Ev": {
             "callees": [],
             "callers": [
-                "_Z3foov"
+                "_Z5makeBv"
             ],
             "doesOverride": false,
-            "hasBody": true,
+            "hasBody": false,
             "isVirtual": false,
             "meta": {
                 "codeStatistics": {
@@ -184,7 +239,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0008.cpp",
+                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0006.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -212,7 +267,8 @@
         "_ZN1BD1Ev": {
             "callees": [],
             "callers": [
-                "_Z3foov"
+                "_Z3foov",
+                "_Z5makeBv"
             ],
             "doesOverride": false,
             "hasBody": true,
@@ -226,7 +282,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0008.cpp",
+                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0006.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -254,7 +310,8 @@
         "_ZN1BD2Ev": {
             "callees": [],
             "callers": [
-                "_Z3foov"
+                "_Z3foov",
+                "_Z5makeBv"
             ],
             "doesOverride": false,
             "hasBody": true,
@@ -268,7 +325,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0008.cpp",
+                    "origin": "/home/groups/da_sc/exafoam/metacg_ng/cgcollector/test/input/allCtorDtor/0006.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
