@@ -89,8 +89,7 @@ build-mcg-no-tests:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-tests -G Ninja -DCMAKE_BUILD_TYPE=Debug 
         -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-no-tests
-        -DCUBE_LIB=$(dirname $(which cube_info))/../lib 
-        -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+        -DCUBE_DIR=$(dirname $(which cube_info))/..
         -DEXTRAP_INCLUDE=./extern/install/extrap/include 
         -DEXTRAP_LIB=./extern/install/extrap/lib 
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
@@ -106,8 +105,7 @@ build-mcg-stripped-all:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-all -G Ninja -DCMAKE_BUILD_TYPE=Debug 
         -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-dflt
-        -DCUBE_LIB=$(dirname $(which cube_info))/../lib 
-        -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+        -DCUBE_DIR=$(dirname $(which cube_info))/..
         -DEXTRAP_INCLUDE=./extern/install/extrap/include 
         -DEXTRAP_LIB=./extern/install/extrap/lib 
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
@@ -122,8 +120,7 @@ build-mcg-stripped-pgis:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-cgcollector -G Ninja -DCMAKE_BUILD_TYPE=Debug
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_pgis
-      -DCUBE_LIB=$(dirname $(which cube_info))/../lib
-      -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+      -DCUBE_DIR=$(dirname $(which cube_info))/..
       -DEXTRAP_INCLUDE=./extern/install/extrap/include
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_PGIS=ON
@@ -139,8 +136,7 @@ build-mcg-stripped-cgcollector:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-pgis -G Ninja -DCMAKE_BUILD_TYPE=Debug
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_cgcollector
-      -DCUBE_LIB=$(dirname $(which cube_info))/../lib
-      -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+      -DCUBE_DIR=$(dirname $(which cube_info))/..
       -DEXTRAP_INCLUDE=./extern/install/extrap/include
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_CGCOLLECTOR=ON
@@ -156,8 +152,7 @@ build-mcg:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD -G Ninja -DCMAKE_BUILD_TYPE=Debug
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_all
-      -DCUBE_LIB=$(dirname $(which cube_info))/../lib
-      -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+      -DCUBE_DIR=$(dirname $(which cube_info))/..
       -DEXTRAP_INCLUDE=./extern/install/extrap/include
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_PGIS=ON
