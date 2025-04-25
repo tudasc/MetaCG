@@ -525,6 +525,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
   std::vector<std::string> vtaInstances;
 
   bool captureCtorsDtors;
+  bool inferCtorDtorCalls;
   typedef llvm::DenseMap<const VarDecl*, llvm::SmallSet<const Decl*, 8>> AliasMapT;
   // Stores the aliases per variable
   AliasMapT aliases;
@@ -538,8 +539,8 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
   std::unordered_map<const VarDecl*, llvm::SmallSet<const FunctionDecl*, 16>> functionPointerTargets;
 
  public:
-  CGBuilder(CallGraph* g, CallGraphNode* N, bool captureCtorsDtors, CallGraph::UnresolvedMapTy unresolvedSyms)
-      : G(g), callerNode(N), captureCtorsDtors(captureCtorsDtors), unresolvedSymbols(unresolvedSyms) {}
+  CGBuilder(CallGraph* g, CallGraphNode* N, bool captureCtorsDtors, bool inferCtorDtorCalls, CallGraph::UnresolvedMapTy unresolvedSyms)
+      : G(g), callerNode(N), captureCtorsDtors(captureCtorsDtors), inferCtorDtorCalls(inferCtorDtorCalls), unresolvedSymbols(unresolvedSyms) {}
 
   void printAliases() const {
     for (const auto& aliasP : aliases) {
@@ -1141,7 +1142,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       // exit(-1);
     }
 
-    if (captureCtorsDtors) {
+    if (captureCtorsDtors && inferCtorDtorCalls) {
       // Check for implicit destruction of local variables
       for (Decl* D : ds->decls()) {
         if (VarDecl* VD = dyn_cast<VarDecl>(D)) {
@@ -1224,7 +1225,7 @@ void CallGraph::addNodeForDecl(Decl* D, bool IsGlobal) {
 #ifndef DEBUG_TEST_AA
   // Process all the calls by this function as well.
   if (Stmt* Body = D->getBody()) {
-    CGBuilder builder(this, Node, captureCtorsDtors, unresolvedSymbols);
+    CGBuilder builder(this, Node, captureCtorsDtors, inferCtorDtorCalls, unresolvedSymbols);
     if (auto cxx = dyn_cast<clang::CXXConstructorDecl>(D); cxx) {
       for (auto ini : cxx->inits()) {
         builder.Visit(ini->getInit());
@@ -1291,7 +1292,7 @@ bool CallGraph::VisitFunctionDecl(clang::FunctionDecl* FD) {
 }
 
 bool CallGraph::VisitCXXDestructorDecl(clang::CXXDestructorDecl* Destructor) {
-  if (!includeInGraph(Destructor)) {
+  if (!includeInGraph(Destructor) || !captureCtorsDtors) {
     return true;
   }
 
@@ -1302,7 +1303,7 @@ bool CallGraph::VisitCXXDestructorDecl(clang::CXXDestructorDecl* Destructor) {
   auto DtorNode = getOrInsertNode(Destructor);
   assert(DtorNode);
 
-  if (captureCtorsDtors) {
+  if (inferCtorDtorCalls) {
     // Check for base class destructors
     for (const auto& Base : ClassDecl->bases()) {
       const CXXRecordDecl* BaseDecl = Base.getType()->getAsCXXRecordDecl();
