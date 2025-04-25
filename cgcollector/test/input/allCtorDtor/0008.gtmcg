@@ -47,7 +47,10 @@
         },
         "_ZN1AD1Ev": {
             "callees": [],
-            "callers": [],
+            "callers": [
+                "_ZN1BD1Ev",
+                "_ZN1BD2Ev"
+            ],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": false,
@@ -87,7 +90,10 @@
         },
         "_ZN1AD2Ev": {
             "callees": [],
-            "callers": [],
+            "callers": [
+                "_ZN1BD1Ev",
+                "_ZN1BD2Ev"
+            ],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": false,
@@ -210,7 +216,10 @@
             "overrides": []
         },
         "_ZN1BD1Ev": {
-            "callees": [],
+            "callees": [
+                "_ZN1AD1Ev",
+                "_ZN1AD2Ev"
+            ],
             "callers": [
                 "_Z3foov"
             ],
@@ -252,7 +261,10 @@
             "overrides": []
         },
         "_ZN1BD2Ev": {
-            "callees": [],
+            "callees": [
+                "_ZN1AD1Ev",
+                "_ZN1AD2Ev"
+            ],
             "callers": [
                 "_Z3foov"
             ],
