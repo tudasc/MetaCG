@@ -70,7 +70,7 @@ $> extinstalldir=./extern/install
 $> cmake -S . -B build \
   -DCMAKE_INSTALL_PREFIX=/where/to/install \
   -DCMAKE_INSTALL_PREFIX="$extinstalldir/metacg" \
-  -DCUBE_LIB="$extinstalldir/cubelib/lib" \
+  -DCUBE_DIR="$extinstalldir/cubelib" \
   -DCUBE_INCLUDE="$extinstalldir/cubelib/include/cubelib" \
   -DEXTRAP_INCLUDE="$extinstalldir/extrap/include" \
   -DEXTRAP_LIB="$extinstalldir/extrap/lib" \
@@ -93,8 +93,7 @@ These options are common for the MetaCG package.
 
 These options are required when building with `METACG_BUILD_PGIS=ON`.
 
-- Path `CUBE_LIB`: Path to the libcube library directory
-- Path `CUBE_INCLUDE`: Path to the libcube include directory
+- Path `CUBE_DIR`: Path to the libcube installation
 - Path `EXTRAP_LIB`: Path to the Extra-P library directory
 - Path `EXTRAP_INCLUDE`: Path to the Extra-P include directory
 

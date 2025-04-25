@@ -13,8 +13,7 @@ COPY . /opt/metacg
 
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg \
-      -DCUBE_LIB=$EXTINSTALLDIR/cubelib/lib \
-      -DCUBE_INCLUDE=$EXTINSTALLDIR/cubelib/include/cubelib \
+      -DCUBE_DIR=$EXTINSTALLDIR/cubelib \
       -DEXTRAP_INCLUDE=$EXTINSTALLDIR/extrap/include \
       -DEXTRAP_LIB=$EXTINSTALLDIR/extrap/lib \
       -DMETACG_BUILD_PGIS=ON \
