@@ -221,6 +221,7 @@ test-cgvalidate:
   stage: integration-test
   needs: ["build-mcg"]
   script:
+    - module load clang/$LLVM
     - cd cgcollector/test/integration
     - ./runner.sh $MCG_BUILD
 
