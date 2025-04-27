@@ -69,9 +69,7 @@ Change the `CMAKE_INSTALL_PREFIX` to where you want your MetaCG installation to 
 $> extinstalldir=./extern/install
 $> cmake -S . -B build \
   -DCMAKE_INSTALL_PREFIX=/where/to/install \
-  -DCMAKE_INSTALL_PREFIX="$extinstalldir/metacg" \
   -DCUBE_DIR="$extinstalldir/cubelib" \
-  -DCUBE_INCLUDE="$extinstalldir/cubelib/include/cubelib" \
   -DEXTRAP_INCLUDE="$extinstalldir/extrap/include" \
   -DEXTRAP_LIB="$extinstalldir/extrap/lib" \
   -DMETACG_BUILD_CGCOLLECTOR=ON \
