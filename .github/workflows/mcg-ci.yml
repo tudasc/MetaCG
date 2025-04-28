@@ -2,7 +2,39 @@ name: MetaCG CI
 
 on: 
   push:
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE.txt'
+      - 'CONTRIBUTING.md'
+      - 'CITATION.cff'
+      - 'AUTHORS'
+      - 'formatSrc.sh'
+      - '.gitlab-ci.yml'
+      - '.gitignore'
+      - '.ci-defaults-template.yml'
+      - 'cgcollector/README.md'
+      - 'cgcollector/formatAllSrc.sh'
+      - 'cgcollector/.gitignore'
+      - 'graph/README.md'
+      - 'pgis/README.md'
+      - 'tools/README.md'
   pull_request: 
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE.txt'
+      - 'CONTRIBUTING.md'
+      - 'CITATION.cff'
+      - 'AUTHORS'
+      - 'formatSrc.sh'
+      - '.gitlab-ci.yml'
+      - '.gitignore'
+      - '.ci-defaults-template.yml'
+      - 'cgcollector/README.md'
+      - 'cgcollector/formatAllSrc.sh'
+      - 'cgcollector/.gitignore'
+      - 'graph/README.md'
+      - 'pgis/README.md'
+      - 'tools/README.md'
 
 jobs:
   build:
