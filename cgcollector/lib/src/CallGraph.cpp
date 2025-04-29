@@ -957,7 +957,9 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     //    std::cout << "Visiting the lambda expression: " << LEstr.front() << " @ " << LE->getCallOperator() <<
     //    std::endl;
     auto lambdaStaticInvoker = LE->getLambdaClass()->getLambdaStaticInvoker();
-    addCalledDecl(lambdaStaticInvoker, LE->getCallOperator(), nullptr);
+    if (lambdaStaticInvoker) {
+      addCalledDecl(lambdaStaticInvoker, LE->getCallOperator(), nullptr);
+    }
     for (auto conversionIt = LE->getLambdaClass()->conversion_begin();
          conversionIt != LE->getLambdaClass()->conversion_end(); ++conversionIt) {
       if (auto conv = *conversionIt) {

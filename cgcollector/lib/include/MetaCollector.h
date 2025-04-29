@@ -81,16 +81,20 @@ class FilePropertyCollector : public MetaCollector {
     const auto sourceLocation = decl->getLocation();
     auto& astCtx = decl->getASTContext();
     const auto fullSrcLoc = astCtx.getFullLoc(sourceLocation);
+    std::string fileNameStr = "";
+        if (fullSrcLoc.isValid()) {
 #if LLVM_VERSION_MAJOR >= 18
-    const auto fileEntry = fullSrcLoc.getFileEntryRef();
+      const auto fileEntry = fullSrcLoc.getFileEntryRef();
 #else
-    const auto fileEntry = fullSrcLoc.getFileEntry();
+      const auto fileEntry = fullSrcLoc.getFileEntry();
 #endif
-    if (!fileEntry) {
-      return result;
+      if (!fileEntry) {
+        return result;
+      }
+
+      const auto fileName = fileEntry->getName();
+      fileNameStr = fileName.str();
     }
-    const auto fileName = fileEntry->getName();
-    std::string fileNameStr = fileName.str();
 
     result->isFromSystemInclude = astCtx.getSourceManager().isInSystemHeader(sourceLocation);
 
