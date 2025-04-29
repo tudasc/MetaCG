@@ -38,7 +38,7 @@ Other version combinations *may* work.
 
 The default is to build only the graph library.
 The build requirements are downloaded at configure time.
-While CMake looks for `nlohmann-json` version 3.10., MetaCG should work starting from version 3.9.2.
+While CMake looks for `nlohmann-json` version 3.12., MetaCG should work starting from version 3.9.2.
 For spdlog, we rely on version 1.8.2 -- other versions *may* work.
 If you do not want to download at configure time, please use the respective CMake options listed below.
 
