@@ -246,9 +246,9 @@ inline void setPiraOneData(T node, int numStmts = 0, bool hasBody = false, bool 
     data->setHasBody(hasBody);
     data->setDominantRuntime(dominantRuntime);
     data->setComesFromCube(inPrevProfile);
- } else {
-   assert_pira_one_data();
- }
+  } else {
+    assert_pira_one_data();
+  }
 }
 
 /**

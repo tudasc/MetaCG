@@ -82,7 +82,7 @@ class FilePropertyCollector : public MetaCollector {
     auto& astCtx = decl->getASTContext();
     const auto fullSrcLoc = astCtx.getFullLoc(sourceLocation);
     std::string fileNameStr = "";
-        if (fullSrcLoc.isValid()) {
+    if (fullSrcLoc.isValid()) {
 #if LLVM_VERSION_MAJOR >= 18
       const auto fileEntry = fullSrcLoc.getFileEntryRef();
 #else
