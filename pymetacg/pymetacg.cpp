@@ -35,6 +35,8 @@ NB_MODULE(pymetacg, m) {
         .def_prop_ro("function_name", [](const CgNodeWrapper& self) {return self.node->getFunctionName();})
         .def_prop_ro("meta_data", [](const CgNodeWrapper& self) {return self.node->getMetaDataContainer();})
         .def("__repr__", [](const CgNodeWrapper& self) {return std::string("CgNode(") + self.node->getFunctionName() + ")";})
+        .def("__hash__", [](const CgNodeWrapper& self) {return self.node->getId();})
+        .def("__eq__", [](const CgNodeWrapper& self, CgNodeWrapper& other) {return self.node->getId() == other.node->getId();})
         .def_prop_ro("callers", [](const CgNodeWrapper& self) {
             return attachGraphPointerToNodes(self.graph.getCallers(self.node), self.graph);
         })

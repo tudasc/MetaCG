@@ -26,3 +26,8 @@ if (NOT CMAKE_INSTALL_PYTHON_LIBDIR)
 endif ()
 
 install(TARGETS pymetacg DESTINATION ${CMAKE_INSTALL_PYTHON_LIBDIR})
+
+# Tests
+if (METACG_BUILD_PYMETACG_TESTS)
+  add_subdirectory(tests)
+endif()

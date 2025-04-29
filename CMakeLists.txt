@@ -137,9 +137,16 @@ option(
   OFF
 )
 
-# If set to on, CMake looks for installed cxxopts
+# If set to on, CMake looks for installed nanobind
 option(
   METACG_USE_EXTERNAL_NANOBIND
+  "On or Off"
+  OFF
+)
+
+# Build tests for pymetacg
+option(
+  METACG_BUILD_PYMETACG_TESTS
   "On or Off"
   OFF
 )
