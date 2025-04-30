@@ -25,8 +25,8 @@ int main(int argc, char** argv) {
   auto console = MCGLogger::instance().getConsole();
   auto errConsole = MCGLogger::instance().getErrConsole();
 
-  console->info("Running metacg::CGMerge2 (version {}.{})\nGit revision: {}", CGCollector_VERSION_MAJOR,
-                CGCollector_VERSION_MINOR, MetaCG_GIT_SHA);
+  console->info("Running metacg::CGMerge2 (version {}.{})\nGit revision: {}", MetaCG_VERSION_MAJOR,
+                MetaCG_VERSION_MINOR, MetaCG_GIT_SHA);
 
   if (argc < 3) {
     errConsole->error("Invalid input arguments. Usage: cgmerge <outfile> <infile1> <infile2> ...");

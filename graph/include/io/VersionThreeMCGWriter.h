@@ -15,7 +15,7 @@ class VersionThreeMCGWriter : public MCGWriter {
  public:
   // Fixme: Make the MetaCG versions, not CGCollector versions
   explicit VersionThreeMCGWriter(
-      MCGFileInfo fileInfo = {{3, 0}, {"MetaCG", CGCollector_VERSION_MAJOR, CGCollector_VERSION_MINOR, MetaCG_GIT_SHA}},
+      MCGFileInfo fileInfo = {{3, 0}, {"MetaCG", MetaCG_VERSION_MAJOR, MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}},
       bool debug = false, bool exportSorted = false)
       : MCGWriter(std::move(fileInfo)), outputDebug(debug), exportSorted(exportSorted) {}
 
