@@ -51,10 +51,10 @@ main = cg["main"]
 foo = cg["main"]
 
 # iterate over node callees and collect callee function names into list
-callees_names = [callee.function_name for main.callees]
+callees_names = [callee.function_name for callee in main.callees]
 
 # iterate over node callers and collect caller function names into list
-callers_names = [callee.function_name for foo.callers]
+callers_names = [caller.function_name for caller in foo.callers]
 
 # check whether function calls itself
 foo_is_recursive = foo in foo.callees
