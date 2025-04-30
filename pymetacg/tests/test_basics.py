@@ -2,44 +2,37 @@ import pytest
 
 import pymetacg
 
-def test_empty_cg(resource_dir):
-    path = (resource_dir / "empty_cg.mcg").as_posix()
-    cg = pymetacg.Callgraph.from_file(path)
+def test_version_info():
+    assert "MetaCG" in pymetacg.info
 
-    assert len(list(cg)) == 0
-    assert "main" not in cg
+def test_empty_cg(empty_cg):
+    assert len(list(empty_cg)) == 0
+    assert "main" not in empty_cg
 
-def test_node_access(resource_dir):
-    path = (resource_dir / "basic_cg.mcg").as_posix()
-    cg = pymetacg.Callgraph.from_file(path)
-
+def test_node_access(basic_cg):
     # test `in` functionality (`__contains__`)
-    assert "main" in cg
-    assert "foo" in cg
-    assert "bar" in cg
-    assert "notinhere" not in cg
+    assert "main" in basic_cg
+    assert "foo" in basic_cg
+    assert "bar" in basic_cg
+    assert "notinhere" not in basic_cg
 
     # test iterating functionality (`__iter__`)
-    assert all(type(node) == pymetacg.CgNode for node in cg)
-    assert set(node.function_name for node in cg) == {"main", "foo", "bar"}
+    assert all(type(node) == pymetacg.CgNode for node in basic_cg)
+    assert set(node.function_name for node in basic_cg) == {"main", "foo", "bar"}
 
     # test access (`__getitem__`)
-    main = cg["main"]
+    main = basic_cg["main"]
     with pytest.raises(KeyError):
-        cg["notinhere"]
+        basic_cg["notinhere"]
 
     # test node equality (`__eq__`)
-    assert cg["main"] == cg["main"]
-    assert cg["main"] != cg["foo"]
+    assert basic_cg["main"] == basic_cg["main"]
+    assert basic_cg["main"] != basic_cg["foo"]
 
-def test_edges(resource_dir):
-    path = (resource_dir / "basic_cg.mcg").as_posix()
-    cg = pymetacg.Callgraph.from_file(path)
-
-    main = cg["main"]
-    foo = cg["foo"]
-    bar = cg["bar"]
-
+def test_edges(basic_cg):
+    main = basic_cg["main"]
+    foo = basic_cg["foo"]
+    bar = basic_cg["bar"]
 
     assert main.callers == set()
     assert main.callees == {foo, bar}

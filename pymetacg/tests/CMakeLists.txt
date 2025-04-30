@@ -6,10 +6,14 @@ find_package(
   REQUIRED
 )
 
+add_library(dummy_md SHARED DummyMD.cpp)
+target_link_libraries(dummy_md PRIVATE metacg::metacg)
+
 pytest_discover_tests(
     pymetacg_tests
     PYTHON_PATH_PREPEND
         $<TARGET_FILE_DIR:pymetacg>
+    ENVIRONMENT LD_PRELOAD=$<TARGET_FILE:dummy_md>
     TRIM_FROM_NAME "^test_"
-    DEPENDS pymetacg
+    DEPENDS pymetacg dummy_md
 )
