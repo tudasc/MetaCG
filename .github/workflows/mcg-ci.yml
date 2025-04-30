@@ -18,6 +18,7 @@ on:
       - 'graph/README.md'
       - 'pgis/README.md'
       - 'tools/README.md'
+      - 'pymetacg/README.md'
   pull_request: 
     paths-ignore:
       - 'README.md'
@@ -35,6 +36,7 @@ on:
       - 'graph/README.md'
       - 'pgis/README.md'
       - 'tools/README.md'
+      - 'pymetacg/README.md'
 
 jobs:
   build:
