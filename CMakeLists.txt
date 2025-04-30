@@ -151,6 +151,6 @@ option(
   OFF
 )
 
-if (METACG_BUILD_PYMETACG)
+if(METACG_BUILD_PYMETACG)
   add_subdirectory(pymetacg)
 endif()

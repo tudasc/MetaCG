@@ -1,16 +1,12 @@
-
 include(nanobind)
 include(spdlog)
 include(json)
 
 nanobind_build_library(nanobind-static)
 
-# nanobind_add_module(pymetacg NOSTRIP pymetacg.cpp)
-# We use nanobind's low-level API, as the high-level API
-# sets the default visibility to `hidden` which breaks
-# our singleton implementations in MetaCG.
-# By using the low-level API and *not* calling
-# `nanobind_set_visibility`, we can prevent this.
+# nanobind_add_module(pymetacg NOSTRIP pymetacg.cpp) We use nanobind's low-level API, as the high-level API sets the
+# default visibility to `hidden` which breaks our singleton implementations in MetaCG. By using the low-level API and
+# *not* calling `nanobind_set_visibility`, we can prevent this.
 add_library(pymetacg MODULE pymetacg.cpp)
 target_link_libraries(pymetacg PRIVATE nanobind-static)
 nanobind_extension(pymetacg)
@@ -23,15 +19,16 @@ add_metacg_library(pymetacg)
 add_spdlog_libraries(pymetacg)
 add_json(pymetacg)
 
-if (NOT CMAKE_INSTALL_PYTHON_LIBDIR)
+if(NOT CMAKE_INSTALL_PYTHON_LIBDIR)
   set(CMAKE_INSTALL_PYTHON_LIBDIR
-  "${CMAKE_INSTALL_LIBDIR}/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages")
+      "${CMAKE_INSTALL_LIBDIR}/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages"
+  )
   # ${Python_SITELIB})
-endif ()
+endif()
 
 install(TARGETS pymetacg DESTINATION ${CMAKE_INSTALL_PYTHON_LIBDIR})
 
 # Tests
-if (METACG_BUILD_PYMETACG_TESTS)
+if(METACG_BUILD_PYMETACG_TESTS)
   add_subdirectory(tests)
 endif()
