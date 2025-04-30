@@ -1,3 +1,6 @@
+include(spdlog)
+include(json)
+
 enable_testing()
 
 find_package(
@@ -7,6 +10,8 @@ find_package(
 )
 
 add_library(dummy_md SHARED DummyMD.cpp)
+add_spdlog_libraries(dummy_md)
+add_json(dummy_md)
 target_link_libraries(dummy_md PRIVATE metacg::metacg)
 
 pytest_discover_tests(
