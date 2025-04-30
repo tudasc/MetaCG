@@ -49,6 +49,7 @@ else
   source "$venv_dir/bin/activate" || err_exit "Activating python venv failed"
   pip install --upgrade pip
   pip install PyQt5 matplotlib || err_exit "Installing Extra-P dependencies failed."
+  pip install pytest pytest-cmake || err_exit "Installing pymetacg test dependencies failed."
 fi
 
 log "Building cubelib for Extra-P"

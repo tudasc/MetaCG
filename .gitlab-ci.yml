@@ -150,6 +150,7 @@ build-mcg:
   needs: ["build-dependencies", "configure-custom-md"]
   script:
     - module load clang/$LLVM
+    - source .venv/bin/activate
     - cmake -S . -B $MCG_BUILD -G Ninja -DCMAKE_BUILD_TYPE=Debug
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_all
       -DCUBE_DIR=$(dirname $(which cube_info))/..
@@ -157,6 +158,8 @@ build-mcg:
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_PGIS=ON
       -DMETACG_BUILD_CGCOLLECTOR=ON
+      -DMETACG_BUILD_PYMETACG=ON
+      -DMETACG_BUILD_PYMETACG_TESTS=ON
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
     - cmake --build $MCG_BUILD --parallel
     - module purge
@@ -205,6 +208,13 @@ test-pgis:
     reports:
       junit: $MCG_BUILD/pgis/test/unit/gcc-$GCC-llvm-$LLVM.xml
 
+test-pymetacg:
+  <<: *job-setup
+  stage: test
+  needs: ["build-mcg"]
+  script:
+    - cd $MCG_BUILD/pymetacg/tests
+    - ctest . --verbose
 
 # Stage: integration-test
 test-graphlib-merge:
