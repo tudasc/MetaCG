@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 function check_selection {
   testSuite=$1
@@ -6,17 +7,17 @@ function check_selection {
   ciConcurrentId=$4
 	aflFileExt=""
 
-	cat ${outDir}/instrumented-${testNo}.txt 2>&1 > /dev/null
+	cat "${outDir}"/instrumented-"${testNo}".txt >/dev/null 2>&1
 	if [ $? -ne 0 ]; then
 		echo "No result file"
 		return 255
 	fi
 
-	cat ${PWD}/${testNo}.afl > /dev/null 2>&1 
+	cat "${PWD}"/"${testNo}".afl > /dev/null 2>&1 
 	if [ $? -eq 0 ]; then
 		aflFileExt="afl"
 	else
-	  cat ${PWD}/${testNo}.spl > /dev/null 2>&1 
+	  cat "${PWD}"/"${testNo}".spl > /dev/null 2>&1 
 		if [ $? -eq 0 ]; then
 			aflFileExt="spl"
 		fi
@@ -26,31 +27,29 @@ function check_selection {
 		return 255
 	fi
 
-  sortedTmpICFile="/tmp/pgis_temp_${testSuite}_res-$ciConcurrentId.txt"
-  sortedTmpBLFile="/tmp/pgis_temp_${testSuite}_bl-$ciConcurrentId.txt"
+  sortedTmpICFile="/tmp/pgis_temp_${testSuite}_res-${ciConcurrentId}.txt"
+  sortedTmpBLFile="/tmp/pgis_temp_${testSuite}_bl-${ciConcurrentId}.txt"
 
-	cat ${outDir}/instrumented-${testNo}.txt | sort | uniq > $sortedTmpICFile
-	cat ${PWD}/${testNo}.${aflFileExt} | sort | uniq > $sortedTmpBLFile
-	diff -q $sortedTmpICFile $sortedTmpBLFile 2>&1 > /dev/null
+	sort "${outDir}"/instrumented-"${testNo}".txt | uniq > "${sortedTmpICFile}"
+	sort "${PWD}"/"${testNo}"."${aflFileExt}" | uniq > "${sortedTmpBLFile}"
+	diff -q "${sortedTmpICFile}" "${sortedTmpBLFile}" >/dev/null 2>&1 
   resultOfTest=$?
 	if [ $resultOfTest -eq 0 ]; then
-	  rm ${outDir}/instrumented-${testNo}.txt
+	  rm "${outDir}"/instrumented-"${testNo}".txt
 	fi
-  rm $sortedTmpBLFile $sortedTmpICFile
+  rm "${sortedTmpBLFile}" "${sortedTmpICFile}"
 	return $resultOfTest
 }
 
-
 function error_exit {
 	echo "An error occured with argument $1"
-	exit -1
+	exit 1
 }
 
 function check_and_print {
 	fails=$1
 	testFile=$2
 	errCode=$3
-	thisFail=0
 	failStr=' PASS'
 
   if [ ${errCode} -ne 0 ]; then
@@ -63,4 +62,3 @@ function check_and_print {
 
 	return ${fails}
 }
-

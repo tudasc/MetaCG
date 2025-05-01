@@ -1,3 +1,4 @@
+#!/usr/bin/env bash 
 
 buildDir=$1
 outDir=$2
@@ -14,7 +15,7 @@ $cmd
 echo -e "\n [ ------------- EXPORT FEATURE ----------------- ]\n"
 
 outfile=${testNo/ipcg/2-${CI_CONCURRENT_ID}.ipcg}
-cp ${testNo} ${outfile}
+cp "${testNo}" "${outfile}"
 cmd="${binary} --use-cs-instrumentation --debug 1 --export --out-dir $outDir --parameter-file ${PWD}/parameters.json --extrap ${PWD}/${extrapDef} ${PWD}/$outfile"
 echo $cmd
 $cmd
