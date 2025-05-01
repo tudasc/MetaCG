@@ -12,7 +12,7 @@ function merge {
   fail=0
   tc=$1
   suffix="$2"
-  
+
   ipcgTaFile="${tc}_a${suffix}.ipcg"
   ipcgTbFile="${tc}_b${suffix}.ipcg"
   gtCombFile="${tc}_both${suffix}.gtmcg"
@@ -36,25 +36,25 @@ function merge {
 
 while getopts ":b:h:g" opt; do
   case $opt in
-    b)
-      if [ -z $OPTARG ]; then
-        echo "no build directory given, assuming \"build\""
-      fi
-      build_dir=$OPTARG
-      ;;
-    h)
-      echo "use -b to provide a build directory NAME"
-      echo "use -h to print this help"
-      exit 0
-      ;;
-    g)
-      echo "Regenerating ground truth files"
-      generate_gt=1
-      ;;
-    \?)
-      echo "Invalid option -$OPTARG"
-      exit 1
-      ;;
+  b)
+    if [ -z $OPTARG ]; then
+      echo "no build directory given, assuming \"build\""
+    fi
+    build_dir=$OPTARG
+    ;;
+  h)
+    echo "use -b to provide a build directory NAME"
+    echo "use -h to print this help"
+    exit 0
+    ;;
+  g)
+    echo "Regenerating ground truth files"
+    generate_gt=1
+    ;;
+  \?)
+    echo "Invalid option -$OPTARG"
+    exit 1
+    ;;
   esac
 done
 
@@ -81,6 +81,5 @@ for tc in "${tests[@]}"; do
   fails=$((fails + fail))
 done
 echo "Test failures: $fails"
-
 
 exit $fails

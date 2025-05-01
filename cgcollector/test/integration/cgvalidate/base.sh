@@ -1,10 +1,10 @@
 function report {
-  echo -e "\n[ --------------------------------- ] \n" >> "$logFile"
+  echo -e "\n[ --------------------------------- ] \n" >>"$logFile"
   echo "Running cgvalidate Integration Test $testNo | $failStr"
 }
 
 function failed {
-  fails=$(($fails+1))
+  fails=$(($fails + 1))
   failStr=FAIL
   report
 }
@@ -20,6 +20,5 @@ function checkErrorCode {
   else
     passed
   fi
-  testNo=$(($testNo+1))
+  testNo=$(($testNo + 1))
 }
-

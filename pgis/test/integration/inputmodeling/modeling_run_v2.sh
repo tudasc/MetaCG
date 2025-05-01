@@ -1,4 +1,3 @@
-
 buildDir=$1
 outDir=$2
 testNo=$3
@@ -16,4 +15,3 @@ $cmd
 #cp ${testNo} ${outfile}
 #${binary} --debug 2 --export --out-file $outDir --extrap ${PWD}/${extrapDef} ${PWD}/$outfile
 #rm ${PWD}/${outfile}
-

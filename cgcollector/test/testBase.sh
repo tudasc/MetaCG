@@ -1,4 +1,3 @@
-
 cgcollectorExe=cgcollector
 testerExe=cgsimpletester
 cgmergeExe=cgmerge
@@ -26,7 +25,7 @@ function applyFileFormatOneToSingleTU {
 
   echo "Running ${testerExe} on ${tfile}"
   $cgcollectorExe --metacg-format-version=1 ${addFlags} --output ${gfile} $tfile -- >>log/testrun.log 2>&1
-  cat $gfile | python3 -m json.tool > ${gfile}_
+  cat $gfile | python3 -m json.tool >${gfile}_
   mv ${gfile}_ ${gfile}
   $testerExe $tgt $gfile >>log/testrun.log 2>&1
 
@@ -55,9 +54,9 @@ function applyFileFormatTwoToSingleTU {
   gfile=${testCaseFile/cpp/ipcg}-${CI_CONCURRENT_ID}
   tgt=${testCaseFile/cpp/gtmcg}
 
- echo "Running tester on ${tfile}"
+  echo "Running tester on ${tfile}"
   $cgcollectorExe --metacg-format-version=2 ${addFlags} --output ${gfile} $tfile -- >>log/testrun.log 2>&1
-  cat $gfile | python3 -m json.tool > ${gfile}_
+  cat $gfile | python3 -m json.tool >${gfile}_
   mv ${gfile}_ ${gfile}
   $testerExe $tgt $gfile >>log/testrun.log 2>&1
 
@@ -83,9 +82,9 @@ function applyFileFormatTwoToSingleTUWithAA {
   gfile=${testCaseFile/cpp/ipcg}-${CI_CONCURRENT_ID}
   tgt=${testCaseFile/cpp/gtaacg}
 
- echo "Running tester on ${tfile}"
+  echo "Running tester on ${tfile}"
   $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA ${addFlags} --output ${gfile} $tfile -- >>log/testrun.log 2>&1
-  cat $gfile | python3 -m json.tool > ${gfile}_
+  cat $gfile | python3 -m json.tool >${gfile}_
   mv ${gfile}_ ${gfile}
   $testerExe $tgt $gfile >>log/testrun.log 2>&1
 
@@ -220,7 +219,7 @@ function applyFileFormatTwoToMultiTUWithAA {
 
   # Translation-unit-local
   $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA --output ./input/multiTU/${ipcgTaFile} ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
-  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA --output ./input/multiTU/${ipcgTbFile}  ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
+  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA --output ./input/multiTU/${ipcgTbFile} ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
 
   cat ./input/multiTU/${ipcgTaFile} | python3 -m json.tool >./input/multiTU/${ipcgTaFile}_
   mv ./input/multiTU/${ipcgTaFile}_ ./input/multiTU/${ipcgTaFile}
@@ -255,23 +254,22 @@ function applyFileFormatTwoToMultiTUWithAA {
   return $fail
 }
 
-
 while getopts ":b:h" opt; do
   case $opt in
-    b)
-      if [ -z $OPTARG ]; then
-        echo "no build directory given, assuming \"build\""
-      fi
-      build_dir=$OPTARG
-      ;;
-    h)
-      echo "use -b to provide a build directory NAME"
-      echo "use -h to print this help"
-      exit 0
-      ;;
-    \?)
-      echo "Invalid option -$OPTARG"
-      exit 1
-      ;;
+  b)
+    if [ -z $OPTARG ]; then
+      echo "no build directory given, assuming \"build\""
+    fi
+    build_dir=$OPTARG
+    ;;
+  h)
+    echo "use -b to provide a build directory NAME"
+    echo "use -h to print this help"
+    exit 0
+    ;;
+  \?)
+    echo "Invalid option -$OPTARG"
+    exit 1
+    ;;
   esac
 done

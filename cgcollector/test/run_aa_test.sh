@@ -42,7 +42,6 @@ multiTests=(0042 0043 0044 0050 0053 0060)
 # Multi-file aa tests
 multiTestsAA=(0070 0071 0072 0214 0240 0241)
 
-
 fails=0
 
 # Single File
