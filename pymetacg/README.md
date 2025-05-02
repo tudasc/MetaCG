@@ -6,7 +6,7 @@ Currently, manipulating and writing call graphs is *not* supported.
 ## Dependencies
  - [nanobind](https://github.com/wjakob/nanobind)
  - [pytest](https://pypi.org/project/pytest/) (for tests only)
- - [pytext-cmake](https://pypi.org/project/pytest/) (for tests only)
+ - [pytest-cmake](https://pypi.org/project/pytest-cmake/) (for tests only)
 
 ## Building
 `pymetacg` can be built as an optional feature during the MetaCG build, producing a dynamic library (e.g., `pymetacg.cpython-313-x86_64-linux-gnu.so`) that can then be loaded from Python.

@@ -4,9 +4,9 @@ include(json)
 
 nanobind_build_library(nanobind-static)
 
-# nanobind_add_module(pymetacg NOSTRIP pymetacg.cpp) We use nanobind's low-level API, as the high-level API sets the
-# default visibility to `hidden` which breaks our singleton implementations in MetaCG. By using the low-level API and
-# *not* calling `nanobind_set_visibility`, we can prevent this.
+# We use nanobind's low-level API, as the high-level API sets the default visibility to `hidden` which breaks our
+# singleton implementations in MetaCG. By using the low-level API and *not* calling `nanobind_set_visibility`, we can
+# prevent this.
 add_library(pymetacg MODULE pymetacg.cpp)
 target_link_libraries(pymetacg PRIVATE nanobind-static)
 nanobind_extension(pymetacg)
@@ -23,7 +23,6 @@ if(NOT CMAKE_INSTALL_PYTHON_LIBDIR)
   set(CMAKE_INSTALL_PYTHON_LIBDIR
       "${CMAKE_INSTALL_LIBDIR}/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages"
   )
-  # ${Python_SITELIB})
 endif()
 
 install(TARGETS pymetacg DESTINATION ${CMAKE_INSTALL_PYTHON_LIBDIR})
