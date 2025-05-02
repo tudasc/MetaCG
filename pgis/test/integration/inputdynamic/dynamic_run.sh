@@ -1,4 +1,3 @@
-
 buildDir=$1
 outDir=$2
 testNo=$3
@@ -9,4 +8,3 @@ cubeTest="${testNo/ipcg/cubex}"
 cmd="${binary} --use-cs-instrumentation --out-dir $outDir ${PWD}/$testNo --cube ${PWD}/$cubeTest"
 echo $cmd
 $cmd
-

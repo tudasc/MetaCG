@@ -1,4 +1,3 @@
-
 buildDir=$1
 outDir=$2
 testNo=$3
@@ -10,4 +9,3 @@ cubeTest="${testNo/mcg/cubex}"
 cmd="${binary} --use-cs-instrumentation --metacg-format 2 --out-dir $outDir ${PWD}/$testNo --cube ${PWD}/$cubeTest"
 echo $cmd
 $cmd
-

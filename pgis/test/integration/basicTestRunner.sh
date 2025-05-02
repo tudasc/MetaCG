@@ -9,21 +9,21 @@ timeStamp=$(date +%s)
 
 while getopts ":b:h" opt; do
   case $opt in
-    b)
-      if [ -z $OPTARG ]; then
-        echo "no build directory given, assuming \"build\""
-      fi
-      buildDirParam=$OPTARG
-      ;;
-    h)
-      echo "use -b to provide a build directory NAME"
-      echo "use -h to print this help"
-      exit 0
-      ;;
-    \?)
-      echo "Invalid option -$OPTARG"
-      exit 1
-      ;;
+  b)
+    if [ -z $OPTARG ]; then
+      echo "no build directory given, assuming \"build\""
+    fi
+    buildDirParam=$OPTARG
+    ;;
+  h)
+    echo "use -b to provide a build directory NAME"
+    echo "use -h to print this help"
+    exit 0
+    ;;
+  \?)
+    echo "Invalid option -$OPTARG"
+    exit 1
+    ;;
   esac
 done
 
@@ -43,12 +43,12 @@ fi
 echo "Running Tests with build directory: ${buildDir}"
 
 for testFile in ./ipcgread/*.ipcg; do
-	$testExec --out-dir $outDir --static $testFile >${logFile} 2>&1
-	errCode=$?
-	check_and_print $fails $testFile $errCode
-	fails=$?
+  $testExec --out-dir $outDir --static $testFile >${logFile} 2>&1
+  errCode=$?
+  check_and_print $fails $testFile $errCode
+  fails=$?
 
-	echo "Running PGIS base test $testNo"
+  echo "Running PGIS base test $testNo"
 done
 
 echo "Failed tests: ${fails}"

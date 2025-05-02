@@ -6,13 +6,11 @@
 #"""
 set -euo pipefail
 
-function log()
-{
+function log() {
   echo "[MetaCG] $1"
 }
 
-function err_exit()
-{
+function err_exit() {
   echo "[MetaCG] Error: $1" >&2
   exit 1
 }

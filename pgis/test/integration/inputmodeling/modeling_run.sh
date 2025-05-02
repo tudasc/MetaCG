@@ -1,4 +1,3 @@
-
 buildDir=$1
 outDir=$2
 testNo=$3
@@ -10,7 +9,6 @@ cmd="${binary} --use-cs-instrumentation --debug 2 --out-dir $outDir --parameter-
 echo $cmd
 $cmd
 
-
 echo -e "\n [ ------------- EXPORT FEATURE ----------------- ]\n"
 
 outfile=${testNo/ipcg/2-${CI_CONCURRENT_ID}.ipcg}
@@ -20,4 +18,3 @@ echo $cmd
 $cmd
 
 #rm ${PWD}/${outfile}
-
