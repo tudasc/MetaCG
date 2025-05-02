@@ -3,7 +3,6 @@ FROM debian:bookworm-slim
 WORKDIR /opt/metacg
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV CMAKE_GENERATOR=Ninja
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
@@ -36,7 +35,7 @@ RUN ./build_submodules.sh $(nproc)
 
 COPY . /opt/metacg
 
-RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
+RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg \
       -DCUBE_DIR=$EXTINSTALLDIR/cubelib \
       -DEXTRAP_INCLUDE=$EXTINSTALLDIR/extrap/include \
