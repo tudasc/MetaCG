@@ -15,7 +15,7 @@ namespace metacg::io {
 class VersionTwoMCGWriter : public MCGWriter {
  public:
   explicit VersionTwoMCGWriter(
-      metacg::MCGFileInfo fileInfo = metacg::getVersionTwoFileInfo({std::string("CGCollector"), CGCollector_VERSION_MAJOR, CGCollector_VERSION_MINOR, MetaCG_GIT_SHA}))
+      metacg::MCGFileInfo fileInfo = metacg::getVersionTwoFileInfo({std::string("CGCollector"), MetaCG_VERSION_MAJOR, MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}))
       : MCGWriter(std::move(fileInfo)) {}
 
   void write(const Callgraph* graph, JsonSink& js) override;

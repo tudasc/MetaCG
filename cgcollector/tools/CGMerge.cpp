@@ -514,7 +514,7 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  std::cout << "Running metacg::CGMerge (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
+  std::cout << "Running metacg::CGMerge (version " << MetaCG_VERSION_MAJOR << '.' << MetaCG_VERSION_MINOR
             << ")\nGit revision: " << MetaCG_GIT_SHA << std::endl;
 
   std::vector<std::string> inputFiles;

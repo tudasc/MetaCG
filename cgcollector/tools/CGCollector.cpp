@@ -117,7 +117,7 @@ int main(int argc, const char** argv) {
   metacgFormatVersion.setInitialValue(1);  // Have the old file format as default
   outputFilenameOption.setInitialValue("");
 
-  std::cout << "Running metacg::CGCollector (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
+  std::cout << "Running metacg::CGCollector (version " << MetaCG_VERSION_MAJOR << '.' << MetaCG_VERSION_MINOR
             << ")\nGit revision: " << MetaCG_GIT_SHA << " LLVM/Clang version: " << LLVM_VERSION_STRING << std::endl;
 
 #if (LLVM_VERSION_MAJOR >= 10) && (LLVM_VERSION_MAJOR <= 12)

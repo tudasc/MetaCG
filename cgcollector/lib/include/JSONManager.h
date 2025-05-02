@@ -38,8 +38,8 @@ inline void writeIPCG(const std::string& filename, const nlohmann::json& callgra
 }
 
 inline void attachFormatTwoHeader(nlohmann::json& j) {
-  std::string cgcMajorVersion = std::to_string(CGCollector_VERSION_MAJOR);
-  std::string cgcMinorVersion = std::to_string(CGCollector_VERSION_MINOR);
+  std::string cgcMajorVersion = std::to_string(MetaCG_VERSION_MAJOR);
+  std::string cgcMinorVersion = std::to_string(MetaCG_VERSION_MINOR);
   std::string cgcVersion{cgcMajorVersion + '.' + cgcMinorVersion};
   j = {{"_MetaCG", {}}, {"_CG", {}}};
   j["_MetaCG"] = {{"version", "2.0"},
