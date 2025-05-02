@@ -32,8 +32,8 @@ namespace nb = nanobind;
 using namespace metacg;
 
 NB_MODULE(pymetacg, m) {
-  m.attr("info") = std::string("MetaCG v" + std::to_string(CGCollector_VERSION_MAJOR) + "." +
-                               std::to_string(CGCollector_VERSION_MINOR) + " (" + MetaCG_GIT_SHA + ")");
+  m.attr("info") = std::string("MetaCG v" + std::to_string(MetaCG_VERSION_MAJOR) + "." +
+                               std::to_string(MetaCG_VERSION_MINOR) + " (" + MetaCG_GIT_SHA + ")");
 
   nb::class_<MetaData>(m, "MetaData")
       .def_prop_ro("key", &MetaData::getKey)
