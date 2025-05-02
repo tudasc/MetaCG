@@ -1,0 +1,20 @@
+name: MetaCG Lint
+
+on: 
+  push:
+  pull_request: 
+
+jobs:
+
+  cmake-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install lint tool in container
+        run: |
+          python3 -m pip install cmakelang
+      - uses: actions/checkout@v4
+      - name: CMake Lint
+        run: |
+          for f in $(find {cgcollector,graph,pgis} -name "CMakeLists.txt"); do cmake-format --check $f || exit 1; done ; cmake-format --check CMakeLists.txt
+          for f in $(find ./cmake -type f); do cmake-format --check $f || exit 1; done
