@@ -17,11 +17,10 @@
 #include <io/VersionThreeMCGReader.h>
 #include <metadata/MetaData.h>
 
-
 // BuiltinMD.h is not used directly here, but including this header
 // ensures that MetaCG's built-in metadata types become part of this
 // translation unit and are hence included in the pymetacg dynamic library.
-#include <metadata/BuiltinMD.h> // IWYU pragma: keep
+#include <metadata/BuiltinMD.h>  // IWYU pragma: keep
 
 #include <string>
 
