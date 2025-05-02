@@ -66,9 +66,7 @@
         },
         "_ZN7MyClassD0Ev": {
             "callees": [],
-            "callers": [
-                "main"
-            ],
+            "callers": [],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": true,
@@ -98,9 +96,7 @@
         },
         "_ZN7MyClassD1Ev": {
             "callees": [],
-            "callers": [
-                "main"
-            ],
+            "callers": [],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": true,
@@ -130,9 +126,7 @@
         },
         "_ZN7MyClassD2Ev": {
             "callees": [],
-            "callers": [
-                "main"
-            ],
+            "callers": [],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": true,
@@ -163,10 +157,7 @@
         "main": {
             "callees": [
                 "_ZN7MyClassC1Ev",
-                "_ZN7MyClassC2Ev",
-                "_ZN7MyClassD0Ev",
-                "_ZN7MyClassD1Ev",
-                "_ZN7MyClassD2Ev"
+                "_ZN7MyClassC2Ev"
             ],
             "callers": [],
             "doesOverride": false,

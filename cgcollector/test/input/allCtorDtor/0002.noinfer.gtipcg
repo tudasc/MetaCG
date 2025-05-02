@@ -1,8 +1,8 @@
 {
-    "_ZN7MyClassC1Ev": {
+    "_ZN4BaseC1Ev": {
         "callees": [],
         "doesOverride": false,
-        "hasBody": true,
+        "hasBody": false,
         "isVirtual": false,
         "numStatements": 0,
         "overriddenBy": [],
@@ -11,10 +11,10 @@
             "main"
         ]
     },
-    "_ZN7MyClassC2Ev": {
+    "_ZN4BaseC2Ev": {
         "callees": [],
         "doesOverride": false,
-        "hasBody": true,
+        "hasBody": false,
         "isVirtual": false,
         "numStatements": 0,
         "overriddenBy": [],
@@ -23,11 +23,11 @@
             "main"
         ]
     },
-    "_ZN7MyClassD0Ev": {
+    "_ZN4BaseD1Ev": {
         "callees": [],
         "doesOverride": false,
-        "hasBody": true,
-        "isVirtual": true,
+        "hasBody": false,
+        "isVirtual": false,
         "numStatements": 0,
         "overriddenBy": [],
         "overriddenFunctions": [],
@@ -35,23 +35,11 @@
             "main"
         ]
     },
-    "_ZN7MyClassD1Ev": {
+    "_ZN4BaseD2Ev": {
         "callees": [],
         "doesOverride": false,
-        "hasBody": true,
-        "isVirtual": true,
-        "numStatements": 0,
-        "overriddenBy": [],
-        "overriddenFunctions": [],
-        "parents": [
-            "main"
-        ]
-    },
-    "_ZN7MyClassD2Ev": {
-        "callees": [],
-        "doesOverride": false,
-        "hasBody": true,
-        "isVirtual": true,
+        "hasBody": false,
+        "isVirtual": false,
         "numStatements": 0,
         "overriddenBy": [],
         "overriddenFunctions": [],
@@ -61,16 +49,15 @@
     },
     "main": {
         "callees": [
-            "_ZN7MyClassC1Ev",
-            "_ZN7MyClassC2Ev",
-            "_ZN7MyClassD0Ev",
-            "_ZN7MyClassD1Ev",
-            "_ZN7MyClassD2Ev"
+            "_ZN4BaseC1Ev",
+            "_ZN4BaseC2Ev",
+            "_ZN4BaseD1Ev",
+            "_ZN4BaseD2Ev"
         ],
         "doesOverride": false,
         "hasBody": true,
         "isVirtual": false,
-        "numStatements": 2,
+        "numStatements": 3,
         "overriddenBy": [],
         "overriddenFunctions": [],
         "parents": []

@@ -1,9 +1,10 @@
 {
     "_CG": {
-        "_ZN7MyClassC1Ev": {
+        "_Z6hiddenv": {
             "callees": [],
             "callers": [
-                "main"
+                "_ZN1BC1Ev",
+                "_ZN1BC2Ev"
             ],
             "doesOverride": false,
             "hasBody": true,
@@ -12,11 +13,21 @@
                 "codeStatistics": {
                     "numVars": 0
                 },
+                "estimateCallCount": {
+                    "calls": {},
+                    "codeRegions": {}
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0001.cpp",
+                    "origin": "/home/sebastian/git/MetaCG-Gitlab/cgcollector/test/input/allCtorDtor/0003.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
                 "loopCallDepth": {},
                 "loopDepth": 0,
                 "mallocCollector": [],
@@ -32,141 +43,10 @@
             "overriddenBy": [],
             "overrides": []
         },
-        "_ZN7MyClassC2Ev": {
-            "callees": [],
-            "callers": [
-                "main"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": false,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 0
-                },
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0001.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "loopCallDepth": {},
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 0,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "_ZN7MyClassD0Ev": {
-            "callees": [],
-            "callers": [
-                "main"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 0
-                },
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0001.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "loopCallDepth": {},
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 0,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "_ZN7MyClassD1Ev": {
-            "callees": [],
-            "callers": [
-                "main"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 0
-                },
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0001.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "loopCallDepth": {},
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 0,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "_ZN7MyClassD2Ev": {
-            "callees": [],
-            "callers": [
-                "main"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 0
-                },
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0001.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "loopCallDepth": {},
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 0,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "main": {
+        "_ZN1AC1Ev": {
             "callees": [
-                "_ZN7MyClassC1Ev",
-                "_ZN7MyClassC2Ev",
-                "_ZN7MyClassD0Ev",
-                "_ZN7MyClassD1Ev",
-                "_ZN7MyClassD2Ev"
+                "_ZN1BC1Ev",
+                "_ZN1BC2Ev"
             ],
             "callers": [],
             "doesOverride": false,
@@ -174,24 +54,185 @@
             "isVirtual": false,
             "meta": {
                 "codeStatistics": {
-                    "numVars": 3
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {},
+                    "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/allCtorDtor/0001.cpp",
+                    "origin": "/home/sebastian/git/MetaCG-Gitlab/cgcollector/test/input/allCtorDtor/0003.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": true,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
                 "loopCallDepth": {},
                 "loopDepth": 0,
                 "mallocCollector": [],
                 "numConditionalBranches": 0,
                 "numOperations": {
-                    "numberOfControlFlowOps": 3,
+                    "numberOfControlFlowOps": 0,
                     "numberOfFloatOps": 0,
                     "numberOfIntOps": 0,
                     "numberOfMemoryAccesses": 0
                 },
-                "numStatements": 2
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1AC2Ev": {
+            "callees": [
+                "_ZN1BC1Ev",
+                "_ZN1BC2Ev"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {},
+                    "codeRegions": {}
+                },
+                "fileProperties": {
+                    "origin": "/home/sebastian/git/MetaCG-Gitlab/cgcollector/test/input/allCtorDtor/0003.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": true,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1BC1Ev": {
+            "callees": [
+                "_Z6hiddenv"
+            ],
+            "callers": [
+                "_ZN1AC1Ev",
+                "_ZN1AC2Ev"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {
+                        "_Z6hiddenv": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ]
+                    },
+                    "codeRegions": {}
+                },
+                "fileProperties": {
+                    "origin": "/home/sebastian/git/MetaCG-Gitlab/cgcollector/test/input/allCtorDtor/0003.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": true,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {
+                    "_Z6hiddenv": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1BC2Ev": {
+            "callees": [
+                "_Z6hiddenv"
+            ],
+            "callers": [
+                "_ZN1AC1Ev",
+                "_ZN1AC2Ev"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {
+                        "_Z6hiddenv": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ]
+                    },
+                    "codeRegions": {}
+                },
+                "fileProperties": {
+                    "origin": "/home/sebastian/git/MetaCG-Gitlab/cgcollector/test/input/allCtorDtor/0003.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": true,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {
+                    "_Z6hiddenv": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
             },
             "overriddenBy": [],
             "overrides": []
@@ -200,8 +241,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "fb0a2854b64e5ac27c0a2e8b3e2c1b413e79ab6d",
-            "version": "0.2"
+            "sha": "2c7e1376528c362b9223eb220b3b32ae8731dd30",
+            "version": "0.7"
         },
         "version": "2.0"
     }

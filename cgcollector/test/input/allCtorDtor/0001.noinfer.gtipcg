@@ -31,9 +31,7 @@
         "numStatements": 0,
         "overriddenBy": [],
         "overriddenFunctions": [],
-        "parents": [
-            "main"
-        ]
+        "parents": []
     },
     "_ZN7MyClassD1Ev": {
         "callees": [],
@@ -43,9 +41,7 @@
         "numStatements": 0,
         "overriddenBy": [],
         "overriddenFunctions": [],
-        "parents": [
-            "main"
-        ]
+        "parents": []
     },
     "_ZN7MyClassD2Ev": {
         "callees": [],
@@ -55,17 +51,12 @@
         "numStatements": 0,
         "overriddenBy": [],
         "overriddenFunctions": [],
-        "parents": [
-            "main"
-        ]
+        "parents": []
     },
     "main": {
         "callees": [
             "_ZN7MyClassC1Ev",
-            "_ZN7MyClassC2Ev",
-            "_ZN7MyClassD0Ev",
-            "_ZN7MyClassD1Ev",
-            "_ZN7MyClassD2Ev"
+            "_ZN7MyClassC2Ev"
         ],
         "doesOverride": false,
         "hasBody": true,
