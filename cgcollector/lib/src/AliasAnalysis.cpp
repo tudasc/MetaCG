@@ -822,8 +822,16 @@ bool ASTInformationExtractor::TraverseConstructorInitializer(clang::CXXCtorIniti
   return RecursiveASTVisitor::TraverseConstructorInitializer(CtorInit);
 }
 
+[[nodiscard]] inline bool isUnnamedBitField(clang::FieldDecl* FD) {
+#if LLVM_VERSION_MAJOR < 19
+  return FD->isUnnamedBitfield();
+#else
+  return FD->isUnnamedBitField();
+#endif
+}
+
 bool ASTInformationExtractor::VisitFieldDecl(clang::FieldDecl* FD) {
-  if (FD->isUnnamedBitfield()) {
+  if (isUnnamedBitField(FD)) {
     // Unnamed bitfields can not be referenced
     return true;
   }
