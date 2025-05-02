@@ -9,7 +9,7 @@ def test_no_metadata(metadata_cg):
 def test_builtin_metadata(metadata_cg):
     n = metadata_cg["nodewithbuiltinmetadata"]
     assert "numStatements" in n.meta_data
-    md = m.meta_data["numStatements"]
+    md = n.meta_data["numStatements"]
     assert md.key == "numStatements"
     assert md.data == 42
 
