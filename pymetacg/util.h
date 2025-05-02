@@ -7,56 +7,73 @@
 
 using namespace metacg;
 
+/**
+ * Helper type that wraps around CgNode* and keeps additional information about which call graph
+ * the a node is part of.
+ */
 struct CgNodeWrapper {
   const CgNode* node;
   const Callgraph& graph;
 };
 
+/**
+ * Auxiliary iterator to iterate over metacg::Callgraph::NodeContainer and pack CgNode* into CgNodeWrapper
+ */
 template <typename NodeIterator>
-class UniquePtrValueIterator {
+class NodeContainerIteratorWrapper {
  public:
-  explicit UniquePtrValueIterator(NodeIterator it, const Callgraph& graph) : iter(it), graph(graph) {}
+  explicit NodeContainerIteratorWrapper(NodeIterator it, const Callgraph& graph) : iter(it), graph(graph) {}
 
   CgNodeWrapper operator*() const { return CgNodeWrapper{iter->second.get(), graph}; }
 
-  UniquePtrValueIterator& operator++() {
+  NodeContainerIteratorWrapper& operator++() {
     ++iter;
     return *this;
   }
 
-  bool operator==(const UniquePtrValueIterator& other) const { return iter == other.iter; }
-  bool operator!=(const UniquePtrValueIterator& other) const { return !(*this == other); }
+  bool operator==(const NodeContainerIteratorWrapper& other) const { return iter == other.iter; }
+  bool operator!=(const NodeContainerIteratorWrapper& other) const { return !(*this == other); }
 
  private:
   NodeIterator iter;
   const Callgraph& graph;
 };
 
+/**
+ * Auxiliary iteartor to iterate over metacg::CgNodeRawPtrUSet and pack CgNode* into CgNodeWrapper
+ */
 template <typename NodeIterator>
-class WrapperIterator {
+class CgNodeRawPtrUSetIteratorWrapper {
  public:
-  explicit WrapperIterator(NodeIterator it, const Callgraph& graph) : iter(it), graph(graph) {}
+  explicit CgNodeRawPtrUSetIteratorWrapper(NodeIterator it, const Callgraph& graph) : iter(it), graph(graph) {}
 
   CgNodeWrapper operator*() const { return CgNodeWrapper{*iter, graph}; }
   CgNodeWrapper operator->() const { return CgNodeWrapper{&iter, graph}; }
 
-  WrapperIterator& operator++() {
+  CgNodeRawPtrUSetIteratorWrapper& operator++() {
     ++iter;
     return *this;
   }
 
-  bool operator==(const WrapperIterator& other) const { return iter == other.iter; }
-  bool operator!=(const WrapperIterator& other) const { return !(*this == other); }
+  bool operator==(const CgNodeRawPtrUSetIteratorWrapper& other) const { return iter == other.iter; }
+  bool operator!=(const CgNodeRawPtrUSetIteratorWrapper& other) const { return !(*this == other); }
 
  private:
   NodeIterator iter;
   const Callgraph& graph;
 };
 
+/**
+ * Helper function to attach the call graph reference to all CgNodes in a CgNodeRawPtrUSet
+ * and return a std::unordered_set<CgNodeWrapper, ...>
+ */
 inline auto attachGraphPointerToNodes(const CgNodeRawPtrUSet nodes, const Callgraph& graph) {
-  auto hash = [](const CgNodeWrapper& p) { return p.node->getId(); };
-  auto equal = [](const CgNodeWrapper& p1, const CgNodeWrapper& p2) { return p1.node->getId() == p2.node->getId(); };
+  constexpr auto hash = [](const CgNodeWrapper& p) { return p.node->getId(); };
+  constexpr auto equal = [](const CgNodeWrapper& p1, const CgNodeWrapper& p2) {
+    return p1.node->getId() == p2.node->getId();
+  };
   std::unordered_set<CgNodeWrapper, decltype(hash), decltype(equal)> newSet(
-      WrapperIterator(nodes.begin(), graph), WrapperIterator(nodes.end(), graph), nodes.size(), hash, equal);
+      CgNodeRawPtrUSetIteratorWrapper(nodes.begin(), graph), CgNodeRawPtrUSetIteratorWrapper(nodes.end(), graph),
+      nodes.size(), hash, equal);
   return newSet;
 }

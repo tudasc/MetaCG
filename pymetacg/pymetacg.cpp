@@ -67,8 +67,8 @@ NB_MODULE(pymetacg, m) {
       .def("__iter__",
            [](const Callgraph& self) {
              return nb::make_iterator(nb::type<CgNodeWrapper>(), "nodes",
-                                      UniquePtrValueIterator(self.getNodes().begin(), self),
-                                      UniquePtrValueIterator(self.getNodes().end(), self));
+                                      NodeContainerIteratorWrapper(self.getNodes().begin(), self),
+                                      NodeContainerIteratorWrapper(self.getNodes().end(), self));
            })
       .def("__getitem__",
            [](const Callgraph& self, const std::string& key) {
