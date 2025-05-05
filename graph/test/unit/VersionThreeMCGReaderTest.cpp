@@ -184,14 +184,14 @@ TEST(V3MCGReaderTest, NodesAndSingleEdge) {
   const Callgraph& graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 3);
 
-  metacg::CgNode* function1 = graph.getNode("Function1","function1and2.cpp");
+  metacg::CgNode* function1 = graph.getNode("Function1", "function1and2.cpp");
   ASSERT_NE(function1, nullptr);
   EXPECT_EQ(function1->getFunctionName(), "Function1");
   EXPECT_EQ(function1->getHasBody(), true);
   EXPECT_EQ(function1->getOrigin(), "function1and2.cpp");
   EXPECT_EQ(function1->getId(), std::hash<std::string>()(function1->getFunctionName() + function1->getOrigin()));
 
-  metacg::CgNode* function2 = graph.getNode("Function2","function1and2.cpp");
+  metacg::CgNode* function2 = graph.getNode("Function2", "function1and2.cpp");
   ASSERT_NE(function2, nullptr);
   EXPECT_EQ(function2->getFunctionName(), "Function2");
   EXPECT_EQ(function2->getHasBody(), false);
@@ -207,17 +207,17 @@ TEST(V3MCGReaderTest, NodesAndSingleEdge) {
   EXPECT_EQ(function3->getOrigin(), "function3.cpp");
   EXPECT_EQ(function3->getId(), std::hash<std::string>()(function3->getFunctionName() + function3->getOrigin()));
 
-  EXPECT_FALSE(graph.existEdgeFromTo("Function1","function1and2.cpp", "Function1","function1and2.cpp"));
-  EXPECT_FALSE(graph.existEdgeFromTo("Function1","function1and2.cpp", "Function2","function1and2.cpp"));
-  EXPECT_TRUE(graph.existEdgeFromTo("Function1","function1and2.cpp", "Function3","function3.cpp"));
+  EXPECT_FALSE(graph.existEdgeFromTo("Function1", "function1and2.cpp", "Function1", "function1and2.cpp"));
+  EXPECT_FALSE(graph.existEdgeFromTo("Function1", "function1and2.cpp", "Function2", "function1and2.cpp"));
+  EXPECT_TRUE(graph.existEdgeFromTo("Function1", "function1and2.cpp", "Function3", "function3.cpp"));
 
-  EXPECT_FALSE(graph.existEdgeFromTo("Function2","function1and2.cpp", "Function1","function1and2.cpp"));
-  EXPECT_FALSE(graph.existEdgeFromTo("Function2","function1and2.cpp", "Function2","function1and2.cpp"));
-  EXPECT_FALSE(graph.existEdgeFromTo("Function2","function1and2.cpp", "Function3","function3.cpp"));
+  EXPECT_FALSE(graph.existEdgeFromTo("Function2", "function1and2.cpp", "Function1", "function1and2.cpp"));
+  EXPECT_FALSE(graph.existEdgeFromTo("Function2", "function1and2.cpp", "Function2", "function1and2.cpp"));
+  EXPECT_FALSE(graph.existEdgeFromTo("Function2", "function1and2.cpp", "Function3", "function3.cpp"));
 
-  EXPECT_FALSE(graph.existEdgeFromTo("Function3","function3.cpp", "Function1","function1and2.cpp"));
-  EXPECT_FALSE(graph.existEdgeFromTo("Function3","function3.cpp", "Function2","function1and2.cpp"));
-  EXPECT_FALSE(graph.existEdgeFromTo("Function3","function3.cpp", "Function3","function3.cpp"));
+  EXPECT_FALSE(graph.existEdgeFromTo("Function3", "function3.cpp", "Function1", "function1and2.cpp"));
+  EXPECT_FALSE(graph.existEdgeFromTo("Function3", "function3.cpp", "Function2", "function1and2.cpp"));
+  EXPECT_FALSE(graph.existEdgeFromTo("Function3", "function3.cpp", "Function3", "function3.cpp"));
 
   EXPECT_EQ(function1->getMetaDataContainer().size(), 0);
 }

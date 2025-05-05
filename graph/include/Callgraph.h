@@ -22,7 +22,7 @@ struct std::hash<std::pair<size_t, size_t>> {
 template <>
 struct std::hash<std::pair<std::string, std::string>> {
   std::size_t operator()(std::pair<std::string, std::string> const& p) const noexcept {
-    return std::hash<std::string>()(p.first+p.second);
+    return std::hash<std::string>()(p.first + p.second);
   }
 };
 namespace metacg {
@@ -51,8 +51,8 @@ class Callgraph {
   Callgraph(const Callgraph& other) = delete;             // No copy constructor
   Callgraph& operator=(const Callgraph& other) = delete;  // No copy assign constructor
 
-  Callgraph(Callgraph&& other) = default;                 // Use default move constructor
-  Callgraph& operator=(Callgraph&& other) = default;      // Use default move assign constructor
+  Callgraph(Callgraph&& other) = default;             // Use default move constructor
+  Callgraph& operator=(Callgraph&& other) = default;  // Use default move assign constructor
 
   /**
    * @brief getMain
@@ -175,19 +175,22 @@ class Callgraph {
   }
   template <class T>
   void addEdgeMetaData(const std::string& parentName, const std::string& childName, T* md) {
-    addEdgeMetaData(parentName,unkownOrigin,childName,unkownOrigin,md);
+    addEdgeMetaData(parentName, unkownOrigin, childName, unkownOrigin, md);
   }
   template <class T>
-  void addEdgeMetaData(const std::string& parentName,const std::string& parentOrigin, const std::string& childName, const std::string& childOrigin, T* md) {
+  void addEdgeMetaData(const std::string& parentName, const std::string& parentOrigin, const std::string& childName,
+                       const std::string& childOrigin, T* md) {
     addEdgeMetaData({nameIdMap.at({parentName, parentOrigin}), nameIdMap.at({childName, childOrigin})}, md);
   }
 
   MetaData* getEdgeMetaData(const CgNode& func1, const CgNode& func2, const std::string& metadataName) const;
   MetaData* getEdgeMetaData(const CgNode* func1, const CgNode* func2, const std::string& metadataName) const;
   MetaData* getEdgeMetaData(const std::pair<size_t, size_t>& id, const std::string& metadataName) const;
-  MetaData* getEdgeMetaData(const std::string& parentName, const std::string& childName, const std::string& metadataName) const;
-  MetaData* getEdgeMetaData(const std::string& parentName, const std::string& parentOrigin, const std::string& childName,
-                            const std::string& childOrigin, const std::string& metadataName) const;
+  MetaData* getEdgeMetaData(const std::string& parentName, const std::string& childName,
+                            const std::string& metadataName) const;
+  MetaData* getEdgeMetaData(const std::string& parentName, const std::string& parentOrigin,
+                            const std::string& childName, const std::string& childOrigin,
+                            const std::string& metadataName) const;
   template <class T>
   T* getEdgeMetaData(const CgNode& func1, const CgNode& func2) {
     return getEdgeMetaData<T>({func1.getId(), func2.getId()});
@@ -205,7 +208,8 @@ class Callgraph {
     return getEdgeMetaData<T>(parentName, unkownOrigin, childName, unkownOrigin);
   }
   template <class T>
-  T* getEdgeMetaData(const std::string& parentName,const std::string& parentOrigin, const std::string& childName, const std::string& childOrigin) {
+  T* getEdgeMetaData(const std::string& parentName, const std::string& parentOrigin, const std::string& childName,
+                     const std::string& childOrigin) {
     return getEdgeMetaData<T>({nameIdMap.at({parentName, parentOrigin}), nameIdMap.at({childName, childOrigin})});
   }
 
@@ -213,7 +217,8 @@ class Callgraph {
   const NamedMetadata& getAllEdgeMetaData(const CgNode* func1, const CgNode* func2) const;
   const NamedMetadata& getAllEdgeMetaData(const std::pair<size_t, size_t>& id) const;
   const NamedMetadata& getAllEdgeMetaData(const std::string& parentName, const std::string& childName) const;
-  const NamedMetadata& getAllEdgeMetaData(const std::string& parentName,const std::string& parentOrigin,const std::string& childName, const std::string& childOrigin) const;
+  const NamedMetadata& getAllEdgeMetaData(const std::string& parentName, const std::string& parentOrigin,
+                                          const std::string& childName, const std::string& childOrigin) const;
 
   bool hasEdgeMetaData(const CgNode& func1, const CgNode& func2, const std::string& metadataName) const;
   bool hasEdgeMetaData(const CgNode* func1, const CgNode* func2, const std::string& metadataName) const;
@@ -236,10 +241,11 @@ class Callgraph {
   }
   template <class T>
   bool hasEdgeMetaData(const std::string& parentName, const std::string& childName) const {
-    return hasEdgeMetaData<T>(parentName,unkownOrigin,childName,unkownOrigin);
+    return hasEdgeMetaData<T>(parentName, unkownOrigin, childName, unkownOrigin);
   }
   template <class T>
-  bool hasEdgeMetaData(const std::string& parentName,const std::string& parentOrigin, const std::string& childName,const std::string& childOrigin) const {
+  bool hasEdgeMetaData(const std::string& parentName, const std::string& parentOrigin, const std::string& childName,
+                       const std::string& childOrigin) const {
     return hasEdgeMetaData<T>({nameIdMap.at({parentName, parentOrigin}), nameIdMap.at({childName, childOrigin})});
   }
 
@@ -252,15 +258,13 @@ class Callgraph {
   EdgeContainer edges;
   CallerList callerList;
   CalleeList calleeList;
-  const char* unkownOrigin="unknownOrigin";
+  const char* unkownOrigin = "unknownOrigin";
   // Dedicated node pointer to main function
   CgNode* mainNode = nullptr;
 
   // Flag to determine if we want to run empirical collision counting
   bool empiricalCollisionCounting;
   int nodeHashCollisionCounter{0};
-
-
 };
 
 [[maybe_unused]] static Callgraph& getEmptyGraph() {

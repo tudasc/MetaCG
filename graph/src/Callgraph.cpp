@@ -9,25 +9,24 @@
 
 int metacg_RegistryInstanceCounter{0};
 
-
 using namespace metacg;
 
 CgNode* Callgraph::getMain() {
-  //short circuit in case of known mainNode
+  // short circuit in case of known mainNode
   if (mainNode) {
     return mainNode;
   }
 
-  //short circuit in case of unkownOrigin main node
+  // short circuit in case of unkownOrigin main node
   if ((mainNode = getNode("main")) || (mainNode = getNode("_Z4main")) || (mainNode = getNode("_ZSt4mainiPPc"))) {
     return mainNode;
   }
 
-  //search whole graph for main node
-  for(const auto& elem : nodes){
-    const auto& nodeName=elem.second->getFunctionName();
-    if(nodeName=="main" || nodeName=="_Z4main" || nodeName=="_ZSt4mainiPPc"){
-      mainNode=elem.second.get();
+  // search whole graph for main node
+  for (const auto& elem : nodes) {
+    const auto& nodeName = elem.second->getFunctionName();
+    if (nodeName == "main" || nodeName == "_Z4main" || nodeName == "_ZSt4mainiPPc") {
+      mainNode = elem.second.get();
       return mainNode;
     }
   }
@@ -43,7 +42,7 @@ size_t Callgraph::insert(const std::string& nodeName) {
 }
 size_t Callgraph::insert(CgNodePtr node) {
   const size_t nodeId = node->getId();
-  if (auto n = nameIdMap.find({node->getFunctionName(),node->getOrigin()}); n != nameIdMap.end()) {
+  if (auto n = nameIdMap.find({node->getFunctionName(), node->getOrigin()}); n != nameIdMap.end()) {
     if (n->first.first != node->getFunctionName()) {
       MCGLogger::instance().getErrConsole()->warn(
           "There already exists a mapping from {} to {}, but the newly inserted node {} generates the same ID ({}) "
@@ -57,10 +56,11 @@ size_t Callgraph::insert(CgNodePtr node) {
       }
     } else {
       MCGLogger::instance().getErrConsole()->warn(
-          "A Node with ID {} and name {} allready exists in the Map: Skipping insertion into Map", n->second, n->first.first);
+          "A Node with ID {} and name {} allready exists in the Map: Skipping insertion into Map", n->second,
+          n->first.first);
     }
   } else {
-    nameIdMap.insert({{node->getFunctionName(),node->getOrigin()}, node->getId()});
+    nameIdMap.insert({{node->getFunctionName(), node->getOrigin()}, node->getId()});
   }
   if (auto n = nodes.find(node->getId()); n != nodes.end()) {
     MCGLogger::instance().getErrConsole()->warn("A Node with ID {} already exists: Skipping insertion",
@@ -82,19 +82,20 @@ void Callgraph::clear() {
   mainNode = nullptr;
 }
 
-void Callgraph::addEdge(const std::string& parentName, const std::string& parentOrigin, const std::string& childName, const std::string& childOrigin) {
-  if (nameIdMap.find({parentName,parentOrigin}) == nameIdMap.end()) {
+void Callgraph::addEdge(const std::string& parentName, const std::string& parentOrigin, const std::string& childName,
+                        const std::string& childOrigin) {
+  if (nameIdMap.find({parentName, parentOrigin}) == nameIdMap.end()) {
     MCGLogger::instance().getErrConsole()->warn("Source node: {} does not exist in graph: Inserting Node", parentName);
     insert(parentName, parentOrigin);
   }
-  if (nameIdMap.find({childName,childOrigin}) == nameIdMap.end()) {
+  if (nameIdMap.find({childName, childOrigin}) == nameIdMap.end()) {
     MCGLogger::instance().getErrConsole()->warn("Target node: {} does not exist in graph: Inserting Node", childName);
     insert(childName, childOrigin);
   }
-  addEdge(nameIdMap[{parentName,parentOrigin}], nameIdMap[{childName,childOrigin}]);
+  addEdge(nameIdMap[{parentName, parentOrigin}], nameIdMap[{childName, childOrigin}]);
 }
-void Callgraph::addEdge(const std::string& parentName, const std::string& childName){
-  addEdge(parentName,unkownOrigin,childName,unkownOrigin);
+void Callgraph::addEdge(const std::string& parentName, const std::string& childName) {
+  addEdge(parentName, unkownOrigin, childName, unkownOrigin);
 }
 void Callgraph::addEdge(const CgNode& parentNode, const CgNode& childNode) {
   if (edges.find({parentNode.getId(), childNode.getId()}) != edges.end()) {
@@ -125,12 +126,10 @@ void Callgraph::addEdge(const CgNode* parent, const CgNode* child) {
 }
 
 bool Callgraph::hasNode(const std::string& name, const std::string& origin) const {
-  auto r = nameIdMap.find({name,origin});
+  auto r = nameIdMap.find({name, origin});
   return r != nameIdMap.end();
 }
-bool Callgraph::hasNode(const std::string& name) const{
-  return hasNode(name,unkownOrigin);
-}
+bool Callgraph::hasNode(const std::string& name) const { return hasNode(name, unkownOrigin); }
 bool Callgraph::hasNode(const CgNode& n) const { return hasNode(n.getId()); }
 bool Callgraph::hasNode(const CgNode* n) const { return hasNode(n->getId()); }
 bool Callgraph::hasNode(size_t id) const {
@@ -139,13 +138,13 @@ bool Callgraph::hasNode(size_t id) const {
 }
 
 CgNode* Callgraph::getNode(const std::string& name, const std::string& origin) const {
-  for(const auto& e : nameIdMap){
+  for (const auto& e : nameIdMap) {
   }
-  if (nameIdMap.find({name,origin}) == nameIdMap.end()) {
+  if (nameIdMap.find({name, origin}) == nameIdMap.end()) {
     return nullptr;
   }
 
-  auto nodeId = nameIdMap.at({name,origin});
+  auto nodeId = nameIdMap.at({name, origin});
 
   if (nodes.find(nodeId) == nodes.end()) {
     return nullptr;
@@ -153,9 +152,7 @@ CgNode* Callgraph::getNode(const std::string& name, const std::string& origin) c
 
   return nodes.at(nodeId).get();
 }
-CgNode* Callgraph::getNode(const std::string& name) const{
-  return getNode(name,unkownOrigin);
-}
+CgNode* Callgraph::getNode(const std::string& name) const { return getNode(name, unkownOrigin); }
 CgNode* Callgraph::getNode(size_t id) const {
   if (nodes.find(id) == nodes.end()) {
     return nullptr;
@@ -199,7 +196,7 @@ void metacg::Callgraph::merge(const metacg::Callgraph& other) {
           mergeNode->setHasBody(node->getHasBody());
 
           if (!mergeNode->has<OverrideMD>() && node->has<OverrideMD>()) {
-              mergeNode->addMetaData<OverrideMD>(new OverrideMD());
+            mergeNode->addMetaData<OverrideMD>(new OverrideMD());
           }
         }
 
@@ -232,14 +229,16 @@ bool Callgraph::existEdgeFromTo(const CgNode* source, const CgNode*& target) con
 bool Callgraph::existEdgeFromTo(size_t source, size_t target) const {
   return edges.find({source, target}) != edges.end();
 }
-bool Callgraph::existEdgeFromTo(const std::string& parentName, const std::string& childName) const{
-  return existEdgeFromTo(parentName,unkownOrigin,childName,unkownOrigin);
+bool Callgraph::existEdgeFromTo(const std::string& parentName, const std::string& childName) const {
+  return existEdgeFromTo(parentName, unkownOrigin, childName, unkownOrigin);
 }
-bool Callgraph::existEdgeFromTo(const std::string& parentName, const std::string& parentOrigin, const std::string& childName, const std::string& childOrigin) const {
-  if (nameIdMap.find({parentName,parentOrigin}) == nameIdMap.end() || nameIdMap.find({childName,childOrigin}) == nameIdMap.end()) {
+bool Callgraph::existEdgeFromTo(const std::string& parentName, const std::string& parentOrigin,
+                                const std::string& childName, const std::string& childOrigin) const {
+  if (nameIdMap.find({parentName, parentOrigin}) == nameIdMap.end() ||
+      nameIdMap.find({childName, childOrigin}) == nameIdMap.end()) {
     return false;
   }
-  return existEdgeFromTo(nameIdMap.at({parentName,parentOrigin}), nameIdMap.at({childName,childOrigin}));
+  return existEdgeFromTo(nameIdMap.at({parentName, parentOrigin}), nameIdMap.at({childName, childOrigin}));
 }
 
 CgNodeRawPtrUSet Callgraph::getCallees(const CgNode& node) const { return getCallees(node.getId()); }
@@ -257,12 +256,10 @@ CgNodeRawPtrUSet Callgraph::getCallees(size_t node) const {
   return returnSet;
 }
 CgNodeRawPtrUSet Callgraph::getCallees(const std::string& node, const std::string& origin) const {
-  assert(nameIdMap.find({node,origin}) != nameIdMap.end());
-  return getCallees(nameIdMap.at({node,origin}));
+  assert(nameIdMap.find({node, origin}) != nameIdMap.end());
+  return getCallees(nameIdMap.at({node, origin}));
 }
-CgNodeRawPtrUSet Callgraph::getCallees(const std::string& node) const{
-    return getCallees(node,unkownOrigin);
-}
+CgNodeRawPtrUSet Callgraph::getCallees(const std::string& node) const { return getCallees(node, unkownOrigin); }
 
 CgNodeRawPtrUSet Callgraph::getCallers(const CgNode* node) const { return getCallers(node->getId()); }
 CgNodeRawPtrUSet Callgraph::getCallers(const CgNode& node) const { return getCallers(node.getId()); };
@@ -278,12 +275,10 @@ CgNodeRawPtrUSet Callgraph::getCallers(size_t node) const {
   }
   return returnSet;
 }
-CgNodeRawPtrUSet Callgraph::getCallers(const std::string& node) const{
-  return getCallers(node,unkownOrigin);
-}
-CgNodeRawPtrUSet Callgraph::getCallers(const std::string& node, const std::string& origin) const{
-  assert(nameIdMap.find({node,origin}) != nameIdMap.end());
-  return getCallers(nameIdMap.at({node,origin}));
+CgNodeRawPtrUSet Callgraph::getCallers(const std::string& node) const { return getCallers(node, unkownOrigin); }
+CgNodeRawPtrUSet Callgraph::getCallers(const std::string& node, const std::string& origin) const {
+  assert(nameIdMap.find({node, origin}) != nameIdMap.end());
+  return getCallers(nameIdMap.at({node, origin}));
 }
 
 void Callgraph::setNodes(Callgraph::NodeContainer external_container) { nodes = std::move(external_container); }
@@ -291,7 +286,7 @@ void Callgraph::setEdges(Callgraph::EdgeContainer external_container) { edges = 
 void Callgraph::recomputeCache() {
   nameIdMap.clear();
   for (const auto& elem : nodes) {
-    nameIdMap[{elem.second->getFunctionName(),elem.second->getOrigin()}] = elem.first;
+    nameIdMap[{elem.second->getFunctionName(), elem.second->getOrigin()}] = elem.first;
   }
   callerList.clear();
   calleeList.clear();
@@ -310,11 +305,15 @@ MetaData* Callgraph::getEdgeMetaData(const CgNode* func1, const CgNode* func2, c
 MetaData* Callgraph::getEdgeMetaData(const std::pair<size_t, size_t>& id, const std::string& metadataName) const {
   return edges.at(id).at(metadataName);
 }
-MetaData* Callgraph::getEdgeMetaData(const std::string& func1, const std::string& func2, const std::string& metadataName) const{
-    return getEdgeMetaData(func1,unkownOrigin,func2,unkownOrigin,metadataName);
+MetaData* Callgraph::getEdgeMetaData(const std::string& func1, const std::string& func2,
+                                     const std::string& metadataName) const {
+  return getEdgeMetaData(func1, unkownOrigin, func2, unkownOrigin, metadataName);
 }
-MetaData* Callgraph::getEdgeMetaData(const std::string& parentName, const std::string& parentOrigin, const std::string& childName, const std::string& childOrigin, const std::string& metadataName) const {
-  return getEdgeMetaData({nameIdMap.at({parentName,parentOrigin}), nameIdMap.at({childName,childOrigin})}, metadataName);
+MetaData* Callgraph::getEdgeMetaData(const std::string& parentName, const std::string& parentOrigin,
+                                     const std::string& childName, const std::string& childOrigin,
+                                     const std::string& metadataName) const {
+  return getEdgeMetaData({nameIdMap.at({parentName, parentOrigin}), nameIdMap.at({childName, childOrigin})},
+                         metadataName);
 }
 
 const metacg::Callgraph::NamedMetadata& Callgraph::getAllEdgeMetaData(const CgNode& func1, const CgNode& func2) const {
@@ -326,11 +325,15 @@ const metacg::Callgraph::NamedMetadata& Callgraph::getAllEdgeMetaData(const CgNo
 const metacg::Callgraph::NamedMetadata& Callgraph::getAllEdgeMetaData(const std::pair<size_t, size_t>& id) const {
   return edges.at(id);
 }
-const metacg::Callgraph::NamedMetadata& Callgraph::getAllEdgeMetaData(const std::string& parentName,const std::string& childName) const {
-  return getAllEdgeMetaData(parentName,unkownOrigin,childName,unkownOrigin);
+const metacg::Callgraph::NamedMetadata& Callgraph::getAllEdgeMetaData(const std::string& parentName,
+                                                                      const std::string& childName) const {
+  return getAllEdgeMetaData(parentName, unkownOrigin, childName, unkownOrigin);
 }
-const metacg::Callgraph::NamedMetadata& Callgraph::getAllEdgeMetaData(const std::string& parentName,const std::string& parentOrigin,const std::string& childName, const std::string& childOrigin) const{
-  return getAllEdgeMetaData({nameIdMap.at({parentName,parentOrigin}), nameIdMap.at({childName,childOrigin})});
+const metacg::Callgraph::NamedMetadata& Callgraph::getAllEdgeMetaData(const std::string& parentName,
+                                                                      const std::string& parentOrigin,
+                                                                      const std::string& childName,
+                                                                      const std::string& childOrigin) const {
+  return getAllEdgeMetaData({nameIdMap.at({parentName, parentOrigin}), nameIdMap.at({childName, childOrigin})});
 }
 
 bool Callgraph::hasEdgeMetaData(const CgNode& func1, const CgNode& func2, const std::string& metadataName) const {
@@ -342,11 +345,15 @@ bool Callgraph::hasEdgeMetaData(const CgNode* func1, const CgNode* func2, const 
 bool Callgraph::hasEdgeMetaData(const std::pair<size_t, size_t>& id, const std::string& metadataName) const {
   return edges.at(id).find(metadataName) != edges.at(id).end();
 }
-bool Callgraph::hasEdgeMetaData(const std::string& parentName, const std::string& childName, const std::string& metadataName) const{
-  return hasEdgeMetaData(parentName,unkownOrigin,childName,unkownOrigin,metadataName);
+bool Callgraph::hasEdgeMetaData(const std::string& parentName, const std::string& childName,
+                                const std::string& metadataName) const {
+  return hasEdgeMetaData(parentName, unkownOrigin, childName, unkownOrigin, metadataName);
 }
-bool Callgraph::hasEdgeMetaData(const std::string& parentName, const std::string& parentOrigin, const std::string& childName, const std::string& childOrigin, const std::string& metadataName) const {
-  return hasEdgeMetaData({nameIdMap.at({parentName,parentOrigin}), nameIdMap.at({childName,childOrigin})}, metadataName);
+bool Callgraph::hasEdgeMetaData(const std::string& parentName, const std::string& parentOrigin,
+                                const std::string& childName, const std::string& childOrigin,
+                                const std::string& metadataName) const {
+  return hasEdgeMetaData({nameIdMap.at({parentName, parentOrigin}), nameIdMap.at({childName, childOrigin})},
+                         metadataName);
 }
 
 void Callgraph::dumpCGStats() const {
