@@ -518,7 +518,7 @@ TEST_F(V2MCGReaderTest, OneNodeWithOriginCGRead) {
   EXPECT_EQ(mcgm.graphs_size(), 1);
   const auto& cg = mcgm.getCallgraph();
   EXPECT_EQ(cg->size(), 1);
-  EXPECT_TRUE(cg->hasNode("main"));
+  EXPECT_TRUE(cg->hasNode("main", "main.cpp"));
   EXPECT_TRUE(cg->getMain() != nullptr);
   EXPECT_TRUE(cg->getMain()->getFunctionName() == "main");
   EXPECT_TRUE(cg->getMain()->getOrigin() == "main.cpp");
@@ -526,8 +526,8 @@ TEST_F(V2MCGReaderTest, OneNodeWithOriginCGRead) {
               std::hash<std::string>()(cg->getMain()->getFunctionName() + cg->getMain()->getOrigin()));
   EXPECT_TRUE(cg->getMain()->getHasBody());
   EXPECT_FALSE(cg->getMain()->isVirtual());
-  EXPECT_TRUE(cg->getCallees("main").empty());
-  EXPECT_TRUE(cg->getCallers("main").empty());
+  EXPECT_TRUE(cg->getCallees("main", "main.cpp").empty());
+  EXPECT_TRUE(cg->getCallers("main", "main.cpp").empty());
 }
 
 #pragma GCC diagnostic pop

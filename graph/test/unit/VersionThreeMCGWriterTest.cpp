@@ -131,7 +131,7 @@ TEST_F(V3MCGWriterTest, TwoNodeCGWrite) {
   cg->getMain()->setHasBody(true);
 
   cg->insert("foo", "main.cpp");
-  cg->getNode("foo")->setHasBody(true);
+  cg->getNode("foo", "main.cpp")->setHasBody(true);
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
@@ -153,7 +153,7 @@ TEST_F(V3MCGWriterTest, TwoNodeCGWriteDebug) {
   cg->getMain()->setHasBody(true);
 
   cg->insert("foo", "main.cpp");
-  cg->getNode("foo")->setHasBody(true);
+  cg->getNode("foo", "main.cpp")->setHasBody(true);
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
@@ -177,9 +177,9 @@ TEST_F(V3MCGWriterTest, TwoNodeOneEdgeCGWrite) {
   cg->getMain()->setHasBody(true);
 
   cg->insert("foo", "main.cpp");
-  cg->getNode("foo")->setHasBody(true);
+  cg->getNode("foo", "main.cpp")->setHasBody(true);
 
-  cg->addEdge("main", "foo");
+  cg->addEdge("main", "main.cpp", "foo", "main.cpp");
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
@@ -202,9 +202,9 @@ TEST_F(V3MCGWriterTest, TwoNodeOneEdgeCGWriteDebug) {
   cg->getMain()->setHasBody(true);
 
   cg->insert("foo", "main.cpp");
-  cg->getNode("foo")->setHasBody(true);
+  cg->getNode("foo", "main.cpp")->setHasBody(true);
 
-  cg->addEdge("main", "foo");
+  cg->addEdge("main", "main.cpp", "foo", "main.cpp");
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
@@ -229,12 +229,12 @@ TEST_F(V3MCGWriterTest, ThreeNodeOneEdgeCGWrite) {
   cg->getMain()->setHasBody(true);
 
   cg->insert("foo", "main.cpp");
-  cg->getNode("foo")->setHasBody(true);
+  cg->getNode("foo", "main.cpp")->setHasBody(true);
 
   cg->insert("bar", "bar.cpp");
-  cg->getNode("bar")->setHasBody(false);
+  cg->getNode("bar", "bar.cpp")->setHasBody(false);
 
-  cg->addEdge("main", "foo");
+  cg->addEdge("main", "main.cpp", "foo", "main.cpp");
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
@@ -258,12 +258,12 @@ TEST_F(V3MCGWriterTest, ThreeNodeOneEdgeCGWriteDebug) {
   cg->getMain()->setHasBody(true);
 
   cg->insert("foo", "main.cpp");
-  cg->getNode("foo")->setHasBody(true);
+  cg->getNode("foo", "main.cpp")->setHasBody(true);
 
   cg->insert("bar", "bar.cpp");
-  cg->getNode("bar")->setHasBody(false);
+  cg->getNode("bar", "bar.cpp")->setHasBody(false);
 
-  cg->addEdge("main", "foo");
+  cg->addEdge("main", "main.cpp", "foo", "main.cpp");
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
@@ -346,9 +346,9 @@ TEST_F(V3MCGWriterTest, EdgeMetadataCGWrite) {
   cg->insert("main", "main.cpp");
   cg->getMain()->setHasBody(true);
   cg->insert("foo", "main.cpp");
-  cg->getNode("foo")->setHasBody(true);
+  cg->getNode("foo", "main.cpp")->setHasBody(true);
 
-  cg->addEdge("main", "foo");
+  cg->addEdge("main", "main.cpp", "foo", "main.cpp");
 
   // metadata does not need to be freed,
   // it is now owned by the node
@@ -357,7 +357,7 @@ TEST_F(V3MCGWriterTest, EdgeMetadataCGWrite) {
   testMetaData->metadataInt = 1337;
   testMetaData->metadataString = "TestString";
 
-  cg->addEdgeMetaData("main", "foo", testMetaData);
+  cg->addEdgeMetaData("main", "main.cpp", "foo", "main.cpp", testMetaData);
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
@@ -385,9 +385,9 @@ TEST_F(V3MCGWriterTest, EdgeMetadataCGWriteDebug) {
   cg->insert("main", "main.cpp");
   cg->getMain()->setHasBody(true);
   cg->insert("foo", "main.cpp");
-  cg->getNode("foo")->setHasBody(true);
+  cg->getNode("foo", "main.cpp")->setHasBody(true);
 
-  cg->addEdge("main", "foo");
+  cg->addEdge("main", "main.cpp", "foo", "main.cpp");
 
   // metadata does not need to be freed,
   // it is now owned by the node
@@ -396,7 +396,7 @@ TEST_F(V3MCGWriterTest, EdgeMetadataCGWriteDebug) {
   testMetaData->metadataInt = 1337;
   testMetaData->metadataString = "TestString";
 
-  cg->addEdgeMetaData("main", "foo", testMetaData);
+  cg->addEdgeMetaData("main", "main.cpp", "foo", "main.cpp", testMetaData);
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
