@@ -140,10 +140,8 @@ bool Callgraph::hasNode(size_t id) const {
 
 CgNode* Callgraph::getNode(const std::string& name, const std::string& origin) const {
   for(const auto& e : nameIdMap){
-    std::cout<<e.second<<"\n";
   }
   if (nameIdMap.find({name,origin}) == nameIdMap.end()) {
-    std::cout<<"Could not find\n";
     return nullptr;
   }
 
