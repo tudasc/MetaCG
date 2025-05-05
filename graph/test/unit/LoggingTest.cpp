@@ -10,8 +10,8 @@
 class LoggingTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    //Need to set log level to trace, to test all levels
-    //Default log level does not include trace and debug outputs
+    // Need to set log level to trace, to test all levels
+    // Default log level does not include trace and debug outputs
     spdlog::set_level(spdlog::level::trace);
   }
 };

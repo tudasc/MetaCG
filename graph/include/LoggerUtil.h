@@ -47,15 +47,15 @@ class MCGLogger {
    * @param msg the msg to be formatted and printed
    * @param args the arguments to format the message with
    */
-  template <LogType lt = LogType::DEFAULT, Output outPutType=Output::DEFAULT,  typename MSG_t, typename... Args>
+  template <LogType lt = LogType::DEFAULT, Output outPutType = Output::DEFAULT, typename MSG_t, typename... Args>
   void info(const MSG_t msg, Args&&... args) {
     const std::string& formattedMessage = fmt::format(msg, args...);
-    if (ensureUnique<lt>(formattedMessage)){
-      return ;
+    if (ensureUnique<lt>(formattedMessage)) {
+      return;
     }
-    if constexpr (outPutType==Output::DEFAULT){
+    if constexpr (outPutType == Output::DEFAULT) {
       getConsole()->info(formattedMessage);
-    }else if constexpr (outPutType==Output::ERROR){
+    } else if constexpr (outPutType == Output::ERROR) {
       getErrConsole()->info(formattedMessage);
     }
   };
@@ -70,15 +70,15 @@ class MCGLogger {
    * @param msg the msg to be formatted and printed
    * @param args the arguments to format the message with
    */
-  template <LogType lt = LogType::DEFAULT, Output outPutType=Output::DEFAULT, typename MSG_t, typename... Args>
+  template <LogType lt = LogType::DEFAULT, Output outPutType = Output::DEFAULT, typename MSG_t, typename... Args>
   void error(const MSG_t msg, Args&&... args) {
     const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
-    if (ensureUnique<lt>(formattedMessage)){
-      return ;
+    if (ensureUnique<lt>(formattedMessage)) {
+      return;
     }
-    if constexpr (outPutType==Output::DEFAULT){
+    if constexpr (outPutType == Output::DEFAULT) {
       getConsole()->error(formattedMessage);
-    }else if constexpr (outPutType==Output::ERROR){
+    } else if constexpr (outPutType == Output::ERROR) {
       getErrConsole()->error(formattedMessage);
     }
   };
@@ -93,15 +93,15 @@ class MCGLogger {
    * @param msg the msg to be formatted and printed
    * @param args the arguments to format the message with
    */
-  template <LogType lt = LogType::DEFAULT, Output outPutType=Output::DEFAULT, typename MSG_t, typename... Args>
+  template <LogType lt = LogType::DEFAULT, Output outPutType = Output::DEFAULT, typename MSG_t, typename... Args>
   void debug(const MSG_t msg, Args&&... args) {
     const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
-    if (ensureUnique<lt>(formattedMessage)){
-      return ;
+    if (ensureUnique<lt>(formattedMessage)) {
+      return;
     }
-    if constexpr (outPutType==Output::DEFAULT){
+    if constexpr (outPutType == Output::DEFAULT) {
       getConsole()->debug(formattedMessage);
-    }else if constexpr (outPutType==Output::ERROR){
+    } else if constexpr (outPutType == Output::ERROR) {
       getErrConsole()->debug(formattedMessage);
     }
   };
@@ -116,15 +116,15 @@ class MCGLogger {
    * @param msg the msg to be formatted and printed
    * @param args the arguments to format the message with
    */
-  template <LogType lt = LogType::DEFAULT, Output outPutType=Output::DEFAULT, typename MSG_t, typename... Args>
+  template <LogType lt = LogType::DEFAULT, Output outPutType = Output::DEFAULT, typename MSG_t, typename... Args>
   void warn(const MSG_t msg, Args&&... args) {
     const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
-    if (ensureUnique<lt>(formattedMessage)){
-      return ;
+    if (ensureUnique<lt>(formattedMessage)) {
+      return;
     }
-    if constexpr (outPutType==Output::DEFAULT){
+    if constexpr (outPutType == Output::DEFAULT) {
       getConsole()->warn(formattedMessage);
-    }else if constexpr (outPutType==Output::ERROR){
+    } else if constexpr (outPutType == Output::ERROR) {
       getErrConsole()->warn(formattedMessage);
     }
   };
@@ -139,15 +139,15 @@ class MCGLogger {
    * @param msg the msg to be formatted and printed
    * @param args the arguments to format the message with
    */
-  template <LogType lt = LogType::DEFAULT, Output outPutType=Output::DEFAULT, typename MSG_t, typename... Args>
+  template <LogType lt = LogType::DEFAULT, Output outPutType = Output::DEFAULT, typename MSG_t, typename... Args>
   void critical(const MSG_t msg, Args&&... args) {
     const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
-    if (ensureUnique<lt>(formattedMessage)){
-      return ;
+    if (ensureUnique<lt>(formattedMessage)) {
+      return;
     }
-    if constexpr (outPutType==Output::DEFAULT){
+    if constexpr (outPutType == Output::DEFAULT) {
       getConsole()->critical(formattedMessage);
-    }else if constexpr (outPutType==Output::ERROR){
+    } else if constexpr (outPutType == Output::ERROR) {
       getErrConsole()->critical(formattedMessage);
     }
   };
@@ -162,15 +162,15 @@ class MCGLogger {
    * @param msg the msg to be formatted and printed
    * @param args the arguments to format the message with
    */
-  template <LogType lt = LogType::DEFAULT, Output outPutType=Output::DEFAULT, typename MSG_t, typename... Args>
+  template <LogType lt = LogType::DEFAULT, Output outPutType = Output::DEFAULT, typename MSG_t, typename... Args>
   void trace(const MSG_t msg, Args&&... args) {
     const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
-    if (ensureUnique<lt>(formattedMessage)){
-      return ;
+    if (ensureUnique<lt>(formattedMessage)) {
+      return;
     }
-    if constexpr (outPutType==Output::DEFAULT){
+    if constexpr (outPutType == Output::DEFAULT) {
       getConsole()->trace(formattedMessage);
-    }else if constexpr (outPutType==Output::ERROR){
+    } else if constexpr (outPutType == Output::ERROR) {
       getErrConsole()->trace(formattedMessage);
     }
   };
@@ -184,8 +184,8 @@ class MCGLogger {
    * @param args the arguments to format the message with
    */
   template <typename MSG_t, typename... Args>
-  void info_c_u(const MSG_t msg, Args&&... args){
-    info<LogType::UNIQUE,Output::DEFAULT>(msg,std::forward<Args>(args)...);
+  void info_c_u(const MSG_t msg, Args&&... args) {
+    info<LogType::UNIQUE, Output::DEFAULT>(msg, std::forward<Args>(args)...);
   }
 
   /**
@@ -197,8 +197,8 @@ class MCGLogger {
    * @param args the arguments to format the message with
    */
   template <typename MSG_t, typename... Args>
-  void error_c_u(const MSG_t msg, Args&&... args){
-    error<LogType::UNIQUE,Output::DEFAULT>(msg,std::forward<Args>(args)...);
+  void error_c_u(const MSG_t msg, Args&&... args) {
+    error<LogType::UNIQUE, Output::DEFAULT>(msg, std::forward<Args>(args)...);
   }
 
   /**
@@ -210,8 +210,8 @@ class MCGLogger {
    * @param args the arguments to format the message with
    */
   template <typename MSG_t, typename... Args>
-  void error_e_u(const MSG_t msg, Args&&... args){
-    error<LogType::UNIQUE,Output::ERROR>(msg,std::forward<Args>(args)...);
+  void error_e_u(const MSG_t msg, Args&&... args) {
+    error<LogType::UNIQUE, Output::ERROR>(msg, std::forward<Args>(args)...);
   }
 
   /**
@@ -223,8 +223,8 @@ class MCGLogger {
    * @param args the arguments to format the message with
    */
   template <typename MSG_t, typename... Args>
-  void warn_c_u(const MSG_t msg, Args&&... args){
-    warn<LogType::UNIQUE,Output::DEFAULT>(msg,std::forward<Args>(args)...);
+  void warn_c_u(const MSG_t msg, Args&&... args) {
+    warn<LogType::UNIQUE, Output::DEFAULT>(msg, std::forward<Args>(args)...);
   }
 
   /**
@@ -236,19 +236,18 @@ class MCGLogger {
    * @param args the arguments to format the message with
    */
   template <typename MSG_t, typename... Args>
-  void warn_e_u(const MSG_t msg, Args&&... args){
-    warn<LogType::UNIQUE,Output::ERROR>(msg,std::forward<Args>(args)...);
+  void warn_e_u(const MSG_t msg, Args&&... args) {
+    warn<LogType::UNIQUE, Output::ERROR>(msg, std::forward<Args>(args)...);
   }
 
  private:
   MCGLogger() : console(spdlog::stdout_color_mt("console")), errconsole(spdlog::stderr_color_mt("errconsole")) {}
 
-
   template <LogType lt>
   inline bool ensureUnique(const std::string& formattedMessage) {
     if constexpr (lt == LogType::UNIQUE) {
       const size_t msg_hash = std::hash<std::string>()(formattedMessage);
-      //If we found the msg, we just return
+      // If we found the msg, we just return
       if (allreadyPrintedMessages.find(msg_hash) != allreadyPrintedMessages.end()) {
         return true;
       }
