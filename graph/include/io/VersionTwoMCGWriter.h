@@ -8,13 +8,14 @@
 #define METACG_VERSIONTWOMCGWRITER_H
 
 #include "MCGWriter.h"
+#include "config.h"
 
 namespace metacg::io {
 
 class VersionTwoMCGWriter : public MCGWriter {
  public:
   explicit VersionTwoMCGWriter(
-      metacg::MCGFileInfo fileInfo = metacg::getVersionTwoFileInfo(metacg::getCGCollectorGeneratorInfo()))
+      metacg::MCGFileInfo fileInfo = metacg::getVersionTwoFileInfo({std::string("CGCollector"), MetaCG_VERSION_MAJOR, MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}))
       : MCGWriter(std::move(fileInfo)) {}
 
   void write(const Callgraph* graph, JsonSink& js) override;

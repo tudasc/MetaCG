@@ -93,14 +93,10 @@ struct MCGFileInfo {
   MCGFileNodeInfo nodeInfo;
 };
 
-// Fixme: inlining this to omit ODR, move to own file
 inline metacg::MCGFileInfo getVersionTwoFileInfo(MCGGeneratorVersionInfo mcgGenInfo) {
   return {MCGFileFormatInfo(2, 0), std::move(mcgGenInfo)};
 }
 
-// Fixme: inlining this to omit ODR, move to own file
-// Fixme These are the wrong defaults
-[[deprecated("Use brace initialization to create info instead")]] MCGGeneratorVersionInfo getCGCollectorGeneratorInfo();
 }  // namespace metacg
 
 #endif  // METACG_MCGBASEINFO_H

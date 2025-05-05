@@ -10,6 +10,10 @@
 #include "MCGManager.h"
 #include "io/VersionTwoMCGReader.h"
 
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 class V2MCGReaderTest : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -526,3 +530,5 @@ TEST_F(V2MCGReaderTest, OneNodeWithOriginCGRead) {
   EXPECT_TRUE(cg->getCallees("main").empty());
   EXPECT_TRUE(cg->getCallers("main").empty());
 }
+
+#pragma GCC diagnostic pop

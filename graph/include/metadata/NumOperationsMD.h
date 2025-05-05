@@ -1,7 +1,7 @@
 /**
-* File: NumOperationsMD.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: NumOperationsMD.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #ifndef CGCOLLECTOR2_NUMOPERATIONSMD_H
 #define CGCOLLECTOR2_NUMOPERATIONSMD_H
@@ -60,10 +60,14 @@ class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
       numberOfControlFlowOps += toMergeDerived->numberOfControlFlowOps;
       numberOfMemoryAccesses += toMergeDerived->numberOfMemoryAccesses;
 
-      if ((numberOfIntOps != 0 && toMergeDerived->numberOfIntOps != 0) ||
-          (numberOfFloatOps != 0 && toMergeDerived->numberOfFloatOps != 0) ||
-          (numberOfControlFlowOps != 0 && toMergeDerived->numberOfControlFlowOps != 0) ||
-          (numberOfMemoryAccesses != 0 && toMergeDerived->numberOfMemoryAccesses != 0)) {
+      if ((numberOfIntOps != 0 && toMergeDerived->numberOfIntOps != 0 &&
+           numberOfIntOps != toMergeDerived->numberOfIntOps) ||
+          (numberOfFloatOps != 0 && toMergeDerived->numberOfFloatOps != 0 &&
+           numberOfFloatOps != toMergeDerived->numberOfFloatOps) ||
+          (numberOfControlFlowOps != 0 && toMergeDerived->numberOfControlFlowOps != 0 &&
+           numberOfControlFlowOps != toMergeDerived->numberOfControlFlowOps) ||
+          (numberOfMemoryAccesses != 0 && toMergeDerived->numberOfMemoryAccesses != 0 &&
+           numberOfMemoryAccesses != toMergeDerived->numberOfMemoryAccesses)) {
         metacg::MCGLogger::instance().getErrConsole()->warn(
             "Same function defined with different number of operations found on merge.");
       }

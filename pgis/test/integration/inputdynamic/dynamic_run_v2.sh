@@ -1,3 +1,4 @@
+#!/usr/bin/env bash 
 
 buildDir=$1
 outDir=$2

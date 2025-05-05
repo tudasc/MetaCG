@@ -38,7 +38,7 @@ Other version combinations *may* work.
 
 The default is to build only the graph library.
 The build requirements are downloaded at configure time.
-While CMake looks for `nlohmann-json` version 3.10., MetaCG should work starting from version 3.9.2.
+While CMake looks for `nlohmann-json` version 3.12., MetaCG should work starting from version 3.9.2.
 For spdlog, we rely on version 1.8.2 -- other versions *may* work.
 If you do not want to download at configure time, please use the respective CMake options listed below.
 
@@ -53,9 +53,9 @@ $> cmake --install build
 
 You can configure MetaCG to also build CGCollector and PGIS.
 This requires additional dependencies.
-Clang/LLVM (in a supported version) and the Cube library are assumed to be available on the system.
-Extra-P can be built using the `build_submodules.sh` script provided in the repository, though the script is not tested outside of our CI system.
-It builds and installs Extra-P into `./deps/src` and `./deps/install`, respectively.
+Clang/LLVM (in a supported version) are assumed to be available on the system.
+Extra-P and Cube library can be built using the `build_submodules.sh` script provided in the repository, though the script is not tested outside of our CI system.
+It builds and installs the dependencies into `./extern`.
 
 ```{.sh}
 $> ./build_submodules.sh
@@ -66,7 +66,14 @@ Change the `CMAKE_INSTALL_PREFIX` to where you want your MetaCG installation to 
 
 ```{.sh}
 # To build the MetaCG library w/ PGIS and CGCollector
-$> cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/where/to/install -DMETACG_BUILD_CGCOLLECTOR=ON -DCUBE_LIB=$(dirname $(which cube_info))/../lib -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib -DEXTRAP_INCLUDE=./extern/src/extrap/extrap-3.0/include -DEXTRAP_LIB=./extern/install/extrap/lib
+$> extinstalldir=./extern/install
+$> cmake -S . -B build \
+  -DCMAKE_INSTALL_PREFIX=/where/to/install \
+  -DCUBE_DIR="$extinstalldir/cubelib" \
+  -DEXTRAP_INCLUDE="$extinstalldir/extrap/include" \
+  -DEXTRAP_LIB="$extinstalldir/extrap/lib" \
+  -DMETACG_BUILD_CGCOLLECTOR=ON \
+  -DMETACG_BUILD_PGIS=ON
 $> cmake --build build --parallel
 # Installation installs CGCollector, CGMerge, CGValidate, PGIS
 $> cmake --install build
@@ -84,8 +91,7 @@ These options are common for the MetaCG package.
 
 These options are required when building with `METACG_BUILD_PGIS=ON`.
 
-- Path `CUBE_LIB`: Path to the libcube library directory
-- Path `CUBE_INCLUDE`: Path to the libcube include directory
+- Path `CUBE_DIR`: Path to the libcube installation
 - Path `EXTRAP_LIB`: Path to the Extra-P library directory
 - Path `EXTRAP_INCLUDE`: Path to the Extra-P include directory
 

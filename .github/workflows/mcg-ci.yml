@@ -1,8 +1,40 @@
-name: MetaCG CI
+name: MetaCG Builds
 
 on: 
   push:
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE.txt'
+      - 'CONTRIBUTING.md'
+      - 'CITATION.cff'
+      - 'AUTHORS'
+      - 'formatSrc.sh'
+      - '.gitlab-ci.yml'
+      - '.gitignore'
+      - '.ci-defaults-template.yml'
+      - 'cgcollector/README.md'
+      - 'cgcollector/formatAllSrc.sh'
+      - 'cgcollector/.gitignore'
+      - 'graph/README.md'
+      - 'pgis/README.md'
+      - 'tools/README.md'
   pull_request: 
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE.txt'
+      - 'CONTRIBUTING.md'
+      - 'CITATION.cff'
+      - 'AUTHORS'
+      - 'formatSrc.sh'
+      - '.gitlab-ci.yml'
+      - '.gitignore'
+      - '.ci-defaults-template.yml'
+      - 'cgcollector/README.md'
+      - 'cgcollector/formatAllSrc.sh'
+      - 'cgcollector/.gitignore'
+      - 'graph/README.md'
+      - 'pgis/README.md'
+      - 'tools/README.md'
 
 jobs:
   build:
@@ -20,19 +52,6 @@ jobs:
         stat install/lib/libmetacg.so
         stat install/include/metadata/CustomMD.h
   
-  lint:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Install lint tool in container
-        run: |
-          python3 -m pip install cmakelang
-      - uses: actions/checkout@v4
-      - name: CMake Lint
-        run: |
-          for f in $(find {cgcollector,graph,pgis} -name "CMakeLists.txt"); do cmake-format --check $f || exit 1; done ; cmake-format --check CMakeLists.txt
-          for f in $(find ./cmake -type f); do cmake-format --check $f || exit 1; done
-
   build-container:
     runs-on: ubuntu-latest
     steps:
@@ -52,32 +71,32 @@ jobs:
         uses: addnab/docker-run-action@v3
         with: 
           image: metacg-devel:latest
-          run: /opt/metacg/metacg/build/graph/test/unit/libtests
+          run: /opt/metacg/build/graph/test/unit/libtests
       - name: Run PGIS library tests 
         uses: addnab/docker-run-action@v3
         with: 
           image: metacg-devel:latest
-          run: /opt/metacg/metacg/build/pgis/test/unit/pgistests
+          run: /opt/metacg/build/pgis/test/unit/pgistests
       - name: Run target collector tests 
         uses: addnab/docker-run-action@v3
         with: 
           image: metacg-devel:latest
           run: |
-            cd /opt/metacg/metacg/graph/test/integration/TargetCollector
+            cd /opt/metacg/graph/test/integration/TargetCollector
             ./TestRunner.sh
       - name: Run call graph merge tests
         uses: addnab/docker-run-action@v3
         with: 
           image: metacg-devel:latest
           run: |
-            cd /opt/metacg/metacg/graph/test/integration/CallgraphMerge
+            cd /opt/metacg/graph/test/integration/CallgraphMerge
             ./MergeTestRunner.sh
       - name: Run cgcollector tests
         uses: addnab/docker-run-action@v3
         with: 
           image: metacg-devel:latest
           run: |
-            cd /opt/metacg/metacg/cgcollector/test
+            cd /opt/metacg/cgcollector/test
             bash run_format_one_test.sh 
             bash run_format_two_test.sh 
       - name: Run cgvalidate tests
@@ -85,5 +104,5 @@ jobs:
         with: 
           image: metacg-devel:latest
           run: |
-            cd /opt/metacg/metacg/cgcollector/test/integration
+            cd /opt/metacg/cgcollector/test/integration
             ./runner.sh build

@@ -106,7 +106,7 @@ class CgNode {
     }
 
     auto nmd = new T(args...);
-    this->template addMetaData(nmd);
+    this->addMetaData(nmd);
     return nmd;
   }
 

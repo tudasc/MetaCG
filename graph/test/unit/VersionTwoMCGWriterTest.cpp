@@ -11,6 +11,9 @@
 #include "MCGManager.h"
 #include "io/VersionTwoMCGWriter.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 class V2MCGWriterTest : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -77,6 +80,7 @@ TEST_F(V2MCGWriterTest, OneNodeCGWrite) {
   auto& mcgm = metacg::graph::MCGManager::get();
   const auto& cg = mcgm.getCallgraph();
   cg->insert("main");
+#pragma warning(suppress: -Wdeprecated-declarations)
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
 
@@ -303,3 +307,4 @@ TEST_F(V2MCGWriterTest, SwitchBeforeWrite) {
             "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
   mcgm.resetManager();
 }
+#pragma GCC diagnostic pop

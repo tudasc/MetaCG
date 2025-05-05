@@ -42,7 +42,7 @@ bool implementation::printLoc(llvm::raw_ostream& OS, SourceLocation BeginLoc, So
   const auto EndLocOffset = SM.getDecomposedLoc(EndLocExpansion).second;
   const std::pair<FileID, unsigned>& Decomposed = SM.getDecomposedLoc(BeginLocExpansion);
   if (PrintFilename) {
-    const FileEntry* FE = SM.getFileEntryForID(Decomposed.first);
+    auto FE = SM.getFileEntryRefForID(Decomposed.first);
     if (FE) {
       OS << llvm::sys::path::filename(FE->getName());
     } else {

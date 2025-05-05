@@ -18,6 +18,9 @@ static llvm::cl::OptionCategory cgc("CGCollector");
 static llvm::cl::opt<bool> captureCtorsDtors("capture-ctors-dtors",
                                              llvm::cl::desc("Capture calls to Constructors and Destructors"),
                                              llvm::cl::cat(cgc));
+static llvm::cl::opt<bool> noInferCtorDtorCalls("no-infer-ctor-dtor-calls",
+    llvm::cl::desc("Don't infer implicit calls to constructors and destructors"),
+                                         llvm::cl::cat(cgc));
 static llvm::cl::opt<bool> captureStackCtorsDtors(
     "capture-stack-ctors-dtors",
     llvm::cl::desc(
@@ -61,6 +64,7 @@ class CallGraphCollectorConsumer : public clang::ASTConsumer {
 
   virtual void HandleTranslationUnit(clang::ASTContext& Context) {
     callGraph.setCaptureCtorsDtors(captureCtorsDtors);
+    callGraph.setInferCtorDtorCalls(!noInferCtorDtorCalls);
     callGraph.setIncludeDecl(includeUnusedDecl);
     if (!disableClassicCGConstruction) {
       callGraph.TraverseDecl(Context.getTranslationUnitDecl());
@@ -113,7 +117,7 @@ int main(int argc, const char** argv) {
   metacgFormatVersion.setInitialValue(1);  // Have the old file format as default
   outputFilenameOption.setInitialValue("");
 
-  std::cout << "Running metacg::CGCollector (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
+  std::cout << "Running metacg::CGCollector (version " << MetaCG_VERSION_MAJOR << '.' << MetaCG_VERSION_MINOR
             << ")\nGit revision: " << MetaCG_GIT_SHA << " LLVM/Clang version: " << LLVM_VERSION_STRING << std::endl;
 
 #if (LLVM_VERSION_MAJOR >= 10) && (LLVM_VERSION_MAJOR <= 12)

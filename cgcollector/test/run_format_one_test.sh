@@ -65,6 +65,17 @@ for tc in ${testGlob}; do
 done
 echo "Single file test failures: $fails"
 
+# Single File and full Ctor/Dtor coverage (--no-infer-ctor-dtor-calls)
+echo -e "\n --- Running single file full ctor/dtor tests (--no-infer-ctor-dtor-calls) ---"
+testGlob="./input/allCtorDtor/*.cpp"
+for tc in ${testGlob}; do
+  echo "Running test ${tc}"
+  applyFileFormatOneToSingleTU ${tc} "--capture-ctors-dtors --no-infer-ctor-dtor-calls" "noinfer"
+  fail=$?
+  fails=$((fails + fail))
+done
+echo "Single file test failures: $fails"
+
 # Single File functionPointers
 echo -e "\n --- Running single file functionPointers tests ---"
 testGlob="./input/functionPointers/*.cpp"

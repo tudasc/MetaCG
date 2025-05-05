@@ -168,7 +168,7 @@ int main(int argc, char** argv) {
   // fixme: why do we use outparameters?
   handleOptions(argc, argv, ipcg, cubex, patch, output, useNoBodyDetection, insertNewNodes, useCubeCallCounts);
 
-  std::cout << "Running metacg::CGValidate (version " << CGCollector_VERSION_MAJOR << '.' << CGCollector_VERSION_MINOR
+  std::cout << "Running metacg::CGValidate (version " << MetaCG_VERSION_MAJOR << '.' << MetaCG_VERSION_MINOR
             << ")\nGit revision: " << MetaCG_GIT_SHA << std::endl;
 
   nlohmann::json callgraph;
