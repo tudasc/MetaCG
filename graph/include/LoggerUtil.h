@@ -37,10 +37,20 @@ class MCGLogger {
   enum class LogType { DEFAULT, UNIQUE };
   enum class Output { DEFAULT, ERROR };
 
-  template <Output outPutType=Output::DEFAULT, LogType lt = LogType::DEFAULT, typename MSG_t, typename... Args>
+  /**
+   * Formats and prints the message as log-level info
+   *
+   * @tparam lt pass UNIQUE if this should be printed only once
+   * @tparam outPutType pass ERROR if this should be printed on the error console
+   * @tparam MSG_t inferred from msg
+   * @tparam Args inferred from args
+   * @param msg the msg to be formatted and printed
+   * @param args the arguments to format the message with
+   */
+  template <LogType lt = LogType::DEFAULT, Output outPutType=Output::DEFAULT,  typename MSG_t, typename... Args>
   void info(const MSG_t msg, Args&&... args) {
     const std::string& formattedMessage = fmt::format(msg, args...);
-    if (uniqueify<lt>(formattedMessage)){
+    if (ensureUnique<lt>(formattedMessage)){
       return ;
     }
     if constexpr (outPutType==Output::DEFAULT){
@@ -50,10 +60,20 @@ class MCGLogger {
     }
   };
 
-  template <Output outPutType=Output::DEFAULT, LogType lt = LogType::DEFAULT, typename MSG_t, typename... Args>
+  /**
+   * Formats and prints the message as log-level error
+   *
+   * @tparam lt pass UNIQUE if this should be printed only once
+   * @tparam outPutType pass ERROR if this should be printed on the error console
+   * @tparam MSG_t inferred from msg
+   * @tparam Args inferred from args
+   * @param msg the msg to be formatted and printed
+   * @param args the arguments to format the message with
+   */
+  template <LogType lt = LogType::DEFAULT, Output outPutType=Output::DEFAULT, typename MSG_t, typename... Args>
   void error(const MSG_t msg, Args&&... args) {
     const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
-    if (uniqueify<lt>(formattedMessage)){
+    if (ensureUnique<lt>(formattedMessage)){
       return ;
     }
     if constexpr (outPutType==Output::DEFAULT){
@@ -63,10 +83,20 @@ class MCGLogger {
     }
   };
 
-  template <Output outPutType=Output::DEFAULT, LogType lt = LogType::DEFAULT, typename MSG_t, typename... Args>
+  /**
+   * Formats and prints the message as log-level debug
+   *
+   * @tparam lt pass UNIQUE if this should be printed only once
+   * @tparam outPutType pass ERROR if this should be printed on the error console
+   * @tparam MSG_t inferred from msg
+   * @tparam Args inferred from args
+   * @param msg the msg to be formatted and printed
+   * @param args the arguments to format the message with
+   */
+  template <LogType lt = LogType::DEFAULT, Output outPutType=Output::DEFAULT, typename MSG_t, typename... Args>
   void debug(const MSG_t msg, Args&&... args) {
     const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
-    if (uniqueify<lt>(formattedMessage)){
+    if (ensureUnique<lt>(formattedMessage)){
       return ;
     }
     if constexpr (outPutType==Output::DEFAULT){
@@ -76,10 +106,20 @@ class MCGLogger {
     }
   };
 
-  template <Output outPutType=Output::DEFAULT, LogType lt = LogType::DEFAULT, typename MSG_t, typename... Args>
+  /**
+   * Formats and prints the message as log-level warn
+   *
+   * @tparam lt pass UNIQUE if this should be printed only once
+   * @tparam outPutType pass ERROR if this should be printed on the error console
+   * @tparam MSG_t inferred from msg
+   * @tparam Args inferred from args
+   * @param msg the msg to be formatted and printed
+   * @param args the arguments to format the message with
+   */
+  template <LogType lt = LogType::DEFAULT, Output outPutType=Output::DEFAULT, typename MSG_t, typename... Args>
   void warn(const MSG_t msg, Args&&... args) {
     const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
-    if (uniqueify<lt>(formattedMessage)){
+    if (ensureUnique<lt>(formattedMessage)){
       return ;
     }
     if constexpr (outPutType==Output::DEFAULT){
@@ -89,10 +129,20 @@ class MCGLogger {
     }
   };
 
-  template <Output outPutType=Output::DEFAULT, LogType lt = LogType::DEFAULT, typename MSG_t, typename... Args>
+  /**
+   * Formats and prints the message as log-level critical
+   *
+   * @tparam lt pass UNIQUE if this should be printed only once
+   * @tparam outPutType pass ERROR if this should be printed on the error console
+   * @tparam MSG_t inferred from msg
+   * @tparam Args inferred from args
+   * @param msg the msg to be formatted and printed
+   * @param args the arguments to format the message with
+   */
+  template <LogType lt = LogType::DEFAULT, Output outPutType=Output::DEFAULT, typename MSG_t, typename... Args>
   void critical(const MSG_t msg, Args&&... args) {
     const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
-    if (uniqueify<lt>(formattedMessage)){
+    if (ensureUnique<lt>(formattedMessage)){
       return ;
     }
     if constexpr (outPutType==Output::DEFAULT){
@@ -102,10 +152,20 @@ class MCGLogger {
     }
   };
 
-  template <Output outPutType=Output::DEFAULT, LogType lt = LogType::DEFAULT, typename MSG_t, typename... Args>
+  /**
+   * Formats and prints the message as log-level trace
+   *
+   * @tparam lt pass UNIQUE if this should be printed only once
+   * @tparam outPutType pass ERROR if this should be printed on the error console
+   * @tparam MSG_t inferred from msg
+   * @tparam Args inferred from args
+   * @param msg the msg to be formatted and printed
+   * @param args the arguments to format the message with
+   */
+  template <LogType lt = LogType::DEFAULT, Output outPutType=Output::DEFAULT, typename MSG_t, typename... Args>
   void trace(const MSG_t msg, Args&&... args) {
     const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
-    if (uniqueify<lt>(formattedMessage)){
+    if (ensureUnique<lt>(formattedMessage)){
       return ;
     }
     if constexpr (outPutType==Output::DEFAULT){
@@ -115,12 +175,77 @@ class MCGLogger {
     }
   };
 
+  /**
+   * A shorthand to print a unique info to the console
+   *
+   * @tparam MSG_t inferred from msg
+   * @tparam Args  inferred from args
+   * @param msg the msg to be formatted and printed
+   * @param args the arguments to format the message with
+   */
+  template <typename MSG_t, typename... Args>
+  void info_c_u(const MSG_t msg, Args&&... args){
+    info<LogType::UNIQUE,Output::DEFAULT>(msg,std::forward<Args>(args)...);
+  }
+
+  /**
+   * A shorthand to print a unique error to the console
+   *
+   * @tparam MSG_t inferred from msg
+   * @tparam Args  inferred from args
+   * @param msg the msg to be formatted and printed
+   * @param args the arguments to format the message with
+   */
+  template <typename MSG_t, typename... Args>
+  void error_c_u(const MSG_t msg, Args&&... args){
+    error<LogType::UNIQUE,Output::DEFAULT>(msg,std::forward<Args>(args)...);
+  }
+
+  /**
+   * A shorthand to print a unique error to the error.console
+   *
+   * @tparam MSG_t inferred from msg
+   * @tparam Args  inferred from args
+   * @param msg the msg to be formatted and printed
+   * @param args the arguments to format the message with
+   */
+  template <typename MSG_t, typename... Args>
+  void error_e_u(const MSG_t msg, Args&&... args){
+    error<LogType::UNIQUE,Output::ERROR>(msg,std::forward<Args>(args)...);
+  }
+
+  /**
+   * A shorthand to print a unique error to the console
+   *
+   * @tparam MSG_t inferred from msg
+   * @tparam Args  inferred from args
+   * @param msg the msg to be formatted and printed
+   * @param args the arguments to format the message with
+   */
+  template <typename MSG_t, typename... Args>
+  void warn_c_u(const MSG_t msg, Args&&... args){
+    warn<LogType::UNIQUE,Output::DEFAULT>(msg,std::forward<Args>(args)...);
+  }
+
+  /**
+   * A shorthand to print a unique error to the error-console
+   *
+   * @tparam MSG_t inferred from msg
+   * @tparam Args  inferred from args
+   * @param msg the msg to be formatted and printed
+   * @param args the arguments to format the message with
+   */
+  template <typename MSG_t, typename... Args>
+  void warn_e_u(const MSG_t msg, Args&&... args){
+    warn<LogType::UNIQUE,Output::ERROR>(msg,std::forward<Args>(args)...);
+  }
+
  private:
   MCGLogger() : console(spdlog::stdout_color_mt("console")), errconsole(spdlog::stderr_color_mt("errconsole")) {}
 
 
   template <LogType lt>
-  inline bool uniqueify(const std::string& formattedMessage) {
+  inline bool ensureUnique(const std::string& formattedMessage) {
     if constexpr (lt == LogType::UNIQUE) {
       const size_t msg_hash = std::hash<std::string>()(formattedMessage);
       //If we found the msg, we just return
