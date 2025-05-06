@@ -20,5 +20,5 @@ if(DEFINED spdlog_SOURCE_DIR)
 endif()
 
 function(add_spdlog_libraries target)
-  target_link_libraries(${target} PRIVATE spdlog::spdlog)
+  target_link_libraries(${target} PUBLIC spdlog::spdlog)
 endfunction()
