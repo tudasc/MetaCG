@@ -26,7 +26,7 @@ To specify which Python installation to use, use `-DPython_ROOT_DIR=<python inst
 
 By default, the resulting dynamic library will be installed in `<installation prefix>/lib/<python version>/site-packages`.
 To override the installation path, use `-DCMAKE_INSTALL_PYTHON_LIBDIR`.
-Finally, make sure that the installation directory in found by Python, e.g., by using the `PYTHONPATH` environment variable.
+Finally, make sure that the installation directory is found by Python, e.g., by using the `PYTHONPATH` environment variable.
 
 Test whether `pymetacg` was built successfully:
 ```bash
@@ -48,7 +48,7 @@ main_exists = "main" in cg
 
 # access nodes in graph
 main = cg["main"]
-foo = cg["main"]
+foo = cg["foo"]
 
 # iterate over node callees and collect callee function names into list
 callees_names = [callee.function_name for callee in main.callees]

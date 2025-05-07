@@ -9,7 +9,7 @@ using namespace metacg;
 
 /**
  * Helper type that wraps around CgNode* and keeps additional information about which call graph
- * the a node is part of.
+ * the node is part of.
  */
 struct CgNodeWrapper {
   const CgNode* node;
@@ -40,7 +40,7 @@ class NodeContainerIteratorWrapper {
 };
 
 /**
- * Auxiliary iteartor to iterate over metacg::CgNodeRawPtrUSet and pack CgNode* into CgNodeWrapper
+ * Auxiliary iterator to iterate over metacg::CgNodeRawPtrUSet and pack CgNode* into CgNodeWrapper
  */
 template <typename NodeIterator>
 class CgNodeRawPtrUSetIteratorWrapper {
