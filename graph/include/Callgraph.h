@@ -79,6 +79,22 @@ class Callgraph {
 
   void addEdge(const CgNode* parent, const CgNode* child);
 
+  void addEdge_anyOrigin(const std::string& parentName, const std::string& childName){
+    size_t parentID=0;
+    size_t childID=0;
+    for(const auto& [nodeId,nodeptr] : nodes){
+      if(nodeptr->getFunctionName()==parentName){
+        parentID=nodeId;
+      }
+      if(nodeptr->getFunctionName()==childName){
+        childID=nodeId;
+      }
+    }
+    assert(childID!=0);
+    assert(parentID!=0);
+    addEdge(parentID,childID);
+  }
+
   /**
    * Inserts a new node and sets it as the 'main' function if its name is main or _Z4main or _ZSt4mainiPPc
    * @param node
@@ -93,6 +109,15 @@ class Callgraph {
    * @return CgNodePtr to the identified node
    */
   CgNode* getOrInsertNode(const std::string& name, const std::string& origin = "unknownOrigin");
+  CgNode* getOrInsertNode_anyOrigin(const std::string& name, const std::string& origin) {
+    if (auto node = getNode_anyOrigin(name); node != nullptr) {
+      return node;
+    }
+
+    auto node_id = insert(name, origin);
+    assert(nodes.find(node_id) != nodes.end());
+    return nodes[node_id].get();
+  }
 
   /**
    * Merges the given call graph into this one.
@@ -122,6 +147,16 @@ class Callgraph {
   bool hasNode(const CgNode* n) const;
   bool hasNode(const size_t n) const;
   bool hasNode(const std::string& name, const std::string& origin) const;
+
+  bool hasNode_anyOrigin(const std::string& name) const{
+      for(const auto& [nodeId,nodePTr] : nodes){
+        if(nodePTr->getFunctionName()==name){
+          return true;
+        }
+      }
+      return false;
+  };
+
   /**
    * @brief getNode searches the node in the graph and returns it
    * @param name
@@ -131,12 +166,30 @@ class Callgraph {
   CgNode* getNode(const std::string& name, const std::string& origin) const;
   CgNode* getNode(size_t id) const;
 
+  CgNode* getNode_anyOrigin(const std::string& name) const{
+      for(const auto& node : nodes){
+        if(node.second->getFunctionName()==name){
+          return node.second.get();
+        }
+      }
+      return nullptr;
+  }
+
   bool existEdgeFromTo(const CgNode& source, const CgNode& target) const;
   bool existEdgeFromTo(const CgNode* source, const CgNode*& target) const;
   bool existEdgeFromTo(size_t source, size_t target) const;
   bool existEdgeFromTo(const std::string& source, const std::string& target) const;
   bool existEdgeFromTo(const std::string& parentName, const std::string& parentOrigin, const std::string& childName,
                        const std::string& childOrigin) const;
+
+  bool existEdgeFromTo_anyOrigin(const std::string& parentName, const std::string& childName){
+    for(const auto& callee : getCallees(getNode_anyOrigin(parentName))){
+      if(callee->getFunctionName()==childName){
+        return true;
+      }
+    }
+    return false;
+  }
 
   CgNodeRawPtrUSet getCallees(const CgNode& node) const;
   CgNodeRawPtrUSet getCallees(const CgNode* node) const;

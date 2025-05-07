@@ -172,24 +172,25 @@ CgNode* Callgraph::getOrInsertNode(const std::string& name, const std::string& o
   return nodes[node_id].get();
 }
 
+
 void metacg::Callgraph::merge(const metacg::Callgraph& other) {
   // Lambda function to clone nodes from the other call graph
   std::function<void(metacg::Callgraph*, const metacg::Callgraph&, metacg::CgNode*)> copyNode =
       [&](metacg::Callgraph* destination, const metacg::Callgraph& source, metacg::CgNode* node) {
         const std::string functionName = node->getFunctionName();
-        metacg::CgNode* mergeNode = destination->getOrInsertNode(functionName, node->getOrigin());
+        metacg::CgNode* mergeNode = destination->getOrInsertNode_anyOrigin(functionName, node->getOrigin());
 
         if (node->getHasBody()) {
           auto callees = source.getCallees(node);
 
           for (auto* c : callees) {
             const std::string calleeName = c->getFunctionName();
-            if (!destination->hasNode(calleeName)) {
+            if (!destination->hasNode_anyOrigin(calleeName)) {
               copyNode(destination, source, c);
             }
 
-            if (!destination->existEdgeFromTo(functionName, calleeName)) {
-              destination->addEdge(functionName, calleeName);
+            if (!destination->existEdgeFromTo_anyOrigin(functionName, calleeName)) {
+              destination->addEdge_anyOrigin(functionName, calleeName);
             }
           }
 
