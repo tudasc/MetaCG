@@ -25,5 +25,5 @@ else()
 endif()
 
 function(add_json target)
-  target_link_libraries(${target} PUBLIC nlohmann_json::nlohmann_json)
+  target_link_libraries(${target} PRIVATE nlohmann_json::nlohmann_json)
 endfunction()
