@@ -10,6 +10,7 @@
 #include <iostream>
 #include <set>
 #include <string>
+#include <unordered_set>
 
 #ifndef LOGLEVEL
 #define LOGLEVEL 0
@@ -153,9 +154,10 @@ const auto cMetric = [](std::string&& name, auto&& cube, auto cn) {
 };
 const auto getVisits = [](auto&& cube, auto cn) { return cMetric(std::string("visits"), cube, cn); };
 
-std::set<std::string> getAllOverriddenFunctions(nlohmann::json& cg, nlohmann::json& baseFn,
+// Recursively computes the set of all functions that are overridden by baseFn
+std::unordered_set<std::string> getAllOverriddenFunctions(nlohmann::json& cg, nlohmann::json& baseFn,
                                                 const std::string& overridesKey) {
-  std::set<std::string> overriddenSet;
+  std::unordered_set<std::string> overriddenSet;
   auto overrides = baseFn[overridesKey];
   std::for_each(overrides.begin(), overrides.end(),
                 [&cg, &overriddenSet, &overridesKey](const std::string& overridesFn) {
