@@ -80,7 +80,7 @@ TEST_F(V2MCGWriterTest, OneNodeCGWrite) {
   auto& mcgm = metacg::graph::MCGManager::get();
   const auto& cg = mcgm.getCallgraph();
   cg->insert("main");
-#pragma warning(suppress : -Wdeprecated - declarations)
+#pragma warning(suppress: -Wdeprecated-declarations)
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
 
