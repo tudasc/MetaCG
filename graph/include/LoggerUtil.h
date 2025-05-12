@@ -176,6 +176,19 @@ class MCGLogger {
   };
 
   /**
+   * A shorthand to print a info to the console
+   *
+   * @tparam MSG_t inferred from msg
+   * @tparam Args  inferred from args
+   * @param msg the msg to be formatted and printed
+   * @param args the arguments to format the message with
+   */
+  template <typename MSG_t, typename... Args>
+  static void logInfo(const MSG_t msg, Args&&... args) {
+    metacg::MCGLogger::instance().info<LogType::DEFAULT, Output::StdConsole>(msg, std::forward<Args>(args)...);
+  }
+
+  /**
    * A shorthand to print a unique info to the console
    *
    * @tparam MSG_t inferred from msg
@@ -184,8 +197,21 @@ class MCGLogger {
    * @param args the arguments to format the message with
    */
   template <typename MSG_t, typename... Args>
-  void logInfoUnique(const MSG_t msg, Args&&... args) {
-    info<LogType::UNIQUE, Output::StdConsole>(msg, std::forward<Args>(args)...);
+  static void logInfoUnique(const MSG_t msg, Args&&... args) {
+    metacg::MCGLogger::instance().info<LogType::UNIQUE, Output::StdConsole>(msg, std::forward<Args>(args)...);
+  }
+
+  /**
+   * A shorthand to print a error to the console
+   *
+   * @tparam MSG_t inferred from msg
+   * @tparam Args  inferred from args
+   * @param msg the msg to be formatted and printed
+   * @param args the arguments to format the message with
+   */
+  template <typename MSG_t, typename... Args>
+  static void logError(const MSG_t msg, Args&&... args) {
+    metacg::MCGLogger::instance().error<LogType::DEFAULT, Output::ErrConsole>(msg, std::forward<Args>(args)...);
   }
 
   /**
@@ -197,21 +223,8 @@ class MCGLogger {
    * @param args the arguments to format the message with
    */
   template <typename MSG_t, typename... Args>
-  void logErrorUnique(const MSG_t msg, Args&&... args) {
-    error<LogType::UNIQUE, Output::StdConsole>(msg, std::forward<Args>(args)...);
-  }
-
-  /**
-   * A shorthand to print a unique error to the error.console
-   *
-   * @tparam MSG_t inferred from msg
-   * @tparam Args  inferred from args
-   * @param msg the msg to be formatted and printed
-   * @param args the arguments to format the message with
-   */
-  template <typename MSG_t, typename... Args>
-  void errErrorUnique(const MSG_t msg, Args&&... args) {
-    error<LogType::UNIQUE, Output::ErrConsole>(msg, std::forward<Args>(args)...);
+  static void logErrorUnique(const MSG_t msg, Args&&... args) {
+    metacg::MCGLogger::instance().error<LogType::UNIQUE, Output::ErrConsole>(msg, std::forward<Args>(args)...);
   }
 
   /**
@@ -223,12 +236,12 @@ class MCGLogger {
    * @param args the arguments to format the message with
    */
   template <typename MSG_t, typename... Args>
-  void logWarnUnique(const MSG_t msg, Args&&... args) {
-    warn<LogType::UNIQUE, Output::StdConsole>(msg, std::forward<Args>(args)...);
+  static void logWarn(const MSG_t msg, Args&&... args) {
+    metacg::MCGLogger::instance().warn<LogType::DEFAULT, Output::StdConsole>(msg, std::forward<Args>(args)...);
   }
 
   /**
-   * A shorthand to print a unique error to the error-console
+   * A shorthand to print a unique error to the console
    *
    * @tparam MSG_t inferred from msg
    * @tparam Args  inferred from args
@@ -236,8 +249,8 @@ class MCGLogger {
    * @param args the arguments to format the message with
    */
   template <typename MSG_t, typename... Args>
-  void errWarnUnique(const MSG_t msg, Args&&... args) {
-    warn<LogType::UNIQUE, Output::ErrConsole>(msg, std::forward<Args>(args)...);
+  static void logWarnUnique(const MSG_t msg, Args&&... args) {
+    metacg::MCGLogger::instance().warn<LogType::UNIQUE, Output::StdConsole>(msg, std::forward<Args>(args)...);
   }
 
  private:
