@@ -156,7 +156,7 @@ const auto getVisits = [](auto&& cube, auto cn) { return cMetric(std::string("vi
 
 // Recursively computes the set of all functions that are overridden by baseFn
 std::unordered_set<std::string> getAllOverriddenFunctions(nlohmann::json& cg, nlohmann::json& baseFn,
-                                                const std::string& overridesKey) {
+                                                          const std::string& overridesKey) {
   std::unordered_set<std::string> overriddenSet;
   auto overrides = baseFn[overridesKey];
   std::for_each(overrides.begin(), overrides.end(),

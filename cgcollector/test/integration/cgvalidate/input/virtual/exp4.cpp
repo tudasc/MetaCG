@@ -1,7 +1,7 @@
 struct Object {
  public:
   virtual void doSomething() {}
-  Object(){}
+  Object() {}
   virtual ~Object() = default;
 };
 
