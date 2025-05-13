@@ -10,6 +10,7 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
 #include <unordered_set>
+#include <iostream>
 
 namespace metacg {
 /**
@@ -253,6 +254,18 @@ class MCGLogger {
     metacg::MCGLogger::instance().warn<LogType::UNIQUE, Output::StdConsole>(msg, std::forward<Args>(args)...);
   }
 
+  /**
+   * Resets the uniqueness-property for all messages.
+   * Any message that has been previously logged as unique can now appear again
+   *
+   * @return the number of messages that now can appear again
+   */
+  size_t resetUniqueCache(){
+    const size_t deletedEntries=alreadyPrintedMessages.size();
+    alreadyPrintedMessages.clear();
+    return deletedEntries;
+  }
+
  private:
   MCGLogger() : console(spdlog::stdout_color_mt("console")), errconsole(spdlog::stderr_color_mt("errconsole")) {}
 
@@ -261,18 +274,17 @@ class MCGLogger {
     if constexpr (lt == LogType::UNIQUE) {
       const size_t msg_hash = std::hash<std::string>()(formattedMessage);
       // If we found the msg, we just return
-      if (allreadyPrintedMessages.find(msg_hash) != allreadyPrintedMessages.end()) {
+      if (alreadyPrintedMessages.find(msg_hash) != alreadyPrintedMessages.end()) {
         return true;
       }
-      allreadyPrintedMessages.insert(std::hash<std::string>()(formattedMessage));
+      alreadyPrintedMessages.insert(std::hash<std::string>()(formattedMessage));
     }
     return false;
   }
 
   std::shared_ptr<spdlog::logger> console;
   std::shared_ptr<spdlog::logger> errconsole;
-
-  std::unordered_set<size_t> allreadyPrintedMessages;
+  std::unordered_set<size_t> alreadyPrintedMessages;
 };
 
 namespace loggerutil {

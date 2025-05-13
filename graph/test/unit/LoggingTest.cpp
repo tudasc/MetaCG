@@ -4,8 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "LoggerUtil.h"
 #include "gtest/gtest.h"
+#include "LoggerUtil.h"
 
 class LoggingTest : public ::testing::Test {
  protected:
@@ -13,6 +13,7 @@ class LoggingTest : public ::testing::Test {
     // Need to set log level to trace, to test all levels
     // Default log level does not include trace and debug outputs
     spdlog::set_level(spdlog::level::trace);
+    metacg::MCGLogger::instance().resetUniqueCache();
   }
 };
 
@@ -54,7 +55,7 @@ TEST_F(LoggingTest, InfoErrorUnique) {
   testing::internal::CaptureStderr();
   logger.info<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::ErrConsole>("Test String {}, {} ", 1,
                                                                                          2.3f);
-  logger.info<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::StdConsole>("Test String {}, {} ", 1,
+  logger.info<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::ErrConsole>("Test String {}, {} ", 1,
                                                                                          2.3f);
   std::string output = testing::internal::GetCapturedStderr();
   removeDate(output);
@@ -123,7 +124,7 @@ TEST_F(LoggingTest, DebugErrorUnique) {
   testing::internal::CaptureStderr();
   logger.debug<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::ErrConsole>("Test String {}, {} ", 1,
                                                                                           2.3f);
-  logger.debug<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::StdConsole>("Test String {}, {} ", 1,
+  logger.debug<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::ErrConsole>("Test String {}, {} ", 1,
                                                                                           2.3f);
   std::string output = testing::internal::GetCapturedStderr();
   removeDate(output);
@@ -181,7 +182,7 @@ TEST_F(LoggingTest, WarnErrorUnique) {
   testing::internal::CaptureStderr();
   logger.warn<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::ErrConsole>("Test String {}, {} ", 1,
                                                                                          2.3f);
-  logger.warn<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::StdConsole>("Test String {}, {} ", 1,
+  logger.warn<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::ErrConsole>("Test String {}, {} ", 1,
                                                                                          2.3f);
   std::string output = testing::internal::GetCapturedStderr();
   removeDate(output);
@@ -196,7 +197,7 @@ TEST_F(LoggingTest, ShorthandWarn) {
   metacg::MCGLogger::logWarn("Test String {}, {} ", 1, 2.3f);
   std::string output = testing::internal::GetCapturedStdout();
   removeDate(output);
-  ASSERT_EQ(output, "[console] [info] Test String 1, 2.3 \n");
+  ASSERT_EQ(output, "[console] [warning] Test String 1, 2.3 \n");
 }
 
 TEST_F(LoggingTest, ShorthandWarnUnique) {
@@ -205,7 +206,7 @@ TEST_F(LoggingTest, ShorthandWarnUnique) {
   metacg::MCGLogger::logWarnUnique("Test String {}, {} ", 1, 2.3f);
   std::string output = testing::internal::GetCapturedStdout();
   removeDate(output);
-  ASSERT_EQ(output, "[console] [info] Test String 1, 2.3 \n");
+  ASSERT_EQ(output, "[console] [warning] Test String 1, 2.3 \n");
 }
 
 TEST_F(LoggingTest, ErrorConsoleDefault) {
@@ -253,7 +254,7 @@ TEST_F(LoggingTest, ErrorErrorUnique) {
   testing::internal::CaptureStderr();
   logger.error<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::ErrConsole>("Test String {}, {} ", 1,
                                                                                           2.3f);
-  logger.error<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::StdConsole>("Test String {}, {} ", 1,
+  logger.error<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::ErrConsole>("Test String {}, {} ", 1,
                                                                                           2.3f);
   std::string output = testing::internal::GetCapturedStderr();
   removeDate(output);
@@ -264,20 +265,20 @@ TEST_F(LoggingTest, ErrorErrorUnique) {
 }
 
 TEST_F(LoggingTest, ShorthandErr) {
-  testing::internal::CaptureStdout();
+  testing::internal::CaptureStderr();
   metacg::MCGLogger::logError("Test String {}, {} ", 1, 2.3f);
-  std::string output = testing::internal::GetCapturedStdout();
+  std::string output = testing::internal::GetCapturedStderr();
   removeDate(output);
-  ASSERT_EQ(output, "[console] [info] Test String 1, 2.3 \n");
+  ASSERT_EQ(output, "[errconsole] [error] Test String 1, 2.3 \n");
 }
 
 TEST_F(LoggingTest, ShorthandErrUnique) {
-  testing::internal::CaptureStdout();
+  testing::internal::CaptureStderr();
   metacg::MCGLogger::logErrorUnique("Test String {}, {} ", 1, 2.3f);
   metacg::MCGLogger::logErrorUnique("Test String {}, {} ", 1, 2.3f);
-  std::string output = testing::internal::GetCapturedStdout();
+  std::string output = testing::internal::GetCapturedStderr();
   removeDate(output);
-  ASSERT_EQ(output, "[console] [info] Test String 1, 2.3 \n");
+  ASSERT_EQ(output, "[errconsole] [error] Test String 1, 2.3 \n");
 }
 
 TEST_F(LoggingTest, TraceConsoleDefault) {
@@ -325,7 +326,7 @@ TEST_F(LoggingTest, TraceErrorUnique) {
   testing::internal::CaptureStderr();
   logger.trace<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::ErrConsole>("Test String {}, {} ", 1,
                                                                                           2.3f);
-  logger.trace<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::StdConsole>("Test String {}, {} ", 1,
+  logger.trace<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::ErrConsole>("Test String {}, {} ", 1,
                                                                                           2.3f);
   std::string output = testing::internal::GetCapturedStderr();
   removeDate(output);
@@ -380,12 +381,9 @@ TEST_F(LoggingTest, CriticalErrorUnique) {
   testing::internal::CaptureStderr();
   logger.critical<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::ErrConsole>("Test String {}, {} ", 1,
                                                                                              2.3f);
-  logger.critical<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::StdConsole>("Test String {}, {} ", 1,
+  logger.critical<metacg::MCGLogger::LogType::UNIQUE, metacg::MCGLogger::Output::ErrConsole>("Test String {}, {} ", 1,
                                                                                              2.3f);
   std::string output = testing::internal::GetCapturedStderr();
   removeDate(output);
-  ASSERT_EQ(output,
-            "[errconsole] "
-            "[critical] Test "
-            "String 1, 2.3 \n");
+  ASSERT_EQ(output, "[errconsole] [critical] Test String 1, 2.3 \n");
 }
