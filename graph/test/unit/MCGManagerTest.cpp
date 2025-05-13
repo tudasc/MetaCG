@@ -6,8 +6,6 @@
 
 #include "gtest/gtest.h"
 
-#include "LoggerUtil.h"
-
 #include "MCGManager.h"
 #include "metadata/MetaData.h"
 
@@ -16,7 +14,6 @@ using json = nlohmann::json;
 class MCGManagerTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    metacg::loggerutil::getLogger();
     auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
     mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
@@ -48,7 +45,7 @@ TEST_F(MCGManagerTest, GetOrCreateCGExistingActive) {
   mcgm.addToManagedGraphs("newCG2", std::make_unique<metacg::Callgraph>(), false);
   ASSERT_FALSE(mcgm.assertActive("newCG"));
   ASSERT_FALSE(mcgm.assertActive("newCG2"));
-  mcgm.addToManagedGraphs("newCG",std::make_unique<metacg::Callgraph>(), true);
+  mcgm.addToManagedGraphs("newCG", std::make_unique<metacg::Callgraph>(), true);
   ASSERT_TRUE(mcgm.assertActive("newCG"));
   ASSERT_FALSE(mcgm.assertActive("newCG2"));
 }

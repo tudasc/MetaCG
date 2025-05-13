@@ -10,14 +10,12 @@
 #include "MCGManager.h"
 #include "io/VersionTwoMCGReader.h"
 
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 class V2MCGReaderTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    metacg::loggerutil::getLogger();
     auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
   }

@@ -64,7 +64,6 @@ struct TestMetaDataV3 final : metacg::MetaData::Registrar<TestMetaDataV3> {
 class V3MCGReaderTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    metacg::loggerutil::getLogger();
     auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
   }
