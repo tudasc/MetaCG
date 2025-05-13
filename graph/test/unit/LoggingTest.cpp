@@ -138,9 +138,6 @@ TEST_F(LoggingTest, WarnConsoleDefault) {
   auto logger = metacg::MCGLogger::instance();
   testing::internal::CaptureStdout();
   logger.warn("Test String {}, {} ", 1, 2.3f);
-  // logger.getConsole()->warn("Test
-  // String {}, {} ",
-  // 1, 2.3f);
   std::string output = testing::internal::GetCapturedStdout();
   removeDate(output);
   ASSERT_EQ(output,
