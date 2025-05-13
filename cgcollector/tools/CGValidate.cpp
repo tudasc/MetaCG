@@ -10,6 +10,7 @@
 #include <iostream>
 #include <set>
 #include <string>
+#include <unordered_set>
 
 #ifndef LOGLEVEL
 #define LOGLEVEL 0
@@ -140,7 +141,7 @@ std::set<std::pair<std::string, std::string>> edgesChecked;
 // Ripped from pgis
 const auto cMetric = [](std::string&& name, auto&& cube, auto cn) {
   if constexpr (std::is_pointer_v<decltype(cn)>) {
-    const auto met = cube.get_met(name);
+    const auto met = cube.get_met(name.c_str());
     typedef decltype(cube.get_sev(met, cn, cube.get_thrdv().at(0))) RetType;
     RetType metric{};
     for (auto t : cube.get_thrdv()) {
@@ -152,6 +153,25 @@ const auto cMetric = [](std::string&& name, auto&& cube, auto cn) {
   }
 };
 const auto getVisits = [](auto&& cube, auto cn) { return cMetric(std::string("visits"), cube, cn); };
+
+// Recursively computes the set of all functions that are overridden by baseFn
+std::unordered_set<std::string> getAllOverriddenFunctions(nlohmann::json& cg, nlohmann::json& baseFn,
+                                                          const std::string& overridesKey) {
+  std::unordered_set<std::string> overriddenSet;
+  auto overrides = baseFn[overridesKey];
+  std::for_each(overrides.begin(), overrides.end(),
+                [&cg, &overriddenSet, &overridesKey](const std::string& overridesFn) {
+                  if (!cg.contains(overridesFn)) {
+                    return;
+                  }
+                  auto& fnNode = cg[overridesFn];
+                  overriddenSet.insert(overridesFn);
+                  for (auto& entry : getAllOverriddenFunctions(cg, fnNode, overridesKey)) {
+                    overriddenSet.insert(entry);
+                  }
+                });
+  return overriddenSet;
+}
 
 int main(int argc, char** argv) {
   std::string ipcg;
@@ -247,10 +267,10 @@ int main(int argc, char** argv) {
         (std::find(callees.begin(), callees.end(), nodeName) != callees.end());  // doesInclude(callees, nodeName);
     auto parentFound =
         (std::find(parents.begin(), parents.end(), parentName) != parents.end());  // doesInclude(parents, parentName);
-    // check polymorphism (currently only first hierarchy level)
+    // check polymorphism
     bool overriddenFunctionParentFound = false;
     bool overriddenFunctionCalleeFound = false;
-    const auto& overriddenFunctions = node[overridesKey];
+    const auto& overriddenFunctions = getAllOverriddenFunctions(callgraph, node, overridesKey);
     for (const std::string overriddenFunctionName : overriddenFunctions) {
       if (!getOrInsert(callgraph, overriddenFunctionName, insertNewNodes, version)) {
         continue;
