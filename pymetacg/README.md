@@ -71,8 +71,8 @@ metadata = main.meta_data["numStatements"].data
 ```
 
 ## Tests
-`pymetacg` comes with a PyTest-based test suite.
-Use `-DMETACG_BUILD_PYMETACG_TESTS=ON` and install `pytest` and `pytest-cmake` need to be installed from PyPI to enable building to the tests:
+`pymetacg` comes with a PyTest-based test suite, which can be enabled via the CMake option `-DMETACG_BUILD_PYMETACG_TESTS=ON`.
+The test suite requires `pytest` and `pytest-cmake` to be installed from PyPI.
 
 ```bash
 # create and activate Python virtual environment
