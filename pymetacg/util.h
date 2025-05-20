@@ -11,15 +11,13 @@
 #include <CgNodePtr.h>
 #include <MCGManager.h>
 
-using namespace metacg;
-
 /**
  * Helper type that wraps around CgNode* and keeps additional information about which call graph
  * the node is part of.
  */
 struct CgNodeWrapper {
-  const CgNode* node;
-  const Callgraph& graph;
+  const metacg::CgNode* node;
+  const metacg::Callgraph& graph;
 };
 
 /**
@@ -28,7 +26,7 @@ struct CgNodeWrapper {
 template <typename NodeIterator>
 class NodeContainerIteratorWrapper {
  public:
-  explicit NodeContainerIteratorWrapper(NodeIterator it, const Callgraph& graph) : iter(it), graph(graph) {}
+  explicit NodeContainerIteratorWrapper(NodeIterator it, const metacg::Callgraph& graph) : iter(it), graph(graph) {}
 
   CgNodeWrapper operator*() const { return CgNodeWrapper{iter->second.get(), graph}; }
 
@@ -42,7 +40,7 @@ class NodeContainerIteratorWrapper {
 
  private:
   NodeIterator iter;
-  const Callgraph& graph;
+  const metacg::Callgraph& graph;
 };
 
 /**
@@ -51,7 +49,7 @@ class NodeContainerIteratorWrapper {
 template <typename NodeIterator>
 class CgNodeRawPtrUSetIteratorWrapper {
  public:
-  explicit CgNodeRawPtrUSetIteratorWrapper(NodeIterator it, const Callgraph& graph) : iter(it), graph(graph) {}
+  explicit CgNodeRawPtrUSetIteratorWrapper(NodeIterator it, const metacg::Callgraph& graph) : iter(it), graph(graph) {}
 
   CgNodeWrapper operator*() const { return CgNodeWrapper{*iter, graph}; }
   CgNodeWrapper operator->() const { return CgNodeWrapper{&iter, graph}; }
@@ -66,14 +64,14 @@ class CgNodeRawPtrUSetIteratorWrapper {
 
  private:
   NodeIterator iter;
-  const Callgraph& graph;
+  const metacg::Callgraph& graph;
 };
 
 /**
  * Helper function to attach the call graph reference to all CgNodes in a CgNodeRawPtrUSet
  * and return a std::unordered_set<CgNodeWrapper, ...>
  */
-inline auto attachGraphPointerToNodes(const CgNodeRawPtrUSet nodes, const Callgraph& graph) {
+inline auto attachGraphPointerToNodes(const CgNodeRawPtrUSet nodes, const metacg::Callgraph& graph) {
   constexpr auto hash = [](const CgNodeWrapper& p) { return p.node->getId(); };
   constexpr auto equal = [](const CgNodeWrapper& p1, const CgNodeWrapper& p2) {
     return p1.node->getId() == p2.node->getId();
