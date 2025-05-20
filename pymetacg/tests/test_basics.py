@@ -1,3 +1,7 @@
+# File: test_basics.py
+# License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+# https://github.com/tudasc/metacg/LICENSE.txt
+
 import pytest
 
 import pymetacg

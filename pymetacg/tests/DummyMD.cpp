@@ -1,3 +1,9 @@
+/**
+ * File: DummyMD.cpp
+ * License: Part of the metacg project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #include <metadata/MetaData.h>
 
 class DummyMD : public metacg::MetaData::Registrar<DummyMD> {
