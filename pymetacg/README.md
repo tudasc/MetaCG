@@ -66,8 +66,8 @@ for node in cg:
 # check if node has some meta data
 main_has_statement_metadata = "numStatements" in main.meta_data
 
-# print node meta data
-print(main.meta_data["numStatements"].data)
+# access JSON representation of node's meta data using `.data` (independent of meta data type)
+metadata = main.meta_data["numStatements"].data
 ```
 
 ## Tests
