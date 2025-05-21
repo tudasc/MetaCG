@@ -24,7 +24,7 @@ To use an already installed nanobind, use `-DMETACG_USE_EXTERNAL_NANOBIND=ON` an
 The CMake setup of `pymetacg` uses CMake's [FindPython](https://cmake.org/cmake/help/latest/module/FindPython.html) to find the Python installation for which `pymetacg` will be built.
 To specify which Python installation to use, use `-DPython_ROOT_DIR=<python installation>`.
 
-By default, the resulting dynamic library will be installed in `<installation prefix>/lib/<python version>/site-packages`.
+By default, the resulting dynamic library will be installed in `<MetaCG installation prefix>/lib/<python version>/site-packages`.
 To override the installation path, use `-DCMAKE_INSTALL_PYTHON_LIBDIR`.
 Finally, make sure that the installation directory is found by Python, e.g., by using the `PYTHONPATH` environment variable.
 
