@@ -14,6 +14,10 @@
 /**
  * Helper type that wraps around CgNode* and keeps additional information about which call graph
  * the node is part of.
+ * In the graphlib, call graph nodes do not contain a pointer/reference to the call graph that they
+ * are a part of. Hence, one must always call a function of the call class to get a node's callers/callees.
+ * To allow for more user-friendly access to callers/callees via Python, pymetacg uses this wrapper to
+ * attach the graph reference to each CgNode pointer.
  */
 struct CgNodeWrapper {
   const metacg::CgNode* node;
