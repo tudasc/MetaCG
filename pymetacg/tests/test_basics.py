@@ -46,3 +46,10 @@ def test_edges(basic_cg):
 
     assert bar.callers == {main, foo, bar}
     assert bar.callees == {bar}
+
+def test_file_format_v3(v3_cg):
+    assert set(node.function_name for node in v3_cg) == {"foo", "main", "bar"}
+    main = v3_cg["main"]
+    foo = v3_cg["foo"]
+    assert foo in main.callees
+    assert main in foo.callers
