@@ -10,7 +10,7 @@ RUN apt-get update -y && \
         cmake python3 apt-utils wget gnupg \
         qtbase5-dev git autoconf automake \
         libtool zlib1g-dev zlib1g vim unzip \
-        python3-pip python3-venv python3-pytest python3-pytest-cov \
+        python3-pip python3-venv \
         openmpi-bin openmpi-common bison flex bear \
         lsb-release wget software-properties-common \
         python3-matplotlib python3-pyqt5 ninja-build
@@ -42,5 +42,10 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DEXTRAP_LIB=$EXTINSTALLDIR/extrap/lib \
       -DMETACG_BUILD_PGIS=ON \
       -DMETACG_BUILD_CGCOLLECTOR=ON \
+      -DMETACG_BUILD_PYMETACG=ON \
+      -DPython_ROOT_DIR=/opt/metacg/.venv \
+      -DPYTEST_EXECUTABLE=/opt/metacg/.venv/bin/pytest \
+      -DCMAKE_MODULE_PATH=/opt/metacg/.venv/share/Pytest/cmake \
+      -DMETACG_BUILD_PYMETACG_TESTS=ON \
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON && \
     cmake --build build --parallel

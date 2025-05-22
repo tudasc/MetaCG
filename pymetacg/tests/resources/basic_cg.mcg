@@ -1,0 +1,55 @@
+{
+    "_CG": {
+        "main": {
+            "callees": [
+                "foo",
+                "bar"
+            ],
+            "meta": {},
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "foo": {
+            "callees": [
+                "bar"
+            ],
+            "callers": [
+                "main"
+            ],
+            "meta": {},
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "bar": {
+            "callees": [
+                "bar"
+            ],
+            "callers": [
+                "main",
+                "foo",
+                "bar"
+            ],
+            "meta": {},
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "05981c57fa438972b164ec3b164e256a00495637",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}

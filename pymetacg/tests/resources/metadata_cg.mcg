@@ -1,0 +1,46 @@
+{
+    "_CG": {
+        "nodewithbuiltinmetadata": {
+            "callees": [],
+            "callers": [],
+            "meta": {
+                "numStatements": 42
+            },
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "nodewithcustommetadata": {
+            "callees": [],
+            "callers": [],
+            "meta": {
+                "dummy_md": {}
+            },
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "nodewithoutmetadata": {
+            "callees": [],
+            "callers": [],
+            "meta": {},
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "05981c57fa438972b164ec3b164e256a00495637",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}

@@ -12,6 +12,9 @@ As an example tool, the repository contains the PGIS analysis tool, which is use
 The current default file format is MetaCG format version 3.
 More info on the different formats can be found in the [graph README](graph/README.md).
 
+The MetaCG project includes `pymetacg`, a set of bindings that allows to parse MetaCG files from Python.
+Refer to the [pymetacg README](pymetacg/README.md) for more information how to build and use `pymetacg`.
+
 ## Requirements and Building
 
 MetaCG consists of the graph library, a CG construction tool, and an example analysis tool.
@@ -49,7 +52,7 @@ $> cmake --build build --parallel
 $> cmake --install build
 ```
 
-#### Full Package Build
+#### Build Graph Library and Tools (CGCollector, PGIS)
 
 You can configure MetaCG to also build CGCollector and PGIS.
 This requires additional dependencies.
