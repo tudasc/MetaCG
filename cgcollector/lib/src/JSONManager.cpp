@@ -170,8 +170,11 @@ nlohmann::json buildFromJSONv2(FuncMapT& functionMap, const std::string& filenam
     auto ps = it.value()["callers"].get<std::set<std::string>>();
     fi.parents.insert(ps.begin(), ps.end());
 
-    readNumStmts(it.value(), fi);
-    readFileOrigin(it.value(), fi);
+    if(!it.value()["meta"].is_null()) {
+      readNumStmts(it.value(), fi);
+      readFileOrigin(it.value(), fi);
+    }
+
   }
 
   // Now the functions map holds all the information
