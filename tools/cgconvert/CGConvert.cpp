@@ -19,14 +19,11 @@
 using namespace metacg;
 
 int main(int argc, char** argv) {
-  auto console = MCGLogger::instance().getConsole();
-  auto errConsole = MCGLogger::instance().getErrConsole();
-
-  console->info("Running metacg::CGConvert (version {}.{})\nGit revision: {}", MetaCG_VERSION_MAJOR,
-                MetaCG_VERSION_MINOR, MetaCG_GIT_SHA);
+  MCGLogger::logInfo("Running metacg::CGConvert (version {}.{})\nGit revision: {}", MetaCG_VERSION_MAJOR,
+                     MetaCG_VERSION_MINOR, MetaCG_GIT_SHA);
 
   if (argc < 3) {
-    errConsole->error("Usage: {} <input_file> <output_file> [output_version]", argv[0]);
+    MCGLogger::logError("Usage: {} <input_file> <output_file> [output_version]", argv[0]);
     return EXIT_FAILURE;
   }
 
@@ -41,7 +38,7 @@ int main(int argc, char** argv) {
 
   auto mcgWriter = io::createWriter(outputMcgVersion);
   if (!mcgWriter) {
-    errConsole->error("Unable to create a writer for format version {}", outputMcgVersion);
+    MCGLogger::logError("Unable to create a writer for format version {}", outputMcgVersion);
     return EXIT_FAILURE;
   }
 
