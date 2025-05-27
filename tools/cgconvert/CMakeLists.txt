@@ -3,11 +3,8 @@ set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 
 add_executable(cgconvert CGConvert.cpp)
 
-add_config_include(cgconvert)
-add_json(cgconvert)
 add_metacg(cgconvert)
 add_spdlog_libraries(cgconvert)
-add_clang(cgconvert)
 
 install(
   TARGETS cgconvert
