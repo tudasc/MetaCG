@@ -47,10 +47,10 @@ if [ -f "$venv_dir/bin/activate" ]; then
 else
   "$python_bin" -m venv "$venv_dir" || err_exit "Creating python venv failed"
   source "$venv_dir/bin/activate" || err_exit "Activating python venv failed"
-  pip install --upgrade pip
-  pip install PyQt5 matplotlib || err_exit "Installing Extra-P dependencies failed."
-  pip install pytest pytest-cmake || err_exit "Installing pymetacg test dependencies failed."
 fi
+pip install --upgrade pip
+pip install PyQt5 matplotlib || err_exit "Installing Extra-P dependencies failed."
+pip install pytest pytest-cmake || err_exit "Installing pymetacg test dependencies failed."
 
 log "Building cubelib for Extra-P"
 if [ -f "$extinstalldir/cubelib/bin/cubelib-config" ]; then
