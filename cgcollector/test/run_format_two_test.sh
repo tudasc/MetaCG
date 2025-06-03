@@ -119,5 +119,7 @@ for tc in "${multiTests[@]}"; do
 done
 echo "Multi file test failuers: $fails"
 
+# CGPatch pre-generated callgraph
+
 echo -e "$fails failures occured when running tests"
 exit $fails
