@@ -7,7 +7,7 @@ CGPatch uses targeted instrumentation to generate dynamic patch-graphs to patch 
 ### LLVM Pass (cgpatch-inst-pass.cpp)
 - Performs targeted instrumentation
 - Runs as first pass in the pass pipeline
-- Instruments indirect calls with a call to the runtime function
+- Instruments indirect calls with a call to the cgpatch runtime function
 - Use `instrument-ctors-dtors` option to additionally instrument constructor and destructor calls.
 
 ### Runtime (cgpatch-inst-runtime.cpp)
