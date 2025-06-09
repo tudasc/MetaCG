@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 LLVM_FLAGS=`llvm-config --cflags --ldflags --libs --system-libs`
 INST_PASS=@METACG_INSTALL_DIR@/lib/

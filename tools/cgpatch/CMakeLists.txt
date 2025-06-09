@@ -13,7 +13,7 @@ target_link_libraries(cgpatch-call-analysis PUBLIC ${llvm_libs})
 target_include_directories(cgpatch-call-analysis PRIVATE include)
 
 # Create Libraries
-add_library(cgpatch-inst-pass SHARED src/cgpatch-inst-pass.cpp)
+add_library(cgpatch-inst-pass SHARED src/CGPatchInstPass.cpp)
 
 target_link_libraries(cgpatch-inst-pass PRIVATE cgpatch-call-analysis ${llvm_libs})
 target_include_directories(cgpatch-inst-pass PRIVATE include)

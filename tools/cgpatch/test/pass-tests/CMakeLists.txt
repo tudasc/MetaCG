@@ -169,12 +169,3 @@ add_lit_testsuite(
   DEPENDS
   cgpatch-inst-pass
 )
-
-# Generate LLVM IR from the test program add_custom_target( generate-ir COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang++ -O1 -S
-# -emit-llvm 01_basic_vcall.cpp -o ${CMAKE_CURRENT_BINARY_DIR}/basic01.ll WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-# COMMENT "Generating LLVM IR" )
-#
-# Run our pass on the generated IR add_custom_target( run-pass COMMAND ${LLVM_TOOLS_BINARY_DIR}/opt
-# -load-pass-plugin=${CMAKE_BINARY_DIR}/pass/libcgpatch-inst-pass.so -passes=detect-virtual-calls -S basic01.ll -o
-# basic01.ll DEPENDS generate-ir WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMENT "Running cgpatch-inst-pass pass"
-# )
