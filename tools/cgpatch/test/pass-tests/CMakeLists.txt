@@ -89,6 +89,13 @@ endfunction()
 find_llvm_progs(
   FILECHECK_EXE
   "FileCheck-${LLVM_VERSION_MAJOR};FileCheck"
+  HINTS
+  /usr/lib/llvm-${LLVM_VERSION_MAJOR}
+  /usr/lib/llvm-${LLVM_VERSION_MAJOR}/bin
+  /usr/lib/llvm
+  /usr/bin
+  /usr/local/bin
+  /opt/local/bin
   ABORT_IF_MISSING
 )
 

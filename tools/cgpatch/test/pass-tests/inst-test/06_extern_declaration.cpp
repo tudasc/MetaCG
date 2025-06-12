@@ -1,5 +1,5 @@
 // RUN: split-file %s %t
-// RUN: %cgpatchcxx clang++ -emit-llvm -S -o - %t/test_function_pointer.cpp | FileCheck %s
+// RUN: %cgpatchcxx clang++ -emit-llvm -S -o - %t/test_function_pointer.cpp | %filecheck %s
 
 //--- test_function_pointer.cpp
 
