@@ -1,0 +1,53 @@
+{
+   "_CG":{
+      "_ZZ4mainENK3$_0clEi":{
+         "callees":[
+
+         ],
+         "callers":[
+            "main"
+         ],
+         "doesOverride":false,
+         "hasBody":true,
+         "isVirtual":false,
+         "meta":{
+            "numStatements":2
+         },
+         "overriddenBy":[
+
+         ],
+         "overrides":[
+
+         ]
+      },
+      "main":{
+         "callees":[
+            "_ZZ4mainENK3$_0clEi",
+            "main"
+         ],
+         "callers":[
+            "main"
+         ],
+         "doesOverride":false,
+         "hasBody":true,
+         "isVirtual":false,
+         "meta":{
+            "numStatements":4
+         },
+         "overriddenBy":[
+
+         ],
+         "overrides":[
+
+         ]
+      }
+   },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "e99454234010d5c91f671a53644c35b50f26c368",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

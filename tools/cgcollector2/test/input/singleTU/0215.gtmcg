@@ -1,0 +1,43 @@
+{
+    "_CG": {
+        "_Z3fooi": {
+            "callees": [
+                "_Z3fooi"
+            ],
+            "callers": [
+                "main",
+                "_Z3fooi"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z3fooi"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 2
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "3f6097119927b7bf04c0507f0bd75c65ae9f5088",
+            "version": "0.2"
+        },
+        "version": "2.0"
+    }
+}

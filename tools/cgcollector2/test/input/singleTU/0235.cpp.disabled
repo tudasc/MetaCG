@@ -1,0 +1,15 @@
+// Tests passing function pointers as C++ style constructor init
+// Disabled because ground truth call graph does not contain a call from main to foo via b();
+
+typedef void (*Function)();
+
+void foo() {}
+
+class C {
+ public:
+  C(Function F) : member(F){};
+
+  Function member;
+};
+
+int main() { C a(&foo); Function b = a.member; b(); }

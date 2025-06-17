@@ -1,0 +1,40 @@
+{
+  "_CG": {
+    "_ZZ4mainENK3$_0clEii": {
+      "callees": [],
+      "callers": [
+        "main"
+      ],
+      "doesOverride": false,
+      "hasBody": true,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 5
+      },
+      "overriddenBy": [],
+      "overrides": []
+    },
+    "main": {
+      "callees": [
+        "_ZZ4mainENK3$_0clEii"
+      ],
+      "callers": [],
+      "doesOverride": false,
+      "hasBody": true,
+      "isVirtual": false,
+      "meta": {
+        "numStatements": 3
+      },
+      "overriddenBy": [],
+      "overrides": []
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "CGCollector",
+      "sha": "GITDIR-NOTFOUND",
+      "version": "0.4"
+    },
+    "version": "2.0"
+  }
+}

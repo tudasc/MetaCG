@@ -1,0 +1,25 @@
+#ifndef CGCOLLECTOR2_NUMSTATEMENTSCOLLECTOR_H
+#define CGCOLLECTOR2_NUMSTATEMENTSCOLLECTOR_H
+
+#include "Callgraph.h"
+
+#include "Plugin.h"
+
+#include "MetaDataFunctions.h"
+#include "metadata/NumStatementsMD.h"
+
+#include <clang/AST/Decl.h>
+
+struct NumberOfStatementsCollector : public Plugin {
+  NumStatementsMD* computeForDecl(const clang::FunctionDecl* const functionDecl) override {
+    auto result = new NumStatementsMD();
+    result->setNumberOfStatements(getNumStmtsInStmt(functionDecl->getBody()));
+    return result;
+  }
+
+  void computeForGraph(const metacg::Callgraph* const cg) override {}
+
+  virtual std::string getPluginName() { return "NumberOfStatementsCollector"; }
+};
+
+#endif  // CGCOLLECTOR2_NUMSTATEMENTSCOLLECTOR_H
