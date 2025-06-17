@@ -19,7 +19,27 @@
 
 namespace metacg {
 
+class CgNode;
+
+using NodeId = size_t;
+
+
 class CgNode {
+ private:
+  /**
+   * Creates a call graph node for a function with name @function.
+   * It should not be used directly, instead construct CgNodePtr values.
+   * @param function
+   */
+  explicit CgNode(NodeId id, std::string function, std::optional<std::string> origin = {}, bool isVirtual, bool hasBody)
+      : id(id),
+        functionName(std::move(function)),
+        origin(std::move(origin)),
+        hasBody(hasBody) {
+    if (isVirtual) {
+      this->getOrCreateMD<OverrideMD>();
+    }
+  };
  public:
   /**
    * Checks if metadata of type #T is attached
@@ -59,13 +79,13 @@ class CgNode {
    * @return tuple: (wasFound, pointerToMetaData)
    */
   template <typename T>
-  inline std::pair<bool, T*> checkAndGet() const {
+  inline T* checkAndGet() const {
     if (this->has<T>()) {
       auto bpd = this->get<T>();
       assert(bpd && "meta data attached");
-      return {true, bpd};
+      return bpd;
     }
-    return {false, nullptr};
+    return nullptr;
   }
 
   /**
@@ -110,22 +130,7 @@ class CgNode {
     return nmd;
   }
 
-  /**
-   * Creates a call graph node for a function with name @function.
-   * It should not be used directly, instead construct CgNodePtr values.
-   * TODO: Currently sets isVirtual and hasBody per default to false. This should be refactored.
-   * @param function
-   */
-  explicit CgNode(std::string function, std::string origin = "unknownOrigin", bool isVirtual = false,
-                  bool hasBody = false)
-      : id(std::hash<std::string>()(function + origin)),
-        functionName(std::move(function)),
-        origin(std::move(origin)),
-        hasBody(hasBody) {
-    if (isVirtual) {
-      this->getOrCreateMD<OverrideMD>();
-    }
-  };
+
 
   /**
    * CgNode destructs all attached meta data when destructed.
@@ -138,14 +143,6 @@ class CgNode {
   CgNode& operator=(CgNode other) = delete;
   CgNode& operator=(const CgNode& other) = delete;
   CgNode& operator=(CgNode&& other) = delete;
-  bool operator==(const CgNode& otherNode) const;
-
-  /**
-   * Compares the function for equality by their node id.
-   * @param otherNode
-   * @return
-   */
-  bool isSameFunction(const CgNode& otherNode) const;
 
   /**
    * Compares the function names for equality.
@@ -185,8 +182,9 @@ class CgNode {
     return this->has<OverrideMD>();
   }
 
-  std::string getOrigin() const;
+  std::optional<std::string> getOrigin() const;
 
+  // TODO: Move out of here
   void dumpToDot(std::ofstream& outputStream, int procNum);
 
   void print();
@@ -196,7 +194,7 @@ class CgNode {
    *
    * @return the id of the function node
    */
-  size_t getId() const { return id; }
+  NodeId getId() const { return id; }
 
   friend std::ostream& operator<<(std::ostream& stream, const CgNode& n);
 
@@ -215,11 +213,11 @@ class CgNode {
   void setMetaDataContainer(std::unordered_map<std::string, MetaData*> data) { metaFields = std::move(data); }
 
  private:
-  size_t id = -1;
+  NodeId id = -1;
   std::string functionName;
-  std::string origin;
-  std::unordered_map<std::string, MetaData*> metaFields;
+  std::optional<std::string> origin;
   bool hasBody;
+  std::unordered_map<std::string, MetaData*> metaFields;
 };
 
 }  // namespace metacg

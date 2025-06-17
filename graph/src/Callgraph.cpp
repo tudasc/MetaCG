@@ -23,8 +23,8 @@ CgNode* Callgraph::getMain() {
   return nullptr;
 }
 
-size_t Callgraph::insert(const std::string& nodeName, const std::string& origin) {
-  return insert(std::make_unique<CgNode>(nodeName, origin));
+size_t Callgraph::insert(const std::string& nodeName) {
+  return insert(std::make_unique<CgNode>(nodeName));
 }
 
 /**

@@ -19,27 +19,33 @@ struct std::hash<std::pair<size_t, size_t>> {
   }
 };
 namespace metacg {
+
+using CgNodePtr = std::unique_ptr<metacg::CgNode>;  // hopefully this typedef helps readability
+using CgNodeRawPtrUSet = std::unordered_set<metacg::CgNode*>;
+
 class Callgraph {
  public:
   // TODO: Can NodeContainer be a set if nameIdMap maps to CgNodePtr?
-  using NodeContainer = std::unordered_map<size_t, CgNodePtr>;
-  using NameIdMap = std::unordered_map<std::string, size_t>;
+  using NodeContainer = std::vector<CgNodePtr>;
+  using NodeList = std::vector<NodeId>;
+
+  using NameIdMap = std::unordered_map<std::string, NodeList>;
+
   using NamedMetadata = std::unordered_map<std::string, MetaData*>;
-  using EdgeContainer = std::unordered_map<std::pair<size_t, size_t>, NamedMetadata>;
-  using CallerList = std::unordered_map<size_t, std::vector<size_t>>;
-  using CalleeList = std::unordered_map<size_t, std::vector<size_t>>;
+  using EdgeContainer = std::unordered_map<std::pair<NodeId, NodeId>, NamedMetadata>;
+  using CallerList = std::unordered_map<NodeId, NodeList>;
+  using CalleeList = std::unordered_map<NodeId, NodeList>;
 
   Callgraph()
       : nodes(),
         nameIdMap(),
         edges(),
-        mainNode(nullptr),
-        empiricalCollisionCounting(util::readBooleanEnvVar("METACG_EMPIRICAL_COLLISION_TRACKING", false)) {}
+        mainNode(nullptr) {}
 
   /**
    * Destructor. Prints call graph stats.
    */
-  ~Callgraph() { dumpCGStats(); }
+  ~Callgraph() = default;
 
   Callgraph(const Callgraph& other) = delete;             // No copy constructor
   Callgraph& operator=(const Callgraph& other) = delete;  // No copy assign constructor
@@ -54,29 +60,19 @@ class Callgraph {
   CgNode* getMain();
 
   /**
-   * Inserts an edge from parentName to childName
-   * @param parentName function name of calling function
-   * @param childName function name of called function
-   */
-  void addEdge(const std::string& parentName, const std::string& childName);
-
-  /**
    * Inserts an edge from parentNode to childNode
    * @param parentNode function node of calling function
    * @param childNode function node of called function
    */
   void addEdge(const CgNode& parentNode, const CgNode& childNode);
 
-  void addEdge(size_t parentID, size_t childID);
+  void addEdge(NodeId parentID, NodeId childID);
 
-  void addEdge(const CgNode* parent, const CgNode* child);
+  CgNode& insert(std::string function, std::optional<std::string> origin = {}, bool isVirtual = false,
+                 bool hasBody = false) {
+    // TODO: Create node
+  }
 
-  /**
-   * Inserts a new node and sets it as the 'main' function if its name is main or _Z4main or _ZSt4mainiPPc
-   * @param node
-   */
-  size_t insert(CgNodePtr node);
-  size_t insert(const std::string& nodeName, const std::string& origin = "unknownOrigin");
 
   /**
    * Returns the node with the given name\n
@@ -84,7 +80,7 @@ class Callgraph {
    * @param name to identify the node by
    * @return CgNodePtr to the identified node
    */
-  CgNode* getOrInsertNode(const std::string& name, const std::string& origin = "unknownOrigin");
+  CgNode* getOrInsertNode(const std::string& name);
 
   /**
    * Merges the given call graph into this one.
@@ -105,37 +101,43 @@ class Callgraph {
    */
   bool hasNode(const std::string& name) const;
 
+  unsigned countNodes(const std::string& name) const;
+
   /**
    * @brief hasNode checks whether a node exists in the graph mapping
-   * @param node
+   * @param name
    * @return true iff exists, false otherwise
    */
-  bool hasNode(const CgNode& n) const;
-  bool hasNode(const CgNode* n) const;
-  bool hasNode(const size_t n) const;
+  bool hasNode(const std::string& name) const;
+
 
   /**
    * @brief getNode searches the node in the graph and returns it
    * @param name
    * @return node for function with name - nullptr otherwise
    */
-  CgNode* getNode(const std::string& name) const;
-  CgNode* getNode(size_t id) const;
+  CgNode* getFirstNode(const std::string& name) const;
+  const NodeList& getNodes(const std::string& name) const;
 
-  bool existEdgeFromTo(const CgNode& source, const CgNode& target) const;
-  bool existEdgeFromTo(const CgNode* source, const CgNode*& target) const;
-  bool existEdgeFromTo(size_t source, size_t target) const;
-  bool existEdgeFromTo(const std::string& source, const std::string& target) const;
+  CgNode* getNode(NodeId id) const;
+
+
+  bool existsEdge(const CgNode& source, const CgNode& target) const;
+  bool existsEdge(NodeId source, NodeId target) const;
+
+  /**
+   *
+   * @param source
+   * @param target
+   * @return True if there is an edge from any node with name `source` to any node with name `target`.
+   */
+  bool existsAnyEdge(const std::string& source, const std::string& target) const;
 
   CgNodeRawPtrUSet getCallees(const CgNode& node) const;
-  CgNodeRawPtrUSet getCallees(const CgNode* node) const;
-  CgNodeRawPtrUSet getCallees(size_t node) const;
-  CgNodeRawPtrUSet getCallees(const std::string& node) const;
+  CgNodeRawPtrUSet getCallees(NodeId node) const;
 
   CgNodeRawPtrUSet getCallers(const CgNode& node) const;
-  CgNodeRawPtrUSet getCallers(const CgNode* node) const;
-  CgNodeRawPtrUSet getCallers(size_t node) const;
-  CgNodeRawPtrUSet getCallers(const std::string& node) const;
+  CgNodeRawPtrUSet getCallers(NodeId node) const;
 
   size_t size() const;
 
@@ -152,66 +154,38 @@ class Callgraph {
   void addEdgeMetaData(const CgNode& func1, const CgNode& func2, T* md) {
     addEdgeMetaData({func1.getId(), func2.getId()}, md);
   }
+
   template <class T>
-  void addEdgeMetaData(const CgNode* func1, const CgNode* func2, T* md) {
-    addEdgeMetaData({func1->getId(), func2->getId()}, md);
-  }
-  template <class T>
-  void addEdgeMetaData(const std::pair<size_t, size_t> id, T* md) {
+  void addEdgeMetaData(const std::pair<NodeId, NodeId> id, T* md) {
     edges.at(id)[T::key] = md;
-  }
-  template <class T>
-  void addEdgeMetaData(const std::string& func1, const std::string& func2, T* md) {
-    addEdgeMetaData({nameIdMap.at(func1), nameIdMap.at(func2)}, md);
   }
 
   MetaData* getEdgeMetaData(const CgNode& func1, const CgNode& func2, const std::string& metadataName) const;
-  MetaData* getEdgeMetaData(const CgNode* func1, const CgNode* func2, const std::string& metadataName) const;
-  MetaData* getEdgeMetaData(const std::pair<size_t, size_t> id, const std::string& metadataName) const;
-  MetaData* getEdgeMetaData(const std::string& func1, const std::string& func2, const std::string& metadataName) const;
+  MetaData* getEdgeMetaData(const std::pair<NodeId, NodeId> id, const std::string& metadataName) const;
 
   template <class T>
   T* getEdgeMetaData(const CgNode& func1, const CgNode& func2) {
     return getEdgeMetaData<T>({func1.getId(), func2.getId()});
   }
+
   template <class T>
-  T* getEdgeMetaData(const CgNode* func1, const CgNode* func2) {
-    return getEdgeMetaData<T>({func1->getId(), func2->getId()});
-  }
-  template <class T>
-  T* getEdgeMetaData(const std::pair<size_t, size_t> id) {
+  T* getEdgeMetaData(const std::pair<NodeId, NodeId> id) {
     return static_cast<T>(edges.at(id).at(T::key));
-  }
-  template <class T>
-  T* getEdgeMetaData(const std::string& func1, const std::string& func2) {
-    return getEdgeMetaData<T>({nameIdMap.at(func1), nameIdMap.at(func2)});
   }
 
   const NamedMetadata& getAllEdgeMetaData(const CgNode& func1, const CgNode& func2) const;
-  const NamedMetadata& getAllEdgeMetaData(const CgNode* func1, const CgNode* func2) const;
-  const NamedMetadata& getAllEdgeMetaData(const std::pair<size_t, size_t> id) const;
-  const NamedMetadata& getAllEdgeMetaData(const std::string& func1, const std::string& func2) const;
+  const NamedMetadata& getAllEdgeMetaData(const std::pair<NodeId, NodeId> id) const;
 
   bool hasEdgeMetaData(const CgNode& func1, const CgNode& func2, const std::string& metadataName) const;
-  bool hasEdgeMetaData(const CgNode* func1, const CgNode* func2, const std::string& metadataName) const;
-  bool hasEdgeMetaData(const std::pair<size_t, size_t> id, const std::string& metadataName) const;
-  bool hasEdgeMetaData(const std::string& func1, const std::string& func2, const std::string& metadataName) const;
+  bool hasEdgeMetaData(const std::pair<NodeId, NodeId> id, const std::string& metadataName) const;
 
   template <class T>
   bool hasEdgeMetaData(const CgNode& func1, const CgNode& func2) const {
     return hasEdgeMetaData<T>({func1.getId(), func2.getId()});
   }
   template <class T>
-  bool hasEdgeMetaData(const CgNode* func1, const CgNode* func2) const {
-    return hasEdgeMetaData<T>({func1->getId(), func2->getId()});
-  }
-  template <class T>
-  bool hasEdgeMetaData(const std::pair<size_t, size_t> id) const {
+  bool hasEdgeMetaData(const std::pair<NodeId, NodeId> id) const {
     return edges.at(id).find(T::key) != edges.at(id).end();
-  }
-  template <class T>
-  bool hasEdgeMetaData(const std::string& func1, const std::string& func2) const {
-    return hasEdgeMetaData<T>({nameIdMap.at(func1), nameIdMap.at(func2)});
   }
 
   void dumpCGStats() const;
