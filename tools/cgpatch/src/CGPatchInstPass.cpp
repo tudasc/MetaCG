@@ -66,10 +66,10 @@ void instrumentIndirectCalls(Module& M) {
         if (CT == CallType::Unknown)
           continue;
 
-        auto calledFunction = CB->getCalledFunction();
         if (isDirect(CT)) {  // Direct call
           // Instrument constructors & destructors if option is enabled
           if (instrumentCtorsDtors) {
+            auto calledFunction = CB->getCalledFunction();
             // Setup demangler's internal state to work on the called function name
             demangler.partialDemangle(calledFunction->getName().str().c_str());
             if (demangler.isCtorOrDtor()) {  // constructor call
