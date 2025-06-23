@@ -47,7 +47,7 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DPYTEST_EXECUTABLE=/opt/metacg/.venv/bin/pytest \
       -DCMAKE_MODULE_PATH=/opt/metacg/.venv/share/Pytest/cmake \
       -DMETACG_BUILD_PYMETACG_TESTS=ON \
-      -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+      -DCMAKE_VERBOSE_MAKEFILE=ON \
 	  -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-18/build/utils/lit/lit.py 
 
 #RUN cmake --build build --parallel
