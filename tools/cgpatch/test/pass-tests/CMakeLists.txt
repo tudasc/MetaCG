@@ -12,19 +12,6 @@ function(
   )
 endfunction()
 
-set(CGPATCHCXX_EXE "${CMAKE_INSTALL_PREFIX}/bin/patchcxx")
-set(TEST_CPP_ARGS "-O0")
-configure_lit_site_cfg(${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/lit_O0.site.cfg)
-
-set(TEST_CPP_ARGS "-O0 -flto=thin -fwhole-program-vtables")
-configure_lit_site_cfg(${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/lit_O0_lto.site.cfg)
-
-set(TEST_CPP_ARGS "-O2")
-configure_lit_site_cfg(${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/lit_O2.site.cfg)
-
-set(TEST_CPP_ARGS "-O2 -flto=thin -fwhole-program-vtables")
-configure_lit_site_cfg(${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/lit_O2_lto.site.cfg)
-
 function(
   find_llvm_progs
   target
@@ -133,6 +120,19 @@ find_llvm_progs(
   /opt/local/bin
   ABORT_IF_MISSING
 )
+
+set(CGPATCHCXX_EXE "${CMAKE_INSTALL_PREFIX}/bin/patchcxx")
+set(TEST_CPP_ARGS "-O0")
+configure_lit_site_cfg(${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/lit_O0.site.cfg)
+
+set(TEST_CPP_ARGS "-O0 -flto=thin -fwhole-program-vtables")
+configure_lit_site_cfg(${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/lit_O0_lto.site.cfg)
+
+set(TEST_CPP_ARGS "-O2")
+configure_lit_site_cfg(${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/lit_O2.site.cfg)
+
+set(TEST_CPP_ARGS "-O2 -flto=thin -fwhole-program-vtables")
+configure_lit_site_cfg(${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/lit_O2_lto.site.cfg)
 
 add_lit_testsuite(
   pass-tests
