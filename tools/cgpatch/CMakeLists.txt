@@ -1,6 +1,11 @@
 project(CGPatch)
 
 # LLVM
+option(
+  USE_FNO_RTTI
+  "Disable RTTI if LLVM doesn't use it"
+  ON
+)
 if(NOT LLVM_ENABLE_RTTI)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 endif()
@@ -16,6 +21,14 @@ add_library(cgpatch-inst-pass SHARED src/CGPatchInstPass.cpp)
 
 target_link_libraries(cgpatch-inst-pass PRIVATE cgpatch-call-analysis ${llvm_libs})
 target_include_directories(cgpatch-inst-pass PRIVATE include ${LLVM_INCLUDE_DIRS})
+
+# Apply compile flags per target
+foreach(tgt cgpatch-call-analysis cgpatch-inst-pass)
+  target_compile_options(${tgt} PRIVATE -fPIC)
+  if(NOT LLVM_ENABLE_RTTI)
+    target_compile_options(${tgt} PRIVATE -fno-rtti)
+  endif()
+endforeach()
 
 add_metacg(cgpatch-inst-pass)
 add_spdlog_libraries(cgpatch-inst-pass)
