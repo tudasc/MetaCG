@@ -39,7 +39,6 @@ void insertMetaCGCall(Instruction& ins, Function& f, Value* calledOperand, Funct
 // Instrumentation
 void instrumentIndirectCalls(Module& M) {
   ItaniumPartialDemangler demangler;
-  nlohmann::json j;
 
   // Counter variables
   int indirectCallCount{0};
