@@ -113,7 +113,7 @@ void printCallTypeInfo(CallType CT, llvm::CallBase* CB) {
       llvm::outs() << "Call type is unknown: " << *CB << "\n";
       break;
     default:
-      break;
+      assert(false);
   }
 }
 
