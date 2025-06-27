@@ -6,11 +6,6 @@ option(
   "Disable RTTI if LLVM doesn't use it"
   ON
 )
-if(NOT LLVM_ENABLE_RTTI)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
-endif()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 add_library(cgpatch-call-analysis STATIC src/CallAnalysis.cpp)
 target_link_libraries(cgpatch-call-analysis PUBLIC ${llvm_libs})
