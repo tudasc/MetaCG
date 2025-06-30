@@ -11,10 +11,4 @@ tools/cgpatch/test/pass-tests/vcall-detection-test/*.s
 .idea/
 build*/
 .cache/
-cmake-build-debug*/
-cmake-build-debug-metacg-container/
-cmake-build-debug-metacg-container-debug/
-cmake-build-debug-metacg-container-release/
-cgcollector/test/cgpatch/Output/*
-
-cgcollector/test/cgpatch/.lit_test_times.txt
+cmake-build*/
