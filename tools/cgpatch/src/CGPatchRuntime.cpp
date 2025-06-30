@@ -50,6 +50,7 @@ void initializeGlobalCallgraph() {
 
 void finalizeGlobalCallgraph() {
   // Write Callgraph to file
+  // TODO: allow user to set format version
   metacg::graph::MCGManager& mcgManager = metacg::graph::MCGManager::get();
   if (shouldWrite) {
     metacg::io::VersionTwoMCGWriter mcgWriter;
