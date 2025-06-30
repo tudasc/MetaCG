@@ -7,8 +7,6 @@ option(
   ON
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-
 add_library(cgpatch-call-analysis STATIC src/CallAnalysis.cpp)
 target_link_libraries(cgpatch-call-analysis PUBLIC ${llvm_libs})
 target_include_directories(cgpatch-call-analysis PRIVATE include ${LLVM_INCLUDE_DIRS})
