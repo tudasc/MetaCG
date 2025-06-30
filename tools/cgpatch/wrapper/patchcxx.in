@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+LLVM_FLAGS=`llvm-config --cxxflags --ldflags --libs --system-libs`
+LIB_DIR=@METACG_INSTALL_DIR@/lib/
+INST_PASS=@METACG_INSTALL_DIR@/lib/libcgpatch-inst-pass.so
+
+# Check if linking is enabled
+linking=yes
+for arg in "$@" ; do
+    case "$arg" in
+    	-c|-S|-E|-M|-MM|-MMD)
+          linking=no
+    	    ;;
+    esac
+done
+
+INST_FLAGS=" -Xclang -load -Xclang $INST_PASS -fpass-plugin=$INST_PASS"
+INST_FLAGS_LINK=""
+
+require_full_lto=0
+add_inst_pass=1 # enabled by default
+
+ARGS=()
+#Command option
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -shared | --shared)
+            echo "shared libraries are not supported"
+            exit 1
+            ;;
+        --instrument-ctors-dtors | -instrument-ctors-dtors)
+            INST_FLAGS+=" -mllvm -instrument-ctors-dtors"
+            ;;
+        --verbose)
+            INST_FLAGS+=" -mllvm -cgpatch-verbose"
+            INST_LINK_FLAGS+=" -Wl,-mllvm=-cgpatch-verbose"
+            ;;
+        *)
+            ARGS+=("$1")
+            ;;
+    esac
+    shift
+done
+
+set -- "${ARGS[@]}"  #  resets the positional parameters ($@) with the values stored in ARGS.
+
+CLI_FLAGS=" -fwhole-program-vtables"
+CLI_FLAGS_LINK=" -fuse-ld=lld"
+
+if [[ "$require_full_lto" == 1 ]]; then
+  CLI_FLAGS+=" -flto=full"
+else
+  CLI_FLAGS+=" -flto=thin"
+fi
+
+if [[ "$add_inst_pass" == 1 ]]; then
+  CLI_FLAGS+=" $INST_FLAGS"
+  CLI_FLAGS_LINK+=" $INST_FLAGS_LINK"
+fi
+
+# set first argument as compiler
+COMPILER=$1;
+shift
+
+if [[ "$linking" == yes ]]
+then
+  echo "[patchcxx] Linking"
+  #echo "[patchcxx] Executing: $COMPILER $CLI_FLAGS $CLI_FLAGS_LINK $@ -L@METACG_INSTALL_DIR@/lib64 -lmetacg -Wl,-whole-archive $RUNTIME -Wl,-no-whole-archive -Wl,--rpath,@GRAPH_LIB@ $LLVM_FLAGS"
+  LD_LIBRARY_PATH="$LIB_DIR:$LD_LIBRARY_PATH" $COMPILER $CLI_FLAGS $CLI_FLAGS_LINK "$@" $LLVM_FLAGS
+else
+  echo "[patchcxx] Compiling"
+  LD_LIBRARY_PATH="$LIB_DIR:$LD_LIBRARY_PATH" $COMPILER $CLI_FLAGS "$@"
+fi

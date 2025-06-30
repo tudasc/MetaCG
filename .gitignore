@@ -3,6 +3,10 @@ build/
 install/
 extern/
 .venv/
+tools/cgpatch/test/pass-tests/*/Output
+tools/cgpatch/test/pass-tests/.lit_test_times.txt
+tools/cgpatch/test/pass-tests/vcall-detection-test/*.s
+
 
 .idea/
 .cache/
