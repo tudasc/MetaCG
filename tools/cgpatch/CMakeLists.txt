@@ -16,7 +16,7 @@ target_include_directories(cgpatch-call-analysis PRIVATE include)
 
 # Create Libraries
 add_library(cgpatch-inst-pass SHARED src/CGPatchInstPass.cpp)
-add_library(cgpatch-runtime STATIC src/cgpatch-runtime.cpp src/SymbolRetriever/SymbolRetriever.cpp)
+add_library(cgpatch-runtime STATIC src/CGPatchRuntime.cpp src/SymbolRetriever/SymbolRetriever.cpp)
 
 target_link_libraries(cgpatch-inst-pass PRIVATE cgpatch-call-analysis ${llvm_libs})
 target_include_directories(cgpatch-inst-pass PRIVATE include ${LLVM_INCLUDE_DIRS})

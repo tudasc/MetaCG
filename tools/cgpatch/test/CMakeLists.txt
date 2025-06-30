@@ -4,7 +4,7 @@ set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 add_executable(cgtester CGTester.cpp)
 
 add_json(cgtester)
-default_compile_options(cgtester)
+# default_compile_options(cgtester)
 
 install(
   TARGETS cgtester

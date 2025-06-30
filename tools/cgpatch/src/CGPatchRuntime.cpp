@@ -1,5 +1,5 @@
 /**
- * File: cgpatch-runtime.cpp
+ * File: CGPatchRuntime.cpp
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
@@ -130,15 +130,6 @@ extern "C" void __metacg_indirect_call(const char* name, void* address) {
 }
 
 #if USE_MPI == 1
-// Overwrite MPI_Finalize using PMPI interface
-/*
-extern "C" int MPI_Comm_rank(void*, int*) __attribute__((weak));
-extern "C" int MPI_Comm_size(void*, int*) __attribute__((weak));
-extern "C" void* MPI_COMM_WORLD __attribute__((weak));
-extern "C" int MPI_Barrier(void*) __attribute__((weak));
-extern "C" int PMPI_Finalize(void) __attribute__((weak));
-extern "C" int MPI_Abort(void*, int) __attribute__((weak));
-*/
 
 extern "C" int MPI_Finalize(void) {
   metacg::graph::MCGManager& mcgManager = metacg::graph::MCGManager::get();
