@@ -43,7 +43,7 @@ using MappedSymTableMap = std::map<uintptr_t, MappedSymTable>;
  */
 MappedSymTableMap loadMappedSymTables(const std::string& execFile, bool printDebug = false);
 
-SymbolTable loadSymbolTable(const std::string& object_file);
+SymbolTable loadSymbolTable(const std::string& objectFile);
 /**
  * Loads symbols from the executable and all shared library dependencies.
  * @param execFile

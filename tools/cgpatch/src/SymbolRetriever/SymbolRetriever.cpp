@@ -82,7 +82,7 @@ std::vector<MemMapEntry> readMemoryMap() {
 
   entries.reserve(1024);
 
-  std::ifstream memory_map("/proc/self/maps");
+  std::ifstream memoryMap("/proc/self/maps");
   if (!memory_map.is_open()) {
     console->info("Could not load memory map.");
     return entries;

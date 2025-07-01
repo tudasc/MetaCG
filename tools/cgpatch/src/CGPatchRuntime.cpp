@@ -118,7 +118,7 @@ extern "C" void __metacg_indirect_call(const char* name, void* address) {
     const auto caller = globalCallgraph->getOrInsertNode(name);
     const auto callee = globalCallgraph->getOrInsertNode(symbol);
 
-    // set hasBody to true so they call-graphs can be fully merged
+    // set hasBody to true so the call-graphs can be fully merged
     caller->setHasBody(true);
     callee->setHasBody(true);
 
@@ -147,12 +147,12 @@ extern "C" int MPI_Finalize(void) {
     nlohmann::json j = jsonSink.getJson();
 
     // Send all call-graphs to rank 0
-    std::string json_str = j.dump();
+    std::string jsonStr = j.dump();
     MPI_Send(json_str.data(), json_str.size(), MPI_CHAR, 0, 0, MPI_COMM_WORLD);
   } else if (rank == 0) {
     shouldWrite = true;
     MPI_Status status;
-    int msg_size;
+    int msgSize;
 
     for (int i = 1; i < size; i++) {
       // Probe for incoming message
