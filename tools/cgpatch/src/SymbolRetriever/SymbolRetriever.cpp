@@ -83,10 +83,8 @@ std::vector<MemMapEntry> readMemoryMap() {
   entries.reserve(1024);
 
   std::ifstream memoryMap("/proc/self/maps");
-  if (!memory_map.is_open()) {
+  if (!memoryMap.is_open()) {
     console->debug("Could not load memory map.");
-
-    console->debug
     return entries;
   }
 
@@ -98,7 +96,7 @@ std::vector<MemMapEntry> readMemoryMap() {
   std::string path;
 
   std::string line;
-  while (std::getline(memory_map, line)) {
+  while (std::getline(memoryMap, line)) {
     std::istringstream lineStream(line);
     lineStream >> addrRange >> perms >> std::hex >> offset >> std::dec >> dev >> inode >> path;
 
@@ -114,7 +112,7 @@ std::vector<MemMapEntry> readMemoryMap() {
   }
 
   entries.shrink_to_fit();
-  memory_map.close();
+  memoryMap.close();
   return entries;
 }
 
@@ -185,7 +183,7 @@ SymbolTable loadSymbolTable(const std::string& object_file) {
   pclose(output);
 
   if (table.empty()) {
-    console->info("Unable to resolve symbol names for binary {}", object_file);
+    errConsole->error("Unable to resolve symbol names for binary {}", object_file);
   }
 
   return table;
@@ -268,8 +266,7 @@ MappedSymTableMap loadMappedSymTables(const std::string& execFile, bool printDeb
     auto& filename = entry.path;
     auto table = loadSymbolTable(filename);
     if (table.empty()) {
-      console->info("Could not load symbols from {}", filename);
-
+      console->error("Could not load symbols from {}", filename);
       continue;
     }
 

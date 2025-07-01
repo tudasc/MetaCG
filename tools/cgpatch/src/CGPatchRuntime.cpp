@@ -104,8 +104,8 @@ extern "C" void __metacg_indirect_call(const char* name, void* address) {
   initializeGlobalCallgraph();
 
   // resolve name
-  if (symTables.empty()) {  // Loads symTables if symTables is not initialized yet. This potentially runs before the
-                            // static constructor
+  // Loads symTables if symTables is not initialized yet. This potentially runs before the static constructor
+  if (symTables.empty()) {
     symTables = loadMappedSymTables(getExecPath());
   }
 
@@ -150,7 +150,7 @@ extern "C" int MPI_Finalize(void) {
 
     // Send all call-graphs to rank 0
     std::string jsonStr = j.dump();
-    MPI_Send(json_str.data(), json_str.size(), MPI_CHAR, 0, 0, MPI_COMM_WORLD);
+    MPI_Send(jsonStr.data(), jsonStr.size(), MPI_CHAR, 0, 0, MPI_COMM_WORLD);
   } else if (rank == 0) {
     shouldWrite = true;
     MPI_Status status;
@@ -161,15 +161,15 @@ extern "C" int MPI_Finalize(void) {
       MPI_Probe(i, 0, MPI_COMM_WORLD, &status);
 
       // Get size of incoming message
-      MPI_Get_count(&status, MPI_CHAR, &msg_size);
+      MPI_Get_count(&status, MPI_CHAR, &msgSize);
 
       // Allocate buffer & receive message
-      std::vector<char> buffer(msg_size);
-      MPI_Recv(buffer.data(), msg_size, MPI_CHAR, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      std::vector<char> buffer(msgSize);
+      MPI_Recv(buffer.data(), msgSize, MPI_CHAR, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
       // Deserialize call-graph and add to mcgManager
-      std::string json_str(buffer.begin(), buffer.end());
-      nlohmann::json j = nlohmann::json::parse(json_str);
+      std::string jsonStr(buffer.begin(), buffer.end());
+      nlohmann::json j = nlohmann::json::parse(jsonStr);
       metacg::io::JsonSource jsonSource(j);
       metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
 
@@ -178,7 +178,6 @@ extern "C" int MPI_Finalize(void) {
 
     mcgManager.mergeIntoActiveGraph();
   }
-
   return PMPI_Finalize();
 }
 
