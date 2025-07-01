@@ -13,14 +13,16 @@ RUN apt-get update -y && \
         python3-pip python3-venv \
         openmpi-bin openmpi-common bison flex bear \
         lsb-release wget software-properties-common \
-        python3-matplotlib python3-pyqt5 ninja-build
+        python3-matplotlib python3-pyqt5 ninja-build \
+		libopenmpi-dev libhwloc-dev libevent-dev
 
 RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc && \
     add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-18 main' && \
     add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-18 main' && \
     apt-get update && \
     apt-get install -y libllvm18 llvm-18 llvm-18-dev llvm-18-runtime \
-        clang-18 clang-tools-18 libclang-common-18-dev libclang-18-dev libclang1-18
+        clang-18 clang-tools-18 libclang-common-18-dev libclang-18-dev libclang1-18 \
+		lld-18
 RUN bash -c "ln -s $(which clang-18) /usr/bin/clang" && \
     bash -c "ln -s $(which clang++-18) /usr/bin/clang++" && \
     bash -c "ln -s $(which llvm-config-18) /usr/bin/llvm-config"
@@ -51,7 +53,7 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_VERBOSE_MAKEFILE=ON \
 	  -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-18/build/utils/lit/lit.py 
 
-#RUN cmake --build build --parallel
+RUN cmake --build build --parallel
 
-#RUN cmake --install build
+RUN cmake --install build
 
