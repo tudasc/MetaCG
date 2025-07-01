@@ -111,6 +111,9 @@ option(
   OFF
 )
 if(METACG_BUILD_CGPATCH)
+  if(NOT METACG_BUILD_GRAPH_TOOLS)
+    message(FATAL_ERROR "CGPatch requires to build with METACG_BUILD_GRAPH_TOOLS=ON")
+  endif()
   if(${LLVM_PACKAGE_VERSION}
      GREATER
      14

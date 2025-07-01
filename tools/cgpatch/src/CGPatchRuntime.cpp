@@ -17,7 +17,6 @@
 #endif
 // applications do not require mpi.
 #include <fstream>
-#include <llvm/Support/JSON.h>
 #include <unordered_map>
 #include <unordered_set>
 

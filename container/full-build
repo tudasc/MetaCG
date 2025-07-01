@@ -41,6 +41,7 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DEXTRAP_LIB=$EXTINSTALLDIR/extrap/lib \
       -DMETACG_BUILD_PGIS=ON \
       -DMETACG_BUILD_CGCOLLECTOR=ON \
+	  -DMETACG_BUILD_GRAPH_TOOLS=ON \
       -DMETACG_BUILD_CGPATCH=ON \
       -DMETACG_BUILD_PYMETACG=ON \
       -DPython_ROOT_DIR=/opt/metacg/.venv \
@@ -50,7 +51,7 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_VERBOSE_MAKEFILE=ON \
 	  -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-18/build/utils/lit/lit.py 
 
-RUN cmake --build build --parallel
+#RUN cmake --build build --parallel
 
-RUN cmake --install build
+#RUN cmake --install build
 
