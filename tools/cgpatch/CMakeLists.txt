@@ -10,7 +10,6 @@ option(
 add_library(cgpatch-call-analysis STATIC src/CallAnalysis.cpp)
 target_link_libraries(cgpatch-call-analysis PUBLIC ${llvm_libs})
 target_include_directories(cgpatch-call-analysis PRIVATE include ${LLVM_INCLUDE_DIRS})
-target_include_directories(cgpatch-call-analysis PRIVATE include)
 
 # Create Libraries
 add_library(cgpatch-inst-pass SHARED src/CGPatchInstPass.cpp)
@@ -40,7 +39,6 @@ add_json(cgpatch-runtime)
 add_metacg(cgpatch-inst-pass)
 
 install(TARGETS cgpatch-inst-pass cgpatch-runtime LIBRARY DESTINATION lib)
-install(TARGETS cgpatch-inst-pass LIBRARY DESTINATION lib)
 
 add_subdirectory(wrapper)
 add_subdirectory(test)
