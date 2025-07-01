@@ -84,7 +84,9 @@ std::vector<MemMapEntry> readMemoryMap() {
 
   std::ifstream memoryMap("/proc/self/maps");
   if (!memory_map.is_open()) {
-    console->info("Could not load memory map.");
+    console->debug("Could not load memory map.");
+
+    console->debug
     return entries;
   }
 
@@ -127,7 +129,7 @@ std::vector<std::string> readSharedObjectDependencies(const std::string& exec_fi
   char buffer[256];
   FILE* output = popen(command.c_str(), "r");
   if (!output) {
-    console->info("Could not execute ldd.");
+    errConsole->error("Could not execute ldd.");
     return {};
   }
 
@@ -160,7 +162,7 @@ SymbolTable loadSymbolTable(const std::string& object_file) {
   char buffer[256] = {0};
   FILE* output = popen(command.c_str(), "r");
   if (!output) {
-    console->info("Unable to execute nm to resolve symbol names.");
+    errConsole->error("Unable to execute nm to resolve symbol names.");
     return {};
   }
 
@@ -200,7 +202,7 @@ std::string getELFType(const std::string& object_file) {
   char buffer[256] = {0};
   FILE* output = popen(command.c_str(), "r");
   if (!output) {
-    console->info("Unable to execute llvm-readelf.");
+    errConsole->error("Unable to execute llvm-readelf.");
     return {};
   }
 
@@ -211,7 +213,7 @@ std::string getELFType(const std::string& object_file) {
     std::istringstream line(buffer);
     line >> desc >> type;
   } else {
-    console->info("Output buffer is empty.");
+    console->debug("Output buffer is empty.");
   }
   return type;
 }
@@ -257,7 +259,7 @@ MappedSymTableMap loadMappedSymTables(const std::string& execFile, bool printDeb
 
   if (printDebug) {
     auto elfType = getELFType(execFile);
-    errConsole->error("ELF type: {}", elfType);
+    errConsole->debug("ELF type: {}", elfType);
   }
 
   // Load symbols from executable and shared libs
@@ -272,9 +274,9 @@ MappedSymTableMap loadMappedSymTables(const std::string& execFile, bool printDeb
     }
 
     if (printDebug) {
-      errConsole->error("Loaded {} symbols from {}.", table.size(), filename);
-      errConsole->error("Starting address: 0x{}{}", std::hex, entry.addrBegin);
-      errConsole->error(" > Offset: 0x{}{}", entry.offset, std::dec);
+      console->debug("Loaded {} symbols from {}.", table.size(), filename);
+      console->debug("Starting address: 0x{}{}", std::hex, entry.addrBegin);
+      console->debug(" > Offset: 0x{}{}", entry.offset, std::dec);
     }
     MappedSymTable mappedTable{std::move(table), entry};
     addrToSymTable[entry.addrBegin] = mappedTable;

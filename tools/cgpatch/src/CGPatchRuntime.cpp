@@ -73,7 +73,9 @@ void finalizeGlobalCallgraph() {
 
 // Struct responsible for initialization and finalization of the patch-graph
 struct ValidatorInitializer {
-  ValidatorInitializer() { initializeGlobalCallgraph(); }
+  ValidatorInitializer() {
+    initializeGlobalCallgraph();
+  }
 
   ValidatorInitializer(const ValidatorInitializer&) = delete;
   ValidatorInitializer& operator=(const ValidatorInitializer&) = delete;
