@@ -9,7 +9,6 @@
 
 // clang-format off
 // Graph library
-#include "CgNodePtr.h"
 #include "CgNode.h"
 #include "Utility.h"
 #include "metadata/MetaData.h"

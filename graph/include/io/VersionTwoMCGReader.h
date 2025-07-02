@@ -20,7 +20,7 @@ class VersionTwoMetaCGReader : public metacg::io::MetaCGReader {
  public:
   explicit VersionTwoMetaCGReader(metacg::io::ReaderSource& source) : MetaCGReader(source) {}
   std::unique_ptr<Callgraph> read() override;
-  static void upgradeV2FormatToV3Format(nlohmann::json& j);
+  static void upgradeV2FormatToV4Format(nlohmann::json& j);
 };
 
 }  // end namespace metacg::io

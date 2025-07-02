@@ -5,19 +5,31 @@
  */
 
 #include "io/VersionTwoMCGWriter.h"
+#include "io/VersionFourMCGWriter.h"
 #include "MCGManager.h"
 #include "metadata/OverrideMD.h"
 #include <set>
 
+using namespace metacg;
+
 void metacg::io::VersionTwoMCGWriter::write(const metacg::Callgraph* cg, metacg::io::JsonSink& js) {
   nlohmann::json j;
   attachMCGFormatHeader(j);
-  j.at(fileInfo.formatInfo.cgFieldName) = *cg;
-  downgradeV3FormatToV2Format(j);
+
+  io::JsonSink v4JsonSink;
+  io::VersionFourMCGWriter v4Writer;
+  v4Writer.write(cg, v4JsonSink);
+
+  auto v4Json = v4JsonSink.getJson();
+  auto& jsonCG = v4Json["_CG"];
+
+  downgradeV4FormatToV2Format(jsonCG);
+
+  j.at(fileInfo.formatInfo.cgFieldName) = jsonCG;
   js.setJson(j);
 }
 
-void metacg::io::VersionTwoMCGWriter::downgradeV3FormatToV2Format(nlohmann::json& j) {
+void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json& j) {
   auto& cg = j.at("_CG");
 
   // rebuild caller callee maps
@@ -27,6 +39,7 @@ void metacg::io::VersionTwoMCGWriter::downgradeV3FormatToV2Format(nlohmann::json
 
   // rebuild caller callee maps
   for (auto& node : cg.at("nodes")) {
+
     idNameMap[node.at(0)] = node.at(1).at("functionName");
     node.at(1).erase("functionName");
   }

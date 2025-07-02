@@ -6,8 +6,6 @@
 #ifndef METACG_GRAPH_METADATA_H
 #define METACG_GRAPH_METADATA_H
 
-#include "CgNodePtr.h"
-
 #include "LoggerUtil.h"
 #include "nlohmann/json.hpp"
 
@@ -34,7 +32,7 @@ template <class CRTPBase>
 class MetaDataFactory {
  public:
   template <class... T>
-  static CRTPBase* create(const std::string& s, const nlohmann::json& j) {
+  static std::unique_ptr<CRTPBase> create(const std::string& s, const nlohmann::json& j) {
     if (data().find(s) == data().end()) {
       MCGLogger::instance().getErrConsole()->warn("Could not create: {}, the Metadata is unknown in your application",
                                                   s);
@@ -50,7 +48,7 @@ class MetaDataFactory {
     static bool registerT() {
       MCGLogger::instance().getConsole()->trace("Registering {} \n", T::key);
       const auto name = T::key;
-      MetaDataFactory::data()[name] = [](const nlohmann::json& j) -> CRTPBase* { return new T(j); };
+      MetaDataFactory::data()[name] = [](const nlohmann::json& j) -> std::unique_ptr<CRTPBase> { return std::make_unique<T>(j); };
       return true;
     }
     static bool registered;
@@ -67,7 +65,7 @@ class MetaDataFactory {
     template <class T>
     friend struct Registrar;
   };
-  using FuncType = CRTPBase* (*)(const nlohmann::json&);
+  using FuncType = std::unique_ptr<CRTPBase> (*)(const nlohmann::json&);
   MetaDataFactory() = default;
 
   /**
@@ -105,7 +103,7 @@ struct MetaData : MetaDataFactory<MetaData> {
   virtual nlohmann::json to_json() const = 0;
   virtual const char* getKey() const = 0;
   virtual void merge(const MetaData&) = 0;
-  [[nodiscard]] virtual MetaData* clone() const = 0;
+  [[nodiscard]] virtual std::unique_ptr<MetaData> clone() const = 0;
   virtual ~MetaData() = default;
 };
 

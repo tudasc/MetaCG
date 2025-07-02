@@ -20,7 +20,7 @@ class VersionTwoMCGWriter : public MCGWriter {
 
   void write(const Callgraph* graph, JsonSink& js) override;
 
-  static void downgradeV3FormatToV2Format(nlohmann::json& cg);
+  static void downgradeV4FormatToV2Format(nlohmann::json& cg);
 };
 }  // namespace metacg::io
 

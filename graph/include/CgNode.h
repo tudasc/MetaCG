@@ -9,7 +9,6 @@
 // clang-format off
 // Graph library
 #include "metadata/OverrideMD.h"
-#include "CgNodePtr.h"
 
 // System library
 #include <map>
@@ -20,18 +19,20 @@
 namespace metacg {
 
 class CgNode;
+class Callgraph;
+using CgNodePtr = std::unique_ptr<metacg::CgNode>;
 
 using NodeId = size_t;
 
-
 class CgNode {
+  friend class Callgraph;
  private:
   /**
    * Creates a call graph node for a function with name @function.
    * It should not be used directly, instead construct CgNodePtr values.
    * @param function
    */
-  explicit CgNode(NodeId id, std::string function, std::optional<std::string> origin = {}, bool isVirtual, bool hasBody)
+  explicit CgNode(NodeId id, std::string function, std::optional<std::string> origin, bool isVirtual, bool hasBody)
       : id(id),
         functionName(std::move(function)),
         origin(std::move(origin)),
@@ -51,8 +52,6 @@ class CgNode {
     return metaFields.find(T::key) != metaFields.end();
   }
 
-  inline bool has(const MetaData* const md) const { return metaFields.find(md->getKey()) != metaFields.end(); }
-
   inline bool has(const std::string& metadataName) const { return metaFields.find(metadataName) != metaFields.end(); }
 
   /**
@@ -62,31 +61,35 @@ class CgNode {
    */
   template <typename T>
   inline T* get() const {
-    assert(metaFields.count(T::key) > 0 && "meta field for key must exist");
-    auto val = metaFields.at(T::key);
-    return static_cast<T*>(val);
-  }
-
-  inline MetaData* get(const std::string& metadataName) const {
-    assert(metaFields.count(metadataName) > 0 && "meta field for key must exist");
-    auto val = metaFields.at(metadataName);
-    return val;
-  }
-
-  /**
-   * Checks for attached metadata of type #T
-   * @tparam T
-   * @return tuple: (wasFound, pointerToMetaData)
-   */
-  template <typename T>
-  inline T* checkAndGet() const {
-    if (this->has<T>()) {
-      auto bpd = this->get<T>();
-      assert(bpd && "meta data attached");
-      return bpd;
+//    assert(metaFields.count(T::key) > 0 && "meta field for key must exist");
+    if (auto it = metaFields.find(T::key); it != metaFields.end()) {
+      return static_cast<T*>(it->second.get());
     }
     return nullptr;
   }
+
+  inline MetaData* get(const std::string& metadataName) const {
+//    assert(metaFields.count(metadataName) > 0 && "meta field for key must exist");
+    if (auto it = metaFields.find(metadataName); it != metaFields.end()) {
+      return it->second.get();
+    }
+   return nullptr;
+  }
+
+//  /**
+//   * Checks for attached metadata of type #T
+//   * @tparam T
+//   * @return tuple: (wasFound, pointerToMetaData)
+//   */
+//  template <typename T>
+//  inline T* checkAndGet() const {
+//    if (this->has<T>()) {
+//      auto bpd = this->get<T>();
+//      assert(bpd && "meta data attached");
+//      return bpd;
+//    }
+//    return nullptr;
+//  }
 
   /**
    * Adds a *new* metadata entry for #T if none exists
@@ -94,18 +97,22 @@ class CgNode {
    * @param md
    */
   template <typename T>
-  inline void addMetaData(T* md) {
-    if (this->has<T>()) {
-      assert(false && "MetaData with key already attached");
-    }
-    metaFields[T::key] = md;
+  inline void addMetaData(std::unique_ptr<T> md) {
+    assert(md && "Cannot add null metadata");
+    assert(!this->has<T>() && "MetaData with key already attached");
+    metaFields[T::key] = std::move(md);
   }
 
-  inline void addMetaData(MetaData* const md) {
-    if (this->has(md->getKey())) {
-      assert(false && "MetaData with key already attached");
-    }
-    metaFields[md->getKey()] = md;
+  template <typename T, typename... Args>
+  inline void addMetaData(Args&&... args) {
+    assert(!this->has<T>() && "MetaData with key already attached");
+    metaFields[T::key] = std::make_unique<T>(std::forward(args)...);
+  }
+
+  inline void addMetaData(std::unique_ptr<MetaData> md) {
+    assert(md && "Cannot add null metadata");
+    assert(!this->has(md->getKey()) && "MetaData with key already attached");
+    metaFields[md->getKey()] = std::move(md);
   }
 
   /**
@@ -119,23 +126,16 @@ class CgNode {
    * @return
    */
   template <typename T, typename... Args>
-  T* getOrCreateMD(const Args&... args) {
-    auto [has, md] = this->template checkAndGet<T>();
-    if (has) {
-      return md;
+  T& getOrCreateMD(const Args&... args) {
+    auto& md = metaFields[T::key];
+    if (md) {
+      return static_cast<T&>(*md);
     }
-
-    auto nmd = new T(args...);
-    this->addMetaData(nmd);
-    return nmd;
+    md = std::make_unique<T>(args...);
+    return static_cast<T&>(*md);
   }
 
-
-
-  /**
-   * CgNode destructs all attached meta data when destructed.
-   */
-  ~CgNode();
+  ~CgNode() = default;
 
   /** We delete copy ctor and copy assign op */
   CgNode(const CgNode& other) = delete;
@@ -203,21 +203,23 @@ class CgNode {
    *
    * @return a map, mapping the name of the metadata to a metadata pointer
    */
-  const std::unordered_map<std::string, MetaData*>& getMetaDataContainer() const { return metaFields; }
+  const std::unordered_map<std::string, std::unique_ptr<MetaData>>& getMetaDataContainer() const { return metaFields; }
 
   /**
    * Override the current set of all node attached metadata with a new set
    *
    * @param data - a map, mapping the name of the metadata to a metadata pointer
    */
-  void setMetaDataContainer(std::unordered_map<std::string, MetaData*> data) { metaFields = std::move(data); }
+  void setMetaDataContainer(std::unordered_map<std::string, std::unique_ptr<MetaData>> data) { metaFields = std::move(data); }
+
+ public:
+  const NodeId id;
 
  private:
-  NodeId id = -1;
   std::string functionName;
   std::optional<std::string> origin;
   bool hasBody;
-  std::unordered_map<std::string, MetaData*> metaFields;
+  std::unordered_map<std::string, std::unique_ptr<MetaData>> metaFields;
 };
 
 }  // namespace metacg
@@ -247,25 +249,25 @@ struct adl_serializer<std::unique_ptr<T>> {
 };
 
 template <>
-struct adl_serializer<std::unordered_map<std::string, metacg::MetaData*>> {
-  static std::unordered_map<std::string, metacg::MetaData*> from_json(const json& j) {
+struct adl_serializer<std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>>> {
+  static std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>> from_json(const json& j) {
     // use compound type serialization instead of metadata serialization,
     // because we need access to key and value for metadata creation
-    std::unordered_map<std::string, metacg::MetaData*> metadataAccumulator;
+    std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>> metadataAccumulator;
     metadataAccumulator.reserve(j.size());
     for (const auto& elem : j.items()) {
       // logging of generation failure is done in create<> function, no else needed
       // if metadata can not be fully generated, there will not be a stub key generated for it in the memory
       // representation
-      if (auto obj = metacg::MetaData::create<>(elem.key(), elem.value()); obj != nullptr) {
-        metadataAccumulator[elem.key()] = obj;
+      if (auto obj = metacg::MetaData::create<>(elem.key(), elem.value()); obj) {
+        metadataAccumulator[elem.key()] = std::move(obj);
       }
     }
     return metadataAccumulator;
   }
 
   // we need to fully specialize the adl_serializer
-  static void to_json(json& j, const std::unordered_map<std::string, metacg::MetaData*>& t) {
+  static void to_json(json& j, const std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>>& t) {
     json jsonAccumulator;
     for (const auto& elem : t) {
       // if metadata_json can not be fully generated, there will not be a stub key generated for it in the json file
@@ -277,23 +279,26 @@ struct adl_serializer<std::unordered_map<std::string, metacg::MetaData*>> {
   }
 };
 
-// place CgNodePtr de/serialization here instead of CgNodePtr.h
-// because we need full access to underlying datastructure CgNode
 template <>
-struct adl_serializer<CgNodePtr> {
-  static CgNodePtr from_json(const json& j) {
-    CgNodePtr cgNode = nullptr;
-    if (j.is_null()) {
-      return cgNode;
-    }
-    cgNode =
-        std::make_unique<metacg::CgNode>(j.at("functionName"), j.contains("origin") ? j.at("origin") : "unknownOrigin");
-    cgNode->setHasBody(j.at("hasBody").get<bool>());
-    cgNode->setMetaDataContainer(j.at("meta"));
-    return cgNode;
-  }
+struct adl_serializer<metacg::CgNodePtr> {
+//  static metacg::CgNodePtr from_json(const json& j) {
+//    metacg::CgNodePtr cgNode{};
+//    if (j.is_null()) {
+//      return cgNode;
+//    }
+//    // TODO: Create node without CG?
+//    std::optional<std::string> origin{};
+//    if (j.contains("origin") && !j.at("origin").is_null()) {
+//      origin = j.at("origin");
+//    }
+//    cgNode =
+//        std::make_unique<metacg::CgNode>(j.at("functionName"), origin);
+//    cgNode->setHasBody(j.at("hasBody").get<bool>());
+//    cgNode->setMetaDataContainer(j.at("meta"));
+//    return cgNode;
+//  }
 
-  static void to_json(json& j, const CgNodePtr& t) {
+  static void to_json(json& j, const metacg::CgNodePtr& t) {
     j = {{"functionName", t->getFunctionName()},
          {"origin", t->getOrigin()},
          {"hasBody", t->getHasBody()},

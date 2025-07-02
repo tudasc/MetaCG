@@ -14,12 +14,11 @@
 
 #include <Callgraph.h>
 #include <CgNode.h>
-#include <CgNodePtr.h>
 #include <MCGManager.h>
 
 #include <io/MCGReader.h>
 #include <io/MCGWriter.h>
-#include <io/VersionThreeMCGReader.h>
+#include <io/VersionFourMCGReader.h>
 #include <metadata/MetaData.h>
 
 // BuiltinMD.h is not used directly here, but including this header

@@ -11,11 +11,7 @@ using namespace metacg;
 
 std::string CgNode::getFunctionName() const { return functionName; }
 
-std::string CgNode::getOrigin() const { return origin; }
-
-bool CgNode::operator==(const CgNode& otherNode) const { return id == otherNode.id; }
-
-bool CgNode::isSameFunction(const CgNode& otherNode) const { return id == otherNode.getId(); }
+std::optional<std::string> CgNode::getOrigin() const { return origin; }
 
 bool CgNode::isSameFunctionName(const CgNode& otherNode) const { return functionName == otherNode.getFunctionName(); }
 
@@ -25,8 +21,3 @@ std::ostream& operator<<(std::ostream& stream, const CgNode& n) {
   return stream;
 }
 
-CgNode::~CgNode() {
-  for (const auto& md : metaFields) {
-    delete md.second;
-  }
-}

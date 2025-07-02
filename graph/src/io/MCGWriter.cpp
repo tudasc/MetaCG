@@ -7,7 +7,7 @@
 #include "io/MCGWriter.h"
 #include "LoggerUtil.h"
 #include "MCGManager.h"
-#include "io/VersionThreeMCGWriter.h"
+#include "io/VersionFourMCGWriter.h"
 #include "io/VersionTwoMCGWriter.h"
 
 void metacg::io::MCGWriter::writeActiveGraph(metacg::io::JsonSink& js) {

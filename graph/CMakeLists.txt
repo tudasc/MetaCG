@@ -8,17 +8,16 @@ set(MetacgGraphLibSources
     src/io/MCGReader.cpp
     src/io/MCGWriter.cpp
     src/io/VersionTwoMCGReader.cpp
-    src/io/VersionThreeMCGReader.cpp
+        src/io/VersionFourMCGReader.cpp
     src/MCGManager.cpp
     src/io/VersionTwoMCGWriter.cpp
-    src/io/VersionThreeMCGWriter.cpp
+        src/io/VersionFourMCGWriter.cpp
     src/DotIO.cpp
     src/MCGBaseInfo.cpp
     src/ReachabilityAnalysis.cpp
     include/io/MCGReader.h
     include/CgNode.h
     include/Callgraph.h
-    include/CgNodePtr.h
     include/metadata/MetaData.h
     include/MCGManager.h
     include/io/MCGWriter.h

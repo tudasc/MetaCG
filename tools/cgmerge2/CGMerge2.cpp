@@ -11,8 +11,8 @@
 #include "LoggerUtil.h"
 #include "MCGManager.h"
 #include "io/MCGReader.h"
-#include "io/VersionThreeMCGReader.h"
-#include "io/VersionThreeMCGWriter.h"
+#include "io/VersionFourMCGReader.h"
+#include "io/VersionFourMCGWriter.h"
 #include "io/VersionTwoMCGReader.h"
 #include "io/VersionTwoMCGWriter.h"
 

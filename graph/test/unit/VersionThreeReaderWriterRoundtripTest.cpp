@@ -7,8 +7,8 @@
 #include "LoggerUtil.h"
 #include "MCGManager.h"
 #include "io/MCGWriter.h"
-#include "io/VersionThreeMCGReader.h"
-#include "io/VersionThreeMCGWriter.h"
+#include "io/VersionFourMCGReader.h"
+#include "io/VersionFourMCGWriter.h"
 #include "gtest/gtest.h"
 
 class V3ReaderWriterRoundtripTest : public ::testing::Test {

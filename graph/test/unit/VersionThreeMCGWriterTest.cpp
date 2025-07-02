@@ -9,7 +9,7 @@
 
 #include "MCGBaseInfo.h"
 #include "MCGManager.h"
-#include "io/VersionThreeMCGWriter.h"
+#include "io/VersionFourMCGWriter.h"
 
 class V3MCGWriterTest : public ::testing::Test {
  protected:

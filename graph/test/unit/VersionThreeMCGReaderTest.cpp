@@ -12,7 +12,7 @@
 
 #include "nlohmann/json.hpp"
 
-#include "io/VersionThreeMCGReader.h"
+#include "io/VersionFourMCGReader.h"
 
 using namespace metacg;
 using json = nlohmann::json;

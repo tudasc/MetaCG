@@ -7,7 +7,6 @@
 #define METACG_GRAPH_CALLGRAPH_H
 
 #include "CgNode.h"
-#include "CgNodePtr.h"
 #include "Util.h"
 
 template <>
@@ -20,7 +19,6 @@ struct std::hash<std::pair<size_t, size_t>> {
 };
 namespace metacg {
 
-using CgNodePtr = std::unique_ptr<metacg::CgNode>;  // hopefully this typedef helps readability
 using CgNodeRawPtrUSet = std::unordered_set<metacg::CgNode*>;
 
 class Callgraph {
@@ -31,7 +29,7 @@ class Callgraph {
 
   using NameIdMap = std::unordered_map<std::string, NodeList>;
 
-  using NamedMetadata = std::unordered_map<std::string, MetaData*>;
+  using NamedMetadata = std::unordered_map<std::string, std::unique_ptr<MetaData>>;
   using EdgeContainer = std::unordered_map<std::pair<NodeId, NodeId>, NamedMetadata>;
   using CallerList = std::unordered_map<NodeId, NodeList>;
   using CalleeList = std::unordered_map<NodeId, NodeList>;
@@ -66,21 +64,15 @@ class Callgraph {
    */
   void addEdge(const CgNode& parentNode, const CgNode& childNode);
 
-  void addEdge(NodeId parentID, NodeId childID);
+  bool addEdge(NodeId parentID, NodeId childID);
 
   CgNode& insert(std::string function, std::optional<std::string> origin = {}, bool isVirtual = false,
-                 bool hasBody = false) {
-    // TODO: Create node
-  }
+                 bool hasBody = false);
 
 
-  /**
-   * Returns the node with the given name\n
-   * If no node exists yet, it creates a new one.
-   * @param name to identify the node by
-   * @return CgNodePtr to the identified node
-   */
-  CgNode* getOrInsertNode(const std::string& name);
+
+  CgNode& getFirstByNameOrInsertNode(std::string function, std::optional<std::string> origin = {}, bool isVirtual = false,
+                                          bool hasBody = false);
 
   /**
    * Merges the given call graph into this one.
@@ -101,14 +93,15 @@ class Callgraph {
    */
   bool hasNode(const std::string& name) const;
 
-  unsigned countNodes(const std::string& name) const;
 
   /**
-   * @brief hasNode checks whether a node exists in the graph mapping
+   * @brief hasNode checks whether a node for #name exists in the graph mapping
    * @param name
    * @return true iff exists, false otherwise
    */
-  bool hasNode(const std::string& name) const;
+  bool hasNode(NodeId id) const;
+
+  unsigned countNodes(const std::string& name) const;
 
 
   /**
@@ -151,17 +144,17 @@ class Callgraph {
   void recomputeCache();
 
   template <class T>
-  void addEdgeMetaData(const CgNode& func1, const CgNode& func2, T* md) {
-    addEdgeMetaData({func1.getId(), func2.getId()}, md);
+  void addEdgeMetaData(const CgNode& func1, const CgNode& func2, std::unique_ptr<T>&& md) {
+    addEdgeMetaData({func1.getId(), func2.getId()}, std::move(md));
   }
 
   template <class T>
-  void addEdgeMetaData(const std::pair<NodeId, NodeId> id, T* md) {
-    edges.at(id)[T::key] = md;
+  void addEdgeMetaData(const std::pair<NodeId, NodeId> id, std::unique_ptr<T>&& md) {
+    edges.at(id)[T::key] = std::move(md);
   }
 
   MetaData* getEdgeMetaData(const CgNode& func1, const CgNode& func2, const std::string& metadataName) const;
-  MetaData* getEdgeMetaData(const std::pair<NodeId, NodeId> id, const std::string& metadataName) const;
+  MetaData* getEdgeMetaData(std::pair<NodeId, NodeId> id, const std::string& metadataName) const;
 
   template <class T>
   T* getEdgeMetaData(const CgNode& func1, const CgNode& func2) {
@@ -188,8 +181,6 @@ class Callgraph {
     return edges.at(id).find(T::key) != edges.at(id).end();
   }
 
-  void dumpCGStats() const;
-
  private:
   // this set represents the call graph during the actual computation
   NodeContainer nodes;
@@ -201,9 +192,6 @@ class Callgraph {
   // Dedicated node pointer to main function
   CgNode* mainNode = nullptr;
 
-  // Flag to determine if we want to run empirical collision counting
-  bool empiricalCollisionCounting;
-  int nodeHashCollisionCounter{0};
 };
 
 [[maybe_unused]] static Callgraph& getEmptyGraph() {
@@ -211,6 +199,27 @@ class Callgraph {
   return graph;
 }
 }  // namespace metacg
+
+namespace {
+// A node cannot serialize/deserialize itself, as it is dependent on the containing call graph to assign IDs.
+// Therefore, we have to this manually.
+  metacg::CgNode* createNodeFromJson(metacg::Callgraph& cg, const nlohmann::json& j) {
+    if (j.is_null()) {
+      return nullptr;
+    }
+    std::optional<std::string> origin{};
+    if (j.contains("origin") && !j.at("origin").is_null()) {
+      origin = j.at("origin");
+    }
+    auto& cgNode = cg.insert(j.at("functionName"), origin);
+    assert(j.contains("hasBody") && "Valid node must contain hasBody field");
+    cgNode.setHasBody(j.at("hasBody").get<bool>());
+    cgNode.setMetaDataContainer(j.at("meta"));
+    return &cgNode;
+  }
+
+
+}
 
 namespace nlohmann {
 template <>
@@ -223,6 +232,10 @@ struct adl_serializer<metacg::Callgraph> {
       return cg;
 
     cg.setNodes(j.at("nodes").get<metacg::Callgraph::NodeContainer>());
+    for (auto& entry : j.at("nodes")) {
+      auto* node = createNodeFromJson(cg, entry);
+      // TODO: Cache ID used in format in order to resolve edges
+    }
     cg.setEdges(j.at("edges").get<metacg::Callgraph::EdgeContainer>());
     cg.recomputeCache();
     return cg;
@@ -234,7 +247,7 @@ struct adl_serializer<metacg::Callgraph> {
   static void to_json(json& j, const metacg::Callgraph& cg) {
     nlohmann::json e = cg.getEdges();
     nlohmann::json n = cg.getNodes();
-    j = {{"edges", cg.getEdges()}, {"nodes", cg.getNodes()}};
+    j = {{"edges", e}, {"nodes", n}};
   }
 };
 }  // namespace nlohmann

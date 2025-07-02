@@ -7,7 +7,7 @@
 
 #include "LoggerUtil.h"
 #include "MCGManager.h"
-#include "io/VersionThreeMCGReader.h"
+#include "io/VersionFourMCGReader.h"
 #include "io/VersionTwoMCGReader.h"
 #include "nlohmann/json.hpp"
 

@@ -8,7 +8,6 @@
 
 #include <Callgraph.h>
 #include <CgNode.h>
-#include <CgNodePtr.h>
 #include <MCGManager.h>
 
 /**

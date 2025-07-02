@@ -7,7 +7,7 @@
 
 #include "io/MCGReader.h"
 #include "LoggerUtil.h"
-#include "io/VersionThreeMCGReader.h"
+#include "io/VersionFourMCGReader.h"
 #include "io/VersionTwoMCGReader.h"
 
 namespace metacg::io {
