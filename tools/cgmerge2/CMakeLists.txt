@@ -4,9 +4,7 @@ set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 add_executable(cgmerge2 CGMerge2.cpp)
 
 add_config_include(cgmerge2)
-add_json(cgmerge2)
 add_metacg(cgmerge2)
-add_spdlog_libraries(cgmerge2)
 add_clang(cgmerge2)
 
 install(

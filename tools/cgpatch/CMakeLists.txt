@@ -26,8 +26,6 @@ foreach(tgt cgpatch-call-analysis cgpatch-inst-pass)
 endforeach()
 
 add_metacg(cgpatch-inst-pass)
-add_spdlog_libraries(cgpatch-inst-pass)
-add_json(cgpatch-inst-pass)
 
 install(TARGETS cgpatch-inst-pass LIBRARY DESTINATION lib)
 
