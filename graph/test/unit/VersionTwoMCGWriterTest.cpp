@@ -58,7 +58,7 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
     // const TestMetaData* toMergeDerived = static_cast<const TestMetaData*>(&toMerge);
   }
 
-  MetaData* clone() const final { return new TestMetaData(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new TestMetaData(*this)); }
 
   std::string metadataString;
   int metadataInt = 0;
@@ -104,8 +104,8 @@ TEST_F(V2MCGWriterTest, TwoNodeCGWrite) {
   cg->getMain()->setHasBody(true);
 
   cg->insert("foo");
-  cg->getNode("foo")->setIsVirtual(true);
-  cg->getNode("foo")->setHasBody(true);
+  cg->getFirstNode("foo")->setIsVirtual(true);
+  cg->getFirstNode("foo")->setHasBody(true);
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
@@ -128,10 +128,10 @@ TEST_F(V2MCGWriterTest, TwoNodeOneEdgeCGWrite) {
   cg->getMain()->setHasBody(true);
 
   cg->insert("foo");
-  cg->getNode("foo")->setIsVirtual(true);
-  cg->getNode("foo")->setHasBody(true);
+  cg->getFirstNode("foo")->setIsVirtual(true);
+  cg->getFirstNode("foo")->setHasBody(true);
 
-  cg->addEdge("main", "foo");
+  cg->addEdge(*cg->getMain(), *cg->getFirstNode("foo"));
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
@@ -155,14 +155,14 @@ TEST_F(V2MCGWriterTest, ThreeNodeOneEdgeCGWrite) {
   cg->getMain()->setHasBody(true);
 
   cg->insert("foo");
-  cg->getNode("foo")->setIsVirtual(true);
-  cg->getNode("foo")->setHasBody(true);
+  cg->getFirstNode("foo")->setIsVirtual(true);
+  cg->getFirstNode("foo")->setHasBody(true);
 
   cg->insert("bar");
-  cg->getNode("bar")->setIsVirtual(false);
-  cg->getNode("bar")->setHasBody(false);
+  cg->getFirstNode("bar")->setIsVirtual(false);
+  cg->getFirstNode("bar")->setHasBody(false);
 
-  cg->addEdge("main", "foo");
+  cg->addEdge(*cg->getMain(),  *cg->getFirstNode("foo"));
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
@@ -185,10 +185,9 @@ TEST_F(V2MCGWriterTest, MetadataCGWrite) {
   cg->insert("main");
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
-  // metadata does not need to be freed,
-  // it is now owned by the node
-  auto testMetaData = new TestMetaData();
-  cg->getMain()->addMetaData(testMetaData);
+
+  auto testMetaData = std::make_unique<TestMetaData>();
+  cg->getMain()->addMetaData(std::move(testMetaData));
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
@@ -212,10 +211,8 @@ TEST_F(V2MCGWriterTest, WriteByName) {
   cg->insert("main");
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
-  // metadata does not need to be freed,
-  // it is now owned by the node
-  auto testMetaData = new TestMetaData();
-  cg->getMain()->addMetaData(testMetaData);
+
+  cg->getMain()->addMetaData(std::make_unique<TestMetaData>());
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
@@ -245,10 +242,8 @@ TEST_F(V2MCGWriterTest, WritePointer) {
   cg->insert("main");
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
-  // metadata does not need to be freed,
-  // it is now owned by the node
-  auto testMetaData = new TestMetaData();
-  cg->getMain()->addMetaData(testMetaData);
+
+  cg->getMain()->addMetaData(std::make_unique<TestMetaData>());
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
@@ -278,10 +273,8 @@ TEST_F(V2MCGWriterTest, SwitchBeforeWrite) {
   cg->insert("main");
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
-  // metadata does not need to be freed,
-  // it is now owned by the node
-  auto testMetaData = new TestMetaData();
-  cg->getMain()->addMetaData(testMetaData);
+
+  cg->getMain()->addMetaData(std::make_unique<TestMetaData>());
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
