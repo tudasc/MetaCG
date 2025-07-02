@@ -45,7 +45,7 @@ class UniqueTypeMD : public metacg::MetaData::Registrar<UniqueTypeMD> {
     }
   }
 
-  MetaData* clone() const final { return new UniqueTypeMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new UniqueTypeMD(*this)); }
 
   int numTypes{0};
 };

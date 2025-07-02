@@ -23,6 +23,10 @@ class VersionFourMCGWriter : public MCGWriter {
 
   static void sortCallgraph(nlohmann::json& j);
 
+  void setUseNamesAsIds(bool useNames) {
+    this->useNamesAsIds = useNames;
+  }
+
  private:
   bool useNamesAsIds;
   bool exportSorted;

@@ -28,7 +28,11 @@ CgNode& Callgraph::insert(std::string function, std::optional<std::string> origi
   NodeId id = nodes.size(); // TODO: Improve this
   // Note: Can't use make_unique here because make_unqiue is not (and should not be) a friend of the CgNode constructor.
   nodes.emplace_back(new CgNode(id, function, origin, isVirtual, hasBody));
-  nameIdMap[function].push_back(id);
+  auto& nodesWithName = nameIdMap[function];
+  if (nodesWithName.size() > 0) {
+    hasDuplicates = true;
+  }
+  nodesWithName.push_back(id);
   return *nodes.back();
 }
 
@@ -103,7 +107,7 @@ void Callgraph::addEdge(const CgNode& parentNode, const CgNode& childNode) {
   }
   calleeList[parentNode.getId()].push_back(childNode.getId());
   callerList[childNode.getId()].push_back(parentNode.getId());
-  edges[{parentNode.getId(), childNode.getId()}] = {};
+//  edges[{parentNode.getId(), childNode.getId()}] = {};
 }
 
 bool Callgraph::addEdge(NodeId parentID, NodeId childID) {
@@ -111,7 +115,6 @@ bool Callgraph::addEdge(NodeId parentID, NodeId childID) {
   if (!parentNode) {
     MCGLogger::instance().getErrConsole()->error("Source ID {} does not exist in graph",
                                                  parentID);
-    // TODO: Print errors here at all
     return false;
   }
   auto* childNode = getNode(childID);
@@ -264,29 +267,40 @@ CgNodeRawPtrUSet Callgraph::getCallers(NodeId node) const {
 }
 
 // TODO: When is this needed?
-void Callgraph::setNodes(Callgraph::NodeContainer external_container) { nodes = std::move(external_container); }
-void Callgraph::setEdges(Callgraph::EdgeContainer external_container) { edges = std::move(external_container); }
-
-void Callgraph::recomputeCache() {
-  nameIdMap.clear();
-  for (const auto& elem : nodes) {
-    nameIdMap[elem->getFunctionName()].push_back(elem->getId());
-  }
-  // TODO: What's the benefit of maintaining a separate caller/callee map?
-  callerList.clear();
-  calleeList.clear();
-  for (const auto& elem : edges) {
-    calleeList[elem.first.first].push_back(elem.first.second);
-    callerList[elem.first.second].push_back(elem.first.first);
-  }
-}
+//void Callgraph::setNodes(Callgraph::NodeContainer external_container) { nodes = std::move(external_container); }
+//void Callgraph::setEdges(Callgraph::EdgeContainer external_container) { edges = std::move(external_container); }
+//
+//void Callgraph::recomputeCache() {
+//  nameIdMap.clear();
+//  for (const auto& elem : nodes) {
+//    nameIdMap[elem->getFunctionName()].push_back(elem->getId());
+//  }
+//  // TODO: What's the benefit of maintaining a separate caller/callee map?
+//  callerList.clear();
+//  calleeList.clear();
+//  for (const auto& elem : edges) {
+//    calleeList[elem.first.first].push_back(elem.first.second);
+//    callerList[elem.first.second].push_back(elem.first.first);
+//  }
+//}
 
 MetaData* Callgraph::getEdgeMetaData(const CgNode& func1, const CgNode& func2, const std::string& metadataName) const {
   return getEdgeMetaData({func1.getId(), func2.getId()}, metadataName);
 }
 
-MetaData* Callgraph::getEdgeMetaData(std::pair<size_t, size_t> id, const std::string& metadataName) const {
-  return edges.at(id).at(metadataName);
+/**
+ * Returns metadata for the given edge. The edge is assumed to exists.
+ * @param ids Node IDs of the edge pair
+ * @param metadataName Name of the metadata
+ * @return The metadata or null, if there is none registered with that key.
+ */
+MetaData* Callgraph::getEdgeMetaData(std::pair<size_t, size_t> ids, const std::string& metadataName) const {
+  assert(edges.find(ids) != edges.end() && "Edge does not exist");
+  auto& edgeMD = edges.at(ids);
+  if (auto it = edgeMD.find(metadataName); it != edgeMD.end()) {
+    return it->second.get();
+  }
+  return nullptr;
 }
 
 const metacg::Callgraph::NamedMetadata& Callgraph::getAllEdgeMetaData(const CgNode& func1, const CgNode& func2) const {

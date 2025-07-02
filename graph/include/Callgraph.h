@@ -103,6 +103,13 @@ class Callgraph {
 
   unsigned countNodes(const std::string& name) const;
 
+  /**
+   * Checks if there is more than one node with the same function name.
+   * @return true if there are duplicate names
+   */
+  bool hasDuplicateNames() const {
+    return hasDuplicates;
+  }
 
   /**
    * @brief getNode searches the node in the graph and returns it
@@ -139,9 +146,9 @@ class Callgraph {
   const NodeContainer& getNodes() const;
   const EdgeContainer& getEdges() const;
 
-  void setNodes(NodeContainer external_container);
-  void setEdges(EdgeContainer external_container);
-  void recomputeCache();
+//  void setNodes(NodeContainer external_container);
+//  void setEdges(EdgeContainer external_container);
+//  void recomputeCache();
 
   template <class T>
   void addEdgeMetaData(const CgNode& func1, const CgNode& func2, std::unique_ptr<T>&& md) {
@@ -191,65 +198,67 @@ class Callgraph {
 
   // Dedicated node pointer to main function
   CgNode* mainNode = nullptr;
+  // Tracks if there is more than one node with the same function name
+  bool hasDuplicates{false};
 
 };
 
-[[maybe_unused]] static Callgraph& getEmptyGraph() {
-  static Callgraph graph;
-  return graph;
-}
+//[[maybe_unused]] static Callgraph& getEmptyGraph() {
+//  static Callgraph graph;
+//  return graph;
+//}
 }  // namespace metacg
 
-namespace {
-// A node cannot serialize/deserialize itself, as it is dependent on the containing call graph to assign IDs.
-// Therefore, we have to this manually.
-  metacg::CgNode* createNodeFromJson(metacg::Callgraph& cg, const nlohmann::json& j) {
-    if (j.is_null()) {
-      return nullptr;
-    }
-    std::optional<std::string> origin{};
-    if (j.contains("origin") && !j.at("origin").is_null()) {
-      origin = j.at("origin");
-    }
-    auto& cgNode = cg.insert(j.at("functionName"), origin);
-    assert(j.contains("hasBody") && "Valid node must contain hasBody field");
-    cgNode.setHasBody(j.at("hasBody").get<bool>());
-    cgNode.setMetaDataContainer(j.at("meta"));
-    return &cgNode;
-  }
-
-
-}
-
-namespace nlohmann {
-template <>
-struct adl_serializer<metacg::Callgraph> {
-  // note: the return type is no longer 'void', and the method only takes
-  // one argument
-  static metacg::Callgraph from_json(const json& j) {
-    metacg::Callgraph cg;
-    if (j.is_null())
-      return cg;
-
-    cg.setNodes(j.at("nodes").get<metacg::Callgraph::NodeContainer>());
-    for (auto& entry : j.at("nodes")) {
-      auto* node = createNodeFromJson(cg, entry);
-      // TODO: Cache ID used in format in order to resolve edges
-    }
-    cg.setEdges(j.at("edges").get<metacg::Callgraph::EdgeContainer>());
-    cg.recomputeCache();
-    return cg;
-  }
-
-  // Here's the catch! You must provide a to_json method! Otherwise, you
-  // will not be able to convert move_only_type to json, since you fully
-  // specialized adl_serializer on that type
-  static void to_json(json& j, const metacg::Callgraph& cg) {
-    nlohmann::json e = cg.getEdges();
-    nlohmann::json n = cg.getNodes();
-    j = {{"edges", e}, {"nodes", n}};
-  }
-};
-}  // namespace nlohmann
+//namespace {
+//// A node cannot serialize/deserialize itself, as it is dependent on the containing call graph to assign IDs.
+//// Therefore, we have to this manually.
+//  metacg::CgNode* createNodeFromJson(metacg::Callgraph& cg, const nlohmann::json& j) {
+//    if (j.is_null()) {
+//      return nullptr;
+//    }
+//    std::optional<std::string> origin{};
+//    if (j.contains("origin") && !j.at("origin").is_null()) {
+//      origin = j.at("origin");
+//    }
+//    auto& cgNode = cg.insert(j.at("functionName"), origin);
+//    assert(j.contains("hasBody") && "Valid node must contain hasBody field");
+//    cgNode.setHasBody(j.at("hasBody").get<bool>());
+//    cgNode.setMetaDataContainer(j.at("meta"));
+//    return &cgNode;
+//  }
+//
+//
+//}
+//
+//namespace nlohmann {
+//template <>
+//struct adl_serializer<metacg::Callgraph> {
+//  // note: the return type is no longer 'void', and the method only takes
+//  // one argument
+//  static metacg::Callgraph from_json(const json& j) {
+//    metacg::Callgraph cg;
+//    if (j.is_null())
+//      return cg;
+//
+//    cg.setNodes(j.at("nodes").get<metacg::Callgraph::NodeContainer>());
+//    for (auto& entry : j.at("nodes")) {
+//      auto* node = createNodeFromJson(cg, entry);
+//      // TODO: Cache ID used in format in order to resolve edges
+//    }
+//    cg.setEdges(j.at("edges").get<metacg::Callgraph::EdgeContainer>());
+//    cg.recomputeCache();
+//    return cg;
+//  }
+//
+//  // Here's the catch! You must provide a to_json method! Otherwise, you
+//  // will not be able to convert move_only_type to json, since you fully
+//  // specialized adl_serializer on that type
+//  static void to_json(json& j, const metacg::Callgraph& cg) {
+//    nlohmann::json e = cg.getEdges();
+//    nlohmann::json n = cg.getNodes();
+//    j = {{"edges", e}, {"nodes", n}};
+//  }
+//};
+//}  // namespace nlohmann
 
 #endif

@@ -58,7 +58,7 @@ struct OverrideMD final : metacg::MetaData::Registrar<OverrideMD> {
     mergeVectors(overrides, toMergeDerived->overrides);
   }
 
-  MetaData* clone() const final { return new OverrideMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new OverrideMD(*this)); }
 
   const char* getKey() const final { return key; }
 

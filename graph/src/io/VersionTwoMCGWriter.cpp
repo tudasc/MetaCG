@@ -13,11 +13,21 @@
 using namespace metacg;
 
 void metacg::io::VersionTwoMCGWriter::write(const metacg::Callgraph* cg, metacg::io::JsonSink& js) {
+
+  // Check for nodes with duplicate function names - this is not supported by V2.
+  if (cg->hasDuplicateNames()) {
+    MCGLogger::logError("There are multiple nodes with the same node - this is not allowed in format version 2."
+        "Duplicate names will be disambiguated by adding a suffix to the function name."
+        "Consider exporting using version 4 instead to retain the original names. ");
+    // TOOD: Should this be considered fatal?
+  }
+
   nlohmann::json j;
   attachMCGFormatHeader(j);
 
   io::JsonSink v4JsonSink;
   io::VersionFourMCGWriter v4Writer;
+  v4Writer.setUseNamesAsIds(true);
   v4Writer.write(cg, v4JsonSink);
 
   auto v4Json = v4JsonSink.getJson();
@@ -25,80 +35,58 @@ void metacg::io::VersionTwoMCGWriter::write(const metacg::Callgraph* cg, metacg:
 
   downgradeV4FormatToV2Format(jsonCG);
 
-  j.at(fileInfo.formatInfo.cgFieldName) = jsonCG;
+  j.at(fileInfo.formatInfo.cgFieldName) = std::move(jsonCG);
   js.setJson(j);
 }
 
 void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json& j) {
-  auto& cg = j.at("_CG");
 
-  // rebuild caller callee maps
-  std::unordered_map<size_t, std::string> idNameMap;
-  std::unordered_map<size_t, std::vector<size_t>> sourceTargetEdgeMap;
-  std::unordered_map<size_t, std::vector<size_t>> targetSourceEdgeMap;
+  // Iterate over all nodes
+  for (auto& it : j.items()) {
+    auto& jNode = it.value();
 
-  // rebuild caller callee maps
-  for (auto& node : cg.at("nodes")) {
+    // Function names are already used as keys, so we don't have to change anything here.
+    jNode.erase("functionName");
 
-    idNameMap[node.at(0)] = node.at(1).at("functionName");
-    node.at(1).erase("functionName");
-  }
-
-  for (auto& edge : cg.at("edges")) {
-    sourceTargetEdgeMap[edge.at(0).at(0)].push_back(edge.at(0).at(1));
-    targetSourceEdgeMap[edge.at(0).at(1)].push_back(edge.at(0).at(0));
-  }
-  cg.erase("edges");
-  // move edges
-  for (auto& node : cg.at("nodes")) {
-    node.at(1)["callees"] = nlohmann::json::array();
-    for (auto& callee : sourceTargetEdgeMap[node.at(0)]) {
-      node.at(1).at("callees").push_back(idNameMap.at(callee));
+    // Convert edges into callee entries. Callers are identified in a second pass, when all nodes are present.
+    auto jCallees = nlohmann::json::array();
+    auto& jEdges = jNode["edges"];
+    for (auto& jEdge: jEdges.items()) {
+      jCallees.push_back(jEdge.key());
+      // Ignoring edge metadata, as not supported in V2
     }
-    node.at(1)["callers"] = nlohmann::json::array();
-    for (auto& caller : targetSourceEdgeMap[node.at(0)]) {
-      node.at(1).at("callers").push_back(idNameMap.at(caller));
+    jNode["callers"] = nlohmann::json::array();
+    jNode["callees"] = std::move(jCallees);
+
+    // Put origin in fileProperties metadata
+    auto& jMeta = jNode["meta"];
+    if (!jMeta.contains("fileProperties")) {
+      jMeta["fileProperties"] = nlohmann::json::object();
     }
-  }
+    jMeta["fileProperties"]["origin"] = jNode["origin"];
+    jNode.erase("origin");
 
-  for (auto& node : cg.at("nodes")) {
-    const auto& nodeName = idNameMap.at(node.at(0));
-    j["CG"][nodeName] = std::move(node.at(1));
-
-    // if we have attached origin information move it to Fileproperty data
-    if (j["CG"][nodeName]["origin"] != "unknownOrigin") {
-      j["CG"][nodeName].at("meta")["fileProperties"] = {{"origin", j["CG"][nodeName]["origin"]},
-                                                        {"systemInclude", false}};
-    }
-    j["CG"][nodeName].erase("origin");
-
-    // if we have override metadata, use it to generate override information
-    if (!j["CG"][nodeName].at("meta").is_null() && j["CG"][nodeName].at("meta").contains("overrideMD")) {
-      j["CG"][nodeName]["isVirtual"] = true;
-      j["CG"][nodeName]["doesOverride"] = !j["CG"][nodeName].at("meta").at("overrideMD").at("overrides").empty();
-      nlohmann::json overrideNames = nlohmann::json::array();
-      for (const auto& n : j["CG"][nodeName].at("meta").at("overrideMD").at("overrides")) {
-        overrideNames.push_back(idNameMap.at(n));
+    jNode["isVirtual"] = false;
+    jNode["doesOverride"] = false;
+    jNode["overrides"] = nlohmann::json::array();
+    jNode["overriddenBy"] = nlohmann::json::array();
+    if (jMeta.contains("overrideMD")) {
+      auto& jOverrideMD = jMeta["overrideMD"];
+      if (!jOverrideMD["overrides"].empty()) {
+        jNode["doesOverride"] = true;
+        jNode["overrides"] = jOverrideMD["overrides"];
       }
-      j["CG"][nodeName]["overrides"] = overrideNames;
-      nlohmann::json overriddenByNames = nlohmann::json::array();
-      for (const auto& n : j["CG"][nodeName].at("meta").at("overrideMD").at("overriddenBy")) {
-        overriddenByNames.push_back(idNameMap.at(n));
-      }
-      j["CG"][nodeName]["overriddenBy"] = overriddenByNames;
-      j["CG"][nodeName].at("meta").erase("overrideMD");
-    } else {
-      j["CG"][nodeName]["isVirtual"] = false;
-      j["CG"][nodeName]["doesOverride"] = false;
-      j["CG"][nodeName]["overrides"] = nlohmann::json::array();
-      j["CG"][nodeName]["overriddenBy"] = nlohmann::json::array();
-    }
-
-    // for some reason, if we don't have metadata we don't generate an empty container, but null
-    if (j["CG"][nodeName].at("meta").empty()) {
-      j["CG"][nodeName].at("meta") = "null"_json;
+      jNode["overriddenBy"] = jOverrideMD["overriddenBy"];
+      jMeta.erase("overrideMD");
     }
   }
-  j.at("_CG") = std::move(j["CG"]);
-  j.erase("CG");
+
+  // Iterate again to write callers
+  for (auto& it : j.items()) {
+    auto& jNode = it.value();
+    for (auto& callee : jNode["callees"]) {
+      j[callee]["callers"].push_back(it.key());
+    }
+  }
+
 }

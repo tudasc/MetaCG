@@ -45,7 +45,7 @@ class NumConditionalBranchMD : public metacg::MetaData::Registrar<NumConditional
     }
   }
 
-  MetaData* clone() const final { return new NumConditionalBranchMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new NumConditionalBranchMD(*this)); }
 
   int numConditionalBranches{0};
 };

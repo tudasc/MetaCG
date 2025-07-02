@@ -51,7 +51,7 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
     // TODO: Merge not implemented as of now
   }
 
-  MetaData* clone() const final { return new MallocVariableMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new MallocVariableMD(*this)); }
 };
 
 #endif  // CGCOLLECTOR2_MALLOCVARIABLEMD_H

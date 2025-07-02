@@ -52,7 +52,7 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
     markedAlwaysInline |= toMergeDerived->markedAlwaysInline;
   }
 
-  MetaData* clone() const final { return new InlineMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new InlineMD(*this)); }
 
   bool isMarkedInline() const { return markedInline; }
 

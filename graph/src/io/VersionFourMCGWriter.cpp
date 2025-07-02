@@ -133,4 +133,3 @@ void metacg::io::VersionFourMCGWriter::sortCallgraph(nlohmann::json& j) {
     }
   }
 }
-

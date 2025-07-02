@@ -123,7 +123,7 @@ void DotParser::handleEntity(const dot::ParsedToken& token) {
     } else {
       seenTokens.pop();        // Remove currently held entity, as this is not a connector
       seenTokens.push(token);  // Push current entity as the potential source for a connector
-      callgraph->getOrInsertNode(token.spelling);
+      callgraph->getFirstByNameOrInsertNode(token.spelling);
     }
   } else {
     MCGLogger::instance().getErrConsole()->warn("DotParser in unclear state");
@@ -151,8 +151,8 @@ void DotParser::reduceStack() {
     assert(srcElement.type == dot::ParsedToken::TokenType::ENTITY);
     seenTokens.pop();
 
-    callgraph->addEdge(callgraph->getOrInsertNode(srcElement.spelling),
-                       callgraph->getOrInsertNode(targetElement.spelling));
+    callgraph->addEdge(callgraph->getFirstByNameOrInsertNode(srcElement.spelling),
+                       callgraph->getFirstByNameOrInsertNode(targetElement.spelling));
   }
 }
 
@@ -198,17 +198,17 @@ struct CGDotEdgeComparator {
 template <typename EdgeContainerTy, typename NodeContainerTy>
 void fillNodesAndEdges(const Callgraph* cg, NodeContainerTy& nodeNames, EdgeContainerTy& edges) {
   for (const auto& node : cg->getNodes()) {
-    nodeNames.insert(node.second->getFunctionName());
+    nodeNames.insert(node->getFunctionName());
 
-    const auto childNodes = cg->getCallees(node.first);
-    const auto parentNodes = cg->getCallers(node.first);
+    const auto childNodes = cg->getCallees(*node);
+    const auto parentNodes = cg->getCallers(*node);
 
     for (const auto& c : childNodes) {
-      edges.emplace(std::make_pair(node.first, c->getId()));
+      edges.emplace(std::make_pair(node->getId(), c->getId()));
     }
 
     for (const auto& p : parentNodes) {
-      edges.emplace(std::make_pair(p->getId(), node.first));
+      edges.emplace(std::make_pair(p->getId(), node->getId()));
     }
   }
 }

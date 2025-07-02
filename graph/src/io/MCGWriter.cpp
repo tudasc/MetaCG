@@ -32,8 +32,8 @@ std::unique_ptr<metacg::io::MCGWriter> metacg::io::createWriter(int version) {
   if (version == 2) {
     return std::make_unique<metacg::io::VersionTwoMCGWriter>();
   }
-  if (version == 3) {
-    return std::make_unique<metacg::io::VersionThreeMCGWriter>();
+  if (version == 4) {
+    return std::make_unique<metacg::io::VersionFourMCGWriter>();
   }
   return {};
 }

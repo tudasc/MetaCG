@@ -44,7 +44,7 @@ class NumStatementsMD : public metacg::MetaData::Registrar<NumStatementsMD> {
     numStmts = std::max(numStmts, toMergeDerived->getNumberOfStatements());
   }
 
-  MetaData* clone() const final { return new NumStatementsMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new NumStatementsMD(*this)); }
 
   void setNumberOfStatements(int numStmts) { this->numStmts = numStmts; }
   int getNumberOfStatements() const { return this->numStmts; }

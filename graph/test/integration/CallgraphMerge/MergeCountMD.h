@@ -38,7 +38,7 @@ class MergeCountMD : public metacg::MetaData::Registrar<MergeCountMD> {
     this->mergeCount += toMergeDerived->mergeCount + 1;
   }
 
-  MetaData* clone() const final { return new MergeCountMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new MergeCountMD(*this)); }
 
  private:
   int mergeCount{0};

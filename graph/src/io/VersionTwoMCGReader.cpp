@@ -60,8 +60,6 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
   console->info("Lifting MetaCG version {} file to version 4", mcgVersion);
   upgradeV2FormatToV4Format(jsonCG);
   mcgInfo["version"] = "4.0";
-  mcgInfo["generator"]["name"] = "MetaCG-V4-Converter";
-  mcgInfo["generator"]["version"] = "1.0";
 
   JsonSource v4JsonSrc(j);
   VersionFourMetaCGReader v4Reader(v4JsonSrc);
@@ -70,8 +68,8 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
 
 void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV4Format(nlohmann::json& j) {
 
-  // Move nodes one layer deeper into node container
-  for (auto it = j.items().begin(); it != j.items().end();) {
+  // Iterate over all nodes
+  for (auto& it : j.items()) {
     auto& jNode = it.value();
 
     // In V2, the function name is the identifier

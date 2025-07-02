@@ -74,7 +74,7 @@ class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
     }
   }
 
-  MetaData* clone() const final { return new NumOperationsMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new NumOperationsMD(*this)); }
 
   int numberOfIntOps{0};
   int numberOfFloatOps{0};

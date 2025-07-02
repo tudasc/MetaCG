@@ -41,7 +41,7 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
     this->fromSystemInclude |= toMergeDerived->fromSystemInclude;
   }
 
-  MetaData* clone() const final { return new FilePropertiesMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<FilePropertiesMD>(new FilePropertiesMD(*this)); }
 
   bool fromSystemInclude;
 };

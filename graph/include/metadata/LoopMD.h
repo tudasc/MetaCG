@@ -37,7 +37,7 @@ class LoopDepthMD : public metacg::MetaData::Registrar<LoopDepthMD> {
     loopDepth = std::max(toMergeDerived->loopDepth, loopDepth);
   }
 
-  MetaData* clone() const final { return new LoopDepthMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new LoopDepthMD(*this)); }
 
   int loopDepth{0};
 };
@@ -77,7 +77,7 @@ class GlobalLoopDepthMD : public metacg::MetaData::Registrar<GlobalLoopDepthMD> 
     globalLoopDepth = std::max(globalLoopDepth, toMergeDerived->globalLoopDepth);
   }
 
-  MetaData* clone() const final { return new GlobalLoopDepthMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new GlobalLoopDepthMD(*this)); }
 
   int globalLoopDepth{0};
 };
@@ -125,7 +125,7 @@ class LoopCallDepthMD : public metacg::MetaData::Registrar<LoopCallDepthMD> {
     }
   }
 
-  MetaData* clone() const final { return new LoopCallDepthMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new LoopCallDepthMD(*this)); }
 
   std::map<std::string, int> loopFunctionMap;
 };

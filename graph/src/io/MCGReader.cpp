@@ -16,8 +16,8 @@ std::unique_ptr<MetaCGReader> createReader(ReaderSource& src) {
   auto versionStr = src.getFormatVersion();
   if (versionStr == "2" || versionStr == "2.0") {
     return std::make_unique<VersionTwoMetaCGReader>(src);
-  } else if (versionStr == "3" || versionStr == "3.0") {
-    return std::make_unique<VersionThreeMetaCGReader>(src);
+  } else if (versionStr == "4" || versionStr == "4.0") {
+    return std::make_unique<VersionFourMetaCGReader>(src);
   } else {
     metacg::MCGLogger::instance().getErrConsole()->error("Cannot create reader: format version '{}' is not suppported.",
                                                          versionStr);

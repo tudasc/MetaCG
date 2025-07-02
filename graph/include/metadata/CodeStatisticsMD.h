@@ -48,7 +48,7 @@ class CodeStatisticsMD : public metacg::MetaData::Registrar<CodeStatisticsMD> {
     }
   }
 
-  MetaData* clone() const final { return new CodeStatisticsMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new CodeStatisticsMD(*this)); }
 
   int numVars{0};
 };
