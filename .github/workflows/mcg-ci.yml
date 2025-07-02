@@ -134,10 +134,9 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: metacg-devel:latest
-          env: |
-            OMPI_ALLOW_RUN_AS_ROOT=1
-            OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
           run: |
+            export OMPI_ALLOW_RUN_AS_ROOT=1
+            export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
             cd /opt/metacg/tools/cgpatch/test/integration/
             ./CGPIntegrationRunner.sh -d
 
