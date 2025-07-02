@@ -120,7 +120,7 @@ if(METACG_BUILD_CGPATCH)
   )
     add_subdirectory(tools/cgpatch/)
   else()
-    message(FATAL_ERROR "CGPatch requires LLVM version 15 or higher")
+    message(STATUS "Skipping CGPatch: requires LLVM version 15 or higher")
   endif()
 endif()
 # PIRA analyzer Should PGIS be built
