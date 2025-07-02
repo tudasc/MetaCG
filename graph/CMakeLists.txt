@@ -111,8 +111,8 @@ endif()
 
 add_config_include(metacg)
 
-add_json(metacg)
-add_spdlog_libraries(metacg)
+target_link_libraries(metacg PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(metacg PUBLIC spdlog::spdlog)
 
 if(METACG_BUILD_UNIT_TESTS)
   add_subdirectory(test/unit)

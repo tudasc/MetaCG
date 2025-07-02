@@ -4,7 +4,6 @@ set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 add_executable(cgconvert CGConvert.cpp)
 
 add_metacg(cgconvert)
-add_spdlog_libraries(cgconvert)
 
 install(
   TARGETS cgconvert
