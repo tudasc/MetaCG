@@ -36,13 +36,7 @@ CgNode& Callgraph::insert(std::string function, std::optional<std::string> origi
   return *nodes.back();
 }
 
-/**
-   * Returns the first node with the given name.\n
-   * If no node exists yet, it creates a new one.
-   * @param name to identify the node by
-   * @return Reference to the identified node
- */
-CgNode& Callgraph::getFirstByNameOrInsertNode(std::string function, std::optional<std::string> origin, bool isVirtual,
+CgNode& Callgraph::getOrInsertNode(std::string function, std::optional<std::string> origin, bool isVirtual,
                                         bool hasBody) {
   auto* node = getFirstNode(function);
   if (node) {
@@ -107,7 +101,8 @@ void Callgraph::addEdge(const CgNode& parentNode, const CgNode& childNode) {
   }
   calleeList[parentNode.getId()].push_back(childNode.getId());
   callerList[childNode.getId()].push_back(parentNode.getId());
-//  edges[{parentNode.getId(), childNode.getId()}] = {};
+  NamedMetadata edgeMd;
+  edges[{parentNode.getId(), childNode.getId()}] = std::move(edgeMd);
 }
 
 bool Callgraph::addEdge(NodeId parentID, NodeId childID) {
@@ -124,7 +119,19 @@ bool Callgraph::addEdge(NodeId parentID, NodeId childID) {
     return false;
   }
   addEdge(*parentNode, *childNode);
+  return true;
 }
+
+bool Callgraph::addEdge(const std::string& callerName, const std::string& calleeName) {
+  auto& callerMatches = getNodes(callerName);
+  auto& calleeMatches = getNodes(calleeName);
+  if (callerMatches.size() != 1 || callerMatches.size() != 1) {
+    return false;
+  }
+  addEdge(callerMatches.front(), calleeMatches.front());
+  return true;
+}
+
 
 bool Callgraph::hasNode(const std::string& name) const {
   auto it = nameIdMap.find(name);
@@ -153,7 +160,8 @@ const Callgraph::NodeList& Callgraph::getNodes(const std::string& name) const {
   if (auto it = nameIdMap.find(name); it != nameIdMap.end()) {
     return it->second;
   }
-  return {}; // TODO: Does this work via lifetime extension?
+  static const Callgraph::NodeList empty{};
+  return empty;
 }
 
 CgNode* Callgraph::getNode(NodeId id) const {
@@ -174,7 +182,7 @@ void metacg::Callgraph::merge(const metacg::Callgraph& other) {
   std::function<void(metacg::Callgraph*, const metacg::Callgraph&, metacg::CgNode*)> copyNode =
       [&](metacg::Callgraph* destination, const metacg::Callgraph& source, metacg::CgNode* node) {
         std::string functionName = node->getFunctionName();
-        metacg::CgNode& mergeNode = destination->getFirstByNameOrInsertNode(functionName, node->getOrigin());
+        metacg::CgNode& mergeNode = destination->getOrInsertNode(functionName, node->getOrigin());
 
         if (node->getHasBody()) {
           auto callees = source.getCallees(*node);
@@ -227,7 +235,7 @@ bool Callgraph::existsEdge(NodeId source, NodeId target) const {
 
 bool Callgraph::existsAnyEdge(const std::string& source, const std::string& target) const {
   auto& sourceNodes = getNodes(source);
-  auto& targetNodes = getNodes(source);
+  auto& targetNodes = getNodes(target);
   for (auto sourceId: sourceNodes) {
     for (auto targetId : targetNodes) {
       if (existsEdge(sourceId, targetId)) {
@@ -244,7 +252,6 @@ CgNodeRawPtrUSet Callgraph::getCallees(NodeId node) const {
   if (calleeList.count(node) == 0) {
     return returnSet;
   }
-  // TODO: Look at this again.
   returnSet.reserve(calleeList.at(node).size());
   for (auto elem : calleeList.at(node)) {
     returnSet.insert(nodes.at(elem).get());
@@ -258,7 +265,6 @@ CgNodeRawPtrUSet Callgraph::getCallers(NodeId node) const {
   if (callerList.count(node) == 0) {
     return returnSet;
   }
-  // TODO: Look at this again.
   returnSet.reserve(callerList.at(node).size());
   for (auto elem : callerList.at(node)) {
     returnSet.insert(nodes.at(elem).get());

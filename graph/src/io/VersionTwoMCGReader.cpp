@@ -30,7 +30,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
     throw std::runtime_error(errorMsg);
   }
 
-  auto mcgInfo = j.at(ffInfo.metaInfoFieldName);
+  auto& mcgInfo = j.at(ffInfo.metaInfoFieldName);
   // from here on we assume, that if any file meta information is given, it is correct
 
   /// XXX How to make that we can use the MCGGeneratorVersionInfo to access the identifiers
@@ -56,10 +56,14 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
     throw std::runtime_error(errorMsg);
   }
 
+  std::cout  << "Before: " << j << "\n";
+
   auto& jsonCG = j[ffInfo.cgFieldName];
   console->info("Lifting MetaCG version {} file to version 4", mcgVersion);
   upgradeV2FormatToV4Format(jsonCG);
   mcgInfo["version"] = "4.0";
+
+  std::cout << "After: " << j << "\n";
 
   JsonSource v4JsonSrc(j);
   VersionFourMetaCGReader v4Reader(v4JsonSrc);
@@ -78,8 +82,8 @@ void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV4Format(nlohmann::jso
     // Convert callees and calllers entries to edges
     jNode["edges"] = nlohmann::json::object();
     auto& jCallees = jNode["callees"];
-    for (auto& jCallee: jCallees.items()) {
-      jNode["edges"][jCallee.key()] = {};
+    for (auto& jCallee: jCallees) {
+      jNode["edges"][jCallee] = {};
     }
     jNode.erase("callees");
     jNode.erase("callers");

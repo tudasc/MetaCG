@@ -8,6 +8,8 @@
 
 #include "metadata/MetaData.h"
 
+namespace metacg {
+
 class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
  public:
   std::map<std::string, std::string> allocs;
@@ -16,7 +18,7 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
 
   MallocVariableMD() = default;
 
-  explicit MallocVariableMD(const nlohmann::json& j) {
+  explicit MallocVariableMD(const nlohmann::json& j, StrToNodeMapping&) {
     metacg::MCGLogger::instance().getConsole()->trace("Creating {} metadata from json", key);
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve metadata for {}", key);
@@ -31,7 +33,7 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
   MallocVariableMD(const MallocVariableMD& other) : allocs(other.allocs) {}
 
  public:
-  nlohmann::json to_json() const final {
+  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final {
     std::vector<nlohmann::json> jArray;
     jArray.reserve(allocs.size());
     for (const auto& [k, v] : allocs) {
@@ -53,5 +55,7 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new MallocVariableMD(*this)); }
 };
+
+}
 
 #endif  // CGCOLLECTOR2_MALLOCVARIABLEMD_H

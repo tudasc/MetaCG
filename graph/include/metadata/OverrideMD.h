@@ -9,7 +9,10 @@
 
 #include "LoggerUtil.h"
 #include "metadata/MetaData.h"
+#include "CgNode.h"
 #include <vector>
+
+namespace metacg {
 
 /**
  * Copies items from the source vector into the destination vector. Removes duplicates.
@@ -38,12 +41,35 @@ struct OverrideMD final : metacg::MetaData::Registrar<OverrideMD> {
   static constexpr const char* key = "overrideMD";
   OverrideMD() = default;
 
-  explicit OverrideMD(const nlohmann::json& j) {
-    overrides = j.at("overrides").get<std::vector<size_t>>();
-    overriddenBy = j.at("overriddenBy").get<std::vector<size_t>>();
+  explicit OverrideMD(const nlohmann::json& j, StrToNodeMapping& strToNode) {
+    auto overrideStrs = j.at("overrides").get<std::vector<std::string>>();
+    for (auto& s : overrideStrs) {
+      auto* n = strToNode.getNodeFromStr(s);
+      assert(n && "Node is null");
+      overrides.push_back(n);
+    }
+
+    auto overridenByStrs = j.at("overriddenBy").get<std::vector<std::string>>();
+    for (auto& s : overridenByStrs) {
+      auto* n = strToNode.getNodeFromStr(s);
+      assert(n && "Node is null");
+      overriddenBy.push_back(n);
+    }
   }
 
-  nlohmann::json to_json() const final { return {{"overrides", overrides}, {"overriddenBy", overriddenBy}}; }
+  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final {
+    auto jOverrides = nlohmann::json::array();
+    for (auto& n : overrides) {
+      assert(n && "Node is null");
+      jOverrides.push_back(nodeToStr.getStrFromNode(*n));
+    }
+    auto jOverriddenBy = nlohmann::json::array();
+    for (auto& n : overriddenBy) {
+      assert(n && "Node is null");
+      jOverrides.push_back(nodeToStr.getStrFromNode(*n));
+    }
+    return {{"overrides", jOverrides}, {"overriddenBy", jOverriddenBy}};
+  }
 
  private:
   OverrideMD(const OverrideMD& other) : overrides(other.overrides), overriddenBy(other.overriddenBy) {}
@@ -56,13 +82,16 @@ struct OverrideMD final : metacg::MetaData::Registrar<OverrideMD> {
 
     mergeVectors(overriddenBy, toMergeDerived->overriddenBy);
     mergeVectors(overrides, toMergeDerived->overrides);
+    // FIXME: Need to figure out how to identify merged nodes here
   }
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new OverrideMD(*this)); }
 
   const char* getKey() const final { return key; }
 
-  std::vector<size_t> overrides;
-  std::vector<size_t> overriddenBy;
+  std::vector<const CgNode*> overrides;
+  std::vector<const CgNode*> overriddenBy;
 };
+
+}
 #endif  // METACG_OVERRIDEMD_H

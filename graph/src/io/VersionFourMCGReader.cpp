@@ -17,7 +17,7 @@ using namespace metacg;
 
 namespace {
 
-struct V4StrToNodeMapping : public io::StrToNodeMapping {
+struct V4StrToNodeMapping : public StrToNodeMapping {
   CgNode* getNodeFromStr(const std::string& nodeStr) override {
     if (auto it = strToNode.find(nodeStr); it != strToNode.end()) {
       return it->second;
@@ -69,7 +69,13 @@ metacg::CgNode* createNodeFromJson(metacg::Callgraph& cg, const std::string& nod
     metacg::MCGLogger::logError("Node must contain 'meta' field");
     return nullptr;
   }
-  cgNode.setMetaDataContainer(j.at("meta"));
+  if (!j.at("meta").is_null()) {
+    if (!j.at("meta").is_object()) {
+      metacg::MCGLogger::logError("'meta' field must be an object");
+      return nullptr;
+    }
+    cgNode.setMetaDataContainer(j.at("meta"));
+  }
   if (!strToNode.registerNode(nodeStr, cgNode)) {
     metacg::MCGLogger::logError("Faulty MetaCG file. Remove duplicate node identifiers to fix issue.");
     return nullptr;
@@ -125,7 +131,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMetaCGReader::read() {
 
   std::vector<TempEdgeData> tempEdgeData;
   // Rough estimate of required size
-  tempEdgeData.reserve(cg->size());
+  tempEdgeData.reserve(jsonCG.size());
 
   V4StrToNodeMapping strToNode;
 
@@ -139,9 +145,9 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMetaCGReader::read() {
       throw std::runtime_error("Error while reading nodes");
     }
     // Save edges for faster processing
-    for (auto& jEdge : jNode["edges"]) {
-      tempEdgeData.emplace_back(node->getId(), jEdge);
-    }
+//    for (auto& jEdgeIt : jNode["edges"].items()) {
+      tempEdgeData.emplace_back(node->getId(), jNode["edges"]);
+//    }
   }
 
   for (auto& nodeEdges : tempEdgeData) {
@@ -154,6 +160,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMetaCGReader::read() {
         throw std::runtime_error("Error while reading edges");
       }
       cg->addEdge(nodeEdges.callerId, node->getId());
+      std::cout << "Added edge for " << nodeEdges.callerId << ", " << node->getId() << "\n";
       // Reading edge metadata
       if (!mdJ.is_null()) {
         for (const auto& mdElem : mdJ.items()) {

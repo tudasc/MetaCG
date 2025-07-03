@@ -8,11 +8,13 @@
 
 #include "metadata/MetaData.h"
 
+namespace metacg {
+
 class CodeStatisticsMD : public metacg::MetaData::Registrar<CodeStatisticsMD> {
  public:
   static constexpr const char* key = "codeStatistics";
   CodeStatisticsMD() = default;
-  explicit CodeStatisticsMD(const nlohmann::json& j) {
+  explicit CodeStatisticsMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
@@ -25,7 +27,7 @@ class CodeStatisticsMD : public metacg::MetaData::Registrar<CodeStatisticsMD> {
   CodeStatisticsMD(const CodeStatisticsMD& other) : numVars(other.numVars) {}
 
  public:
-  nlohmann::json to_json() const final {
+  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final {
     nlohmann::json j;
     j["numVars"] = numVars;
     return j;
@@ -52,5 +54,7 @@ class CodeStatisticsMD : public metacg::MetaData::Registrar<CodeStatisticsMD> {
 
   int numVars{0};
 };
+
+}
 
 #endif  // CGCOLLECTOR2_CODESTATISTICSMD_H

@@ -9,11 +9,13 @@
 
 #include "metadata/MetaData.h"
 
+namespace metacg {
+
 class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
  public:
   static constexpr const char* key = "fileProperties";
   FilePropertiesMD() : fromSystemInclude(false) {}
-  explicit FilePropertiesMD(const nlohmann::json& j) {
+  explicit FilePropertiesMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
@@ -25,7 +27,7 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
   FilePropertiesMD(const FilePropertiesMD& other) : fromSystemInclude(other.fromSystemInclude) {}
 
  public:
-  nlohmann::json to_json() const final {
+  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final {
     nlohmann::json j;
     j["systemInclude"] = fromSystemInclude;
     return j;
@@ -41,9 +43,13 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
     this->fromSystemInclude |= toMergeDerived->fromSystemInclude;
   }
 
-  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<FilePropertiesMD>(new FilePropertiesMD(*this)); }
+  std::unique_ptr<MetaData> clone() const final {
+    return std::unique_ptr<FilePropertiesMD>(new FilePropertiesMD(*this));
+  }
 
   bool fromSystemInclude;
 };
+
+}
 
 #endif  // METACG_FILEPROPERTIESMD_H

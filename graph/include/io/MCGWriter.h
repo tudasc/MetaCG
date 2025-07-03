@@ -9,20 +9,13 @@
 
 #include "Callgraph.h"
 #include "MCGBaseInfo.h"
+#include "IdMapping.h"
 
 #include "nlohmann/json.hpp"
 
 #include <fstream>
 
 namespace metacg::io {
-
-/**
- * Maps nodes in the internal call graph representation to unique string identifiers used to identify nodes in the json
- * format.
- */
-struct NodeToStrMapping {
-  virtual std::string getStrFromNode(const CgNode& node) = 0;
-};
 
 /**
  * Target sink to serialize the CG into a json object.

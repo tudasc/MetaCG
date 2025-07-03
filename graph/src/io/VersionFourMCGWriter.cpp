@@ -14,13 +14,13 @@ using namespace metacg;
 
 namespace {
 
-struct V4WriterMapping: public io::NodeToStrMapping {
+struct V4WriterMapping: public NodeToStrMapping {
 
   V4WriterMapping(const Callgraph& cg, bool useNameAsId) : cg(cg), useNameAsId(useNameAsId) {
   }
 
   std::string getStrFromNode(const CgNode& node) override {
-    if (auto it = idToStr.find(node.getId()); it == idToStr.end()) {
+    if (auto it = idToStr.find(node.getId()); it != idToStr.end()) {
       return it->second;
     }
     idToStr[node.getId()] = std::move(convertToStr(node));
@@ -52,19 +52,17 @@ struct V4WriterMapping: public io::NodeToStrMapping {
   std::unordered_map<NodeId, std::string> idToStr;
 };
 
-// A node cannot serialize/deserialize itself, as it is dependent on the containing call graph to assign IDs.
-// Therefore, we have to this manually.
-nlohmann::json createJsonFromNode(const CgNode& node, io::NodeToStrMapping& nodeToStr) {
-
-  auto idStr = nodeToStr.getStrFromNode(node);
-
-  nlohmann::json j = {idStr, {{"functionName", node.getFunctionName()},
-       {"origin", node.getOrigin()},
-       {"hasBody", node.getHasBody()},
-       /*{"meta", node.getMetaDataContainer()}*/}};
-
-  return j;
-}
+//nlohmann::json createJsonFromNode(const CgNode& node, io::NodeToStrMapping& nodeToStr) {
+//
+//  auto idStr = nodeToStr.getStrFromNode(node);
+//
+//  nlohmann::json j = {idStr, {{"functionName", node.getFunctionName()},
+//       {"origin", node.getOrigin()},
+//       {"hasBody", node.getHasBody()},
+//       {"meta", node.getMetaDataContainer()}}};
+//
+//  return j;
+//}
 
 
 }
@@ -87,8 +85,8 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
                                 {"origin", node->getOrigin()},
                                 {"hasBody", node->getHasBody()},
                                 {"edges", {}},
-                                /*{"meta", node.getMetaDataContainer()}*/};
-    // TOOD: Add node MD
+                                {"meta", node->getMetaDataContainer()}};
+    // TODO: Add node MD
     auto idStr = nodeToStr.getStrFromNode(*node);
     jNodes[idStr] = std::move(jNode);
   }
@@ -108,7 +106,7 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
       jEdgeMD[key] = val->to_json();
     }
 
-    jNodes[callerStr]["edges"].push_back({calleeStr, jEdgeMD});
+    jNodes[callerStr]["edges"][calleeStr] = jEdgeMD;
   }
 
   j["_CG"] = std::move(jNodes);

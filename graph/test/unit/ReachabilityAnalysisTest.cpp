@@ -37,15 +37,15 @@ class ReachabilityAnalysisTest : public ::testing::Test {
   }
 
   void fillGraph(metacg::Callgraph* graph) {
-    graph->getOrInsertNode(mainS);
-    graph->getOrInsertNode(LC1);
-    graph->getOrInsertNode(RC1);
-    graph->getOrInsertNode(LC2);
-    graph->getOrInsertNode(RC2);
-    graph->getOrInsertNode(LC3);
-    graph->getOrInsertNode(RC3);
-    graph->getOrInsertNode(LC4);
-    graph->getOrInsertNode(RC4);
+    graph->insert(mainS);
+    graph->insert(LC1);
+    graph->insert(RC1);
+    graph->insert(LC2);
+    graph->insert(RC2);
+    graph->insert(LC3);
+    graph->insert(RC3);
+    graph->insert(LC4);
+    graph->insert(RC4);
   }
 };
 
@@ -54,138 +54,138 @@ TEST_F(ReachabilityAnalysisTest, NoneReachable) {
   ASSERT_TRUE(cg != nullptr);
   fillGraph(cg);
   ReachabilityAnalysis ra(cg);
-  ASSERT_FALSE(ra.existsPathBetween(cg->getNode(mainS), cg->getNode(LC1)));
-  ASSERT_FALSE(ra.existsPathBetween(cg->getNode(mainS), cg->getNode(LC2)));
-  ASSERT_FALSE(ra.existsPathBetween(cg->getNode(mainS), cg->getNode(LC3)));
-  ASSERT_FALSE(ra.existsPathBetween(cg->getNode(mainS), cg->getNode(LC4)));
+  ASSERT_FALSE(ra.existsPathBetween(cg->getFirstNode(mainS), cg->getFirstNode(LC1)));
+  ASSERT_FALSE(ra.existsPathBetween(cg->getFirstNode(mainS), cg->getFirstNode(LC2)));
+  ASSERT_FALSE(ra.existsPathBetween(cg->getFirstNode(mainS), cg->getFirstNode(LC3)));
+  ASSERT_FALSE(ra.existsPathBetween(cg->getFirstNode(mainS), cg->getFirstNode(LC4)));
 
-  ASSERT_FALSE(ra.existsPathBetween(cg->getNode(mainS), cg->getNode(RC1)));
-  ASSERT_FALSE(ra.existsPathBetween(cg->getNode(mainS), cg->getNode(RC2)));
-  ASSERT_FALSE(ra.existsPathBetween(cg->getNode(mainS), cg->getNode(RC3)));
-  ASSERT_FALSE(ra.existsPathBetween(cg->getNode(mainS), cg->getNode(RC4)));
+  ASSERT_FALSE(ra.existsPathBetween(cg->getFirstNode(mainS), cg->getFirstNode(RC1)));
+  ASSERT_FALSE(ra.existsPathBetween(cg->getFirstNode(mainS), cg->getFirstNode(RC2)));
+  ASSERT_FALSE(ra.existsPathBetween(cg->getFirstNode(mainS), cg->getFirstNode(RC3)));
+  ASSERT_FALSE(ra.existsPathBetween(cg->getFirstNode(mainS), cg->getFirstNode(RC4)));
 }
 
 TEST_F(ReachabilityAnalysisTest, OneReachable) {
   auto cg = getGraph();
   ASSERT_TRUE(cg != nullptr);
   fillGraph(cg);
-  cg->addEdge(mainS, LC1);
+  ASSERT_TRUE(cg->addEdge(mainS, LC1));
   // Explicit call to compute the result
   ReachabilityAnalysis ra(cg);
   ra.computeReachableFromMain();
-  ASSERT_TRUE(ra.isReachableFromMain(cg->getNode(LC1)));
-  ASSERT_FALSE(ra.isReachableFromMain(cg->getNode(LC2)));
-  ASSERT_FALSE(ra.isReachableFromMain(cg->getNode(LC3)));
-  ASSERT_FALSE(ra.isReachableFromMain(cg->getNode(LC4)));
-  ASSERT_FALSE(ra.isReachableFromMain(cg->getNode(RC1)));
-  ASSERT_FALSE(ra.isReachableFromMain(cg->getNode(RC2)));
-  ASSERT_FALSE(ra.isReachableFromMain(cg->getNode(RC3)));
-  ASSERT_FALSE(ra.isReachableFromMain(cg->getNode(RC4)));
+  ASSERT_TRUE(ra.isReachableFromMain(cg->getFirstNode(LC1)));
+  ASSERT_FALSE(ra.isReachableFromMain(cg->getFirstNode(LC2)));
+  ASSERT_FALSE(ra.isReachableFromMain(cg->getFirstNode(LC3)));
+  ASSERT_FALSE(ra.isReachableFromMain(cg->getFirstNode(LC4)));
+  ASSERT_FALSE(ra.isReachableFromMain(cg->getFirstNode(RC1)));
+  ASSERT_FALSE(ra.isReachableFromMain(cg->getFirstNode(RC2)));
+  ASSERT_FALSE(ra.isReachableFromMain(cg->getFirstNode(RC3)));
+  ASSERT_FALSE(ra.isReachableFromMain(cg->getFirstNode(RC4)));
 
   // No Explicit call to compute the result, yet implicitly triggered
   ReachabilityAnalysis ra2(cg);
-  ASSERT_TRUE(ra2.isReachableFromMain(cg->getNode(LC1)));
-  ASSERT_FALSE(ra2.isReachableFromMain(cg->getNode(LC2)));
-  ASSERT_FALSE(ra2.isReachableFromMain(cg->getNode(LC3)));
-  ASSERT_FALSE(ra2.isReachableFromMain(cg->getNode(LC4)));
-  ASSERT_FALSE(ra2.isReachableFromMain(cg->getNode(RC1)));
-  ASSERT_FALSE(ra2.isReachableFromMain(cg->getNode(RC2)));
-  ASSERT_FALSE(ra2.isReachableFromMain(cg->getNode(RC3)));
-  ASSERT_FALSE(ra2.isReachableFromMain(cg->getNode(RC4)));
+  ASSERT_TRUE(ra2.isReachableFromMain(cg->getFirstNode(LC1)));
+  ASSERT_FALSE(ra2.isReachableFromMain(cg->getFirstNode(LC2)));
+  ASSERT_FALSE(ra2.isReachableFromMain(cg->getFirstNode(LC3)));
+  ASSERT_FALSE(ra2.isReachableFromMain(cg->getFirstNode(LC4)));
+  ASSERT_FALSE(ra2.isReachableFromMain(cg->getFirstNode(RC1)));
+  ASSERT_FALSE(ra2.isReachableFromMain(cg->getFirstNode(RC2)));
+  ASSERT_FALSE(ra2.isReachableFromMain(cg->getFirstNode(RC3)));
+  ASSERT_FALSE(ra2.isReachableFromMain(cg->getFirstNode(RC4)));
 
   // No explicit call, but force RA to recompute reachable set
   ReachabilityAnalysis ra3(cg);
-  ASSERT_TRUE(ra3.isReachableFromMain(cg->getNode(LC1), true));
-  ASSERT_FALSE(ra3.isReachableFromMain(cg->getNode(LC2)));
-  ASSERT_FALSE(ra3.isReachableFromMain(cg->getNode(LC3)));
-  ASSERT_FALSE(ra3.isReachableFromMain(cg->getNode(LC4)));
-  ASSERT_FALSE(ra3.isReachableFromMain(cg->getNode(RC1)));
-  ASSERT_FALSE(ra3.isReachableFromMain(cg->getNode(RC2)));
-  ASSERT_FALSE(ra3.isReachableFromMain(cg->getNode(RC3)));
-  ASSERT_FALSE(ra3.isReachableFromMain(cg->getNode(RC4)));
+  ASSERT_TRUE(ra3.isReachableFromMain(cg->getFirstNode(LC1), true));
+  ASSERT_FALSE(ra3.isReachableFromMain(cg->getFirstNode(LC2)));
+  ASSERT_FALSE(ra3.isReachableFromMain(cg->getFirstNode(LC3)));
+  ASSERT_FALSE(ra3.isReachableFromMain(cg->getFirstNode(LC4)));
+  ASSERT_FALSE(ra3.isReachableFromMain(cg->getFirstNode(RC1)));
+  ASSERT_FALSE(ra3.isReachableFromMain(cg->getFirstNode(RC2)));
+  ASSERT_FALSE(ra3.isReachableFromMain(cg->getFirstNode(RC3)));
+  ASSERT_FALSE(ra3.isReachableFromMain(cg->getFirstNode(RC4)));
 }
 
 TEST_F(ReachabilityAnalysisTest, TwoReachable) {
   auto cg = getGraph();
   ASSERT_TRUE(cg != nullptr);
   fillGraph(cg);
-  cg->addEdge(mainS, LC1);
-  cg->addEdge(mainS, LC2);
+  ASSERT_TRUE(cg->addEdge(mainS, LC1));
+  ASSERT_TRUE(cg->addEdge(mainS, LC2));
   // Explicit call to compute the result
   ReachabilityAnalysis ra(cg);
   ra.computeReachableFromMain();
-  ASSERT_TRUE(ra.isReachableFromMain(cg->getNode(LC1)));
-  ASSERT_TRUE(ra.isReachableFromMain(cg->getNode(LC2)));
-  ASSERT_FALSE(ra.isReachableFromMain(cg->getNode(LC3)));
-  ASSERT_FALSE(ra.isReachableFromMain(cg->getNode(LC4)));
-  ASSERT_FALSE(ra.isReachableFromMain(cg->getNode(RC1)));
-  ASSERT_FALSE(ra.isReachableFromMain(cg->getNode(RC2)));
-  ASSERT_FALSE(ra.isReachableFromMain(cg->getNode(RC3)));
-  ASSERT_FALSE(ra.isReachableFromMain(cg->getNode(RC4)));
+  ASSERT_TRUE(ra.isReachableFromMain(cg->getFirstNode(LC1)));
+  ASSERT_TRUE(ra.isReachableFromMain(cg->getFirstNode(LC2)));
+  ASSERT_FALSE(ra.isReachableFromMain(cg->getFirstNode(LC3)));
+  ASSERT_FALSE(ra.isReachableFromMain(cg->getFirstNode(LC4)));
+  ASSERT_FALSE(ra.isReachableFromMain(cg->getFirstNode(RC1)));
+  ASSERT_FALSE(ra.isReachableFromMain(cg->getFirstNode(RC2)));
+  ASSERT_FALSE(ra.isReachableFromMain(cg->getFirstNode(RC3)));
+  ASSERT_FALSE(ra.isReachableFromMain(cg->getFirstNode(RC4)));
 
   // No Explicit call to compute the result, yet implicitly triggered
   ReachabilityAnalysis ra2(cg);
-  ASSERT_TRUE(ra2.isReachableFromMain(cg->getNode(LC1)));
-  ASSERT_TRUE(ra2.isReachableFromMain(cg->getNode(LC2)));
-  ASSERT_FALSE(ra2.isReachableFromMain(cg->getNode(LC3)));
-  ASSERT_FALSE(ra2.isReachableFromMain(cg->getNode(LC4)));
-  ASSERT_FALSE(ra2.isReachableFromMain(cg->getNode(RC1)));
-  ASSERT_FALSE(ra2.isReachableFromMain(cg->getNode(RC2)));
-  ASSERT_FALSE(ra2.isReachableFromMain(cg->getNode(RC3)));
-  ASSERT_FALSE(ra2.isReachableFromMain(cg->getNode(RC4)));
+  ASSERT_TRUE(ra2.isReachableFromMain(cg->getFirstNode(LC1)));
+  ASSERT_TRUE(ra2.isReachableFromMain(cg->getFirstNode(LC2)));
+  ASSERT_FALSE(ra2.isReachableFromMain(cg->getFirstNode(LC3)));
+  ASSERT_FALSE(ra2.isReachableFromMain(cg->getFirstNode(LC4)));
+  ASSERT_FALSE(ra2.isReachableFromMain(cg->getFirstNode(RC1)));
+  ASSERT_FALSE(ra2.isReachableFromMain(cg->getFirstNode(RC2)));
+  ASSERT_FALSE(ra2.isReachableFromMain(cg->getFirstNode(RC3)));
+  ASSERT_FALSE(ra2.isReachableFromMain(cg->getFirstNode(RC4)));
 
   // No explicit call, but force RA to recompute reachable set
   ReachabilityAnalysis ra3(cg);
-  ASSERT_TRUE(ra3.isReachableFromMain(cg->getNode(LC1), true));
-  ASSERT_TRUE(ra3.isReachableFromMain(cg->getNode(LC2), true));
-  ASSERT_FALSE(ra3.isReachableFromMain(cg->getNode(LC3)));
-  ASSERT_FALSE(ra3.isReachableFromMain(cg->getNode(LC4)));
-  ASSERT_FALSE(ra3.isReachableFromMain(cg->getNode(RC1)));
-  ASSERT_FALSE(ra3.isReachableFromMain(cg->getNode(RC2)));
-  ASSERT_FALSE(ra3.isReachableFromMain(cg->getNode(RC3)));
-  ASSERT_FALSE(ra3.isReachableFromMain(cg->getNode(RC4)));
+  ASSERT_TRUE(ra3.isReachableFromMain(cg->getFirstNode(LC1), true));
+  ASSERT_TRUE(ra3.isReachableFromMain(cg->getFirstNode(LC2), true));
+  ASSERT_FALSE(ra3.isReachableFromMain(cg->getFirstNode(LC3)));
+  ASSERT_FALSE(ra3.isReachableFromMain(cg->getFirstNode(LC4)));
+  ASSERT_FALSE(ra3.isReachableFromMain(cg->getFirstNode(RC1)));
+  ASSERT_FALSE(ra3.isReachableFromMain(cg->getFirstNode(RC2)));
+  ASSERT_FALSE(ra3.isReachableFromMain(cg->getFirstNode(RC3)));
+  ASSERT_FALSE(ra3.isReachableFromMain(cg->getFirstNode(RC4)));
 }
 
 TEST_F(ReachabilityAnalysisTest, ReachableBetweenTwoNodes) {
   auto cg = getGraph();
   ASSERT_TRUE(cg != nullptr);
   fillGraph(cg);
-  cg->addEdge(mainS, LC1);
-  cg->addEdge(mainS, LC2);
-  cg->addEdge(LC2, RC1);
+  ASSERT_TRUE(cg->addEdge(mainS, LC1));
+  ASSERT_TRUE(cg->addEdge(mainS, LC2));
+  ASSERT_TRUE(cg->addEdge(LC2, RC1));
   ReachabilityAnalysis ra(cg);
-  ASSERT_TRUE(ra.existsPathBetween(cg->getNode(mainS), cg->getNode(LC1)));
-  ASSERT_TRUE(ra.existsPathBetween(cg->getNode(LC2), cg->getNode(RC1)));
-  ASSERT_FALSE(ra.existsPathBetween(cg->getNode(LC4), cg->getNode(RC3)));
+  ASSERT_TRUE(ra.existsPathBetween(cg->getFirstNode(mainS), cg->getFirstNode(LC1)));
+  ASSERT_TRUE(ra.existsPathBetween(cg->getFirstNode(LC2), cg->getFirstNode(RC1)));
+  ASSERT_FALSE(ra.existsPathBetween(cg->getFirstNode(LC4), cg->getFirstNode(RC3)));
 }
 
 TEST_F(ReachabilityAnalysisTest, ReachableBetweenNodesNoCycle) {
   auto cg = getGraph();
   ASSERT_TRUE(cg != nullptr);
   fillGraph(cg);
-  cg->addEdge(mainS, LC1);
-  cg->addEdge(mainS, LC2);
-  cg->addEdge(LC2, RC1);
-  cg->addEdge(RC1, RC2);
+  ASSERT_TRUE(cg->addEdge(mainS, LC1));
+  ASSERT_TRUE(cg->addEdge(mainS, LC2));
+  ASSERT_TRUE(cg->addEdge(LC2, RC1));
+  ASSERT_TRUE(cg->addEdge(RC1, RC2));
   ReachabilityAnalysis ra(cg);
-  ASSERT_TRUE(ra.existsPathBetween(cg->getNode(mainS), cg->getNode(RC2)));
-  ASSERT_TRUE(ra.existsPathBetween(cg->getNode(LC2), cg->getNode(RC2)));
-  ASSERT_FALSE(ra.existsPathBetween(cg->getNode(RC2), cg->getNode(RC3)));
+  ASSERT_TRUE(ra.existsPathBetween(cg->getFirstNode(mainS), cg->getFirstNode(RC2)));
+  ASSERT_TRUE(ra.existsPathBetween(cg->getFirstNode(LC2), cg->getFirstNode(RC2)));
+  ASSERT_FALSE(ra.existsPathBetween(cg->getFirstNode(RC2), cg->getFirstNode(RC3)));
 }
 
 TEST_F(ReachabilityAnalysisTest, ReachableBetweenNodesWithCycle) {
   auto cg = getGraph();
   ASSERT_TRUE(cg != nullptr);
   fillGraph(cg);
-  cg->addEdge(mainS, LC1);
-  cg->addEdge(LC1, RC1);
-  cg->addEdge(RC1, RC2);
-  cg->addEdge(RC2, LC1);  // creates cycle main -> lc1 -> rc1 -> rc2 -> lc1 -> lc2
-  cg->addEdge(LC1, LC2);
-  cg->addEdge(mainS, LC2);
+  ASSERT_TRUE(cg->addEdge(mainS, LC1));
+  ASSERT_TRUE(cg->addEdge(LC1, RC1));
+  ASSERT_TRUE(cg->addEdge(RC1, RC2));
+  ASSERT_TRUE(cg->addEdge(RC2, LC1));  // creates cycle main -> lc1 -> rc1 -> rc2 -> lc1 -> lc2
+  ASSERT_TRUE(cg->addEdge(LC1, LC2));
+  ASSERT_TRUE(cg->addEdge(mainS, LC2));
   ReachabilityAnalysis ra(cg);
-  ASSERT_TRUE(ra.existsPathBetween(cg->getNode(mainS), cg->getNode(LC2)));
-  ASSERT_TRUE(ra.existsPathBetween(cg->getNode(RC2), cg->getNode(LC2)));
-  ASSERT_FALSE(ra.existsPathBetween(cg->getNode(RC2), cg->getNode(RC3)));
+  ASSERT_TRUE(ra.existsPathBetween(cg->getFirstNode(mainS), cg->getFirstNode(LC2)));
+  ASSERT_TRUE(ra.existsPathBetween(cg->getFirstNode(RC2), cg->getFirstNode(LC2)));
+  ASSERT_FALSE(ra.existsPathBetween(cg->getFirstNode(RC2), cg->getFirstNode(RC3)));
 }
 }  // namespace

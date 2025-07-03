@@ -33,9 +33,12 @@ void metacg::io::VersionTwoMCGWriter::write(const metacg::Callgraph* cg, metacg:
   auto v4Json = v4JsonSink.getJson();
   auto& jsonCG = v4Json["_CG"];
 
+  std::cout  << "Before: " << v4Json << "\n";
+
   downgradeV4FormatToV2Format(jsonCG);
 
   j.at(fileInfo.formatInfo.cgFieldName) = std::move(jsonCG);
+  std::cout  << "After: " << j << "\n";
   js.setJson(j);
 }
 
@@ -57,13 +60,17 @@ void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json
     }
     jNode["callers"] = nlohmann::json::array();
     jNode["callees"] = std::move(jCallees);
+    jNode.erase("edges");
 
-    // Put origin in fileProperties metadata
     auto& jMeta = jNode["meta"];
-    if (!jMeta.contains("fileProperties")) {
-      jMeta["fileProperties"] = nlohmann::json::object();
+
+    // Put origin in fileProperties metadata, if not null
+    if (!jNode["origin"].is_null()) {
+      if (!jMeta.contains("fileProperties")) {
+        jMeta["fileProperties"] = nlohmann::json::object();
+      }
+      jMeta["fileProperties"]["origin"] = jNode["origin"];
     }
-    jMeta["fileProperties"]["origin"] = jNode["origin"];
     jNode.erase("origin");
 
     jNode["isVirtual"] = false;
@@ -71,6 +78,7 @@ void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json
     jNode["overrides"] = nlohmann::json::array();
     jNode["overriddenBy"] = nlohmann::json::array();
     if (jMeta.contains("overrideMD")) {
+      jNode["isVirtual"] = true;
       auto& jOverrideMD = jMeta["overrideMD"];
       if (!jOverrideMD["overrides"].empty()) {
         jNode["doesOverride"] = true;
@@ -78,6 +86,10 @@ void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json
       }
       jNode["overriddenBy"] = jOverrideMD["overriddenBy"];
       jMeta.erase("overrideMD");
+      // If no other metadata exist, set meta field to null to maintain consistency.
+      if (jMeta.empty()) {
+        jMeta = nullptr;
+      }
     }
   }
 

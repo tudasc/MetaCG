@@ -4,78 +4,57 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
+#include "Callgraph.h"
 #include "CgNode.h"
 #include "gtest/gtest.h"
 
 TEST(CgNode, CreateNodeOnlyName) {
-  auto n = new metacg::CgNode("foo");
-  EXPECT_NE(n, nullptr);
-  EXPECT_EQ(n->getFunctionName(), "foo");
-
-  delete n;
+  auto cg = std::make_unique<metacg::Callgraph>();
+  auto& n = cg->insert("foo");
+  EXPECT_EQ(n.getFunctionName(), "foo");
 }
 
 TEST(CgNode, CreateNodeNameAndOrigin) {
-  auto n = new metacg::CgNode("foo", "origin:21");
+  auto cg = std::make_unique<metacg::Callgraph>();
+  auto& n = cg->insert("foo", "origin:21");
 
-  EXPECT_NE(n, nullptr);
-  EXPECT_EQ(n->getFunctionName(), "foo");
-  EXPECT_EQ((n->getOrigin()), "origin:21");
-
-  delete n;
+  EXPECT_EQ(n.getFunctionName(), "foo");
+  EXPECT_EQ((n.getOrigin()), "origin:21");
 }
 
 TEST(CgNode, NodesSame) {
-  auto n = new metacg::CgNode("foo");
-  auto nn = new metacg::CgNode("foo");
+  auto cg = std::make_unique<metacg::Callgraph>();
+  auto& n = cg->insert("foo");
+  auto& nn = cg->insert("foo");
 
-  EXPECT_NE(n, nullptr);
-  EXPECT_NE(nn, nullptr);
-  EXPECT_TRUE(n->isSameFunctionName(*nn));
-  EXPECT_TRUE(nn->isSameFunctionName(*n));
-
-  delete n;
-  delete nn;
+  EXPECT_NE(n.getId(), nn.getId());
+  EXPECT_TRUE(n.getFunctionName() == nn.getFunctionName());
 }
 
 TEST(CgNode, NodesNotSameName) {
-  auto n = new metacg::CgNode("foo");
-  auto nn = new metacg::CgNode("bar");
+  auto cg = std::make_unique<metacg::Callgraph>();
+  auto& n = cg->insert("foo");
+  auto& nn = cg->insert("bar");
 
-  EXPECT_NE(n, nullptr);
-  EXPECT_NE(nn, nullptr);
-  EXPECT_FALSE(n->isSameFunctionName(*nn));
-  EXPECT_FALSE(nn->isSameFunctionName(*n));
-
-  delete n;
-  delete nn;
+  EXPECT_NE(n.getId(), nn.getId());
+  EXPECT_FALSE(n.getFunctionName() == nn.getFunctionName());
 }
 
 TEST(CgNode, NodesNameAndOriginSame) {
-  auto n = new metacg::CgNode("foo", "origin:a");
-  auto nn = new metacg::CgNode("foo", "origin:a");
+  auto cg = std::make_unique<metacg::Callgraph>();
+  auto& n = cg->insert("foo", "origin:a");
+  auto& nn = cg->insert("foo", "origin:a");
 
-  EXPECT_NE(n, nullptr);
-  EXPECT_NE(nn, nullptr);
-  EXPECT_TRUE(n->isSameFunctionName(*nn));
-  EXPECT_TRUE(nn->isSameFunctionName(*n));
-
-  delete n;
-  delete nn;
+  EXPECT_NE(n.getId(), nn.getId());
+  EXPECT_TRUE(n.getFunctionName() == nn.getFunctionName());
 }
 
 TEST(CgNode, NodesNameAndOriginNotSame) {
-  auto n = new metacg::CgNode("foo", "origin:a");
-  auto nn = new metacg::CgNode("foo", "origin:b");
+  auto cg = std::make_unique<metacg::Callgraph>();
+  auto& n = cg->insert("foo", "origin:a");
+  auto& nn = cg->insert("foo", "origin:b");
 
-  EXPECT_NE(n, nullptr);
-  EXPECT_NE(nn, nullptr);
-  EXPECT_TRUE(n->isSameFunctionName(*nn));
-  EXPECT_TRUE(nn->isSameFunctionName(*n));
-
-  EXPECT_FALSE(n->isSameFunction(*nn));
-  EXPECT_FALSE(nn->isSameFunction(*n));
-
-  delete n;
-  delete nn;
+  EXPECT_NE(n.getId(), nn.getId());
+  EXPECT_TRUE(n.getFunctionName() == nn.getFunctionName());
+  EXPECT_FALSE(n.getOrigin() == nn.getOrigin());
 }

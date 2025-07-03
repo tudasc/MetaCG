@@ -8,11 +8,13 @@
 
 #include "metadata/MetaData.h"
 
+namespace metacg {
+
 class NumStatementsMD : public metacg::MetaData::Registrar<NumStatementsMD> {
  public:
   static constexpr const char* key = "numStatements";
   NumStatementsMD() = default;
-  explicit NumStatementsMD(const nlohmann::json& j) {
+  explicit NumStatementsMD(const nlohmann::json& j, StrToNodeMapping&) {
     metacg::MCGLogger::instance().getConsole()->trace("Reading NumStatementsMD from json");
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", "NumStatementsMD");
@@ -27,7 +29,7 @@ class NumStatementsMD : public metacg::MetaData::Registrar<NumStatementsMD> {
   NumStatementsMD(const NumStatementsMD& other) : numStmts(other.numStmts) {}
 
  public:
-  nlohmann::json to_json() const final { return getNumberOfStatements(); }
+  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final { return getNumberOfStatements(); }
 
   const char* getKey() const override { return key; }
 
@@ -52,5 +54,6 @@ class NumStatementsMD : public metacg::MetaData::Registrar<NumStatementsMD> {
  private:
   int numStmts{0};
 };
+}
 
 #endif  // CGCOLLECTOR2_NUMSTATEMENTSMD_H

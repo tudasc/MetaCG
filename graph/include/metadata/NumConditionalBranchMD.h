@@ -8,11 +8,13 @@
 
 #include "metadata/MetaData.h"
 
+namespace metacg {
+
 class NumConditionalBranchMD : public metacg::MetaData::Registrar<NumConditionalBranchMD> {
  public:
   static constexpr const char* key = "numConditionalBranches";
   NumConditionalBranchMD() = default;
-  explicit NumConditionalBranchMD(const nlohmann::json& j) {
+  explicit NumConditionalBranchMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
@@ -22,11 +24,10 @@ class NumConditionalBranchMD : public metacg::MetaData::Registrar<NumConditional
   }
 
  private:
-  NumConditionalBranchMD(const NumConditionalBranchMD& other)
-      : numConditionalBranches(other.numConditionalBranches) {}
+  NumConditionalBranchMD(const NumConditionalBranchMD& other) : numConditionalBranches(other.numConditionalBranches) {}
 
  public:
-  nlohmann::json to_json() const final { return numConditionalBranches; }
+  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final { return numConditionalBranches; }
 
   virtual const char* getKey() const final { return key; }
 
@@ -34,7 +35,7 @@ class NumConditionalBranchMD : public metacg::MetaData::Registrar<NumConditional
     assert(toMerge.getKey() == getKey() && "Trying to merge NumConditionalBranchMD with meta data of different types");
 
     const NumConditionalBranchMD* toMergeDerived = static_cast<const NumConditionalBranchMD*>(&toMerge);
-    
+
     if (numConditionalBranches != toMergeDerived->numConditionalBranches) {
       numConditionalBranches += toMergeDerived->numConditionalBranches;
 
@@ -49,5 +50,7 @@ class NumConditionalBranchMD : public metacg::MetaData::Registrar<NumConditional
 
   int numConditionalBranches{0};
 };
+
+}
 
 #endif  // CGCOLLECTOR2_NUMCONDITIONALBRANCHMD_H

@@ -8,12 +8,14 @@
 
 #include "metadata/MetaData.h"
 
+namespace metacg {
+
 class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
  public:
   NumOperationsMD() = default;
   static constexpr const char* key = "numOperations";
 
-  explicit NumOperationsMD(const nlohmann::json& j) {
+  explicit NumOperationsMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
@@ -36,7 +38,7 @@ class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
         numberOfMemoryAccesses(other.numberOfMemoryAccesses) {}
 
  public:
-  nlohmann::json to_json() const final {
+  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final {
     nlohmann::json j;
     j["numberOfIntOps"] = numberOfIntOps;
     j["numberOfFloatOps"] = numberOfFloatOps;
@@ -81,5 +83,6 @@ class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
   int numberOfControlFlowOps{0};
   int numberOfMemoryAccesses{0};
 };
+}
 
 #endif  // CGCOLLECTOR2_NUMOPERATIONSMD_H

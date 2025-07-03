@@ -66,12 +66,26 @@ class Callgraph {
 
   bool addEdge(NodeId parentID, NodeId childID);
 
+  /**
+   * Inserts an edge between the two nodes with the given names.
+   * Does nothing if there are multiple or no nodes with this name.
+   * @param callerName
+   * @param calleeName
+   * @return True if the edges was inserted, false otherwise.
+   */
+  bool addEdge(const std::string& callerName, const std::string& calleeName);
+
   CgNode& insert(std::string function, std::optional<std::string> origin = {}, bool isVirtual = false,
                  bool hasBody = false);
 
 
-
-  CgNode& getFirstByNameOrInsertNode(std::string function, std::optional<std::string> origin = {}, bool isVirtual = false,
+  /**
+   * Returns the first node matching the given name.\n
+   * If no node exists yet, it creates a new one.
+   * @param name to identify the node by
+   * @return Reference to the identified node
+   */
+  CgNode& getOrInsertNode(std::string function, std::optional<std::string> origin = {}, bool isVirtual = false,
                                           bool hasBody = false);
 
   /**
@@ -192,6 +206,7 @@ class Callgraph {
   // this set represents the call graph during the actual computation
   NodeContainer nodes;
   NameIdMap nameIdMap;
+
   EdgeContainer edges;
   CallerList callerList;
   CalleeList calleeList;

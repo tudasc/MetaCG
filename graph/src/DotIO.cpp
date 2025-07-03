@@ -123,7 +123,7 @@ void DotParser::handleEntity(const dot::ParsedToken& token) {
     } else {
       seenTokens.pop();        // Remove currently held entity, as this is not a connector
       seenTokens.push(token);  // Push current entity as the potential source for a connector
-      callgraph->getFirstByNameOrInsertNode(token.spelling);
+      callgraph->getOrInsertNode(token.spelling);
     }
   } else {
     MCGLogger::instance().getErrConsole()->warn("DotParser in unclear state");
@@ -151,8 +151,8 @@ void DotParser::reduceStack() {
     assert(srcElement.type == dot::ParsedToken::TokenType::ENTITY);
     seenTokens.pop();
 
-    callgraph->addEdge(callgraph->getFirstByNameOrInsertNode(srcElement.spelling),
-                       callgraph->getFirstByNameOrInsertNode(targetElement.spelling));
+    callgraph->addEdge(callgraph->getOrInsertNode(srcElement.spelling),
+                       callgraph->getOrInsertNode(targetElement.spelling));
   }
 }
 

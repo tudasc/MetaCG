@@ -131,7 +131,7 @@ TEST_F(V2MCGWriterTest, TwoNodeOneEdgeCGWrite) {
   cg->getFirstNode("foo")->setIsVirtual(true);
   cg->getFirstNode("foo")->setHasBody(true);
 
-  cg->addEdge(*cg->getMain(), *cg->getFirstNode("foo"));
+  EXPECT_TRUE(cg->addEdge("main", "foo"));
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
@@ -162,7 +162,7 @@ TEST_F(V2MCGWriterTest, ThreeNodeOneEdgeCGWrite) {
   cg->getFirstNode("bar")->setIsVirtual(false);
   cg->getFirstNode("bar")->setHasBody(false);
 
-  cg->addEdge(*cg->getMain(),  *cg->getFirstNode("foo"));
+  EXPECT_TRUE(cg->addEdge("main", "foo"));
 
   const std::string generatorName = "Test";
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};

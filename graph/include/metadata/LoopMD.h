@@ -9,11 +9,13 @@
 
 #include "metadata/MetaData.h"
 
+namespace metacg {
+
 class LoopDepthMD : public metacg::MetaData::Registrar<LoopDepthMD> {
  public:
   static constexpr const char* key = "loopDepth";
   LoopDepthMD() = default;
-  explicit LoopDepthMD(const nlohmann::json& j) {
+  explicit LoopDepthMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
@@ -25,7 +27,7 @@ class LoopDepthMD : public metacg::MetaData::Registrar<LoopDepthMD> {
   LoopDepthMD(const LoopDepthMD& other) : loopDepth(other.loopDepth) {}
 
  public:
-  nlohmann::json to_json() const final { return loopDepth; }
+  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final { return loopDepth; }
 
   virtual const char* getKey() const final { return key; }
 
@@ -59,7 +61,7 @@ class GlobalLoopDepthMD : public metacg::MetaData::Registrar<GlobalLoopDepthMD> 
   GlobalLoopDepthMD(const GlobalLoopDepthMD& other) : globalLoopDepth(other.globalLoopDepth) {}
 
  public:
-  nlohmann::json to_json() const final { return globalLoopDepth; }
+  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final { return globalLoopDepth; }
 
   virtual const char* getKey() const final { return key; }
 
@@ -100,7 +102,7 @@ class LoopCallDepthMD : public metacg::MetaData::Registrar<LoopCallDepthMD> {
   LoopCallDepthMD(const LoopCallDepthMD& other) : loopFunctionMap(other.loopFunctionMap) {}
 
  public:
-  nlohmann::json to_json() const final { return loopFunctionMap; }
+  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final { return loopFunctionMap; }
 
   virtual const char* getKey() const final { return key; }
 
@@ -129,5 +131,7 @@ class LoopCallDepthMD : public metacg::MetaData::Registrar<LoopCallDepthMD> {
 
   std::map<std::string, int> loopFunctionMap;
 };
+
+}
 
 #endif //LOOPMD_H

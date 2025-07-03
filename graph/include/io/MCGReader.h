@@ -8,6 +8,7 @@
 
 #include "LoggerUtil.h"
 #include "MCGManager.h"
+#include "IdMapping.h"
 
 #include "nlohmann/json.hpp"
 
@@ -20,13 +21,6 @@
 namespace metacg::io {
 
 using json = nlohmann::json;
-
-/**
- * Maps string identifiers used in the json file to the respective nodes in the internal call graph representation.
- */
-struct StrToNodeMapping {
-  virtual CgNode* getNodeFromStr(const std::string& formatId) = 0;
-};
 
 /**
  * Abstraction for the source of the JSON to read-in

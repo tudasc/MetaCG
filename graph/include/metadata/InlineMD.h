@@ -8,11 +8,13 @@
 
 #include "metadata/MetaData.h"
 
+namespace metacg {
+
 class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
  public:
   static constexpr const char* key = "inlineInfo";
   InlineMD() = default;
-  explicit InlineMD(const nlohmann::json& j) {
+  explicit InlineMD(const nlohmann::json& j, StrToNodeMapping&) {
     metacg::MCGLogger::instance().getConsole()->trace("Reading inlineInfo from json");
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", "inlineInfo");
@@ -28,7 +30,7 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
   InlineMD(const InlineMD& other) = default;
 
  public:
-  nlohmann::json to_json() const final {
+  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final {
     nlohmann::json j;
     j["markedInline"] = markedInline;
     j["likelyInline"] = likelyInline;
@@ -68,5 +70,7 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
   bool markedAlwaysInline = false;
   bool isTemplateFunction = false;
 };
+
+}
 
 #endif  // METACG_INLINEMD_H
