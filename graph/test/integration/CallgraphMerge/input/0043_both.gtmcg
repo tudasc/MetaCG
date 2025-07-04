@@ -13,7 +13,7 @@
                     "numVars": 0
                 },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0043_b.cpp",
+                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0043_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,

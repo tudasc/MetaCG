@@ -76,7 +76,8 @@ int main(int argc, char** argv) {
     mcgManager.addToManagedGraphs(inFile, mcgReader->read());
   }
 
-  mcgManager.mergeIntoActiveGraph();
+  // TODO: Let user set merge policy
+  mcgManager.mergeIntoActiveGraph(MergeByName());
 
   auto mcgWriter = io::createWriter(mcgVersion);
   if (!mcgWriter) {

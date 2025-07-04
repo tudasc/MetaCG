@@ -6,6 +6,7 @@
 #ifndef METACG_GRAPH_IDMAPPING_H
 #define METACG_GRAPH_IDMAPPING_H
 
+#include "CgTypes.h"
 #include <string>
 
 namespace metacg {
