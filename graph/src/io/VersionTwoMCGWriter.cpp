@@ -64,14 +64,30 @@ void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json
 
     auto& jMeta = jNode["meta"];
 
-    // Put origin in fileProperties metadata, if not null
-    if (!jNode["origin"].is_null()) {
-      if (!jMeta.contains("fileProperties")) {
-        jMeta["fileProperties"] = nlohmann::json::object();
+    // If fileProperties metadata is already attached, put the origin entry there.
+    // Otherwise, create the metadata if the origin is not null.
+    if (jMeta.contains("fileProperties")) {
+      // The expected behavior in V2 is to put an empty string if the origin is null
+      if (jNode["origin"].is_null()) {
+        jMeta["fileProperties"]["origin"] = "";
+      } else {
+        jMeta["fileProperties"]["origin"] = jNode["origin"];
       }
+    } else if (!jNode["origin"].is_null()){
+      jMeta["fileProperties"] = nlohmann::json::object();
       jMeta["fileProperties"]["origin"] = jNode["origin"];
     }
     jNode.erase("origin");
+
+//    // Put origin in fileProperties metadata, if not null
+//    if (!jNode["origin"].is_null()) {
+//
+//      if (!jMeta.contains("fileProperties")) {
+//        jMeta["fileProperties"] = nlohmann::json::object();
+//      }
+//      jMeta["fileProperties"]["origin"] = jNode["origin"];
+//    }
+//    jNode.erase("origin");
 
     jNode["isVirtual"] = false;
     jNode["doesOverride"] = false;

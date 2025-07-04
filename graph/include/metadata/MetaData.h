@@ -35,8 +35,8 @@ class MetaDataFactory {
   template <class... T>
   static std::unique_ptr<CRTPBase> create(const std::string& s, const nlohmann::json& j, StrToNodeMapping& strToNode) {
     if (data().find(s) == data().end()) {
-      MCGLogger::instance().getErrConsole()->warn("Could not create: {}, the Metadata is unknown in your application",
-                                                  s);
+      MCGLogger::instance().warn<MCGLogger::LogType::UNIQUE, MCGLogger::Output::ErrConsole>(
+          "Could not create {}: the metadata is unknown in your application", s);
       return nullptr;
     }
     return data().at(s)(j, strToNode);
@@ -101,7 +101,7 @@ bool MetaDataFactory<Base>::Registrar<T>::registered = MetaDataFactory<Base>::Re
 struct MetaData : MetaDataFactory<MetaData> {
   explicit MetaData(Key) {}
   static constexpr const char* key = "BaseClass";
-  virtual nlohmann::json to_json(NodeToStrMapping&) const = 0;
+  virtual nlohmann::json toJson(NodeToStrMapping&) const = 0;
   virtual const char* getKey() const = 0;
   virtual void merge(const MetaData&) = 0;
   [[nodiscard]] virtual std::unique_ptr<MetaData> clone() const = 0;

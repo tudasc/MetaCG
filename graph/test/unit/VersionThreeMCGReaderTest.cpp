@@ -37,7 +37,7 @@
 //      : stored_int(other.stored_int), stored_double(other.stored_double), stored_string(other.stored_string) {}
 //
 // public:
-//  nlohmann::json to_json() const final {
+//  nlohmann::json toJson() const final {
 //    return {{"stored_int", stored_int}, {"stored_double", stored_double}, {"stored_string", stored_string}};
 //  };
 //

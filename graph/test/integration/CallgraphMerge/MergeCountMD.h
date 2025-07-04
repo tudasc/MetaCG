@@ -26,7 +26,7 @@ class MergeCountMD : public metacg::MetaData::Registrar<MergeCountMD> {
   MergeCountMD(const MergeCountMD& other) : mergeCount(other.mergeCount) {}
 
  public:
-  nlohmann::json to_json() const final { return mergeCount; }
+  nlohmann::json toJson() const final { return mergeCount; }
 
   const char* getKey() const override { return key; }
 

@@ -57,7 +57,7 @@ struct OverrideMD final : metacg::MetaData::Registrar<OverrideMD> {
     }
   }
 
-  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final {
+  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
     auto jOverrides = nlohmann::json::array();
     for (auto& n : overrides) {
       assert(n && "Node is null");
@@ -66,7 +66,7 @@ struct OverrideMD final : metacg::MetaData::Registrar<OverrideMD> {
     auto jOverriddenBy = nlohmann::json::array();
     for (auto& n : overriddenBy) {
       assert(n && "Node is null");
-      jOverrides.push_back(nodeToStr.getStrFromNode(*n));
+      jOverriddenBy.push_back(nodeToStr.getStrFromNode(*n));
     }
     return {{"overrides", jOverrides}, {"overriddenBy", jOverriddenBy}};
   }

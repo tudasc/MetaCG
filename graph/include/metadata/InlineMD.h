@@ -30,7 +30,7 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
   InlineMD(const InlineMD& other) = default;
 
  public:
-  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final {
+  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
     nlohmann::json j;
     j["markedInline"] = markedInline;
     j["likelyInline"] = likelyInline;

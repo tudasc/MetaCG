@@ -27,7 +27,7 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
  public:
   static constexpr const char* key = "TestMetaData";
   TestMetaData() = default;
-  explicit TestMetaData(const nlohmann::json& j) {
+  explicit TestMetaData(const nlohmann::json& j, metacg::StrToNodeMapping&) {
     metadataString = j.at("metadataString");
     metadataInt = j.at("metadataInt");
     metadataFloat = j.at("metadataFloat");
@@ -38,7 +38,7 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
       : metadataString(other.metadataString), metadataInt(other.metadataInt), metadataFloat(other.metadataFloat) {}
 
  public:
-  nlohmann::json to_json() const final {
+  nlohmann::json toJson(metacg::NodeToStrMapping&) const final {
     nlohmann::json j;
     j["metadataString"] = metadataString;
     j["metadataInt"] = metadataInt;

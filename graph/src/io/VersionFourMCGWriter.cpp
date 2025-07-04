@@ -6,6 +6,7 @@
 
 #include "io/VersionFourMCGWriter.h"
 #include "MCGManager.h"
+#include "metadata/BuiltinMD.h"
 #include "config.h"
 #include <iostream>
 
@@ -81,11 +82,30 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
     if (!node) {
       continue;
     }
+    auto jMeta = nlohmann::json::object();
+    if (node->getMetaDataContainer().empty()) {
+      // If there is no metadata, write null instead of empty object
+      jMeta = nullptr;
+    } else {
+      for (auto& [key, md] : node->getMetaDataContainer()) {
+        std::cout << "Processing MD " << key << "\n";
+        // Metadata is not attached, if the generated field is empty or null.
+        // TODO: Should this be considered an error instead?
+        if (auto jMetaEntry = md->toJson(nodeToStr); !jMetaEntry.empty() && !jMetaEntry.is_null()) {
+          jMeta[key] = std::move(jMetaEntry);
+        } else {
+          MCGLogger::logWarn("Could not serialize metadata of type {} in node {}", key, node->getFunctionName());
+        }
+      }
+    }
+
     nlohmann::json jNode =  {{"functionName", node->getFunctionName()},
                                 {"origin", node->getOrigin()},
                                 {"hasBody", node->getHasBody()},
                                 {"edges", {}},
-                                {"meta", node->getMetaDataContainer()}};
+                                {"meta", jMeta}};
+
+    std::cout << "V4 generated node json: " << jNode << "\n";
     // TODO: Add node MD
     auto idStr = nodeToStr.getStrFromNode(*node);
     jNodes[idStr] = std::move(jNode);
@@ -103,7 +123,7 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
     nlohmann::json jEdgeMD = {};
     auto& mdMap = cg->getAllEdgeMetaData({caller->getId(), callee->getId()});
     for (auto&& [key, val] : mdMap) {
-      jEdgeMD[key] = val->to_json();
+      jEdgeMD[key] = val->toJson(nodeToStr);
     }
 
     jNodes[callerStr]["edges"][calleeStr] = jEdgeMD;

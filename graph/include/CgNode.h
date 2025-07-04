@@ -248,63 +248,63 @@ struct adl_serializer<std::unique_ptr<T>> {
   }
 };
 
-template <>
-struct adl_serializer<std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>>> {
-  static std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>> from_json(const json& j) {
-    // use compound type serialization instead of metadata serialization,
-    // because we need access to key and value for metadata creation
-    std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>> metadataAccumulator;
-    metadataAccumulator.reserve(j.size());
-    for (const auto& elem : j.items()) {
-      // logging of generation failure is done in create<> function, no else needed
-      // if metadata can not be fully generated, there will not be a stub key generated for it in the memory
-      // representation
-      if (auto obj = metacg::MetaData::create<>(elem.key(), elem.value()); obj) {
-        metadataAccumulator[elem.key()] = std::move(obj);
-      }
-    }
-    return metadataAccumulator;
-  }
-
-  // we need to fully specialize the adl_serializer
-  static void to_json(json& j, const std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>>& t) {
-    json jsonAccumulator;
-    for (const auto& elem : t) {
-      // if metadata_json can not be fully generated, there will not be a stub key generated for it in the json file
-      if (auto generated = elem.second->to_json(); !generated.empty()) {
-        jsonAccumulator[elem.first] = generated;
-      }
-    }
-    j = jsonAccumulator;
-  }
-};
-
-template <>
-struct adl_serializer<metacg::CgNodePtr> {
-//  static metacg::CgNodePtr from_json(const json& j) {
-//    metacg::CgNodePtr cgNode{};
-//    if (j.is_null()) {
-//      return cgNode;
+//template <>
+//struct adl_serializer<std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>>> {
+//  static std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>> from_json(const json& j) {
+//    // use compound type serialization instead of metadata serialization,
+//    // because we need access to key and value for metadata creation
+//    std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>> metadataAccumulator;
+//    metadataAccumulator.reserve(j.size());
+//    for (const auto& elem : j.items()) {
+//      // logging of generation failure is done in create<> function, no else needed
+//      // if metadata can not be fully generated, there will not be a stub key generated for it in the memory
+//      // representation
+//      if (auto obj = metacg::MetaData::create<>(elem.key(), elem.value()); obj) {
+//        metadataAccumulator[elem.key()] = std::move(obj);
+//      }
 //    }
-//    // TODO: Create node without CG?
-//    std::optional<std::string> origin{};
-//    if (j.contains("origin") && !j.at("origin").is_null()) {
-//      origin = j.at("origin");
-//    }
-//    cgNode =
-//        std::make_unique<metacg::CgNode>(j.at("functionName"), origin);
-//    cgNode->setHasBody(j.at("hasBody").get<bool>());
-//    cgNode->setMetaDataContainer(j.at("meta"));
-//    return cgNode;
+//    return metadataAccumulator;
 //  }
+//
+//  // we need to fully specialize the adl_serializer
+//  static void to_json(json& j, const std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>>& t) {
+//    json jsonAccumulator;
+//    for (const auto& elem : t) {
+//      // if metadata_json can not be fully generated, there will not be a stub key generated for it in the json file
+//      if (auto generated = elem.second->to_json(); !generated.empty()) {
+//        jsonAccumulator[elem.first] = generated;
+//      }
+//    }
+//    j = jsonAccumulator;
+//  }
+//};
 
-  static void to_json(json& j, const metacg::CgNodePtr& t) {
-    j = {{"functionName", t->getFunctionName()},
-         {"origin", t->getOrigin()},
-         {"hasBody", t->getHasBody()},
-         {"meta", t->getMetaDataContainer()}};
-  }
-};
+//template <>
+//struct adl_serializer<metacg::CgNodePtr> {
+////  static metacg::CgNodePtr from_json(const json& j) {
+////    metacg::CgNodePtr cgNode{};
+////    if (j.is_null()) {
+////      return cgNode;
+////    }
+////    // TODO: Create node without CG?
+////    std::optional<std::string> origin{};
+////    if (j.contains("origin") && !j.at("origin").is_null()) {
+////      origin = j.at("origin");
+////    }
+////    cgNode =
+////        std::make_unique<metacg::CgNode>(j.at("functionName"), origin);
+////    cgNode->setHasBody(j.at("hasBody").get<bool>());
+////    cgNode->setMetaDataContainer(j.at("meta"));
+////    return cgNode;
+////  }
+//
+//  static void to_json(json& j, const metacg::CgNodePtr& t) {
+//    j = {{"functionName", t->getFunctionName()},
+//         {"origin", t->getOrigin()},
+//         {"hasBody", t->getHasBody()},
+//         {"meta", t->getMetaDataContainer()}};
+//  }
+//};
 
 }  // namespace nlohmann
 

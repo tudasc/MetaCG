@@ -5,15 +5,13 @@
  */
 
 #include "io/VersionFourMCGReader.h"
+#include "metadata/BuiltinMD.h"
 #include "MCGBaseInfo.h"
 #include "Timing.h"
 #include "Util.h"
 #include <iostream>
 
-
 using namespace metacg;
-
-
 
 namespace {
 
@@ -36,6 +34,8 @@ struct V4StrToNodeMapping : public StrToNodeMapping {
  private:
   std::unordered_map<std::string, CgNode*> strToNode;
 };
+
+
 
 
 metacg::CgNode* createNodeFromJson(metacg::Callgraph& cg, const std::string& nodeStr, const nlohmann::json& j, V4StrToNodeMapping& strToNode) {
@@ -65,6 +65,9 @@ metacg::CgNode* createNodeFromJson(metacg::Callgraph& cg, const std::string& nod
     return nullptr;
   }
   cgNode.setHasBody(j.at("hasBody").get<bool>());
+
+  // Note: Checking the validity of the metadata field here, but actual processing is deferred until after ID mapping
+  // is finalized.
   if (!j.contains("meta")) {
     metacg::MCGLogger::logError("Node must contain 'meta' field");
     return nullptr;
@@ -74,8 +77,8 @@ metacg::CgNode* createNodeFromJson(metacg::Callgraph& cg, const std::string& nod
       metacg::MCGLogger::logError("'meta' field must be an object");
       return nullptr;
     }
-    cgNode.setMetaDataContainer(j.at("meta"));
   }
+
   if (!strToNode.registerNode(nodeStr, cgNode)) {
     metacg::MCGLogger::logError("Faulty MetaCG file. Remove duplicate node identifiers to fix issue.");
     return nullptr;
@@ -83,13 +86,15 @@ metacg::CgNode* createNodeFromJson(metacg::Callgraph& cg, const std::string& nod
   return &cgNode;
 }
 
+
 /**
- * Internal data structure to temporarily store edge data for later processing.
+ * Internal data structure to temporarily store edges and metadata data for later processing.
  */
-struct TempEdgeData {
-  TempEdgeData(NodeId id, nlohmann::json& j) : callerId(id), j(j) {};
-  NodeId callerId;
-  nlohmann::json& j;
+struct TempNodeData {
+  TempNodeData(NodeId id, nlohmann::json& jEdges, nlohmann::json& jMeta) : nodeId(id), jEdges(jEdges), jMeta(jMeta) {};
+  NodeId nodeId;
+  nlohmann::json& jEdges;
+  nlohmann::json& jMeta;
 };
 
 
@@ -129,13 +134,13 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMetaCGReader::read() {
 
   auto cg = std::make_unique<Callgraph>();
 
-  std::vector<TempEdgeData> tempEdgeData;
+  std::vector<TempNodeData> tempNodeData;
   // Rough estimate of required size
-  tempEdgeData.reserve(jsonCG.size());
+  tempNodeData.reserve(jsonCG.size());
 
   V4StrToNodeMapping strToNode;
 
-  for (nlohmann::json::iterator it = jsonCG.begin(); it != jsonCG.end(); ++it) {
+  for (auto it = jsonCG.begin(); it != jsonCG.end(); ++it) {
     auto& strId  = it.key();
     auto& jNode = it.value();
 
@@ -144,32 +149,44 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMetaCGReader::read() {
       errConsole->error("Encountered an error while processing node '{}'", strId);
       throw std::runtime_error("Error while reading nodes");
     }
-    // Save edges for faster processing
-//    for (auto& jEdgeIt : jNode["edges"].items()) {
-      tempEdgeData.emplace_back(node->getId(), jNode["edges"]);
-//    }
+
+    // Save edges and metadata for processing after IDs have been finalized
+    tempNodeData.emplace_back(node->getId(), jNode["edges"], jNode["meta"]);
   }
 
-  for (auto& nodeEdges : tempEdgeData) {
-    for (nlohmann::json::iterator it = nodeEdges.j.begin(); it != nodeEdges.j.end(); ++it) {
+  for (auto& nodeData : tempNodeData) {
+    auto* node = cg->getNode(nodeData.nodeId);
+    assert(node && "Node must not be null");
+    // Creating edges
+    for (auto it = nodeData.jEdges.begin(); it != nodeData.jEdges.end(); ++it) {
       auto& calleeStr = it.key();
       auto& mdJ = it.value();
-      auto* node = strToNode.getNodeFromStr(calleeStr);
-      if (!node) {
-        errConsole->error("Encountered unknown call target '{}' in edge from node '{}'", calleeStr, cg->getNode(nodeEdges.callerId)->getFunctionName());
+      auto* calleeNode = strToNode.getNodeFromStr(calleeStr);
+      if (!calleeNode) {
+        errConsole->error("Encountered unknown call target '{}' in edge from node '{}'", calleeStr, node->getFunctionName());
         throw std::runtime_error("Error while reading edges");
       }
-      cg->addEdge(nodeEdges.callerId, node->getId());
-      std::cout << "Added edge for " << nodeEdges.callerId << ", " << node->getId() << "\n";
+      cg->addEdge(nodeData.nodeId, calleeNode->getId());
+      std::cout << "Added edge for " << nodeData.nodeId << ", " << calleeNode->getId() << "\n"; // TODO: Remove
       // Reading edge metadata
       if (!mdJ.is_null()) {
         for (const auto& mdElem : mdJ.items()) {
           auto& mdKey = mdElem.key();
           auto& mdValJ = mdElem.value();
-          if (auto md = metacg::MetaData::create<>(mdKey, mdValJ); md) {
-            cg->addEdgeMetaData({nodeEdges.callerId, node->getId()}, std::move(md));
+          if (auto md = metacg::MetaData::create<>(mdKey, mdValJ, strToNode); md) {
+            cg->addEdgeMetaData({nodeData.nodeId, calleeNode->getId()}, std::move(md));
           }
         }
+      }
+    }
+    // Creating node metadata
+    for (auto it = nodeData.jMeta.begin(); it != nodeData.jMeta.end(); ++it) {
+      auto& mdKey = it.key();
+      auto& mdVal = it.value();
+      if (auto md = metacg::MetaData::create<>(mdKey, mdVal, strToNode); md) {
+        node->addMetaData(std::move(md));
+      } else {
+        errConsole->warn("Could not create metadata of type {} for node {}", mdKey, node->getFunctionName());
       }
     }
   }

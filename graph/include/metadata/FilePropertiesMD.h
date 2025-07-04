@@ -27,7 +27,7 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
   FilePropertiesMD(const FilePropertiesMD& other) : fromSystemInclude(other.fromSystemInclude) {}
 
  public:
-  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final {
+  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
     nlohmann::json j;
     j["systemInclude"] = fromSystemInclude;
     return j;

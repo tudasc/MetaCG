@@ -27,7 +27,7 @@ class LoopDepthMD : public metacg::MetaData::Registrar<LoopDepthMD> {
   LoopDepthMD(const LoopDepthMD& other) : loopDepth(other.loopDepth) {}
 
  public:
-  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final { return loopDepth; }
+  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final { return loopDepth; }
 
   virtual const char* getKey() const final { return key; }
 
@@ -49,7 +49,7 @@ class GlobalLoopDepthMD : public metacg::MetaData::Registrar<GlobalLoopDepthMD> 
   GlobalLoopDepthMD() = default;
   static constexpr const char* key = "globalLoopDepth";
 
-  explicit GlobalLoopDepthMD(const nlohmann::json& j) {
+  explicit GlobalLoopDepthMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
@@ -61,7 +61,7 @@ class GlobalLoopDepthMD : public metacg::MetaData::Registrar<GlobalLoopDepthMD> 
   GlobalLoopDepthMD(const GlobalLoopDepthMD& other) : globalLoopDepth(other.globalLoopDepth) {}
 
  public:
-  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final { return globalLoopDepth; }
+  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final { return globalLoopDepth; }
 
   virtual const char* getKey() const final { return key; }
 
@@ -88,7 +88,7 @@ class LoopCallDepthMD : public metacg::MetaData::Registrar<LoopCallDepthMD> {
  public:
   static constexpr const char* key = "loopCallDepth";
   LoopCallDepthMD() = default;
-  explicit LoopCallDepthMD(const nlohmann::json& j) {
+  explicit LoopCallDepthMD(const nlohmann::json& j, StrToNodeMapping&) {
     metacg::MCGLogger::instance().getConsole()->trace("Running LoopCallDepthHandler::read from json");
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
@@ -102,7 +102,7 @@ class LoopCallDepthMD : public metacg::MetaData::Registrar<LoopCallDepthMD> {
   LoopCallDepthMD(const LoopCallDepthMD& other) : loopFunctionMap(other.loopFunctionMap) {}
 
  public:
-  nlohmann::json to_json(NodeToStrMapping& nodeToStr) const final { return loopFunctionMap; }
+  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final { return loopFunctionMap; }
 
   virtual const char* getKey() const final { return key; }
 
