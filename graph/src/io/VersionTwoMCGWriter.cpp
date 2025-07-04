@@ -27,6 +27,7 @@ void metacg::io::VersionTwoMCGWriter::write(const metacg::Callgraph* cg, metacg:
 
   io::JsonSink v4JsonSink;
   io::VersionFourMCGWriter v4Writer;
+  v4Writer.setExportSorted(this->exportSorted);
   v4Writer.setUseNamesAsIds(true);
   v4Writer.write(cg, v4JsonSink);
 
@@ -35,14 +36,14 @@ void metacg::io::VersionTwoMCGWriter::write(const metacg::Callgraph* cg, metacg:
 
   std::cout  << "Before: " << v4Json << "\n";
 
-  downgradeV4FormatToV2Format(jsonCG);
+  downgradeV4FormatToV2Format(jsonCG, exportSorted);
 
   j.at(fileInfo.formatInfo.cgFieldName) = std::move(jsonCG);
   std::cout  << "After: " << j << "\n";
   js.setJson(j);
 }
 
-void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json& j) {
+void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json& j, bool sortCallers) {
 
   // Iterate over all nodes
   for (auto& it : j.items()) {
@@ -117,4 +118,11 @@ void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json
     }
   }
 
+  // Finally, sort callers (if requested)
+  if (sortCallers) {
+    for (auto& it : j.items()) {
+      auto& jNode = it.value();
+      std::sort(jNode["callers"].begin(), jNode["callers"].end());
+    }
+  }
 }

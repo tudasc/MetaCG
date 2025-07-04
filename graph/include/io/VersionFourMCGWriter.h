@@ -27,6 +27,10 @@ class VersionFourMCGWriter : public MCGWriter {
     this->useNamesAsIds = useNames;
   }
 
+  void setExportSorted(bool sort) {
+    this->exportSorted = sort;
+  }
+
  private:
   bool useNamesAsIds;
   bool exportSorted;

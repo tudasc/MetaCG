@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
   mcgManager.addToManagedGraphs("cg_b", mcgReaderB.read());
 
   metacg::io::VersionTwoMCGWriter mcgWriter;
+  mcgWriter.setExportSorted(true);
   mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
 
   metacg::io::JsonSink jsonSink;

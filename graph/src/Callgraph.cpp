@@ -238,7 +238,6 @@ MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::Mer
         clonedMd->applyMapping(mapping);
         this->addEdgeMetaData({mappedCallerId, mappedCalleeId}, std::move(clonedMd));
       }
-      // TODO: Mapping needed in edge metadata?
     }
   }
 

@@ -2,12 +2,12 @@
     "_CG": {
         "_Z1xv": {
             "callees": [
-                "_Z4loopv",
-                "_Z4leafv"
+                "_Z4leafv",
+                "_Z4loopv"
             ],
             "callers": [
-                "_Z5rightv",
-                "_Z4leftv"
+                "_Z4leftv",
+                "_Z5rightv"
             ],
             "doesOverride": false,
             "hasBody": true,
@@ -26,7 +26,7 @@
                     "_Z4loopv": 0
                 },
                 "loopDepth": 0,
-                "mergeCount": 1,
+                "mergeCount": 0,
                 "numConditionalBranches": 0,
                 "numOperations": {
                     "numberOfControlFlowOps": 2,
@@ -223,8 +223,8 @@
                 "_Z5rightv"
             ],
             "callers": [
-                "main",
-                "_Z4loopv"
+                "_Z4loopv",
+                "main"
             ],
             "doesOverride": false,
             "hasBody": true,

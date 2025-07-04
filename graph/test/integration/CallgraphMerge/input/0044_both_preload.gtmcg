@@ -73,8 +73,8 @@
         "_Z3foov": {
             "callees": [],
             "callers": [
-                "_Z3barv",
-                "_Z2hfv"
+                "_Z2hfv",
+                "_Z3barv"
             ],
             "doesOverride": false,
             "hasBody": true,
