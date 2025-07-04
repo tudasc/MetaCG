@@ -33,9 +33,9 @@ class CodeStatisticsMD : public metacg::MetaData::Registrar<CodeStatisticsMD> {
     return j;
   }
 
-  virtual const char* getKey() const final { return key; }
+  const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge CodeStatisticsMD with meta data of different types");
 
     const CodeStatisticsMD* toMergeDerived = static_cast<const CodeStatisticsMD*>(&toMerge);
@@ -51,6 +51,8 @@ class CodeStatisticsMD : public metacg::MetaData::Registrar<CodeStatisticsMD> {
   }
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new CodeStatisticsMD(*this)); }
+
+  void applyMapping(const GraphMapping&) override {}
 
   int numVars{0};
 };

@@ -43,9 +43,9 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
     return jArray;
   }
 
-  virtual const char* getKey() const { return key; }
+  const char* getKey() const override { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge MallocVariableMD with meta data of different types");
 
     const MallocVariableMD* toMergeDerived = static_cast<const MallocVariableMD*>(&toMerge);
@@ -54,6 +54,8 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
   }
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new MallocVariableMD(*this)); }
+
+  void applyMapping(const GraphMapping&) override {}
 };
 
 }

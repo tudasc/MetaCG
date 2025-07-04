@@ -30,7 +30,7 @@ class MergeCountMD : public metacg::MetaData::Registrar<MergeCountMD> {
 
   const char* getKey() const override { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge MergeCountMD with meta data of different types");
 
     const MergeCountMD* toMergeDerived = static_cast<const MergeCountMD*>(&toMerge);

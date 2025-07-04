@@ -188,7 +188,7 @@ TEST_F(MCGManagerTest, EmptyCallgraphMerge) {
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newCG", std::make_unique<metacg::Callgraph>(), true);
   mcgm.addToManagedGraphs("newCG2", std::make_unique<metacg::Callgraph>(), false);
-  mcgm.mergeIntoActiveGraph();
+  mcgm.mergeIntoActiveGraph(metacg::MergeByName());
   ASSERT_TRUE(mcgm.getCallgraph()->isEmpty());
 }
 
@@ -203,7 +203,7 @@ TEST_F(MCGManagerTest, FullIntoEmptyCallgraphMerge) {
   mcgm.getCallgraph("newCG2", false)->getFirstNode("child1")->setHasBody(true);
   mcgm.getCallgraph("newCG2", false)->addEdge("main", "child1");
 
-  mcgm.mergeIntoActiveGraph();
+  mcgm.mergeIntoActiveGraph(metacg::MergeByName());
 
   ASSERT_TRUE(mcgm.getCallgraph()->hasNode("main"));
   ASSERT_TRUE(mcgm.getCallgraph()->hasNode("child1"));
@@ -233,7 +233,7 @@ TEST_F(MCGManagerTest, FullIntoFullCallgraphMerge) {
   mcgm.getCallgraph("newCG2", false)->getFirstNode("child1")->setHasBody(true);
   mcgm.getCallgraph("newCG2", false)->addEdge("main", "child1");
 
-  mcgm.mergeIntoActiveGraph();
+  mcgm.mergeIntoActiveGraph(metacg::MergeByName());
 
   ASSERT_TRUE(mcgm.getCallgraph()->hasNode("main"));
   ASSERT_TRUE(mcgm.getCallgraph()->hasNode("child1"));

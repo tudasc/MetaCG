@@ -46,7 +46,7 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
 
   const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
       metacg::MCGLogger::instance().getErrConsole()->error(
           "The MetaData which was tried to merge with TestMetaData was of a different MetaData type");
@@ -55,6 +55,8 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
 
     // const TestMetaData* toMergeDerived = static_cast<const TestMetaData*>(&toMerge);
   }
+
+  void applyMapping(const metacg::GraphMapping&) override {}
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new TestMetaData(*this)); }
 

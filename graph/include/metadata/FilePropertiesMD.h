@@ -33,9 +33,9 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
     return j;
   }
 
-  virtual const char* getKey() const final { return key; }
+  const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge FilePropertiesMD with metadata of different types");
 
     const FilePropertiesMD* toMergeDerived = static_cast<const FilePropertiesMD*>(&toMerge);
@@ -46,6 +46,8 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
   std::unique_ptr<MetaData> clone() const final {
     return std::unique_ptr<FilePropertiesMD>(new FilePropertiesMD(*this));
   }
+
+  void applyMapping(const GraphMapping&) override {}
 
   bool fromSystemInclude;
 };

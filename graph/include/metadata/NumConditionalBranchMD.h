@@ -29,9 +29,9 @@ class NumConditionalBranchMD : public metacg::MetaData::Registrar<NumConditional
  public:
   nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final { return numConditionalBranches; }
 
-  virtual const char* getKey() const final { return key; }
+  const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge NumConditionalBranchMD with meta data of different types");
 
     const NumConditionalBranchMD* toMergeDerived = static_cast<const NumConditionalBranchMD*>(&toMerge);
@@ -47,6 +47,8 @@ class NumConditionalBranchMD : public metacg::MetaData::Registrar<NumConditional
   }
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new NumConditionalBranchMD(*this)); }
+
+  void applyMapping(const GraphMapping&) override {}
 
   int numConditionalBranches{0};
 };

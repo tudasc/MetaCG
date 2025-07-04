@@ -41,7 +41,7 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
 
   const char* getKey() const override { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge InlineMD with metadata of different types");
 
     const InlineMD* toMergeDerived = static_cast<const InlineMD*>(&toMerge);
@@ -55,6 +55,8 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
   }
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new InlineMD(*this)); }
+
+  void applyMapping(const GraphMapping&) override {}
 
   bool isMarkedInline() const { return markedInline; }
 

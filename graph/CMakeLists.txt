@@ -8,13 +8,14 @@ set(MetacgGraphLibSources
     src/io/MCGReader.cpp
     src/io/MCGWriter.cpp
     src/io/VersionTwoMCGReader.cpp
-        src/io/VersionFourMCGReader.cpp
+    src/io/VersionFourMCGReader.cpp
     src/MCGManager.cpp
     src/io/VersionTwoMCGWriter.cpp
-        src/io/VersionFourMCGWriter.cpp
+    src/io/VersionFourMCGWriter.cpp
     src/DotIO.cpp
     src/MCGBaseInfo.cpp
     src/ReachabilityAnalysis.cpp
+    src/MergePolicy.cpp
     include/io/MCGReader.h
     include/CgNode.h
     include/Callgraph.h
@@ -27,6 +28,7 @@ set(MetacgGraphLibSources
     include/DotIO.h
     include/Timing.h
     include/ReachabilityAnalysis.h
+    include/MergePolicy.h
 )
 
 # Custom in-tree metadata

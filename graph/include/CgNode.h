@@ -7,40 +7,34 @@
 #define METACG_GRAPH_CGNODE_H
 
 // clang-format off
+
 // Graph library
-#include "metadata/OverrideMD.h"
+#include "CgTypes.h"
+#include "metadata/MetaData.h"
 
 // System library
 #include <map>
 #include <string>
 #include <utility>
+#include <memory>
+#include <optional>
 // clang-format on
 
 namespace metacg {
 
 class CgNode;
 class Callgraph;
-using CgNodePtr = std::unique_ptr<metacg::CgNode>;
-
-using NodeId = size_t;
 
 class CgNode {
   friend class Callgraph;
  private:
   /**
    * Creates a call graph node for a function with name @function.
-   * It should not be used directly, instead construct CgNodePtr values.
+   * Cannot be invoked directly, use CallGraph::insert instead.
    * @param function
    */
-  explicit CgNode(NodeId id, std::string function, std::optional<std::string> origin, bool isVirtual, bool hasBody)
-      : id(id),
-        functionName(std::move(function)),
-        origin(std::move(origin)),
-        hasBody(hasBody) {
-    if (isVirtual) {
-      this->getOrCreateMD<OverrideMD>();
-    }
-  };
+  explicit CgNode(NodeId id, std::string function, std::optional<std::string> origin, bool isVirtual, bool hasBody);
+
  public:
   /**
    * Checks if metadata of type #T is attached
@@ -149,7 +143,7 @@ class CgNode {
    * @param otherNode
    * @return
    */
-  bool isSameFunctionName(const CgNode& otherNode) const;
+  bool isSameFunctionName(const CgNode& otherNode) const { return functionName == otherNode.getFunctionName(); }
 
   /**
    * Check whether a function body has been found.
@@ -168,26 +162,34 @@ class CgNode {
   /**
    * @return the nameIdMap of the function
    */
-  std::string getFunctionName() const;
+  std::string getFunctionName() const { return functionName; }
 
-  [[deprecated("Attach \"OverrideMD\" instead")]] void setIsVirtual(bool virtualness) {
-    if (virtualness) {
-      this->getOrCreateMD<OverrideMD>();
-    } else {
-      this->metaFields.erase(OverrideMD::key);
-    }
+  /**
+   * Sets the function name.
+   * @param name
+   */
+  void setFunctionName(std::string name) {
+    this->functionName = std::move(name);
   }
 
-  [[deprecated("Check with has<OverrideMD>() instead")]] bool isVirtual() {
-    return this->has<OverrideMD>();
+  [[deprecated("Attach \"OverrideMD\" instead")]] void setIsVirtual(bool);
+
+  [[deprecated("Check with has<OverrideMD>() instead")]] bool isVirtual();
+
+  /**
+   * Returns the origin.
+   * @return
+   */
+  std::optional<std::string> getOrigin() const { return origin; }
+
+  void setOrigin(std::optional<std::string> origin) {
+    this->origin = std::move(origin);
   }
 
-  std::optional<std::string> getOrigin() const;
-
-  // TODO: Move out of here
-  void dumpToDot(std::ofstream& outputStream, int procNum);
-
-  void print();
+//  // TODO: Move out of here
+//  void dumpToDot(std::ofstream& outputStream, int procNum);
+//
+//  void print();
 
   /**
    * Get the id of the function node

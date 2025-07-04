@@ -47,9 +47,9 @@ class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
     return j;
   }
 
-  virtual const char* getKey() const final { return key; }
+  const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge NumOperationsMD with meta data of different types");
 
     const NumOperationsMD* toMergeDerived = static_cast<const NumOperationsMD*>(&toMerge);
@@ -77,6 +77,8 @@ class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
   }
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new NumOperationsMD(*this)); }
+
+  void applyMapping(const GraphMapping&) override {}
 
   int numberOfIntOps{0};
   int numberOfFloatOps{0};

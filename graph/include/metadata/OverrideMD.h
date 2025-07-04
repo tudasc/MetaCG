@@ -16,15 +16,15 @@ namespace metacg {
 
 /**
  * Copies items from the source vector into the destination vector. Removes duplicates.
- * @tparam T Vector type
  * @param dst Destination vector
  * @param src Source vector
  */
-template <typename T>
-void mergeVectors(std::vector<T>& dst, const std::vector<T>& src) {
+inline void mergeVectors(std::vector<NodeId>& dst, const std::vector<NodeId>& src, const GraphMapping& mapping) {
   for (const auto& entry : src) {
-    if (auto it = std::find(dst.begin(), dst.end(), entry); it == dst.end()) {
-      dst.push_back(entry);
+    assert(mapping.count(entry) == 1 && "Mapping must exist");
+    auto& mappedId = mapping.at(entry);
+    if (auto it = std::find(dst.begin(), dst.end(), mappedId); it == dst.end()) {
+      dst.push_back(mappedId);
     }
   }
 }
@@ -46,27 +46,25 @@ struct OverrideMD final : metacg::MetaData::Registrar<OverrideMD> {
     for (auto& s : overrideStrs) {
       auto* n = strToNode.getNodeFromStr(s);
       assert(n && "Node is null");
-      overrides.push_back(n);
+      overrides.push_back(n->getId());
     }
 
     auto overridenByStrs = j.at("overriddenBy").get<std::vector<std::string>>();
     for (auto& s : overridenByStrs) {
       auto* n = strToNode.getNodeFromStr(s);
       assert(n && "Node is null");
-      overriddenBy.push_back(n);
+      overriddenBy.push_back(n->getId());
     }
   }
 
   nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
     auto jOverrides = nlohmann::json::array();
     for (auto& n : overrides) {
-      assert(n && "Node is null");
-      jOverrides.push_back(nodeToStr.getStrFromNode(*n));
+      jOverrides.push_back(nodeToStr.getStrFromNode(n));
     }
     auto jOverriddenBy = nlohmann::json::array();
     for (auto& n : overriddenBy) {
-      assert(n && "Node is null");
-      jOverriddenBy.push_back(nodeToStr.getStrFromNode(*n));
+      jOverriddenBy.push_back(nodeToStr.getStrFromNode(n));
     }
     return {{"overrides", jOverrides}, {"overriddenBy", jOverriddenBy}};
   }
@@ -75,22 +73,32 @@ struct OverrideMD final : metacg::MetaData::Registrar<OverrideMD> {
   OverrideMD(const OverrideMD& other) : overrides(other.overrides), overriddenBy(other.overriddenBy) {}
 
  public:
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping& mapping) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge OverrideMD with meta data of different types");
 
     const OverrideMD* toMergeDerived = static_cast<const OverrideMD*>(&toMerge);
 
-    mergeVectors(overriddenBy, toMergeDerived->overriddenBy);
-    mergeVectors(overrides, toMergeDerived->overrides);
-    // FIXME: Need to figure out how to identify merged nodes here
+    mergeVectors(overriddenBy, toMergeDerived->overriddenBy, mapping);
+    mergeVectors(overrides, toMergeDerived->overrides, mapping);
   }
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new OverrideMD(*this)); }
 
+  void applyMapping(const GraphMapping& mapping) override {
+    for (auto& overridesId : overrides) {
+      assert(mapping.count(overridesId) == 1 && "Incomplete mapping");
+      overridesId = mapping.at(overridesId);
+    }
+    for (auto& overriddenById : overriddenBy) {
+      assert(mapping.count(overriddenById) == 1 && "Incomplete mapping");
+      overriddenById = mapping.at(overriddenById);
+    }
+  }
+
   const char* getKey() const final { return key; }
 
-  std::vector<const CgNode*> overrides;
-  std::vector<const CgNode*> overriddenBy;
+  std::vector<NodeId> overrides;
+  std::vector<NodeId> overriddenBy;
 };
 
 }

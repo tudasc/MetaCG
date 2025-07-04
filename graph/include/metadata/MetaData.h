@@ -7,7 +7,8 @@
 #define METACG_GRAPH_METADATA_H
 
 #include "LoggerUtil.h"
-#include "IdMapping.h"
+#include "io/IdMapping.h"
+#include "MergePolicy.h"
 #include "nlohmann/json.hpp"
 
 // Instance counter to protect meta-data registry against ABI incompatibilities
@@ -103,8 +104,15 @@ struct MetaData : MetaDataFactory<MetaData> {
   static constexpr const char* key = "BaseClass";
   virtual nlohmann::json toJson(NodeToStrMapping&) const = 0;
   virtual const char* getKey() const = 0;
-  virtual void merge(const MetaData&) = 0;
+  virtual void merge(const MetaData&, const MergeAction&, const GraphMapping&) = 0;
   [[nodiscard]] virtual std::unique_ptr<MetaData> clone() const = 0;
+
+  /**
+   * Re-maps internal node IDs.
+   * Only needed if this metadata stores node IDs.
+   */
+  virtual void applyMapping(const GraphMapping&) = 0;
+
   virtual ~MetaData() = default;
 };
 

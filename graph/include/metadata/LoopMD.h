@@ -29,9 +29,9 @@ class LoopDepthMD : public metacg::MetaData::Registrar<LoopDepthMD> {
  public:
   nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final { return loopDepth; }
 
-  virtual const char* getKey() const final { return key; }
+  const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge LoopDepthMD with meta data of different types");
 
     const LoopDepthMD* toMergeDerived = static_cast<const LoopDepthMD*>(&toMerge);
@@ -40,6 +40,8 @@ class LoopDepthMD : public metacg::MetaData::Registrar<LoopDepthMD> {
   }
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new LoopDepthMD(*this)); }
+
+  void applyMapping(const GraphMapping&) override {}
 
   int loopDepth{0};
 };
@@ -63,9 +65,9 @@ class GlobalLoopDepthMD : public metacg::MetaData::Registrar<GlobalLoopDepthMD> 
  public:
   nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final { return globalLoopDepth; }
 
-  virtual const char* getKey() const final { return key; }
+  const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge GlobalLoopDepthMD with meta data of different types");
 
     metacg::MCGLogger::instance().getErrConsole()->warn(
@@ -80,6 +82,8 @@ class GlobalLoopDepthMD : public metacg::MetaData::Registrar<GlobalLoopDepthMD> 
   }
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new GlobalLoopDepthMD(*this)); }
+
+  void applyMapping(const GraphMapping&) override {}
 
   int globalLoopDepth{0};
 };
@@ -104,9 +108,9 @@ class LoopCallDepthMD : public metacg::MetaData::Registrar<LoopCallDepthMD> {
  public:
   nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final { return loopFunctionMap; }
 
-  virtual const char* getKey() const final { return key; }
+  const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge LoopCallDepthMD with meta data of different types");
 
     const LoopCallDepthMD* toMergeDerived = static_cast<const LoopCallDepthMD*>(&toMerge);
@@ -128,6 +132,8 @@ class LoopCallDepthMD : public metacg::MetaData::Registrar<LoopCallDepthMD> {
   }
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new LoopCallDepthMD(*this)); }
+
+  void applyMapping(const GraphMapping&) override {}
 
   std::map<std::string, int> loopFunctionMap;
 };

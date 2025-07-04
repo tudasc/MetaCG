@@ -16,16 +16,19 @@ using namespace metacg;
 namespace {
 
 struct V4WriterMapping: public NodeToStrMapping {
+  // Note: The following allows overload resolution of the base class function.
+  using NodeToStrMapping::getStrFromNode;
 
   V4WriterMapping(const Callgraph& cg, bool useNameAsId) : cg(cg), useNameAsId(useNameAsId) {
   }
 
-  std::string getStrFromNode(const CgNode& node) override {
-    if (auto it = idToStr.find(node.getId()); it != idToStr.end()) {
+  std::string getStrFromNode(NodeId id) override {
+    if (auto it = idToStr.find(id); it != idToStr.end()) {
       return it->second;
     }
-    idToStr[node.getId()] = std::move(convertToStr(node));
-    return idToStr[node.getId()];
+    assert(cg.getNode(id) && "ID must be valid");
+    idToStr[id] = std::move(convertToStr(*cg.getNode(id)));
+    return idToStr[id];
   }
 
  private:
@@ -52,19 +55,6 @@ struct V4WriterMapping: public NodeToStrMapping {
   bool useNameAsId;
   std::unordered_map<NodeId, std::string> idToStr;
 };
-
-//nlohmann::json createJsonFromNode(const CgNode& node, io::NodeToStrMapping& nodeToStr) {
-//
-//  auto idStr = nodeToStr.getStrFromNode(node);
-//
-//  nlohmann::json j = {idStr, {{"functionName", node.getFunctionName()},
-//       {"origin", node.getOrigin()},
-//       {"hasBody", node.getHasBody()},
-//       {"meta", node.getMetaDataContainer()}}};
-//
-//  return j;
-//}
-
 
 }
 
@@ -106,7 +96,7 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
                                 {"meta", jMeta}};
 
     std::cout << "V4 generated node json: " << jNode << "\n";
-    // TODO: Add node MD
+
     auto idStr = nodeToStr.getStrFromNode(*node);
     jNodes[idStr] = std::move(jNode);
   }

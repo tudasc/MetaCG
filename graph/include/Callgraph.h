@@ -8,6 +8,7 @@
 
 #include "CgNode.h"
 #include "Util.h"
+#include "MergePolicy.h"
 
 template <>
 struct std::hash<std::pair<size_t, size_t>> {
@@ -91,9 +92,21 @@ class Callgraph {
   /**
    * Merges the given call graph into this one.
    * The other call graph remains unchanged.
+   *
+   * Merging is performed in four major steps:
+   * 1. For each node in the source graph, the policy determines if there is matching node in the target graph. If yes,
+   *    it emits an action to either keep or replace the existing node with the source node. Otherwise, the node is
+   *    marked to be copied.
+   * 2. Nodes with no match are copied inserted into the destination graph, and core attributes of merged nodes are
+   *    modified according to the chosen action.
+   *    After this step, node references in the edges and metadata are invalid and need to be updated.
+   * 3. New edges from the source graph are inserted, using the updated node IDs.
+   * 4. Metadata is merged, taking into account the change of node IDs and the performed merge actions.
+   *
    * @param other The call graph to merge.
+   * @param policy The merge policy.
    */
-  void merge(const Callgraph& other);
+  MergeRecorder merge(const Callgraph& other, const MergePolicy& policy);
 
   /**
    * Clears the graph to an empty graph with no main node.
@@ -217,6 +230,9 @@ class Callgraph {
   bool hasDuplicates{false};
 
 };
+
+
+
 
 //[[maybe_unused]] static Callgraph& getEmptyGraph() {
 //  static Callgraph graph;

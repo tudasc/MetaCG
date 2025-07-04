@@ -1,5 +1,5 @@
 /**
-* File: MCGReader.h
+* File: IdMapping.h
 * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
 * https://github.com/tudasc/metacg/LICENSE.txt
 */
@@ -24,7 +24,9 @@ struct StrToNodeMapping {
  * format.
  */
 struct NodeToStrMapping {
-  virtual std::string getStrFromNode(const CgNode& node) = 0;
+  virtual std::string getStrFromNode(NodeId id) = 0;
+
+  std::string getStrFromNode(const CgNode& node);
 };
 
 

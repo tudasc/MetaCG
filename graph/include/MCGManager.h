@@ -69,7 +69,7 @@ class MCGManager {
   /**
    * Merges all managed graphs into the active graph
    */
-  void mergeIntoActiveGraph();
+  void mergeIntoActiveGraph(const MergePolicy&);
 
   ~MCGManager();
 

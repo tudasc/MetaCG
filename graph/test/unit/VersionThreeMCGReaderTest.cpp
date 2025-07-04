@@ -43,7 +43,7 @@
 //
 //  const char* getKey() const override { return key; }
 //
-//  void merge(const MetaData& toMerge) final {
+//  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
 //    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
 //      metacg::MCGLogger::instance().getErrConsole()->error(
 //          "The MetaData which was tried to merge with TestMetaDataV3 was of a different MetaData type");
