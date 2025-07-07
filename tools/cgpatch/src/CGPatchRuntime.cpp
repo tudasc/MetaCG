@@ -10,6 +10,7 @@
 #include "io/VersionTwoMCGWriter.h"
 #include "nlohmann/json.hpp"
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 
 #if USE_MPI == 1
@@ -21,26 +22,22 @@
 #include <unordered_set>
 
 using namespace SymbolRetriever;
+
+
 namespace {
 metacg::Callgraph* globalCallgraph;
 MappedSymTableMap symTables;
 bool shouldWrite = true;
 int counter;
 
-// Logger
-spdlog::logger* console;
-spdlog::logger* errConsole;
-
 void initializeGlobalCallgraph() {
   if (metacg::graph::MCGManager& mcgManager = metacg::graph::MCGManager::get();
       mcgManager.getAllManagedGraphNames().empty()) {
     globalCallgraph = mcgManager.getOrCreateCallgraph("globalCallGraph", true);
     if (!globalCallgraph) {
-      errConsole->error("globalCallgraph is not initialized.");
+      metacg::MCGLogger::logError("globalCallgraph is not initialized.");
       return;
     }
-    console = metacg::MCGLogger::getConsole();
-    errConsole = metacg::MCGLogger::getErrConsole();
     counter = 0;
   }
 }
@@ -55,16 +52,20 @@ void finalizeGlobalCallgraph() {
     mcgWriter.write(mcgManager.getCallgraph(), jsonSink);
     nlohmann::json j = jsonSink.getJson();
 
-    const char* filename = std::getenv("CGPATCH_CG_NAME");
-    if (!filename) {
-      filename = "validateGraph.json";
+    const char* envVal = std::getenv("CGPATCH_CG_NAME");
+    std::filesystem::path filename = envVal ? std::filesystem::path(envVal) : "validateGraph.json";
+
+    if (filename.has_parent_path() && !std::filesystem::exists(filename.parent_path())) {
+      metacg::MCGLogger::logError("Directory {} does not exist.", filename.parent_path().string());
+      return;
     }
+
     std::ofstream ofs(filename);
     if (ofs.is_open()) {
       ofs << j;
       ofs.close();
     } else {
-      errConsole->error("Unable to open file {} for writing.", filename);
+      metacg::MCGLogger::logError("Unable to open file {} for writing.", filename.string());
     }
   }
 }
@@ -88,7 +89,7 @@ struct ValidatorInitializer {
 extern "C" void __metacg_indirect_call(const char* name, void* address) {
   static std::unordered_map<const char*, std::unordered_set<void*>> visitedMap;
   if (!globalCallgraph) {
-    errConsole->error("globalCallgraph is not initialized.");
+    metacg::MCGLogger::logError("globalCallgraph is not initialized.");
     return;
   }
   auto& knownCalls = visitedMap[name];
@@ -109,7 +110,7 @@ extern "C" void __metacg_indirect_call(const char* name, void* address) {
 
   const std::string& symbol = findSymbol(reinterpret_cast<std::uintptr_t>(address), symTables);
   if (symbol.empty()) {
-    errConsole->error("Could not find symbol for address {:#x}", reinterpret_cast<std::uintptr_t>(address));
+    metacg::MCGLogger::logError("Could not find symbol for address {:#x}", reinterpret_cast<std::uintptr_t>(address));
     return;
   }
 
