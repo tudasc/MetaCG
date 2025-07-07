@@ -217,4 +217,6 @@ class Callgraph {
   bool hasDuplicates{false};
 };
 
+} // namespace metacg
+
 #endif
