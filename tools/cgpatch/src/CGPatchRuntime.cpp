@@ -22,8 +22,6 @@
 
 using namespace SymbolRetriever;
 namespace {
-// Variables
-
 metacg::Callgraph* globalCallgraph;
 MappedSymTableMap symTables;
 bool shouldWrite = true;
@@ -41,8 +39,8 @@ void initializeGlobalCallgraph() {
       errConsole->error("globalCallgraph is not initialized.");
       return;
     }
-    console = metacg::MCGLogger::instance().getConsole();
-    errConsole = metacg::MCGLogger::instance().getErrConsole();
+    console = metacg::MCGLogger::getConsole();
+    errConsole = metacg::MCGLogger::getErrConsole();
     counter = 0;
   }
 }

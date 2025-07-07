@@ -38,7 +38,7 @@ struct RemoveEnvInScope {
   const char* oldVal;
 };
 
-uintptr_t get_text_section_offset_from_library(const std::string& lib_path) {
+uintptr_t getTextSectionOffsetFromLibrary(const std::string& lib_path) {
   int fd = open(lib_path.c_str(), O_RDONLY);
   if (fd < 0) {
     perror("open");
