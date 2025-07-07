@@ -27,6 +27,7 @@ class Callgraph;
 
 class CgNode {
   friend class Callgraph;
+
  private:
   /**
    * Creates a call graph node for a function with name @function.
@@ -55,7 +56,7 @@ class CgNode {
    */
   template <typename T>
   inline T* get() const {
-//    assert(metaFields.count(T::key) > 0 && "meta field for key must exist");
+    //    assert(metaFields.count(T::key) > 0 && "meta field for key must exist");
     if (auto it = metaFields.find(T::key); it != metaFields.end()) {
       return static_cast<T*>(it->second.get());
     }
@@ -63,11 +64,11 @@ class CgNode {
   }
 
   inline MetaData* get(const std::string& metadataName) const {
-//    assert(metaFields.count(metadataName) > 0 && "meta field for key must exist");
+    //    assert(metaFields.count(metadataName) > 0 && "meta field for key must exist");
     if (auto it = metaFields.find(metadataName); it != metaFields.end()) {
       return it->second.get();
     }
-   return nullptr;
+    return nullptr;
   }
 
   /**
@@ -152,9 +153,7 @@ class CgNode {
    * Sets the function name.
    * @param name
    */
-  void setFunctionName(std::string name) {
-    this->functionName = std::move(name);
-  }
+  void setFunctionName(std::string name) { this->functionName = std::move(name); }
 
   [[deprecated("Attach \"OverrideMD\" instead")]] void setIsVirtual(bool);
 
@@ -166,9 +165,7 @@ class CgNode {
    */
   std::optional<std::string> getOrigin() const { return origin; }
 
-  void setOrigin(std::optional<std::string> origin) {
-    this->origin = std::move(origin);
-  }
+  void setOrigin(std::optional<std::string> origin) { this->origin = std::move(origin); }
 
   /**
    * Get the id of the function node
@@ -191,7 +188,9 @@ class CgNode {
    *
    * @param data - a map, mapping the name of the metadata to a metadata pointer
    */
-  void setMetaDataContainer(std::unordered_map<std::string, std::unique_ptr<MetaData>> data) { metaFields = std::move(data); }
+  void setMetaDataContainer(std::unordered_map<std::string, std::unique_ptr<MetaData>> data) {
+    metaFields = std::move(data);
+  }
 
  public:
   const NodeId id;

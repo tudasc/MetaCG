@@ -10,9 +10,7 @@
 #include "io/VersionFourMCGWriter.h"
 #include "io/VersionTwoMCGWriter.h"
 
-std::string metacg::NodeToStrMapping::getStrFromNode(const CgNode& node)  {
-  return getStrFromNode(node.getId());
-}
+std::string metacg::NodeToStrMapping::getStrFromNode(const CgNode& node) { return getStrFromNode(node.getId()); }
 
 void metacg::io::MCGWriter::writeActiveGraph(metacg::io::JsonSink& js) {
   const auto* cg = metacg::graph::MCGManager::get().getCallgraph();

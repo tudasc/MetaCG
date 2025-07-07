@@ -5,10 +5,10 @@
  */
 
 #include "io/VersionFourMCGReader.h"
-#include "metadata/BuiltinMD.h"
 #include "MCGBaseInfo.h"
 #include "Timing.h"
 #include "Util.h"
+#include "metadata/BuiltinMD.h"
 #include <iostream>
 
 using namespace metacg;
@@ -31,14 +31,13 @@ struct V4StrToNodeMapping : public StrToNodeMapping {
     strToNode[nodeStr] = &node;
     return true;
   }
+
  private:
   std::unordered_map<std::string, CgNode*> strToNode;
 };
 
-
-
-
-metacg::CgNode* createNodeFromJson(metacg::Callgraph& cg, const std::string& nodeStr, const nlohmann::json& j, V4StrToNodeMapping& strToNode) {
+metacg::CgNode* createNodeFromJson(metacg::Callgraph& cg, const std::string& nodeStr, const nlohmann::json& j,
+                                   V4StrToNodeMapping& strToNode) {
   if (j.is_null()) {
     metacg::MCGLogger::logError("Node is null!");
     return nullptr;
@@ -52,7 +51,8 @@ metacg::CgNode* createNodeFromJson(metacg::Callgraph& cg, const std::string& nod
     if (!j.at("origin").empty()) {
       origin = j.at("origin");
     } else {
-      metacg::MCGLogger::logWarnUnique("Encountered empty origin field. Please use an explicit 'null' value to indicate unknown origin.");
+      metacg::MCGLogger::logWarnUnique(
+          "Encountered empty origin field. Please use an explicit 'null' value to indicate unknown origin.");
     }
   }
   if (!j.contains("functionName")) {
@@ -86,7 +86,6 @@ metacg::CgNode* createNodeFromJson(metacg::Callgraph& cg, const std::string& nod
   return &cgNode;
 }
 
-
 /**
  * Internal data structure to temporarily store edges and metadata data for later processing.
  */
@@ -97,8 +96,7 @@ struct TempNodeData {
   nlohmann::json& jMeta;
 };
 
-
-}
+}  // namespace
 
 std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMetaCGReader::read() {
   const metacg::RuntimeTimer rtt("VersionFourMetaCGReader::read");
@@ -141,7 +139,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMetaCGReader::read() {
   V4StrToNodeMapping strToNode;
 
   for (auto it = jsonCG.begin(); it != jsonCG.end(); ++it) {
-    auto& strId  = it.key();
+    auto& strId = it.key();
     auto& jNode = it.value();
 
     auto* node = createNodeFromJson(*cg, strId, jNode, strToNode);
@@ -163,11 +161,12 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMetaCGReader::read() {
       auto& mdJ = it.value();
       auto* calleeNode = strToNode.getNodeFromStr(calleeStr);
       if (!calleeNode) {
-        errConsole->error("Encountered unknown call target '{}' in edge from node '{}'", calleeStr, node->getFunctionName());
+        errConsole->error("Encountered unknown call target '{}' in edge from node '{}'", calleeStr,
+                          node->getFunctionName());
         throw std::runtime_error("Error while reading edges");
       }
       cg->addEdge(nodeData.nodeId, calleeNode->getId());
-//      std::cout << "Added edge for " << nodeData.nodeId << ", " << calleeNode->getId() << "\n"; // TODO: Remove
+      //      std::cout << "Added edge for " << nodeData.nodeId << ", " << calleeNode->getId() << "\n"; // TODO: Remove
       // Reading edge metadata
       if (!mdJ.is_null()) {
         for (const auto& mdElem : mdJ.items()) {

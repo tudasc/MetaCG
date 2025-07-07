@@ -7,9 +7,9 @@
 #ifndef METACG_OVERRIDEMD_H
 #define METACG_OVERRIDEMD_H
 
+#include "CgNode.h"
 #include "LoggerUtil.h"
 #include "metadata/MetaData.h"
-#include "CgNode.h"
 #include <vector>
 
 namespace metacg {
@@ -101,5 +101,5 @@ struct OverrideMD final : metacg::MetaData::Registrar<OverrideMD> {
   std::vector<NodeId> overriddenBy;
 };
 
-}
+}  // namespace metacg
 #endif  // METACG_OVERRIDEMD_H

@@ -4,14 +4,14 @@
 // * https://github.com/tudasc/metacg/LICENSE.txt
 // */
 //
-//#include "LoggerUtil.h"
-//#include "gtest/gtest.h"
+// #include "LoggerUtil.h"
+// #include "gtest/gtest.h"
 //
-//#include "MCGBaseInfo.h"
-//#include "MCGManager.h"
-//#include "io/VersionFourMCGWriter.h"
+// #include "MCGBaseInfo.h"
+// #include "MCGManager.h"
+// #include "io/VersionFourMCGWriter.h"
 //
-//class V3MCGWriterTest : public ::testing::Test {
+// class V3MCGWriterTest : public ::testing::Test {
 // protected:
 //  void SetUp() override {
 //    auto& mcgm = metacg::graph::MCGManager::get();
@@ -20,7 +20,7 @@
 //  }
 //};
 //
-//class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
+// class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
 // public:
 //  static constexpr const char* key = "TestMetaData";
 //  TestMetaData() = default;
@@ -62,7 +62,7 @@
 //  float metadataFloat = 0.0f;
 //};
 //
-//TEST_F(V3MCGWriterTest, DifferentMetaInformation) {
+// TEST_F(V3MCGWriterTest, DifferentMetaInformation) {
 //  const std::string generatorName = "Test";
 //  const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
 //  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo);
@@ -73,7 +73,7 @@
 //            "\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"3.0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, DifferentMetaInformationDebug) {
+// TEST_F(V3MCGWriterTest, DifferentMetaInformationDebug) {
 //  const std::string generatorName = "Test";
 //  const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
 //  metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, true);
@@ -84,7 +84,7 @@
 //            "\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"3.0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, OneNodeCGWrite) {
+// TEST_F(V3MCGWriterTest, OneNodeCGWrite) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  const auto& cg = mcgm.getCallgraph();
 //  cg->insert("main", "main.cpp");
@@ -103,7 +103,7 @@
 //            "0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, OneNodeCGWriteDebug) {
+// TEST_F(V3MCGWriterTest, OneNodeCGWriteDebug) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  const auto& cg = mcgm.getCallgraph();
 //  cg->insert("main", "main.cpp");
@@ -124,7 +124,7 @@
 //            "0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, TwoNodeCGWrite) {
+// TEST_F(V3MCGWriterTest, TwoNodeCGWrite) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  const auto& cg = mcgm.getCallgraph();
 //  cg->insert("main", "main.cpp");
@@ -146,7 +146,7 @@
 //            "0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, TwoNodeCGWriteDebug) {
+// TEST_F(V3MCGWriterTest, TwoNodeCGWriteDebug) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  const auto& cg = mcgm.getCallgraph();
 //  cg->insert("main", "main.cpp");
@@ -170,7 +170,7 @@
 //            "0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, TwoNodeOneEdgeCGWrite) {
+// TEST_F(V3MCGWriterTest, TwoNodeOneEdgeCGWrite) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  const auto& cg = mcgm.getCallgraph();
 //  cg->insert("main", "main.cpp");
@@ -195,7 +195,7 @@
 //            "0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, TwoNodeOneEdgeCGWriteDebug) {
+// TEST_F(V3MCGWriterTest, TwoNodeOneEdgeCGWriteDebug) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  const auto& cg = mcgm.getCallgraph();
 //  cg->insert("main", "main.cpp");
@@ -222,7 +222,7 @@
 //            "0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, ThreeNodeOneEdgeCGWrite) {
+// TEST_F(V3MCGWriterTest, ThreeNodeOneEdgeCGWrite) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  const auto& cg = mcgm.getCallgraph();
 //  cg->insert("main", "main.cpp");
@@ -251,7 +251,7 @@
 //      "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"3.0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, ThreeNodeOneEdgeCGWriteDebug) {
+// TEST_F(V3MCGWriterTest, ThreeNodeOneEdgeCGWriteDebug) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  const auto& cg = mcgm.getCallgraph();
 //  cg->insert("main", "main.cpp");
@@ -283,7 +283,7 @@
 //            "0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, GraphMetadataCGWrite) {
+// TEST_F(V3MCGWriterTest, GraphMetadataCGWrite) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  const auto& cg = mcgm.getCallgraph();
 //  cg->insert("main", "main.cpp");
@@ -311,7 +311,7 @@
 //            "0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, GraphMetadataCGWriteDebug) {
+// TEST_F(V3MCGWriterTest, GraphMetadataCGWriteDebug) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  const auto& cg = mcgm.getCallgraph();
 //  cg->insert("main", "main.cpp");
@@ -340,7 +340,7 @@
 //            "0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, EdgeMetadataCGWrite) {
+// TEST_F(V3MCGWriterTest, EdgeMetadataCGWrite) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  const auto& cg = mcgm.getCallgraph();
 //  cg->insert("main", "main.cpp");
@@ -379,7 +379,7 @@
 //  // clang-format on
 //}
 //
-//TEST_F(V3MCGWriterTest, EdgeMetadataCGWriteDebug) {
+// TEST_F(V3MCGWriterTest, EdgeMetadataCGWriteDebug) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  const auto& cg = mcgm.getCallgraph();
 //  cg->insert("main", "main.cpp");
@@ -420,7 +420,7 @@
 //  // clang-format on
 //}
 //
-//TEST_F(V3MCGWriterTest, WriteByName) {
+// TEST_F(V3MCGWriterTest, WriteByName) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
 //  const auto& cg = mcgm.getCallgraph();
@@ -445,7 +445,7 @@
 //            "0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, WriteByNameDebug) {
+// TEST_F(V3MCGWriterTest, WriteByNameDebug) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
 //  const auto& cg = mcgm.getCallgraph();
@@ -471,7 +471,7 @@
 //            "0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, WritePointer) {
+// TEST_F(V3MCGWriterTest, WritePointer) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
 //  const auto& cg = mcgm.getCallgraph();
@@ -496,7 +496,7 @@
 //            "0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, WritePointerDebug) {
+// TEST_F(V3MCGWriterTest, WritePointerDebug) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
 //  const auto& cg = mcgm.getCallgraph();
@@ -522,7 +522,7 @@
 //            "0\"}}");
 //}
 //
-//TEST_F(V3MCGWriterTest, SwitchBeforeWrite) {
+// TEST_F(V3MCGWriterTest, SwitchBeforeWrite) {
 //  auto& mcgm = metacg::graph::MCGManager::get();
 //  mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
 //  const auto& cg = mcgm.getCallgraph();

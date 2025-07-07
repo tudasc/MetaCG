@@ -85,6 +85,6 @@ class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
   int numberOfControlFlowOps{0};
   int numberOfMemoryAccesses{0};
 };
-}
+}  // namespace metacg
 
 #endif  // CGCOLLECTOR2_NUMOPERATIONSMD_H

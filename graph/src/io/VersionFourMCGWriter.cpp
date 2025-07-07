@@ -6,21 +6,19 @@
 
 #include "io/VersionFourMCGWriter.h"
 #include "MCGManager.h"
-#include "metadata/BuiltinMD.h"
 #include "config.h"
+#include "metadata/BuiltinMD.h"
 #include <iostream>
 
 using namespace metacg;
 
-
 namespace {
 
-struct V4WriterMapping: public NodeToStrMapping {
+struct V4WriterMapping : public NodeToStrMapping {
   // Note: The following allows overload resolution of the base class function.
   using NodeToStrMapping::getStrFromNode;
 
-  V4WriterMapping(const Callgraph& cg, bool useNameAsId) : cg(cg), useNameAsId(useNameAsId) {
-  }
+  V4WriterMapping(const Callgraph& cg, bool useNameAsId) : cg(cg), useNameAsId(useNameAsId) {}
 
   std::string getStrFromNode(NodeId id) override {
     if (auto it = idToStr.find(id); it != idToStr.end()) {
@@ -40,8 +38,8 @@ struct V4WriterMapping: public NodeToStrMapping {
       if (allNodesWithName.size() > 1) {
         auto it = std::find(allNodesWithName.begin(), allNodesWithName.end(), node.getId());
         auto idx = std::distance(allNodesWithName.begin(), it);
-        // Using '#' because it is not valid in an ELF symbol name. This ensures that we do not accidentally use the name
-        // of another, unrelated symbol.
+        // Using '#' because it is not valid in an ELF symbol name. This ensures that we do not accidentally use the
+        // name of another, unrelated symbol.
         idStr += "#" + std::to_string(static_cast<int>(idx));
       }
     } else {
@@ -56,7 +54,7 @@ struct V4WriterMapping: public NodeToStrMapping {
   std::unordered_map<NodeId, std::string> idToStr;
 };
 
-}
+}  // namespace
 
 void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg::io::JsonSink& js) {
   nlohmann::json j;
@@ -89,13 +87,13 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
       }
     }
 
-    nlohmann::json jNode =  {{"functionName", node->getFunctionName()},
-                                {"origin", node->getOrigin()},
-                                {"hasBody", node->getHasBody()},
-                                {"edges", {}},
-                                {"meta", jMeta}};
+    nlohmann::json jNode = {{"functionName", node->getFunctionName()},
+                            {"origin", node->getOrigin()},
+                            {"hasBody", node->getHasBody()},
+                            {"edges", {}},
+                            {"meta", jMeta}};
 
-//    std::cout << "V4 generated node json: " << jNode << "\n"; // FIXME: remove
+    //    std::cout << "V4 generated node json: " << jNode << "\n"; // FIXME: remove
 
     auto idStr = nodeToStr.getStrFromNode(*node);
     jNodes[idStr] = std::move(jNode);

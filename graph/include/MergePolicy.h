@@ -1,8 +1,8 @@
 /**
-* File: MergePolicy.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: MergePolicy.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 #ifndef METACG_MERGEPOLICY_H
 #define METACG_MERGEPOLICY_H
 
@@ -26,11 +26,9 @@ struct MergeAction {
   bool replace;
 };
 
-
 using GraphMapping = std::unordered_map<NodeId, NodeId>;
 
 struct MergeRecorder {
-
   /**
    * Records a merge of matching nodes.
    * @param sourceId Id of the node in the source graph.
@@ -46,9 +44,7 @@ struct MergeRecorder {
    * @param sourceId Id of the node in the source graph.
    * @param targetId Id of the newly created node in the target graph.
    */
-  void recordCopy(NodeId sourceId, NodeId targetId) {
-    mapping[sourceId] = targetId;
-  }
+  void recordCopy(NodeId sourceId, NodeId targetId) { mapping[sourceId] = targetId; }
 
   /**
    * Returns the merge action performed on the given source node.
@@ -67,21 +63,19 @@ struct MergeRecorder {
    * Returns the graph mapping that resulted from this merge.
    * @return A mapping from the source to the destination graph.
    */
-  const GraphMapping& getMapping() {
-    return mapping;
-  }
+  const GraphMapping& getMapping() { return mapping; }
 
-//  /**
-//   * Returns the Id of the given node in the combined graph after merging.
-//   * @param sourceId Id of the node in the source graph.
-//   * @return Id of the node in the destination graph after merging.
-//   */
-//  std::optional<NodeId> getPostMergeId(NodeId sourceId) const {
-//    if (auto it = mapping.find(sourceId); it != mapping.end()) {
-//      return it->second;
-//    }
-//    return {};
-//  }
+  //  /**
+  //   * Returns the Id of the given node in the combined graph after merging.
+  //   * @param sourceId Id of the node in the source graph.
+  //   * @return Id of the node in the destination graph after merging.
+  //   */
+  //  std::optional<NodeId> getPostMergeId(NodeId sourceId) const {
+  //    if (auto it = mapping.find(sourceId); it != mapping.end()) {
+  //      return it->second;
+  //    }
+  //    return {};
+  //  }
 
  private:
   std::unordered_map<NodeId, MergeAction> actions;
@@ -99,7 +93,6 @@ struct MergeByName : public MergePolicy {
   std::optional<MergeAction> findMatchingNode(const Callgraph& targetCG, const CgNode& sourceNode) const override;
 };
 
-
-}
+}  // namespace metacg
 
 #endif  // METACG_MERGEPOLICY_H

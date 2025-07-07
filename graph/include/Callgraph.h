@@ -7,8 +7,8 @@
 #define METACG_GRAPH_CALLGRAPH_H
 
 #include "CgNode.h"
-#include "Util.h"
 #include "MergePolicy.h"
+#include "Util.h"
 
 template <>
 struct std::hash<std::pair<size_t, size_t>> {
@@ -35,11 +35,7 @@ class Callgraph {
   using CallerList = std::unordered_map<NodeId, NodeList>;
   using CalleeList = std::unordered_map<NodeId, NodeList>;
 
-  Callgraph()
-      : nodes(),
-        nameIdMap(),
-        edges(),
-        mainNode(nullptr) {}
+  Callgraph() : nodes(), nameIdMap(), edges(), mainNode(nullptr) {}
 
   /**
    * Destructor. Prints call graph stats.
@@ -79,7 +75,6 @@ class Callgraph {
   CgNode& insert(std::string function, std::optional<std::string> origin = {}, bool isVirtual = false,
                  bool hasBody = false);
 
-
   /**
    * Returns the first node matching the given name.\n
    * If no node exists yet, it creates a new one.
@@ -87,7 +82,7 @@ class Callgraph {
    * @return Reference to the identified node
    */
   CgNode& getOrInsertNode(std::string function, std::optional<std::string> origin = {}, bool isVirtual = false,
-                                          bool hasBody = false);
+                          bool hasBody = false);
 
   /**
    * Merges the given call graph into this one.
@@ -120,7 +115,6 @@ class Callgraph {
    */
   bool hasNode(const std::string& name) const;
 
-
   /**
    * @brief hasNode checks whether a node for #name exists in the graph mapping
    * @param name
@@ -134,9 +128,7 @@ class Callgraph {
    * Checks if there is more than one node with the same function name.
    * @return true if there are duplicate names
    */
-  bool hasDuplicateNames() const {
-    return hasDuplicates;
-  }
+  bool hasDuplicateNames() const { return hasDuplicates; }
 
   /**
    * @brief getNode searches the node in the graph and returns it
@@ -147,7 +139,6 @@ class Callgraph {
   const NodeList& getNodes(const std::string& name) const;
 
   CgNode* getNode(NodeId id) const;
-
 
   bool existsEdge(const CgNode& source, const CgNode& target) const;
   bool existsEdge(NodeId source, NodeId target) const;
@@ -224,7 +215,6 @@ class Callgraph {
   CgNode* mainNode = nullptr;
   // Tracks if there is more than one node with the same function name
   bool hasDuplicates{false};
-
 };
 
 #endif

@@ -5,19 +5,19 @@
 // * https://github.com/tudasc/metacg/LICENSE.txt
 // */
 //
-//#include "LoggerUtil.h"
-//#include "MCGManager.h"
+// #include "LoggerUtil.h"
+// #include "MCGManager.h"
 //
-//#include "gtest/gtest.h"
+// #include "gtest/gtest.h"
 //
-//#include "nlohmann/json.hpp"
+// #include "nlohmann/json.hpp"
 //
-//#include "io/VersionFourMCGReader.h"
+// #include "io/VersionFourMCGReader.h"
 //
-//using namespace metacg;
-//using json = nlohmann::json;
+// using namespace metacg;
+// using json = nlohmann::json;
 //
-//struct TestMetaDataV3 final : metacg::MetaData::Registrar<TestMetaDataV3> {
+// struct TestMetaDataV3 final : metacg::MetaData::Registrar<TestMetaDataV3> {
 //  static constexpr const char* key = "TestMetaDataV3";
 //
 //  explicit TestMetaDataV3(const nlohmann::json& j) {
@@ -61,7 +61,7 @@
 //  std::string stored_string;
 //};
 //
-//class V3MCGReaderTest : public ::testing::Test {
+// class V3MCGReaderTest : public ::testing::Test {
 // protected:
 //  void SetUp() override {
 //    auto& mcgm = metacg::graph::MCGManager::get();
@@ -69,7 +69,7 @@
 //  }
 //};
 //
-//TEST(V3MCGReaderTest, EmptyJSON) {
+// TEST(V3MCGReaderTest, EmptyJSON) {
 //  const json j =
 //      "{\"_CG\":"
 //      "{\n"
@@ -91,7 +91,7 @@
 //  ASSERT_EQ(graph.size(), 0);
 //}
 //
-//TEST(V3MCGReaderTest, SingleNode) {
+// TEST(V3MCGReaderTest, SingleNode) {
 //  const json j =
 //      "{\"_CG\":"
 //      "  {\n"
@@ -127,7 +127,7 @@
 //  EXPECT_EQ(graph.getMain()->getMetaDataContainer().size(), 0);
 //}
 //
-//TEST(V3MCGReaderTest, NodesAndSingleEdge) {
+// TEST(V3MCGReaderTest, NodesAndSingleEdge) {
 //  const json j =
 //      "{\"_CG\":"
 //      "{\n"
@@ -222,7 +222,7 @@
 //  EXPECT_EQ(function1->getMetaDataContainer().size(), 0);
 //}
 //
-//TEST(V3MCGReaderTest, NodeMetaData) {
+// TEST(V3MCGReaderTest, NodeMetaData) {
 //  const json j =
 //      "{\"_CG\":"
 //      "{\n"

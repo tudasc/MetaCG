@@ -56,6 +56,6 @@ class NumStatementsMD : public metacg::MetaData::Registrar<NumStatementsMD> {
  private:
   int numStmts{0};
 };
-}
+}  // namespace metacg
 
 #endif  // CGCOLLECTOR2_NUMSTATEMENTSMD_H

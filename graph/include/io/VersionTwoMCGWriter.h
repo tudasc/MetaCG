@@ -15,7 +15,8 @@ namespace metacg::io {
 class VersionTwoMCGWriter : public MCGWriter {
  public:
   explicit VersionTwoMCGWriter(
-      metacg::MCGFileInfo fileInfo = metacg::getVersionTwoFileInfo({std::string("CGCollector"), MetaCG_VERSION_MAJOR, MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}),
+      metacg::MCGFileInfo fileInfo = metacg::getVersionTwoFileInfo({std::string("CGCollector"), MetaCG_VERSION_MAJOR,
+                                                                    MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}),
       bool exportSorted = false)
       : exportSorted(exportSorted), MCGWriter(std::move(fileInfo)) {}
 
@@ -23,9 +24,7 @@ class VersionTwoMCGWriter : public MCGWriter {
 
   static void downgradeV4FormatToV2Format(nlohmann::json&, bool sortCallers);
 
-  void setExportSorted(bool sort) {
-    this->exportSorted = sort;
-  }
+  void setExportSorted(bool sort) { this->exportSorted = sort; }
 
  private:
   bool exportSorted;

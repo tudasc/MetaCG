@@ -7,8 +7,8 @@
 #define METACG_GRAPH_METADATA_H
 
 #include "LoggerUtil.h"
-#include "io/IdMapping.h"
 #include "MergePolicy.h"
+#include "io/IdMapping.h"
 #include "nlohmann/json.hpp"
 
 // Instance counter to protect meta-data registry against ABI incompatibilities
@@ -50,7 +50,10 @@ class MetaDataFactory {
     static bool registerT() {
       MCGLogger::instance().getConsole()->trace("Registering {} \n", T::key);
       const auto name = T::key;
-      MetaDataFactory::data()[name] = [](const nlohmann::json& j, StrToNodeMapping& strToNode) -> std::unique_ptr<CRTPBase> { return std::make_unique<T>(j, strToNode); };
+      MetaDataFactory::data()[name] = [](const nlohmann::json& j,
+                                         StrToNodeMapping& strToNode) -> std::unique_ptr<CRTPBase> {
+        return std::make_unique<T>(j, strToNode);
+      };
       return true;
     }
     static bool registered;

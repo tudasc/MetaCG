@@ -73,6 +73,6 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
   bool isTemplateFunction = false;
 };
 
-}
+}  // namespace metacg
 
 #endif  // METACG_INLINEMD_H

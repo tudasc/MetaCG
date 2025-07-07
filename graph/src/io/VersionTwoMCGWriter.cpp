@@ -5,18 +5,18 @@
  */
 
 #include "io/VersionTwoMCGWriter.h"
-#include "io/VersionFourMCGWriter.h"
 #include "MCGManager.h"
+#include "io/VersionFourMCGWriter.h"
 #include "metadata/OverrideMD.h"
 #include <set>
 
 using namespace metacg;
 
 void metacg::io::VersionTwoMCGWriter::write(const metacg::Callgraph* cg, metacg::io::JsonSink& js) {
-
   // Check for nodes with duplicate function names - this is not supported by V2.
   if (cg->hasDuplicateNames()) {
-    MCGLogger::logError("There are multiple nodes with the same node - this is not allowed in format version 2."
+    MCGLogger::logError(
+        "There are multiple nodes with the same node - this is not allowed in format version 2."
         "Duplicate names will be disambiguated by adding a suffix to the function name."
         "Consider exporting using version 4 instead to retain the original names. ");
     // TOOD: Should this be considered fatal?
@@ -34,17 +34,16 @@ void metacg::io::VersionTwoMCGWriter::write(const metacg::Callgraph* cg, metacg:
   auto v4Json = v4JsonSink.getJson();
   auto& jsonCG = v4Json["_CG"];
 
-//  std::cout  << "Before: " << v4Json << "\n"; // FIXME: remove
+  //  std::cout  << "Before: " << v4Json << "\n"; // FIXME: remove
 
   downgradeV4FormatToV2Format(jsonCG, exportSorted);
 
   j.at(fileInfo.formatInfo.cgFieldName) = std::move(jsonCG);
-//  std::cout  << "After: " << j << "\n"; // FIXME: Remove
+  //  std::cout  << "After: " << j << "\n"; // FIXME: Remove
   js.setJson(j);
 }
 
 void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json& j, bool sortCallers) {
-
   // Iterate over all nodes
   for (auto& it : j.items()) {
     auto& jNode = it.value();
@@ -55,7 +54,7 @@ void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json
     // Convert edges into callee entries. Callers are identified in a second pass, when all nodes are present.
     auto jCallees = nlohmann::json::array();
     auto& jEdges = jNode["edges"];
-    for (auto& jEdge: jEdges.items()) {
+    for (auto& jEdge : jEdges.items()) {
       jCallees.push_back(jEdge.key());
       // Ignoring edge metadata, as not supported in V2
     }
@@ -74,21 +73,21 @@ void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json
       } else {
         jMeta["fileProperties"]["origin"] = jNode["origin"];
       }
-    } else if (!jNode["origin"].is_null()){
+    } else if (!jNode["origin"].is_null()) {
       jMeta["fileProperties"] = nlohmann::json::object();
       jMeta["fileProperties"]["origin"] = jNode["origin"];
     }
     jNode.erase("origin");
 
-//    // Put origin in fileProperties metadata, if not null
-//    if (!jNode["origin"].is_null()) {
-//
-//      if (!jMeta.contains("fileProperties")) {
-//        jMeta["fileProperties"] = nlohmann::json::object();
-//      }
-//      jMeta["fileProperties"]["origin"] = jNode["origin"];
-//    }
-//    jNode.erase("origin");
+    //    // Put origin in fileProperties metadata, if not null
+    //    if (!jNode["origin"].is_null()) {
+    //
+    //      if (!jMeta.contains("fileProperties")) {
+    //        jMeta["fileProperties"] = nlohmann::json::object();
+    //      }
+    //      jMeta["fileProperties"]["origin"] = jNode["origin"];
+    //    }
+    //    jNode.erase("origin");
 
     jNode["isVirtual"] = false;
     jNode["doesOverride"] = false;

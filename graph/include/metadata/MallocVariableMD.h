@@ -58,6 +58,6 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
   void applyMapping(const GraphMapping&) override {}
 };
 
-}
+}  // namespace metacg
 
 #endif  // CGCOLLECTOR2_MALLOCVARIABLEMD_H

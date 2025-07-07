@@ -5,10 +5,10 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #include "io/VersionTwoMCGReader.h"
-#include "io/VersionFourMCGReader.h"
 #include "MCGBaseInfo.h"
 #include "Timing.h"
 #include "Util.h"
+#include "io/VersionFourMCGReader.h"
 
 std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
   const metacg::RuntimeTimer rtt("VersionTwoMetaCGReader::read");
@@ -56,14 +56,14 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
     throw std::runtime_error(errorMsg);
   }
 
-//  std::cout  << "Before: " << j << "\n"; // FIXME: remove
+  //  std::cout  << "Before: " << j << "\n"; // FIXME: remove
 
   auto& jsonCG = j[ffInfo.cgFieldName];
   console->info("Lifting MetaCG version {} file to version 4", mcgVersion);
   upgradeV2FormatToV4Format(jsonCG);
   mcgInfo["version"] = "4.0";
 
-//  std::cout << "After: " << j << "\n"; // FIXME: remove
+  //  std::cout << "After: " << j << "\n"; // FIXME: remove
 
   JsonSource v4JsonSrc(j);
   VersionFourMetaCGReader v4Reader(v4JsonSrc);
@@ -71,7 +71,6 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
 }
 
 void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV4Format(nlohmann::json& j) {
-
   // Iterate over all nodes
   for (auto& it : j.items()) {
     auto& jNode = it.value();
@@ -82,7 +81,7 @@ void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV4Format(nlohmann::jso
     // Convert callees and calllers entries to edges
     jNode["edges"] = nlohmann::json::object();
     auto& jCallees = jNode["callees"];
-    for (auto& jCallee: jCallees) {
+    for (auto& jCallee : jCallees) {
       jNode["edges"][jCallee] = {};
     }
     jNode.erase("callees");
@@ -90,13 +89,12 @@ void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV4Format(nlohmann::jso
 
     // Create origin field by reading in fileProperties metadata
     auto& jMeta = jNode.at("meta");
-    if (jMeta.contains("fileProperties") &&
-        !jMeta.at("fileProperties").at("origin").get<std::string>().empty()) {
+    if (jMeta.contains("fileProperties") && !jMeta.at("fileProperties").at("origin").get<std::string>().empty()) {
       jNode["origin"] = jMeta.at("fileProperties").at("origin");
       jMeta.at("fileProperties").erase("origin");
     } else {
       // if the V2 format did not contain origin data insert null
-     jNode["origin"] = nullptr;
+      jNode["origin"] = nullptr;
     }
 
     // Create OverrideMD if the function is virtual
@@ -110,7 +108,6 @@ void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV4Format(nlohmann::jso
         jOverriddenBy.push_back(overridenByNode);
       }
       jMeta["overrideMD"] = {{"overrides", jOverrides}, {"overriddenBy", jOverriddenBy}};
-
     }
     jNode.erase("isVirtual");
     jNode.erase("doesOverride");

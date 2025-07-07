@@ -53,6 +53,6 @@ class NumConditionalBranchMD : public metacg::MetaData::Registrar<NumConditional
   int numConditionalBranches{0};
 };
 
-}
+}  // namespace metacg
 
 #endif  // CGCOLLECTOR2_NUMCONDITIONALBRANCHMD_H

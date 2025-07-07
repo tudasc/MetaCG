@@ -138,6 +138,6 @@ class LoopCallDepthMD : public metacg::MetaData::Registrar<LoopCallDepthMD> {
   std::map<std::string, int> loopFunctionMap;
 };
 
-}
+}  // namespace metacg
 
 #endif //LOOPMD_H

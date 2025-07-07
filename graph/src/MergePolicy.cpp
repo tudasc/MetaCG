@@ -1,7 +1,7 @@
 /**
-* File: MergePolicy.cpp
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: MergePolicy.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #include "MergePolicy.h"
 
@@ -18,7 +18,8 @@ std::optional<MergeAction> MergeByName::findMatchingNode(const Callgraph& target
   }
   if (nameMatches.size() > 1) {
     // There is more than one node: in V2, this can't happen. Print a warning and merge with the first node.
-    MCGLogger::logWarn("Found multiple nodes with matching name '{}'! Merging with the first node.", sourceNode.getFunctionName());
+    MCGLogger::logWarn("Found multiple nodes with matching name '{}'! Merging with the first node.",
+                       sourceNode.getFunctionName());
   }
   auto* targetNode = targetCG.getNode(nameMatches.front());
   assert(targetNode && "Node must not be null");
@@ -30,7 +31,6 @@ std::optional<MergeAction> MergeByName::findMatchingNode(const Callgraph& target
   }
 
   return MergeAction(targetNode->getId(), true);
-
 }
 
-}
+}  // namespace metacg

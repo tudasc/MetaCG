@@ -57,6 +57,6 @@ class CodeStatisticsMD : public metacg::MetaData::Registrar<CodeStatisticsMD> {
   int numVars{0};
 };
 
-}
+}  // namespace metacg
 
 #endif  // CGCOLLECTOR2_CODESTATISTICSMD_H

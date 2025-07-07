@@ -53,6 +53,6 @@ class UniqueTypeMD : public metacg::MetaData::Registrar<UniqueTypeMD> {
 
   int numTypes{0};
 };
-}
+}  // namespace metacg
 
 #endif  // CGCOLLECTOR2_UNIQUETYPEMD_H

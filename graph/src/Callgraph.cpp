@@ -19,16 +19,16 @@ CgNode* Callgraph::getMain() {
     return mainNode;
   }
 
-  if ((mainNode = getFirstNode("main")) || (mainNode = getFirstNode("_Z4main")) || (mainNode = getFirstNode("_ZSt4mainiPPc"))) {
+  if ((mainNode = getFirstNode("main")) || (mainNode = getFirstNode("_Z4main")) ||
+      (mainNode = getFirstNode("_ZSt4mainiPPc"))) {
     return mainNode;
   }
 
   return nullptr;
 }
 
-CgNode& Callgraph::insert(std::string function, std::optional<std::string> origin, bool isVirtual,
-               bool hasBody) {
-  NodeId id = nodes.size(); // TODO: Improve this
+CgNode& Callgraph::insert(std::string function, std::optional<std::string> origin, bool isVirtual, bool hasBody) {
+  NodeId id = nodes.size();  // TODO: Improve this
   // Note: Can't use make_unique here because make_unqiue is not (and should not be) a friend of the CgNode constructor.
   nodes.emplace_back(new CgNode(id, function, origin, isVirtual, hasBody));
   auto& nodesWithName = nameIdMap[function];
@@ -40,7 +40,7 @@ CgNode& Callgraph::insert(std::string function, std::optional<std::string> origi
 }
 
 CgNode& Callgraph::getOrInsertNode(std::string function, std::optional<std::string> origin, bool isVirtual,
-                                        bool hasBody) {
+                                   bool hasBody) {
   auto* node = getFirstNode(function);
   if (node) {
     return *node;
@@ -72,14 +72,12 @@ void Callgraph::addEdge(const CgNode& parentNode, const CgNode& childNode) {
 bool Callgraph::addEdge(NodeId parentID, NodeId childID) {
   auto* parentNode = getNode(parentID);
   if (!parentNode) {
-    MCGLogger::instance().getErrConsole()->error("Source ID {} does not exist in graph",
-                                                 parentID);
+    MCGLogger::instance().getErrConsole()->error("Source ID {} does not exist in graph", parentID);
     return false;
   }
   auto* childNode = getNode(childID);
   if (!childNode) {
-    MCGLogger::instance().getErrConsole()->error("Target ID {} does not exist in graph",
-                                                 childID);
+    MCGLogger::instance().getErrConsole()->error("Target ID {} does not exist in graph", childID);
     return false;
   }
   addEdge(*parentNode, *childNode);
@@ -96,19 +94,14 @@ bool Callgraph::addEdge(const std::string& callerName, const std::string& callee
   return true;
 }
 
-
 bool Callgraph::hasNode(const std::string& name) const {
   auto it = nameIdMap.find(name);
   return it != nameIdMap.end();
 }
 
-bool Callgraph::hasNode(NodeId id) const {
-  return id < nodes.size() && nodes.at(id);
-}
+bool Callgraph::hasNode(NodeId id) const { return id < nodes.size() && nodes.at(id); }
 
-unsigned Callgraph::countNodes(const std::string& name) const {
-  return nameIdMap.count(name);
-}
+unsigned Callgraph::countNodes(const std::string& name) const { return nameIdMap.count(name); }
 
 CgNode* Callgraph::getFirstNode(const std::string& name) const {
   if (auto it = nameIdMap.find(name); it != nameIdMap.end()) {
@@ -140,54 +133,53 @@ size_t Callgraph::size() const { return nodes.size(); }
 bool Callgraph::isEmpty() const { return nodes.empty(); }
 
 MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::MergePolicy& policy) {
-//  // TODO: Introduce merge policies. For now, we fall back on the old behavior of merging by name.
-//  // Lambda function to clone nodes from the other call graph
-//  std::function<void(metacg::Callgraph*, const metacg::Callgraph&, metacg::CgNode*)> copyNode =
-//      [&](metacg::Callgraph* destination, const metacg::Callgraph& source, metacg::CgNode* node) {
-//        std::string functionName = node->getFunctionName();
-//        metacg::CgNode& mergeNode = destination->getOrInsertNode(functionName, node->getOrigin());
-//
-//        if (node->getHasBody()) {
-//          auto callees = source.getCallees(*node);
-//
-//          for (auto* c : callees) {
-//            std::string calleeName = c->getFunctionName();
-//            if (!destination->hasNode(calleeName)) {
-//              copyNode(destination, source, c);
-//            }
-//            auto& calleeNode = *destination->getFirstNode(c->getFunctionName());
-//
-//            if (!destination->existsEdge(mergeNode, calleeNode)) {
-//              destination->addEdge(mergeNode, calleeNode);
-//            }
-//          }
-//
-//          mergeNode.setHasBody(node->getHasBody());
-//
-//          if (!mergeNode.has<OverrideMD>() && node->has<OverrideMD>()) {
-//              mergeNode.addMetaData<OverrideMD>();
-//          }
-//        }
-//
-//        for (const auto& it : node->getMetaDataContainer()) {
-//          if (mergeNode.has(it.first)) {
-//            mergeNode.get(it.first)->merge(*(it.second));
-//          } else {
-//            mergeNode.addMetaData(it.second->clone());
-//          }
-//        }
-//      };
-//
-//  auto cloneNode = [&](CgNode& sourceNode) {
-//
-//  };
+  //  // TODO: Introduce merge policies. For now, we fall back on the old behavior of merging by name.
+  //  // Lambda function to clone nodes from the other call graph
+  //  std::function<void(metacg::Callgraph*, const metacg::Callgraph&, metacg::CgNode*)> copyNode =
+  //      [&](metacg::Callgraph* destination, const metacg::Callgraph& source, metacg::CgNode* node) {
+  //        std::string functionName = node->getFunctionName();
+  //        metacg::CgNode& mergeNode = destination->getOrInsertNode(functionName, node->getOrigin());
+  //
+  //        if (node->getHasBody()) {
+  //          auto callees = source.getCallees(*node);
+  //
+  //          for (auto* c : callees) {
+  //            std::string calleeName = c->getFunctionName();
+  //            if (!destination->hasNode(calleeName)) {
+  //              copyNode(destination, source, c);
+  //            }
+  //            auto& calleeNode = *destination->getFirstNode(c->getFunctionName());
+  //
+  //            if (!destination->existsEdge(mergeNode, calleeNode)) {
+  //              destination->addEdge(mergeNode, calleeNode);
+  //            }
+  //          }
+  //
+  //          mergeNode.setHasBody(node->getHasBody());
+  //
+  //          if (!mergeNode.has<OverrideMD>() && node->has<OverrideMD>()) {
+  //              mergeNode.addMetaData<OverrideMD>();
+  //          }
+  //        }
+  //
+  //        for (const auto& it : node->getMetaDataContainer()) {
+  //          if (mergeNode.has(it.first)) {
+  //            mergeNode.get(it.first)->merge(*(it.second));
+  //          } else {
+  //            mergeNode.addMetaData(it.second->clone());
+  //          }
+  //        }
+  //      };
+  //
+  //  auto cloneNode = [&](CgNode& sourceNode) {
+  //
+  //  };
 
   // Records performed merge actions to enable proper updating node references (in edges and metadata).
   MergeRecorder recorder;
 
-
   // Step 1 & 2: iterate over all nodes, determine actions according to the policy, and merge the nodes into this graph.
-  for (auto& node: other.nodes) {
+  for (auto& node : other.nodes) {
     auto match = policy.findMatchingNode(*this, *node);
     if (match) {
       auto& action = match.value();
@@ -219,7 +211,8 @@ MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::Mer
   //         Note that there is no need to update existing nodes in the destination graph, as the IDs remain unchanged.
   for (auto& edge : other.getEdges()) {
     auto& sourceIds = edge.first;
-    assert(mapping.count(sourceIds.first) == 1 && mapping.count(sourceIds.second) == 1 && "All nodes have to be recorded at this point");
+    assert(mapping.count(sourceIds.first) == 1 && mapping.count(sourceIds.second) == 1 &&
+           "All nodes have to be recorded at this point");
     auto mappedCallerId = mapping.at(sourceIds.first);
     auto mappedCalleeId = mapping.at(sourceIds.second);
     if (!this->existsEdge(mappedCallerId, mappedCalleeId)) {
@@ -242,7 +235,7 @@ MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::Mer
   }
 
   // Step 4: Copy or merge node metadata as needed.
-  for (auto& node: other.nodes) {
+  for (auto& node : other.nodes) {
     assert(mapping.count(node->getId()) == 1 && "All nodes have to be recorded at this point");
     auto mappedNodeId = mapping.at(node->getId());
     auto targetNode = this->getNode(mappedNodeId);
@@ -272,14 +265,12 @@ bool Callgraph::existsEdge(const CgNode& source, const CgNode& target) const {
   return existsEdge(source.getId(), target.getId());
 }
 
-bool Callgraph::existsEdge(NodeId source, NodeId target) const {
-  return edges.find({source, target}) != edges.end();
-}
+bool Callgraph::existsEdge(NodeId source, NodeId target) const { return edges.find({source, target}) != edges.end(); }
 
 bool Callgraph::existsAnyEdge(const std::string& source, const std::string& target) const {
   auto& sourceNodes = getNodes(source);
   auto& targetNodes = getNodes(target);
-  for (auto sourceId: sourceNodes) {
+  for (auto sourceId : sourceNodes) {
     for (auto targetId : targetNodes) {
       if (existsEdge(sourceId, targetId)) {
         return true;
@@ -316,10 +307,10 @@ CgNodeRawPtrUSet Callgraph::getCallers(NodeId node) const {
 }
 
 // TODO: When is this needed?
-//void Callgraph::setNodes(Callgraph::NodeContainer external_container) { nodes = std::move(external_container); }
-//void Callgraph::setEdges(Callgraph::EdgeContainer external_container) { edges = std::move(external_container); }
+// void Callgraph::setNodes(Callgraph::NodeContainer external_container) { nodes = std::move(external_container); }
+// void Callgraph::setEdges(Callgraph::EdgeContainer external_container) { edges = std::move(external_container); }
 //
-//void Callgraph::recomputeCache() {
+// void Callgraph::recomputeCache() {
 //  nameIdMap.clear();
 //  for (const auto& elem : nodes) {
 //    nameIdMap[elem->getFunctionName()].push_back(elem->getId());
@@ -367,4 +358,3 @@ bool Callgraph::hasEdgeMetaData(const CgNode& func1, const CgNode& func2, const 
 bool Callgraph::hasEdgeMetaData(const std::pair<size_t, size_t> id, const std::string& metadataName) const {
   return edges.at(id).find(metadataName) != edges.at(id).end();
 }
-

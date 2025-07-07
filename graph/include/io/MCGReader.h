@@ -6,9 +6,9 @@
 #ifndef METACG_GRAPH_MCGREADER_H
 #define METACG_GRAPH_MCGREADER_H
 
+#include "IdMapping.h"
 #include "LoggerUtil.h"
 #include "MCGManager.h"
-#include "IdMapping.h"
 
 #include "nlohmann/json.hpp"
 
