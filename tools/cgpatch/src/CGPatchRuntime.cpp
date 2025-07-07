@@ -116,8 +116,8 @@ extern "C" void __metacg_indirect_call(const char* name, void* address) {
 
   // Add new edge if edge does not exist yet
   if (!globalCallgraph->existEdgeFromTo(name, symbol)) {
-    const auto caller = globalCallgraph->getOrInsertNode(name);
-    const auto callee = globalCallgraph->getOrInsertNode(symbol);
+    auto* const caller = globalCallgraph->getOrInsertNode(name);
+    auto* const callee = globalCallgraph->getOrInsertNode(symbol);
 
     // set hasBody to true so the call-graphs can be fully merged
     caller->setHasBody(true);
