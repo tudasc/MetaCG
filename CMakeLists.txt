@@ -152,7 +152,7 @@ option(
 # Enable MPI for CGPatch
 option(
   CGPATCH_USE_MPI
-  "On or Of"
+  "On or Off"
   ON
 )
 
