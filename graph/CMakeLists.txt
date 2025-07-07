@@ -119,3 +119,4 @@ if(METACG_BUILD_UNIT_TESTS)
 endif()
 
 add_subdirectory(test/integration/CallgraphMerge)
+add_subdirectory(test/integration/Performance)
