@@ -9,7 +9,7 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
-    "mergeCount": 0,
+            "mergeCount": 0,
                 "codeStatistics": {
                     "numVars": 0
                 },
@@ -44,7 +44,7 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
-    "mergeCount": 0,
+            "mergeCount": 0,
                 "codeStatistics": {
                     "numVars": 0
                 },

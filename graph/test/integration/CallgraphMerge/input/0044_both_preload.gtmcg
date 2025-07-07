@@ -57,7 +57,7 @@
                     "_Z3foov": 0
                 },
                 "loopDepth": 0,
-                "mergeCount": 1,
+                "mergeCount": 0,
                 "numConditionalBranches": 0,
                 "numOperations": {
                     "numberOfControlFlowOps": 2,

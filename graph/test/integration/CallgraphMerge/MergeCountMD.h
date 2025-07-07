@@ -38,7 +38,7 @@ class MergeCountMD : public metacg::MetaData::Registrar<MergeCountMD> {
     this->mergeCount += toMergeDerived->mergeCount + 1;
   }
 
-  void applyMapping(const metacg::GraphMapping&) {}
+  void applyMapping(const metacg::GraphMapping&) override {}
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new MergeCountMD(*this)); }
 
