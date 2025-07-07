@@ -14,7 +14,7 @@ RUN apt-get update -y && \
         openmpi-bin openmpi-common bison flex bear \
         lsb-release wget software-properties-common \
         python3-matplotlib python3-pyqt5 ninja-build \
-		libopenmpi-dev libhwloc-dev libevent-dev
+    libopenmpi-dev libhwloc-dev libevent-dev
 
 RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc && \
     add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-18 main' && \
@@ -22,7 +22,7 @@ RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.
     apt-get update && \
     apt-get install -y libllvm18 llvm-18 llvm-18-dev llvm-18-runtime \
         clang-18 clang-tools-18 libclang-common-18-dev libclang-18-dev libclang1-18 \
-		lld-18
+    lld-18
 RUN bash -c "ln -s $(which clang-18) /usr/bin/clang" && \
     bash -c "ln -s $(which clang++-18) /usr/bin/clang++" && \
     bash -c "ln -s $(which llvm-config-18) /usr/bin/llvm-config"
