@@ -56,14 +56,14 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
     throw std::runtime_error(errorMsg);
   }
 
-  std::cout  << "Before: " << j << "\n";
+//  std::cout  << "Before: " << j << "\n"; // FIXME: remove
 
   auto& jsonCG = j[ffInfo.cgFieldName];
   console->info("Lifting MetaCG version {} file to version 4", mcgVersion);
   upgradeV2FormatToV4Format(jsonCG);
   mcgInfo["version"] = "4.0";
 
-  std::cout << "After: " << j << "\n";
+//  std::cout << "After: " << j << "\n"; // FIXME: remove
 
   JsonSource v4JsonSrc(j);
   VersionFourMetaCGReader v4Reader(v4JsonSrc);

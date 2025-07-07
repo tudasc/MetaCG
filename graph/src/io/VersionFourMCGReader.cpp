@@ -167,7 +167,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMetaCGReader::read() {
         throw std::runtime_error("Error while reading edges");
       }
       cg->addEdge(nodeData.nodeId, calleeNode->getId());
-      std::cout << "Added edge for " << nodeData.nodeId << ", " << calleeNode->getId() << "\n"; // TODO: Remove
+//      std::cout << "Added edge for " << nodeData.nodeId << ", " << calleeNode->getId() << "\n"; // TODO: Remove
       // Reading edge metadata
       if (!mdJ.is_null()) {
         for (const auto& mdElem : mdJ.items()) {

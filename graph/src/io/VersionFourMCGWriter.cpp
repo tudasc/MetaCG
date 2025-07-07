@@ -95,7 +95,7 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
                                 {"edges", {}},
                                 {"meta", jMeta}};
 
-    std::cout << "V4 generated node json: " << jNode << "\n";
+//    std::cout << "V4 generated node json: " << jNode << "\n"; // FIXME: remove
 
     auto idStr = nodeToStr.getStrFromNode(*node);
     jNodes[idStr] = std::move(jNode);
