@@ -70,21 +70,6 @@ class CgNode {
    return nullptr;
   }
 
-//  /**
-//   * Checks for attached metadata of type #T
-//   * @tparam T
-//   * @return tuple: (wasFound, pointerToMetaData)
-//   */
-//  template <typename T>
-//  inline T* checkAndGet() const {
-//    if (this->has<T>()) {
-//      auto bpd = this->get<T>();
-//      assert(bpd && "meta data attached");
-//      return bpd;
-//    }
-//    return nullptr;
-//  }
-
   /**
    * Adds a *new* metadata entry for #T if none exists
    * @tparam T
@@ -111,7 +96,6 @@ class CgNode {
 
   /**
    * Convenience function to get the existing meta data node, or attach a new meta data node.
-   * TODO: Should this return a pair<bool, T*> instead with first indicating if newly inserted?
    *
    * @tparam T
    * @tparam Args
@@ -186,11 +170,6 @@ class CgNode {
     this->origin = std::move(origin);
   }
 
-//  // TODO: Move out of here
-//  void dumpToDot(std::ofstream& outputStream, int procNum);
-//
-//  void print();
-
   /**
    * Get the id of the function node
    *
@@ -225,89 +204,5 @@ class CgNode {
 };
 
 }  // namespace metacg
-
-namespace nlohmann {
-
-template <typename T>
-struct adl_serializer<std::unique_ptr<T>> {
-  // allow nlohmann to serialize unique pointer
-  // as json does not have a representation of a pointer construct
-  // we only generate the value of the object pointed to
-  static void to_json(json& j, const std::unique_ptr<T>& uniquePointerT) {
-    if (uniquePointerT) {
-      j = *uniquePointerT;
-    } else {
-      j = nullptr;
-    }
-  }
-
-  static void from_json(const json& j, std::unique_ptr<T>& uniquePointerT) {
-    if (j.is_null()) {
-      uniquePointerT = nullptr;
-    } else {
-      uniquePointerT.reset(j.get<T>());
-    }
-  }
-};
-
-//template <>
-//struct adl_serializer<std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>>> {
-//  static std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>> from_json(const json& j) {
-//    // use compound type serialization instead of metadata serialization,
-//    // because we need access to key and value for metadata creation
-//    std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>> metadataAccumulator;
-//    metadataAccumulator.reserve(j.size());
-//    for (const auto& elem : j.items()) {
-//      // logging of generation failure is done in create<> function, no else needed
-//      // if metadata can not be fully generated, there will not be a stub key generated for it in the memory
-//      // representation
-//      if (auto obj = metacg::MetaData::create<>(elem.key(), elem.value()); obj) {
-//        metadataAccumulator[elem.key()] = std::move(obj);
-//      }
-//    }
-//    return metadataAccumulator;
-//  }
-//
-//  // we need to fully specialize the adl_serializer
-//  static void to_json(json& j, const std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>>& t) {
-//    json jsonAccumulator;
-//    for (const auto& elem : t) {
-//      // if metadata_json can not be fully generated, there will not be a stub key generated for it in the json file
-//      if (auto generated = elem.second->to_json(); !generated.empty()) {
-//        jsonAccumulator[elem.first] = generated;
-//      }
-//    }
-//    j = jsonAccumulator;
-//  }
-//};
-
-//template <>
-//struct adl_serializer<metacg::CgNodePtr> {
-////  static metacg::CgNodePtr from_json(const json& j) {
-////    metacg::CgNodePtr cgNode{};
-////    if (j.is_null()) {
-////      return cgNode;
-////    }
-////    // TODO: Create node without CG?
-////    std::optional<std::string> origin{};
-////    if (j.contains("origin") && !j.at("origin").is_null()) {
-////      origin = j.at("origin");
-////    }
-////    cgNode =
-////        std::make_unique<metacg::CgNode>(j.at("functionName"), origin);
-////    cgNode->setHasBody(j.at("hasBody").get<bool>());
-////    cgNode->setMetaDataContainer(j.at("meta"));
-////    return cgNode;
-////  }
-//
-//  static void to_json(json& j, const metacg::CgNodePtr& t) {
-//    j = {{"functionName", t->getFunctionName()},
-//         {"origin", t->getOrigin()},
-//         {"hasBody", t->getHasBody()},
-//         {"meta", t->getMetaDataContainer()}};
-//  }
-//};
-
-}  // namespace nlohmann
 
 #endif

@@ -186,7 +186,7 @@ MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::Mer
   MergeRecorder recorder;
 
 
-  // Step 1 & 2: iterate over all nodes, determine matches according to the policy, and merge the nodes into this graph.
+  // Step 1 & 2: iterate over all nodes, determine actions according to the policy, and merge the nodes into this graph.
   for (auto& node: other.nodes) {
     auto match = policy.findMatchingNode(*this, *node);
     if (match) {

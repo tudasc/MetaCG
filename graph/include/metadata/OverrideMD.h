@@ -49,8 +49,8 @@ struct OverrideMD final : metacg::MetaData::Registrar<OverrideMD> {
       overrides.push_back(n->getId());
     }
 
-    auto overridenByStrs = j.at("overriddenBy").get<std::vector<std::string>>();
-    for (auto& s : overridenByStrs) {
+    auto overriddenByStrs = j.at("overriddenBy").get<std::vector<std::string>>();
+    for (auto& s : overriddenByStrs) {
       auto* n = strToNode.getNodeFromStr(s);
       assert(n && "Node is null");
       overriddenBy.push_back(n->getId());

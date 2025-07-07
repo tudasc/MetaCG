@@ -33,6 +33,4 @@ std::optional<MergeAction> MergeByName::findMatchingNode(const Callgraph& target
 
 }
 
-
-
 }
