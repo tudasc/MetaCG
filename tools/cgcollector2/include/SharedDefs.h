@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-enum AliasAnalysisLevel { No, All, Analyse };
+enum AliasAnalysisLevel { No, All };
 
 struct FunctionSignature {
   std::string retType;

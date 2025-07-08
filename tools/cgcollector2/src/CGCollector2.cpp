@@ -94,8 +94,7 @@ static opt<AliasAnalysisLevel> aliasAssumption(
     values(clEnumVal(No, "Treat function pointers as own function, do not analyse"),
            clEnumVal(
                All,
-               "Treat all available valid function signatures for a given function pointer as potential call target "),
-           clEnumVal(Analyse, "Enable alias analysis")),
+               "Treat all available valid function signatures for a given function pointer as potential call target ")),
     cat(cgc), init(All));
 
 static opt<bool> standalone("whole-program", desc("Treat all undefined functions as calls to shared libraries"),

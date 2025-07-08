@@ -15,7 +15,6 @@
 #include "CallGraphNodeGenerator.h"
 #include "Plugin.h"
 #include "SharedDefs.h"
-#include "aliasAnalysis/AliasAnalysis.h"
 #include "metadata/Internal/ASTNodeMetadata.h"
 #include "metadata/Internal/AllAliasMetadata.h"
 #include "metadata/Internal/FunctionSignatureMetadata.h"
@@ -42,13 +41,6 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
   // if other TUs are present, overestimation needs to be done during merge
   if (level == AliasAnalysisLevel::All) {
     addOverestimationEdges(callgraph);
-  }
-
-  nlohmann::json AliasAnalysisMetadata;
-  if (level == AliasAnalysisLevel::Analyse) {
-    SPDLOG_INFO("Calculating Aliasses");
-    calculateAliasInfo(Context.getTranslationUnitDecl(), callgraph, AliasAnalysisMetadata, captureCtorsDtors,
-                       captureCtorsDtors);
   }
 
   SPDLOG_INFO("Sucessfully Created Callgraph");
@@ -97,10 +89,6 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
         ++iter;
       }
     }
-  }
-
-  if (!AliasAnalysisMetadata.is_null()) {
-    newJ["PointerEquivalenceData"] = AliasAnalysisMetadata;
   }
 
   file << newJ << std::endl;

@@ -200,9 +200,6 @@ bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
       case All:
         addOverestimationData(nonDirectCallee);
         break;
-      case Analyse:
-        // HandledSeparately
-        break;
       default:
         assert(false && "Alias Analysis level is corrupt");
         break;
