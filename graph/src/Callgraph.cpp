@@ -28,15 +28,38 @@ CgNode* Callgraph::getMain() {
 }
 
 CgNode& Callgraph::insert(std::string function, std::optional<std::string> origin, bool isVirtual, bool hasBody) {
-  NodeId id = nodes.size();  // TODO: Improve this
+  NodeId id = nodes.size();
   // Note: Can't use make_unique here because make_unqiue is not (and should not be) a friend of the CgNode constructor.
-  nodes.emplace_back(new CgNode(id, function, origin, isVirtual, hasBody));
+  nodes.emplace_back(new CgNode(id, function, std::move(origin), isVirtual, hasBody));
   auto& nodesWithName = nameIdMap[function];
-  if (nodesWithName.size() > 0) {
+  if (!nodesWithName.empty()) {
     hasDuplicates = true;
   }
   nodesWithName.push_back(id);
   return *nodes.back();
+}
+
+bool Callgraph::erase(NodeId id) {
+  if (!hasNode(id)) {
+    return false;
+  }
+  // Remove edges
+  for (auto& calleeId : calleeList[id]) {
+    edges.erase({id, calleeId});
+  }
+  calleeList.erase(id);
+  for (auto& callerId : callerList[id]) {
+    edges.erase({callerId, id});
+  }
+  callerList.erase(id);
+  // Destroy the node
+  auto& ptr = nodes[id];
+  assert(ptr);
+  std::string name = ptr->getFunctionName();
+  nameIdMap[name].erase(std::find(nameIdMap[name].begin(), nameIdMap[name].end(), id));
+  ptr.reset();
+  numErased++;
+  return true;
 }
 
 CgNode& Callgraph::getOrInsertNode(std::string function, std::optional<std::string> origin, bool isVirtual,
@@ -55,6 +78,8 @@ void Callgraph::clear() {
   callerList.clear();
   calleeList.clear();
   mainNode = nullptr;
+  numErased = 0;
+  hasDuplicates = false;
 }
 
 void Callgraph::addEdge(const CgNode& parentNode, const CgNode& childNode) {
@@ -87,16 +112,45 @@ bool Callgraph::addEdge(NodeId parentID, NodeId childID) {
 bool Callgraph::addEdge(const std::string& callerName, const std::string& calleeName) {
   auto& callerMatches = getNodes(callerName);
   auto& calleeMatches = getNodes(calleeName);
-  if (callerMatches.size() != 1 || callerMatches.size() != 1) {
+  if (callerMatches.size() != 1 || calleeMatches.size() != 1) {
     return false;
   }
   addEdge(callerMatches.front(), calleeMatches.front());
   return true;
 }
 
+bool Callgraph::removeEdge(NodeId parentID, NodeId childID) {
+  bool existed = edges.erase({parentID, childID});
+  if (existed) {
+    auto& parentCallees = calleeList[parentID];
+    auto calleeEntry = std::find(parentCallees.begin(), parentCallees.end(), childID);
+    parentCallees.erase(calleeEntry);
+    auto& childCallers = callerList[childID];
+    auto callerEntry = std::find(childCallers.begin(), childCallers.end(), parentID);
+    childCallers.erase(callerEntry);
+  }
+  return existed;
+}
+
+bool Callgraph::removeEdge(const CgNode& parentNode, const CgNode& childNode) {
+  return removeEdge(parentNode.id, childNode.id);
+}
+
+bool Callgraph::removeEdge(const std::string& callerName, const std::string& calleeName) {
+  auto& callerMatches = getNodes(callerName);
+  auto& calleeMatches = getNodes(calleeName);
+  if (callerMatches.size() != 1 || calleeMatches.size() != 1) {
+    return false;
+  }
+  return removeEdge(callerMatches.front(), calleeMatches.front());
+}
+
 bool Callgraph::hasNode(const std::string& name) const {
   auto it = nameIdMap.find(name);
-  return it != nameIdMap.end();
+  if (it != nameIdMap.end()) {
+    return std::any_of(it->second.begin(), it->second.end(), [&](auto& id) { return hasNode(id); });
+  }
+  return false;
 }
 
 bool Callgraph::hasNode(NodeId id) const { return id < nodes.size() && nodes.at(id); }
@@ -130,7 +184,9 @@ CgNode* Callgraph::getNode(NodeId id) const {
 
 size_t Callgraph::size() const { return nodes.size(); }
 
-bool Callgraph::isEmpty() const { return nodes.empty(); }
+size_t Callgraph::getNodeCount() const { return nodes.size() - numErased; }
+
+bool Callgraph::isEmpty() const { return getNodeCount() == 0; }
 
 MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::MergePolicy& policy) {
   //  // TODO: Introduce merge policies. For now, we fall back on the old behavior of merging by name.

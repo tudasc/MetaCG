@@ -55,12 +55,18 @@ class Callgraph {
   CgNode* getMain();
 
   /**
-   * Inserts an edge from parentNode to childNode
+   * Inserts an edge from parentNode to childNode.
    * @param parentNode function node of calling function
    * @param childNode function node of called function
    */
   void addEdge(const CgNode& parentNode, const CgNode& childNode);
 
+  /**
+   * Inserts an edge between the nodes with the given IDs.
+   * @param parentID
+   * @param childID
+   * @return True if the the edge was inserted, false otherwise.
+   */
   bool addEdge(NodeId parentID, NodeId childID);
 
   /**
@@ -72,6 +78,39 @@ class Callgraph {
    */
   bool addEdge(const std::string& callerName, const std::string& calleeName);
 
+  /**
+   * Removes the edge between the given nodes.
+   * @param parentID
+   * @param childID
+   * @return True if there was an edge to remove, false otherwise.
+   */
+  bool removeEdge(NodeId parentID, NodeId childID);
+
+  /**
+   * Removes the edge from parentNode to childNode.
+   * @param parentNode function node of calling function
+   * @param childNode function node of called function
+   * @return True if there was an edge to remove, false otherwise.
+   */
+  bool removeEdge(const CgNode& parentNode, const CgNode& childNode);
+
+  /**
+   * Removes the edge between two nodes of the given names.
+   * Does nothing if there are multiple or no nodes with this name, or if there is no such edge.
+   * @param callerName
+   * @param calleeName
+   * @return True if the edges was removed, false otherwise.
+   */
+  bool removeEdge(const std::string& callerName, const std::string& calleeName);
+
+  /**
+   * Inserts a node with the given properties into the call graph.
+   * @param function
+   * @param origin
+   * @param isVirtual
+   * @param hasBody
+   * @return A reference to the newly created node.
+   */
   CgNode& insert(std::string function, std::optional<std::string> origin = {}, bool isVirtual = false,
                  bool hasBody = false);
 
@@ -83,6 +122,16 @@ class Callgraph {
    */
   CgNode& getOrInsertNode(std::string function, std::optional<std::string> origin = {}, bool isVirtual = false,
                           bool hasBody = false);
+
+  /**
+   * Erases the node with the given ID. If there are edges from or to this node, they are removed.
+   * Note that if there is metadata in other nodes referencing the erased node, this metadata has to be updated
+   * manually to maintain consistency.
+   *
+   * @param id ID of the node to erase.
+   * @return True, if the node ID was valid and the corresponding node was erased.
+   */
+  bool erase(NodeId id);
 
   /**
    * Merges the given call graph into this one.
@@ -116,12 +165,17 @@ class Callgraph {
   bool hasNode(const std::string& name) const;
 
   /**
-   * @brief hasNode checks whether a node for #name exists in the graph mapping
+   * @brief hasNode Checks whether a node with the given ID exists.
    * @param name
    * @return true iff exists, false otherwise
    */
   bool hasNode(NodeId id) const;
 
+  /**
+   * Counts the number of nodes that match the given name.
+   * @param name
+   * @return
+   */
   unsigned countNodes(const std::string& name) const;
 
   /**
@@ -157,7 +211,17 @@ class Callgraph {
   CgNodeRawPtrUSet getCallers(const CgNode& node) const;
   CgNodeRawPtrUSet getCallers(NodeId node) const;
 
+  /**
+   * Returns the number of inserted nodes. Note that this includes erased nodes.
+   * @return
+   */
   size_t size() const;
+
+  /**
+   * Returns the number of nodes, excluding erased nodes.
+   * @return
+   */
+  size_t getNodeCount() const;
 
   bool isEmpty() const;
 
@@ -215,8 +279,10 @@ class Callgraph {
   CgNode* mainNode = nullptr;
   // Tracks if there is more than one node with the same function name
   bool hasDuplicates{false};
+  // Tracks number of erased nodes
+  size_t numErased{0};
 };
 
-} // namespace metacg
+}  // namespace metacg
 
 #endif

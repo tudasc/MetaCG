@@ -96,6 +96,48 @@ TEST_F(MCGManagerTest, TwoNodeOneEdgeCG) {
   ASSERT_TRUE(mcgm.getCallgraph()->getCallees(mainNode->getId()).size() == 1);
 }
 
+TEST_F(MCGManagerTest, EraseNodeNoEdge) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  auto& cg = *mcgm.getCallgraph();
+  auto& mainNode = cg.getOrInsertNode("main");
+  int mainNodeId = mainNode.getId();
+  ASSERT_TRUE(cg.erase(mainNode.getId()));
+  ASSERT_FALSE(cg.hasNode("main"));
+  ASSERT_FALSE(cg.hasNode(mainNodeId));
+  ASSERT_EQ(cg.size(), 1);
+  ASSERT_EQ(cg.getNodeCount(), 0);
+  ASSERT_TRUE(cg.isEmpty());
+}
+
+TEST_F(MCGManagerTest, EraseNodeWithEdge) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  auto& cg = *mcgm.getCallgraph();
+  auto& mainNode = cg.getOrInsertNode("main");
+  auto& childNode = cg.getOrInsertNode("child1");
+  int mainNodeId = mainNode.getId();
+  int childNodeId = childNode.getId();
+  ASSERT_TRUE(cg.addEdge(mainNodeId, childNodeId));
+  ASSERT_TRUE(cg.erase(mainNode.getId()));
+  ASSERT_FALSE(cg.hasNode("main"));
+  ASSERT_FALSE(cg.hasNode(mainNodeId));
+  ASSERT_EQ(cg.size(), 2);
+  ASSERT_EQ(cg.getNodeCount(), 1);
+  ASSERT_FALSE(cg.isEmpty());
+  ASSERT_FALSE(cg.existsEdge(mainNodeId, childNodeId));
+}
+
+TEST_F(MCGManagerTest, RemoveEdge) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  auto& cg = *mcgm.getCallgraph();
+  auto& mainNode = cg.getOrInsertNode("main");
+  auto& childNode = cg.getOrInsertNode("child1");
+  int mainNodeId = mainNode.getId();
+  int childNodeId = childNode.getId();
+  ASSERT_TRUE(cg.addEdge(mainNodeId, childNodeId));
+  ASSERT_TRUE(cg.removeEdge(mainNodeId, childNodeId));
+  ASSERT_FALSE(cg.existsEdge(mainNodeId, childNodeId));
+}
+
 TEST_F(MCGManagerTest, ComplexCG) {
   // Call-order: top to bottom or arrow if given
   /*
