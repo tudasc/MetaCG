@@ -83,7 +83,7 @@ TEST_F(V2MCGWriterTest, OneNodeCGWrite) {
   const auto& cg = mcgm.getCallgraph();
   cg->insert("main");
 #pragma warning(suppress: -Wdeprecated-declarations)
-  cg->getMain()->setIsVirtual(false);
+  cg->getMain()->setVirtual(false);
   cg->getMain()->setHasBody(true);
 
   const std::string generatorName = "Test";
@@ -102,11 +102,11 @@ TEST_F(V2MCGWriterTest, TwoNodeCGWrite) {
   auto& mcgm = metacg::graph::MCGManager::get();
   const auto& cg = mcgm.getCallgraph();
   cg->insert("main");
-  cg->getMain()->setIsVirtual(false);
+  cg->getMain()->setVirtual(false);
   cg->getMain()->setHasBody(true);
 
   cg->insert("foo");
-  cg->getFirstNode("foo")->setIsVirtual(true);
+  cg->getFirstNode("foo")->setVirtual(true);
   cg->getFirstNode("foo")->setHasBody(true);
 
   const std::string generatorName = "Test";
@@ -126,11 +126,11 @@ TEST_F(V2MCGWriterTest, TwoNodeOneEdgeCGWrite) {
   auto& mcgm = metacg::graph::MCGManager::get();
   const auto& cg = mcgm.getCallgraph();
   cg->insert("main");
-  cg->getMain()->setIsVirtual(false);
+  cg->getMain()->setVirtual(false);
   cg->getMain()->setHasBody(true);
 
   cg->insert("foo");
-  cg->getFirstNode("foo")->setIsVirtual(true);
+  cg->getFirstNode("foo")->setVirtual(true);
   cg->getFirstNode("foo")->setHasBody(true);
 
   EXPECT_TRUE(cg->addEdge("main", "foo"));
@@ -153,15 +153,15 @@ TEST_F(V2MCGWriterTest, ThreeNodeOneEdgeCGWrite) {
   auto& mcgm = metacg::graph::MCGManager::get();
   const auto& cg = mcgm.getCallgraph();
   cg->insert("main");
-  cg->getMain()->setIsVirtual(false);
+  cg->getMain()->setVirtual(false);
   cg->getMain()->setHasBody(true);
 
   cg->insert("foo");
-  cg->getFirstNode("foo")->setIsVirtual(true);
+  cg->getFirstNode("foo")->setVirtual(true);
   cg->getFirstNode("foo")->setHasBody(true);
 
   cg->insert("bar");
-  cg->getFirstNode("bar")->setIsVirtual(false);
+  cg->getFirstNode("bar")->setVirtual(false);
   cg->getFirstNode("bar")->setHasBody(false);
 
   EXPECT_TRUE(cg->addEdge("main", "foo"));
@@ -185,7 +185,7 @@ TEST_F(V2MCGWriterTest, MetadataCGWrite) {
   auto& mcgm = metacg::graph::MCGManager::get();
   const auto& cg = mcgm.getCallgraph();
   cg->insert("main");
-  cg->getMain()->setIsVirtual(false);
+  cg->getMain()->setVirtual(false);
   cg->getMain()->setHasBody(true);
 
   auto testMetaData = std::make_unique<TestMetaData>();
@@ -211,7 +211,7 @@ TEST_F(V2MCGWriterTest, WriteByName) {
   EXPECT_EQ(mcgm.graphs_size(), 2);
   EXPECT_EQ(mcgm.getActiveGraphName(), "newGraph");
   cg->insert("main");
-  cg->getMain()->setIsVirtual(false);
+  cg->getMain()->setVirtual(false);
   cg->getMain()->setHasBody(true);
 
   cg->getMain()->addMetaData(std::make_unique<TestMetaData>());
@@ -242,7 +242,7 @@ TEST_F(V2MCGWriterTest, WritePointer) {
   EXPECT_EQ(mcgm.graphs_size(), 2);
   EXPECT_EQ(mcgm.getActiveGraphName(), "newGraph");
   cg->insert("main");
-  cg->getMain()->setIsVirtual(false);
+  cg->getMain()->setVirtual(false);
   cg->getMain()->setHasBody(true);
 
   cg->getMain()->addMetaData(std::make_unique<TestMetaData>());
@@ -273,7 +273,7 @@ TEST_F(V2MCGWriterTest, SwitchBeforeWrite) {
   EXPECT_EQ(mcgm.graphs_size(), 2);
   EXPECT_EQ(mcgm.getActiveGraphName(), "newGraph");
   cg->insert("main");
-  cg->getMain()->setIsVirtual(false);
+  cg->getMain()->setVirtual(false);
   cg->getMain()->setHasBody(true);
 
   cg->getMain()->addMetaData(std::make_unique<TestMetaData>());

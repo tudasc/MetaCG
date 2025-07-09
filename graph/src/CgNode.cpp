@@ -13,13 +13,13 @@ using namespace metacg;
 CgNode::CgNode(NodeId id, std::string function, std::optional<std::string> origin, bool isVirtual, bool hasBody)
     : id(id), functionName(std::move(function)), origin(std::move(origin)), hasBody(hasBody) {
   if (isVirtual) {
-    this->getOrCreateMD<OverrideMD>();
+    this->getOrCreate<OverrideMD>();
   }
 };
 
-[[deprecated("Attach \"OverrideMD\" instead")]] void CgNode::setIsVirtual(bool virtualness) {
+[[deprecated("Attach \"OverrideMD\" instead")]] void CgNode::setVirtual(bool virtualness) {
   if (virtualness) {
-    this->getOrCreateMD<OverrideMD>();
+    this->getOrCreate<OverrideMD>();
   } else {
     this->metaFields.erase(OverrideMD::key);
   }

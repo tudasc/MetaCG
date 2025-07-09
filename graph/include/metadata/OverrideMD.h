@@ -34,7 +34,7 @@ inline void mergeVectors(std::vector<NodeId>& dst, const std::vector<NodeId>& sr
  *  MetaCG tries to generate this metadata whenever legacy file formats are read.
  *  It stores information about whether a function is virtual, or whether it overrides,
  *  and which function it overrides or gets overridden by
- *  The deprecated setIsVirtual and IsVirtual use this metadata to achieve compatibility with older API calls
+ *  The deprecated setVirtual and IsVirtual use this metadata to achieve compatibility with older API calls
  */
 struct OverrideMD final : metacg::MetaData::Registrar<OverrideMD> {
  public:

@@ -56,10 +56,12 @@ class Callgraph {
 
   /**
    * Inserts an edge from parentNode to childNode.
+   * Does nothing if one of the nodes is not contained in this graph.
    * @param parentNode function node of calling function
    * @param childNode function node of called function
+   * @return True if the edge was inserted, false otherwise.
    */
-  void addEdge(const CgNode& parentNode, const CgNode& childNode);
+  bool addEdge(const CgNode& parentNode, const CgNode& childNode);
 
   /**
    * Inserts an edge between the nodes with the given IDs.
@@ -172,6 +174,13 @@ class Callgraph {
   bool hasNode(NodeId id) const;
 
   /**
+   * Checks whether the given node is contained in this graph.
+   * @param node
+   * @return True iff the node is contained in this graph, false otherwise.
+   */
+  bool hasNode(const CgNode& node) const;
+
+  /**
    * Counts the number of nodes that match the given name.
    * @param name
    * @return
@@ -229,16 +238,30 @@ class Callgraph {
   const EdgeContainer& getEdges() const;
 
   template <class T>
-  void addEdgeMetaData(const CgNode& func1, const CgNode& func2, std::unique_ptr<T>&& md) {
-    addEdgeMetaData({func1.getId(), func2.getId()}, std::move(md));
+  bool addEdgeMetaData(const CgNode& func1, const CgNode& func2, std::unique_ptr<T>&& md) {
+    if (!hasNode(func1) || !hasNode(func2)) {
+      return false;
+    }
+    return addEdgeMetaData({func1.getId(), func2.getId()}, std::move(md));
   }
 
   template <class T>
-  void addEdgeMetaData(const std::pair<NodeId, NodeId> id, std::unique_ptr<T>&& md) {
-    edges.at(id)[T::key] = std::move(md);
+  bool addEdgeMetaData(const std::pair<NodeId, NodeId> id, std::unique_ptr<T>&& md) {
+    if (auto it = edges.find(id); it != edges.end()) {
+      it->second[T::key] = std::move(md);
+      return true;
+    }
+    return false;
   }
 
   MetaData* getEdgeMetaData(const CgNode& func1, const CgNode& func2, const std::string& metadataName) const;
+
+  /**
+ * Returns metadata for the given edge. The edge is assumed to exists.
+ * @param ids Node IDs of the edge pair
+ * @param metadataName Name of the metadata
+ * @return The metadata or null, if there is none registered with that key.
+   */
   MetaData* getEdgeMetaData(std::pair<NodeId, NodeId> id, const std::string& metadataName) const;
 
   template <class T>
@@ -259,12 +282,15 @@ class Callgraph {
 
   template <class T>
   bool hasEdgeMetaData(const CgNode& func1, const CgNode& func2) const {
-    return hasEdgeMetaData<T>({func1.getId(), func2.getId()});
+    return hasNode(func1) && hasNode(func2) && hasEdgeMetaData<T>({func1.getId(), func2.getId()});
   }
   template <class T>
   bool hasEdgeMetaData(const std::pair<NodeId, NodeId> id) const {
     return edges.at(id).find(T::key) != edges.at(id).end();
   }
+ private:
+
+  bool addEdgeInternal(NodeId caller, NodeId callee);
 
  private:
   // this set represents the call graph during the actual computation

@@ -82,16 +82,25 @@ void Callgraph::clear() {
   hasDuplicates = false;
 }
 
-void Callgraph::addEdge(const CgNode& parentNode, const CgNode& childNode) {
-  if (edges.find({parentNode.getId(), childNode.getId()}) != edges.end()) {
+bool Callgraph::addEdgeInternal(NodeId caller, NodeId callee) {
+  if (edges.find({caller, callee}) != edges.end()) {
     MCGLogger::instance().getErrConsole()->warn("Edge between {} and {} already exist: Skipping edge insertion",
-                                                parentNode.getFunctionName(), childNode.getFunctionName());
-    return;
+                                                getNode(caller)->getFunctionName(), getNode(callee)->getFunctionName());
+    return false;
   }
-  calleeList[parentNode.getId()].push_back(childNode.getId());
-  callerList[childNode.getId()].push_back(parentNode.getId());
+  calleeList[caller].push_back(callee);
+  callerList[callee].push_back(caller);
   NamedMetadata edgeMd;
-  edges[{parentNode.getId(), childNode.getId()}] = std::move(edgeMd);
+  edges[{caller, callee}] = std::move(edgeMd);
+  return true;
+}
+
+
+bool Callgraph::addEdge(const CgNode& parentNode, const CgNode& childNode) {
+  if (!hasNode(parentNode) || !hasNode(childNode)) {
+    return false;
+  }
+  return addEdgeInternal(parentNode.getId(), childNode.getId());
 }
 
 bool Callgraph::addEdge(NodeId parentID, NodeId childID) {
@@ -105,8 +114,7 @@ bool Callgraph::addEdge(NodeId parentID, NodeId childID) {
     MCGLogger::instance().getErrConsole()->error("Target ID {} does not exist in graph", childID);
     return false;
   }
-  addEdge(*parentNode, *childNode);
-  return true;
+  return addEdgeInternal(parentID, childID);
 }
 
 bool Callgraph::addEdge(const std::string& callerName, const std::string& calleeName) {
@@ -133,6 +141,9 @@ bool Callgraph::removeEdge(NodeId parentID, NodeId childID) {
 }
 
 bool Callgraph::removeEdge(const CgNode& parentNode, const CgNode& childNode) {
+  if (!hasNode(parentNode) && !hasNode(childNode)) {
+    return false;
+  }
   return removeEdge(parentNode.id, childNode.id);
 }
 
@@ -154,6 +165,15 @@ bool Callgraph::hasNode(const std::string& name) const {
 }
 
 bool Callgraph::hasNode(NodeId id) const { return id < nodes.size() && nodes.at(id); }
+
+bool Callgraph::hasNode(const CgNode& node) const {
+  if (node.id >= nodes.size()) {
+    return false;
+  }
+  auto& nodeAtId = nodes.at(node.id);
+  // Check for matching address
+  return nodeAtId && nodeAtId.get() == &node;
+}
 
 unsigned Callgraph::countNodes(const std::string& name) const { return nameIdMap.count(name); }
 
@@ -189,49 +209,7 @@ size_t Callgraph::getNodeCount() const { return nodes.size() - numErased; }
 bool Callgraph::isEmpty() const { return getNodeCount() == 0; }
 
 MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::MergePolicy& policy) {
-  //  // TODO: Introduce merge policies. For now, we fall back on the old behavior of merging by name.
-  //  // Lambda function to clone nodes from the other call graph
-  //  std::function<void(metacg::Callgraph*, const metacg::Callgraph&, metacg::CgNode*)> copyNode =
-  //      [&](metacg::Callgraph* destination, const metacg::Callgraph& source, metacg::CgNode* node) {
-  //        std::string functionName = node->getFunctionName();
-  //        metacg::CgNode& mergeNode = destination->getOrInsertNode(functionName, node->getOrigin());
-  //
-  //        if (node->getHasBody()) {
-  //          auto callees = source.getCallees(*node);
-  //
-  //          for (auto* c : callees) {
-  //            std::string calleeName = c->getFunctionName();
-  //            if (!destination->hasNode(calleeName)) {
-  //              copyNode(destination, source, c);
-  //            }
-  //            auto& calleeNode = *destination->getFirstNode(c->getFunctionName());
-  //
-  //            if (!destination->existsEdge(mergeNode, calleeNode)) {
-  //              destination->addEdge(mergeNode, calleeNode);
-  //            }
-  //          }
-  //
-  //          mergeNode.setHasBody(node->getHasBody());
-  //
-  //          if (!mergeNode.has<OverrideMD>() && node->has<OverrideMD>()) {
-  //              mergeNode.addMetaData<OverrideMD>();
-  //          }
-  //        }
-  //
-  //        for (const auto& it : node->getMetaDataContainer()) {
-  //          if (mergeNode.has(it.first)) {
-  //            mergeNode.get(it.first)->merge(*(it.second));
-  //          } else {
-  //            mergeNode.addMetaData(it.second->clone());
-  //          }
-  //        }
-  //      };
-  //
-  //  auto cloneNode = [&](CgNode& sourceNode) {
-  //
-  //  };
-
-  // Records performed merge actions to enable proper updating node references (in edges and metadata).
+  // Records performed merge actions to enable properly updating node references (in edges and metadata).
   MergeRecorder recorder;
 
   // Step 1 & 2: iterate over all nodes, determine actions according to the policy, and merge the nodes into this graph.
@@ -318,7 +296,7 @@ const metacg::Callgraph::NodeContainer& Callgraph::getNodes() const { return nod
 const metacg::Callgraph::EdgeContainer& Callgraph::getEdges() const { return edges; }
 
 bool Callgraph::existsEdge(const CgNode& source, const CgNode& target) const {
-  return existsEdge(source.getId(), target.getId());
+  return hasNode(source) && hasNode(target) && existsEdge(source.getId(), target.getId());
 }
 
 bool Callgraph::existsEdge(NodeId source, NodeId target) const { return edges.find({source, target}) != edges.end(); }
@@ -336,7 +314,13 @@ bool Callgraph::existsAnyEdge(const std::string& source, const std::string& targ
   return false;
 }
 
-CgNodeRawPtrUSet Callgraph::getCallees(const CgNode& node) const { return getCallees(node.getId()); }
+CgNodeRawPtrUSet Callgraph::getCallees(const CgNode& node) const {
+  if (hasNode(node)) {
+    return getCallees(node.getId());
+  }
+  return {};
+}
+
 CgNodeRawPtrUSet Callgraph::getCallees(NodeId node) const {
   CgNodeRawPtrUSet returnSet;
   if (calleeList.count(node) == 0) {
@@ -349,7 +333,13 @@ CgNodeRawPtrUSet Callgraph::getCallees(NodeId node) const {
   return returnSet;
 }
 
-CgNodeRawPtrUSet Callgraph::getCallers(const CgNode& node) const { return getCallers(node.getId()); };
+CgNodeRawPtrUSet Callgraph::getCallers(const CgNode& node) const {
+  if (hasNode(node)) {
+    return getCallers(node.getId());
+  }
+  return {};
+};
+
 CgNodeRawPtrUSet Callgraph::getCallers(NodeId node) const {
   CgNodeRawPtrUSet returnSet;
   if (callerList.count(node) == 0) {
@@ -362,34 +352,13 @@ CgNodeRawPtrUSet Callgraph::getCallers(NodeId node) const {
   return returnSet;
 }
 
-// TODO: When is this needed?
-// void Callgraph::setNodes(Callgraph::NodeContainer external_container) { nodes = std::move(external_container); }
-// void Callgraph::setEdges(Callgraph::EdgeContainer external_container) { edges = std::move(external_container); }
-//
-// void Callgraph::recomputeCache() {
-//  nameIdMap.clear();
-//  for (const auto& elem : nodes) {
-//    nameIdMap[elem->getFunctionName()].push_back(elem->getId());
-//  }
-//  // TODO: What's the benefit of maintaining a separate caller/callee map?
-//  callerList.clear();
-//  calleeList.clear();
-//  for (const auto& elem : edges) {
-//    calleeList[elem.first.first].push_back(elem.first.second);
-//    callerList[elem.first.second].push_back(elem.first.first);
-//  }
-//}
-
 MetaData* Callgraph::getEdgeMetaData(const CgNode& func1, const CgNode& func2, const std::string& metadataName) const {
-  return getEdgeMetaData({func1.getId(), func2.getId()}, metadataName);
+  if (hasNode(func1) && hasNode(func2)) {
+    return getEdgeMetaData({func1.getId(), func2.getId()}, metadataName);
+  }
+  return nullptr;
 }
 
-/**
- * Returns metadata for the given edge. The edge is assumed to exists.
- * @param ids Node IDs of the edge pair
- * @param metadataName Name of the metadata
- * @return The metadata or null, if there is none registered with that key.
- */
 MetaData* Callgraph::getEdgeMetaData(std::pair<size_t, size_t> ids, const std::string& metadataName) const {
   assert(edges.find(ids) != edges.end() && "Edge does not exist");
   auto& edgeMD = edges.at(ids);
@@ -408,9 +377,12 @@ const metacg::Callgraph::NamedMetadata& Callgraph::getAllEdgeMetaData(const std:
 }
 
 bool Callgraph::hasEdgeMetaData(const CgNode& func1, const CgNode& func2, const std::string& metadataName) const {
-  return hasEdgeMetaData({func1.getId(), func2.getId()}, metadataName);
+  return hasNode(func1) && hasNode(func2) && hasEdgeMetaData({func1.getId(), func2.getId()}, metadataName);
 }
 
 bool Callgraph::hasEdgeMetaData(const std::pair<size_t, size_t> id, const std::string& metadataName) const {
-  return edges.at(id).find(metadataName) != edges.at(id).end();
+  if (auto it = edges.find(id); it != edges.end()) {
+    return it->second.find(metadataName) != it->second.end();
+  }
+  return false;
 }

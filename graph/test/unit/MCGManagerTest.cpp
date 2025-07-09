@@ -8,8 +8,12 @@
 
 #include "MCGManager.h"
 #include "metadata/MetaData.h"
+#include "metadata/OverrideMD.h"
 
 using json = nlohmann::json;
+
+// TODO: These tests mostly test the CG itself and not so much the manager anymore.
+//       If/when we decide to remove the manager, these tests should be renamed accordingly.
 
 class MCGManagerTest : public ::testing::Test {
  protected:
@@ -138,6 +142,61 @@ TEST_F(MCGManagerTest, RemoveEdge) {
   ASSERT_FALSE(cg.existsEdge(mainNodeId, childNodeId));
 }
 
+TEST_F(MCGManagerTest, HasNode) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  auto& cg = *mcgm.getCallgraph();
+  auto& mainNode = cg.getOrInsertNode("main");
+
+  auto& cg2 = *mcgm.getOrCreateCallgraph("secondCG");
+  auto& otherMain = cg2.getOrInsertNode("main");
+
+  ASSERT_TRUE(cg.hasNode(mainNode));
+  ASSERT_TRUE(cg.hasNode("main"));
+  ASSERT_TRUE(cg.hasNode(mainNode.getId()));
+  ASSERT_FALSE(cg.hasNode(otherMain));
+
+  ASSERT_TRUE(cg2.hasNode(otherMain));
+  ASSERT_TRUE(cg2.hasNode("main"));
+  ASSERT_TRUE(cg2.hasNode(otherMain.getId()));
+  ASSERT_FALSE(cg2.hasNode(mainNode));
+}
+
+
+TEST_F(MCGManagerTest, EdgeToNodeFromOtherCG) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  auto& cg = *mcgm.getCallgraph();
+  auto& mainNode = cg.getOrInsertNode("main");
+  auto& childNode = cg.getOrInsertNode("child1");
+
+  auto& cg2 = *mcgm.getOrCreateCallgraph("secondCG");
+  auto& otherMain = cg2.getOrInsertNode("main");
+
+  // Try to add edge between nodes of different call graphs
+  cg.addEdge(otherMain, childNode);
+
+  ASSERT_FALSE(cg.existsEdge(otherMain, childNode));
+  ASSERT_FALSE(cg.existsEdge(mainNode, childNode));
+}
+
+TEST_F(MCGManagerTest, AddMDtoEdge) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  auto cg = mcgm.getCallgraph();
+  cg->addEdge(cg->getOrInsertNode("main"), cg->getOrInsertNode("LC1"));
+  ASSERT_TRUE(cg->getMain() != nullptr);
+  ASSERT_TRUE(cg->getFirstNode("LC1"));
+
+  cg->addEdgeMetaData(*cg->getMain(), *cg->getFirstNode("LC1"), std::make_unique<metacg::OverrideMD>());
+  cg->hasEdgeMetaData<metacg::OverrideMD>(*cg->getMain(), *cg->getFirstNode("LC1"));
+}
+
+TEST_F(MCGManagerTest, AddMDtoMissingEdge) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  auto cg = mcgm.getCallgraph();
+  auto& main = cg->getOrInsertNode("main");
+  auto& foo = cg->getOrInsertNode("foo");
+  ASSERT_FALSE(cg->addEdgeMetaData(main, foo, std::make_unique<metacg::OverrideMD>()));
+}
+
 TEST_F(MCGManagerTest, ComplexCG) {
   // Call-order: top to bottom or arrow if given
   /*
@@ -251,10 +310,6 @@ TEST_F(MCGManagerTest, FullIntoEmptyCallgraphMerge) {
   ASSERT_TRUE(mcgm.getCallgraph()->hasNode("child1"));
   ASSERT_TRUE(mcgm.getCallgraph()->getFirstNode("main")->getHasBody());
   ASSERT_TRUE(mcgm.getCallgraph()->getFirstNode("child1")->getHasBody());
-  std::cout << "Edges in merged graph: \n";
-  for (auto& edge : mcgm.getCallgraph()->getEdges()) {
-    std::cout << edge.first.first << ", " << edge.first.second << "\n";
-  }
   ASSERT_TRUE(mcgm.getCallgraph()->existsAnyEdge("main", "child1"));
 }
 

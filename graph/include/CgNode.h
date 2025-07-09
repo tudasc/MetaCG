@@ -72,6 +72,25 @@ class CgNode {
   }
 
   /**
+   * Erases the metadata of given type.
+   * @tparam T
+   * @return True if there was metadata of this type, false otherwise.
+   */
+  template <typename T>
+  bool erase() {
+    return metaFields.erase(T::key);
+  }
+
+  /**
+   * Erases the metadata with the given name.
+   * @tparam T
+   * @return True if there was metadata with this name, false otherwise.
+   */
+  bool erase(const std::string& mdKey) {
+    return metaFields.erase(mdKey);
+  }
+
+  /**
    * Adds a *new* metadata entry for #T if none exists
    * @tparam T
    * @param md
@@ -105,7 +124,7 @@ class CgNode {
    * @return
    */
   template <typename T, typename... Args>
-  T& getOrCreateMD(const Args&... args) {
+  T& getOrCreate(const Args&... args) {
     auto& md = metaFields[T::key];
     if (md) {
       return static_cast<T&>(*md);
@@ -155,7 +174,7 @@ class CgNode {
    */
   void setFunctionName(std::string name) { this->functionName = std::move(name); }
 
-  [[deprecated("Attach \"OverrideMD\" instead")]] void setIsVirtual(bool);
+  [[deprecated("Attach \"OverrideMD\" instead")]] void setVirtual(bool);
 
   [[deprecated("Check with has<OverrideMD>() instead")]] bool isVirtual();
 
