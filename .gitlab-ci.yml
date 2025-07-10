@@ -64,19 +64,6 @@ configure-custom-md:
     - grep "TestHeader.h" "build-configure-md/graph/include/metadata/CustomMD.h" || exit 1
     - rm -f graph/include/metadata/custom/TestHeader.h
 
-mcg-container:
-  stage: build
-  tags:
-    - podman
-  allow_failure: true
-  needs: ["mcg-download", "configure-custom-md"]
-  script:
-    - podman login ${CI_REGISTRY} -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD}
-    - podman build -t metacg:$CI_PIPELINE_ID -f container/metacg .
-    - podman run --cgroupns=host --rm -t metacg:$CI_PIPELINE_ID /opt/metacg/build/pgis/test/unit/pgistests
-    - podman run --cgroupns=host --rm -t metacg:$CI_PIPELINE_ID /opt/metacg/build/graph/test/unit/libtests
-
-
 # Stage: build
 build-mcg-no-tests:
   <<: *job-setup
