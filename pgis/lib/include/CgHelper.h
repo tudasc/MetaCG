@@ -9,6 +9,7 @@
 
 #include "Callgraph.h"
 #include "CgNode.h"
+#include "CgTypes.h"
 #include "ReachabilityAnalysis.h"
 
 #include <algorithm>  // std::set_intersection
@@ -35,22 +36,22 @@ namespace CgHelper {
 
 bool isConjunction(const metacg::CgNode* node, const metacg::Callgraph* const graph);
 
-CgNodeRawPtrUSet getInstrumentationPath(metacg::CgNode* start, const metacg::Callgraph* const graph);
+metacg::CgNodeRawPtrUSet getInstrumentationPath(metacg::CgNode* start, const metacg::Callgraph* const graph);
 
 /**
  * Calculates the inclusive statement count for every node which is reachable from mainNode and saves in the node field
  */
 void calculateInclusiveStatementCounts(metacg::CgNode* mainNode, const metacg::Callgraph* const graph);
 
-CgNodeRawPtrUSet allNodesToMain(metacg::CgNode* startNode, metacg::CgNode* mainNode,
+metacg::CgNodeRawPtrUSet allNodesToMain(metacg::CgNode* startNode, metacg::CgNode* mainNode,
                                 const metacg::Callgraph* const graph,
-                                const std::unordered_map<metacg::CgNode*, CgNodeRawPtrUSet>& init,
+                                const std::unordered_map<metacg::CgNode*, metacg::CgNodeRawPtrUSet>& init,
                                 metacg::analysis::ReachabilityAnalysis& ra);
-CgNodeRawPtrUSet allNodesToMain(metacg::CgNode* startNode, metacg::CgNode* mainNode,
+metacg::CgNodeRawPtrUSet allNodesToMain(metacg::CgNode* startNode, metacg::CgNode* mainNode,
                                 const metacg::Callgraph* const graph, metacg::analysis::ReachabilityAnalysis& ra);
 
-CgNodeRawPtrUSet getDescendants(metacg::CgNode* startingNode, const metacg::Callgraph* const graph);
-CgNodeRawPtrUSet getAncestors(metacg::CgNode* startingNode, const metacg::Callgraph* const graph);
+metacg::CgNodeRawPtrUSet getDescendants(metacg::CgNode* startingNode, const metacg::Callgraph* const graph);
+metacg::CgNodeRawPtrUSet getAncestors(metacg::CgNode* startingNode, const metacg::Callgraph* const graph);
 
 /**
  *
@@ -60,27 +61,27 @@ CgNodeRawPtrUSet getAncestors(metacg::CgNode* startingNode, const metacg::Callgr
  */
 double calcRuntimeThreshold(const metacg::Callgraph& cg, bool useLongAsRef);
 
-inline CgNodeRawPtrUSet setIntersect(const CgNodeRawPtrUSet& a, const CgNodeRawPtrUSet& b) {
-  CgNodeRawPtrUSet intersect;
+inline metacg::CgNodeRawPtrUSet setIntersect(const metacg::CgNodeRawPtrUSet& a, const metacg::CgNodeRawPtrUSet& b) {
+  metacg::CgNodeRawPtrUSet intersect;
 
   std::set_intersection(a.begin(), a.end(), b.begin(), b.end(), std::inserter(intersect, intersect.begin()));
 
   return intersect;
 }
 
-inline CgNodeRawPtrUSet setDifference(const CgNodeRawPtrUSet& a, const CgNodeRawPtrUSet& b) {
-  CgNodeRawPtrUSet difference;
+inline metacg::CgNodeRawPtrUSet setDifference(const metacg::CgNodeRawPtrUSet& a, const metacg::CgNodeRawPtrUSet& b) {
+  metacg::CgNodeRawPtrUSet difference;
 
   std::set_difference(a.begin(), a.end(), b.begin(), b.end(), std::inserter(difference, difference.begin()));
 
   return difference;
 }
 
-inline bool isSubsetOf(const CgNodeRawPtrUSet& smallSet, const CgNodeRawPtrUSet& largeSet) {
+inline bool isSubsetOf(const metacg::CgNodeRawPtrUSet& smallSet, const metacg::CgNodeRawPtrUSet& largeSet) {
   return setDifference(smallSet, largeSet) == smallSet;
 }
 
-inline bool intersects(const CgNodeRawPtrUSet& a, const CgNodeRawPtrUSet& b) { return !setIntersect(a, b).empty(); }
+inline bool intersects(const metacg::CgNodeRawPtrUSet& a, const metacg::CgNodeRawPtrUSet& b) { return !setIntersect(a, b).empty(); }
 
 /**
  *
@@ -100,9 +101,7 @@ using Callgraph = metacg::Callgraph;
 template <typename MD, typename... Args>
 void attachMetaDataToGraph(Callgraph* cg, const Args&... args) {
   for (const auto& n : cg->getNodes()) {
-    if (!n.second->template getOrCreateMD<MD>(args...)) {
-      assert(false && MD::key != "" && "Could not create MetaData with key");
-    }
+    n->template getOrCreate<MD>(args...);
   }
 }
 }  // namespace metacg::pgis

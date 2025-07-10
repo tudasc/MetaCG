@@ -29,11 +29,11 @@ TEST_F(CallgraphTest, OnlyMainCG) {
   Callgraph c;
   ASSERT_TRUE(c.isEmpty());
   ASSERT_EQ(nullptr, c.getMain());
-  auto n = c.insert("main");
+  auto n = &c.insert("main");
   ASSERT_FALSE(c.isEmpty());
-  ASSERT_EQ(n, c.getMain()->getId());
-  ASSERT_EQ(n, c.getNode("main")->getId());
-  ASSERT_EQ(n, (*(c.getNodes().begin())).second.get()->getId());
+  ASSERT_EQ(n->getId(), c.getMain()->getId());
+  ASSERT_EQ(n->getId(), c.getSingleNode("main").getId());
+  ASSERT_EQ(n->getId(), (*(c.getNodes().begin())).get()->getId());
   ASSERT_EQ(true, c.hasNode("main"));
   ASSERT_EQ(1, c.size());
 }
@@ -41,8 +41,7 @@ TEST_F(CallgraphTest, OnlyMainCG) {
 TEST_F(CallgraphTest, ClearEmptiesGraph) {
   Callgraph c;
   ASSERT_TRUE(c.isEmpty());
-  auto n = std::make_unique<CgNode>("main");
-  c.insert(std::move(n));
+  c.insert("main");
   ASSERT_FALSE(c.isEmpty());
   ASSERT_TRUE(c.hasNode("main"));  // sets lastSearched field
   c.clear();
@@ -52,15 +51,15 @@ TEST_F(CallgraphTest, ClearEmptiesGraph) {
 
 TEST_F(CallgraphTest, TwoNodeConnectedCG) {
   Callgraph c;
-  auto main = c.insert("main");
-  auto child = c.insert("child");
-  c.addEdge(main, child);
+  auto main = &c.insert("main");
+  auto child = &c.insert("child");
+  c.addEdge(*main, *child);
   ASSERT_EQ(2, c.size());
   ASSERT_EQ(true, c.hasNode("main"));
   ASSERT_EQ(true, c.hasNode("child"));
-  ASSERT_EQ(main, c.getMain()->getId());
+  ASSERT_EQ(main->getId(), c.getMain()->getId());
   auto foundMain = c.getMain();
-  ASSERT_EQ(child, (*c.getCallees(foundMain).begin())->getId());
+  ASSERT_EQ(child->getId(), (*c.getCallees(*foundMain).begin())->getId());
 }
 
 TEST_F(CallgraphTest, InsertTwiceTest) {
@@ -71,9 +70,9 @@ TEST_F(CallgraphTest, InsertTwiceTest) {
 
 TEST_F(CallgraphTest, SearchNodes) {
   Callgraph c;
-  auto node = c.insert("node1");
-  auto node2 = c.insert("node2");
-  c.addEdge(node, node2);
+  auto node = &c.insert("node1");
+  auto node2 = &c.insert("node2");
+  c.addEdge(*node, *node2);
   ASSERT_EQ(nullptr, c.getMain());
   ASSERT_EQ(false, c.hasNode("main"));
   ASSERT_EQ(false, c.hasNode("nodeee"));

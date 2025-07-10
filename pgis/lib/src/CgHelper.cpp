@@ -17,7 +17,7 @@ using namespace pira;
 
 /** returns true for nodes with two or more parents */
 bool isConjunction(const metacg::CgNode* node, const metacg::Callgraph* const graph) {
-  return (graph->getCallers(node).size() > 1);
+  return (graph->getCallers(*node).size() > 1);
 }
 
 /** Returns a set of all nodes from the starting node up to the instrumented
@@ -34,11 +34,11 @@ CgNodeRawPtrUSet getInstrumentationPath(metacg::CgNode* start, const metacg::Cal
     if (path.find(node) == path.end()) {
       path.insert(node);
       if (metacg::pgis::isInstrumented(node) || metacg::pgis::isInstrumentedPath(node) ||
-          /*node.isRootNode()*/ graph->getCallers(node).empty()) {
+          /*node.isRootNode()*/ graph->getCallers(*node).empty()) {
         continue;
       }
 
-      for (auto parentNode : graph->getCallers(node)) {
+      for (auto parentNode : graph->getCallers(*node)) {
         workQueue.push(parentNode);
       }
     }
@@ -50,14 +50,14 @@ CgNodeRawPtrUSet getInstrumentationPath(metacg::CgNode* start, const metacg::Cal
 Statements visitNodeForInclusiveStatements(metacg::CgNode* node, CgNodeRawPtrUSet* visitedNodes,
                                            const metacg::Callgraph* const graph) {
   if (visitedNodes->find(node) != visitedNodes->end()) {
-    return node->getOrCreateMD<LoadImbalance::LIMetaData>()->getNumberOfInclusiveStatements();
+    return node->getOrCreate<LoadImbalance::LIMetaData>().getNumberOfInclusiveStatements();
   }
   visitedNodes->insert(node);
 
   CgNodeRawPtrUSet visitedChilds;
 
-  Statements inclusiveStatements = node->getOrCreateMD<PiraOneData>()->getNumberOfStatements();
-  for (const auto& childNode : graph->getCallees(node)) {
+  Statements inclusiveStatements = node->getOrCreate<PiraOneData>().getNumberOfStatements();
+  for (const auto& childNode : graph->getCallees(*node)) {
     // prevent double processing
     if (visitedChilds.find(childNode) != visitedChilds.end()) {
       continue;
@@ -65,8 +65,8 @@ Statements visitNodeForInclusiveStatements(metacg::CgNode* node, CgNodeRawPtrUSe
     visitedChilds.insert(childNode);
 
     // approximate statements of a abstract function with maximum of its children (potential call targets)
-    if (node->getOrCreateMD<LoadImbalance::LIMetaData>()->isVirtual() &&
-        node->getOrCreateMD<PiraOneData>()->getNumberOfStatements() == 0) {
+    if (node->getOrCreate<LoadImbalance::LIMetaData>().isVirtual() &&
+        node->getOrCreate<PiraOneData>().getNumberOfStatements() == 0) {
       inclusiveStatements =
           std::max(inclusiveStatements, visitNodeForInclusiveStatements(childNode, visitedNodes, graph));
     } else {
@@ -74,7 +74,7 @@ Statements visitNodeForInclusiveStatements(metacg::CgNode* node, CgNodeRawPtrUSe
     }
   }
 
-  node->getOrCreateMD<LoadImbalance::LIMetaData>()->setNumberOfInclusiveStatements(inclusiveStatements);
+  node->getOrCreate<LoadImbalance::LIMetaData>().setNumberOfInclusiveStatements(inclusiveStatements);
 
   metacg::MCGLogger::instance().getConsole()->trace("Visiting node " + node->getFunctionName() +
                                                     ". Result = " + std::to_string(inclusiveStatements));
@@ -121,7 +121,7 @@ CgNodeRawPtrUSet allNodesToMain(metacg::CgNode* startNode, metacg::CgNode* mainN
         continue;
       }
 
-      auto pns = graph->getCallers(node);
+      auto pns = graph->getCallers(*node);
       for (auto pNode : pns) {
         workQueue.push(pNode);
       }
@@ -147,7 +147,7 @@ CgNodeRawPtrUSet getDescendants(metacg::CgNode* startingNode, const metacg::Call
     auto node = workQueue.front();
     workQueue.pop();
     if (const auto [it, inserted] = childs.insert(node); inserted) {
-      for (auto childNode : graph->getCallees(node)) {
+      for (auto childNode : graph->getCallees(*node)) {
         workQueue.push(childNode);
       }
     }
@@ -165,7 +165,7 @@ CgNodeRawPtrUSet getAncestors(metacg::CgNode* startingNode, const metacg::Callgr
     auto node = workQueue.front();
     workQueue.pop();
     if (const auto [it, inserted] = ancestors.insert(node); inserted) {
-      for (auto parentNode : graph->getCallers(node)) {
+      for (auto parentNode : graph->getCallers(*node)) {
         workQueue.push(parentNode);
       }
     }
@@ -183,9 +183,9 @@ CgNodeRawPtrUSet getAncestors(metacg::CgNode* startingNode, const metacg::Callgr
 double calcRuntimeThreshold(const Callgraph& cg, bool useLongAsRef) {
   std::vector<double> rt;
   for (const auto& elem : cg.getNodes()) {
-    const auto& n = elem.second.get();
-    const auto& [hasBPD, bpd] = n->checkAndGet<BaseProfileData>();
-    if (hasBPD) {
+    const auto& n = elem.get();
+    const auto bpd = n->get<BaseProfileData>();
+    if (bpd) {
       metacg::MCGLogger::instance().getConsole()->trace(
           "Found BaseProfileData for {}: Adding inclusive runtime of {} to RT vector.", n->getFunctionName(),
           bpd->getInclusiveRuntimeInSeconds());
@@ -248,10 +248,10 @@ double getEstimatedCallsFromNode(metacg::Callgraph* graph, metacg::CgNode* node,
         std::vector<double> tempResults;
         for (const auto& rfunc : IRegion->second.functions) {
           if (rfunc != calledFunctionName) {
-            const auto rnode = graph->getNode(rfunc);
+            const auto rnode = &graph->getSingleNode(rfunc);
             assert(rnode);
-            const auto info = rnode->checkAndGet<InstrumentationResultMetaData>();
-            if (info.first) {
+            const auto info = rnode->template get<InstrumentationResultMetaData>();
+            if (info) {
               const auto& rfuncCalledInfo = pCCMD->calledFunctions[rfunc];
               auto calledInRegionIter = std::find_if(rfuncCalledInfo.begin(), rfuncCalledInfo.end(),
                                                      [&regionName](const auto& i) { return i.second == regionName; });
@@ -262,7 +262,7 @@ double getEstimatedCallsFromNode(metacg::Callgraph* graph, metacg::CgNode* node,
                                                   [](const auto& i) { return i.second == ""; });
               }
               assert(calledInRegionIter != rfuncCalledInfo.end());
-              const auto regionCallCount = static_cast<double>(info.second->callsFromParents[node->getFunctionName()]) /
+              const auto regionCallCount = static_cast<double>(info->callsFromParents[node->getFunctionName()]) /
                                            calledInRegionIter->first;
               tempResults.push_back(regionCallCount);
             }

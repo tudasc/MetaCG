@@ -60,7 +60,7 @@ class VersionOneMetaCGReader : public metacg::io::MetaCGReader {
    * Inserts all nodes in the function map into the final call-graph.
    * Uses potentialTargets to include all potential virtual call targets for virtual functions.
    */
-  void buildGraph(metacg::graph::MCGManager& cgManager, StrStrMap& potentialTargets);
+  void buildGraph(metacg::graph::MCGManager& cgManager, StrStrMap& potentialTargets, metacg::StrToNodeMapping&);
 
   /**
    * Checks if the jsonValue contains a value for key and sets field accordingly

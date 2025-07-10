@@ -55,10 +55,10 @@ TEST(VersionOneMCGReaderTest, SimpleJSON) {
   const Callgraph& graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 1);
 
-  metacg::CgNode* mainNode = graph.getNode("main");
-  mainNode->getOrCreateMD<pira::PiraOneData>();
-  mainNode->getOrCreateMD<pira::PiraTwoData>();
-  mainNode->getOrCreateMD<LoadImbalance::LIMetaData>();
+  metacg::CgNode* mainNode = &graph.getSingleNode("main");
+  mainNode->getOrCreate<pira::PiraOneData>();
+  mainNode->getOrCreate<pira::PiraTwoData>();
+  mainNode->getOrCreate<LoadImbalance::LIMetaData>();
   ASSERT_NE(mainNode, nullptr);
 
   EXPECT_EQ(mainNode->getFunctionName(), "main");
@@ -95,34 +95,34 @@ TEST(VersionOneMCGReaderTest, MultiNodeJSON) {
   const Callgraph& graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 2);
 
-  metacg::CgNode* mainNode = graph.getNode("main");
+  metacg::CgNode* mainNode = &graph.getSingleNode("main");
   ASSERT_NE(mainNode, nullptr);
-  mainNode->getOrCreateMD<pira::PiraOneData>();
-  mainNode->getOrCreateMD<pira::PiraTwoData>();
-  mainNode->getOrCreateMD<LoadImbalance::LIMetaData>();
+  mainNode->getOrCreate<pira::PiraOneData>();
+  mainNode->getOrCreate<pira::PiraTwoData>();
+  mainNode->getOrCreate<LoadImbalance::LIMetaData>();
   EXPECT_EQ(mainNode->getFunctionName(), "main");
   EXPECT_EQ(mainNode->get<pira::PiraOneData>()->getNumberOfStatements(), 42);
   EXPECT_EQ(mainNode->get<pira::PiraOneData>()->getHasBody(), true);
   EXPECT_EQ(mainNode->get<LoadImbalance::LIMetaData>()->isVirtual(), false);
-  EXPECT_EQ(graph.getCallers(mainNode).size(), 0);
-  EXPECT_EQ(graph.getCallees(mainNode).size(), 1);
-  for (const auto cn : graph.getCallees(mainNode)) {
+  EXPECT_EQ(graph.getCallers(*mainNode).size(), 0);
+  EXPECT_EQ(graph.getCallees(*mainNode).size(), 1);
+  for (const auto cn : graph.getCallees(*mainNode)) {
     EXPECT_EQ(cn->getFunctionName(), "foo");
   }
 
-  metacg::CgNode* fooNode = graph.getNode("foo");
+  metacg::CgNode* fooNode = &graph.getSingleNode("foo");
   ASSERT_NE(fooNode, nullptr);
 
-  fooNode->getOrCreateMD<pira::PiraOneData>();
-  fooNode->getOrCreateMD<pira::PiraTwoData>();
-  fooNode->getOrCreateMD<LoadImbalance::LIMetaData>();
+  fooNode->getOrCreate<pira::PiraOneData>();
+  fooNode->getOrCreate<pira::PiraTwoData>();
+  fooNode->getOrCreate<LoadImbalance::LIMetaData>();
   EXPECT_EQ(fooNode->getFunctionName(), "foo");
   EXPECT_EQ(fooNode->get<pira::PiraOneData>()->getNumberOfStatements(), 1);
   EXPECT_EQ(fooNode->get<pira::PiraOneData>()->getHasBody(), true);
   EXPECT_EQ(fooNode->get<LoadImbalance::LIMetaData>()->isVirtual(), false);
-  EXPECT_EQ(graph.getCallees(fooNode).size(), 0);
-  EXPECT_EQ(graph.getCallers(fooNode).size(), 1);
-  for (const auto pn : graph.getCallers(fooNode)) {
+  EXPECT_EQ(graph.getCallees(*fooNode).size(), 0);
+  EXPECT_EQ(graph.getCallers(*fooNode).size(), 1);
+  for (const auto pn : graph.getCallers(*fooNode)) {
     EXPECT_EQ(pn->getFunctionName(), "main");
   }
 }
