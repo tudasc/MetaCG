@@ -186,6 +186,15 @@ CgNode* Callgraph::getFirstNode(const std::string& name) const {
   return nullptr;
 }
 
+CgNode& Callgraph::getSingleNode(const std::string& name) const {
+  auto it = nameIdMap.find(name);
+  assert(it->second.size() == 1 && "There must be exactly one node with this name");
+  auto* node = getNode(it->second.front());
+  assert(node && "This node should always exist");
+  return *node;
+}
+
+
 const Callgraph::NodeList& Callgraph::getNodes(const std::string& name) const {
   if (auto it = nameIdMap.find(name); it != nameIdMap.end()) {
     return it->second;

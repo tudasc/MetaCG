@@ -194,11 +194,24 @@ class Callgraph {
   bool hasDuplicateNames() const { return hasDuplicates; }
 
   /**
-   * @brief getNode searches the node in the graph and returns it
+   * Returns one of the nodes with given name.
    * @param name
-   * @return node for function with name - nullptr otherwise
+   * @return The first node that matches the name, or null if no node can be found.
    */
   CgNode* getFirstNode(const std::string& name) const;
+
+  /**
+   * Like `getFirstNode` but fails if there is not exactly one node with this name.
+   * @param name
+   * @return The node matching the given name.
+   */
+  CgNode& getSingleNode(const std::string& name) const;
+
+  /**
+   * Returns a list of nodes that match the given name.
+   * @param name
+   * @return
+   */
   const NodeList& getNodes(const std::string& name) const;
 
   CgNode* getNode(NodeId id) const;

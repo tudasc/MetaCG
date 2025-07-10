@@ -100,6 +100,15 @@ TEST_F(MCGManagerTest, TwoNodeOneEdgeCG) {
   ASSERT_TRUE(mcgm.getCallgraph()->getCallees(mainNode->getId()).size() == 1);
 }
 
+TEST_F(MCGManagerTest, GetSingleNode) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  auto& cg = *mcgm.getCallgraph();
+  cg.insert("main");
+  ASSERT_EQ(cg.getSingleNode("main").getFunctionName(), "main");
+  cg.insert("main");
+  ASSERT_DEBUG_DEATH(cg.getSingleNode("main"), "There must be exactly one node with this name");
+}
+
 TEST_F(MCGManagerTest, EraseNodeNoEdge) {
   auto& mcgm = metacg::graph::MCGManager::get();
   auto& cg = *mcgm.getCallgraph();
