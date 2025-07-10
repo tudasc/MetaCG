@@ -14,6 +14,10 @@ More info on the different formats can be found in the [graph README](graph/READ
 The MetaCG project includes `pymetacg`, a set of bindings that allows to parse MetaCG files from Python.
 Refer to the [pymetacg README](pymetacg/README.md) for more information how to build and use `pymetacg`.
 
+MetaCG originated from PGIS, a tool to generate Score-P instrumentation configurations from static call-graph data and dynamic profile information, that is part of the [PIRA](https://github.com/tudasc/PIRA) toolset.
+PGIS is no longer maintained and was thus removed from the repository.
+The last MetaCG release that includes PGIS is v0.7.1.
+
 ## Requirements and Building
 
 MetaCG consists of the graph library, a CG construction tool, and an example analysis tool.
