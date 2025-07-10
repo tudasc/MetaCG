@@ -16,7 +16,6 @@ on:
       - 'cgcollector/formatAllSrc.sh'
       - 'cgcollector/.gitignore'
       - 'graph/README.md'
-      - 'pgis/README.md'
       - 'tools/README.md'
       - 'pymetacg/README.md'
   pull_request: 
@@ -34,7 +33,6 @@ on:
       - 'cgcollector/formatAllSrc.sh'
       - 'cgcollector/.gitignore'
       - 'graph/README.md'
-      - 'pgis/README.md'
       - 'tools/README.md'
       - 'pymetacg/README.md'
 
@@ -74,11 +72,6 @@ jobs:
         with: 
           image: metacg-devel:latest
           run: /opt/metacg/build/graph/test/unit/libtests
-      - name: Run PGIS library tests 
-        uses: addnab/docker-run-action@v3
-        with: 
-          image: metacg-devel:latest
-          run: /opt/metacg/build/pgis/test/unit/pgistests
       - name: Run target collector tests 
         uses: addnab/docker-run-action@v3
         with: 

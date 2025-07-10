@@ -123,17 +123,6 @@ if(METACG_BUILD_CGPATCH)
     message(STATUS "Skipping CGPatch: requires LLVM version 15 or higher")
   endif()
 endif()
-# PIRA analyzer Should PGIS be built
-option(
-  METACG_BUILD_PGIS
-  "On or off"
-  OFF
-)
-if(METACG_BUILD_PGIS)
-  include(ExtraP)
-  include(CubeLib)
-  add_subdirectory(pgis)
-endif()
 
 # If set to on, CMake looks for installed nlohmann::json
 option(

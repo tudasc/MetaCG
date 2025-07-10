@@ -37,9 +37,6 @@ COPY . /opt/metacg
 RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg \
       -DCUBE_DIR=$EXTINSTALLDIR/cubelib \
-      -DEXTRAP_INCLUDE=$EXTINSTALLDIR/extrap/include \
-      -DEXTRAP_LIB=$EXTINSTALLDIR/extrap/lib \
-      -DMETACG_BUILD_PGIS=ON \
       -DMETACG_BUILD_CGCOLLECTOR=ON \
       -DMETACG_BUILD_CGPATCH=ON \
       -DMETACG_BUILD_PYMETACG=ON \

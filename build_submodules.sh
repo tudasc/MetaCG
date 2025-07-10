@@ -49,10 +49,9 @@ else
   source "$venv_dir/bin/activate" || err_exit "Activating python venv failed"
 fi
 pip install --upgrade pip
-pip install PyQt5 matplotlib || err_exit "Installing Extra-P dependencies failed."
 pip install pytest pytest-cmake || err_exit "Installing pymetacg test dependencies failed."
 
-log "Building cubelib for Extra-P"
+log "Building cubelib"
 if [ -f "$extinstalldir/cubelib/bin/cubelib-config" ]; then
   log "cubelib is already built. Skipping."
 else
@@ -78,43 +77,4 @@ else
   )
 
   log "cubelib built and installed successfully"
-fi
-
-# Extra-P (https://www.scalasca.org/software/extra-p/download.html)
-log "Building Extra-P (for PIRA II modeling)"
-if [ -f "$extinstalldir/extrap/bin/extrap" ]; then
-  log "Extra-P is already built. Skipping."
-else
-  extrap_dir="$extsourcedir/extrap"
-  extrap_tarball="$extrap_dir/extrap-3.0.tar.gz"
-  extrap_build="$extrap_dir/extrap-3.0/build"
-  mkdir -p "$extrap_dir"
-
-  if [ ! -f "$extrap_tarball" ]; then
-    log "Downloading Extra-P"
-    wget -O "$extrap_tarball" "http://apps.fz-juelich.de/scalasca/releases/extra-p/extrap-3.0.tar.gz" || err_exit "Download failed"
-  fi
-
-  tar -xzf "$extrap_tarball" -C "$extrap_dir"
-  rm -rf "$extrap_build"
-  mkdir -p "$extrap_build"
-
-  # python3-config should be the preferred way to get the python include directory,
-  # but at least with python 3.9 on ubuntu it is a bit buggy and some distributions don't support it at all
-  pythonheader=$("$python_bin" -c "from sysconfig import get_paths; print(get_paths().get('include', ''))")
-  [ -z "$pythonheader" ] && err_exit "Python header not found."
-  log "Found Python.h at $pythonheader"
-
-  (
-    cd "$extrap_build"
-    export PATH="$extinstalldir/cubelib/bin:$PATH"
-    ../configure --prefix="$extinstalldir/extrap" CPPFLAGS="-I$pythonheader" || err_exit "Configuring Extra-P failed"
-    make -j "$parallel_jobs" || err_exit "Building Extra-P failed"
-    make install || err_exit "Installing Extra-P failed"
-  )
-
-  mkdir -p "$extinstalldir/extrap/include"
-  cp "$extrap_dir/extrap-3.0/include/"* "$extinstalldir/extrap/include"
-
-  log "Extra-P built and installed successfully"
 fi

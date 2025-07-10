@@ -4,8 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#ifndef METACG_PGIS_TIMING_H
-#define METACG_PGIS_TIMING_H
+#ifndef METACG_TIMING_H
+#define METACG_TIMING_H
 
 #include "LoggerUtil.h"
 #include <chrono>

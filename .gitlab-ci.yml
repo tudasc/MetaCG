@@ -38,7 +38,7 @@ mcg-cmake-lint:
   stage: lint
   needs: ["mcg-download"]
   script:
-    - for f in $(find {cgcollector,graph,pgis} -name "CMakeLists.txt"); do cmake-format --check $f || exit 1; done ; cmake-format --check CMakeLists.txt
+    - for f in $(find {cgcollector,graph} -name "CMakeLists.txt"); do cmake-format --check $f || exit 1; done ; cmake-format --check CMakeLists.txt
     - for f in $(find ./cmake -type f); do cmake-format --check $f || exit 1; done
 
 
@@ -57,7 +57,6 @@ configure-custom-md:
     - test -d graph/include/metadata/custom || exit 1
     - echo "// Empty test header" > graph/include/metadata/custom/TestHeader.h
     - cmake -S . -B build-configure-md -G Ninja -DCMAKE_BUILD_TYPE=Debug
-      -DMETACG_BUILD_PGIS=OFF
       -DMETACG_BUILD_CGCOLLECTOR=OFF
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
       -DMETACG_BUILD_UNIT_TESTS=OFF
@@ -74,8 +73,6 @@ build-mcg-no-tests:
     - cmake -S . -B $MCG_BUILD-no-tests -G Ninja -DCMAKE_BUILD_TYPE=Debug 
         -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-no-tests
         -DCUBE_DIR=$(dirname $(which cube_info))/..
-        -DEXTRAP_INCLUDE=./extern/install/extrap/include 
-        -DEXTRAP_LIB=./extern/install/extrap/lib 
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
         -DMETACG_BUILD_UNIT_TESTS=OFF
     - cmake --build $MCG_BUILD-no-tests --parallel
@@ -90,26 +87,8 @@ build-mcg-stripped-all:
     - cmake -S . -B $MCG_BUILD-no-all -G Ninja -DCMAKE_BUILD_TYPE=Debug 
         -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-dflt
         -DCUBE_DIR=$(dirname $(which cube_info))/..
-        -DEXTRAP_INCLUDE=./extern/install/extrap/include 
-        -DEXTRAP_LIB=./extern/install/extrap/lib 
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
     - cmake --build $MCG_BUILD-no-all --parallel
-    - module purge
-
-build-mcg-stripped-pgis:
-  <<: *job-setup
-  stage: build
-  needs: ["build-dependencies", "configure-custom-md"]
-  script:
-    - module load clang/$LLVM
-    - cmake -S . -B $MCG_BUILD-no-cgcollector -G Ninja -DCMAKE_BUILD_TYPE=Debug
-      -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_pgis
-      -DCUBE_DIR=$(dirname $(which cube_info))/..
-      -DEXTRAP_INCLUDE=./extern/install/extrap/include
-      -DEXTRAP_LIB=./extern/install/extrap/lib
-      -DMETACG_BUILD_PGIS=ON
-      -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-    - cmake --build $MCG_BUILD-no-cgcollector --parallel
     - module purge
 
 build-mcg-stripped-cgcollector:
@@ -118,14 +97,12 @@ build-mcg-stripped-cgcollector:
   needs: ["build-dependencies", "configure-custom-md"]
   script:
     - module load clang/$LLVM
-    - cmake -S . -B $MCG_BUILD-no-pgis -G Ninja -DCMAKE_BUILD_TYPE=Debug
+    - cmake -S . -B $MCG_BUILD-cgcollector -G Ninja -DCMAKE_BUILD_TYPE=Debug
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_cgcollector
       -DCUBE_DIR=$(dirname $(which cube_info))/..
-      -DEXTRAP_INCLUDE=./extern/install/extrap/include
-      -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_CGCOLLECTOR=ON
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-    - cmake --build $MCG_BUILD-no-pgis --parallel
+    - cmake --build $MCG_BUILD-cgcollector --parallel
     - module purge
 
 build-mcg:
@@ -138,9 +115,6 @@ build-mcg:
     - cmake -S . -B $MCG_BUILD -G Ninja -DCMAKE_BUILD_TYPE=Debug
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_all
       -DCUBE_DIR=$(dirname $(which cube_info))/..
-      -DEXTRAP_INCLUDE=./extern/install/extrap/include
-      -DEXTRAP_LIB=./extern/install/extrap/lib
-      -DMETACG_BUILD_PGIS=ON
       -DMETACG_BUILD_CGCOLLECTOR=ON
       -DMETACG_BUILD_CGPATCH=ON
       -DMETACG_BUILD_PYMETACG=ON
@@ -161,7 +135,6 @@ test-cgc:
     - mkdir -p log
     - bash run_format_one_test.sh -b $MCG_BUILD
     - bash run_format_two_test.sh -b $MCG_BUILD
-    #- bash run_aa_test.sh -b $MCG_BUILD
 
 test-graphlib:
   <<: *job-setup
@@ -177,21 +150,6 @@ test-graphlib:
       - $MCG_BUILD/graph/test/unit/gcc-$GCC-llvm-$LLVM.xml
     reports:
       junit: $MCG_BUILD/graph/test/unit/gcc-$GCC-llvm-$LLVM.xml
-
-test-pgis:
-  <<: *job-setup
-  stage: test
-  needs: ["build-mcg"]
-  script:
-    - module load clang/$LLVM
-    - cd $MCG_BUILD/pgis/test/unit && ./pgistests --gtest_output=xml:gcc-$GCC-llvm-$LLVM.xml
-    - GCCv=$GCC && LLVMv=$LLVM && sed -i -e "s/Test\"/Test-gcc-$GCCv-llvm-$LLVMv\"/g" gcc-$GCC-llvm-$LLVM.xml
-  artifacts:
-    when: always
-    paths:
-      - $MCG_BUILD/pgis/test/unit/gcc-$GCC-llvm-$LLVM.xml
-    reports:
-      junit: $MCG_BUILD/pgis/test/unit/gcc-$GCC-llvm-$LLVM.xml
 
 test-pymetacg:
   <<: *job-setup
@@ -219,61 +177,6 @@ test-cgvalidate:
     - module load clang/$LLVM
     - cd cgcollector/test/integration
     - ./runner.sh $MCG_BUILD
-
-test-basic-pgis:
-  <<: *job-setup
-  stage: integration-test
-  needs: ["build-mcg"]
-  script:
-    - module load clang/$LLVM
-    - cd pgis
-    - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
-    - cd test/integration
-    - ./basicTestRunner.sh -b $MCG_BUILD
-
-test-static-pgis:
-  <<: *job-setup
-  stage: integration-test
-  needs: ["build-mcg"]
-  script:
-    - module load clang/$LLVM
-    - cd pgis
-    - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
-    - cd test/integration
-    - ./selectionTestRunner.sh -t static -b $MCG_BUILD
-
-test-modeling-pgis:
-  <<: *job-setup
-  stage: integration-test
-  needs: ["build-mcg"]
-  script:
-    - module load clang/$LLVM
-    - cd pgis
-    - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
-    - cd test/integration
-    - ./selectionTestRunner.sh -t modeling -b $MCG_BUILD
-
-test-dynamic-pgis:
-  <<: *job-setup
-  stage: integration-test
-  needs: ["build-mcg"]
-  script:
-    - module load clang/$LLVM
-    - cd pgis
-    - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
-    - cd test/integration
-    - ./selectionTestRunner.sh -t dynamic -b $MCG_BUILD
-
-test-imbalance-pgis:
-  <<: *job-setup
-  stage: integration-test
-  needs: ["build-mcg"]
-  script:
-    - module load clang/$LLVM
-    - cd pgis
-    - export LD_LIBRARY_PATH=$PWD/../extern/install/extrap/lib:$LD_LIBRARY_PATH
-    - cd test/integration
-    - ./selectionTestRunner.sh -t imbalance -b $MCG_BUILD
 
 test-target-collector:
   <<: *job-setup
@@ -308,27 +211,13 @@ install-mcg:
     - cmake --build $MCG_BUILD --parallel
     - rm -r /tmp/metacg/$MCG_BUILD-dflt
 
-install-pgis:
-  <<: *job-setup
-  stage: install
-  needs: ["build-mcg"]
-  script:
-    - module load clang/$LLVM
-    - export LD_LIBRARY_PATH=$PWD/extern/install/extrap/lib:$LD_LIBRARY_PATH
-    - cmake --install $MCG_BUILD-no-cgcollector
-    - stat /tmp/metacg/$MCG_BUILD-w_pgis/bin/pgis_pira
-    - export LD_LIBRARY_PATH=/tmp/metacg/$MCG_BUILD-w_pgis/lib64:/tmp/metacg/$MCG_BUILD-w_pgis/lib:$LD_LIBRARY_PATH
-    - /tmp/metacg/$MCG_BUILD-w_pgis/bin/pgis_pira --help
-    - rm -r /tmp/metacg/$MCG_BUILD-w_pgis
-
 install-cgcollector:
   <<: *job-setup
   stage: install
   needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
-    - export LD_LIBRARY_PATH=$PWD/extern/install/extrap/lib:$LD_LIBRARY_PATH
-    - cmake --install $MCG_BUILD-no-pgis
+    - cmake --install $MCG_BUILD-cgcollector
     - stat /tmp/metacg/$MCG_BUILD-w_cgcollector/bin/cgcollector
     - export LD_LIBRARY_PATH=/tmp/metacg/$MCG_BUILD-w_cgcollector/lib64:/tmp/metacg/$MCG_BUILD-w_cgcollector/lib:$LD_LIBRARY_PATH
     - /tmp/metacg/$MCG_BUILD-w_cgcollector/bin/cgcollector --help

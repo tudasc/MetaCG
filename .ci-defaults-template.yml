@@ -3,7 +3,7 @@ default:
     - module purge
     - module load gcc/$GCC
     - module load git cmake python/3
-    - module load libcube/4.5 extrap/3
+    - module load libcube/4.5
   tags:
     - general
 

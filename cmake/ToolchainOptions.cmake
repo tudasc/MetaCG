@@ -7,28 +7,12 @@ function(add_metacg target)
   add_graph_includes(${target})
 endfunction()
 
-function(add_pgis target)
-  add_pgis_includes(${target})
-  add_pgis_library(${target})
-endfunction()
-
 function(add_config_include target)
   target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>)
 endfunction()
 
-function(add_pgis_includes target)
-  target_include_directories(
-    ${target} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/pgis/lib/include>
-                     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/pgis/lib/include/config>
-  )
-endfunction()
-
 function(add_graph_includes target)
   target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/graph/include>)
-endfunction()
-
-function(add_pgis_library target)
-  target_link_libraries(${target} PUBLIC pgis)
 endfunction()
 
 function(add_metacg_library target)

@@ -171,7 +171,7 @@ class CallGraphNode {
 
   // TODO parents are not handled correctly for virtual functions
   // (virtual functions are not handled correctly in general)
-  // this is currently done in pgis
+  // previously, this was handled in pgis
   // so we dont do this for compatibility but we will change this in the future
   llvm::SmallVector<const clang::Decl*, 5> Parents;
 
