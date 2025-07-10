@@ -14,8 +14,6 @@ add_executable(
 add_googletest_libraries(pgistests)
 add_pgis(pgistests)
 add_metacg(pgistests)
-add_json(pgistests)
-add_spdlog_libraries(pgistests)
 
 # add_library(ipcg) target_link_libraries(pgistests)
 
