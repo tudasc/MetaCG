@@ -51,16 +51,17 @@ void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json
     // Function names are already used as keys, so we don't have to change anything here.
     jNode.erase("functionName");
 
-    // Convert edges into callee entries. Callers are identified in a second pass, when all nodes are present.
-    auto jCallees = nlohmann::json::array();
-    auto& jEdges = jNode["edges"];
-    for (auto& jEdge : jEdges.items()) {
-      jCallees.push_back(jEdge.key());
+    // Convert callees with edge metadata into a simple callee array. Callers are identified in a second pass, when all
+    // nodes are present.
+    auto jCalleesV2 = nlohmann::json::array();
+    auto& jCallees = jNode["callees"];
+    for (auto& jCallee : jCallees.items()) {
+      jCalleesV2.push_back(jCallee.key());
       // Ignoring edge metadata, as not supported in V2
     }
+    jNode.erase("callees");
     jNode["callers"] = nlohmann::json::array();
-    jNode["callees"] = std::move(jCallees);
-    jNode.erase("edges");
+    jNode["callees"] = std::move(jCalleesV2);
 
     auto& jMeta = jNode["meta"];
 
@@ -78,16 +79,6 @@ void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json
       jMeta["fileProperties"]["origin"] = jNode["origin"];
     }
     jNode.erase("origin");
-
-    //    // Put origin in fileProperties metadata, if not null
-    //    if (!jNode["origin"].is_null()) {
-    //
-    //      if (!jMeta.contains("fileProperties")) {
-    //        jMeta["fileProperties"] = nlohmann::json::object();
-    //      }
-    //      jMeta["fileProperties"]["origin"] = jNode["origin"];
-    //    }
-    //    jNode.erase("origin");
 
     jNode["isVirtual"] = false;
     jNode["doesOverride"] = false;

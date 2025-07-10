@@ -78,14 +78,15 @@ void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV4Format(nlohmann::jso
     // In V2, the function name is the identifier
     jNode["functionName"] = it.key();
 
-    // Convert callees and calllers entries to edges
-    jNode["edges"] = nlohmann::json::object();
+    // Convert callees and calllers entries
+    auto jNewCallees = nlohmann::json::object();
     auto& jCallees = jNode["callees"];
     for (auto& jCallee : jCallees) {
-      jNode["edges"][jCallee] = {};
+      jNewCallees[jCallee] = {};
     }
     jNode.erase("callees");
     jNode.erase("callers");
+    jNode["callees"] = std::move(jNewCallees);
 
     // Create origin field by reading in fileProperties metadata
     auto& jMeta = jNode.at("meta");

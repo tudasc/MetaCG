@@ -149,7 +149,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMetaCGReader::read() {
     }
 
     // Save edges and metadata for processing after IDs have been finalized
-    tempNodeData.emplace_back(node->getId(), jNode["edges"], jNode["meta"]);
+    tempNodeData.emplace_back(node->getId(), jNode["callees"], jNode["meta"]);
   }
 
   for (auto& nodeData : tempNodeData) {

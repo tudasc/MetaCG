@@ -90,7 +90,7 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
     nlohmann::json jNode = {{"functionName", node->getFunctionName()},
                             {"origin", node->getOrigin()},
                             {"hasBody", node->getHasBody()},
-                            {"edges", {}},
+                            {"callees", {}},
                             {"meta", jMeta}};
 
     //    std::cout << "V4 generated node json: " << jNode << "\n"; // FIXME: remove
@@ -114,7 +114,7 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
       jEdgeMD[key] = val->toJson(nodeToStr);
     }
 
-    jNodes[callerStr]["edges"][calleeStr] = jEdgeMD;
+    jNodes[callerStr]["callees"][calleeStr] = jEdgeMD;
   }
 
   j["_CG"] = std::move(jNodes);
