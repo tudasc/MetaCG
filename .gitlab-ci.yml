@@ -17,9 +17,6 @@ stages:
 .job-setup: &job-setup
   parallel:
     matrix:
-      - GCC: 10
-        #LLVM: [10.0.1, 11.1.0, 12.0.1, 13.0.0, 14.0.0]
-        LLVM: [10.0.1, 14.0.6]
       - GCC: 11
         LLVM: [13.0.1, 14.0.6, 15.0.7, 16.0.6, 17.0.6, 18.1.8]
   variables:

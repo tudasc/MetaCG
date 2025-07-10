@@ -20,7 +20,7 @@ Refer to the [pymetacg README](pymetacg/README.md) for more information how to b
 MetaCG consists of the graph library, a CG construction tool, and an example analysis tool.
 The graph library is always built, while the CGCollector and the PGIS tool can be disabled at configure time.
 
-We test MetaCG internally using GCC 10 and 11 for Clang 10 and 14 (for GCC 10) and 13 and 14 (for GCC 11), respectively.
+We test MetaCG internally using GCC 11 for Clang/LLVM 13, 14, 15, 16, 17 and 18.
 Other version combinations *may* work.
 
 **Build Requirements (for graph lib)**
