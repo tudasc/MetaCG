@@ -257,10 +257,10 @@ class Callgraph {
   MetaData* getEdgeMetaData(const CgNode& func1, const CgNode& func2, const std::string& metadataName) const;
 
   /**
- * Returns metadata for the given edge. The edge is assumed to exists.
- * @param ids Node IDs of the edge pair
- * @param metadataName Name of the metadata
- * @return The metadata or null, if there is none registered with that key.
+   * Returns metadata for the given edge. The edge is assumed to exists.
+   * @param ids Node IDs of the edge pair
+   * @param metadataName Name of the metadata
+   * @return The metadata or null, if there is none registered with that key.
    */
   MetaData* getEdgeMetaData(std::pair<NodeId, NodeId> id, const std::string& metadataName) const;
 
@@ -288,8 +288,8 @@ class Callgraph {
   bool hasEdgeMetaData(const std::pair<NodeId, NodeId> id) const {
     return edges.at(id).find(T::key) != edges.at(id).end();
   }
- private:
 
+ private:
   bool addEdgeInternal(NodeId caller, NodeId callee);
 
  private:

@@ -76,7 +76,7 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
       jMeta = nullptr;
     } else {
       for (auto& [key, md] : node->getMetaDataContainer()) {
-//        std::cout << "Processing MD " << key << "\n"; //FIXME: remove
+        //        std::cout << "Processing MD " << key << "\n"; //FIXME: remove
         // Metadata is not attached, if the generated field is empty or null.
         // TODO: Should this be considered an error instead?
         if (auto jMetaEntry = md->toJson(nodeToStr); !jMetaEntry.empty() && !jMetaEntry.is_null()) {

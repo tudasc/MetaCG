@@ -95,7 +95,6 @@ bool Callgraph::addEdgeInternal(NodeId caller, NodeId callee) {
   return true;
 }
 
-
 bool Callgraph::addEdge(const CgNode& parentNode, const CgNode& childNode) {
   if (!hasNode(parentNode) || !hasNode(childNode)) {
     return false;

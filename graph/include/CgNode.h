@@ -86,9 +86,7 @@ class CgNode {
    * @tparam T
    * @return True if there was metadata with this name, false otherwise.
    */
-  bool erase(const std::string& mdKey) {
-    return metaFields.erase(mdKey);
-  }
+  bool erase(const std::string& mdKey) { return metaFields.erase(mdKey); }
 
   /**
    * Adds a *new* metadata entry for #T if none exists

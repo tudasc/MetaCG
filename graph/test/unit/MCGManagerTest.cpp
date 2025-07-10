@@ -161,7 +161,6 @@ TEST_F(MCGManagerTest, HasNode) {
   ASSERT_FALSE(cg2.hasNode(mainNode));
 }
 
-
 TEST_F(MCGManagerTest, EdgeToNodeFromOtherCG) {
   auto& mcgm = metacg::graph::MCGManager::get();
   auto& cg = *mcgm.getCallgraph();
