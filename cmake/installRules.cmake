@@ -79,6 +79,9 @@ install(
   COMPONENT metacg_Development
 )
 
+# Install public graph library dependencies
+install(TARGETS nlohmann_json spdlog EXPORT metacgTargets)
+
 # Install the generated CustomMD.h header
 install(
   FILES ${PROJECT_BINARY_DIR}/graph/include/metadata/CustomMD.h

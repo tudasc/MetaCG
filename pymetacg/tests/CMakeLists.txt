@@ -10,9 +10,7 @@ find_package(
 )
 
 add_library(dummy_md SHARED DummyMD.cpp)
-add_spdlog_libraries(dummy_md)
-add_json(dummy_md)
-target_link_libraries(dummy_md PRIVATE metacg::metacg)
+add_metacg(dummy_md)
 
 pytest_discover_tests(
   pymetacg_tests

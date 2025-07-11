@@ -7,8 +7,6 @@ add_executable(pgis_pira PGISMain.cpp)
 add_pgis(pgis_pira)
 add_cxxopts(pgis_pira)
 add_cube(pgis_pira)
-add_json(pgis_pira)
-add_spdlog_libraries(pgis_pira)
 add_metacg(pgis_pira)
 
 install(

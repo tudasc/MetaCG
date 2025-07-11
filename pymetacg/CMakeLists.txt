@@ -16,8 +16,6 @@ nanobind_strip(pymetacg)
 nanobind_disable_stack_protector(pymetacg)
 
 add_metacg_library(pymetacg)
-add_spdlog_libraries(pymetacg)
-add_json(pymetacg)
 
 if(NOT CMAKE_INSTALL_PYTHON_LIBDIR)
   set(CMAKE_INSTALL_PYTHON_LIBDIR

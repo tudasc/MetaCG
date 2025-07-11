@@ -31,12 +31,9 @@ set(PGIS_LIB_SOURCES
 add_library(pgis SHARED ${PGIS_LIB_SOURCES})
 
 add_pgis_includes(pgis)
-add_graph_includes(pgis)
-add_metacg_library(pgis)
+add_metacg(pgis)
 add_cube(pgis)
 add_extrap(pgis)
-add_spdlog_libraries(pgis)
-add_json(pgis)
 target_project_compile_options(pgis)
 
 install(
