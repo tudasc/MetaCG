@@ -226,7 +226,7 @@ for tc in "${multiTests[@]}"; do
   fail=$?
   fails=$((fails + fail))
 done
-echo "Multi file test failuers: $fails"
+echo "Multi file test failures: $fails"
 
 echo -e "$fails failures occured when running tests"
 exit $fails
