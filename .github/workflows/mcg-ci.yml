@@ -53,6 +53,11 @@ jobs:
         cmake --install build --prefix install
         stat install/lib/libmetacg.so
         stat install/include/metadata/CustomMD.h
+        stat install/lib/cmake/metacg/metacgConfig.cmake
+    - name: install-test
+      run: |
+        CMAKE_PREFIX_PATH=install/lib/cmake/metacg cmake -S graph/test/install -B build-install-test
+        cmake --build build-install-test
   
   build-container:
     runs-on: ubuntu-latest
