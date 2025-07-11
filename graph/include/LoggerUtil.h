@@ -59,7 +59,7 @@ class MCGLogger {
     } else if constexpr (outPutType == Output::ErrConsole) {
       getErrConsole()->info(formattedMessage);
     }
-  };
+  }
 
   /**
    * Formats and prints the message as log-level error
@@ -82,7 +82,7 @@ class MCGLogger {
     } else if constexpr (outPutType == Output::ErrConsole) {
       getErrConsole()->error(formattedMessage);
     }
-  };
+  }
 
   /**
    * Formats and prints the message as log-level debug
@@ -105,7 +105,7 @@ class MCGLogger {
     } else if constexpr (outPutType == Output::ErrConsole) {
       getErrConsole()->debug(formattedMessage);
     }
-  };
+  }
 
   /**
    * Formats and prints the message as log-level warn
@@ -128,7 +128,7 @@ class MCGLogger {
     } else if constexpr (outPutType == Output::ErrConsole) {
       getErrConsole()->warn(formattedMessage);
     }
-  };
+  }
 
   /**
    * Formats and prints the message as log-level critical
@@ -174,7 +174,7 @@ class MCGLogger {
     } else if constexpr (outPutType == Output::ErrConsole) {
       getErrConsole()->trace(formattedMessage);
     }
-  };
+  }
 
   /**
    * A shorthand to print a info to the console
