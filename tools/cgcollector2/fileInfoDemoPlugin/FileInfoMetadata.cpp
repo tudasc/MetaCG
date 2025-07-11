@@ -15,9 +15,7 @@ FileInfoMetadata::FileInfoMetadata(const nlohmann::json& j) {
     return;
   }
   origin = j["origin"].get<std::string>();
-  ;
   fromSystemInclude = j["systemInclude"].get<bool>();
-  ;
 }
 
 nlohmann::json FileInfoMetadata::to_json() const {
