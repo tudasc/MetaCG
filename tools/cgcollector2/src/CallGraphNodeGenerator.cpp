@@ -1,8 +1,8 @@
 /**
-* File: CallGraphNodeGenerator.cpp
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: CallGraphNodeGenerator.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 //===- CallGraph.cpp - AST-based Call graph -------------------------------===//
 //
@@ -26,7 +26,6 @@
 #include <llvm/Support/Compiler.h>
 #include <llvm/Support/GraphWriter.h>
 
-
 #if LLVM_VERSION_MAJOR > 10
 
 #include <clang/AST/ParentMapContext.h>
@@ -34,7 +33,6 @@
 #endif
 
 #include <cassert>
-#include <string>
 
 #include <ASTUtil.h>
 #include <clang/AST/DeclCXX.h>
@@ -81,7 +79,20 @@ bool CallGraphNodeGenerator::TraverseCXXConstructorDecl(clang::CXXConstructorDec
   }
   auto oldFd = topLevelFD;
   topLevelFD = D;
-  bool const retval = RecursiveASTVisitor::TraverseCXXConstructorDecl(D);;
+  bool const retval = RecursiveASTVisitor::TraverseCXXConstructorDecl(D);
+  topLevelFD = oldFd;
+  return retval;
+}
+
+bool CallGraphNodeGenerator::TraverseCXXDestructorDecl(clang::CXXDestructorDecl* D) {
+  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)D);
+  // If function is ignored, we don't need to traverse its content
+  if (!shouldIncludeFunction(D)) {
+    return true;
+  }
+  auto oldFd = topLevelFD;
+  topLevelFD = D;
+  bool const retval = RecursiveASTVisitor::TraverseCXXDestructorDecl(D);
   topLevelFD = oldFd;
   return retval;
 }
@@ -135,7 +146,7 @@ bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) {
 
     // if it is a constructor or destructor, and we don't capture those, return early
     if ((isa<CXXConstructorDecl>(D) || isa<CXXDestructorDecl>(D)) && !captureCtorsDtors) {
-      // The Node is a Constructor or Destructor but we do not want to capture
+      // The Node is a Constructor or Destructor, but we do not want to capture
       return false;
     }
 
@@ -152,7 +163,6 @@ bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) {
   } else {
     assert(false && "all nodes to check for graph inclusion should be function decls of some kind");
   }
-
   return true;
 }
 
@@ -168,6 +178,7 @@ bool CallGraphNodeGenerator::VisitFunctionDecl(clang::FunctionDecl* FD) {
   }
 
   addNode(FD);
+
   return true;
 }
 
@@ -205,7 +216,7 @@ bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
         break;
     }
   } else if (E->getCallee()->getType()->isPointerType()) {
-    //We got a callee which points to something"
+    // We got a callee which points to something"
     assert(E->getCallee()->getType()->isPointerType() && "Callee must point to a function we call");
     assert(E->getCallee()
                ->getType()
@@ -228,7 +239,8 @@ bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
     SPDLOG_WARN("Wierd cases encountered!");
     if (E->getCallee()->getType()->isDependentType()) {
       SPDLOG_WARN(
-          "The callees type {} is not instantiated and is supposed to be resolved later. THIS SHOULD NOT HAPPEN ANYMORE!!!",
+          "The callees type {} is not instantiated and is supposed to be resolved later. THIS SHOULD NOT HAPPEN "
+          "ANYMORE!!!",
           E->getCallee()->getType().getAsString());
       return true;
     }
@@ -245,6 +257,42 @@ bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
   return true;
 }
 
+bool CallGraphNodeGenerator::VisitCXXDestructorDecl(clang::CXXDestructorDecl* DD) {
+  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)DD);
+  if (!shouldIncludeFunction(DD) || !captureCtorsDtors) {
+    return true;
+  }
+
+  const clang::CXXRecordDecl* ClassDecl = DD->getParent();
+  if (ClassDecl == nullptr) {
+    return true;
+  }
+
+  if (inferCtorsDtors) {
+    // Check for base class destructors
+    for (const auto& Base : ClassDecl->bases()) {
+      const clang::CXXRecordDecl* BaseDecl = Base.getType()->getAsCXXRecordDecl();
+      if (BaseDecl && BaseDecl->hasDefinition()) {
+        if (clang::CXXDestructorDecl* BaseDestructor = BaseDecl->getDestructor()) {
+          addEdge(BaseDestructor);
+        }
+      }
+    }
+    // Detect member variable destruction
+    for (const clang::FieldDecl* Field : ClassDecl->fields()) {
+      const clang::QualType FieldType = Field->getType();
+      if (const clang::CXXRecordDecl* MemberClass = FieldType->getAsCXXRecordDecl()) {
+        if (MemberClass->hasDefinition() && MemberClass->hasNonTrivialDestructor()) {
+          if (clang::CXXDestructorDecl* MemberDestructor = MemberClass->getDestructor()) {
+            addEdge(MemberDestructor);
+          }
+        }
+      }
+    }
+  }
+  return true;
+}
+
 bool CallGraphNodeGenerator::VisitCXXDeleteExpr(clang::CXXDeleteExpr* DE) {
   assert(DE != nullptr);
   if (!captureCtorsDtors) {
@@ -257,19 +305,10 @@ bool CallGraphNodeGenerator::VisitCXXDeleteExpr(clang::CXXDeleteExpr* DE) {
   }
 
   if (DE->getDestroyedType().isNull()) {
-    std::cout << "\n\n\n";
-    DE->dump();
-    std::cout<<std::endl;
-
-
     assert(llvm::isa<DeclRefExpr>(*DE->child_begin()));
-    llvm::cast<DeclRefExpr>(*DE->child_begin())->getDecl()->dump();
     assert(DE->getSourceRange().isValid());
     assert(topLevelFD != nullptr);
-    topLevelFD->dump();
-    std::cout<<std::endl;
-    // std::cout<<"SourceRange:"<<DE->getSourceRange().printToString(topLevelFD->getASTContext().getSourceManager())<<"\n";
-    std::cout << "\n\n" << std::endl;
+    SPDLOG_WARN("Found a destruction of an unknown type");
     // We do not know the type that is to be destroyed, we skip this
     return true;
   }
@@ -290,7 +329,8 @@ bool CallGraphNodeGenerator::VisitCXXDeleteExpr(clang::CXXDeleteExpr* DE) {
   if (!callgraph->hasNode(getMangledNames(DECxxDecl->getDestructor()).at(0))) {
     SPDLOG_DEBUG("The call from {} ({}) into {} ({}) was to a previously unobserved function, adding node on the fly",
                  topLevelFD->getNameAsString(), (void*)topLevelFD,
-                 clang::cast<clang::NamedDecl>(DECxxDecl->getDestructor())->getNameAsString(), (void*)DECxxDecl->getDestructor());
+                 clang::cast<clang::NamedDecl>(DECxxDecl->getDestructor())->getNameAsString(),
+                 (void*)DECxxDecl->getDestructor());
     addNode(DECxxDecl->getDestructor());
   }
 
@@ -311,8 +351,8 @@ bool CallGraphNodeGenerator::VisitCXXConstructExpr(clang::CXXConstructExpr* CE) 
       return true;
     }
 
-    //We sometimes encounter a reference to a function, that has never been seen before
-    //This can happen for compiler generated functions
+    // We sometimes encounter a reference to a function, that has never been seen before
+    // This can happen for compiler generated functions
     if (!callgraph->hasNode(getMangledNames(CE->getConstructor()).at(0))) {
       SPDLOG_DEBUG("The call from {} ({}) into {} ({}) was to a previously unobserved function, adding node on the fly",
                    topLevelFD->getNameAsString(), (void*)topLevelFD,
@@ -322,6 +362,36 @@ bool CallGraphNodeGenerator::VisitCXXConstructExpr(clang::CXXConstructExpr* CE) 
 
     addEdge(CE->getConstructor());
   }
+  return true;
+}
+
+// We need to visit the var decls and then filter for local CXXRecords as the underlying CXXConstructExpr does not allow
+// us to access the storage kind
+bool CallGraphNodeGenerator::VisitVarDecl(clang::VarDecl* VD) {
+  if (!inferCtorsDtors) {
+    return true;
+  }
+  if (!VD->hasLocalStorage()) {
+    return true;  // Only check local variables
+  }
+  if (const clang::CXXRecordDecl* RD = VD->getType()->getAsCXXRecordDecl()) {
+    if (RD->hasDefinition()) {
+      if (auto Dtor = RD->getDestructor()) {
+        addEdge(Dtor);
+      }
+    }
+  }
+  return true;
+}
+
+bool CallGraphNodeGenerator::VisitCXXBindTemporaryExpr(clang::CXXBindTemporaryExpr* CXXBTE) {
+  if (!inferCtorsDtors) {
+    return true;
+  }
+  assert(CXXBTE->getType()->getAsCXXRecordDecl() && "Could not get the CXXRecordDeclaration from the temporary construct expression");
+  assert(CXXBTE->getType()->getAsCXXRecordDecl()->getDestructor() && "Could not get the Destructor from the temporarily constructed CXXRecord");
+  const auto cxxbte = CXXBTE->getType()->getAsCXXRecordDecl()->getDestructor();
+  addEdge(cxxbte);
   return true;
 }
 
@@ -354,7 +424,7 @@ void CallGraphNodeGenerator::addNode(const clang::FunctionDecl* const D) {
 
 void CallGraphNodeGenerator::addEdge(clang::Decl* Child) {
   assert(isa<clang::NamedDecl>(Child));
-  assert(topLevelFD!= nullptr);
+  assert(topLevelFD != nullptr);
   assert(Child != nullptr);
   SPDLOG_DEBUG("Calling from: {} {} into {} {} ", topLevelFD->getNameAsString(), (void*)topLevelFD,
                clang::cast<clang::NamedDecl>(Child)->getNameAsString(), (void*)Child);
@@ -362,10 +432,10 @@ void CallGraphNodeGenerator::addEdge(clang::Decl* Child) {
     for (auto& childName : getMangledNames(clang::cast<clang::NamedDecl>(Child))) {
       assert(callgraph->hasNode(parentName));
       assert(callgraph->hasNode(childName));
-      //If parent calls child multiple times inside its body this will be true the second time
-      if(callgraph->existEdgeFromTo(parentName,childName)){
-        //This is to silence warnings about existing edges
-        continue ;
+      // If parent calls child multiple times inside its body this will be true the second time
+      if (callgraph->existEdgeFromTo(parentName, childName)) {
+        // This is to silence warnings about existing edges
+        continue;
       }
       callgraph->addEdge(parentName, childName);
     }

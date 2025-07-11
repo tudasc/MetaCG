@@ -43,13 +43,14 @@ class CallGraphNodeGenerator : public clang::RecursiveASTVisitor<CallGraphNodeGe
   // We store unresolved symbols across function decl traverses
  public:
   CallGraphNodeGenerator(metacg::Callgraph* cg, bool captureCtorDtor, bool captureNewDelete, bool captureImplicits,
-                         bool standalone, AliasAnalysisLevel level)
+                         bool inferCtorsDtors, bool standalone, AliasAnalysisLevel level)
       : callgraph(cg),
         captureCtorsDtors(captureCtorDtor),
         captureNewDelete(captureNewDelete),
         captureImplicits(captureImplicits),
+        inferCtorsDtors(inferCtorsDtors),
         standalone(standalone),
-        level(level) {};
+        level(level){};
 
   CallGraphNodeGenerator() = delete;
 
@@ -67,24 +68,21 @@ class CallGraphNodeGenerator : public clang::RecursiveASTVisitor<CallGraphNodeGe
 
   bool TraverseCXXConstructorDecl(clang::CXXConstructorDecl* D);
 
-  // Visitors for Node Generation
+  bool TraverseCXXDestructorDecl(clang::CXXDestructorDecl* D);
+
   bool VisitFunctionDecl(clang::FunctionDecl* FD);
 
-  /// We need to also visit the Parameter Variable Declerations, as they might be function pointers, which we then need
-  /// to add
-  bool VisitParmVarDecl(clang::ParmVarDecl* D) { return true; }
-
-  /// The Old Edge Generator
   bool VisitCallExpr(clang::CallExpr* E);
 
-  bool VisitCXXMemberCallExpr(clang::CXXMemberCallExpr* C) { return true; }
+  bool VisitCXXDestructorDecl(clang::CXXDestructorDecl* DD);
 
   bool VisitCXXConstructExpr(clang::CXXConstructExpr* CE);
 
+  bool VisitVarDecl(clang::VarDecl* VD);
+
   bool VisitCXXDeleteExpr(clang::CXXDeleteExpr* DE);
 
-  // We do not need to visit new separately as constructors capturing ist done via VisitCXXConstructExpr
-  bool VisitCXXNewExpr(clang::CXXNewExpr*) { return true; }
+  bool VisitCXXBindTemporaryExpr(clang::CXXBindTemporaryExpr* CXXBTE);
 
   bool shouldVisitImplicitCode() const { return true; }
 
@@ -112,6 +110,7 @@ class CallGraphNodeGenerator : public clang::RecursiveASTVisitor<CallGraphNodeGe
   bool captureCtorsDtors{false};
   bool captureNewDelete{false};
   bool captureImplicits{false};
+  bool inferCtorsDtors{false};
   bool standalone{false};
   AliasAnalysisLevel level = No;
   std::vector<const clang::Decl*> inOrderDecls;

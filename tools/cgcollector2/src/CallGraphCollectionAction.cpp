@@ -32,7 +32,7 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
   mcgm.resetManager();
   mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
   auto callgraph = mcgm.getCallgraph();
-  CallGraphNodeGenerator graphGenerator(callgraph, captureCtorsDtors, captureNewDeleteCalls, captureImplicits,
+  CallGraphNodeGenerator graphGenerator(callgraph, captureCtorsDtors, captureNewDeleteCalls, captureImplicits, inferCtorsDtors,
                                         standalone, level);
 
   graphGenerator.TraverseDecl(Context.getTranslationUnitDecl());

@@ -16,7 +16,6 @@
 
 #include "Plugin.h"
 #include "SharedDefs.h"
-#include "aliasAnalysis/AliasAnalysis.h"
 
 #include "metadata/BuiltinMD.h"
 #include <iostream>
@@ -32,8 +31,8 @@ static opt<bool> captureCtorsDtors("capture-ctors-dtors",
                                    cat(cgc));
 static opt<bool> captureStackCtorsDtors(
     "capture-stack-ctors-dtors",
-    desc("This is here for compatibility reasons and is ignored, it was originaly used to:"
-         "\nCapture calls to Constructors and Destructors of stack allocated variables. (Only works together with AA)"),
+    desc("This is here for compatibility reasons and is ignored, it was originally used to:"
+         "\nCapture calls to Constructors and Destructors of stack allocated variables."),
     init(false), Hidden, cat(cgc));
 
 static opt<bool> captureNewDeleteCalls(
@@ -42,7 +41,12 @@ static opt<bool> captureNewDeleteCalls(
 
 static opt<bool> captureImplicits("capture-implicits",
                                   desc("Capture calls to functions that are only implicit like builtins and "
-                                       "unspecified class-member-functions <default=true>"),
+                                       "unspecified class-member-functions <default=false>"),
+                                  init(false), cat(cgc));
+
+static opt<bool> inferCtorsDtors("infer-ctors-dtors",
+                                  desc("Infer calls to constructors and destructurs through inheritance chains and  "
+                                       "infer calls to destructors based on scopes / lifetimes <default=false>"),
                                   init(false), cat(cgc));
 
 enum class Collectors {
@@ -208,7 +212,7 @@ int main(int argc, const char** argv) {
 
   std::unique_ptr<CallGraphCollectorAction> const cgca2 =
       std::make_unique<CallGraphCollectorAction>(mcs, metacgFormatVersion, captureCtorsDtors, captureNewDeleteCalls,
-                                                 captureImplicits, prune, standalone, aliasAssumption);
+                                                 captureImplicits, inferCtorsDtors, prune, standalone, aliasAssumption);
 
   CT.run(clang::tooling::newFrontendActionFactory<CallGraphCollectorAction>(cgca2.get()).get());
 
