@@ -110,7 +110,14 @@ jobs:
           run: |
             cd /opt/metacg/cgcollector/test
             bash run_format_one_test.sh 
-            bash run_format_two_test.sh 
+            bash run_format_two_test.sh
+      - name: Run cgcollector2 tests
+        uses: addnab/docker-run-action@v3
+        with:
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/tools/cgcollector2/test
+            bash testBase.sh
       - name: Run cgvalidate tests
         uses: addnab/docker-run-action@v3
         with: 
