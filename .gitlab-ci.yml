@@ -135,9 +135,11 @@ build-mcg:
   script:
     - module load clang/$LLVM
     - source .venv/bin/activate
+    - ls -l /tmp/metacg/.venv/bin/
+    - ls -l /tmp/metacg/.venv/bin/lit
     - cmake -S . -B $MCG_BUILD -G Ninja -DCMAKE_BUILD_TYPE=Debug
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_all
-      -DLLVM_EXTERNAL_LIT=/tmp/metacg/.venv/bin/lit
+      -DLLVM_EXTERNAL_LIT=.venv/bin/lit
       -DCUBE_DIR=$(dirname $(which cube_info))/..
       -DEXTRAP_INCLUDE=./extern/install/extrap/include
       -DEXTRAP_LIB=./extern/install/extrap/lib
