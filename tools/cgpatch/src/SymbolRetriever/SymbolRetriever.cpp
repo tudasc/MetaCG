@@ -107,7 +107,7 @@ std::vector<MemMapEntry> readMemoryMap() {
 
     uintptr_t addrBegin = std::stoul(addrRange.substr(0, addrRange.find('-')), nullptr, 16);
     // The offset reported by the memory map does not consider alignment.
-    uint64_t textOffset = get_text_section_offset_from_library(path);
+    uint64_t textOffset = getTextSectionOffsetFromLibrary(path);
     entries.push_back({path, addrBegin, offset + textOffset});
   }
 
