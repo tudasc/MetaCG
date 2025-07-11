@@ -40,9 +40,6 @@ add_executable(cgcollector2
         src/CallGraphCollectionAction.cpp
         src/Plugin.cpp
         src/ASTUtil.cpp
-        src/AliasAnalysis/AliasAnalysis.cpp
-        src/AliasAnalysis/AAUSR.cpp
-        src/AliasAnalysis/AAReferenceVisitor.cpp
         src/SharedDefs.cpp)
 default_compile_options(cgcollector2)
 
