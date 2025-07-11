@@ -172,8 +172,8 @@ echo -e "\n --- Running single file full ctor/dtor tests ---"
 testGlob="./input/allCtorDtor/*.cpp"
 for tc in ${testGlob}; do
   echo "Running test ${tc}"
-  # we need to pass capture implicits to pass 0002.cpp test
-  applyFileFormatTwoToSingleTU ${tc} "--capture-ctors-dtors --capture-implicits --whole-program --NumStatements"
+  #we need to capture implicits here, as some calls are to implicit constructors/destructors
+  applyFileFormatTwoToSingleTU ${tc} "--capture-ctors-dtors --capture-new-delete-calls --capture-implicits --infer-ctors-dtors --whole-program --prune --NumStatements"
   fail=$?
   fails=$((fails + fail))
 done

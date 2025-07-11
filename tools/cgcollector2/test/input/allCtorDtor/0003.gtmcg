@@ -1,9 +1,10 @@
 {
     "_CG": {
-        "_ZN7MyClassC1Ev": {
+        "_Z6hiddenv": {
             "callees": [],
             "callers": [
-                "main"
+                "_ZN1BC1Ev",
+                "_ZN1BC2Ev"
             ],
             "doesOverride": false,
             "hasBody": true,
@@ -14,76 +15,66 @@
             "overriddenBy": [],
             "overrides": []
         },
-        "_ZN7MyClassC2Ev": {
-            "callees": [],
-            "callers": [
-                "main"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": false,
-            "meta": {
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "_ZN7MyClassD0Ev": {
-            "callees": [],
-            "callers": [
-                "main"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "_ZN7MyClassD1Ev": {
-            "callees": [],
-            "callers": [
-                "main"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "_ZN7MyClassD2Ev": {
-            "callees": [],
-            "callers": [
-                "main"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "main": {
+        "_ZN1AC1Ev": {
             "callees": [
-                "_ZN7MyClassC1Ev",
-                "_ZN7MyClassC2Ev",
-                "_ZN7MyClassD0Ev",
-                "_ZN7MyClassD1Ev",
-                "_ZN7MyClassD2Ev"
+                "_ZN1BC1Ev",
+                "_ZN1BC2Ev"
             ],
             "callers": [],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": false,
             "meta": {
-                "numStatements": 2
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1AC2Ev": {
+            "callees": [
+                "_ZN1BC1Ev",
+                "_ZN1BC2Ev"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1BC1Ev": {
+            "callees": [
+                "_Z6hiddenv"
+            ],
+            "callers": [
+                "_ZN1AC1Ev",
+                "_ZN1AC2Ev"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1BC2Ev": {
+            "callees": [
+                "_Z6hiddenv"
+            ],
+            "callers": [
+                "_ZN1AC1Ev",
+                "_ZN1AC2Ev"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
             },
             "overriddenBy": [],
             "overrides": []
@@ -92,8 +83,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "fb0a2854b64e5ac27c0a2e8b3e2c1b413e79ab6d",
-            "version": "0.2"
+            "sha": "de5748d537c1e79cf1ea786deeb1830c325a5ad3",
+            "version": "0.7"
         },
         "version": "2.0"
     }
