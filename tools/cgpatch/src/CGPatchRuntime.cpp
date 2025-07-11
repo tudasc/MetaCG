@@ -135,11 +135,11 @@ extern "C" void __metacg_indirect_call(const char* name, void* address) {
 extern "C" int MPI_Finalize(void) {
   metacg::graph::MCGManager& mcgManager = metacg::graph::MCGManager::get();
 
-  int rank, size;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
+  int localRank, totalRanks;
+  MPI_Comm_rank(MPI_COMM_WORLD, &localRank);
+  MPI_Comm_size(MPI_COMM_WORLD, &totalRanks);
 
-  if (rank != 0) {
+  if (localRank != 0) {
     shouldWrite = false;
     // serialize call-graph
     metacg::io::VersionTwoMCGWriter mcgWriter;
@@ -150,12 +150,12 @@ extern "C" int MPI_Finalize(void) {
     // Send all call-graphs to rank 0
     std::string jsonStr = j.dump();
     MPI_Send(jsonStr.data(), jsonStr.size(), MPI_CHAR, 0, 0, MPI_COMM_WORLD);
-  } else if (rank == 0) {
+  } else if (localRank == 0) {
     shouldWrite = true;
     MPI_Status status;
     int msgSize;
 
-    for (int i = 1; i < size; i++) {
+    for (int i = 1; i < totalRanks; i++) {
       // Probe for incoming message
       MPI_Probe(i, 0, MPI_COMM_WORLD, &status);
 
