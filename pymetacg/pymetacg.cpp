@@ -33,19 +33,37 @@
 #include <config.h>
 
 namespace nb = nanobind;
-using namespace metacg;
+using namespace metacg::pymetacg;
 
 NB_MODULE(pymetacg, m) {
   m.attr("info") = std::string("MetaCG v" + std::to_string(MetaCG_VERSION_MAJOR) + "." +
                                std::to_string(MetaCG_VERSION_MINOR) + " (" + MetaCG_GIT_SHA + ")");
 
-  nb::class_<MetaData>(m, "MetaData")
-      .def_prop_ro("key", &MetaData::getKey)
-      .def_prop_ro("data", [](const MetaData& self) { return self.to_json(); });
+  nb::class_<MetaDataWrapper>(m, "MetaData")
+      .def_prop_ro("key", [](const MetaDataWrapper& self) { return self.md->getKey(); })
+      .def_prop_ro("data", [](const MetaDataWrapper& self) {
+        NameMapping mapping(self.graph);
+        return self.md->toJson(mapping);
+      });
+
+  nb::class_<MetaDataContainer>(m, "MetaDataContainer")
+      .def("__getitem__",
+           [](const MetaDataContainer& self, const std::string& key) {
+             try {
+               return MetaDataWrapper{self.map.at(key).get(), self.graph};
+             } catch (std::out_of_range& e) {
+               throw nb::key_error("Meta data entry not found in node.");
+             }
+           })
+      .def("__contains__",
+           [](const MetaDataContainer& self, const std::string& key) { return self.map.find(key) != self.map.end(); })
+      .def("__len__", [](const MetaDataContainer& self) { return self.map.size(); });
 
   nb::class_<CgNodeWrapper>(m, "CgNode")
       .def_prop_ro("function_name", [](const CgNodeWrapper& self) { return self.node->getFunctionName(); })
-      .def_prop_ro("meta_data", [](const CgNodeWrapper& self) { return self.node->getMetaDataContainer(); })
+      .def_prop_ro(
+          "meta_data",
+          [](const CgNodeWrapper& self) { return MetaDataContainer{self.node->getMetaDataContainer(), self.graph}; })
       .def("__repr__",
            [](const CgNodeWrapper& self) { return std::string("CgNode(") + self.node->getFunctionName() + ")"; })
       .def("__hash__", [](const CgNodeWrapper& self) { return self.node->getId(); })
@@ -53,35 +71,73 @@ NB_MODULE(pymetacg, m) {
            [](const CgNodeWrapper& self, CgNodeWrapper& other) { return self.node->getId() == other.node->getId(); })
       .def_prop_ro("callers",
                    [](const CgNodeWrapper& self) {
-                     return attachGraphPointerToNodes(self.graph.getCallers(self.node), self.graph);
+                     return attachGraphPointerToNodes(self.graph.getCallers(*self.node), self.graph);
                    })
       .def_prop_ro("callees", [](const CgNodeWrapper& self) {
-        return attachGraphPointerToNodes(self.graph.getCallees(self.node), self.graph);
+        return attachGraphPointerToNodes(self.graph.getCallees(*self.node), self.graph);
       });
 
-  nb::class_<Callgraph>(m, "Callgraph")
+  nb::class_<metacg::Callgraph>(m, "Callgraph")
       .def_static("from_file",
                   [](std::string& path) {
-                    io::FileSource fs(path);
+                    metacg::io::FileSource fs(path);
 
-                    auto mcgReader = io::createReader(fs);
+                    auto mcgReader = metacg::io::createReader(fs);
                     auto graph = mcgReader->read();
                     return graph;
                   })
       .def("__iter__",
-           [](const Callgraph& self) {
+           [](const metacg::Callgraph& self) {
              return nb::make_iterator(nb::type<CgNodeWrapper>(), "nodes",
                                       NodeContainerIteratorWrapper(self.getNodes().begin(), self),
                                       NodeContainerIteratorWrapper(self.getNodes().end(), self));
            })
-      .def("__getitem__",
-           [](const Callgraph& self, const std::string& key) {
-             CgNode* node = self.getNode(key);
-             if (node != nullptr) {
-               return CgNodeWrapper{node, self};
+      .def("__len__", [](const metacg::Callgraph& self) { return self.getNodeCount(); })
+      .def("get_nodes",
+           [](const metacg::Callgraph& self, const std::string& name) {
+             const auto& nodes = self.getNodes(name);
+             if (nodes.size() == 0) {
+               throw nb::key_error("Node not found in callgraph.");
              } else {
-               throw nb::key_error("Node not found in call graph.");
+               return nb::make_iterator(nb::type<CgNodeWrapper>(), "nodes",
+                                        NodeListIteratorWrapper(nodes.begin(), self),
+                                        NodeListIteratorWrapper(nodes.end(), self));
              }
            })
-      .def("__contains__", [](const Callgraph& self, const std::string& key) { return self.hasNode(key); });
+      .def("get_first_node",
+           [](const metacg::Callgraph& self, const std::string& name) {
+             metacg::CgNode* node = self.getFirstNode(name);
+             if (node == nullptr) {
+               throw nb::key_error("Node not found in callgraph.");
+             } else {
+               return CgNodeWrapper{node, self};
+             }
+           })
+      .def("get_single_node",
+           [](const metacg::Callgraph& self, const std::string& name) {
+             const auto& nodes = self.getNodes(name);
+             const size_t n = nodes.size();
+
+             if (n == 0) {
+               throw nb::key_error("Node not found in callgraph.");
+             } else if (n > 1) {
+               throw nb::key_error("More than one node with name found in callgraph.");
+             } else {
+               return CgNodeWrapper{self.getNode(nodes[0]), self};
+             }
+           })
+      .def("__getitem__",
+           [](const metacg::Callgraph& self, const std::string& name) {
+             const auto& nodes = self.getNodes(name);
+             const size_t n = nodes.size();
+
+             if (n == 0) {
+               throw nb::key_error("Node not found in callgraph.");
+             } else if (n > 1) {
+               throw nb::key_error("More than one node with name found in callgraph.");
+             } else {
+               return CgNodeWrapper{self.getNode(nodes[0]), self};
+             }
+           })
+      .def("__contains__", [](const metacg::Callgraph& self, const std::string& key) { return self.hasNode(key); });
 }

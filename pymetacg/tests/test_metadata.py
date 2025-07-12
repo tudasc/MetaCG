@@ -8,7 +8,7 @@ import pymetacg
 
 def test_no_metadata(metadata_cg):
     n = metadata_cg["nodewithoutmetadata"]
-    assert n.meta_data == {}
+    assert len(n.meta_data) == 0
 
 def test_builtin_metadata(metadata_cg):
     n = metadata_cg["nodewithbuiltinmetadata"]
