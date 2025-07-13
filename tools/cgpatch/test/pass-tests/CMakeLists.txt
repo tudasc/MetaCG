@@ -121,7 +121,8 @@ find_llvm_progs(
   ABORT_IF_MISSING
 )
 
-set(CGPATCHCXX_EXE "${CMAKE_INSTALL_PREFIX}/bin/patchcxx")
+# set(CGPATCHCXX_EXE "${CMAKE_INSTALL_PREFIX}/bin/patchcxx")
+set(CGPATCHCXX_EXE "${CMAKE_BINARY_DIR}/tools/cgpatch/wrapper/patchcxx")
 set(TEST_CPP_ARGS "-O0")
 configure_lit_site_cfg(${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/lit_O0.site.cfg)
 
