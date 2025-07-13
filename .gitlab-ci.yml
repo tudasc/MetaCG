@@ -303,6 +303,7 @@ install-mcg:
   needs: ["build-mcg"]
   script:
     - cmake --install $MCG_BUILD-no-all
+    - cmake --install $MCG_BUILD
     - cd graph/test/install
     - stat /tmp/metacg/$MCG_BUILD-dflt/lib64/libmetacg.so
     - CMAKE_PREFIX_PATH=/tmp/metacg/$MCG_BUILD-dflt/lib64/cmake/metacg cmake -S . -B $MCG_BUILD -DCMAKE_INSTALL_PREFIX=/tmp/metacg-user/test
