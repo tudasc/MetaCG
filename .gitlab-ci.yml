@@ -334,3 +334,10 @@ install-cgcollector:
     - export LD_LIBRARY_PATH=/tmp/metacg/$MCG_BUILD-w_cgcollector/lib64:/tmp/metacg/$MCG_BUILD-w_cgcollector/lib:$LD_LIBRARY_PATH
     - /tmp/metacg/$MCG_BUILD-w_cgcollector/bin/cgcollector --help
     - rm -r /tmp/metacg/$MCG_BUILD-w_cgcollector
+
+install-mcg:
+  <<: *job-setup
+  stage: install
+  needs: ["build-mcg"]
+  script:
+    - cmake --install $MCG_BUILD
