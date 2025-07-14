@@ -288,6 +288,10 @@ test-target-collector:
 test-cgpatch-lit:
   <<: *job-setup
   needs: ["build-mcg"]
+  parallel:
+    matrix:
+      - GCC: 11
+        LLVM: ["15.0.7", "16.0.6", "17.0.6", "18.1.8"]
   script:
     - module load clang/$LLVM
     - cmake --build $MCG_BUILD --target pass-tests
