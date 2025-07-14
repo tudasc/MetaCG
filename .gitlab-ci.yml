@@ -287,7 +287,7 @@ test-target-collector:
 
 test-cgpatch-lit:
   <<: *job-setup
-  needs: ["build-mcg"]
+  needs: ["install-mcg"]
   parallel:
     matrix:
       - GCC: 11
@@ -295,7 +295,7 @@ test-cgpatch-lit:
   script:
     - module load clang/$LLVM
     - cmake --build $MCG_BUILD --target pass-tests
-    - cmake --build $MCG_BUILD --targetake pass-tests-lto
+    - cmake --build $MCG_BUILD --target pass-tests-lto
     - cmake --build $MCG_BUILD --target pass-tests-optimized
     - cmake --build $MCG_BUILD --target pass-tests-optimized-lto
 
