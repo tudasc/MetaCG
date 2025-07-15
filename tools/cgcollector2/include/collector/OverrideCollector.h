@@ -27,18 +27,12 @@ struct OverrideCollector : public Plugin {
       // multiple inheritance causes multiple entries in overriden_methods
       // hierarchical overridden methods does not show up here
       for (auto om : MD->overridden_methods()) {
-        // std::cout << "override " << om->getParent()->getNameAsString() << "::" << om->getNameAsString() << std::endl;
-
         for (auto& nodeName : getMangledName(om)) {
-          // TODO once I rebased this onto devel with the new patch just use getNode
-          if (!cg->hasNode(nodeName)) {
-            // TODO: replace logging with spdlog
-            std::cout << "Unknown node " << om->getNameAsString() << "\n";
+          const auto omNode = cg->getNode(nodeName);
+          if (omNode == nullptr) {
+            metacg::MCGLogger::logWarn("Node {} tries to override unknown node {} ",nodeName, om->getNameAsString());
             continue;
           }
-
-          auto omNode = cg->getNode(nodeName);
-
           omNode->getOrCreateMD<OverrideMD>()->overriddenBy.push_back(node.first);
           node.second->getOrCreateMD<OverrideMD>()->overrides.push_back(omNode->getId());
         }

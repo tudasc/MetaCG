@@ -62,7 +62,7 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
     // mightCall.insert(mightCall.end(), toMergeDerived.begin(), toMergeDerived.end());
     // sort( mightCall.begin(), mightCall.end() );
     // mightCall.erase( unique( mightCall.begin(), mightCall.end() ), mightCall.end() );
-    // but we would need a strict ordering relation between FunctionSignatureMetadata which we dont have
+    // but we would need a strict ordering relation between FunctionSignatureMetadata which we don't have
     mightCall.reserve(mightCall.size()+toMergeDerived->mightCall.size());
     for(const auto& elem : toMergeDerived->mightCall){
       if(std::find(mightCall.begin(), mightCall.end(), elem)!=mightCall.end()){
@@ -72,8 +72,8 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
 
     //At this point the metadata should be merged so that the AllAliasMetadata contains all
     // signatures that are possibly used by the node, this metadata is attached to
-    //FIXME: converting this to actual edges is not yet possible... I think?
-    // We could hack this togeth, by adding another datamember containing the ids of the functions of interst
+    //Fixme: converting this to actual edges is not yet possible... I think?
+    // We could hack this together, by adding another datamember containing the ids of the functions of interest
     // I decided to wait for more advanced metadata merge strategies, similar to global loopdepth
 
   }

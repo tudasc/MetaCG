@@ -18,7 +18,6 @@ class Callgraph;
 
 class CallGraphCollectorConsumer : public clang::ASTConsumer {
  public:
-  // Fixme: callgraph can be acquired via manager, and can be removed from constructor
   CallGraphCollectorConsumer(MetaCollectorVector& mcs, int mcgVersion, bool captureCtorsDtors,
                              bool captureNewDeleteCalls, bool captureImplicits, bool inferCtorsDtors, bool prune, bool standalone,
                              AliasAnalysisLevel level)

@@ -43,7 +43,6 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
     return {};
   };
 
-  // TODO implement
   void merge(const MetaData& toMerge) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
       metacg::MCGLogger::instance().getErrConsole()->error(
@@ -52,6 +51,8 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
     }
     const auto* toMergeDerived = static_cast<const FunctionSignatureMetadata*>(&toMerge);
     assert(ownSignature==toMergeDerived->ownSignature && "The two metadata should be equal");
+    // No further merging logic is needed, as the function signatures should be identical
+    // it therefore doesn't matter which of the identical signatures we keep in our node.
   }
 
   MetaData* clone() const final { return new FunctionSignatureMetadata(*this); }

@@ -17,8 +17,7 @@ class ASTNodeMetadata : public metacg::MetaData::Registrar<ASTNodeMetadata> {
   ASTNodeMetadata() = default;
 
   explicit ASTNodeMetadata(const nlohmann::json& j) {
-    assert(false);
-    // This metadata will not be created via json
+    assert(false && "This metadata should not be created via json");
   }
 
   nlohmann::json to_json() const final {
@@ -32,18 +31,20 @@ class ASTNodeMetadata : public metacg::MetaData::Registrar<ASTNodeMetadata> {
 
   const char* getKey() const override { return key; }
 
-  // TODO implement
   void merge(const MetaData& toMerge) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
       metacg::MCGLogger::instance().getErrConsole()->error(
           "The MetaData which was tried to merge with ASTNodeMetadata was of a different MetaData type");
       abort();
     }
+    assert(false && "This metadata can not be exported and therefore is not mergeable");
     // const ASTNodeMetadata* toMergeDerived = static_cast<const ASTNodeMetadata*>(&toMerge);
   }
 
-  // TODO implement
-  MetaData* clone() const final { return new ASTNodeMetadata(); }
+  MetaData* clone() const final {
+    assert(false && "This should not be necesssary to use");
+    return new ASTNodeMetadata();
+  }
 
   void setFunctionDecl(const clang::FunctionDecl* const fD) { functionDecl = fD; }
 

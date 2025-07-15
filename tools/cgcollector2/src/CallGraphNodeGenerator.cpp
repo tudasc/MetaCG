@@ -401,11 +401,10 @@ void CallGraphNodeGenerator::addNode(const clang::FunctionDecl* const D) {
   for (auto& name : getMangledNames(D)) {
     // Add the function to the callgraph
     auto node = callgraph->getOrInsertNode(name);
-    // Todo: this is so we overwrite if we ever find the body of a function after a predeclare
+    // This is so we overwrite if we ever find the body of a function after a predeclare
     node->setHasBody(D->hasBody());
-    node->setIsVirtual(false);
-    if (auto cxxmethod = dyn_cast<CXXMethodDecl>(D)) {
-      node->setIsVirtual(cxxmethod->isVirtual());
+    if (auto cxxmethod = dyn_cast<CXXMethodDecl>(D); cxxmethod!= nullptr && cxxmethod->isVirtual()) {
+        node->getOrCreateMD<OverrideMD>();
     }
     node->getOrCreateMD<ASTNodeMetadata>()->setFunctionDecl(D);
     if (!node->has<FunctionSignatureMetadata>()) {

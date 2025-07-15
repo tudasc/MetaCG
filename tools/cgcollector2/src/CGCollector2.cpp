@@ -117,7 +117,6 @@ static opt<LogLevel> LoggingLevel("log-level", desc("Select log level"),
                                          clEnumValN(LogLevel::Off, "off", "Disable all logging")),
                                   init(LogLevel::Info), cat(cgc));
 
-// TODO handle multiple inputs
 int main(int argc, const char** argv) {
 #if (LLVM_VERSION_MAJOR >= 10) && (LLVM_VERSION_MAJOR <= 12)
   clang::tooling::CommonOptionsParser OP(argc, argv, cgc);
