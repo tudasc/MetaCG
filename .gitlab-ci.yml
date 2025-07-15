@@ -287,14 +287,14 @@ test-target-collector:
 
 test-cgpatch-lit:
   <<: *job-setup
-  needs: ["build-mcg"]
+  needs: ["install-mcg"]
   parallel:
     matrix:
       - GCC: 11
         LLVM: ["15.0.7", "16.0.6", "17.0.6", "18.1.8"]
   script:
     - module load clang/$LLVM
-    - cmake --install $MCG_BUILD
+    #- cmake --install $MCG_BUILD
     - cmake --build $MCG_BUILD --target pass-tests
     - cmake --build $MCG_BUILD --target pass-tests-lto
     - cmake --build $MCG_BUILD --target pass-tests-optimized
@@ -311,8 +311,8 @@ install-mcg:
     - cmake --install $MCG_BUILD
     - cd graph/test/install
     - stat /tmp/metacg/$MCG_BUILD-dflt/lib64/libmetacg.so
-    - CMAKE_PREFIX_PATH=/tmp/metacg/$MCG_BUILD-dflt/lib64/cmake/metacg cmake -S . -B $MCG_BUILD -DCMAKE_INSTALL_PREFIX=/tmp/metacg-user/test
-    - cmake --build $MCG_BUILD --parallel
+    - CMAKE_PREFIX_PATH=/tmp/metacg/$MCG_BUILD-dflt/lib64/cmake/metacg cmake -S . -B $MCG_BUILD/install-test -DCMAKE_INSTALL_PREFIX=/tmp/metacg-user/test
+    - cmake --build $MCG_BUILD/install-test --parallel
     - rm -r /tmp/metacg/$MCG_BUILD-dflt
 
 install-pgis:
