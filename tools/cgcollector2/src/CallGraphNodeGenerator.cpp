@@ -34,16 +34,30 @@
 
 #include <cassert>
 
-#include <ASTUtil.h>
-#include <clang/AST/DeclCXX.h>
+#include <clang/AST/Mangle.h>
 
 #include "metadata/Internal/ASTNodeMetadata.h"
 #include "metadata/Internal/AllAliasMetadata.h"
 #include "metadata/Internal/FunctionSignatureMetadata.h"
 
 #include "LoggerUtil.h"
-
 using namespace clang;
+
+
+std::vector<std::string> getMangledNames(clang::Decl const* const nd) {
+  if (!nd) {
+    std::cerr << "NamedDecl was nullptr" << std::endl;
+    assert(nd && "NamedDecl and MangleContext must not be nullptr");
+    return {"__NO_NAME__"};
+  }
+  clang::ASTNameGenerator NG(nd->getASTContext());
+  if (llvm::isa<clang::CXXRecordDecl>(nd) || llvm::isa<clang::CXXMethodDecl>(nd) ||
+      llvm::isa<clang::ObjCInterfaceDecl>(nd) || llvm::isa<clang::ObjCImplementationDecl>(nd)) {
+    return NG.getAllManglings(nd);
+  }
+  return {NG.getName(nd)};
+}
+
 
 bool CallGraphNodeGenerator::TraverseFunctionDecl(clang::FunctionDecl* D) {
   SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)D);
