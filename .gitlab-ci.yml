@@ -285,22 +285,6 @@ test-target-collector:
     - cd graph/test/integration/TargetCollector
     - ./TestRunner.sh -b $MCG_BUILD
 
-test-cgpatch-lit:
-  <<: *job-setup
-  needs: ["install-mcg"]
-  parallel:
-    matrix:
-      - GCC: 11
-        LLVM: ["15.0.7", "16.0.6", "17.0.6", "18.1.8"]
-  script:
-    - module load clang/$LLVM
-    #- cmake --install $MCG_BUILD
-    - cmake --build $MCG_BUILD --target pass-tests
-    - cmake --build $MCG_BUILD --target pass-tests-lto
-    - cmake --build $MCG_BUILD --target pass-tests-optimized
-    - cmake --build $MCG_BUILD --target pass-tests-optimized-lto
-
-
 # Stage: install
 install-mcg:
   <<: *job-setup
@@ -340,3 +324,18 @@ install-cgcollector:
     - export LD_LIBRARY_PATH=/tmp/metacg/$MCG_BUILD-w_cgcollector/lib64:/tmp/metacg/$MCG_BUILD-w_cgcollector/lib:$LD_LIBRARY_PATH
     - /tmp/metacg/$MCG_BUILD-w_cgcollector/bin/cgcollector --help
     - rm -r /tmp/metacg/$MCG_BUILD-w_cgcollector
+
+test-cgpatch-lit:
+  <<: *job-setup
+  needs: ["install-mcg"]
+  parallel:
+    matrix:
+      - GCC: 11
+        LLVM: ["15.0.7", "16.0.6", "17.0.6", "18.1.8"]
+  script:
+    - module load clang/$LLVM
+    #- cmake --install $MCG_BUILD
+    - cmake --build $MCG_BUILD --target pass-tests
+    - cmake --build $MCG_BUILD --target pass-tests-lto
+    - cmake --build $MCG_BUILD --target pass-tests-optimized
+    - cmake --build $MCG_BUILD --target pass-tests-optimized-lto
