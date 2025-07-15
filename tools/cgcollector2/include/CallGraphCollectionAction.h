@@ -21,7 +21,7 @@ class CallGraphCollectorConsumer : public clang::ASTConsumer {
   CallGraphCollectorConsumer(MetaCollectorVector& mcs, int mcgVersion, bool captureCtorsDtors,
                              bool captureNewDeleteCalls, bool captureImplicits, bool inferCtorsDtors, bool prune, bool standalone,
                              AliasAnalysisLevel level)
-      : _mcs(mcs),
+      : mcs(mcs),
         mcgVersion(mcgVersion),
         captureCtorsDtors(captureCtorsDtors),
         captureNewDeleteCalls(captureNewDeleteCalls),
@@ -36,7 +36,7 @@ class CallGraphCollectorConsumer : public clang::ASTConsumer {
  private:
   void addOverestimationEdges(metacg::Callgraph* callgraph);
 
-  MetaCollectorVector _mcs;
+  MetaCollectorVector mcs;
   int mcgVersion;
   bool captureCtorsDtors;
   bool captureNewDeleteCalls;
@@ -51,7 +51,7 @@ class CallGraphCollectorAction : clang::ASTFrontendAction {
  public:
   CallGraphCollectorAction(MetaCollectorVector& mcs, int mcgVersion, bool captureCtorsDtors, bool captureNewDeleteCalls,
                            bool captureImplicits, bool infereCtorsDtors, bool prune, bool standalone, AliasAnalysisLevel level)
-      : _mcs(mcs),
+      : mcs(mcs),
         mcgVersion(mcgVersion),
         captureCtorsDtors(captureCtorsDtors),
         captureNewDeleteCalls(captureNewDeleteCalls),
@@ -63,17 +63,17 @@ class CallGraphCollectorAction : clang::ASTFrontendAction {
 
   std::unique_ptr<clang::ASTConsumer> newASTConsumer() {
     return std::unique_ptr<clang::ASTConsumer>(new CallGraphCollectorConsumer(
-        _mcs, mcgVersion, captureCtorsDtors, captureNewDeleteCalls, captureImplicits, inferCtorsDtors, prune, standalone, level));
+        mcs, mcgVersion, captureCtorsDtors, captureNewDeleteCalls, captureImplicits, inferCtorsDtors, prune, standalone, level));
   }
 
   std::unique_ptr<clang::ASTConsumer> CreateASTConsumer([[maybe_unused]] clang::CompilerInstance& compiler,
                                                         [[maybe_unused]] llvm::StringRef sr) {
     return std::unique_ptr<clang::ASTConsumer>(new CallGraphCollectorConsumer(
-        _mcs, mcgVersion, captureCtorsDtors, captureNewDeleteCalls, captureImplicits, inferCtorsDtors, prune, standalone, level));
+        mcs, mcgVersion, captureCtorsDtors, captureNewDeleteCalls, captureImplicits, inferCtorsDtors, prune, standalone, level));
   }
 
  private:
-  MetaCollectorVector _mcs;
+  MetaCollectorVector mcs;
   int mcgVersion;
   bool captureCtorsDtors;
   bool captureNewDeleteCalls;

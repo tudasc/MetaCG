@@ -4,9 +4,6 @@
 * https://github.com/tudasc/metacg/LICENSE.txt
 */
 
-
-#include <clang/AST/Decl.h>
-
 #include "FileInfoMetadata.h"
 
 FileInfoMetadata::FileInfoMetadata(const nlohmann::json& j) {

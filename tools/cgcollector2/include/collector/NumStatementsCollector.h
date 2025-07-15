@@ -17,9 +17,9 @@ struct NumberOfStatementsCollector : public Plugin {
     return result;
   }
 
-  void computeForGraph(const metacg::Callgraph* const cg) override {}
+  void computeForGraph(const metacg::Callgraph* const) override {}
 
-  virtual std::string getPluginName() { return "NumberOfStatementsCollector"; }
+  virtual std::string getPluginName() override { return "NumberOfStatementsCollector"; }
 };
 
 #endif  // CGCOLLECTOR2_NUMSTATEMENTSCOLLECTOR_H

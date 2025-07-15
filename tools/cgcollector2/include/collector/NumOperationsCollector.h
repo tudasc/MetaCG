@@ -11,7 +11,7 @@
 #include "metadata/NumOperationsMD.h"
 
 struct NumOperationsCollector : public Plugin {
-  virtual NumOperationsMD* computeForDecl(clang::FunctionDecl const* const decl) {
+  virtual NumOperationsMD* computeForDecl(clang::FunctionDecl const* const decl) override {
     auto result = new NumOperationsMD;
     const auto counts = getNumOperationsInStmt(decl->getBody());
     result->numberOfIntOps = counts.numberOfIntOps;

@@ -16,7 +16,7 @@ class ASTNodeMetadata : public metacg::MetaData::Registrar<ASTNodeMetadata> {
 
   ASTNodeMetadata() = default;
 
-  explicit ASTNodeMetadata(const nlohmann::json& j) {
+  explicit ASTNodeMetadata(const nlohmann::json&) {
     assert(false && "This metadata should not be created via json");
   }
 

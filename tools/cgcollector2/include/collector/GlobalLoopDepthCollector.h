@@ -14,9 +14,9 @@
 
 struct GlobalLoopDepthCollector final : public Plugin {
  public:
-  GlobalLoopDepthMD* computeForDecl(const clang::FunctionDecl* const functionDecl) override { return nullptr; }
+  GlobalLoopDepthMD* computeForDecl(const clang::FunctionDecl* const) override { return nullptr; }
 
-  void computeForGraph(const metacg::Callgraph* const cg) override {}
+  void computeForGraph(const metacg::Callgraph* const) override {}
 
   std::string getPluginName() override { return "GlobalLoopDepthCollector"; }
 

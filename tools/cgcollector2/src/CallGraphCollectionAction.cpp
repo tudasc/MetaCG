@@ -45,7 +45,7 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
 
   SPDLOG_INFO("Sucessfully Created Callgraph");
   SPDLOG_INFO("Running Metadata Collectors");
-  for (auto& c : _mcs) {
+  for (auto& c : mcs) {
     SPDLOG_DEBUG("Running: {}", c->getPluginName());
     for (const auto& node : callgraph->getNodes()) {
       if (!node.second->has<ASTNodeMetadata>()) {
