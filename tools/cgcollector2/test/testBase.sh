@@ -115,12 +115,12 @@ done
 type -P $testerExe > /dev/null 2>&1
 if [[ $? -eq 1 ]]; then
   echo "The CGSimpleTester2 binary (cgsimpletester2) could not be found in path, testing with relative path."
-  stat ../../../${build_dir}/tools/cgcollector2/test/cgsimpletester2 >> log/testrun.log 2>&1
+  stat ${PWD}/../../../${build_dir}/tools/cgcollector2/test/cgsimpletester2 >> log/testrun.log 2>&1
   if [ $? -eq 1 ]; then
     echo "The file cgsimpletester2 seems also non-present in ../../../${build_dir}/tools/cgcollector2/test. Aborting test. Failure! Please build the tester first."
     exit 1
   else
-    testerExe=../../../${build_dir}/tools/cgcollector2/test/cgsimpletester2
+    testerExe=${PWD}/../../../${build_dir}/tools/cgcollector2/test/cgsimpletester2
   fi
 fi
 
@@ -129,24 +129,24 @@ type -P $cgcollectorExe > /dev/null 2>&1
 if [[ $? -eq 1 ]]; then
   echo "No cgcollector2 in PATH. Trying relative path ../../../${build_dir}/tools/cgcollector2/"
 
-  stat ../../../${build_dir}/tools/cgcollector2/cgcollector2 >> log/testrun.log 2>&1
+  stat ${PWD}/../../../${build_dir}/tools/cgcollector2/cgcollector2 >> log/testrun.log 2>&1
   if [ $? -eq 1 ]; then
     echo "The file seems also non-present in ../../../${build_dir}/tools/cgcollector2/ Aborting test. Failure! Please build the collector first."
     exit 1
   else
-    cgcollectorExe=../../../${build_dir}/tools/cgcollector2/cgcollector2
+    cgcollectorExe=${PWD}/../../../${build_dir}/tools/cgcollector2/cgcollector2
   fi
 fi
 
 type -P $cgmergeExe > /dev/null 2>&1
 if [[ $? -eq 1 ]]; then
   echo "No cgmerge2 in PATH. Trying relative path ../${build_dir}/test"
-  stat ../../../${build_dir}/tools/cgmerge2/cgmerge2 >> log/testrun.log 2>&1
+  stat ${PWD}/../../../${build_dir}/tools/cgmerge2/cgmerge2 >> log/testrun.log 2>&1
   if [ $? -eq 1 ]; then
     echo "The file seems also non-present in ../../../${build_dir}/tools/cgmerge2/. Aborting test. Failure! Please build the collector first."
     exit 1
   else
-    cgmergeExe=../../../${build_dir}/tools/cgmerge2/cgmerge2
+    cgmergeExe=${PWD}/../../../${build_dir}/tools/cgmerge2/cgmerge2
   fi
 fi
 
