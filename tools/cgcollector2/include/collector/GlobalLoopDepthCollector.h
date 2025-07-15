@@ -7,7 +7,6 @@
 #ifndef CGCOLLECTOR2_GLOBALLOOPDEPTHCOLLECTOR_H
 #define CGCOLLECTOR2_GLOBALLOOPDEPTHCOLLECTOR_H
 
-#include "ASTUtil.h"
 #include "metadata/LoopMD.h"
 
 #include <iostream>
