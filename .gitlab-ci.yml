@@ -137,6 +137,7 @@ build-mcg:
     - source .venv/bin/activate
     - cmake -S . -B $MCG_BUILD -G Ninja -DCMAKE_BUILD_TYPE=Debug
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_all
+      -DLLVM_EXTERNAL_LIT=$(which lit)
       -DCUBE_DIR=$(dirname $(which cube_info))/..
       -DEXTRAP_INCLUDE=./extern/install/extrap/include
       -DEXTRAP_LIB=./extern/install/extrap/lib
@@ -200,6 +201,22 @@ test-pymetacg:
   script:
     - cd $MCG_BUILD/pymetacg/tests
     - ctest . --verbose
+
+test-cgpatch-lit:
+  <<: *job-setup
+  stage: test
+  needs: ["build-mcg"]
+  parallel:
+    matrix:
+      - GCC: 11
+        LLVM: ["15.0.7", "16.0.6", "17.0.6", "18.1.8"]
+  script:
+    - module load clang/$LLVM
+    - cmake --install $MCG_BUILD
+    - cmake --build $MCG_BUILD --target pass-tests
+    - cmake --build $MCG_BUILD --target pass-tests-lto
+    - cmake --build $MCG_BUILD --target pass-tests-optimized
+    - cmake --build $MCG_BUILD --target pass-tests-optimized-lto
 
 # Stage: integration-test
 test-graphlib-merge:
@@ -284,17 +301,6 @@ test-target-collector:
     - cd graph/test/integration/TargetCollector
     - ./TestRunner.sh -b $MCG_BUILD
 
-test-cgpatch-lit:
-  <<: *job-setup
-  needs: ["build-mcg"]
-  script:
-    - module load clang/$LLVM
-    - cmake --build $MCG_BUILD --target pass-tests
-    - cmake --build $MCG_BUILD --targetake pass-tests-lto
-    - cmake --build $MCG_BUILD --target pass-tests-optimized
-    - cmake --build $MCG_BUILD --target pass-tests-optimized-lto
-
-
 # Stage: install
 install-mcg:
   <<: *job-setup
@@ -304,8 +310,8 @@ install-mcg:
     - cmake --install $MCG_BUILD-no-all
     - cd graph/test/install
     - stat /tmp/metacg/$MCG_BUILD-dflt/lib64/libmetacg.so
-    - CMAKE_PREFIX_PATH=/tmp/metacg/$MCG_BUILD-dflt/lib64/cmake/metacg cmake -S . -B $MCG_BUILD -DCMAKE_INSTALL_PREFIX=/tmp/metacg-user/test
-    - cmake --build $MCG_BUILD --parallel
+    - CMAKE_PREFIX_PATH=/tmp/metacg/$MCG_BUILD-dflt/lib64/cmake/metacg cmake -S . -B $MCG_BUILD-no-all/install-test -DCMAKE_INSTALL_PREFIX=/tmp/metacg-user/test
+    - cmake --build $MCG_BUILD-no-all/install-test --parallel
     - rm -r /tmp/metacg/$MCG_BUILD-dflt
 
 install-pgis:

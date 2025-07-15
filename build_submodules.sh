@@ -51,6 +51,7 @@ fi
 pip install --upgrade pip
 pip install PyQt5 matplotlib || err_exit "Installing Extra-P dependencies failed."
 pip install pytest pytest-cmake || err_exit "Installing pymetacg test dependencies failed."
+pip install lit || err_exit "Installing cgpatch pass-tests lit dependencies failed."
 
 log "Building cubelib for Extra-P"
 if [ -f "$extinstalldir/cubelib/bin/cubelib-config" ]; then
