@@ -39,7 +39,6 @@ add_executable(cgcollector2
         src/CallGraphNodeGenerator.cpp
         src/CallGraphCollectionAction.cpp
         src/Plugin.cpp
-        src/ASTUtil.cpp
         src/SharedDefs.cpp)
 default_compile_options(cgcollector2)
 
