@@ -325,8 +325,10 @@ install-cgcollector:
     - /tmp/metacg/$MCG_BUILD-w_cgcollector/bin/cgcollector --help
     - rm -r /tmp/metacg/$MCG_BUILD-w_cgcollector
 
+
 test-cgpatch-lit:
   <<: *job-setup
+  stage: install
   needs: ["install-mcg"]
   parallel:
     matrix:
