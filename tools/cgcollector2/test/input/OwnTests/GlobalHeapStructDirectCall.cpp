@@ -4,10 +4,11 @@
 * https://github.com/tudasc/metacg/LICENSE.txt
 */
 
+struct localStruct {
+  int operator()(int a, int b, int c) { return a + b * c; }
+};
+
 int main() {
-  struct localStruct {
-    int operator()(int a, int b, int c) { return a + b * c; }
-  };
   auto c = (new localStruct())->operator()(1, 2, 3);
   return c;
 }
