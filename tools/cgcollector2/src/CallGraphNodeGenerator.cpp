@@ -128,6 +128,12 @@ bool CallGraphNodeGenerator::TraverseFunctionTemplateDecl(clang::FunctionTemplat
 bool CallGraphNodeGenerator::TraverseClassTemplateDecl(clang::ClassTemplateDecl* D) {
   // We do not traverse the uninstantiated class template description, but only their specialisations
   for (clang::ClassTemplateSpecializationDecl* const c : D->specializations()) {
+    const auto& names = getMangledNames(c);
+    if(names.empty() || callgraph->hasNode(names.front())){
+      //This is to circumvent infinite recursive template walks
+      //If we already have the decl, we don't need to traverse again
+      continue ;
+    }
     RecursiveASTVisitor::TraverseCXXRecordDecl(c);
   }
 
