@@ -20,7 +20,7 @@ nlohmann::json FileInfoMetadata::to_json() const {
   j["origin"] = origin;
   j["systemInclude"] = fromSystemInclude;
   return j;
-};
+}
 
 void FileInfoMetadata::merge(const MetaData& toMerge) {
   if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
