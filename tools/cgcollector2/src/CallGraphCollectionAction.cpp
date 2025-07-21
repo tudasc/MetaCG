@@ -22,7 +22,7 @@
 void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Context) {
   std::string dumpLoc;
   llvm::raw_string_ostream rso(dumpLoc);
-  Context.getTranslationUnitDecl()->dump(rso);
+  Context.getTranslationUnitDecl()->dump(rso,true);
   SPDLOG_TRACE("\n{}\n", dumpLoc);
 
   // Context.getTranslationUnitDecl()->dump();

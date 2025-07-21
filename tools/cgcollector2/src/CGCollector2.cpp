@@ -152,6 +152,7 @@ int main(int argc, const char** argv) {
   spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [errconsole] [%l] %v");
 
   clang::tooling::ClangTool CT(OP.getCompilations(), OP.getSourcePathList());
+
   std::vector<Plugin*> mcs = {};
   mcs.reserve(9 /*number of builtin collectors*/ + pluginPaths.size());
 

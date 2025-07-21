@@ -43,6 +43,13 @@
 #include "LoggerUtil.h"
 using namespace clang;
 
+[[nodiscard]] inline bool starts_with(llvm::StringRef Str, llvm::StringRef Prefix) {
+#if LLVM_VERSION_MAJOR < 17
+  return Str.startswith(Prefix);
+#else
+  return Str.starts_with(Prefix);
+#endif
+}
 
 std::vector<std::string> getMangledNames(clang::Decl const* const nd) {
   if (!nd) {
@@ -58,6 +65,13 @@ std::vector<std::string> getMangledNames(clang::Decl const* const nd) {
   return {NG.getName(nd)};
 }
 
+template <typename T>
+std::string dumpToString(T elem, clang::ASTContext& ctx){
+  std::string dump;
+  auto rso= llvm::raw_string_ostream(dump);
+  elem->dump(rso,ctx);
+  return dump;
+}
 
 bool CallGraphNodeGenerator::TraverseFunctionDecl(clang::FunctionDecl* D) {
   SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)D);
@@ -177,7 +191,7 @@ bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) {
 
     IdentifierInfo* II = FD->getIdentifier();
     // TODO not sure whether we want to include __inline marked functions
-    if (II && II->getName().startswith("__inline")) {
+    if (II && starts_with(II->getName(),("__inline"))) {
       return true;
     }
   } else {
@@ -203,10 +217,13 @@ bool CallGraphNodeGenerator::VisitFunctionDecl(clang::FunctionDecl* FD) {
 }
 
 bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
+  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)E);
+
   if (!topLevelFD) {
     SPDLOG_DEBUG("We are not inside a function, no call edge to be drawn for call {}", (void*)E);
     return true;
   }
+
   if (E->getDirectCallee() != nullptr) {
     SPDLOG_DEBUG("Handling direct call");
     const auto& directCallee = E->getDirectCallee();
@@ -259,8 +276,9 @@ bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
     SPDLOG_WARN("Wierd cases encountered!");
     if (E->getCallee()->getType()->isDependentType()) {
       SPDLOG_WARN(
-          "The callees type {} is not instantiated and is supposed to be resolved later. THIS SHOULD NOT HAPPEN "
+          "The callees {} type {} is not instantiated and is supposed to be resolved later. THIS SHOULD NOT HAPPEN "
           "ANYMORE!!!",
+          dumpToString(E,topLevelFD->getASTContext()),
           E->getCallee()->getType().getAsString());
       return true;
     }
@@ -314,6 +332,7 @@ bool CallGraphNodeGenerator::VisitCXXDestructorDecl(clang::CXXDestructorDecl* DD
 }
 
 bool CallGraphNodeGenerator::VisitCXXDeleteExpr(clang::CXXDeleteExpr* DE) {
+  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)DE);
   assert(DE != nullptr);
   if (!captureCtorsDtors) {
     // We should ignore calls to a destructor via delete
@@ -359,6 +378,7 @@ bool CallGraphNodeGenerator::VisitCXXDeleteExpr(clang::CXXDeleteExpr* DE) {
 }
 
 bool CallGraphNodeGenerator::VisitCXXConstructExpr(clang::CXXConstructExpr* CE) {
+  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)CE);
   if (!topLevelFD) {
     SPDLOG_DEBUG("We are not inside a function, no call edge to be drawn for construct expression {}", (void*)CE);
     return true;
@@ -388,6 +408,7 @@ bool CallGraphNodeGenerator::VisitCXXConstructExpr(clang::CXXConstructExpr* CE) 
 // We need to visit the var decls and then filter for local CXXRecords as the underlying CXXConstructExpr does not allow
 // us to access the storage kind
 bool CallGraphNodeGenerator::VisitVarDecl(clang::VarDecl* VD) {
+  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)VD);
   if (!inferCtorsDtors) {
     return true;
   }
@@ -405,6 +426,7 @@ bool CallGraphNodeGenerator::VisitVarDecl(clang::VarDecl* VD) {
 }
 
 bool CallGraphNodeGenerator::VisitCXXBindTemporaryExpr(clang::CXXBindTemporaryExpr* CXXBTE) {
+  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)CXXBTE);
   if (!inferCtorsDtors) {
     return true;
   }
