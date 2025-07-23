@@ -156,6 +156,11 @@ option(
   ON
 )
 
+if(CGPATCH_USE_MPI)
+  find_package(MPI REQUIRED)
+  message(STATUS "MPI VERSION: ${MPI_C_VERSION}")
+endif()
+
 # Build MetaCG's Python interface
 option(
   METACG_BUILD_PYMETACG
