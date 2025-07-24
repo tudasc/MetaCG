@@ -4,6 +4,7 @@ LLVM_FLAGS=`llvm-config --cxxflags --ldflags --libs --system-libs`
 LIB_DIR=@METACG_INSTALL_DIR@/lib/
 LIB64_DIR=@METACG_INSTALL_DIR@/lib64/
 INST_PASS=@METACG_INSTALL_DIR@/lib/libcgpatch-inst-pass.so
+RUNTIME=@METACG_INSTALL_DIR@/lib/libcgpatch-runtime.a
 
 # Check if linking is enabled
 linking=yes
@@ -67,7 +68,7 @@ if [[ "$linking" == yes ]]
 then
   echo "[patchcxx] Linking"
   #echo "[patchcxx] Executing: $COMPILER $CLI_FLAGS $CLI_FLAGS_LINK $@ -L@METACG_INSTALL_DIR@/lib64 -lmetacg -Wl,-whole-archive $RUNTIME -Wl,-no-whole-archive -Wl,--rpath,@GRAPH_LIB@ $LLVM_FLAGS"
-  LD_LIBRARY_PATH="$LIB_DIR:$LIB64_DIR:$LD_LIBRARY_PATH" $COMPILER $CLI_FLAGS $CLI_FLAGS_LINK "$@" $LLVM_FLAGS
+  LD_LIBRARY_PATH="$LIB_DIR:$LIB64_DIR:$LD_LIBRARY_PATH" $COMPILER $CLI_FLAGS $CLI_FLAGS_LINK -L@METACG_INSTALL_DIR@/lib -lmetacg -Wl,-rpath,$LIB_DIR -Wl,-whole-archive $RUNTIME -Wl,-no-whole-archive "$@" $LLVM_FLAGS
 else
   echo "[patchcxx] Compiling"
   LD_LIBRARY_PATH="$LIB_DIR:$LIB64_DIR:$LD_LIBRARY_PATH" $COMPILER $CLI_FLAGS "$@"
