@@ -1,0 +1,285 @@
+{
+    "_CG": {
+        "MPI_Comm_rank": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {},
+                    "codeRegions": {}
+                },
+                "fileProperties": {
+                    "origin": "/usr/include/mpi.h",
+                    "systemInclude": true
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "MPI_Finalize": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {},
+                    "codeRegions": {}
+                },
+                "fileProperties": {
+                    "origin": "/usr/include/mpi.h",
+                    "systemInclude": true
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "MPI_Init": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {},
+                    "codeRegions": {}
+                },
+                "fileProperties": {
+                    "origin": "/usr/include/mpi.h",
+                    "systemInclude": true
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z3fooi": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 1
+                },
+                "estimateCallCount": {
+                    "calls": {},
+                    "codeRegions": {}
+                },
+                "fileProperties": {
+                    "origin": "01_a.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z6secreti": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 1
+                },
+                "estimateCallCount": {
+                    "calls": {},
+                    "codeRegions": {}
+                },
+                "fileProperties": {
+                    "origin": "01_a.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "MPI_Comm_rank",
+                "MPI_Finalize",
+                "MPI_Init"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 6
+                },
+                "estimateCallCount": {
+                    "calls": {
+                        "MPI_Comm_rank": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ],
+                        "MPI_Finalize": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ],
+                        "MPI_Init": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ]
+                    },
+                    "codeRegions": {}
+                },
+                "fileProperties": {
+                    "origin": "01_a.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {
+                    "MPI_Comm_rank": 0,
+                    "MPI_Finalize": 0,
+                    "MPI_Init": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 3,
+                "numOperations": {
+                    "numberOfControlFlowOps": 10,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 14,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 11
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "bc73297b72f9c884cc0eaefbf1a6f2f9bc681209",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}

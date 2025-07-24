@@ -130,4 +130,13 @@ jobs:
             cmake --build build --targetake pass-tests-lto
             cmake --build build --target pass-tests-optimized
             cmake --build build --target pass-tests-optimized-lto
+      - name: Run cgpatch integration tests
+        uses: addnab/docker-run-action@v3
+        with:
+          image: metacg-devel:latest
+          run: |
+            export OMPI_ALLOW_RUN_AS_ROOT=1
+            export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+            cd /opt/metacg/tools/cgpatch/test/integration/
+            ./CGPIntegrationRunner.sh -d
 

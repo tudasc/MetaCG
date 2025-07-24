@@ -1,0 +1,36 @@
+{
+    "_CG": {
+        "_Z9say_hellov": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": null,
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z9say_hellov"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": null,
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "c59e0d489c59307822fbb04903d2bbcbbbb93fed",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}

@@ -111,6 +111,9 @@ option(
   OFF
 )
 if(METACG_BUILD_CGPATCH)
+  if(NOT METACG_BUILD_GRAPH_TOOLS)
+    message(FATAL_ERROR "CGPatch requires to build with METACG_BUILD_GRAPH_TOOLS=ON")
+  endif()
   if(${LLVM_PACKAGE_VERSION}
      GREATER
      14
@@ -145,6 +148,18 @@ option(
   "On or Off"
   OFF
 )
+
+# Enable MPI for CGPatch
+option(
+  CGPATCH_USE_MPI
+  "On or Off"
+  ON
+)
+
+if(METACG_BUILD_CGPATCH AND CGPATCH_USE_MPI)
+  find_package(MPI REQUIRED)
+  message(STATUS "MPI VERSION: ${MPI_C_VERSION}")
+endif()
 
 # Build MetaCG's Python interface
 option(

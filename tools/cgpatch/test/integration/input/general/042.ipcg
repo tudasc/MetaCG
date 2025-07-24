@@ -1,0 +1,87 @@
+{
+    "_CG": {
+        "_Z9say_hellov": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "042_b.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopDepth": 0,
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z9say_hellov"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 1
+                },
+                "fileProperties": {
+                    "origin": "042_b.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {
+                    "_Z9say_hellov": 0
+                },
+                "loopDepth": 0,
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 4
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "bc73297b72f9c884cc0eaefbf1a6f2f9bc681209",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}
