@@ -1,0 +1,1 @@
+export CGPATCH_USE_MPI="@CGPATCH_USE_MPI@"

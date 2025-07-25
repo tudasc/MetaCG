@@ -20,3 +20,4 @@ configure_package_config_file(
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATION lib/cmake)
 
 add_subdirectory(pass-tests)
+add_subdirectory(integration)
