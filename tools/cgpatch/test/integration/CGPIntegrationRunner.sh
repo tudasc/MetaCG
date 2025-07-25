@@ -49,6 +49,11 @@ cgpatchExe=$buildDir/tools/cgpatch/wrapper/patchcxx
 testerExe=$buildDir/tools/cgpatch/test/cgtester
 cgmerge2Exe="$buildDir/tools/cgmerge2/cgmerge2"
 
+# load config file, required to check if using MPI
+if [ -f "${buildDir}/config.sh" ]; then
+  source "${buildDir}/config.sh"
+fi
+
 if [ ! -d "${logDir}" ]; then
 	mkdir "${logDir}"
 fi
@@ -157,7 +162,11 @@ function handle_testcase {
 	local testSources="$2"
 
 	if [[ "$testSources" == *"/mpi/"* ]]; then
-		build_and_run_mpi_testcase "$testName" "$testSources"
+		if [ "$CGPATCH_USE_MPI" == "ON" ]; then
+			build_and_run_mpi_testcase "$testName" "$testSources"
+		else
+			log "Skipping MPI testcase $testName because CGPATCH_USE_MPI != ON"
+		fi
 	else
 		build_and_run_regular_testcase "$testName" "$testSources"
 	fi
