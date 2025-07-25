@@ -11,3 +11,5 @@ default:
 variables:
     GIT_STRATEGY: none
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PIPELINE_ID
+    CC: gcc
+    CXX: g++
