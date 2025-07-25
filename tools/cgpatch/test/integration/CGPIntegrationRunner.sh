@@ -51,7 +51,7 @@ cgmerge2Exe="$buildDir/tools/cgmerge2/cgmerge2"
 
 # load config file, required to check if using MPI
 if [ -f "${buildDir}/config.sh" ]; then
-  source "${buildDir}/config.sh"
+  source "${buildDir}/tools/cgpatch/test/integration/config.sh"
 fi
 
 if [ ! -d "${logDir}" ]; then
