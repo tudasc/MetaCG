@@ -4,12 +4,9 @@ default:
     - module load gcc/$GCC
     - module load git cmake python/3
     - module load libcube/4.5 extrap/3
-    - module load openmpi
   tags:
     - general
 
 variables:
     GIT_STRATEGY: none
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PIPELINE_ID
-    CC: gcc
-    CXX: g++
