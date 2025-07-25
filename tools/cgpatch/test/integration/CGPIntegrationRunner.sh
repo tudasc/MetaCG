@@ -50,7 +50,7 @@ testerExe=$buildDir/tools/cgpatch/test/cgtester
 cgmerge2Exe="$buildDir/tools/cgmerge2/cgmerge2"
 
 # load config file, required to check if using MPI
-if [ -f "${buildDir}/config.sh" ]; then
+if [ -f "${buildDir}/tools/cgpatch/test/integration/config.sh" ]; then
   source "${buildDir}/tools/cgpatch/test/integration/config.sh"
 fi
 
@@ -108,7 +108,7 @@ function build_and_run_regular_testcase {
 	export CGPATCH_CG_NAME="${testPG}"
 
 	log "Compiling regular testcase: $testSources"
-	$cgpatchExe mpicxx $testSources -o "$testExe" >> "$logFile"
+	$cgpatchExe clang++ $testSources -o "$testExe" >> "$logFile"
 	if [ $? -ne 0 ]; then
 		echo "Compilation failed for $testName"
 		fails=$((fails + 1))
