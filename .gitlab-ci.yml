@@ -300,6 +300,7 @@ test-target-collector:
   needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
+    - cmake --install $MCG_BUILD
     - cd graph/test/integration/TargetCollector
     - ./TestRunner.sh -b $MCG_BUILD
 
