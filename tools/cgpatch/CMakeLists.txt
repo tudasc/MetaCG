@@ -1,5 +1,7 @@
 project(CGPatch)
 
+include(GNUInstallDirs)
+
 # LLVM
 option(
   USE_FNO_RTTI
@@ -38,7 +40,7 @@ add_json(cgpatch-runtime)
 
 add_metacg(cgpatch-inst-pass)
 
-install(TARGETS cgpatch-inst-pass cgpatch-runtime LIBRARY DESTINATION lib)
+install(TARGETS cgpatch-inst-pass cgpatch-runtime LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 add_subdirectory(wrapper)
 add_subdirectory(test)
