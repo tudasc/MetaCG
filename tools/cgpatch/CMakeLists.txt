@@ -1,5 +1,7 @@
 project(CGPatch)
 
+include(GNUInstallDirs)
+
 # LLVM
 option(
   USE_FNO_RTTI
@@ -14,6 +16,8 @@ target_include_directories(cgpatch-call-analysis PRIVATE include ${LLVM_INCLUDE_
 # Create Libraries
 add_library(cgpatch-inst-pass SHARED src/CGPatchInstPass.cpp)
 add_library(cgpatch-runtime STATIC src/CGPatchRuntime.cpp src/SymbolRetriever/SymbolRetriever.cpp)
+
+set_target_properties(cgpatch-runtime PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_link_libraries(cgpatch-inst-pass PRIVATE cgpatch-call-analysis ${llvm_libs})
 target_include_directories(cgpatch-inst-pass PRIVATE include ${LLVM_INCLUDE_DIRS})
@@ -38,7 +42,7 @@ add_json(cgpatch-runtime)
 
 add_metacg(cgpatch-inst-pass)
 
-install(TARGETS cgpatch-inst-pass cgpatch-runtime LIBRARY DESTINATION lib)
+install(TARGETS cgpatch-inst-pass cgpatch-runtime LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 add_subdirectory(wrapper)
 add_subdirectory(test)

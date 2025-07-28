@@ -143,7 +143,9 @@ build-mcg:
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_PGIS=ON
       -DMETACG_BUILD_CGCOLLECTOR=ON
+      -DMETACG_BUILD_GRAPH_TOOLS=ON
       -DMETACG_BUILD_CGPATCH=ON
+      -DCGPATCH_USE_MPI=OFF
       -DMETACG_BUILD_PYMETACG=ON
       -DMETACG_BUILD_PYMETACG_TESTS=ON
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
@@ -298,11 +300,16 @@ test-target-collector:
   needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
+    - cmake --install $MCG_BUILD
     - cd graph/test/integration/TargetCollector
     - ./TestRunner.sh -b $MCG_BUILD
 
 test-cgpatch-integration:
   <<: *job-setup
+  parallel:
+    matrix:
+      - GCC: 11
+        LLVM: [15.0.7, 16.0.6, 17.0.6, 18.1.8]
   needs: ["build-mcg"]
   script:
     - module load clang/$LLVM

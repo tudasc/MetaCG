@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 LLVM_FLAGS=`llvm-config --cflags --ldflags --libs --system-libs`
-LIB_DIR=@METACG_INSTALL_DIR@/lib/
-INST_PASS=@METACG_INSTALL_DIR@/lib/libcgpatch-inst-pass.so
-RUNTIME=@METACG_INSTALL_DIR@/lib/libcgpatch-runtime.a
+LIB_DIR=@METACG_INSTALL_DIR@/@CMAKE_INSTALL_LIBDIR@
+INST_PASS=${LIB_DIR}/libcgpatch-inst-pass.so
+RUNTIME=${LIB_DIR}/libcgpatch-runtime.a
 
 
 # Check if linking is enabled
@@ -67,7 +67,7 @@ shift
 if [[ "$linking" == yes ]]
 then
   echo "[patchcc] Linking"
-  LD_LIBRARY_PATH="$LIB_DIR:$LD_LIBRARY_PATH" $COMPILER $CLI_FLAGS $CLI_FLAGS_LINK "$@" -lstdc++ -Wl,-rpath,@METACG_INSTALL_DIR@/lib -L@METACG_INSTALL_DIR@/lib -lmetacg -Wl,-whole-archive $RUNTIME -Wl,-no-whole-archive -Wl,--rpath,@GRAPH_LIB@ $LLVM_FLAGS
+  LD_LIBRARY_PATH="$LIB_DIR:$LD_LIBRARY_PATH" $COMPILER $CLI_FLAGS $CLI_FLAGS_LINK "$@" -lstdc++ -Wl,-rpath,${LIB_DIR} -L${LIB_DIR} -L${LIB64_DIR} -lmetacg -Wl,-whole-archive $RUNTIME -Wl,-no-whole-archive -Wl,--rpath,@GRAPH_LIB@ $LLVM_FLAGS
 else
   echo "[patchcc] Compiling"
   LD_LIBRARY_PATH="$LIB_DIR:$LD_LIBRARY_PATH" $COMPILER $CLI_FLAGS "$@"
