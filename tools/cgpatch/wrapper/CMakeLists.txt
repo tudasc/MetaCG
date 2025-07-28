@@ -1,5 +1,7 @@
 project(wrapper)
 
+include(GNUInstallDirs)
+
 # Configure wrapper script
 
 # make_executable: Copy the input file to the output file and make it executable Source:

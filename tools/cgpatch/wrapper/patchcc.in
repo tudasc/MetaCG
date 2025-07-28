@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 LLVM_FLAGS=`llvm-config --cflags --ldflags --libs --system-libs`
-LIB_DIR=@METACG_INSTALL_DIR@/lib/
-INST_PASS=@METACG_INSTALL_DIR@/lib/libcgpatch-inst-pass.so
-RUNTIME=@METACG_INSTALL_DIR@/lib/libcgpatch-runtime.a
+LIB_DIR=@METACG_INSTALL_DIR@/@CMAKE_INSTALL_LIBDIR@
+INST_PASS=${LIB_DIR}/libcgpatch-inst-pass.so
+RUNTIME=${LIB_DIR}/libcgpatch-runtime.a
 
 
 # Check if linking is enabled
