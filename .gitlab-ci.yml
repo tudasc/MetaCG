@@ -306,6 +306,10 @@ test-target-collector:
 
 test-cgpatch-integration:
   <<: *job-setup
+  parallel:
+    matrix:
+      - GCC: 11
+        LLVM: [15.0.7, 16.0.6, 17.0.6, 18.1.8]
   needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
