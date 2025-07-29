@@ -93,10 +93,11 @@ void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json
       }
       jNode["overriddenBy"] = jOverrideMD["overriddenBy"];
       jMeta.erase("overrideMD");
-      // If no other metadata exist, set meta field to null to maintain consistency.
-      if (jMeta.empty()) {
-        jMeta = nullptr;
-      }
+    }
+
+    // In V2, the meta field is traditionally set to null if empty
+    if (jMeta.empty()) {
+      jMeta = nullptr;
     }
   }
 

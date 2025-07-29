@@ -16,15 +16,11 @@ using namespace metacg;
 using json = nlohmann::json;
 
 struct NoStrMapping : public metacg::StrToNodeMapping {
-  CgNode* getNodeFromStr(const std::string&) override {
-    return nullptr;
-  }
+  CgNode* getNodeFromStr(const std::string&) override { return nullptr; }
 };
 
 struct NoNodeMapping : public metacg::NodeToStrMapping {
-  std::string getStrFromNode(NodeId id) override {
-    return "";
-  }
+  std::string getStrFromNode(NodeId id) override { return ""; }
 };
 
 TEST(PIRAPGISMetadataTest, BaseProfileData) {

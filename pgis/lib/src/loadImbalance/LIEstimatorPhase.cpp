@@ -78,16 +78,15 @@ void LIEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
         } else if (c->childRelevanceStrategy == ChildRelevanceStrategy::ConstantThreshold) {
           statementThreshold = c->childConstantThreshold;
         } else if (c->childRelevanceStrategy == ChildRelevanceStrategy::RelativeToParent) {
+          statementThreshold =
+              std::max((pira::Statements)(n->getOrCreate<LoadImbalance::LIMetaData>().getNumberOfInclusiveStatements() *
+                                          c->childFraction),
+                       c->childConstantThreshold);
+        } else if (c->childRelevanceStrategy == ChildRelevanceStrategy::RelativeToMain) {
           statementThreshold = std::max(
-              (pira::Statements)(n->getOrCreate<LoadImbalance::LIMetaData>().getNumberOfInclusiveStatements() *
+              (pira::Statements)(mainMethod->getOrCreate<LoadImbalance::LIMetaData>().getNumberOfInclusiveStatements() *
                                  c->childFraction),
               c->childConstantThreshold);
-        } else if (c->childRelevanceStrategy == ChildRelevanceStrategy::RelativeToMain) {
-          statementThreshold =
-              std::max((pira::Statements)(
-                           mainMethod->getOrCreate<LoadImbalance::LIMetaData>().getNumberOfInclusiveStatements() *
-                           c->childFraction),
-                       c->childConstantThreshold);
         }
 
         instrumentRelevantChildren(n, statementThreshold, debugString);

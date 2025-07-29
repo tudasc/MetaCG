@@ -74,7 +74,7 @@ TEST_F(V2MCGWriterTest, DifferentMetaInformation) {
   metacg::io::JsonSink jsonSink;
   mcgWriter.writeActiveGraph(jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
-            "{\"_CG\":null,\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},"
+            "{\"_CG\":{},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},"
             "\"version\":\"2.0\"}}");
 }
 
@@ -229,7 +229,7 @@ TEST_F(V2MCGWriterTest, WriteByName) {
 
   mcgWriter.writeNamedGraph("emptyGraph", jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
-            "{\"_CG\":null,"
+            "{\"_CG\":{},"
             "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
             "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
   mcgm.resetManager();
@@ -260,7 +260,7 @@ TEST_F(V2MCGWriterTest, WritePointer) {
 
   mcgWriter.write(mcgm.getCallgraph("emptyGraph"), jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
-            "{\"_CG\":null,"
+            "{\"_CG\":{},"
             "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
             "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
   mcgm.resetManager();
@@ -297,7 +297,7 @@ TEST_F(V2MCGWriterTest, SwitchBeforeWrite) {
   mcgm.setActive("emptyGraph");
   mcgWriter.writeActiveGraph(jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
-            "{\"_CG\":null,"
+            "{\"_CG\":{},"
             "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
             "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
   mcgm.resetManager();

@@ -44,11 +44,12 @@ metacg::CgNodeRawPtrUSet getInstrumentationPath(metacg::CgNode* start, const met
 void calculateInclusiveStatementCounts(metacg::CgNode* mainNode, const metacg::Callgraph* const graph);
 
 metacg::CgNodeRawPtrUSet allNodesToMain(metacg::CgNode* startNode, metacg::CgNode* mainNode,
-                                const metacg::Callgraph* const graph,
-                                const std::unordered_map<metacg::CgNode*, metacg::CgNodeRawPtrUSet>& init,
-                                metacg::analysis::ReachabilityAnalysis& ra);
+                                        const metacg::Callgraph* const graph,
+                                        const std::unordered_map<metacg::CgNode*, metacg::CgNodeRawPtrUSet>& init,
+                                        metacg::analysis::ReachabilityAnalysis& ra);
 metacg::CgNodeRawPtrUSet allNodesToMain(metacg::CgNode* startNode, metacg::CgNode* mainNode,
-                                const metacg::Callgraph* const graph, metacg::analysis::ReachabilityAnalysis& ra);
+                                        const metacg::Callgraph* const graph,
+                                        metacg::analysis::ReachabilityAnalysis& ra);
 
 metacg::CgNodeRawPtrUSet getDescendants(metacg::CgNode* startingNode, const metacg::Callgraph* const graph);
 metacg::CgNodeRawPtrUSet getAncestors(metacg::CgNode* startingNode, const metacg::Callgraph* const graph);
@@ -81,7 +82,9 @@ inline bool isSubsetOf(const metacg::CgNodeRawPtrUSet& smallSet, const metacg::C
   return setDifference(smallSet, largeSet) == smallSet;
 }
 
-inline bool intersects(const metacg::CgNodeRawPtrUSet& a, const metacg::CgNodeRawPtrUSet& b) { return !setIntersect(a, b).empty(); }
+inline bool intersects(const metacg::CgNodeRawPtrUSet& a, const metacg::CgNodeRawPtrUSet& b) {
+  return !setIntersect(a, b).empty();
+}
 
 /**
  *

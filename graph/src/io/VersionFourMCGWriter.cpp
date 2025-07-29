@@ -60,7 +60,7 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
   nlohmann::json j;
   attachMCGFormatHeader(j);
 
-  nlohmann::json jNodes{};
+  nlohmann::json jNodes = nlohmann::json::object();
 
   V4WriterMapping nodeToStr(*cg, useNamesAsIds);
 
@@ -71,26 +71,22 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
       continue;
     }
     auto jMeta = nlohmann::json::object();
-    if (node->getMetaDataContainer().empty()) {
-      // If there is no metadata, write null instead of empty object
-      jMeta = nullptr;
-    } else {
-      for (auto& [key, md] : node->getMetaDataContainer()) {
-        //        std::cout << "Processing MD " << key << "\n"; //FIXME: remove
-        // Metadata is not attached, if the generated field is empty or null.
-        // TODO: Should this be considered an error instead?
-        if (auto jMetaEntry = md->toJson(nodeToStr); !jMetaEntry.empty() && !jMetaEntry.is_null()) {
-          jMeta[key] = std::move(jMetaEntry);
-        } else {
-          MCGLogger::logWarn("Could not serialize metadata of type {} in node {}", key, node->getFunctionName());
-        }
+
+    for (auto& [key, md] : node->getMetaDataContainer()) {
+      //        std::cout << "Processing MD " << key << "\n"; //FIXME: remove
+      // Metadata is not attached, if the generated field is empty or null.
+      // TODO: Should this be considered an error instead?
+      if (auto jMetaEntry = md->toJson(nodeToStr); !jMetaEntry.empty() && !jMetaEntry.is_null()) {
+        jMeta[key] = std::move(jMetaEntry);
+      } else {
+        MCGLogger::logWarn("Could not serialize metadata of type {} in node {}", key, node->getFunctionName());
       }
     }
 
     nlohmann::json jNode = {{"functionName", node->getFunctionName()},
                             {"origin", node->getOrigin()},
                             {"hasBody", node->getHasBody()},
-                            {"callees", {}},
+                            {"callees", nlohmann::json::object()},
                             {"meta", jMeta}};
 
     //    std::cout << "V4 generated node json: " << jNode << "\n"; // FIXME: remove
@@ -108,7 +104,7 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
     auto callerStr = nodeToStr.getStrFromNode(*caller);
     auto calleeStr = nodeToStr.getStrFromNode(*callee);
 
-    nlohmann::json jEdgeMD = {};
+    nlohmann::json jEdgeMD = nlohmann::json::object();
     auto& mdMap = cg->getAllEdgeMetaData({caller->getId(), callee->getId()});
     for (auto&& [key, val] : mdMap) {
       jEdgeMD[key] = val->toJson(nodeToStr);

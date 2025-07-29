@@ -194,7 +194,6 @@ CgNode& Callgraph::getSingleNode(const std::string& name) const {
   return *node;
 }
 
-
 const Callgraph::NodeList& Callgraph::getNodes(const std::string& name) const {
   if (auto it = nameIdMap.find(name); it != nameIdMap.end()) {
     return it->second;

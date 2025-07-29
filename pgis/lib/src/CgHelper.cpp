@@ -262,8 +262,8 @@ double getEstimatedCallsFromNode(metacg::Callgraph* graph, metacg::CgNode* node,
                                                   [](const auto& i) { return i.second == ""; });
               }
               assert(calledInRegionIter != rfuncCalledInfo.end());
-              const auto regionCallCount = static_cast<double>(info->callsFromParents[node->getFunctionName()]) /
-                                           calledInRegionIter->first;
+              const auto regionCallCount =
+                  static_cast<double>(info->callsFromParents[node->getFunctionName()]) / calledInRegionIter->first;
               tempResults.push_back(regionCallCount);
             }
           }

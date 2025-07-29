@@ -45,12 +45,13 @@ class InstrumentationMetaData : public metacg::MetaData::Registrar<Instrumentati
 
     metacg::MCGLogger::instance().getErrConsole()->warn(
         "InstrumentationMetaData should be written into a fully merged graph directly.");
-
   }
 
   void applyMapping(const GraphMapping&) override {}
 
-  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new InstrumentationMetaData(*this)); }
+  std::unique_ptr<MetaData> clone() const final {
+    return std::unique_ptr<MetaData>(new InstrumentationMetaData(*this));
+  }
 
   void reset() { state = InstrumentationState::None; }
   void setInstrumented() { state = InstrumentationState::Instrumented; }

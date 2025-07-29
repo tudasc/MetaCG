@@ -481,8 +481,7 @@ void RuntimeEstimatorPhase::modifyGraphOverhead(metacg::CgNode* mainMethod) {
   const auto filterEligible = [&childsToPotentialInstrumentCollection, &childsToPotentialInstrument, this]() {
     for (const auto& C : childsToPotentialInstrumentCollection) {
       if (const auto metaDataInstResult = C.first->get<InstrumentationResultMetaData>();
-          !metaDataInstResult || metaDataInstResult->callCount != 0 ||
-          !metaDataInstResult->isExclusiveRuntime) {
+          !metaDataInstResult || metaDataInstResult->callCount != 0 || !metaDataInstResult->isExclusiveRuntime) {
         if (const auto metaDataInstDecision = C.first->get<TemporaryInstrumentationDecisionMetadata>();
             metaDataInstDecision->info.callsFromParents != 0) {
           if (C.first->getHasBody() || isMPIFunction(C.first) || (!onlyEligibleNodes && !useCSInstrumentation)) {
@@ -1288,8 +1287,7 @@ void AttachInstrumentationResultsEstimatorPhase::modifyGraph(CgNode* mainMethod)
     // We have pretty exact information about a function if we instrument it and all of its childs
     // This information should not change between iterations, so we do not need to overwrite/recalculate it
     const auto instResult = node->get<InstrumentationResultMetaData>();
-    if (instResult &&
-        (instResult->shouldBeInstrumented && !node->getOrCreate<PiraOneData>().comesFromCube())) {
+    if (instResult && (instResult->shouldBeInstrumented && !node->getOrCreate<PiraOneData>().comesFromCube())) {
       // A node should have been instrumented, but was not in the cube file. This means it has zero calls and zero
       // runtime
       instResult->isExclusiveRuntime = true;

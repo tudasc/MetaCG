@@ -263,7 +263,8 @@ public:
  static constexpr const char* key = "PiraTwoData";
 
  explicit PiraTwoData() : epCon({}, {}), params(), rtVec(), numReps(0) {}
- explicit PiraTwoData(const nlohmann::json& j, metacg::StrToNodeMapping&) : epCon({}, {}), params(), rtVec(), numReps(0) {
+ explicit PiraTwoData(const nlohmann::json& j, metacg::StrToNodeMapping&)
+     : epCon({}, {}), params(), rtVec(), numReps(0) {
    metacg::MCGLogger::instance().getConsole()->warn(
        "Read PiraTwoData from json currently not implemented / supported");
  };
@@ -514,7 +515,9 @@ public:
 
  void applyMapping(const metacg::GraphMapping&) override {}
 
- std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new CallCountEstimationMetaData(*this)); }
+ std::unique_ptr<MetaData> clone() const final {
+   return std::unique_ptr<MetaData>(new CallCountEstimationMetaData(*this));
+ }
 
  CalledFunctionType
      calledFunctions;  // Maps the name of called function to the estimate of local calls to it and the regions in
@@ -582,7 +585,9 @@ public:
 
  void applyMapping(const metacg::GraphMapping&) override {}
 
- std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new TemporaryInstrumentationDecisionMetadata(*this)); }
+ std::unique_ptr<MetaData> clone() const final {
+   return std::unique_ptr<MetaData>(new TemporaryInstrumentationDecisionMetadata(*this));
+ }
 
  InstumentationInfo info;
  bool isKicked = false;
@@ -657,7 +662,9 @@ public:
 
  void applyMapping(const metacg::GraphMapping&) override {}
 
- std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new InstrumentationResultMetaData(*this)); }
+ std::unique_ptr<MetaData> clone() const final {
+   return std::unique_ptr<MetaData>(new InstrumentationResultMetaData(*this));
+ }
 
  unsigned long long callCount{0};
  std::map<std::string, unsigned long long> callsFromParents;

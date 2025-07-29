@@ -8,10 +8,9 @@ add_executable(
   ReachabilityAnalysisTest.cpp
   ReaderFactoryTest.cpp
   UtilTest.cpp
-  # TODO: Re-add tests for V4
-  # VersionThreeMCGReaderTest.cpp
-  # VersionThreeMCGWriterTest.cpp
-  # VersionThreeReaderWriterRoundtripTest.cpp
+  VersionFourMCGReaderTest.cpp
+  VersionFourMCGWriterTest.cpp
+  VersionFourReaderWriterRoundtripTest.cpp
   VersionTwoMCGReaderTest.cpp
   VersionTwoMCGWriterTest.cpp
   VersionTwoReaderWriterRoundtripTest.cpp

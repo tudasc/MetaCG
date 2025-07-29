@@ -5,8 +5,8 @@
  */
 
 #include "LegacyMCGReader.h"
-#include "CgNode.h"
 #include "Callgraph.h"
+#include "CgNode.h"
 #include "Timing.h"
 #include "Util.h"
 
@@ -19,14 +19,11 @@ namespace metacg::pgis::io {
 struct LegacyStrToNodeMapping : public StrToNodeMapping {
   LegacyStrToNodeMapping(Callgraph& cg) : cg(cg) {}
 
-  CgNode* getNodeFromStr(const std::string& nodeStr) override {
-    return &cg.getSingleNode(nodeStr);
-  }
+  CgNode* getNodeFromStr(const std::string& nodeStr) override { return &cg.getSingleNode(nodeStr); }
 
  private:
   Callgraph& cg;
 };
-
 
 VersionOneMetaCGReader::FuncMapT::mapped_type& VersionOneMetaCGReader::getOrInsert(const std::string& key) {
   if (functions.find(key) != functions.end()) {
