@@ -9,23 +9,23 @@
 #include "io/VersionFourMCGReader.h"
 #include "metadata/MetaData.h"
 
-struct TestMetaDataV4 final : metacg::MetaData::Registrar<TestMetaDataV4> {
-  static constexpr const char* key = "TestMetaDataV4";
+struct SimpleTestMD final : metacg::MetaData::Registrar<SimpleTestMD> {
+  static constexpr const char* key = "SimpleTestMD";
 
-  explicit TestMetaDataV4(const nlohmann::json& j, metacg::StrToNodeMapping&) {
+  explicit SimpleTestMD(const nlohmann::json& j, metacg::StrToNodeMapping&) {
     stored_int = j.at("stored_int");
     stored_double = j.at("stored_double");
     stored_string = j.at("stored_string");
   }
 
-  explicit TestMetaDataV4(int storeInt, double storeDouble, const std::string& storeString) {
+  explicit SimpleTestMD(int storeInt, double storeDouble, const std::string& storeString) {
     stored_int = storeInt;
     stored_double = storeDouble;
     stored_string = storeString;
   }
 
  private:
-  TestMetaDataV4(const TestMetaDataV4& other)
+  SimpleTestMD(const SimpleTestMD& other)
       : stored_int(other.stored_int), stored_double(other.stored_double), stored_string(other.stored_string) {}
 
  public:
@@ -38,14 +38,12 @@ struct TestMetaDataV4 final : metacg::MetaData::Registrar<TestMetaDataV4> {
   void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
       metacg::MCGLogger::instance().getErrConsole()->error(
-          "The MetaData which was tried to merge with TestMetaDataV4 was of a different MetaData type");
+          "The MetaData which was tried to merge with SimpleTestMD was of a different MetaData type");
       abort();
     }
-
-    // const TestMetaDataV4* toMergeDerived = static_cast<const TestMetaDataV4*>(&toMerge);
   }
 
-  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<TestMetaDataV4>(new TestMetaDataV4(*this)); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<SimpleTestMD>(new SimpleTestMD(*this)); }
 
   void applyMapping(const metacg::GraphMapping&) override {}
 
@@ -53,6 +51,47 @@ struct TestMetaDataV4 final : metacg::MetaData::Registrar<TestMetaDataV4> {
   int stored_int;
   double stored_double;
   std::string stored_string;
+};
+
+struct RefTestMD final : metacg::MetaData::Registrar<RefTestMD> {
+  static constexpr const char* key = "RefTestMD";
+
+  explicit RefTestMD(const nlohmann::json& j, metacg::StrToNodeMapping& strToNode) {
+    auto nodeRefStr = j.at("node_ref");
+    auto* node = strToNode.getNodeFromStr(nodeRefStr);
+    this->nodeRef = node->id;
+  }
+
+  explicit RefTestMD(metacg::CgNode& node) { this->nodeRef = node.id; }
+
+ private:
+  RefTestMD(const RefTestMD& other) = default;
+
+ public:
+  nlohmann::json toJson(metacg::NodeToStrMapping& nodeToStr) const final {
+    auto nodeRefStr = nodeToStr.getStrFromNode(nodeRef);
+    return {{"node_ref", nodeRefStr}};
+  };
+
+  const char* getKey() const override { return key; }
+
+  void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
+    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
+      metacg::MCGLogger::instance().getErrConsole()->error(
+          "The MetaData which was tried to merge with RefTestMD was of a different MetaData type");
+      abort();
+    }
+    // Not implemented
+  }
+
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<RefTestMD>(new RefTestMD(*this)); }
+
+  void applyMapping(const metacg::GraphMapping& mapping) override { nodeRef = mapping.at(nodeRef); }
+
+  metacg::NodeId getNodeRef() const { return nodeRef; }
+
+ private:
+  metacg::NodeId nodeRef;
 };
 
 #endif  // METACG_TESTMD_H

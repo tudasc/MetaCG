@@ -221,9 +221,8 @@ TEST_F(V4MCGWriterTest, GraphMetadataCGWrite) {
   const auto& cg = mcgm.getCallgraph();
   cg->insert("main", "main.cpp");
   cg->getMain()->setHasBody(true);
-  // metadata does not need to be freed,
-  // it is now owned by the node
-  auto testMetaData = std::make_unique<TestMetaDataV4>(0, 1337, "TestString");
+
+  auto testMetaData = std::make_unique<SimpleTestMD>(0, 1337, "TestString");
   cg->getMain()->addMetaData(std::move(testMetaData));
 
   const std::string generatorName = "Test";
@@ -234,9 +233,35 @@ TEST_F(V4MCGWriterTest, GraphMetadataCGWrite) {
 
   EXPECT_EQ(
       jsonSink.getJson().dump(),
-      "{\"_CG\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{\"TestMetaDataV4\":{"
+      "{\"_CG\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{\"SimpleTestMD\":{"
       "\"stored_double\":1337.0,\"stored_int\":0,\"stored_string\":\"TestString\"}},\"origin\":\"main.cpp\"}},\"_"
       "MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4.0\"}}");
+}
+
+TEST_F(V4MCGWriterTest, GraphMetadataWithRefWrite) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  const auto& cg = mcgm.getCallgraph();
+  cg->insert("main", "main.cpp");
+  cg->getMain()->setHasBody(true);
+
+  auto& foo = cg->insert("foo", "main.cpp");
+  foo.setHasBody(true);
+
+  auto refMD = std::make_unique<RefTestMD>(foo);
+  cg->getMain()->addMetaData(std::move(refMD));
+
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{4, 0}, {generatorName, 0, 1, "TestSha"}};
+  metacg::io::VersionFourMCGWriter mcgWriter(mcgFileInfo);
+  metacg::io::JsonSink jsonSink;
+  mcgWriter.writeActiveGraph(jsonSink);
+
+  EXPECT_EQ(
+      jsonSink.getJson().dump(),
+      "{\"_CG\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{\"RefTestMD\":{"
+      "\"node_ref\":\"1\"}},\"origin\":\"main.cpp\"},\"1\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,"
+      "\"meta\":{},\"origin\":\"main.cpp\"}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
+      "\"version\":\"0.1\"},\"version\":\"4.0\"}}");
 }
 
 TEST_F(V4MCGWriterTest, EdgeMetadataCGWrite) {
@@ -249,7 +274,7 @@ TEST_F(V4MCGWriterTest, EdgeMetadataCGWrite) {
 
   cg->addEdge("main", "foo");
 
-  auto testMetaData = std::make_unique<TestMetaDataV4>(0, 1337, "TestString");
+  auto testMetaData = std::make_unique<SimpleTestMD>(0, 1337, "TestString");
   cg->addEdgeMetaData(main, foo, std::move(testMetaData));
 
   const std::string generatorName = "Test";
@@ -259,7 +284,7 @@ TEST_F(V4MCGWriterTest, EdgeMetadataCGWrite) {
   mcgWriter.writeActiveGraph(jsonSink);
   EXPECT_EQ(
       jsonSink.getJson().dump(),
-      "{\"_CG\":{\"0\":{\"callees\":{\"1\":{\"TestMetaDataV4\":{\"stored_double\":1337.0,\"stored_int\":0,\"stored_"
+      "{\"_CG\":{\"0\":{\"callees\":{\"1\":{\"SimpleTestMD\":{\"stored_double\":1337.0,\"stored_int\":0,\"stored_"
       "string\":\"TestString\"}}},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},\"origin\":\"main.cpp\"},"
       "\"1\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,\"meta\":{},\"origin\":\"main.cpp\"}},\"_"
       "MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4.0\"}}");

@@ -1,8 +1,8 @@
 /**
-* File: CGConvert.cpp
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: CGConvert.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #include "config.h"
 
@@ -19,34 +19,34 @@
 using namespace metacg;
 
 int main(int argc, char** argv) {
- MCGLogger::logInfo("Running metacg::CGConvert (version {}.{})\nGit revision: {}", MetaCG_VERSION_MAJOR,
-                    MetaCG_VERSION_MINOR, MetaCG_GIT_SHA);
+  MCGLogger::logInfo("Running metacg::CGConvert (version {}.{})\nGit revision: {}", MetaCG_VERSION_MAJOR,
+                     MetaCG_VERSION_MINOR, MetaCG_GIT_SHA);
 
- if (argc < 3) {
-   MCGLogger::logError("Usage: {} <input_file> <output_file> [output_version]", argv[0]);
-   return EXIT_FAILURE;
- }
+  if (argc < 3) {
+    MCGLogger::logError("Usage: {} <input_file> <output_file> [output_version]", argv[0]);
+    return EXIT_FAILURE;
+  }
 
- std::string inputFile = argv[1];
- std::string outputFile = argv[2];
- int outputMcgVersion = (argc >= 4) ? std::stoi(argv[3]) : 4;
+  std::string inputFile = argv[1];
+  std::string outputFile = argv[2];
+  int outputMcgVersion = (argc >= 4) ? std::stoi(argv[3]) : 4;
 
- io::FileSource fs(inputFile);
+  io::FileSource fs(inputFile);
 
- auto mcgReader = io::createReader(fs);
- auto graph = mcgReader->read();
+  auto mcgReader = io::createReader(fs);
+  auto graph = mcgReader->read();
 
- auto mcgWriter = io::createWriter(outputMcgVersion);
- if (!mcgWriter) {
-   MCGLogger::logError("Unable to create a writer for format version {}", outputMcgVersion);
-   return EXIT_FAILURE;
- }
+  auto mcgWriter = io::createWriter(outputMcgVersion);
+  if (!mcgWriter) {
+    MCGLogger::logError("Unable to create a writer for format version {}", outputMcgVersion);
+    return EXIT_FAILURE;
+  }
 
- io::JsonSink jsonSink;
- mcgWriter->write(graph.get(), jsonSink);
+  io::JsonSink jsonSink;
+  mcgWriter->write(graph.get(), jsonSink);
 
- std::ofstream os(outputFile);
- os << jsonSink.getJson() << std::endl;
+  std::ofstream os(outputFile);
+  os << jsonSink.getJson() << std::endl;
 
- return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }

@@ -176,7 +176,7 @@ TEST(V4MCGReaderTest, NodeMetaData) {
       "            \"functionName\": \"main\",\n"
       "            \"hasBody\": true,\n"
       "            \"meta\": {\n"
-      "                \"TestMetaDataV4\": {\n"
+      "                \"SimpleTestMD\": {\n"
       "                    \"stored_double\": 13.37,\n"
       "                    \"stored_int\": 42,\n"
       "                    \"stored_string\": \"Test\"\n"
@@ -203,5 +203,52 @@ TEST(V4MCGReaderTest, NodeMetaData) {
   const Callgraph& graph = *mcgm.getCallgraph();
 
   EXPECT_EQ(graph.getSingleNode("main").getMetaDataContainer().size(), 1);
-  EXPECT_NE(graph.getSingleNode("main").get<TestMetaDataV4>(), nullptr);
+  EXPECT_NE(graph.getSingleNode("main").get<SimpleTestMD>(), nullptr);
+}
+
+TEST(V4MCGReaderTest, NodeMetaDataWithRef) {
+  const json j =
+      "{\n"
+      "    \"_CG\": {\n"
+      "        \"0\": {\n"
+      "            \"callees\": null,\n"
+      "            \"functionName\": \"main\",\n"
+      "            \"hasBody\": true,\n"
+      "            \"meta\": {\n"
+      "                \"RefTestMD\": {\n"
+      "                    \"node_ref\": \"thisoneisreferenced\"\n"
+      "                }\n"
+      "            },\n"
+      "            \"origin\": \"main.cpp\"\n"
+      "        }\n,"
+      "        \"thisoneisreferenced\": {\n"
+      "            \"callees\": null,\n"
+      "            \"functionName\": \"foo\",\n"
+      "            \"hasBody\": true,\n"
+      "            \"meta\": {},\n"
+      "            \"origin\": \"main.cpp\"\n"
+      "        }\n"
+      "    },\n"
+      "    \"_MetaCG\": {\n"
+      "        \"generator\": {\n"
+      "            \"name\": \"MetaCG\",\n"
+      "            \"sha\": \"4ad73ebf7a108aa388d232ee4824bada13feaa4c\",\n"
+      "            \"version\": \"0.7\"\n"
+      "        },\n"
+      "        \"version\": \"4.0\"\n"
+      "    }\n"
+      "}"_json;
+
+  auto& mcgm = metacg::graph::MCGManager::get();
+  mcgm.resetManager();
+  metacg::io::JsonSource source(j);
+  metacg::io::VersionFourMetaCGReader reader(source);
+  mcgm.addToManagedGraphs("newCallgraph", reader.read());
+  const Callgraph& graph = *mcgm.getCallgraph();
+
+  EXPECT_EQ(graph.getSingleNode("main").getMetaDataContainer().size(), 1);
+  auto refMD = graph.getSingleNode("main").get<RefTestMD>();
+  EXPECT_NE(refMD, nullptr);
+  auto nodeId = refMD->getNodeRef();
+  EXPECT_EQ(graph.getNode(nodeId)->getFunctionName(), "foo");
 }
