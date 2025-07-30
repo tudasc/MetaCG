@@ -73,7 +73,6 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
     auto jMeta = nlohmann::json::object();
 
     for (auto& [key, md] : node->getMetaDataContainer()) {
-      //        std::cout << "Processing MD " << key << "\n"; //FIXME: remove
       // Metadata is not attached, if the generated field is empty or null.
       // TODO: Should this be considered an error instead?
       if (auto jMetaEntry = md->toJson(nodeToStr); !jMetaEntry.empty() && !jMetaEntry.is_null()) {
@@ -88,8 +87,6 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
                             {"hasBody", node->getHasBody()},
                             {"callees", nlohmann::json::object()},
                             {"meta", jMeta}};
-
-    //    std::cout << "V4 generated node json: " << jNode << "\n"; // FIXME: remove
 
     auto idStr = nodeToStr.getStrFromNode(*node);
     jNodes[idStr] = std::move(jNode);

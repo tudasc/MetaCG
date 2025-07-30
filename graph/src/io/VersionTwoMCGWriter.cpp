@@ -34,12 +34,9 @@ void metacg::io::VersionTwoMCGWriter::write(const metacg::Callgraph* cg, metacg:
   auto v4Json = v4JsonSink.getJson();
   auto& jsonCG = v4Json["_CG"];
 
-  //  std::cout  << "Before: " << v4Json << "\n"; // FIXME: remove
-
   downgradeV4FormatToV2Format(jsonCG, exportSorted);
 
   j.at(fileInfo.formatInfo.cgFieldName) = std::move(jsonCG);
-  //  std::cout  << "After: " << j << "\n"; // FIXME: Remove
   js.setJson(j);
 }
 

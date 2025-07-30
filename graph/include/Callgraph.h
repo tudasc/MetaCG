@@ -24,7 +24,6 @@ using CgNodeRawPtrUSet = std::unordered_set<metacg::CgNode*>;
 
 class Callgraph {
  public:
-  // TODO: Can NodeContainer be a set if nameIdMap maps to CgNodePtr?
   using NodeContainer = std::vector<CgNodePtr>;
   using NodeList = std::vector<NodeId>;
 
