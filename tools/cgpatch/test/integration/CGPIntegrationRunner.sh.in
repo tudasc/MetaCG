@@ -7,7 +7,9 @@ function pretty {
 
 export OMPI_CXX=$(which clang++)
 
-build_dir=build # default
+build_dir=@CMAKE_BINARY_DIR@ # default
+test_root=@CMAKE_CURRENT_SOURCE_DIR@
+CGPATCH_USE_MPI=@CGPATCH_USE_MPI@
 debug=0
 
 while getopts ":b:hd" opt; do
@@ -16,7 +18,7 @@ while getopts ":b:hd" opt; do
 			if [ -z "$OPTARG" ]; then
 				echo "no build directory given, assuming \"build\""
 			fi
-			build_dir=$OPTARG
+			build_dir=$build_dir/../$OPTARG
 			;;
 		h)
 			echo "use -b to provide build directory NAME"
@@ -43,17 +45,13 @@ function log {
 fails=0
 logDir=$PWD/logging
 logFile=$logDir/cgpatch-${CI_CONCURRENT_ID}.log
-inputRoot=$PWD/input
-buildDir=$PWD/../../../../${build_dir}/
+inputRoot=$test_root/input
+buildDir=${build_dir}/
 cgpatchExe=$buildDir/tools/cgpatch/wrapper/patchcxx
 testerExe=$buildDir/tools/cgpatch/test/cgtester
 cgmerge2Exe="$buildDir/tools/cgmerge2/cgmerge2"
 outputDir=$buildDir/tools/cgpatch/test/integration
 
-# load config file, required to check if using MPI
-if [ -f "${buildDir}/tools/cgpatch/test/integration/config.sh" ]; then
-  source "${buildDir}/tools/cgpatch/test/integration/config.sh"
-fi
 
 if [ ! -d "${logDir}" ]; then
 	mkdir "${logDir}"
@@ -73,9 +71,9 @@ function build_and_run_mpi_testcase {
 	local testDir="$3"
 	local testExe="$outputDir/${testName}.out"
 	local testPG="$outputDir/${testName}.pg"
-    local testGT="$./input/mpi/{testName}.gtpg"
+    local testGT="$test_root/input/mpi/{testName}.gtpg"
 	local testMCG="$outputDir/${testName}.mcg"
-	local testSCG="./input/general/${testName}.ipcg"
+	local testSCG="$test_root/input/general/${testName}.ipcg"
 
     export CGPATCH_CG_NAME="${testPG}"
 
@@ -104,9 +102,9 @@ function build_and_run_regular_testcase {
 	local testDir="$3"
 	local testExe="$outputDir/${testName}.out"
 	local testPG="$outputDir/${testName}.pg"
-	local testGT="./input/general/${testName}.gtpg"
+	local testGT="$test_root/input/general/${testName}.gtpg"
 	local testMCG="$outputDir/${testName}.mcg"
-	local testSCG="./input/general/${testName}.ipcg"
+	local testSCG="$test_root/input/general/${testName}.ipcg"
 
     export CGPATCH_CG_NAME="${testPG}"
 
@@ -191,4 +189,5 @@ for prefix in $(collect_testcases); do
 done
 
 echo "Finished running tests. Failures: $fails"
+
 exit $fails
