@@ -48,6 +48,7 @@ buildDir=$PWD/../../../../${build_dir}/
 cgpatchExe=$buildDir/tools/cgpatch/wrapper/patchcxx
 testerExe=$buildDir/tools/cgpatch/test/cgtester
 cgmerge2Exe="$buildDir/tools/cgmerge2/cgmerge2"
+outputDir=$buildDir/tools/cgpatch/test/integration
 
 # load config file, required to check if using MPI
 if [ -f "${buildDir}/tools/cgpatch/test/integration/config.sh" ]; then
@@ -69,13 +70,14 @@ fi
 function build_and_run_mpi_testcase {
 	local testName="$1"
 	local testSources="$2"
-	local testExe="${testName}.out"
-	local testPG="${testName}.pg"
-	local testGT="${testName}.gtpg"
-	local testMCG="${testName}.mcg"
-	local testSCG="${testName}.ipcg"
+	local testDir="$3"
+	local testExe="$outputDir/${testName}.out"
+	local testPG="$outputDir/${testName}.pg"
+    local testGT="$./input/mpi/{testName}.gtpg"
+	local testMCG="$outputDir/${testName}.mcg"
+	local testSCG="./input/general/${testName}.ipcg"
 
-	export CGPATCH_CG_NAME="${testPG}"
+    export CGPATCH_CG_NAME="${testPG}"
 
 	log "Compiling MPI testcase: $testSources"
 	$cgpatchExe mpicxx $testSources -o "$testExe" >> "$logFile"
@@ -99,13 +101,14 @@ function build_and_run_mpi_testcase {
 function build_and_run_regular_testcase {
 	local testName="$1"
 	local testSources="$2"
-	local testExe="${testName}.out"
-	local testPG="${testName}.pg"
-	local testGT="${testName}.gtpg"
-	local testMCG="${testName}.mcg"
-	local testSCG="${testName}.ipcg"
+	local testDir="$3"
+	local testExe="$outputDir/${testName}.out"
+	local testPG="$outputDir/${testName}.pg"
+	local testGT="./input/general/${testName}.gtpg"
+	local testMCG="$outputDir/${testName}.mcg"
+	local testSCG="./input/general/${testName}.ipcg"
 
-	export CGPATCH_CG_NAME="${testPG}"
+    export CGPATCH_CG_NAME="${testPG}"
 
 	log "Compiling regular testcase: $testSources"
 	$cgpatchExe clang++ $testSources -o "$testExe" >> "$logFile"
@@ -160,15 +163,16 @@ function evaluate_and_merge {
 function handle_testcase {
 	local testName="$1"
 	local testSources="$2"
+    local testDir="$3"
 
 	if [[ "$testSources" == *"/mpi/"* ]]; then
 		if [ "$CGPATCH_USE_MPI" == "ON" ]; then
-			build_and_run_mpi_testcase "$testName" "$testSources"
+			build_and_run_mpi_testcase "$testName" "$testSources" "$testDir"
 		else
 			log "Skipping MPI testcase $testName because CGPATCH_USE_MPI != ON"
 		fi
 	else
-		build_and_run_regular_testcase "$testName" "$testSources"
+		build_and_run_regular_testcase "$testName" "$testSources" "$testDir"
 	fi
 }
 
@@ -180,10 +184,10 @@ for prefix in $(collect_testcases); do
 	testSources=$(find "$inputRoot" -name "${prefix}_*.cpp" | sort)
 	firstSource=$(echo "$testSources" | head -n 1)
 	testDir=$(dirname "$firstSource")
-	testName="${testDir}/${prefix}"
+	testName="${prefix}"
 
 	log "Handling testcase $testName"
-	handle_testcase "$testName" "$testSources"
+	handle_testcase "$testName" "$testSources" "$testDir"
 done
 
 echo "Finished running tests. Failures: $fails"
