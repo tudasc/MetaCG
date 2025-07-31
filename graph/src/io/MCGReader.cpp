@@ -21,7 +21,7 @@ std::unique_ptr<MetaCGReader> createReader(ReaderSource& src) {
     metacg::MCGLogger::logError(
         "Format version 3 is no longer supported. Please use the version 4 reader instead. Old version 3 files can be "
         "converted using the 'cgconvert' tool included in the MetaCG v0.8 release.");
-    return std::make_unique<VersionTwoMetaCGReader>(src);
+    return {};
   } else if (versionStr == "4" || versionStr == "4.0") {
     return std::make_unique<VersionFourMetaCGReader>(src);
   } else {
