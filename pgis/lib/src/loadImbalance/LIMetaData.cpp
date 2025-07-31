@@ -25,7 +25,7 @@ bool LIMetaData::isFlagged(FlagType type) const { return this->flags.at(type); }
 void LIMetaData::setAssessment(double assessment) { this->assessment = std::optional<double>(assessment); }
 
 std::optional<double> LIMetaData::getAssessment() { return this->assessment; }
-nlohmann::json LIMetaData::to_json() const {
+nlohmann::json LIMetaData::toJson(metacg::NodeToStrMapping&) const {
   return nlohmann::json{
       {flagType2String(FlagType::Visited), isFlagged(FlagType::Visited)},
       {flagType2String(FlagType::Irrelevant), isFlagged(FlagType::Irrelevant)},

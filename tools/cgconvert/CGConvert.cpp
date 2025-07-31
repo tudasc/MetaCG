@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 
   std::string inputFile = argv[1];
   std::string outputFile = argv[2];
-  int outputMcgVersion = (argc >= 4) ? std::stoi(argv[3]) : 3;
+  int outputMcgVersion = (argc >= 4) ? std::stoi(argv[3]) : 4;
 
   io::FileSource fs(inputFile);
 

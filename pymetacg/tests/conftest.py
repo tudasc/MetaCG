@@ -30,5 +30,9 @@ def metadata_cg(resource_dir):
     return read_mcg_file(resource_dir, "metadata_cg.mcg")
 
 @pytest.fixture()
-def v3_cg(resource_dir):
-    return read_mcg_file(resource_dir, "basic_cg_v3.mcg")
+def v4_cg(resource_dir):
+    return read_mcg_file(resource_dir, "basic_cg_v4.mcg")
+
+@pytest.fixture()
+def double_name_cg(resource_dir):
+    return read_mcg_file(resource_dir, "double_name_cg.mcg")

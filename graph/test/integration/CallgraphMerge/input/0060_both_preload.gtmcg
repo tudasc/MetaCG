@@ -2,12 +2,12 @@
     "_CG": {
         "_Z1xv": {
             "callees": [
-                "_Z4loopv",
-                "_Z4leafv"
+                "_Z4leafv",
+                "_Z4loopv"
             ],
             "callers": [
-                "_Z5rightv",
-                "_Z4leftv"
+                "_Z4leftv",
+                "_Z5rightv"
             ],
             "doesOverride": false,
             "hasBody": true,
@@ -26,7 +26,7 @@
                     "_Z4loopv": 0
                 },
                 "loopDepth": 0,
-                "mergeCount": 1,
+                "mergeCount": 0,
                 "numConditionalBranches": 0,
                 "numOperations": {
                     "numberOfControlFlowOps": 2,
@@ -57,7 +57,7 @@
                 },
                 "globalLoopDepth": 1,
                 "loopDepth": 1,
-                "mergeCount": 1,
+                "mergeCount": 0,
                 "numConditionalBranches": 1,
                 "numOperations": {
                     "numberOfControlFlowOps": 3,
@@ -94,7 +94,7 @@
                     "_Z1xv": 1
                 },
                 "loopDepth": 1,
-                "mergeCount": 1,
+                "mergeCount": 0,
                 "numConditionalBranches": 1,
                 "numOperations": {
                     "numberOfControlFlowOps": 4,
@@ -204,7 +204,7 @@
                     "_Z1xv": 2
                 },
                 "loopDepth": 2,
-                "mergeCount": 1,
+                "mergeCount": 0,
                 "numConditionalBranches": 2,
                 "numOperations": {
                     "numberOfControlFlowOps": 7,
@@ -223,8 +223,8 @@
                 "_Z5rightv"
             ],
             "callers": [
-                "main",
-                "_Z4loopv"
+                "_Z4loopv",
+                "main"
             ],
             "doesOverride": false,
             "hasBody": true,
@@ -234,7 +234,7 @@
                     "numVars": 0
                 },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0060_b.cpp",
+                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0060_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 3,

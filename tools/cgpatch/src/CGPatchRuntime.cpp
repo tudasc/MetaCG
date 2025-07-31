@@ -5,13 +5,13 @@
  */
 
 #include "Callgraph.h"
+#include "MergePolicy.h"
 #include "SymbolRetriever.h"
 #include "io/VersionTwoMCGReader.h"
 #include "io/VersionTwoMCGWriter.h"
 #include "nlohmann/json.hpp"
 #include <cstdlib>
 #include <filesystem>
-#include <iostream>
 
 #if USE_MPI == 1
 #include <mpi.h>
@@ -115,13 +115,13 @@ extern "C" void __metacg_indirect_call(const char* name, void* address) {
   }
 
   // Add new edge if edge does not exist yet
-  if (!globalCallgraph->existEdgeFromTo(name, symbol)) {
-    auto* const caller = globalCallgraph->getOrInsertNode(name);
-    auto* const callee = globalCallgraph->getOrInsertNode(symbol);
+  if (!globalCallgraph->existsAnyEdge(name, symbol)) {
+    metacg::CgNode& caller = globalCallgraph->getOrInsertNode(name);
+    metacg::CgNode& callee = globalCallgraph->getOrInsertNode(symbol);
 
     // set hasBody to true so the call-graphs can be fully merged
-    caller->setHasBody(true);
-    callee->setHasBody(true);
+    caller.setHasBody(true);
+    callee.setHasBody(true);
 
     globalCallgraph->addEdge(caller, callee);
     counter++;
@@ -175,7 +175,7 @@ extern "C" int MPI_Finalize(void) {
       mcgManager.addToManagedGraphs(std::to_string(i), std::move(mcgReader.read()), false);
     }
 
-    mcgManager.mergeIntoActiveGraph();
+    mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
   }
   return PMPI_Finalize();
 }

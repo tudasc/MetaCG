@@ -31,12 +31,12 @@ void ExtrapLocalEstimatorPhaseBase::modifyGraph(metacg::CgNode* mainNode) {
   metacg::analysis::ReachabilityAnalysis ra(graph);
 
   for (const auto& elem : graph->getNodes()) {
-    const auto& n = elem.second.get();
+    const auto& n = elem.get();
     auto [shouldInstr, funcRtVal] = shouldInstrument(n);
     if (shouldInstr) {
       auto useCSInstr =
           pgis::config::GlobalConfig::get().getAs<bool>(pgis::options::useCallSiteInstrumentation.cliName);
-      if (useCSInstr && !n->getOrCreateMD<PiraOneData>()->getHasBody()) {
+      if (useCSInstr && !n->getOrCreate<PiraOneData>().getHasBody()) {
         // If no definition, use call-site instrumentation
         metacg::pgis::instrumentPathNode(n);
         //        n->setState(CgNodeState::INSTRUMENT_PATH);
@@ -66,8 +66,8 @@ void ExtrapLocalEstimatorPhaseBase::printReport() {
   std::sort(std::begin(kernels), std::end(kernels), [&](auto& e1, auto& e2) { return e1.first > e2.first; });
   for (auto [t, k] : kernels) {
     ss << "- " << k->getFunctionName() << "\n  * Time: " << t << "\n";
-    auto [has, obj] = k->checkAndGet<pira::FilePropertiesMetaData>();
-    if (has) {
+    auto obj = k->get<pira::FilePropertiesMetaData>();
+    if (obj) {
       ss << "\t" << obj->origin << ':' << obj->lineNumber << "\n\n";
     }
   }
@@ -136,12 +136,12 @@ void ExtrapLocalEstimatorPhaseSingleValueExpander::modifyGraph(metacg::CgNode* m
   const int statementThreshold = pgis::config::ParameterConfig::get().getPiraIIConfig()->statementThreshold;
 
   for (const auto& elem : graph->getNodes()) {
-    const auto& n = elem.second.get();
+    const auto& n = elem.get();
     auto console = metacg::MCGLogger::instance().getConsole();
     console->trace("Running ExtrapLocalEstimatorPhaseExpander::modifyGraph on {}", n->getFunctionName());
     auto [shouldInstr, funcRtVal] = shouldInstrument(n);
     if (shouldInstr) {
-      if (!n->getOrCreateMD<PiraOneData>()->getHasBody() && n->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
+      if (!n->getOrCreate<PiraOneData>().getHasBody() && n->get<BaseProfileData>()->getRuntimeInSeconds() == .0) {
         // If no definition, use call-site instrumentation
         metacg::pgis::instrumentPathNode(n);
       } else {

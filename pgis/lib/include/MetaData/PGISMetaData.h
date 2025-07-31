@@ -21,7 +21,7 @@ class InstrumentationMetaData : public metacg::MetaData::Registrar<Instrumentati
  public:
   static constexpr const char* key = "InstrumentationMetaData";
   InstrumentationMetaData() : state(InstrumentationState::None) {}
-  InstrumentationMetaData(const nlohmann::json& j) : state(InstrumentationState::None) {
+  InstrumentationMetaData(const nlohmann::json& j, StrToNodeMapping&) : state(InstrumentationState::None) {
     metacg::MCGLogger::instance().getConsole()->warn("This constructor is not supposed to be called");
   }
 
@@ -29,14 +29,14 @@ class InstrumentationMetaData : public metacg::MetaData::Registrar<Instrumentati
   InstrumentationMetaData(const InstrumentationMetaData& other) : state(other.state) {}
 
  public:
-  nlohmann::json to_json() const final {
+  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
     metacg::MCGLogger::instance().getConsole()->trace("Serializing InstrumentationMetaData to json is not implemented");
     return {};
   };
 
   const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
       metacg::MCGLogger::instance().getErrConsole()->error(
           "The MetaData which was tried to merge with InstrumentationMetaData was of a different MetaData type");
@@ -45,10 +45,13 @@ class InstrumentationMetaData : public metacg::MetaData::Registrar<Instrumentati
 
     metacg::MCGLogger::instance().getErrConsole()->warn(
         "InstrumentationMetaData should be written into a fully merged graph directly.");
-
   }
 
-  MetaData* clone() const final { return new InstrumentationMetaData(*this); }
+  void applyMapping(const GraphMapping&) override {}
+
+  std::unique_ptr<MetaData> clone() const final {
+    return std::unique_ptr<MetaData>(new InstrumentationMetaData(*this));
+  }
 
   void reset() { state = InstrumentationState::None; }
   void setInstrumented() { state = InstrumentationState::Instrumented; }
@@ -63,32 +66,32 @@ class InstrumentationMetaData : public metacg::MetaData::Registrar<Instrumentati
 };
 
 inline void resetInstrumentation(metacg::CgNode* node) {
-  auto md = node->getOrCreateMD<InstrumentationMetaData>();
+  auto md = &node->getOrCreate<InstrumentationMetaData>();
   md->reset();
 }
 
 inline void instrumentNode(metacg::CgNode* node) {
-  auto md = node->getOrCreateMD<InstrumentationMetaData>();
+  auto md = &node->getOrCreate<InstrumentationMetaData>();
   md->setInstrumented();
 }
 
 inline void instrumentPathNode(metacg::CgNode* node) {
-  auto md = node->getOrCreateMD<InstrumentationMetaData>();
+  auto md = &node->getOrCreate<InstrumentationMetaData>();
   md->setInstrumentedPath();
 }
 
 [[nodiscard]] inline bool isInstrumented(metacg::CgNode* node) {
-  auto md = node->getOrCreateMD<InstrumentationMetaData>();
+  auto md = &node->getOrCreate<InstrumentationMetaData>();
   return md->isInstrumented();
 }
 
 [[nodiscard]] inline bool isInstrumentedPath(metacg::CgNode* node) {
-  auto md = node->getOrCreateMD<InstrumentationMetaData>();
+  auto md = &node->getOrCreate<InstrumentationMetaData>();
   return md->isInstrumentedPath();
 }
 
 [[nodiscard]] inline bool isAnyInstrumented(metacg::CgNode* node) {
-  auto md = node->getOrCreateMD<InstrumentationMetaData>();
+  auto md = &node->getOrCreate<InstrumentationMetaData>();
   return md->isInstrumented() || md->isInstrumentedPath();
 }
 

@@ -73,13 +73,13 @@ PerfResults PerfTester::run() {
   runPerfTest(results, "insert edges", insertEdges, *cg, numEdges);
 
   auto writeTest = std::bind(&PerfTester::write, *this, _1, _2, _3);
-  io::JsonSink v3Sink;
-  runPerfTest(results, "write V3 format", writeTest, *cg, v3Sink, 3);
+  io::JsonSink v4Sink;
+  runPerfTest(results, "write V4 format", writeTest, *cg, v4Sink, 4);
 
   auto readTest = std::bind(&PerfTester::read, *this, _1, _2);
   std::unique_ptr<Callgraph> readCg;
-  auto v3Source = io::JsonSource(v3Sink.getJson());
-  runPerfTest(results, "read V3 format", readTest, readCg, v3Source);
+  auto v4Source = io::JsonSource(v4Sink.getJson());
+  runPerfTest(results, "read V4 format", readTest, readCg, v4Source);
 
   io::JsonSink v2Sink;
   runPerfTest(results, "write V2 format", writeTest, *cg, v2Sink, 2);
@@ -113,10 +113,10 @@ void PerfTester::insertEdges(Callgraph& cg, int num) {
   for (int i = 0; i < num; i++) {
     auto name1 = "function" + std::to_string(dist(rng));
     auto name2 = "function" + std::to_string(dist(rng));
-    auto node1 = cg.getNode(name1);
-    auto node2 = cg.getNode(name2);
+    auto node1 = cg.getFirstNode(name1);
+    auto node2 = cg.getFirstNode(name2);
     assert(node1 && node2 && "Node does not exist");
-    cg.addEdge(node1, node2);
+    cg.addEdge(*node1, *node2);
   }
 }
 

@@ -9,7 +9,6 @@
 
 // clang-format off
 // Graph library
-#include "CgNodePtr.h"
 #include "CgNode.h"
 #include "Utility.h"
 #include "metadata/MetaData.h"
@@ -45,7 +44,7 @@ class BaseProfileData : public metacg::MetaData::Registrar<BaseProfileData> {
 public:
  static constexpr const char* key = "BaseProfileData";
  BaseProfileData() = default;
- BaseProfileData(const nlohmann::json& j) {
+ BaseProfileData(const nlohmann::json& j, metacg::StrToNodeMapping&) {
    metacg::MCGLogger::instance().getConsole()->trace("Running BaseProfileDataHandler::read");
    if (j.is_null()) {
      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve metadata for {}", key);
@@ -69,7 +68,7 @@ private:
        cgLoc(other.cgLoc) {}
 
 public:
- nlohmann::json to_json() const final {
+ nlohmann::json toJson(metacg::NodeToStrMapping& nodeToStr) const final {
    return nlohmann::json{{"numCalls", getNumberOfCalls()},
                          {"timeInSeconds", getRuntimeInSeconds()},
                          {"inclusiveRtInSeconds", getInclusiveRuntimeInSeconds()}};
@@ -77,7 +76,7 @@ public:
 
  const char* getKey() const final { return key; }
 
- void merge(const MetaData& toMerge) final {
+ void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with BaseProfileData was of a different MetaData type");
@@ -94,7 +93,9 @@ public:
    metacg::MCGLogger::instance().getErrConsole()->warn("BaseProfileData should be written into fully merged graph.");
  }
 
- MetaData* clone() const final { return new BaseProfileData(*this); }
+ void applyMapping(const metacg::GraphMapping&) override {}
+
+ std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new BaseProfileData(*this)); }
 
  // Regular profile data
  // Warning: This function is *not* used by the Cube reader
@@ -173,7 +174,7 @@ class PiraOneData : public metacg::MetaData::Registrar<PiraOneData> {
 public:
  static constexpr const char* key = "numStatements";
  PiraOneData() = default;
- explicit PiraOneData(const nlohmann::json& j) {
+ explicit PiraOneData(const nlohmann::json& j, metacg::StrToNodeMapping&) {
    metacg::MCGLogger::instance().getConsole()->trace("Running PiraOneMetaDataRetriever::read from json");
    if (j.is_null()) {
      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
@@ -192,11 +193,11 @@ private:
        numStmts(other.numStmts) {}
 
 public:
- nlohmann::json to_json() const final { return getNumberOfStatements(); };
+ nlohmann::json toJson(metacg::NodeToStrMapping& nodeToStr) const final { return getNumberOfStatements(); };
 
  const char* getKey() const final { return key; }
 
- void merge(const MetaData& toMerge) final {
+ void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with PiraOneData was of a different MetaData type");
@@ -218,7 +219,9 @@ public:
    wasInPreviousProfile = wasInPreviousProfile || toMergeDerived->wasInPreviousProfile;
  }
 
- MetaData* clone() const final { return new PiraOneData(*this); }
+ void applyMapping(const metacg::GraphMapping&) override {}
+
+ std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new PiraOneData(*this)); }
 
  void setNumberOfStatements(int numStmts) { this->numStmts = numStmts; }
  int getNumberOfStatements() const { return this->numStmts; }
@@ -240,8 +243,8 @@ private:
 template <typename T>
 inline void setPiraOneData(T node, int numStmts = 0, bool hasBody = false, bool dominantRuntime = false,
                           bool inPrevProfile = false) {
-  const auto& [has, data] = node->template checkAndGet<PiraOneData>();
-  if (has) {
+  auto* data = node->template get<PiraOneData>();
+  if (data) {
     data->setNumberOfStatements(numStmts);
     data->setHasBody(hasBody);
     data->setDominantRuntime(dominantRuntime);
@@ -260,7 +263,8 @@ public:
  static constexpr const char* key = "PiraTwoData";
 
  explicit PiraTwoData() : epCon({}, {}), params(), rtVec(), numReps(0) {}
- explicit PiraTwoData(const nlohmann::json& j) : epCon({}, {}), params(), rtVec(), numReps(0) {
+ explicit PiraTwoData(const nlohmann::json& j, metacg::StrToNodeMapping&)
+     : epCon({}, {}), params(), rtVec(), numReps(0) {
    metacg::MCGLogger::instance().getConsole()->warn(
        "Read PiraTwoData from json currently not implemented / supported");
  };
@@ -271,7 +275,7 @@ public:
                                                      rtVec.size());
  }
 
- nlohmann::json to_json() const final {
+ nlohmann::json toJson(metacg::NodeToStrMapping& nodeToStr) const final {
    nlohmann::json j;
    if (getExtrapModel() == nullptr) {
      metacg::MCGLogger::instance().getConsole()->error(
@@ -301,7 +305,7 @@ public:
 
  const char* getKey() const final { return key; }
 
- void merge(const MetaData& toMerge) final {
+ void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with PiraTwoData was of a different MetaData type");
@@ -310,7 +314,9 @@ public:
    metacg::MCGLogger::instance().getErrConsole()->warn("PiraTwoData should be written into fully merged graph.");
  }
 
- MetaData* clone() const final { return new PiraTwoData(*this); }
+ void applyMapping(const metacg::GraphMapping&) override {}
+
+ std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new PiraTwoData(*this)); }
 
  void setExtrapModelConnector(extrapconnection::ExtrapConnector epCon) { this->epCon = epCon; }
  extrapconnection::ExtrapConnector& getExtrapModelConnector() { return epCon; }
@@ -339,7 +345,7 @@ class FilePropertiesMetaData : public metacg::MetaData::Registrar<FileProperties
 public:
  static constexpr const char* key = "fileProperties";
  FilePropertiesMetaData() : origin("INVALID"), fromSystemInclude(false), lineNumber(0) {}
- explicit FilePropertiesMetaData(const nlohmann::json& j) {
+ explicit FilePropertiesMetaData(const nlohmann::json& j, metacg::StrToNodeMapping&) {
    if (j.is_null()) {
      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
      return;
@@ -356,7 +362,7 @@ private:
      : origin(other.origin), fromSystemInclude(other.fromSystemInclude), lineNumber(other.lineNumber) {}
 
 public:
- nlohmann::json to_json() const final {
+ nlohmann::json toJson(metacg::NodeToStrMapping& nodeToStr) const final {
    nlohmann::json j;
    j["origin"] = origin;
    j["systemInclude"] = fromSystemInclude;
@@ -365,7 +371,7 @@ public:
 
  const char* getKey() const final { return key; }
 
- void merge(const MetaData& toMerge) final {
+ void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with FilePropertiesMetaData was of a different MetaData type");
@@ -373,7 +379,9 @@ public:
    }
  }
 
- MetaData* clone() const final { return new FilePropertiesMetaData(*this); }
+ void applyMapping(const metacg::GraphMapping&) override {}
+
+ std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new FilePropertiesMetaData(*this)); }
 
  std::string origin;
  bool fromSystemInclude;
@@ -385,7 +393,7 @@ public:
  static constexpr const char* key = "inlineInfo";
  const char* getKey() const final { return key; }
  InlineMetaData() = default;
- explicit InlineMetaData(const nlohmann::json& j) {
+ explicit InlineMetaData(const nlohmann::json& j, metacg::StrToNodeMapping&) {
    if (j.is_null()) {
      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
      return;
@@ -404,7 +412,7 @@ private:
        isTemplate(other.isTemplate) {}
 
 public:
- nlohmann::json to_json() const final {
+ nlohmann::json toJson(metacg::NodeToStrMapping& nodeToStr) const final {
    nlohmann::json j;
    j["markedInline"] = markedInline;
    j["likelyInline"] = likelyInline;
@@ -413,7 +421,7 @@ public:
    return j;
  }
 
- void merge(const MetaData& toMerge) final {
+ void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with InlineMetaData was of a different MetaData type");
@@ -427,7 +435,9 @@ public:
    isTemplate = isTemplate || toMergeDerived->isTemplate;
  }
 
- MetaData* clone() const final { return new InlineMetaData(*this); }
+ void applyMapping(const metacg::GraphMapping&) override {}
+
+ std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new InlineMetaData(*this)); }
 
  bool markedInline{false};
  bool likelyInline{false};
@@ -451,7 +461,7 @@ public:
  static constexpr const char* key = "estimateCallCount";
  const char* getKey() const final { return key; }
  CallCountEstimationMetaData() = default;
- explicit CallCountEstimationMetaData(const nlohmann::json& j) {
+ explicit CallCountEstimationMetaData(const nlohmann::json& j, metacg::StrToNodeMapping&) {
    if (j.is_null()) {
      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
      return;
@@ -465,14 +475,14 @@ private:
      : calledFunctions(other.calledFunctions), codeRegions(other.codeRegions) {}
 
 public:
- nlohmann::json to_json() const final {
+ nlohmann::json toJson(metacg::NodeToStrMapping& nodeToStr) const final {
    nlohmann::json j;
    j["calls"] = calledFunctions;
    j["codeRegions"] = codeRegions;
    return j;
  }
 
- void merge(const MetaData& toMerge) final {
+ void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with CallCountEstimationMetaData was of a different MetaData type");
@@ -503,7 +513,11 @@ public:
    }
  }
 
- MetaData* clone() const final { return new CallCountEstimationMetaData(*this); }
+ void applyMapping(const metacg::GraphMapping&) override {}
+
+ std::unique_ptr<MetaData> clone() const final {
+   return std::unique_ptr<MetaData>(new CallCountEstimationMetaData(*this));
+ }
 
  CalledFunctionType
      calledFunctions;  // Maps the name of called function to the estimate of local calls to it and the regions in
@@ -544,7 +558,7 @@ public:
  static constexpr const char* key = "TemporaryInstrumentationDecisionMetadata";
  const char* getKey() const final { return key; }
  TemporaryInstrumentationDecisionMetadata() = default;
- explicit TemporaryInstrumentationDecisionMetadata(const nlohmann::json& j) {
+ explicit TemporaryInstrumentationDecisionMetadata(const nlohmann::json& j, metacg::StrToNodeMapping&) {
    (void)j;
    // This is just temporary data
  }
@@ -556,9 +570,9 @@ private:
        parentHasHighExclusiveRuntime(other.parentHasHighExclusiveRuntime) {}
 
 public:
- nlohmann::json to_json() const final { return {}; }
+ nlohmann::json toJson(metacg::NodeToStrMapping& nodeToStr) const final { return {}; }
 
- void merge(const MetaData& toMerge) final {
+ void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with TemporaryInstrumentationDecisionMetadata was of a different "
@@ -569,7 +583,11 @@ public:
        "TemporaryInstrumentationDecisionMetadata can not be merged, as it only pertains to temporary data.");
  }
 
- MetaData* clone() const final { return new TemporaryInstrumentationDecisionMetadata(*this); }
+ void applyMapping(const metacg::GraphMapping&) override {}
+
+ std::unique_ptr<MetaData> clone() const final {
+   return std::unique_ptr<MetaData>(new TemporaryInstrumentationDecisionMetadata(*this));
+ }
 
  InstumentationInfo info;
  bool isKicked = false;
@@ -585,7 +603,7 @@ public:
  const char* getKey() const final { return key; }
 
  InstrumentationResultMetaData() = default;
- explicit InstrumentationResultMetaData(const nlohmann::json& j) {
+ explicit InstrumentationResultMetaData(const nlohmann::json& j, metacg::StrToNodeMapping&) {
    if (j.is_null()) {
      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
      return;
@@ -616,7 +634,7 @@ private:
        shouldBeInstrumented(other.shouldBeInstrumented) {}
 
 public:
- nlohmann::json to_json() const final {
+ nlohmann::json toJson(metacg::NodeToStrMapping& nodeToStr) const final {
    nlohmann::json j;
    j["calls"] = callCount;
    j["runtime"] = runtime;
@@ -631,7 +649,7 @@ public:
    return j;
  }
 
- void merge(const MetaData& toMerge) final {
+ void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with InstrumentationResultMetaData was of a different MetaData type");
@@ -642,7 +660,11 @@ public:
        "InstrumentationResultMetaData can not be merged and should be written into a fully merged callgraph.");
  }
 
- MetaData* clone() const final { return new InstrumentationResultMetaData(*this); }
+ void applyMapping(const metacg::GraphMapping&) override {}
+
+ std::unique_ptr<MetaData> clone() const final {
+   return std::unique_ptr<MetaData>(new InstrumentationResultMetaData(*this));
+ }
 
  unsigned long long callCount{0};
  std::map<std::string, unsigned long long> callsFromParents;

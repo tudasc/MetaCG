@@ -46,9 +46,24 @@ cg = pymetacg.Callgraph.from_file("/path/to/callgraph.mcg")
 # check whether node exists in graph
 main_exists = "main" in cg
 
-# access nodes in graph
+# get number of nodes in graph
+num_nodes = len(cg)
+
+# access nodes in graph (assumes function name to be unique in graph)
+main = cg.get_single_node("main")
+foo = cg.get_single_node("foo")
+
+# shorthand for `get_single_node`
 main = cg["main"]
 foo = cg["foo"]
+
+# access node by function name (ignoring possible other entries with same function name)
+foo = cg.get_first_node("foo")
+
+# get iterator over all nodes of name
+for node in cg.get_nodes("foo")
+    print(hash(node)) # get node ID
+list_of_nodes = list(cg.get_nodes("foo"))
 
 # iterate over node callees and collect callee function names into list
 callees_names = [callee.function_name for callee in main.callees]

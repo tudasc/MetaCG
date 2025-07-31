@@ -8,12 +8,14 @@
 
 #include "metadata/MetaData.h"
 
+namespace metacg {
+
 class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
  public:
   NumOperationsMD() = default;
   static constexpr const char* key = "numOperations";
 
-  explicit NumOperationsMD(const nlohmann::json& j) {
+  explicit NumOperationsMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
@@ -36,7 +38,7 @@ class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
         numberOfMemoryAccesses(other.numberOfMemoryAccesses) {}
 
  public:
-  nlohmann::json to_json() const final {
+  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
     nlohmann::json j;
     j["numberOfIntOps"] = numberOfIntOps;
     j["numberOfFloatOps"] = numberOfFloatOps;
@@ -45,9 +47,9 @@ class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
     return j;
   }
 
-  virtual const char* getKey() const final { return key; }
+  const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge NumOperationsMD with meta data of different types");
 
     const NumOperationsMD* toMergeDerived = static_cast<const NumOperationsMD*>(&toMerge);
@@ -74,12 +76,15 @@ class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
     }
   }
 
-  MetaData* clone() const final { return new NumOperationsMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new NumOperationsMD(*this)); }
+
+  void applyMapping(const GraphMapping&) override {}
 
   int numberOfIntOps{0};
   int numberOfFloatOps{0};
   int numberOfControlFlowOps{0};
   int numberOfMemoryAccesses{0};
 };
+}  // namespace metacg
 
 #endif  // CGCOLLECTOR2_NUMOPERATIONSMD_H

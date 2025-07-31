@@ -39,7 +39,7 @@ void FirstNLevelsEstimatorPhase::instrumentLevel(metacg::CgNode* parentNode, int
 
   pgis::instrumentNode(parentNode);
 
-  for (auto childNode : graph->getCallees(parentNode)) {
+  for (auto childNode : graph->getCallees(*parentNode)) {
     instrumentLevel(childNode, levelsLeft - 1);
   }
 }
@@ -68,7 +68,7 @@ void StatementCountEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
   }
 
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
+    const auto& node = elem.get();
     console->trace("Processing node: {}", node->getFunctionName());
     if (!ra.isReachableFromMain(node)) {
       console->trace("\tskipping.");
@@ -90,13 +90,13 @@ void StatementCountEstimatorPhase::estimateStatementCount(metacg::CgNode* startN
 
     while (!workQueue.empty()) {
       auto node = workQueue.front();
-      const auto nodePOD = node->getOrCreateMD<PiraOneData>();
+      const auto nodePOD = &node->getOrCreate<PiraOneData>();
       workQueue.pop();
 
       if (const auto [it, inserted] = visitedNodes.insert(node); inserted) {
         inclStmtCount += nodePOD->getNumberOfStatements();
 
-        for (auto childNode : graph->getCallees(node)) {
+        for (auto childNode : graph->getCallees(*node)) {
           if (ra.isReachableFromMain(childNode)) {
             workQueue.push(childNode);
           }
@@ -106,7 +106,7 @@ void StatementCountEstimatorPhase::estimateStatementCount(metacg::CgNode* startN
     inclStmtCounts[startNode] = inclStmtCount;
   } else {
     // EXCLUSIVE
-    const auto snPOD = startNode->getOrCreateMD<PiraOneData>();
+    const auto snPOD = &startNode->getOrCreate<PiraOneData>();
     inclStmtCount = snPOD->getNumberOfStatements();
   }
 
@@ -172,7 +172,7 @@ void RuntimeEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
   metacg::analysis::ReachabilityAnalysis ra(graph);
 
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
+    const auto& node = elem.get();
     estimateRuntime(node);
   }
 
@@ -180,7 +180,7 @@ void RuntimeEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
   metacg::MCGLogger::instance().getConsole()->debug("The runtime is threshold is computed as: {}", runTimeThreshold);
 
   // The main method is always in the dominant runtime path
-  mainMethod->getOrCreateMD<PiraOneData>()->setDominantRuntime();
+  mainMethod->getOrCreate<PiraOneData>().setDominantRuntime();
 
   std::queue<metacg::CgNode*> workQueue;
   workQueue.push(mainMethod);
@@ -194,7 +194,7 @@ void RuntimeEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
       visitedNodes.insert(node);
       doInstrumentation(node, ra);
 
-      for (auto childNode : graph->getCallees(node)) {
+      for (auto childNode : graph->getCallees(*node)) {
         workQueue.push(childNode);
       }
     }
@@ -211,9 +211,9 @@ void RuntimeEstimatorPhase::estimateRuntime(metacg::CgNode* startNode) {
     const auto calls = startNode->get<BaseProfileData>()->getNumberOfCalls();
     totalExclusiveCalls += calls;
     // Skip not leave nodes
-    const auto& childs = graph->getCallees(startNode);
+    const auto& childs = graph->getCallees(*startNode);
     if (calls > 0 && std::none_of(childs.begin(), childs.end(), [](const auto cnode) {
-          return cnode->template getOrCreateMD<PiraOneData>()->comesFromCube();
+          return cnode->template getOrCreate<PiraOneData>().comesFromCube();
         })) {
       exclusiveCalls.emplace(calls, startNode);
     }
@@ -243,7 +243,7 @@ void RuntimeEstimatorPhase::doInstrumentation(metacg::CgNode* startNode, metacg:
     // If we have at least one child, initialize maxRtChild with the first child node
     metacg::CgNode* maxRtChild{nullptr};
 
-    for (auto childNode : graph->getCallees(startNode)) {
+    for (auto childNode : graph->getCallees(*startNode)) {
       StatementCountEstimatorPhase scep(999999999, graph);  // prevent pass from instrumentation
       scep.estimateStatementCount(childNode, ra);
       childStmts[childNode] = scep.getNumStatements(childNode);
@@ -252,7 +252,7 @@ void RuntimeEstimatorPhase::doInstrumentation(metacg::CgNode* startNode, metacg:
         maxStmts = childStmts[childNode];
       }
 
-      if (childNode->getOrCreateMD<PiraOneData>()->comesFromCube()) {
+      if (childNode->getOrCreate<PiraOneData>().comesFromCube()) {
         if (childNode->get<BaseProfileData>()->getInclusiveRuntimeInSeconds() < runTimeThreshold) {
           continue;
         }
@@ -285,12 +285,12 @@ void RuntimeEstimatorPhase::doInstrumentation(metacg::CgNode* startNode, metacg:
      * XXX: We should only consider children that have a body defines, i.e., that are eligible for instrumentation
      * with our method. This specifically excludes, for example, stdlib functions.
      */
-    auto numChildren = graph->getCallees(startNode).size();
+    auto numChildren = graph->getCallees(*startNode).size();
 #define NEW_PIRA_ONE 1
 // #undef NEW_PIRA_ONE
 #ifdef NEW_PIRA_ONE
     alpha = .3f;
-    numChildren = std::count_if(std::begin(graph->getCallees(startNode)), std::end(graph->getCallees(startNode)),
+    numChildren = std::count_if(std::begin(graph->getCallees(*startNode)), std::end(graph->getCallees(*startNode)),
                                 [&](const auto& n) { return childStmts[n] > 0; });
 #endif
     long int stmtThreshold;
@@ -315,12 +315,12 @@ void RuntimeEstimatorPhase::doInstrumentation(metacg::CgNode* startNode, metacg:
     if (maxRtChild) {
       console->debug("This is the dominant runtime path");
       pgis::instrumentNode(maxRtChild);
-      maxRtChild->getOrCreateMD<PiraOneData>()->setDominantRuntime();
+      maxRtChild->getOrCreate<PiraOneData>().setDominantRuntime();
     } else {
       spdlog::get("console")->debug("This is the non-dominant runtime path");
-      if (startNode->getOrCreateMD<PiraOneData>()->isDominantRuntime()) {
+      if (startNode->getOrCreate<PiraOneData>().isDominantRuntime()) {
         spdlog::get("console")->debug("\tPrincipal: {}", startNode->getFunctionName());
-        for (auto child : graph->getCallees(startNode)) {
+        for (auto child : graph->getCallees(*startNode)) {
           console->trace("\tEvaluating {} with {} [stmt threshold: {}]", child->getFunctionName(), childStmts[child],
                          stmtThreshold);
           if (childStmts[child] > stmtThreshold) {
@@ -345,7 +345,7 @@ InstumentationInfo RuntimeEstimatorPhase::getEstimatedInfoForInstrumentedNode(Cg
   unsigned long exclusiveStmtCount = 0;
   while (!workQueue.empty()) {
     auto wnode = workQueue.front();
-    const auto nodePOD = wnode->getOrCreateMD<PiraOneData>();
+    const auto nodePOD = &wnode->getOrCreate<PiraOneData>();
     workQueue.pop();
     if (visitedNodes.find(wnode) == visitedNodes.end()) {
       visitedNodes.insert(wnode);
@@ -360,20 +360,20 @@ InstumentationInfo RuntimeEstimatorPhase::getEstimatedInfoForInstrumentedNode(Cg
         exclusiveStmtCount = perNodeStmtCount;
       }
 
-      for (const auto& childNode : graph->getCallees(wnode)) {
+      for (const auto& childNode : graph->getCallees(*wnode)) {
         workQueue.push(childNode);
       }
     }
   }
   const double callsFromParent = getEstimatedCallCountForNode(node, exclusiveStmtCount);
   pira::InstumentationInfo ret(callsFromParent, inclusiveStmtCount, exclusiveStmtCount);
-  auto [hasMD, md] = node->checkAndGet<TemporaryInstrumentationDecisionMetadata>();
-  if (hasMD) {
+  auto md = node->get<TemporaryInstrumentationDecisionMetadata>();
+  if (md) {
     if (md->info.Init) {
       assert(md->info == ret && "Sanity check to ensure the instrumentation info is always the same");
     }
   } else {
-    md = node->getOrCreateMD<TemporaryInstrumentationDecisionMetadata>();
+    md = &node->getOrCreate<TemporaryInstrumentationDecisionMetadata>();
     md->info = ret;
   }
   return ret;
@@ -389,14 +389,14 @@ void RuntimeEstimatorPhase::modifyGraphOverhead(metacg::CgNode* mainMethod) {
 
   const auto mainRuntimeInclusive = mainMethod->get<InstrumentationResultMetaData>()->inclusiveRunTimeSum;
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
-    node->getOrCreateMD<TemporaryInstrumentationDecisionMetadata>();
+    const auto& node = elem.get();
+    node->getOrCreate<TemporaryInstrumentationDecisionMetadata>();
     estimateRuntime(node);
     getEstimatedInfoForInstrumentedNode(node);
   }
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
-    if (node->getOrCreateMD<PiraOneData>()->comesFromCube()) {
+    const auto& node = elem.get();
+    if (node->getOrCreate<PiraOneData>().comesFromCube()) {
       if (node->getHasBody() || isMPIFunction(node) || (!onlyEligibleNodes && !useCSInstrumentation)) {
         pgis::instrumentNode(node);
       } else if (useCSInstrumentation) {
@@ -407,8 +407,8 @@ void RuntimeEstimatorPhase::modifyGraphOverhead(metacg::CgNode* mainMethod) {
           irmd->runtime >= mainRuntimeInclusive * thresholdHotspotExclusive) {
         nodeInclusiveHotspot.push_back(node);
         if (irmd->runtime >= mainRuntimeInclusive * thresholdHotspotExclusive) {
-          for (const auto& C : graph->getCallees(node)) {
-            C->getOrCreateMD<TemporaryInstrumentationDecisionMetadata>()->parentHasHighExclusiveRuntime = true;
+          for (const auto& C : graph->getCallees(*node)) {
+            C->getOrCreate<TemporaryInstrumentationDecisionMetadata>().parentHasHighExclusiveRuntime = true;
           }
         }
       } else {
@@ -457,7 +457,7 @@ void RuntimeEstimatorPhase::modifyGraphOverhead(metacg::CgNode* mainMethod) {
     }
   }
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
+    const auto& node = elem.get();
     if (pgis::isAnyInstrumented(node)) {
       metacg::MCGLogger::instance().getConsole()->debug("Node left after kicking: {}", node->getFunctionName());
     }
@@ -465,11 +465,11 @@ void RuntimeEstimatorPhase::modifyGraphOverhead(metacg::CgNode* mainMethod) {
 
   // Find direct childs nodes to potentially instrument
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
-    if (node->getOrCreateMD<PiraOneData>()->comesFromCube()) {
+    const auto& node = elem.get();
+    if (node->getOrCreate<PiraOneData>().comesFromCube()) {
       // TODO: Do we need this check
       if (!node->get<TemporaryInstrumentationDecisionMetadata>()->isKicked) {
-        for (const auto& C : graph->getCallees(node)) {
+        for (const auto& C : graph->getCallees(*node)) {
           if (!pgis::isAnyInstrumented(C)) {
             childsToPotentialInstrumentCollection[C].push_back(node);
           }
@@ -480,9 +480,8 @@ void RuntimeEstimatorPhase::modifyGraphOverhead(metacg::CgNode* mainMethod) {
 
   const auto filterEligible = [&childsToPotentialInstrumentCollection, &childsToPotentialInstrument, this]() {
     for (const auto& C : childsToPotentialInstrumentCollection) {
-      if (const auto metaDataInstResult = C.first->checkAndGet<InstrumentationResultMetaData>();
-          !metaDataInstResult.first || metaDataInstResult.second->callCount != 0 ||
-          !metaDataInstResult.second->isExclusiveRuntime) {
+      if (const auto metaDataInstResult = C.first->get<InstrumentationResultMetaData>();
+          !metaDataInstResult || metaDataInstResult->callCount != 0 || !metaDataInstResult->isExclusiveRuntime) {
         if (const auto metaDataInstDecision = C.first->get<TemporaryInstrumentationDecisionMetadata>();
             metaDataInstDecision->info.callsFromParents != 0) {
           if (C.first->getHasBody() || isMPIFunction(C.first) || (!onlyEligibleNodes && !useCSInstrumentation)) {
@@ -525,7 +524,7 @@ void RuntimeEstimatorPhase::modifyGraphOverhead(metacg::CgNode* mainMethod) {
       } else {
         pgis::instrumentPathNode(nti);
       }
-      for (const auto& C : graph->getCallees(nti)) {
+      for (const auto& C : graph->getCallees(*nti)) {
         if (!pgis::isAnyInstrumented(C)) {
           childsToPotentialInstrumentCollection[C].push_back(nti);
         }
@@ -648,14 +647,14 @@ std::pair<std::vector<CgNode*>, double> RuntimeEstimatorPhase::getNodesToInstrum
 
 double RuntimeEstimatorPhase::getEstimatedCallCountForNode(CgNode* node, std::set<CgNode*>& blacklist) {
   // Quick exit if we have the info already
-  const auto info = node->checkAndGet<InstrumentationResultMetaData>();
-  if (info.first) {
+  const auto info = node->get<InstrumentationResultMetaData>();
+  if (info) {
     // TODO JR: Scale this for Inline reasons ?
-    return info.second->callCount;
+    return info->callCount;
   }
 
   blacklist.insert(node);
-  const auto& parent = graph->getCallers(node);
+  const auto& parent = graph->getCallers(*node);
   double ret = 0.0;
   double selfCalls = 0.0;
   bool selfRecursive = RuntimeEstimatorPhase::isSelfRecursive(node, graph);
@@ -830,12 +829,12 @@ bool RuntimeEstimatorPhase::isLikelyToBeInlined(const CgNode* node, unsigned lon
 }
 
 bool RuntimeEstimatorPhase::isSelfRecursive(metacg::CgNode* node, metacg::Callgraph* cg) {
-  auto callees = cg->getCallees(node);
+  auto callees = cg->getCallees(*node);
   if (callees.find(node) != callees.end()) {
     return true;
   }
   for (const auto& child : callees) {
-    auto calleeCallees = cg->getCallees(child);
+    auto calleeCallees = cg->getCallees(*child);
     if (calleeCallees.find(node) != calleeCallees.end()) {
       return true;
     }
@@ -886,7 +885,7 @@ void StatisticsEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
 
   metacg::analysis::ReachabilityAnalysis ra(graph);
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
+    const auto& node = elem.get();
     if (!ra.isReachableFromMain(node)) {
       metacg::MCGLogger::instance().getConsole()->trace("Running on non-reachable function {}",
                                                         node->getFunctionName());
@@ -894,11 +893,11 @@ void StatisticsEstimatorPhase::modifyGraph(metacg::CgNode* mainMethod) {
     }
 
     numReachableFunctions++;
-    auto numStmts = node->getOrCreateMD<PiraOneData>()->getNumberOfStatements();
+    auto numStmts = node->getOrCreate<PiraOneData>().getNumberOfStatements();
     if (pgis::isInstrumented(node)) {
       stmtsCoveredWithInstr += numStmts;
     }
-    if (node->getOrCreateMD<PiraOneData>()->comesFromCube()) {
+    if (node->getOrCreate<PiraOneData>().comesFromCube()) {
       stmtsActuallyCovered += numStmts;
     }
     auto& histElem = stmtHist[numStmts];
@@ -1097,7 +1096,7 @@ void WLCallpathDifferentiationEstimatorPhase::modifyGraph(metacg::CgNode* mainMe
     if (line.empty()) {
       continue;
     }
-    metacg::CgNode* node = graph->getNode(line);
+    metacg::CgNode* node = &graph->getSingleNode(line);
     if (node == nullptr) {
       continue;
     }
@@ -1106,9 +1105,9 @@ void WLCallpathDifferentiationEstimatorPhase::modifyGraph(metacg::CgNode* mainMe
   file.close();
 
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
+    const auto& node = elem.get();
     if (CgHelper::isConjunction(node, graph) && (whitelist.find(node) != whitelist.end())) {
-      for (const auto& parentNode : graph->getCallers(node)) {
+      for (const auto& parentNode : graph->getCallers(*node)) {
         pgis::instrumentNode(parentNode);
       }
     }
@@ -1119,7 +1118,7 @@ void WLCallpathDifferentiationEstimatorPhase::addNodeAndParentsToWhitelist(metac
   if (whitelist.find(node) == whitelist.end()) {
     whitelist.insert(node);
 
-    for (const auto& parentNode : graph->getCallers(node)) {
+    for (const auto& parentNode : graph->getCallers(*node)) {
       addNodeAndParentsToWhitelist(parentNode);
     }
   }
@@ -1137,7 +1136,7 @@ void SummingCountPhaseBase::modifyGraph(metacg::CgNode* mainMethod) {
   }
   runInitialization();
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
+    const auto& node = elem.get();
     console->trace("Processing node: {}", node->getFunctionName());
     if (!ra.isReachableFromMain(node)) {
       console->trace("\tskipping.");
@@ -1163,7 +1162,7 @@ void SummingCountPhaseBase::estimateCount(CgNode* startNode, metacg::analysis::R
         visitedNodes.insert(node);
         count += getTargetCount(node);
 
-        for (const auto& childNode : graph->getCallees(node)) {
+        for (const auto& childNode : graph->getCallees(*node)) {
           if (ra.isReachableFromMain(childNode)) {
             workQueue.push(childNode);
           }
@@ -1231,7 +1230,7 @@ long int ConditionalBranchesReverseEstimatorPhase::getTargetCount(const CgNode* 
 void ConditionalBranchesReverseEstimatorPhase::runInitialization() {
   maxBranches = 0;
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
+    const auto& node = elem.get();
     if (node->has<NumConditionalBranchMD>()) {
       const auto md = node->get<NumConditionalBranchMD>();
       maxBranches = std::max(maxBranches, static_cast<long int>(md->numConditionalBranches));
@@ -1284,39 +1283,38 @@ long int GlobalLoopDepthEstimatorPhase::getTargetCount(const CgNode* node) const
 }
 void AttachInstrumentationResultsEstimatorPhase::modifyGraph(CgNode* mainMethod) {
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
+    const auto& node = elem.get();
     // We have pretty exact information about a function if we instrument it and all of its childs
     // This information should not change between iterations, so we do not need to overwrite/recalculate it
-    const auto instResult = node->checkAndGet<InstrumentationResultMetaData>();
-    if (instResult.first &&
-        (instResult.second->shouldBeInstrumented && !node->getOrCreateMD<PiraOneData>()->comesFromCube())) {
+    const auto instResult = node->get<InstrumentationResultMetaData>();
+    if (instResult && (instResult->shouldBeInstrumented && !node->getOrCreate<PiraOneData>().comesFromCube())) {
       // A node should have been instrumented, but was not in the cube file. This means it has zero calls and zero
       // runtime
-      instResult.second->isExclusiveRuntime = true;
-      instResult.second->shouldBeInstrumented = false;
-      instResult.second->callCount = 0;
-      instResult.second->callsFromParents = {};
-      instResult.second->runtime = 0;
-      instResult.second->timePerCall = 0;
-      instResult.second->inclusiveRunTimeCube = 0;
-      instResult.second->inclusiveRunTimeSum = 0;
-      instResult.second->inclusiveTimePerCallCube = 0;
-      instResult.second->inclusiveTimePerCallSum = 0;
+      instResult->isExclusiveRuntime = true;
+      instResult->shouldBeInstrumented = false;
+      instResult->callCount = 0;
+      instResult->callsFromParents = {};
+      instResult->runtime = 0;
+      instResult->timePerCall = 0;
+      instResult->inclusiveRunTimeCube = 0;
+      instResult->inclusiveRunTimeSum = 0;
+      instResult->inclusiveTimePerCallCube = 0;
+      instResult->inclusiveTimePerCallSum = 0;
       continue;
     }
 
-    if (node->getOrCreateMD<PiraOneData>()->comesFromCube()) {
+    if (node->getOrCreate<PiraOneData>().comesFromCube()) {
       // We already calculated an exclusive result before. Do not change it, as there could be small measurement
       // differences that could cause flickering between different instrumentation states
-      const bool hasPrevExclusive = instResult.first && instResult.second->isExclusiveRuntime;
+      const bool hasPrevExclusive = instResult && instResult->isExclusiveRuntime;
 
       const auto runtime = node->get<BaseProfileData>()->getRuntimeInSeconds();
       const auto inclusiveRuntime = node->get<BaseProfileData>()->getInclusiveRuntimeInSeconds();
       const auto calls = node->get<BaseProfileData>()->getNumberOfCalls();
       const auto callsFromParents = node->get<BaseProfileData>()->getCallsFromParents();
-      const auto& childs = graph->getCallees(node);
+      const auto& childs = graph->getCallees(*node);
       const bool isExclusive = std::none_of(childs.begin(), childs.end(), [](const auto& child) {
-        return !child->template getOrCreateMD<PiraOneData>()->comesFromCube();
+        return !child->template getOrCreate<PiraOneData>().comesFromCube();
       });
       // Calculate the summing inclusive runtime
       std::queue<CgNode*> workQueue;
@@ -1329,13 +1327,13 @@ void AttachInstrumentationResultsEstimatorPhase::modifyGraph(CgNode* mainMethod)
         if (visitedNodes.find(workNode) == visitedNodes.end()) {
           visitedNodes.insert(workNode);
           inclusiveRuntimeSum += workNode->get<BaseProfileData>()->getRuntimeInSeconds();
-          for (const auto childNode : graph->getCallees(workNode)) {
+          for (const auto childNode : graph->getCallees(*workNode)) {
             workQueue.push(childNode);
           }
         }
       }
 
-      const auto md = node->getOrCreateMD<InstrumentationResultMetaData>();
+      const auto md = &node->getOrCreate<InstrumentationResultMetaData>();
       if (!hasPrevExclusive) {
         md->runtime = runtime;
         md->callCount = calls;
@@ -1362,7 +1360,7 @@ void AttachInstrumentationResultsEstimatorPhase::printReport() {
   };
   std::set<CgNode*, decltype(comperator)> snodes(comperator);
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
+    const auto& node = elem.get();
     if (node->has<InstrumentationResultMetaData>()) {
       snodes.insert(node);
     }
@@ -1394,8 +1392,8 @@ void FillInstrumentationGapsPhase::modifyGraph(CgNode* mainMethod) {
   std::unordered_map<CgNode*, CgNodeRawPtrUSet> pathsToMain;
 
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
-    const auto& parents = graph->getCallers(node);
+    const auto& node = elem.get();
+    const auto& parents = graph->getCallers(*node);
     if (pgis::isAnyInstrumented(node) &&
         std::any_of(parents.begin(), parents.end(), [](const auto& p) { return !pgis::isAnyInstrumented(p); })) {
       auto nodesToMain = CgHelper::allNodesToMain(node, mainMethod, graph, pathsToMain, ra);
@@ -1408,8 +1406,8 @@ void FillInstrumentationGapsPhase::modifyGraph(CgNode* mainMethod) {
     }
   }
   for (const auto& ntf : nodesToFill) {
-    const auto mtd = ntf->checkAndGet<InstrumentationResultMetaData>();
-    if (mtd.first && mtd.second->callCount == 0 && mtd.second->isExclusiveRuntime) {
+    const auto mtd = ntf->get<InstrumentationResultMetaData>();
+    if (mtd && mtd->callCount == 0 && mtd->isExclusiveRuntime) {
       // This node will never be called
       continue;
     }
@@ -1452,13 +1450,13 @@ void FillInstrumentationGapsPhase::printReport() {
 
 void StoreInstrumentationDecisionsPhase::modifyGraph(metacg::CgNode* /*mainMethod*/) {
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
+    const auto& node = elem.get();
     if (pgis::isAnyInstrumented(node)) {
-      node->getOrCreateMD<InstrumentationResultMetaData>()->shouldBeInstrumented = true;
+      node->getOrCreate<InstrumentationResultMetaData>().shouldBeInstrumented = true;
     } else {
-      const auto md = node->checkAndGet<InstrumentationResultMetaData>();
-      if (md.first) {
-        md.second->shouldBeInstrumented = false;
+      const auto md = node->get<InstrumentationResultMetaData>();
+      if (md) {
+        md->shouldBeInstrumented = false;
       }
     }
   }

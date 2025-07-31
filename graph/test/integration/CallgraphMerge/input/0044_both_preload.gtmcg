@@ -57,7 +57,7 @@
                     "_Z3foov": 0
                 },
                 "loopDepth": 0,
-                "mergeCount": 1,
+                "mergeCount": 0,
                 "numConditionalBranches": 0,
                 "numOperations": {
                     "numberOfControlFlowOps": 2,
@@ -73,8 +73,8 @@
         "_Z3foov": {
             "callees": [],
             "callers": [
-                "_Z3barv",
-                "_Z2hfv"
+                "_Z2hfv",
+                "_Z3barv"
             ],
             "doesOverride": false,
             "hasBody": true,

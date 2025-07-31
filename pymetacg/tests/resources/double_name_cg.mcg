@@ -1,0 +1,33 @@
+{
+    "_CG": {
+        "0": {
+            "callees": {},
+            "functionName": "foo",
+            "hasBody": true,
+            "meta": null,
+            "origin": null
+        },
+        "1": {
+            "callees": {},
+            "functionName": "foo",
+            "hasBody": true,
+            "meta": null,
+            "origin": null
+        },
+        "2": {
+            "callees": {},
+            "functionName": "bar",
+            "hasBody": true,
+            "meta": null,
+            "origin": null
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "bd29e40402af29b2ca5baf81f7edf26c2c4ed7d5",
+            "version": "0.7"
+        },
+        "version": "4.0"
+    }
+}
