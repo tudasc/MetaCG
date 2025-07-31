@@ -1,0 +1,59 @@
+FROM debian:bookworm-slim
+
+WORKDIR /opt/metacg
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install -y gcc g++ gdb \
+        cmake python3 apt-utils wget gnupg \
+        qtbase5-dev git autoconf automake \
+        libtool zlib1g-dev zlib1g vim unzip \
+        python3-pip python3-venv \
+        openmpi-bin openmpi-common bison flex bear \
+        lsb-release wget software-properties-common \
+        python3-matplotlib python3-pyqt5 ninja-build \
+    libopenmpi-dev libhwloc-dev libevent-dev
+
+RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc && \
+    add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-18 main' && \
+    add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-18 main' && \
+    apt-get update && \
+    apt-get install -y libllvm18 llvm-18 llvm-18-dev llvm-18-runtime \
+        clang-18 clang-tools-18 libclang-common-18-dev libclang-18-dev libclang1-18 \
+    lld-18
+RUN bash -c "ln -s $(which clang-18) /usr/bin/clang" && \
+    bash -c "ln -s $(which clang++-18) /usr/bin/clang++" && \
+    bash -c "ln -s $(which llvm-config-18) /usr/bin/llvm-config"
+
+ARG extinstalldir=/opt/metacg/extern/install
+ENV EXTINSTALLDIR=$extinstalldir
+
+COPY ./build_submodules.sh /opt/metacg
+
+RUN ./build_submodules.sh $(nproc)
+
+COPY . /opt/metacg
+
+RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_INSTALL_PREFIX=/tmp/metacg \
+      -DCUBE_DIR=$EXTINSTALLDIR/cubelib \
+      -DEXTRAP_INCLUDE=$EXTINSTALLDIR/extrap/include \
+      -DEXTRAP_LIB=$EXTINSTALLDIR/extrap/lib \
+      -DMETACG_BUILD_PGIS=ON \
+      -DMETACG_BUILD_CGCOLLECTOR=ON \
+      -DMETACG_BUILD_GRAPH_TOOLS=ON \
+      -DMETACG_BUILD_CGPATCH=ON \
+      -DMETACG_BUILD_PYMETACG=ON \
+      -DPython_ROOT_DIR=/opt/metacg/.venv \
+      -DPYTEST_EXECUTABLE=/opt/metacg/.venv/bin/pytest \
+      -DCMAKE_MODULE_PATH=/opt/metacg/.venv/share/Pytest/cmake \
+      -DMETACG_BUILD_PYMETACG_TESTS=ON \
+      -DCMAKE_VERBOSE_MAKEFILE=ON \
+      -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-18/build/utils/lit/lit.py 
+
+RUN cmake --build build --parallel
+
+RUN cmake --install build
+

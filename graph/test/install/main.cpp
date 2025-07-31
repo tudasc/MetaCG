@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
 
   metacg::io::VersionTwoMCGWriter writer;
   metacg::io::JsonSink js;
-  writer.write(js);
+  writer.writeActiveGraph(js);
   {
     std::ofstream os(outFile);
     js.output(os);

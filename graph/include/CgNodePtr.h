@@ -11,9 +11,9 @@
 
 namespace metacg {
 class CgNode;
-}
+}  // namespace metacg
 
-typedef std::unique_ptr<metacg::CgNode> CgNodePtr;  // hopefully this typedef helps readability
-typedef std::unordered_set<metacg::CgNode*> CgNodeRawPtrUSet;
+using CgNodePtr = std::unique_ptr<metacg::CgNode>;  // hopefully this typedef helps readability
+using CgNodeRawPtrUSet = std::unordered_set<metacg::CgNode*>;
 
 #endif

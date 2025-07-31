@@ -1,11 +1,14 @@
 .vscode
 build/
+install/
 extern/
+.venv/
+tools/cgpatch/test/pass-tests/*/Output
+tools/cgpatch/test/pass-tests/.lit_test_times.txt
+tools/cgpatch/test/pass-tests/vcall-detection-test/*.s
+
 
 .idea/
-
-cmake-build-debug-metacg-container/
-
-cmake-build-debug-metacg-container-debug/
-
-cmake-build-debug-metacg-container-release/
+build*/
+.cache/
+cmake-build*/

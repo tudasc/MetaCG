@@ -1,10 +1,15 @@
 # This ships with Ubuntu 20.04 and supports C++20
 cmake_minimum_required(VERSION 3.16)
 
-# Choose modern CMake behavior when extracting archives
-if(POLICY CMP0135)
-  cmake_policy(SET CMP0135 NEW)
-endif()
+list(
+  APPEND
+  CMAKE_MODULE_PATH
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake
+)
+
+include(Policies)
+
+set_policies()
 
 # Require out-of-source builds (taken from
 # https://hsf-training.github.io/hsf-training-cmake-webpage/07-commonproblems/index.html)
@@ -24,7 +29,7 @@ endif()
 # End of require out-of-source builds
 
 # Project information
-set(METACG_VERSION 0.7.1)
+set(METACG_VERSION 0.8.0)
 project(
   MetaCG
   VERSION ${METACG_VERSION}
@@ -37,12 +42,6 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-list(
-  APPEND
-  CMAKE_MODULE_PATH
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake
-)
 
 set(METACG_Directory ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -81,6 +80,18 @@ include(GoogleTest)
 # Component options MetaCG graph library will always be built. The actual graph implementation
 add_subdirectory(graph)
 
+option(
+  METACG_BUILD_GRAPH_TOOLS
+  "Build new graphlib-based tools (cgcollector2, cgmerge2)"
+  OFF
+)
+
+if(METACG_BUILD_GRAPH_TOOLS)
+  # New MetaCG tools based on the graphlib
+  include(ClangLLVM)
+  add_subdirectory(tools)
+endif()
+
 # Build the collector toolchain: CGCollector, CGMerge, and CGValidate
 option(
   METACG_BUILD_CGCOLLECTOR
@@ -93,6 +104,25 @@ if(METACG_BUILD_CGCOLLECTOR)
   add_subdirectory(cgcollector)
 endif()
 
+# Build CGPatch: cgpatch-pass, cgpatch-runtime, wrappers, tests
+option(
+  METACG_BUILD_CGPATCH
+  "On or off"
+  OFF
+)
+if(METACG_BUILD_CGPATCH)
+  if(NOT METACG_BUILD_GRAPH_TOOLS)
+    message(FATAL_ERROR "CGPatch requires to build with METACG_BUILD_GRAPH_TOOLS=ON")
+  endif()
+  if(${LLVM_PACKAGE_VERSION}
+     GREATER
+     14
+  )
+    add_subdirectory(tools/cgpatch/)
+  else()
+    message(STATUS "Skipping CGPatch: requires LLVM version 15 or higher")
+  endif()
+endif()
 # PIRA analyzer Should PGIS be built
 option(
   METACG_BUILD_PGIS
@@ -118,3 +148,40 @@ option(
   "On or Off"
   OFF
 )
+
+# Enable MPI for CGPatch
+option(
+  CGPATCH_USE_MPI
+  "On or Off"
+  ON
+)
+
+if(METACG_BUILD_CGPATCH AND CGPATCH_USE_MPI)
+  find_package(MPI REQUIRED)
+  message(STATUS "MPI VERSION: ${MPI_C_VERSION}")
+endif()
+
+# Build MetaCG's Python interface
+option(
+  METACG_BUILD_PYMETACG
+  "On or off"
+  OFF
+)
+
+# If set to on, CMake looks for installed nanobind
+option(
+  METACG_USE_EXTERNAL_NANOBIND
+  "On or Off"
+  OFF
+)
+
+# Build tests for pymetacg
+option(
+  METACG_BUILD_PYMETACG_TESTS
+  "On or Off"
+  OFF
+)
+
+if(METACG_BUILD_PYMETACG)
+  add_subdirectory(pymetacg)
+endif()

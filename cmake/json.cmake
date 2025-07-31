@@ -20,10 +20,10 @@ else()
       CACHE INTERNAL ""
   )
 
-  FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.10.5/json.tar.xz)
+  FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
   FetchContent_MakeAvailable(json)
 endif()
 
 function(add_json target)
-  target_link_libraries(${target} PRIVATE nlohmann_json::nlohmann_json)
+  target_link_libraries(${target} PUBLIC nlohmann_json::nlohmann_json)
 endfunction()

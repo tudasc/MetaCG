@@ -14,7 +14,6 @@
 class V3ReaderWriterRoundtripTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    metacg::loggerutil::getLogger();
     auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
   }
@@ -42,7 +41,7 @@ TEST_F(V3ReaderWriterRoundtripTest, TextGraphText) {
   const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, false, true);
   metacg::io::JsonSink jsonSink;
-  mcgWriter.write(jsonSink);
+  mcgWriter.writeActiveGraph(jsonSink);
 
   EXPECT_EQ(jsonSink.getJson(), jsonCG);
 }
@@ -69,7 +68,7 @@ TEST_F(V3ReaderWriterRoundtripTest, DebugTextGraphDebugText) {
   const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, true, true);
   metacg::io::JsonSink jsonSink;
-  mcgWriter.write(jsonSink);
+  mcgWriter.writeActiveGraph(jsonSink);
 
   EXPECT_EQ(jsonSink.getJson(), jsonCG);
 }
@@ -96,7 +95,7 @@ TEST_F(V3ReaderWriterRoundtripTest, DebugTextGraphText) {
   const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, false, true);
   metacg::io::JsonSink jsonSink;
-  mcgWriter.write(jsonSink);
+  mcgWriter.writeActiveGraph(jsonSink);
 
   const nlohmann::json jsonCG =
       "{\"_CG\":{"
@@ -135,7 +134,7 @@ TEST_F(V3ReaderWriterRoundtripTest, TextGraphDebugText) {
   const metacg::MCGFileInfo mcgFileInfo = {{3, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionThreeMCGWriter mcgWriter(mcgFileInfo, true, true);
   metacg::io::JsonSink jsonSink;
-  mcgWriter.write(jsonSink);
+  mcgWriter.writeActiveGraph(jsonSink);
 
   const nlohmann::json jsonDbgCG =
       "{\"_CG\":{"

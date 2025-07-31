@@ -9,8 +9,8 @@ timeStamp=$(date +%s)
 while getopts ":t:b:h" opt; do
   case $opt in
     b)
-      echo "$OPTARG"
-      if [ -z $OPTARG ]; then
+      echo "${OPTARG}"
+      if [ -z "${OPTARG}" ]; then
         echo "no build directory given, assuming \"build\""
       else
         echo "Using ${OPTARG} as build dir"
@@ -19,7 +19,7 @@ while getopts ":t:b:h" opt; do
       ;;
     t)
       echo "Running testsuite ${OPTARG}"
-      testSuite=${OPTARG}
+      testSuite="${OPTARG}"
       ;;
     h)
       echo "use -b to provide a build directory NAME"
@@ -48,10 +48,10 @@ logFile=${logDir}/${testSuite}-${CI_CONCURRENT_ID}.log
 echo "Running Tests with build directory: ${buildDir}"
 
 
-rm -rf $outDir && mkdir $outDir
-rm -rf $logDir && mkdir ${logDir}
+rm -rf "${outDir}" && mkdir "${outDir}"
+rm -rf "${logDir}" && mkdir "${logDir}"
 
-cd input$testSuite || error_exit "cd input$testSuite"
+cd input"${testSuite}" || error_exit "cd input$testSuite"
 
 
 echo "Running $testSuite tests with build directory: $buildDir"
@@ -69,25 +69,25 @@ for testNoInit in *.afl; do
 
   # We now overwrite logs with each execution. On error, the log is echo'ed inside
   # this script.
-	bash "${testSuite}_run.sh" $buildDir $outDir $testNo 2>&1 > "$logFile"
+	bash "${testSuite}_run.sh" "${buildDir}" "${outDir}" "${testNo}" > "$logFile" 2>&1
 	#bash "${testSuite}_run.sh" $buildDir $outDir $testNo
 
 	if [ $? -ne 0 ]; then
-		fails=$(($fails+1))
+		fails=$((fails+1))
 		thisFail=1
 	fi
 	
-	check_selection $testSuite $testNo $outDir $CI_CONCURRENT_ID
+	check_selection "${testSuite}" "${testNo}" "${outDir}" "${CI_CONCURRENT_ID}"
 
 	if [ $? -ne 0 ]; then
-		fails=$(($fails+1))
+		fails=$((fails+1))
 		thisFail=1
 	fi
 	if [ $thisFail -eq 1 ]; then
 		failStr=' FAIL'
     # In case of error, print the log file
     echo ">>> ERROR OCCURRED -- Dumping log <<<"
-    cat $logFile
+    cat "${logFile}"
 	else
 		failStr=' PASS'
 	fi
@@ -105,25 +105,25 @@ for testNoInit in *.afl; do
 	echo "Running $testNo"
 	thisFail=0
 
-	bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo > "$logFile" 2>&1
+	bash "${testSuite}_run_v2.sh" "${buildDir}" "${outDir}" "${testNo}" > "$logFile" 2>&1
 	#bash "${testSuite}_run_v2.sh" $buildDir $outDir $testNo
 
 	if [ $? -ne 0 ]; then
-		fails=$(($fails+1))
+		fails=$((fails+1))
 		thisFail=1
 	fi
 	
-	check_selection $testSuite $testNo $outDir $CI_CONCURRENT_ID
+	check_selection "${testSuite}" "${testNo}" "${outDir}" "${CI_CONCURRENT_ID}"
 
 	if [ $? -ne 0 ]; then
-		fails=$(($fails+1))
+		fails=$((fails+1))
 		thisFail=1
 	fi
 	if [ $thisFail -eq 1 ]; then
 		failStr=' FAIL'
     # in case of error, print the log file
     echo ">>> ERROR OCCURRED -- Dumping log <<<"
-    cat $logFile
+    cat "${logFile}"
 	else
 		failStr=' PASS'
 	fi
@@ -142,24 +142,24 @@ for testNoInit in *.spl; do
 	echo "Running $testNo"
 	thisFail=0
 
-	bash "${testSuite}_run.sh" $buildDir $outDir $testNo "spl" 2>&1 > "$logFile"
+	bash "${testSuite}_run.sh" "${buildDir}" "${outDir}" "${testNo}" "spl" > "${logFile}" 2>&1
 	#bash "${testSuite}_run.sh" $buildDir $outDir $testNo
 
 	if [ $? -ne 0 ]; then
-		fails=$(($fails+1))
+		fails=$((fails+1))
 		thisFail=1
 	fi
 	
-	check_selection $testSuite $testNo $outDir $CI_CONCURRENT_ID
+	check_selection "${testSuite}" "${testNo}" "${outDir}" "${CI_CONCURRENT_ID}"
 
 	if [ $? -ne 0 ]; then
-		fails=$(($fails+1))
+		fails=$((fails+1))
 		thisFail=1
 	fi
 	if [ $thisFail -eq 1 ]; then
 		failStr=' FAIL'
     # In case of error, print the log file
-    cat $logFile
+    cat "${logFile}"
 	else
 		failStr=' PASS'
 	fi

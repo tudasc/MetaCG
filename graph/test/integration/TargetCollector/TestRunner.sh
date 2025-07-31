@@ -64,7 +64,7 @@ if [ $resultOfTest -ne 0 ]; then
 	exit 1
 fi
 
-rm ./src/foo.ipcg
-rm ./src/main.ipcg
-rm ./src/wholeProgramCG.ipcg
-echo "{}" > ./src/wholeProgramCG.ipcg
+rm ./src/foo.cpp${CI_CONCURRENT_ID}.ipcg
+rm ./src/main.cpp${CI_CONCURRENT_ID}.ipcg
+rm ./src/wholeProgramCG-${CI_CONCURRENT_ID}.ipcg
+rm -rf build-${CI_CONCURRENT_ID}

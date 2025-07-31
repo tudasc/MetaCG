@@ -11,10 +11,12 @@
 #include "MCGManager.h"
 #include "io/VersionTwoMCGWriter.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 class V2MCGWriterTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    metacg::loggerutil::getLogger();
     auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
     mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
@@ -31,6 +33,11 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
     metadataFloat = j.at("metadataFloat");
   }
 
+ private:
+  TestMetaData(const TestMetaData& other)
+      : metadataString(other.metadataString), metadataInt(other.metadataInt), metadataFloat(other.metadataFloat) {}
+
+ public:
   nlohmann::json to_json() const final {
     nlohmann::json j;
     j["metadataString"] = metadataString;
@@ -40,6 +47,18 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
   };
 
   const char* getKey() const final { return key; }
+
+  void merge(const MetaData& toMerge) final {
+    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
+      metacg::MCGLogger::instance().getErrConsole()->error(
+          "The MetaData which was tried to merge with TestMetaData was of a different MetaData type");
+      abort();
+    }
+
+    // const TestMetaData* toMergeDerived = static_cast<const TestMetaData*>(&toMerge);
+  }
+
+  MetaData* clone() const final { return new TestMetaData(*this); }
 
   std::string metadataString;
   int metadataInt = 0;
@@ -51,7 +70,7 @@ TEST_F(V2MCGWriterTest, DifferentMetaInformation) {
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
-  mcgWriter.write(jsonSink);
+  mcgWriter.writeActiveGraph(jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
             "{\"_CG\":null,\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},"
             "\"version\":\"2.0\"}}");
@@ -61,6 +80,7 @@ TEST_F(V2MCGWriterTest, OneNodeCGWrite) {
   auto& mcgm = metacg::graph::MCGManager::get();
   const auto& cg = mcgm.getCallgraph();
   cg->insert("main");
+#pragma warning(suppress: -Wdeprecated-declarations)
   cg->getMain()->setIsVirtual(false);
   cg->getMain()->setHasBody(true);
 
@@ -68,7 +88,7 @@ TEST_F(V2MCGWriterTest, OneNodeCGWrite) {
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
-  mcgWriter.write(jsonSink);
+  mcgWriter.writeActiveGraph(jsonSink);
 
   EXPECT_EQ(jsonSink.getJson().dump(),
             "{\"_CG\":{\"main\":{\"callees\":[],\"callers\":[],\"doesOverride\":false,\"hasBody\":true,\"isVirtual\":"
@@ -91,7 +111,7 @@ TEST_F(V2MCGWriterTest, TwoNodeCGWrite) {
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
-  mcgWriter.write(jsonSink);
+  mcgWriter.writeActiveGraph(jsonSink);
   EXPECT_EQ(
       jsonSink.getJson().dump(),
       "{\"_CG\":{\"foo\":{\"callees\":[],\"callers\":[],\"doesOverride\":false,\"hasBody\":true,\"isVirtual\":true,"
@@ -117,7 +137,7 @@ TEST_F(V2MCGWriterTest, TwoNodeOneEdgeCGWrite) {
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
-  mcgWriter.write(jsonSink);
+  mcgWriter.writeActiveGraph(jsonSink);
 
   EXPECT_EQ(
       jsonSink.getJson().dump(),
@@ -148,7 +168,7 @@ TEST_F(V2MCGWriterTest, ThreeNodeOneEdgeCGWrite) {
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
-  mcgWriter.write(jsonSink);
+  mcgWriter.writeActiveGraph(jsonSink);
 
   EXPECT_EQ(jsonSink.getJson().dump(),
             "{\"_CG\":{\"bar\":{\"callees\":[],\"callers\":[],\"doesOverride\":false,\"hasBody\":false,\"isVirtual\":"
@@ -174,7 +194,7 @@ TEST_F(V2MCGWriterTest, MetadataCGWrite) {
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
-  mcgWriter.write(jsonSink);
+  mcgWriter.writeActiveGraph(jsonSink);
 
   EXPECT_EQ(jsonSink.getJson().dump(),
             "{\"_CG\":{\"main\":{\"callees\":[],\"callers\":[],\"doesOverride\":false,\"hasBody\":true,\"isVirtual\":"
@@ -201,14 +221,14 @@ TEST_F(V2MCGWriterTest, WriteByName) {
   const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {generatorName, 0, 1, "TestSha"}};
   metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
   metacg::io::JsonSink jsonSink;
-  mcgWriter.write("newGraph", jsonSink);
+  mcgWriter.writeNamedGraph("newGraph", jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
             "{\"_CG\":{\"main\":{\"callees\":[],\"callers\":[],\"doesOverride\":false,\"hasBody\":true,\"isVirtual\":"
             "false,\"meta\":{\"TestMetaData\":{\"metadataFloat\":0.0,\"metadataInt\":0,\"metadataString\":\"\"}},"
             "\"overriddenBy\":[],\"overrides\":[]}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
             "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
 
-  mcgWriter.write("emptyGraph", jsonSink);
+  mcgWriter.writeNamedGraph("emptyGraph", jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
             "{\"_CG\":null,"
             "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
@@ -272,7 +292,7 @@ TEST_F(V2MCGWriterTest, SwitchBeforeWrite) {
   mcgm.setActive("emptyGraph");
   mcgm.setActive("newGraph");
 
-  mcgWriter.write(jsonSink);
+  mcgWriter.writeActiveGraph(jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
             "{\"_CG\":{\"main\":{\"callees\":[],\"callers\":[],\"doesOverride\":false,\"hasBody\":true,\"isVirtual\":"
             "false,\"meta\":{\"TestMetaData\":{\"metadataFloat\":0.0,\"metadataInt\":0,\"metadataString\":\"\"}},"
@@ -280,10 +300,11 @@ TEST_F(V2MCGWriterTest, SwitchBeforeWrite) {
             "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
 
   mcgm.setActive("emptyGraph");
-  mcgWriter.write(jsonSink);
+  mcgWriter.writeActiveGraph(jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
             "{\"_CG\":null,"
             "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
             "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
   mcgm.resetManager();
 }
+#pragma GCC diagnostic pop

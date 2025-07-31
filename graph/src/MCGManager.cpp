@@ -23,10 +23,10 @@ bool MCGManager::resetActiveGraph() {
   if (activeGraph) {
     activeGraph->clear();
     return true;
-  } else {
-    assert(false && "Graph manager could not reset active Graph, no active graph exists");
-    return false;
   }
+
+  assert(false && "Graph manager could not reset active Graph, no active graph exists");
+  return false;
 }
 
 size_t MCGManager::size() const { return activeGraph->size(); }
@@ -52,13 +52,13 @@ metacg::Callgraph* MCGManager::getOrCreateCallgraph(const std::string& name, boo
       activeGraph = graph->second.get();
     }
     return graph->second.get();
-  } else {
-    managedGraphs[name] = std::make_unique<Callgraph>();
-    if (setActive) {
-      activeGraph = managedGraphs[name].get();
-    }
-    return managedGraphs[name].get();
   }
+
+  managedGraphs[name] = std::make_unique<Callgraph>();
+  if (setActive) {
+    activeGraph = managedGraphs[name].get();
+  }
+  return managedGraphs[name].get();
 }
 
 bool MCGManager::setActive(const std::string& callgraph) {
@@ -93,6 +93,22 @@ bool MCGManager::addToManagedGraphs(const std::string& name, std::unique_ptr<Cal
     activeGraph = managedGraphs[name].get();
   }
   return true;
+}
+
+void MCGManager::mergeIntoActiveGraph() {
+  assert(activeGraph && "Graph manager could not merge into active Graph, no active graph exists");
+
+  // We merge into whatever the active callgraph is
+  auto* activeCallgraph = getCallgraph();
+  for (const auto& callgraphName : getAllManagedGraphNames()) {
+    if (assertActive(callgraphName))
+      continue;
+
+    auto* currentCallgraph = getCallgraph(callgraphName);
+    assert(currentCallgraph && "Callgraph is null!");
+
+    activeCallgraph->merge(*currentCallgraph);
+  }
 }
 
 std::unordered_set<std::string> MCGManager::getAllManagedGraphNames() {

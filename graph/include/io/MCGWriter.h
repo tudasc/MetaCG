@@ -52,7 +52,24 @@ class MCGWriter {
    * @param graph which graph to write out
    * @param js which sink to write to
    */
-  virtual void write(Callgraph* graph, JsonSink& js) = 0;
+  virtual void write(const Callgraph* graph, JsonSink& js) = 0;
+
+  /**
+   * Writes the (managed) call graph with the given name to a json sink.
+   * Note: Distinct name to avoid overload resolution issues.
+   * @param cgName Name of the graph
+   * @param js The json sink to write to
+   */
+  void writeNamedGraph(const std::string& cgName, JsonSink& js);
+
+  /**
+   * Writes the active call graph to a json sink.
+   * Note: Distinct name to avoid overload resolution issues.
+   * @param js The json sink to write to
+   */
+  void writeActiveGraph(JsonSink& js);
+
+  virtual ~MCGWriter() = default;
 
  protected:
   /**
@@ -71,6 +88,13 @@ class MCGWriter {
   }
   MCGFileInfo fileInfo;
 };
+
+/**
+ * Factory function to instantiate the correct writer implementation for the given format.
+ * @param version The format version.
+ * @return A unique pointer to the instantiated writer. Empty, if there is no writer matching the format version.
+ */
+std::unique_ptr<MCGWriter> createWriter(int version);
 
 }  // namespace metacg::io
 

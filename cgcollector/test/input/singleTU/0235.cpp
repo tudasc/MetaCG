@@ -6,7 +6,7 @@ void foo() {}
 
 class C {
  public:
-  C(Function F) : member(F){};
+  C(Function F) : member(F) {};
 
   Function member;
 };

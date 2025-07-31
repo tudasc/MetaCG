@@ -9,15 +9,7 @@
 #include "metadata/OverrideMD.h"
 #include <set>
 
-void metacg::io::VersionTwoMCGWriter::write(metacg::io::JsonSink& js) {
-  write(metacg::graph::MCGManager::get().getCallgraph(), js);
-}
-
-void metacg::io::VersionTwoMCGWriter::write(const std::string& CGName, metacg::io::JsonSink& js) {
-  write(metacg::graph::MCGManager::get().getCallgraph(CGName), js);
-}
-
-void metacg::io::VersionTwoMCGWriter::write(metacg::Callgraph* cg, metacg::io::JsonSink& js) {
+void metacg::io::VersionTwoMCGWriter::write(const metacg::Callgraph* cg, metacg::io::JsonSink& js) {
   nlohmann::json j;
   attachMCGFormatHeader(j);
   j.at(fileInfo.formatInfo.cgFieldName) = *cg;

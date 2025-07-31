@@ -10,10 +10,12 @@
 #include "MCGManager.h"
 #include "io/VersionTwoMCGReader.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 class V2MCGReaderTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    metacg::loggerutil::getLogger();
     auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
   }
@@ -29,6 +31,11 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
     metadataFloat = j.at("metadataFloat");
   }
 
+ private:
+  TestMetaData(const TestMetaData& other)
+      : metadataString(other.metadataString), metadataInt(other.metadataInt), metadataFloat(other.metadataFloat) {}
+
+ public:
   nlohmann::json to_json() const final {
     nlohmann::json j;
     j["metadataString"] = metadataString;
@@ -38,6 +45,18 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
   };
 
   const char* getKey() const final { return key; }
+
+  void merge(const MetaData& toMerge) final {
+    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
+      metacg::MCGLogger::instance().getErrConsole()->error(
+          "The MetaData which was tried to merge with TestMetaData was of a different MetaData type");
+      abort();
+    }
+
+    // const TestMetaData* toMergeDerived = static_cast<const TestMetaData*>(&toMerge);
+  }
+
+  MetaData* clone() const final { return new TestMetaData(*this); }
 
   std::string metadataString;
   int metadataInt = 0;
@@ -510,3 +529,5 @@ TEST_F(V2MCGReaderTest, OneNodeWithOriginCGRead) {
   EXPECT_TRUE(cg->getCallees("main").empty());
   EXPECT_TRUE(cg->getCallers("main").empty());
 }
+
+#pragma GCC diagnostic pop

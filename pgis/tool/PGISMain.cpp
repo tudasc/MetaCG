@@ -361,7 +361,7 @@ int main(int argc, char** argv) {
 
         metacg::io::VersionTwoMCGWriter mcgWriter{};
         metacg::io::JsonSink jsonSink;
-        mcgWriter.write(jsonSink);
+        mcgWriter.writeActiveGraph(jsonSink);
         {
           std::ofstream out(metacgFile);
           out << jsonSink.getJson().dump(4) << std::endl;
@@ -411,7 +411,7 @@ int main(int argc, char** argv) {
 
       metacg::io::VersionTwoMCGWriter mcgWriter;
       metacg::io::JsonSink jsonSink;
-      mcgWriter.write(jsonSink);
+      mcgWriter.writeActiveGraph(jsonSink);
       {
         std::ofstream out(metacgFile);
         out << jsonSink.getJson().dump(4) << std::endl;
@@ -445,7 +445,7 @@ int main(int argc, char** argv) {
   {
     metacg::io::JsonSink jsSink;
     metacg::io::VersionTwoMCGWriter mcgw;
-    mcgw.write(jsSink);
+    mcgw.writeActiveGraph(jsSink);
     const std::string filename = c.outputFile + "/instrumented-" + c.appName + ".mcg";
     std::ofstream ofile(filename);
     jsSink.output(ofile);

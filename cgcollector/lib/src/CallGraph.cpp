@@ -24,6 +24,7 @@
 #include <clang/Basic/LLVM.h>
 #include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/ADT/STLExtras.h>
+#include <llvm/ADT/SmallSet.h>
 #include <llvm/ADT/Statistic.h>
 #include <llvm/Support/Casting.h>
 #include <llvm/Support/Compiler.h>
@@ -450,7 +451,7 @@ class FunctionPointerTracer : public StmtVisitor<FunctionPointerTracer> {
  private:
   // add a called decl to another function
   void addCalledDecl(const Decl* caller, const Decl* callee, const CallExpr* C) {
-    if (!G->includeInGraph(callee)) {
+    if (!CallGraph::includeInGraph(callee) || !CallGraph::includeInGraph(caller)) {
       return;
     }
     G->getOrInsertNode(caller)->addCallee(G->getOrInsertNode(callee));
@@ -524,6 +525,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
   std::vector<std::string> vtaInstances;
 
   bool captureCtorsDtors;
+  bool inferCtorDtorCalls;
   typedef llvm::DenseMap<const VarDecl*, llvm::SmallSet<const Decl*, 8>> AliasMapT;
   // Stores the aliases per variable
   AliasMapT aliases;
@@ -537,8 +539,8 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
   std::unordered_map<const VarDecl*, llvm::SmallSet<const FunctionDecl*, 16>> functionPointerTargets;
 
  public:
-  CGBuilder(CallGraph* g, CallGraphNode* N, bool captureCtorsDtors, CallGraph::UnresolvedMapTy unresolvedSyms)
-      : G(g), callerNode(N), captureCtorsDtors(captureCtorsDtors), unresolvedSymbols(unresolvedSyms) {}
+  CGBuilder(CallGraph* g, CallGraphNode* N, bool captureCtorsDtors, bool inferCtorDtorCalls, CallGraph::UnresolvedMapTy unresolvedSyms)
+      : G(g), callerNode(N), captureCtorsDtors(captureCtorsDtors), inferCtorDtorCalls(inferCtorDtorCalls), unresolvedSymbols(unresolvedSyms) {}
 
   void printAliases() const {
     for (const auto& aliasP : aliases) {
@@ -773,7 +775,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
 
   // add a called decl to the current function
   void addCalledDecl(const Decl* D, const CallExpr* C) {
-    if (!G->includeInGraph(D))
+    if (!CallGraph::includeInGraph(D))
       return;
 
     CallGraphNode* CalleeNode = G->getOrInsertNode(D);
@@ -785,7 +787,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
 
   // add a called decl to another function
   void addCalledDecl(Decl* Caller, Decl* Callee, CallExpr* C) {
-    if (!G->includeInGraph(Callee))
+    if (!CallGraph::includeInGraph(Caller) || !CallGraph::includeInGraph(Callee))
       return;
     G->getOrInsertNode(Caller)->addCallee(G->getOrInsertNode(Callee));
     if (C) {
@@ -798,7 +800,8 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       return;
     }
 
-    if (auto ctor = CE->getConstructor()) {
+    // Ignoring elidable constructor calls here
+    if (auto ctor = CE->getConstructor(); ctor && !CE->isElidable()) {
       addCalledDecl(ctor, nullptr);
     }
 
@@ -956,7 +959,9 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     //    std::cout << "Visiting the lambda expression: " << LEstr.front() << " @ " << LE->getCallOperator() <<
     //    std::endl;
     auto lambdaStaticInvoker = LE->getLambdaClass()->getLambdaStaticInvoker();
-    addCalledDecl(lambdaStaticInvoker, LE->getCallOperator(), nullptr);
+    if (lambdaStaticInvoker) {
+      addCalledDecl(lambdaStaticInvoker, LE->getCallOperator(), nullptr);
+    }
     for (auto conversionIt = LE->getLambdaClass()->conversion_begin();
          conversionIt != LE->getLambdaClass()->conversion_end(); ++conversionIt) {
       if (auto conv = *conversionIt) {
@@ -999,6 +1004,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       // std::cout << "VarDeclInit not a DeclRefExpr" << std::endl;
     }
   }
+
   FunctionDecl* getFunctionDecl(DeclRefExpr* dre) {
     auto decl = dre->getDecl();
     if (decl && isa<FunctionDecl>(*decl)) {
@@ -1006,6 +1012,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     }
     return dyn_cast<FunctionDecl>(decl);
   }
+
   void insertFuncAlias(VarDecl* vDecl, DeclRefExpr* dre) {
     if (auto fd = getFunctionDecl(dre)) {
       aliases[vDecl].insert(fd);
@@ -1013,6 +1020,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       // std::endl;
     }
   }
+
   VarDecl* getVarDecl(DeclRefExpr* dre) {
     auto decl = dre->getDecl();
     if (decl && isa<VarDecl>(*decl)) {
@@ -1020,6 +1028,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     }
     return dyn_cast<VarDecl>(decl);
   }
+
   void VisitBinaryOperator(BinaryOperator* bo) {
     if (bo->isAssignmentOp()) {
       auto lhs = bo->getLHS();
@@ -1079,6 +1088,7 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
     }
     return {};
   }
+
   std::unordered_set<Expr*> resolveToDeclRefExpr(ConditionalOperator* co) {
     auto trueExpr = co->getTrueExpr();
     auto falseExpr = co->getFalseExpr();
@@ -1133,8 +1143,30 @@ class CGBuilder : public StmtVisitor<CGBuilder> {
       // std::cerr << "Decl groups are currently unsupported" << std::endl;
       // exit(-1);
     }
+
+    if (captureCtorsDtors && inferCtorDtorCalls) {
+      // Check for implicit destruction of local variables
+      for (Decl* D : ds->decls()) {
+        if (VarDecl* VD = dyn_cast<VarDecl>(D)) {
+          if (!VD->hasLocalStorage())
+            return;  // Only check local variables
+
+          // Infer destructor calls of local variables
+          QualType VarType = VD->getType();
+          if (const CXXRecordDecl* RD = VarType->getAsCXXRecordDecl()) {
+            if (RD->hasDefinition() && RD->hasNonTrivialDestructor()) {
+              if (auto Dtor = RD->getDestructor()) {
+                addCalledDecl(Dtor, nullptr);
+              }
+            }
+          }
+        }
+      }
+    }
+
     VisitChildren(ds);
   }
+
   void VisitCXXNewExpr(CXXNewExpr* new_expr) {
     if (auto* rd = new_expr->getAllocatedType()->getAsCXXRecordDecl()) {
       vtaInstances.push_back(rd->getQualifiedNameAsString());
@@ -1158,8 +1190,23 @@ CallGraph::CallGraph() : Root(getOrInsertNode(nullptr)) {}
 
 CallGraph::~CallGraph() = default;
 
+[[nodiscard]] inline bool starts_with(llvm::StringRef Str, llvm::StringRef Prefix) {
+#if LLVM_VERSION_MAJOR < 17
+  return Str.startswith(Prefix);
+#else
+  return Str.starts_with(Prefix);
+#endif
+}
+
 bool CallGraph::includeInGraph(const Decl* D) {
   assert(D);
+
+  // We decided that the lambda static invoker is not to be manifested as a CG node
+  // as it is not explicitly part of the source code and also absent in the IR representation
+  if (const auto& invoke = dyn_cast<CXXMethodDecl>(D); invoke && invoke->isLambdaStaticInvoker()) {
+    return false;
+  }
+
   // NOTE: It could make sense to check here that only FunctionDecls are included. Right now this function also returns
   // true for VarDecls/ParmVarDecls that are called because they contain a function pointer
   if (const FunctionDecl* FD = dyn_cast<FunctionDecl>(D)) {
@@ -1170,7 +1217,7 @@ bool CallGraph::includeInGraph(const Decl* D) {
 
     IdentifierInfo* II = FD->getIdentifier();
     // TODO not sure whether we want to include __inline marked functions
-    if (II && II->getName().startswith("__inline")) {
+    if (II && starts_with(II->getName(), "__inline")) {
       return true;
     }
   }
@@ -1188,7 +1235,13 @@ void CallGraph::addNodeForDecl(Decl* D, bool IsGlobal) {
 #ifndef DEBUG_TEST_AA
   // Process all the calls by this function as well.
   if (Stmt* Body = D->getBody()) {
-    CGBuilder builder(this, Node, captureCtorsDtors, unresolvedSymbols);
+    CGBuilder builder(this, Node, captureCtorsDtors, inferCtorDtorCalls, unresolvedSymbols);
+    if (auto cxx = dyn_cast<clang::CXXConstructorDecl>(D); cxx) {
+      for (auto ini : cxx->inits()) {
+        builder.Visit(ini->getInit());
+      }
+    }
+
     builder.Visit(Body);
     // builder.printAliases();
     unresolvedSymbols.insert(builder.getUnresolvedSymbols().begin(), builder.getUnresolvedSymbols().end());
@@ -1244,6 +1297,47 @@ bool CallGraph::VisitFunctionDecl(clang::FunctionDecl* FD) {
     addNodeForDecl(FD, FD->isGlobal());
   } else {
     // std::cout << "Not including in graph " << FD->getNameAsString() << std::endl;
+  }
+  return true;
+}
+
+bool CallGraph::VisitCXXDestructorDecl(clang::CXXDestructorDecl* Destructor) {
+  if (!includeInGraph(Destructor) || !captureCtorsDtors) {
+    return true;
+  }
+
+  const CXXRecordDecl* ClassDecl = Destructor->getParent();
+  if (!ClassDecl)
+    return true;
+
+  auto DtorNode = getOrInsertNode(Destructor);
+  assert(DtorNode);
+
+  if (inferCtorDtorCalls) {
+    // Check for base class destructors
+    for (const auto& Base : ClassDecl->bases()) {
+      const CXXRecordDecl* BaseDecl = Base.getType()->getAsCXXRecordDecl();
+      if (BaseDecl && BaseDecl->hasDefinition()) {
+        if (CXXDestructorDecl* BaseDestructor = BaseDecl->getDestructor()) {
+          CallGraphNode* CalleeNode = getOrInsertNode(BaseDestructor);
+          assert(CalleeNode);
+          DtorNode->addCallee(CalleeNode);
+        }
+      }
+    }
+    // Detect member variable destruction
+    for (const FieldDecl* Field : ClassDecl->fields()) {
+      QualType FieldType = Field->getType();
+      if (const CXXRecordDecl* MemberClass = FieldType->getAsCXXRecordDecl()) {
+        if (MemberClass->hasDefinition() && MemberClass->hasNonTrivialDestructor()) {
+          if (CXXDestructorDecl* MemberDestructor = MemberClass->getDestructor()) {
+            CallGraphNode* CalleeNode = getOrInsertNode(MemberDestructor);
+            assert(CalleeNode);
+            DtorNode->addCallee(CalleeNode);
+          }
+        }
+      }
+    }
   }
   return true;
 }

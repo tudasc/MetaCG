@@ -81,12 +81,20 @@ class FilePropertyCollector : public MetaCollector {
     const auto sourceLocation = decl->getLocation();
     auto& astCtx = decl->getASTContext();
     const auto fullSrcLoc = astCtx.getFullLoc(sourceLocation);
-    const auto fileEntry = fullSrcLoc.getFileEntry();
-    if (!fileEntry) {
-      return result;
+    std::string fileNameStr = "";
+    if (fullSrcLoc.isValid()) {
+#if LLVM_VERSION_MAJOR >= 18
+      const auto fileEntry = fullSrcLoc.getFileEntryRef();
+#else
+      const auto fileEntry = fullSrcLoc.getFileEntry();
+#endif
+      if (!fileEntry) {
+        return result;
+      }
+
+      const auto fileName = fileEntry->getName();
+      fileNameStr = fileName.str();
     }
-    const auto fileName = fileEntry->getName();
-    std::string fileNameStr = fileName.str();
 
     result->isFromSystemInclude = astCtx.getSourceManager().isInSystemHeader(sourceLocation);
 
@@ -127,7 +135,7 @@ class MallocVariableCollector : public MetaCollector {
       std::map<std::string, std::string>& allocs;
 
      public:
-      MallocFinder(clang::ASTContext& ctx, std::map<std::string, std::string>& allocs) : ctx(ctx), allocs(allocs){};
+      MallocFinder(clang::ASTContext& ctx, std::map<std::string, std::string>& allocs) : ctx(ctx), allocs(allocs) {};
       ~MallocFinder() = default;
 
       void VisitStmt(clang::Stmt* stmt) {

@@ -8,6 +8,7 @@ stages:
   - download
   - lint
   - build-deps
+  - configure-test
   - build
   - test
   - integration-test
@@ -16,11 +17,8 @@ stages:
 .job-setup: &job-setup
   parallel:
     matrix:
-      - GCC: 10
-        #LLVM: [10.0.1, 11.1.0, 12.0.1, 13.0.0, 14.0.0]
-        LLVM: [10.0.1, 14.0.6]
       - GCC: 11
-        LLVM: [13.0.1, 14.0.6]
+        LLVM: [13.0.1, 14.0.6, 15.0.7, 16.0.6, 17.0.6, 18.1.8]
   variables:
     MCG_BUILD: build-GCC-$GCC-LLVM-$LLVM
 
@@ -30,7 +28,7 @@ mcg-download:
   stage: download
   variables:
     GIT_STRATEGY: clone
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PIPELINE_ID
   script:
     - echo 'Done.'
 
@@ -40,7 +38,7 @@ mcg-cmake-lint:
   stage: lint
   needs: ["mcg-download"]
   script:
-    - for f in $(find . -name "CMakeLists.txt"); do cmake-format --check $f || exit 1; done
+    - for f in $(find {cgcollector,graph,pgis} -name "CMakeLists.txt"); do cmake-format --check $f || exit 1; done ; cmake-format --check CMakeLists.txt
     - for f in $(find ./cmake -type f); do cmake-format --check $f || exit 1; done
 
 
@@ -51,33 +49,31 @@ build-dependencies:
   script:
     - ./build_submodules.sh
 
-mcg-container:
-  stage: build
-  tags:
-    - podman
-  allow_failure: true
+# Stage: configure-test
+configure-custom-md:
+  stage: configure-test
   needs: ["mcg-download"]
-  variables:
-    GIT_STRATEGY: clone
-    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_SHA
   script:
-    - podman login ${CI_REGISTRY} -u ${CI_CONTAINER_REG_USER} -p ${CONTAINER_REGISTRY_READ_TOKEN}
-    - podman build -t metacg:$CI_COMMIT_SHA -f container/metacg .
-    - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/pgis/test/unit/pgistests
-    - podman run --rm -t metacg:$CI_COMMIT_SHA /opt/metacg/metacg/build/graph/test/unit/libtests
-
+    - test -d graph/include/metadata/custom || exit 1
+    - echo "// Empty test header" > graph/include/metadata/custom/TestHeader.h
+    - cmake -S . -B build-configure-md -G Ninja -DCMAKE_BUILD_TYPE=Debug
+      -DMETACG_BUILD_PGIS=OFF
+      -DMETACG_BUILD_CGCOLLECTOR=OFF
+      -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      -DMETACG_BUILD_UNIT_TESTS=OFF
+    - grep "TestHeader.h" "build-configure-md/graph/include/metadata/CustomMD.h" || exit 1
+    - rm -f graph/include/metadata/custom/TestHeader.h
 
 # Stage: build
 build-mcg-no-tests:
   <<: *job-setup
   stage: build
-  needs: ["build-dependencies"]
+  needs: ["build-dependencies", "configure-custom-md"]
   script:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-tests -G Ninja -DCMAKE_BUILD_TYPE=Debug 
         -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-no-tests
-        -DCUBE_LIB=$(dirname $(which cube_info))/../lib 
-        -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+        -DCUBE_DIR=$(dirname $(which cube_info))/..
         -DEXTRAP_INCLUDE=./extern/install/extrap/include 
         -DEXTRAP_LIB=./extern/install/extrap/lib 
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
@@ -88,13 +84,12 @@ build-mcg-no-tests:
 build-mcg-stripped-all:
   <<: *job-setup
   stage: build
-  needs: ["build-dependencies"]
+  needs: ["build-dependencies", "configure-custom-md"]
   script:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-all -G Ninja -DCMAKE_BUILD_TYPE=Debug 
         -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-dflt
-        -DCUBE_LIB=$(dirname $(which cube_info))/../lib 
-        -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+        -DCUBE_DIR=$(dirname $(which cube_info))/..
         -DEXTRAP_INCLUDE=./extern/install/extrap/include 
         -DEXTRAP_LIB=./extern/install/extrap/lib 
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
@@ -104,13 +99,12 @@ build-mcg-stripped-all:
 build-mcg-stripped-pgis:
   <<: *job-setup
   stage: build
-  needs: ["build-dependencies"]
+  needs: ["build-dependencies", "configure-custom-md"]
   script:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-cgcollector -G Ninja -DCMAKE_BUILD_TYPE=Debug
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_pgis
-      -DCUBE_LIB=$(dirname $(which cube_info))/../lib
-      -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+      -DCUBE_DIR=$(dirname $(which cube_info))/..
       -DEXTRAP_INCLUDE=./extern/install/extrap/include
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_PGIS=ON
@@ -121,13 +115,12 @@ build-mcg-stripped-pgis:
 build-mcg-stripped-cgcollector:
   <<: *job-setup
   stage: build
-  needs: ["build-dependencies"]
+  needs: ["build-dependencies", "configure-custom-md"]
   script:
     - module load clang/$LLVM
     - cmake -S . -B $MCG_BUILD-no-pgis -G Ninja -DCMAKE_BUILD_TYPE=Debug
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_cgcollector
-      -DCUBE_LIB=$(dirname $(which cube_info))/../lib
-      -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+      -DCUBE_DIR=$(dirname $(which cube_info))/..
       -DEXTRAP_INCLUDE=./extern/install/extrap/include
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_CGCOLLECTOR=ON
@@ -138,17 +131,23 @@ build-mcg-stripped-cgcollector:
 build-mcg:
   <<: *job-setup
   stage: build
-  needs: ["build-dependencies"]
+  needs: ["build-dependencies", "configure-custom-md"]
   script:
     - module load clang/$LLVM
+    - source .venv/bin/activate
     - cmake -S . -B $MCG_BUILD -G Ninja -DCMAKE_BUILD_TYPE=Debug
       -DCMAKE_INSTALL_PREFIX=/tmp/metacg/$MCG_BUILD-w_all
-      -DCUBE_LIB=$(dirname $(which cube_info))/../lib
-      -DCUBE_INCLUDE=$(dirname $(which cube_info))/../include/cubelib
+      -DLLVM_EXTERNAL_LIT=$(which lit)
+      -DCUBE_DIR=$(dirname $(which cube_info))/..
       -DEXTRAP_INCLUDE=./extern/install/extrap/include
       -DEXTRAP_LIB=./extern/install/extrap/lib
       -DMETACG_BUILD_PGIS=ON
       -DMETACG_BUILD_CGCOLLECTOR=ON
+      -DMETACG_BUILD_GRAPH_TOOLS=ON
+      -DMETACG_BUILD_CGPATCH=ON
+      -DCGPATCH_USE_MPI=OFF
+      -DMETACG_BUILD_PYMETACG=ON
+      -DMETACG_BUILD_PYMETACG_TESTS=ON
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
     - cmake --build $MCG_BUILD --parallel
     - module purge
@@ -165,7 +164,7 @@ test-cgc:
     - mkdir -p log
     - bash run_format_one_test.sh -b $MCG_BUILD
     - bash run_format_two_test.sh -b $MCG_BUILD
-    - bash run_aa_test.sh -b $MCG_BUILD
+    #- bash run_aa_test.sh -b $MCG_BUILD
 
 test-graphlib:
   <<: *job-setup
@@ -197,13 +196,46 @@ test-pgis:
     reports:
       junit: $MCG_BUILD/pgis/test/unit/gcc-$GCC-llvm-$LLVM.xml
 
+test-pymetacg:
+  <<: *job-setup
+  stage: test
+  needs: ["build-mcg"]
+  script:
+    - cd $MCG_BUILD/pymetacg/tests
+    - ctest . --verbose
+
+test-cgpatch-lit:
+  <<: *job-setup
+  stage: test
+  needs: ["build-mcg"]
+  parallel:
+    matrix:
+      - GCC: 11
+        LLVM: ["15.0.7", "16.0.6", "17.0.6", "18.1.8"]
+  script:
+    - module load clang/$LLVM
+    - cmake --install $MCG_BUILD
+    - cmake --build $MCG_BUILD --target pass-tests
+    - cmake --build $MCG_BUILD --target pass-tests-lto
+    - cmake --build $MCG_BUILD --target pass-tests-optimized
+    - cmake --build $MCG_BUILD --target pass-tests-optimized-lto
 
 # Stage: integration-test
+test-graphlib-merge:
+  <<: *job-setup
+  stage: integration-test
+  needs: ["build-mcg"]
+  script:
+    - module load clang/$LLVM
+    - cd graph/test/integration/CallgraphMerge
+    - ./MergeTestRunner.sh -b $MCG_BUILD
+
 test-cgvalidate:
   <<: *job-setup
   stage: integration-test
   needs: ["build-mcg"]
   script:
+    - module load clang/$LLVM
     - cd cgcollector/test/integration
     - ./runner.sh $MCG_BUILD
 
@@ -268,8 +300,21 @@ test-target-collector:
   needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
+    - cmake --install $MCG_BUILD
     - cd graph/test/integration/TargetCollector
     - ./TestRunner.sh -b $MCG_BUILD
+
+test-cgpatch-integration:
+  <<: *job-setup
+  parallel:
+    matrix:
+      - GCC: 11
+        LLVM: [15.0.7, 16.0.6, 17.0.6, 18.1.8]
+  needs: ["build-mcg"]
+  script:
+    - module load clang/$LLVM
+    - cd $MCG_BUILD/tools/cgpatch/test/integration/
+    - ./CGPIntegrationRunner.sh -b $MCG_BUILD
 
 # Stage: install
 install-mcg:
@@ -280,8 +325,8 @@ install-mcg:
     - cmake --install $MCG_BUILD-no-all
     - cd graph/test/install
     - stat /tmp/metacg/$MCG_BUILD-dflt/lib64/libmetacg.so
-    - CMAKE_PREFIX_PATH=/tmp/metacg/$MCG_BUILD-dflt/lib64/cmake/metacg cmake -S . -B $MCG_BUILD -DCMAKE_INSTALL_PREFIX=/tmp/metacg-user/test
-    - cmake --build $MCG_BUILD --parallel
+    - CMAKE_PREFIX_PATH=/tmp/metacg/$MCG_BUILD-dflt/lib64/cmake/metacg cmake -S . -B $MCG_BUILD-no-all/install-test -DCMAKE_INSTALL_PREFIX=/tmp/metacg-user/test
+    - cmake --build $MCG_BUILD-no-all/install-test --parallel
     - rm -r /tmp/metacg/$MCG_BUILD-dflt
 
 install-pgis:

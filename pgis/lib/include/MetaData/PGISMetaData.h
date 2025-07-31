@@ -24,12 +24,31 @@ class InstrumentationMetaData : public metacg::MetaData::Registrar<Instrumentati
   InstrumentationMetaData(const nlohmann::json& j) : state(InstrumentationState::None) {
     metacg::MCGLogger::instance().getConsole()->warn("This constructor is not supposed to be called");
   }
+
+ private:
+  InstrumentationMetaData(const InstrumentationMetaData& other) : state(other.state) {}
+
+ public:
   nlohmann::json to_json() const final {
     metacg::MCGLogger::instance().getConsole()->trace("Serializing InstrumentationMetaData to json is not implemented");
     return {};
   };
 
   const char* getKey() const final { return key; }
+
+  void merge(const MetaData& toMerge) final {
+    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
+      metacg::MCGLogger::instance().getErrConsole()->error(
+          "The MetaData which was tried to merge with InstrumentationMetaData was of a different MetaData type");
+      abort();
+    }
+
+    metacg::MCGLogger::instance().getErrConsole()->warn(
+        "InstrumentationMetaData should be written into a fully merged graph directly.");
+
+  }
+
+  MetaData* clone() const final { return new InstrumentationMetaData(*this); }
 
   void reset() { state = InstrumentationState::None; }
   void setInstrumented() { state = InstrumentationState::Instrumented; }

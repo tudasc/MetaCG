@@ -1,0 +1,142 @@
+name: MetaCG Builds
+
+on: 
+  push:
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE.txt'
+      - 'CONTRIBUTING.md'
+      - 'CITATION.cff'
+      - 'AUTHORS'
+      - 'formatSrc.sh'
+      - '.gitlab-ci.yml'
+      - '.gitignore'
+      - '.ci-defaults-template.yml'
+      - 'cgcollector/README.md'
+      - 'cgcollector/formatAllSrc.sh'
+      - 'cgcollector/.gitignore'
+      - 'graph/README.md'
+      - 'pgis/README.md'
+      - 'tools/README.md'
+      - 'pymetacg/README.md'
+  pull_request: 
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE.txt'
+      - 'CONTRIBUTING.md'
+      - 'CITATION.cff'
+      - 'AUTHORS'
+      - 'formatSrc.sh'
+      - '.gitlab-ci.yml'
+      - '.gitignore'
+      - '.ci-defaults-template.yml'
+      - 'cgcollector/README.md'
+      - 'cgcollector/formatAllSrc.sh'
+      - 'cgcollector/.gitignore'
+      - 'graph/README.md'
+      - 'pgis/README.md'
+      - 'tools/README.md'
+      - 'pymetacg/README.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: cmake
+      run: cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -B build -S .
+    - name: build
+      run: cmake --build build --parallel
+    - name: install
+      run: |
+        cmake --install build --prefix install
+        stat install/lib/libmetacg.so
+        stat install/include/metadata/CustomMD.h
+        stat install/lib/cmake/metacg/metacgConfig.cmake
+    - name: install-test
+      run: |
+        CMAKE_PREFIX_PATH=install/lib/cmake/metacg cmake -S graph/test/install -B build-install-test
+        cmake --build build-install-test
+  
+  build-container:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: "container/full-build"
+          tags: metacg-devel:latest 
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: false
+      - name: Run MCG library tests 
+        uses: addnab/docker-run-action@v3
+        with: 
+          image: metacg-devel:latest
+          run: /opt/metacg/build/graph/test/unit/libtests
+      - name: Run PGIS library tests 
+        uses: addnab/docker-run-action@v3
+        with: 
+          image: metacg-devel:latest
+          run: /opt/metacg/build/pgis/test/unit/pgistests
+      - name: Run target collector tests 
+        uses: addnab/docker-run-action@v3
+        with: 
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/graph/test/integration/TargetCollector
+            ./TestRunner.sh
+      - name: Run call graph merge tests
+        uses: addnab/docker-run-action@v3
+        with: 
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/graph/test/integration/CallgraphMerge
+            ./MergeTestRunner.sh
+      - name: Run cgcollector tests
+        uses: addnab/docker-run-action@v3
+        with: 
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/cgcollector/test
+            bash run_format_one_test.sh 
+            bash run_format_two_test.sh 
+      - name: Run cgvalidate tests
+        uses: addnab/docker-run-action@v3
+        with: 
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/cgcollector/test/integration
+            ./runner.sh build
+      - name: Run pymetacg tests
+        uses: addnab/docker-run-action@v3
+        with: 
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/build/pymetacg/tests
+            ctest . --verbose
+      - name: Run cpatch pass-tests (lit)
+        uses: addnab/docker-run-action@v3
+        with:
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/
+            cmake --build build --target pass-tests
+            cmake --build build --targetake pass-tests-lto
+            cmake --build build --target pass-tests-optimized
+            cmake --build build --target pass-tests-optimized-lto
+      - name: Run cgpatch integration tests
+        uses: addnab/docker-run-action@v3
+        with:
+          image: metacg-devel:latest
+          run: |
+            export OMPI_ALLOW_RUN_AS_ROOT=1
+            export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+            cd /opt/metacg/build/tools/cgpatch/test/integration/
+            ./CGPIntegrationRunner.sh -d
+
