@@ -9,7 +9,7 @@ The MetaCG graph library is the fundamental component, together with, e.g., I/O 
 The repository also contains an experimental Clang-based tool for call-graph construction at the source-code level.
 As an example tool, the repository contains the PGIS analysis tool, which is used as the analysis backend in [PIRA](https://github.com/tudasc/pira).
 
-The current default file format is MetaCG format version 3.
+The current default file format is MetaCG format version 4.
 More info on the different formats can be found in the [graph README](graph/README.md).
 
 The MetaCG project includes `pymetacg`, a set of bindings that allows to parse MetaCG files from Python.
