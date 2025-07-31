@@ -313,7 +313,7 @@ test-cgpatch-integration:
   needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
-    - cd tools/cgpatch/test/integration/
+    - cd $MCG_BUILD/tools/cgpatch/test/integration/
     - ./CGPIntegrationRunner.sh -b $MCG_BUILD
 
 # Stage: install
