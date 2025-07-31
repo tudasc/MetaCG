@@ -18,6 +18,7 @@ struct std::hash<std::pair<size_t, size_t>> {
     return h1 ^ (h2 << 1);  // or use boost::hash_combine
   }
 };
+
 namespace metacg {
 
 using CgNodeRawPtrUSet = std::unordered_set<metacg::CgNode*>;
@@ -36,9 +37,6 @@ class Callgraph {
 
   Callgraph() : nodes(), nameIdMap(), edges(), mainNode(nullptr) {}
 
-  /**
-   * Destructor. Prints call graph stats.
-   */
   ~Callgraph() = default;
 
   Callgraph(const Callgraph& other) = delete;             // No copy constructor
@@ -112,7 +110,7 @@ class Callgraph {
    * @param hasBody
    * @return A reference to the newly created node.
    */
-  CgNode& insert(std::string function, std::optional<std::string> origin = {}, bool isVirtual = false,
+  CgNode& insert(const std::string& function, std::optional<std::string> origin = {}, bool isVirtual = false,
                  bool hasBody = false);
 
   /**
@@ -121,7 +119,7 @@ class Callgraph {
    * @param name to identify the node by
    * @return Reference to the identified node
    */
-  CgNode& getOrInsertNode(std::string function, std::optional<std::string> origin = {}, bool isVirtual = false,
+  CgNode& getOrInsertNode(const std::string& function, std::optional<std::string> origin = {}, bool isVirtual = false,
                           bool hasBody = false);
 
   /**
@@ -167,7 +165,7 @@ class Callgraph {
 
   /**
    * @brief hasNode Checks whether a node with the given ID exists.
-   * @param name
+   * @param id The node ID.
    * @return true iff exists, false otherwise
    */
   bool hasNode(NodeId id) const;
@@ -181,8 +179,8 @@ class Callgraph {
 
   /**
    * Counts the number of nodes that match the given name.
-   * @param name
-   * @return
+   * @param name Name of the function.
+   * @return The number of name matches.
    */
   unsigned countNodes(const std::string& name) const;
 
@@ -208,11 +206,16 @@ class Callgraph {
 
   /**
    * Returns a list of nodes that match the given name.
-   * @param name
-   * @return
+   * @param name Name of the function.
+   * @return A vector of matching node IDs.
    */
   const NodeList& getNodes(const std::string& name) const;
 
+  /**
+   * Looks up the node matching the given ID.
+   * @param id
+   * @return The node or null, if no such node exists.
+   */
   CgNode* getNode(NodeId id) const;
 
   bool existsEdge(const CgNode& source, const CgNode& target) const;
@@ -226,11 +229,33 @@ class Callgraph {
    */
   bool existsAnyEdge(const std::string& source, const std::string& target) const;
 
+  /**
+   * Looks up the set of callees for the given node.
+   * @param node
+   * @return A #CgNodeRawPtrUSet of callee nodes.
+   */
   CgNodeRawPtrUSet getCallees(const CgNode& node) const;
-  CgNodeRawPtrUSet getCallees(NodeId node) const;
 
+  /**
+   * Looks up the set of callees for the given node ID.
+   * @param id
+   * @return A #CgNodeRawPtrUSet of callee nodes.
+   */
+  CgNodeRawPtrUSet getCallees(NodeId id) const;
+
+  /**
+   * Looks up the set of callers for the given node.
+   * @param node
+   * @return A #CgNodeRawPtrUSet of callee nodes.
+   */
   CgNodeRawPtrUSet getCallers(const CgNode& node) const;
-  CgNodeRawPtrUSet getCallers(NodeId node) const;
+
+  /**
+   * Looks up the set of callers for the given node.
+   * @param node
+   * @return A #CgNodeRawPtrUSet of caller nodes.
+   */
+  CgNodeRawPtrUSet getCallers(NodeId id) const;
 
   /**
    * Returns the number of inserted nodes. Note that this includes erased nodes.
@@ -244,11 +269,33 @@ class Callgraph {
    */
   size_t getNodeCount() const;
 
+  /**
+   * Checks if this graph is empty.
+   * @return True if there are no active nodes, false otherwise.
+   */
   bool isEmpty() const;
 
+  /**
+   * Provides access to the raw list of nodes.
+   * @return A vector containing all node pointers.
+   */
   const NodeContainer& getNodes() const;
+
+  /**
+   * Provides access to the raw edge map.
+   * @return A map containing node pairs and corresponding metadata.
+   */
   const EdgeContainer& getEdges() const;
 
+  /**
+   * Attaches edge metadata of type #T to the edge (`func1`, `func2`).
+   * Does nothing if the edge does not exist.
+   * @tparam T
+   * @param func1
+   * @param func2
+   * @param md
+   * @return True if the metadata was successfully attached.
+   */
   template <class T>
   bool addEdgeMetaData(const CgNode& func1, const CgNode& func2, std::unique_ptr<T>&& md) {
     if (!hasNode(func1) || !hasNode(func2)) {
@@ -257,6 +304,14 @@ class Callgraph {
     return addEdgeMetaData({func1.getId(), func2.getId()}, std::move(md));
   }
 
+  /**
+   * Attaches edge metadata of type #T to the edge defined by the given ID pair.
+   * Does nothing if the edge does not exist.
+   * @tparam T
+   * @param id A pair of `NodeId`s
+   * @param md
+   * @return True if the metadata was successfully attached.
+   */
   template <class T>
   bool addEdgeMetaData(const std::pair<NodeId, NodeId> id, std::unique_ptr<T>&& md) {
     if (auto it = edges.find(id); it != edges.end()) {
@@ -266,36 +321,95 @@ class Callgraph {
     return false;
   }
 
+  /**
+   * Returns metadata of this name for the given edge.
+   * @param ids Node IDs of the edge pair
+   * @param metadataName Name of the metadata
+   * @return The metadata or null, if there is none registered with that key.
+   */
   MetaData* getEdgeMetaData(const CgNode& func1, const CgNode& func2, const std::string& metadataName) const;
 
   /**
-   * Returns metadata for the given edge. The edge is assumed to exists.
+   * Returns metadata of this name for the given edge.
    * @param ids Node IDs of the edge pair
    * @param metadataName Name of the metadata
    * @return The metadata or null, if there is none registered with that key.
    */
   MetaData* getEdgeMetaData(std::pair<NodeId, NodeId> id, const std::string& metadataName) const;
 
+  /**
+   * Returns metadata of type #T for the given edge.
+   * @tparam T
+   * @param func1
+   * @param func2
+   * @return The metadata or null, if there is none registered with that type.
+   */
   template <class T>
   T* getEdgeMetaData(const CgNode& func1, const CgNode& func2) {
     return getEdgeMetaData<T>({func1.getId(), func2.getId()});
   }
 
+  /**
+   * Returns metadata of type #T for the given edge.
+   * @tparam T
+   * @param id
+   * @return The metadata or null, if there is none registered with that type.
+   */
   template <class T>
   T* getEdgeMetaData(const std::pair<NodeId, NodeId> id) {
     return static_cast<T>(edges.at(id).at(T::key));
   }
 
+  /**
+   * Returns a map of available metadata for this edge. The caller must ensure that this edge exists.
+   * @param func1
+   * @param func2
+   * @return The metadata map.
+   */
   const NamedMetadata& getAllEdgeMetaData(const CgNode& func1, const CgNode& func2) const;
+
+  /**
+   * Returns a map of available metadata for this edge. The caller must ensure that this edge exists.
+   * @param id
+   * @return The metadata map.
+   */
   const NamedMetadata& getAllEdgeMetaData(const std::pair<NodeId, NodeId> id) const;
 
+  /**
+   * Checks if this edge has metadata matching the given name.
+   * @param func1
+   * @param func2
+   * @param metadataName
+   * @return True if metadata with this key exists.
+   */
   bool hasEdgeMetaData(const CgNode& func1, const CgNode& func2, const std::string& metadataName) const;
+
+  /**
+   * Checks if this edge has metadata matching the given name.
+   * @param id
+   * @param metadataName
+   * @return True if metadata with this key exists.
+   */
   bool hasEdgeMetaData(const std::pair<NodeId, NodeId> id, const std::string& metadataName) const;
 
+  /**
+   * Checks if this edge has metadata of the given type #T.
+   * @tparam T
+   * @param func1
+   * @param func2
+   * @return True if metadata of this type exists.
+   */
   template <class T>
   bool hasEdgeMetaData(const CgNode& func1, const CgNode& func2) const {
     return hasNode(func1) && hasNode(func2) && hasEdgeMetaData<T>({func1.getId(), func2.getId()});
   }
+
+  /**
+   * Checks if this edge has metadata of the given type #T.
+   * @tparam T
+   * @param id
+   * @return True if metadata of this type exists.
+   */
   template <class T>
   bool hasEdgeMetaData(const std::pair<NodeId, NodeId> id) const {
     return edges.at(id).find(T::key) != edges.at(id).end();

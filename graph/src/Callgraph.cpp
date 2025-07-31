@@ -27,7 +27,8 @@ CgNode* Callgraph::getMain() {
   return nullptr;
 }
 
-CgNode& Callgraph::insert(std::string function, std::optional<std::string> origin, bool isVirtual, bool hasBody) {
+CgNode& Callgraph::insert(const std::string& function, std::optional<std::string> origin, bool isVirtual,
+                          bool hasBody) {
   NodeId id = nodes.size();
   // Note: Can't use make_unique here because make_unqiue is not (and should not be) a friend of the CgNode constructor.
   nodes.emplace_back(new CgNode(id, function, std::move(origin), isVirtual, hasBody));
@@ -54,7 +55,7 @@ bool Callgraph::erase(NodeId id) {
   callerList.erase(id);
   // Destroy the node
   auto& ptr = nodes[id];
-  assert(ptr);
+  assert(ptr && "The ID must correspond to a valid node");
   std::string name = ptr->getFunctionName();
   nameIdMap[name].erase(std::find(nameIdMap[name].begin(), nameIdMap[name].end(), id));
   ptr.reset();
@@ -62,13 +63,13 @@ bool Callgraph::erase(NodeId id) {
   return true;
 }
 
-CgNode& Callgraph::getOrInsertNode(std::string function, std::optional<std::string> origin, bool isVirtual,
+CgNode& Callgraph::getOrInsertNode(const std::string& function, std::optional<std::string> origin, bool isVirtual,
                                    bool hasBody) {
   auto* node = getFirstNode(function);
   if (node) {
     return *node;
   }
-  return insert(std::move(function), std::move(origin), isVirtual, hasBody);
+  return insert(function, std::move(origin), isVirtual, hasBody);
 }
 
 void Callgraph::clear() {
@@ -367,8 +368,11 @@ MetaData* Callgraph::getEdgeMetaData(const CgNode& func1, const CgNode& func2, c
 }
 
 MetaData* Callgraph::getEdgeMetaData(std::pair<size_t, size_t> ids, const std::string& metadataName) const {
-  assert(edges.find(ids) != edges.end() && "Edge does not exist");
-  auto& edgeMD = edges.at(ids);
+  auto edgeIt = edges.find(ids);
+  if (edgeIt == edges.end()) {
+    return nullptr;
+  }
+  auto& edgeMD = edgeIt->second;
   if (auto it = edgeMD.find(metadataName); it != edgeMD.end()) {
     return it->second.get();
   }
@@ -380,6 +384,7 @@ const metacg::Callgraph::NamedMetadata& Callgraph::getAllEdgeMetaData(const CgNo
 }
 
 const metacg::Callgraph::NamedMetadata& Callgraph::getAllEdgeMetaData(const std::pair<size_t, size_t> id) const {
+  assert(edges.find(id) != edges.end() && "Edge does not exist");
   return edges.at(id);
 }
 

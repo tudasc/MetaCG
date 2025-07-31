@@ -17,7 +17,7 @@ namespace metacg {
 class Callgraph;
 
 /**
- * Could be represented by a std::pair, but this makes the meaning more clear.
+ * Represents the action of replacing or merging with a specific target node.
  */
 struct MergeAction {
   MergeAction(NodeId targetNode, bool replace) : targetNode(targetNode), replace(replace) {}
@@ -64,18 +64,6 @@ struct MergeRecorder {
    * @return A mapping from the source to the destination graph.
    */
   const GraphMapping& getMapping() { return mapping; }
-
-  //  /**
-  //   * Returns the Id of the given node in the combined graph after merging.
-  //   * @param sourceId Id of the node in the source graph.
-  //   * @return Id of the node in the destination graph after merging.
-  //   */
-  //  std::optional<NodeId> getPostMergeId(NodeId sourceId) const {
-  //    if (auto it = mapping.find(sourceId); it != mapping.end()) {
-  //      return it->second;
-  //    }
-  //    return {};
-  //  }
 
  private:
   std::unordered_map<NodeId, MergeAction> actions;

@@ -34,7 +34,8 @@ class CgNode {
    * Cannot be invoked directly, use CallGraph::insert instead.
    * @param function
    */
-  explicit CgNode(NodeId id, std::string function, std::optional<std::string> origin, bool isVirtual, bool hasBody);
+  explicit CgNode(NodeId id, const std::string& function, std::optional<std::string> origin, bool isVirtual,
+                  bool hasBody);
 
  public:
   /**
@@ -52,11 +53,10 @@ class CgNode {
   /**
    * Returns pointer to attached metadata of type #T
    * @tparam T
-   * @return
+   * @return The metadata or null, if no metadata of type #T exists.
    */
   template <typename T>
   inline T* get() const {
-    //    assert(metaFields.count(T::key) > 0 && "meta field for key must exist");
     if (auto it = metaFields.find(T::key); it != metaFields.end()) {
       return static_cast<T*>(it->second.get());
     }
@@ -64,7 +64,6 @@ class CgNode {
   }
 
   inline MetaData* get(const std::string& metadataName) const {
-    //    assert(metaFields.count(metadataName) > 0 && "meta field for key must exist");
     if (auto it = metaFields.find(metadataName); it != metaFields.end()) {
       return it->second.get();
     }
@@ -83,32 +82,38 @@ class CgNode {
 
   /**
    * Erases the metadata with the given name.
-   * @tparam T
    * @return True if there was metadata with this name, false otherwise.
    */
   bool erase(const std::string& mdKey) { return metaFields.erase(mdKey); }
 
   /**
-   * Adds a *new* metadata entry for #T if none exists
+   * Adds a metadata entry of type #T. Overrides any existing metadata of this type.
    * @tparam T
    * @param md
    */
   template <typename T>
   inline void addMetaData(std::unique_ptr<T> md) {
     assert(md && "Cannot add null metadata");
-    assert(!this->has<T>() && "MetaData with key already attached");
     metaFields[T::key] = std::move(md);
   }
 
+  /**
+   * Creates and adds a metadata entry of type #T. Overrides any existing metadata of this type.
+   * @tparam T
+   * @tparam Args
+   * @param args Arguments passed to the constructor of #T
+   */
   template <typename T, typename... Args>
   inline void addMetaData(Args&&... args) {
-    assert(!this->has<T>() && "MetaData with key already attached");
     metaFields[T::key] = std::make_unique<T>(std::forward(args)...);
   }
 
+  /**
+   * Adds the given metadata. Overrides any existing metadata of the same type.
+   * @param md
+   */
   inline void addMetaData(std::unique_ptr<MetaData> md) {
     assert(md && "Cannot add null metadata");
-    assert(!this->has(md->getKey()) && "MetaData with key already attached");
     metaFields[md->getKey()] = std::move(md);
   }
 
@@ -133,7 +138,7 @@ class CgNode {
 
   ~CgNode() = default;
 
-  /** We delete copy ctor and copy assign op */
+  /** We delete copy/move ctor, copy/move assign op */
   CgNode(const CgNode& other) = delete;
   CgNode(const CgNode&& other) = delete;
   CgNode& operator=(CgNode other) = delete;
@@ -170,7 +175,7 @@ class CgNode {
    * Sets the function name.
    * @param name
    */
-  void setFunctionName(std::string name) { this->functionName = std::move(name); }
+  void setFunctionName(const std::string& name) { this->functionName = name; }
 
   [[deprecated("Attach \"OverrideMD\" instead")]] void setVirtual(bool);
 
@@ -178,10 +183,14 @@ class CgNode {
 
   /**
    * Returns the origin.
-   * @return
+   * @return The origin string if set, or `std::nullopt`.
    */
   std::optional<std::string> getOrigin() const { return origin; }
 
+  /**
+   * Sets the origin path.
+   * @param origin
+   */
   void setOrigin(std::optional<std::string> origin) { this->origin = std::move(origin); }
 
   /**

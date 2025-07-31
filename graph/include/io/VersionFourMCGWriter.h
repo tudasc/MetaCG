@@ -13,7 +13,6 @@ namespace metacg::io {
 
 class VersionFourMCGWriter : public MCGWriter {
  public:
-  // Fixme: Make the MetaCG versions, not CGCollector versions
   explicit VersionFourMCGWriter(
       MCGFileInfo fileInfo = {{4, 0}, {"MetaCG", MetaCG_VERSION_MAJOR, MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}},
       bool useNamesAsIds = false, bool exportSorted = false)

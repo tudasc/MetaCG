@@ -10,8 +10,8 @@
 #include <iostream>
 using namespace metacg;
 
-CgNode::CgNode(NodeId id, std::string function, std::optional<std::string> origin, bool isVirtual, bool hasBody)
-    : id(id), functionName(std::move(function)), origin(std::move(origin)), hasBody(hasBody) {
+CgNode::CgNode(NodeId id, const std::string& function, std::optional<std::string> origin, bool isVirtual, bool hasBody)
+    : id(id), functionName(function), origin(std::move(origin)), hasBody(hasBody) {
   if (isVirtual) {
     this->getOrCreate<OverrideMD>();
   }
