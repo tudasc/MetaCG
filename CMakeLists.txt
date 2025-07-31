@@ -29,7 +29,7 @@ endif()
 # End of require out-of-source builds
 
 # Project information
-set(METACG_VERSION 0.7.1)
+set(METACG_VERSION 0.8.0)
 project(
   MetaCG
   VERSION ${METACG_VERSION}
