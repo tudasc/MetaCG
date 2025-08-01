@@ -239,6 +239,14 @@ test-cgvalidate:
     - cd cgcollector/test/integration
     - ./runner.sh $MCG_BUILD
 
+test-cgformat:
+  <<: *job-setup
+  stage: test
+  needs: [ "build-mcg" ]
+  script:
+    - cd $MCG_BUILD/tools/cgformat/test
+    - ./run_cgformat_tests.sh
+
 test-basic-pgis:
   <<: *job-setup
   stage: integration-test
