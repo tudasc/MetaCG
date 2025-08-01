@@ -1,0 +1,52 @@
+{
+    "_CG": {
+        "0": {
+            "callees": {
+                "1": {}
+            },
+            "functionName": "bar",
+            "hasBody": true,
+            "meta": {
+                "fileProperties": {
+                    "systemInclude": false
+                },
+                "numStatements": 1
+            },
+            "origin": "/opt/metacg/mcg-local/cgformat_test_01_input.c"
+        },
+        "1": {
+            "callees": {},
+            "functionName": "baz",
+            "hasBody": false,
+            "meta": {
+                "fileProperties": {
+                    "systemInclude": false
+                },
+                "numStatements": 0
+            },
+            "origin": "/opt/metacg/mcg-local/cgformat_test_01_input.c"
+        },
+        "2": {
+            "callees": {
+                "0": {}
+            },
+            "functionName": "foo",
+            "hasBody": true,
+            "meta": {
+                "fileProperties": {
+                    "systemInclude": false
+                },
+                "numStatements": 1
+            },
+            "origin": "/opt/metacg/mcg-local/cgformat_test_01_input.c"
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "d28254fde4e10e5682c097563d425bff04142510",
+            "version": "0.9"
+        },
+        "version": "4.0"
+    }
+}

@@ -63,6 +63,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
 
   JsonSource v4JsonSrc(j);
   VersionFourMetaCGReader v4Reader(v4JsonSrc);
+  v4Reader.onFailedMetadataRead(this->failedMetadataCb);
   return v4Reader.read();
 }
 

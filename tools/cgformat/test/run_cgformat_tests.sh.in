@@ -1,0 +1,100 @@
+#!/bin/bash
+
+input_dir="@CGFORMAT_TEST_DIR@"
+cgformat="@CGFORMAT_EXE@"
+cgtester="@CGFORMAT_TESTER_EXE@"
+
+num_failures=0
+
+run_and_expect_success() {
+  "$@"
+  if [[ $? -ne 0 ]]; then
+    echo "Error: Expected success for: $*"
+    ((num_failures++))
+    return 1
+  fi
+  return 0
+}
+
+run_and_expect_failure() {
+  "$@"
+  if [[ $? -eq 0 ]]; then
+    echo "Error: Expected failure for: $*"
+    ((num_failures++))
+    return 1
+  fi
+  return 0
+}
+
+check_and_compare_output() {
+  local gt="$1"
+  local output="$2"
+
+  "$cgtester" "$gt" "$output"
+  if [[ $? -ne 0 ]]; then
+    echo "Error: Output '$output' does not match ground truth '$gt'"
+    ((num_failures++))
+  else
+    rm -f "$output"
+  fi
+}
+
+for gt_input in "$input_dir"/*.gtmcg; do
+  test_path="${gt_input%.gtmcg}"
+  test_name="$(basename "$test_path")"
+
+  echo "Running test case $test_name"
+
+  run_and_expect_success "$cgformat" "$gt_input" --origin_prefix "/opt/metacg/mcg-local"
+
+  # ---- wrong_origin test ----
+  wrong_origin_input="${test_path}.wrong_origin.mcg"
+  if [[ -f "$wrong_origin_input" ]]; then
+    echo "Testing wrong origin"
+
+    run_and_expect_failure "$cgformat" "$wrong_origin_input" --origin_prefix "/opt/metacg/mcg-local"
+
+    echo "Testing fixing wrong origin"
+    output_file="${test_name}.wrong_origin.fixed.mcg"
+    run_and_expect_success "$cgformat" "$wrong_origin_input" \
+      --origin_prefix "/opt/metacg/mcg-local" \
+      --origin_prefix_to_replace "path" \
+      --apply -o "$output_file"
+
+    check_and_compare_output "$gt_input" "$output_file"
+  else
+    echo "No 'wrong_origin' test for $test_name"
+  fi
+
+  # ---- unknown_md test ----
+  unknown_md_input="${test_path}.unknown_md.mcg"
+  if [[ -f "$unknown_md_input" ]]; then
+    echo "Testing catching unknown metadata"
+    output_file="${test_name}.unknown_md.fixed.mcg"
+
+    run_and_expect_failure "$cgformat" "$unknown_md_input" --apply -o "$output_file"
+
+    if [[ -f "$output_file" ]]; then
+      echo "Output file should not have been generated"
+      rm -f "$output_file"
+      ((num_failures++))
+    fi
+
+    run_and_expect_success "$cgformat" "$unknown_md_input" \
+      --discard_failed_metadata --apply -o "$output_file"
+
+    check_and_compare_output "$gt_input" "$output_file"
+  else
+    echo "No 'unknown_md' test for $test_name"
+  fi
+
+done
+
+echo "*******************"
+if (( num_failures )); then
+  echo "Test failures: $num_failures"
+  exit 1
+else
+  echo "All tests succeeded"
+  exit 0
+fi
