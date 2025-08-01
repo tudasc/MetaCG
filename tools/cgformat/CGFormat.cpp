@@ -13,6 +13,7 @@
 #include "LoggerUtil.h"
 #include "io/MCGReader.h"
 #include "io/MCGWriter.h"
+#include "metadata/FilePropertiesMD.h"
 
 #include "cxxopts.hpp"
 
@@ -44,6 +45,7 @@ int main(int argc, char** argv) {
       "abort_after_error", "abort checking after the first error", cxxopts::value<bool>()->default_value("false"))(
       "origin_prefix", "check for a specific path prefix in the origin field", cxxopts::value<std::string>()->default_value(""))(
       "origin_prefix_to_replace", "marks the directory in the origin path that will be replaced by the prefix given in 'origin_prefix'", cxxopts::value<std::string>()->default_value(""))(
+      "ignore_system_includes", "ignore system includes when checking origin paths", cxxopts::value<bool>()->default_value("true"))(
       "indent", "number of spaced used for indentation of the file. A value of -1 disables pretty-printing.", cxxopts::value<int>()->default_value("4"))(
       "discard_failed_metadata", "continue formatting, even if there is metadata that cannot be parsed and would be lost.", cxxopts::value<bool>()->default_value("false"))(
       "h,help", "Print help");
@@ -67,6 +69,7 @@ int main(int argc, char** argv) {
   int indent = result["indent"].as<int>();
   std::string originPrefix = result["origin_prefix"].as<std::string>();
   std::string prefixToReplace = result["origin_prefix_to_replace"].as<std::string>();
+  bool ignoreSysInclues = result["ignore_system_includes"].as<bool>();
   bool checkOnly = !result["apply"].as<bool>();
   bool discardFailedMd = result["discard_failed_metadata"].as<bool>();
   bool abortCheckAfterError = result["abort_after_error"].as<bool>();
@@ -98,8 +101,14 @@ int main(int argc, char** argv) {
             node->setOrigin(std::nullopt);
           }
         } else {
+
+          bool isSysInclude = false;
+          if (ignoreSysInclues) {
+            auto md = node->get<metacg::FilePropertiesMD>();
+            isSysInclude = md && md->fromSystemInclude;
+          }
           // This can be done with "starts_with" in C++20
-          if (origin->size() < originPrefix.size() || origin->compare(0, originPrefix.size(), originPrefix) != 0) {
+          if (!isSysInclude && (origin->size() < originPrefix.size() || origin->compare(0, originPrefix.size(), originPrefix) != 0)) {
             if (checkOnly) {
               MCGLogger::logError("Origin field in node {} ('{}') does not match expected prefix. Value is: {}", node->getId(), node->getFunctionName(), *origin);
               checkSucceeded = false;
