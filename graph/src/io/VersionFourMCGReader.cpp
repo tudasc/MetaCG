@@ -173,6 +173,8 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMetaCGReader::read() {
           auto& mdValJ = mdElem.value();
           if (auto md = metacg::MetaData::create<>(mdKey, mdValJ, strToNode); md) {
             cg->addEdgeMetaData({nodeData.nodeId, calleeNode->getId()}, std::move(md));
+          } else if (failedMetadataCb) {
+            (*failedMetadataCb)(nodeData.nodeId, mdKey, mdValJ);
           }
         }
       }
@@ -185,6 +187,9 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMetaCGReader::read() {
         node->addMetaData(std::move(md));
       } else {
         errConsole->warn("Could not create metadata of type {} for node {}", mdKey, node->getFunctionName());
+        if (failedMetadataCb) {
+          (*failedMetadataCb)(node->getId(), mdKey, mdVal);
+        }
       }
     }
   }
