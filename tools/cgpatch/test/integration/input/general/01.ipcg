@@ -17,7 +17,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "/home/sm41myca/work/github/MetaCG/tools/cgpatch/test/integration/input/01_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/integration/input/01_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -61,7 +61,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "/home/sm41myca/work/github/MetaCG/tools/cgpatch/test/integration/input/01_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/integration/input/01_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -103,7 +103,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "/home/sm41myca/work/github/MetaCG/tools/cgpatch/test/integration/input/01_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/integration/input/01_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -147,7 +147,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "/home/sm41myca/work/github/MetaCG/tools/cgpatch/test/integration/input/01_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/integration/input/01_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -205,7 +205,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "/home/sm41myca/work/github/MetaCG/tools/cgpatch/test/integration/input/01_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/integration/input/01_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -257,7 +257,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "/home/sm41myca/work/github/MetaCG/tools/cgpatch/test/integration/input/01_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/integration/input/01_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,

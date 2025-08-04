@@ -141,7 +141,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "01_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/input/mpi/01_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -181,7 +181,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "01_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/input/mpi/01_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -244,7 +244,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "01_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/input/mpi/01_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
