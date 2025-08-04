@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/env bash
 
 # This script goes through all test call graphs and performs basic checks using cgformat.
 
