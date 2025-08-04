@@ -13,7 +13,7 @@
           "numVars": 5
         },
         "fileProperties": {
-          "origin": "/tmp/tmp.xzlAw8bNoO/cgcollector/test/input/metaCollectors/numStatements/0042.cpp",
+          "origin": "/opt/metacg/mcg-local/cgcollector/test/input/metaCollectors/numStatements/0042.cpp",
           "systemInclude": false
         },
         "globalLoopDepth": 1,
@@ -45,7 +45,7 @@
           "numVars": 4
         },
         "fileProperties": {
-          "origin": "/tmp/tmp.xzlAw8bNoO/cgcollector/test/input/metaCollectors/numStatements/0042.cpp",
+          "origin": "/opt/metacg/mcg-local/cgcollector/test/input/metaCollectors/numStatements/0042.cpp",
           "systemInclude": false
         },
         "globalLoopDepth": 1,

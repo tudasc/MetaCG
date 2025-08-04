@@ -152,6 +152,12 @@ build-mcg:
     - cmake --build $MCG_BUILD --parallel
     - module purge
 
+check-test-format:
+  <<: *job-setup
+  stage: test
+  needs: ["build-mcg"]
+  script:
+    - ./checkTests.sh $MCG_BUILD/tools/cgformat/cgformat
 
 # Stage: test
 test-cgc:
