@@ -112,7 +112,6 @@ class CgNode : public MetadataMixin {
   std::string functionName;
   std::optional<std::string> origin;
   bool hasBody;
-  //  std::unordered_map<std::string, std::unique_ptr<MetaData>> metaFields;
 };
 
 }  // namespace metacg
