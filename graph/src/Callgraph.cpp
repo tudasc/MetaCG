@@ -296,6 +296,19 @@ MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::Mer
     }
   }
 
+  // Step 5: merge global metadata
+  for (auto& md : other.getMetaDataContainer()) {
+    auto* existingMd = this->get(md.first);
+    if (existingMd) {
+      // Merge action is irrelevant (node ID set to -1 by default), as there is no associated node.
+      existingMd->merge(*(md.second), MergeAction(), mapping);
+    } else {
+      auto clonedMd = md.second->clone();
+      clonedMd->applyMapping(mapping);
+      this->addMetaData(std::move(clonedMd));
+    }
+  }
+
   return recorder;
 }
 

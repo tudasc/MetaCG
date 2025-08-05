@@ -11,6 +11,7 @@
 // Graph library
 #include "CgTypes.h"
 #include "metadata/MetaData.h"
+#include "metadata/MetadataMixin.h"
 
 // System library
 #include <map>
@@ -25,7 +26,7 @@ namespace metacg {
 class CgNode;
 class Callgraph;
 
-class CgNode {
+class CgNode: public MetadataMixin {
   friend class Callgraph;
 
  private:
@@ -38,103 +39,6 @@ class CgNode {
                   bool hasBody);
 
  public:
-  /**
-   * Checks if metadata of type #T is attached
-   * @tparam T
-   * @return
-   */
-  template <typename T>
-  inline bool has() const {
-    return metaFields.find(T::key) != metaFields.end();
-  }
-
-  inline bool has(const std::string& metadataName) const { return metaFields.find(metadataName) != metaFields.end(); }
-
-  /**
-   * Returns pointer to attached metadata of type #T
-   * @tparam T
-   * @return The metadata or null, if no metadata of type #T exists.
-   */
-  template <typename T>
-  inline T* get() const {
-    if (auto it = metaFields.find(T::key); it != metaFields.end()) {
-      return static_cast<T*>(it->second.get());
-    }
-    return nullptr;
-  }
-
-  inline MetaData* get(const std::string& metadataName) const {
-    if (auto it = metaFields.find(metadataName); it != metaFields.end()) {
-      return it->second.get();
-    }
-    return nullptr;
-  }
-
-  /**
-   * Erases the metadata of given type.
-   * @tparam T
-   * @return True if there was metadata of this type, false otherwise.
-   */
-  template <typename T>
-  bool erase() {
-    return metaFields.erase(T::key);
-  }
-
-  /**
-   * Erases the metadata with the given name.
-   * @return True if there was metadata with this name, false otherwise.
-   */
-  bool erase(const std::string& mdKey) { return metaFields.erase(mdKey); }
-
-  /**
-   * Adds a metadata entry of type #T. Overrides any existing metadata of this type.
-   * @tparam T
-   * @param md
-   */
-  template <typename T>
-  inline void addMetaData(std::unique_ptr<T> md) {
-    assert(md && "Cannot add null metadata");
-    metaFields[T::key] = std::move(md);
-  }
-
-  /**
-   * Creates and adds a metadata entry of type #T. Overrides any existing metadata of this type.
-   * @tparam T
-   * @tparam Args
-   * @param args Arguments passed to the constructor of #T
-   */
-  template <typename T, typename... Args>
-  inline void addMetaData(Args&&... args) {
-    metaFields[T::key] = std::make_unique<T>(std::forward(args)...);
-  }
-
-  /**
-   * Adds the given metadata. Overrides any existing metadata of the same type.
-   * @param md
-   */
-  inline void addMetaData(std::unique_ptr<MetaData> md) {
-    assert(md && "Cannot add null metadata");
-    metaFields[md->getKey()] = std::move(md);
-  }
-
-  /**
-   * Convenience function to get the existing meta data node, or attach a new meta data node.
-   *
-   * @tparam T
-   * @tparam Args
-   * @param p
-   * @param args Arguments to construct MetaData  T, ignored when MetaData already exists.
-   * @return
-   */
-  template <typename T, typename... Args>
-  T& getOrCreate(const Args&... args) {
-    auto& md = metaFields[T::key];
-    if (md) {
-      return static_cast<T&>(*md);
-    }
-    md = std::make_unique<T>(args...);
-    return static_cast<T&>(*md);
-  }
 
   ~CgNode() = default;
 
@@ -202,22 +106,6 @@ class CgNode {
 
   friend std::ostream& operator<<(std::ostream& stream, const CgNode& n);
 
-  /**
-   * Get the whole container of all attached metadata with its unique name identifier
-   *
-   * @return a map, mapping the name of the metadata to a metadata pointer
-   */
-  const std::unordered_map<std::string, std::unique_ptr<MetaData>>& getMetaDataContainer() const { return metaFields; }
-
-  /**
-   * Override the current set of all node attached metadata with a new set
-   *
-   * @param data - a map, mapping the name of the metadata to a metadata pointer
-   */
-  void setMetaDataContainer(std::unordered_map<std::string, std::unique_ptr<MetaData>> data) {
-    metaFields = std::move(data);
-  }
-
  public:
   const NodeId id;
 
@@ -225,7 +113,7 @@ class CgNode {
   std::string functionName;
   std::optional<std::string> origin;
   bool hasBody;
-  std::unordered_map<std::string, std::unique_ptr<MetaData>> metaFields;
+//  std::unordered_map<std::string, std::unique_ptr<MetaData>> metaFields;
 };
 
 }  // namespace metacg

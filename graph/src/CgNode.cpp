@@ -21,7 +21,7 @@ CgNode::CgNode(NodeId id, const std::string& function, std::optional<std::string
   if (virtualness) {
     this->getOrCreate<OverrideMD>();
   } else {
-    this->metaFields.erase(OverrideMD::key);
+    this->erase(OverrideMD::key);
   }
 }
 

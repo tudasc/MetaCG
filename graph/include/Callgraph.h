@@ -9,6 +9,7 @@
 #include "CgNode.h"
 #include "MergePolicy.h"
 #include "Util.h"
+#include "metadata/MetadataMixin.h"
 
 template <>
 struct std::hash<std::pair<size_t, size_t>> {
@@ -23,7 +24,7 @@ namespace metacg {
 
 using CgNodeRawPtrUSet = std::unordered_set<metacg::CgNode*>;
 
-class Callgraph {
+class Callgraph: public MetadataMixin {
  public:
   using NodeContainer = std::vector<CgNodePtr>;
   using NodeList = std::vector<NodeId>;
