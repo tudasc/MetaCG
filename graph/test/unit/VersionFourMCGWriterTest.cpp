@@ -11,6 +11,7 @@
 #include "MCGManager.h"
 #include "TestMD.h"
 #include "io/VersionFourMCGWriter.h"
+#include "metadata/EntryFunctionMD.h"
 
 class V4MCGWriterTest : public ::testing::Test {
  protected:
@@ -28,7 +29,8 @@ TEST_F(V4MCGWriterTest, DifferentMetaInformation) {
   metacg::io::JsonSink jsonSink;
   mcgWriter.writeActiveGraph(jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
-            "{\"_CG\":{},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},"
+            "{\"_CG\":{\"meta\":{},\"nodes\":{}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
+            "\"version\":\"0.1\"},"
             "\"version\":\"4.0\"}}");
 }
 
@@ -45,8 +47,9 @@ TEST_F(V4MCGWriterTest, OneNodeCGWrite) {
   mcgWriter.writeActiveGraph(jsonSink);
 
   EXPECT_EQ(jsonSink.getJson().dump(),
-            "{\"_CG\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},\"origin\":"
-            "\"main.cpp\"}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},"
+            "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,"
+            "\"meta\":{},\"origin\":"
+            "\"main.cpp\"}}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},"
             "\"version\":\"4.0\"}}");
 }
 
@@ -64,8 +67,9 @@ TEST_F(V4MCGWriterTest, OneNodeCGWriteUseName) {
   mcgWriter.writeActiveGraph(jsonSink);
 
   EXPECT_EQ(jsonSink.getJson().dump(),
-            "{\"_CG\":{\"main\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},"
-            "\"origin\":\"main.cpp\"}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":"
+            "{\"_CG\":{\"meta\":{},\"nodes\":{\"main\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,"
+            "\"meta\":{},"
+            "\"origin\":\"main.cpp\"}}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":"
             "\"0.1\"},\"version\":\"4.0\"}}");
 }
 
@@ -85,9 +89,10 @@ TEST_F(V4MCGWriterTest, TwoNodeCGWrite) {
   mcgWriter.writeActiveGraph(jsonSink);
   EXPECT_EQ(
       jsonSink.getJson().dump(),
-      "{\"_CG\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},\"origin\":\"main."
+      "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},"
+      "\"origin\":\"main."
       "cpp\"},\"1\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,\"meta\":{},\"origin\":\"main."
-      "cpp\"}}"
+      "cpp\"}}}"
       ",\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4.0\"}}");
 }
 
@@ -106,9 +111,10 @@ TEST_F(V4MCGWriterTest, TwoNodeCGWriteUseName) {
   metacg::io::JsonSink jsonSink;
   mcgWriter.writeActiveGraph(jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
-            "{\"_CG\":{\"foo\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,\"meta\":{},\"origin\":"
+            "{\"_CG\":{\"meta\":{},\"nodes\":{\"foo\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,"
+            "\"meta\":{},\"origin\":"
             "\"main.cpp\"},\"main\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},"
-            "\"origin\":\"main.cpp\"}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":"
+            "\"origin\":\"main.cpp\"}}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":"
             "\"0.1\"},\"version\":\"4.0\"}}");
 }
 
@@ -130,9 +136,10 @@ TEST_F(V4MCGWriterTest, TwoNodeOneEdgeCGWrite) {
   mcgWriter.writeActiveGraph(jsonSink);
 
   EXPECT_EQ(jsonSink.getJson().dump(),
-            "{\"_CG\":{\"0\":{\"callees\":{\"1\":{}},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},"
+            "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{\"1\":{}},\"functionName\":\"main\",\"hasBody\":true,"
+            "\"meta\":{},"
             "\"origin\":\"main.cpp\"},\"1\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,\"meta\":{},"
-            "\"origin\":\"main.cpp\"}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":"
+            "\"origin\":\"main.cpp\"}}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":"
             "\"0.1\"},\"version\":\"4.0\"}}");
 }
 
@@ -154,9 +161,10 @@ TEST_F(V4MCGWriterTest, TwoNodeOneEdgeCGWriteUseName) {
   mcgWriter.writeActiveGraph(jsonSink);
 
   EXPECT_EQ(jsonSink.getJson().dump(),
-            "{\"_CG\":{\"foo\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,\"meta\":{},\"origin\":\"main."
+            "{\"_CG\":{\"meta\":{},\"nodes\":{\"foo\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,"
+            "\"meta\":{},\"origin\":\"main."
             "cpp\"},\"main\":{\"callees\":{\"foo\":{}},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},"
-            "\"origin\":\"main.cpp\"}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":"
+            "\"origin\":\"main.cpp\"}}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":"
             "\"0.1\"},\"version\":\"4.0\"}}");
 }
 
@@ -182,9 +190,11 @@ TEST_F(V4MCGWriterTest, FourNodeOneEdgeCGWrite) {
 
   EXPECT_EQ(
       jsonSink.getJson().dump(),
-      "{\"_CG\":{\"0\":{\"callees\":{\"1\":{}},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},\"origin\":"
+      "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{\"1\":{}},\"functionName\":\"main\",\"hasBody\":true,"
+      "\"meta\":{},\"origin\":"
       "\"main.cpp\"},\"1\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,\"meta\":{},\"origin\":\"main."
-      "cpp\"},\"2\":{\"callees\":{},\"functionName\":\"bar\",\"hasBody\":false,\"meta\":{},\"origin\":\"bar.cpp\"}},\"_"
+      "cpp\"},\"2\":{\"callees\":{},\"functionName\":\"bar\",\"hasBody\":false,\"meta\":{},\"origin\":\"bar.cpp\"}}},"
+      "\"_"
       "MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4.0\"}}");
 }
 
@@ -209,10 +219,11 @@ TEST_F(V4MCGWriterTest, FourNodeOneEdgeCGWriteUseName) {
   mcgWriter.writeActiveGraph(jsonSink);
 
   EXPECT_EQ(jsonSink.getJson().dump(),
-            "{\"_CG\":{\"bar\":{\"callees\":{},\"functionName\":\"bar\",\"hasBody\":false,\"meta\":{},\"origin\":\"bar."
+            "{\"_CG\":{\"meta\":{},\"nodes\":{\"bar\":{\"callees\":{},\"functionName\":\"bar\",\"hasBody\":false,"
+            "\"meta\":{},\"origin\":\"bar."
             "cpp\"},\"foo\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,\"meta\":{},\"origin\":\"main."
             "cpp\"},\"main\":{\"callees\":{\"foo\":{}},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},"
-            "\"origin\":\"main.cpp\"}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":"
+            "\"origin\":\"main.cpp\"}}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":"
             "\"0.1\"},\"version\":\"4.0\"}}");
 }
 
@@ -233,8 +244,9 @@ TEST_F(V4MCGWriterTest, GraphMetadataCGWrite) {
 
   EXPECT_EQ(
       jsonSink.getJson().dump(),
-      "{\"_CG\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{\"SimpleTestMD\":{"
-      "\"stored_double\":1337.0,\"stored_int\":0,\"stored_string\":\"TestString\"}},\"origin\":\"main.cpp\"}},\"_"
+      "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{"
+      "\"SimpleTestMD\":{"
+      "\"stored_double\":1337.0,\"stored_int\":0,\"stored_string\":\"TestString\"}},\"origin\":\"main.cpp\"}}},\"_"
       "MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4.0\"}}");
 }
 
@@ -258,10 +270,33 @@ TEST_F(V4MCGWriterTest, GraphMetadataWithRefWrite) {
 
   EXPECT_EQ(
       jsonSink.getJson().dump(),
-      "{\"_CG\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{\"RefTestMD\":{"
+      "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{"
+      "\"RefTestMD\":{"
       "\"node_ref\":\"1\"}},\"origin\":\"main.cpp\"},\"1\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,"
-      "\"meta\":{},\"origin\":\"main.cpp\"}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
+      "\"meta\":{},\"origin\":\"main.cpp\"}}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
       "\"version\":\"0.1\"},\"version\":\"4.0\"}}");
+}
+
+TEST_F(V4MCGWriterTest, GlobalGraphMetadataWrite) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  const auto& cg = mcgm.getCallgraph();
+  auto& main = cg->insert("main", "main.cpp");
+  main.setHasBody(true);
+
+  auto entryFunctionMD = std::make_unique<metacg::EntryFunctionMD>(main);
+  cg->addMetaData(std::move(entryFunctionMD));
+
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{4, 0}, {generatorName, 0, 1, "TestSha"}};
+  metacg::io::VersionFourMCGWriter mcgWriter(mcgFileInfo);
+  metacg::io::JsonSink jsonSink;
+  mcgWriter.writeActiveGraph(jsonSink);
+
+  EXPECT_EQ(
+      jsonSink.getJson().dump(),
+      "{\"_CG\":{\"meta\":{\"entryFunction\":\"0\"},\"nodes\":{\"0\":{\"callees\":{},\"functionName\":\"main\","
+      "\"hasBody\":true,\"meta\":{},\"origin\":\"main.cpp\"}}},"
+      "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4.0\"}}");
 }
 
 TEST_F(V4MCGWriterTest, EdgeMetadataCGWrite) {
@@ -284,9 +319,10 @@ TEST_F(V4MCGWriterTest, EdgeMetadataCGWrite) {
   mcgWriter.writeActiveGraph(jsonSink);
   EXPECT_EQ(
       jsonSink.getJson().dump(),
-      "{\"_CG\":{\"0\":{\"callees\":{\"1\":{\"SimpleTestMD\":{\"stored_double\":1337.0,\"stored_int\":0,\"stored_"
+      "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{\"1\":{\"SimpleTestMD\":{\"stored_double\":1337.0,\"stored_"
+      "int\":0,\"stored_"
       "string\":\"TestString\"}}},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},\"origin\":\"main.cpp\"},"
-      "\"1\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,\"meta\":{},\"origin\":\"main.cpp\"}},\"_"
+      "\"1\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,\"meta\":{},\"origin\":\"main.cpp\"}}},\"_"
       "MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4.0\"}}");
 }
 
@@ -303,14 +339,15 @@ TEST_F(V4MCGWriterTest, WriteByName) {
   metacg::io::JsonSink jsonSink;
   mcgWriter.writeNamedGraph("emptyGraph", jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
-            "{\"_CG\":{},"
+            "{\"_CG\":{\"meta\":{},\"nodes\":{}},"
             "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4."
             "0\"}}");
 
   mcgWriter.writeNamedGraph("newGraph", jsonSink);
   EXPECT_EQ(
       jsonSink.getJson().dump(),
-      "{\"_CG\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},\"origin\":\"main.cpp\"}}"
+      "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},"
+      "\"origin\":\"main.cpp\"}}}"
       ",\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4.0\"}}");
 }
 
@@ -327,14 +364,15 @@ TEST_F(V4MCGWriterTest, WritePointer) {
   metacg::io::JsonSink jsonSink;
   mcgWriter.write(mcgm.getCallgraph("emptyGraph"), jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
-            "{\"_CG\":{},"
+            "{\"_CG\":{\"meta\":{},\"nodes\":{}},"
             "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4."
             "0\"}}");
 
   mcgWriter.write(mcgm.getCallgraph("newGraph"), jsonSink);
   EXPECT_EQ(
       jsonSink.getJson().dump(),
-      "{\"_CG\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},\"origin\":\"main.cpp\"}}"
+      "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},"
+      "\"origin\":\"main.cpp\"}}}"
       ",\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4.0\"}}");
 }
 
@@ -356,7 +394,7 @@ TEST_F(V4MCGWriterTest, SwitchBeforeWrite) {
 
   mcgWriter.writeActiveGraph(jsonSink);
   EXPECT_EQ(jsonSink.getJson().dump(),
-            "{\"_CG\":{},"
+            "{\"_CG\":{\"meta\":{},\"nodes\":{}},"
             "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4."
             "0\"}}");
 
@@ -365,6 +403,7 @@ TEST_F(V4MCGWriterTest, SwitchBeforeWrite) {
   mcgWriter.writeActiveGraph(jsonSink);
   EXPECT_EQ(
       jsonSink.getJson().dump(),
-      "{\"_CG\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},\"origin\":\"main.cpp\"}}"
+      "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},"
+      "\"origin\":\"main.cpp\"}}}"
       ",\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4.0\"}}");
 }

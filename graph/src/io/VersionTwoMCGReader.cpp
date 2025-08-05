@@ -68,6 +68,8 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
 }
 
 void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV4Format(nlohmann::json& j) {
+  auto jNodes = nlohmann::json::object();
+
   // Iterate over all nodes
   for (auto& it : j.items()) {
     auto& jNode = it.value();
@@ -111,5 +113,8 @@ void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV4Format(nlohmann::jso
     jNode.erase("doesOverride");
     jNode.erase("overrides");
     jNode.erase("overriddenBy");
+    jNodes[it.key()] = std::move(jNode);
   }
+  j["nodes"] = std::move(jNodes);
+  j["meta"] = nlohmann::json::object();
 }

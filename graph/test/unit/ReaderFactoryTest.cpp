@@ -23,7 +23,10 @@ class MCGReaderFactoryTest : public ::testing::Test {
 
 TEST(MCGReaderFactoryTest, V4Reader) {
   const nlohmann::json j =
-      "{\"_CG\": {},"
+      "{\"_CG\": {"
+      "   \"meta\": {},"
+      "   \"nodes\": {}"
+      "   },"
       " \"_MetaCG\":{"
       "   \"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},"
       "    \"version\":\"4.0\"}"

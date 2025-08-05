@@ -32,7 +32,7 @@ void metacg::io::VersionTwoMCGWriter::write(const metacg::Callgraph* cg, metacg:
   v4Writer.write(cg, v4JsonSink);
 
   auto v4Json = v4JsonSink.getJson();
-  auto& jsonCG = v4Json["_CG"];
+  auto& jsonCG = v4Json[fileInfo.formatInfo.cgFieldName];
 
   downgradeV4FormatToV2Format(jsonCG, exportSorted);
 
@@ -41,8 +41,12 @@ void metacg::io::VersionTwoMCGWriter::write(const metacg::Callgraph* cg, metacg:
 }
 
 void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json& j, bool sortCallers) {
+  // V2 does not support global metadata
+  j.erase("meta");
+  auto& jNodes = j["nodes"];
+
   // Iterate over all nodes
-  for (auto& it : j.items()) {
+  for (auto& it : jNodes.items()) {
     auto& jNode = it.value();
 
     // Function names are already used as keys, so we don't have to change anything here.
@@ -99,18 +103,21 @@ void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json
   }
 
   // Iterate again to write callers
-  for (auto& it : j.items()) {
+  for (auto& it : jNodes.items()) {
     auto& jNode = it.value();
     for (auto& callee : jNode["callees"]) {
-      j[callee]["callers"].push_back(it.key());
+      jNodes[callee]["callers"].push_back(it.key());
     }
   }
 
   // Finally, sort callers (if requested)
   if (sortCallers) {
-    for (auto& it : j.items()) {
+    for (auto& it : jNodes.items()) {
       auto& jNode = it.value();
       std::sort(jNode["callers"].begin(), jNode["callers"].end());
     }
   }
+
+  // Remove "nodes" layer
+  j = std::move(jNodes);
 }

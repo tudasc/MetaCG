@@ -33,7 +33,7 @@ struct EntryFunctionMD final : metacg::MetaData::Registrar<EntryFunctionMD> {
     if (entryFunction) {
       nodeStr = nodeToStr.getStrFromNode(*entryFunction);
     }
-    return {nodeStr};
+    return nodeStr;
   }
 
  private:

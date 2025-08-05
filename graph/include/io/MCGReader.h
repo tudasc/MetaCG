@@ -103,7 +103,7 @@ struct JsonSource : ReaderSource {
  */
 class MetaCGReader {
  public:
-  using MetadataCB = std::function<void(NodeId, const std::string&, nlohmann::json&)>;
+  using MetadataCB = std::function<void(std::optional<NodeId>, const std::string&, nlohmann::json&)>;
 
   /**
    * filename path to file
@@ -121,8 +121,8 @@ class MetaCGReader {
    * Registers a callback that will be invoked, when reading metadata fails.
    * Note that only one callback can be registered.
    * Pass an empty optional to disable the callback.
-   * @param cb Callback function taking the ID of the currently processed node, the metadata type and
-   * corresponding json.
+   * @param cb Callback function taking the ID of the currently processed node (or none if it is globally attached),
+   * the metadata type and the corresponding json.
    */
   void onFailedMetadataRead(std::optional<MetadataCB> cb) {
     this->failedMetadataCb = cb;

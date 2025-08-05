@@ -22,10 +22,12 @@ class V4ReaderWriterRoundtripTest : public ::testing::Test {
 
 TEST_F(V4ReaderWriterRoundtripTest, TextGraphText) {
   const nlohmann::json jsonCG =
-      "{\"_CG\":{\"0\":{\"callees\":{\"1\":{}},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},"
+      "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{\"1\":{}},\"functionName\":\"main\",\"hasBody\":true,"
+      "\"meta\":{},"
       "\"origin\":\"main.cpp\"},\"1\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,\"meta\":{},"
       "\"origin\":\"main.cpp\"},\"2\":{\"callees\":{},\"functionName\":\"bar\",\"hasBody\":false,\"meta\":{},"
-      "\"origin\":\"bar.cpp\"}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},"
+      "\"origin\":\"bar.cpp\"}}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"}"
+      ","
       "\"version\":\"4.0\"}}"_json;
 
   metacg::io::JsonSource jsonSource(jsonCG);
@@ -44,10 +46,12 @@ TEST_F(V4ReaderWriterRoundtripTest, TextGraphText) {
 
 TEST_F(V4ReaderWriterRoundtripTest, TextGraphTextUseName) {
   const nlohmann::json jsonCG =
-      "{\"_CG\":{\"main\":{\"callees\":{\"foo\":{}},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},"
+      "{\"_CG\":{\"meta\":{},\"nodes\":{\"main\":{\"callees\":{\"foo\":{}},\"functionName\":\"main\",\"hasBody\":true,"
+      "\"meta\":{},"
       "\"origin\":\"main.cpp\"},\"foo\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,\"meta\":{},"
       "\"origin\":\"main.cpp\"},\"bar\":{\"callees\":{},\"functionName\":\"bar\",\"hasBody\":false,\"meta\":{},"
-      "\"origin\":\"bar.cpp\"}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},"
+      "\"origin\":\"bar.cpp\"}}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"}"
+      ","
       "\"version\":\"4.0\"}}"_json;
 
   metacg::io::JsonSource jsonSource(jsonCG);
@@ -66,11 +70,13 @@ TEST_F(V4ReaderWriterRoundtripTest, TextGraphTextUseName) {
 
 TEST_F(V4ReaderWriterRoundtripTest, TextGraphTextWithMetadata) {
   const nlohmann::json jsonCG =
-      "{\"_CG\":{\"0\":{\"callees\":{\"1\":{}},\"functionName\":\"main\",\"hasBody\":true,\"meta\":"
+      "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{\"1\":{}},\"functionName\":\"main\",\"hasBody\":true,"
+      "\"meta\":"
       "{\"SimpleTestMD\":{\"stored_double\":1337.0,\"stored_int\":0,\"stored_string\":\"TestString\"}},"
       "\"origin\":\"main.cpp\"},\"1\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,\"meta\":{},"
       "\"origin\":\"main.cpp\"},\"2\":{\"callees\":{},\"functionName\":\"bar\",\"hasBody\":false,\"meta\":{},"
-      "\"origin\":\"bar.cpp\"}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},"
+      "\"origin\":\"bar.cpp\"}}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"}"
+      ","
       "\"version\":\"4.0\"}}"_json;
 
   metacg::io::JsonSource jsonSource(jsonCG);
@@ -89,13 +95,15 @@ TEST_F(V4ReaderWriterRoundtripTest, TextGraphTextWithMetadata) {
 
 TEST_F(V4ReaderWriterRoundtripTest, TextGraphTextWithRefMetadata) {
   const nlohmann::json jsonCG =
-      "{\"_CG\":{\"0\":{\"callees\":{\"1\":{}},\"functionName\":\"main\",\"hasBody\":true,\"meta\":"
+      "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{\"1\":{}},\"functionName\":\"main\",\"hasBody\":true,"
+      "\"meta\":"
       "{\"RefTestMD\":{\"node_ref\":\"1\"}},"
       "\"origin\":\"main.cpp\"},\"1\":{\"callees\":{},\"functionName\":\"foo\",\"hasBody\":true,\"meta\":"
       "{\"RefTestMD\":{\"node_ref\":\"2\"}},"
       "\"origin\":\"main.cpp\"},\"2\":{\"callees\":{},\"functionName\":\"bar\",\"hasBody\":false,\"meta\":"
       "{\"RefTestMD\":{\"node_ref\":\"0\"}},"
-      "\"origin\":\"bar.cpp\"}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},"
+      "\"origin\":\"bar.cpp\"}}},\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"}"
+      ","
       "\"version\":\"4.0\"}}"_json;
 
   metacg::io::JsonSource jsonSource(jsonCG);

@@ -79,9 +79,8 @@ int main(int argc, char** argv) {
   std::unordered_set<std::string> failedToRead;
 
   auto mcgReader = io::createReader(fs);
-  mcgReader->onFailedMetadataRead([&failedToRead](NodeId, const std::string mdKey, nlohmann::json& mdVal) {
-    failedToRead.insert(mdKey);
-  });
+  mcgReader->onFailedMetadataRead([&failedToRead](std::optional<NodeId>, const std::string mdKey,
+                                                  nlohmann::json& mdVal) { failedToRead.insert(mdKey); });
   auto graph = mcgReader->read();
 
   bool checkSucceeded = true;
