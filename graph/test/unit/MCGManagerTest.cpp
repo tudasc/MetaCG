@@ -7,9 +7,9 @@
 #include "gtest/gtest.h"
 
 #include "MCGManager.h"
+#include "metadata/EntryFunctionMD.h"
 #include "metadata/MetaData.h"
 #include "metadata/OverrideMD.h"
-#include "metadata/EntryFunctionMD.h"
 
 using json = nlohmann::json;
 

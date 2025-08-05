@@ -6,8 +6,8 @@
 #include "Callgraph.h"
 
 #include "LoggerUtil.h"
-#include "metadata/OverrideMD.h"
 #include "metadata/EntryFunctionMD.h"
+#include "metadata/OverrideMD.h"
 
 #include <string>
 

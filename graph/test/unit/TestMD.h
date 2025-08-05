@@ -75,7 +75,8 @@ struct RefTestMD final : metacg::MetaData::Registrar<RefTestMD> {
 
   const char* getKey() const override { return key; }
 
-  void merge(const MetaData& toMerge, std::optional<metacg::MergeAction> action, const metacg::GraphMapping& mapping) final {
+  void merge(const MetaData& toMerge, std::optional<metacg::MergeAction> action,
+             const metacg::GraphMapping& mapping) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
       metacg::MCGLogger::instance().getErrConsole()->error(
           "The MetaData which was tried to merge with RefTestMD was of a different MetaData type");
@@ -93,7 +94,6 @@ struct RefTestMD final : metacg::MetaData::Registrar<RefTestMD> {
       // There is no merge action -> this metadata is attached globally.
       // Behavior: simply keep the existing node ref.
     }
-
   }
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<RefTestMD>(new RefTestMD(*this)); }

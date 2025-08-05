@@ -26,7 +26,7 @@ namespace metacg {
 class CgNode;
 class Callgraph;
 
-class CgNode: public MetadataMixin {
+class CgNode : public MetadataMixin {
   friend class Callgraph;
 
  private:
@@ -39,7 +39,6 @@ class CgNode: public MetadataMixin {
                   bool hasBody);
 
  public:
-
   ~CgNode() = default;
 
   /** We delete copy/move ctor, copy/move assign op */
@@ -113,7 +112,7 @@ class CgNode: public MetadataMixin {
   std::string functionName;
   std::optional<std::string> origin;
   bool hasBody;
-//  std::unordered_map<std::string, std::unique_ptr<MetaData>> metaFields;
+  //  std::unordered_map<std::string, std::unique_ptr<MetaData>> metaFields;
 };
 
 }  // namespace metacg

@@ -24,7 +24,7 @@ namespace metacg {
 
 using CgNodeRawPtrUSet = std::unordered_set<metacg::CgNode*>;
 
-class Callgraph: public MetadataMixin {
+class Callgraph : public MetadataMixin {
  public:
   using NodeContainer = std::vector<CgNodePtr>;
   using NodeList = std::vector<NodeId>;
@@ -53,7 +53,7 @@ class Callgraph: public MetadataMixin {
    * @brief getMain
    * @return main function CgNodePtr
    */
-  CgNode* getMain(bool forceRecompute=false) const;
+  CgNode* getMain(bool forceRecompute = false) const;
 
   /**
    * Inserts an edge from parentNode to childNode.

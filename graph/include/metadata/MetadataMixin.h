@@ -1,16 +1,16 @@
 /**
-* File: MetaData.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: MetaData.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 #ifndef METACG_METADATAMIXIN_H
 #define METACG_METADATAMIXIN_H
 
 #include "metadata/MetaData.h"
 
+#include <memory>
 #include <string>
 #include <unordered_map>
-#include <memory>
 
 namespace metacg {
 
@@ -19,7 +19,6 @@ namespace metacg {
  */
 class MetadataMixin {
  public:
-
   MetadataMixin() = default;
 
   // Delete copy constructor and assignment.
@@ -148,7 +147,6 @@ class MetadataMixin {
 
  private:
   std::unordered_map<std::string, std::unique_ptr<MetaData>> metaFields;
-
 };
 
 }  // namespace metacg

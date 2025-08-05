@@ -1,8 +1,8 @@
 /**
-* File: GlobalMDTest.cpp
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: GlobalMDTest.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #include "Callgraph.h"
 
@@ -11,13 +11,13 @@
 #include "TestMD.h"
 
 TEST(GlobalMD, AttachMD) {
- auto cg = std::make_unique<metacg::Callgraph>();
+  auto cg = std::make_unique<metacg::Callgraph>();
 
- auto testMd = std::make_unique<SimpleTestMD>(1337, 42.0, ":)");
- cg->addMetaData(std::move(testMd));
+  auto testMd = std::make_unique<SimpleTestMD>(1337, 42.0, ":)");
+  cg->addMetaData(std::move(testMd));
 
- EXPECT_TRUE(cg->get<SimpleTestMD>() != nullptr);
- EXPECT_EQ(cg->get<SimpleTestMD>()->stored_int, 1337);
+  EXPECT_TRUE(cg->get<SimpleTestMD>() != nullptr);
+  EXPECT_EQ(cg->get<SimpleTestMD>()->stored_int, 1337);
 }
 
 TEST(GlobalMD, EraseMD) {

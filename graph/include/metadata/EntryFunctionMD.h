@@ -1,13 +1,13 @@
 /**
-* File: EntryFunctionMD.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: EntryFunctionMD.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 #ifndef METACG_ENTRYFUNCTIONMD_H
 #define METACG_ENTRYFUNCTIONMD_H
 
-#include "metadata/MetaData.h"
 #include "CgNode.h"
+#include "metadata/MetaData.h"
 
 namespace metacg {
 
@@ -26,9 +26,7 @@ struct EntryFunctionMD final : metacg::MetaData::Registrar<EntryFunctionMD> {
     entryFunction = node->getId();
   }
 
-  explicit EntryFunctionMD(const CgNode& mainNode) {
-    this->entryFunction = mainNode.getId();
-  }
+  explicit EntryFunctionMD(const CgNode& mainNode) { this->entryFunction = mainNode.getId(); }
 
   nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
     std::string nodeStr = "";
@@ -48,7 +46,8 @@ struct EntryFunctionMD final : metacg::MetaData::Registrar<EntryFunctionMD> {
     const EntryFunctionMD* toMergeDerived = static_cast<const EntryFunctionMD*>(&toMerge);
 
     if (action) {
-      MCGLogger::logWarn("EntryFunctionMD is not meant to be attached to a node. Merging is not implemented for this "
+      MCGLogger::logWarn(
+          "EntryFunctionMD is not meant to be attached to a node. Merging is not implemented for this "
           "case");
       return;
     }
@@ -61,7 +60,6 @@ struct EntryFunctionMD final : metacg::MetaData::Registrar<EntryFunctionMD> {
                            *entryFunction);
       }
     }
-
   }
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new EntryFunctionMD(*this)); }
@@ -74,14 +72,12 @@ struct EntryFunctionMD final : metacg::MetaData::Registrar<EntryFunctionMD> {
 
   const char* getKey() const final { return key; }
 
-  std::optional<NodeId> getEntryFunctionId() const {
-    return entryFunction;
-  }
+  std::optional<NodeId> getEntryFunctionId() const { return entryFunction; }
 
  private:
   std::optional<NodeId> entryFunction;
 };
 
-} // metacg
+}  // namespace metacg
 
 #endif  // METACG_ENTRYFUNCTIONMD_H
