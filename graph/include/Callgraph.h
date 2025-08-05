@@ -53,7 +53,7 @@ class Callgraph: public MetadataMixin {
    * @brief getMain
    * @return main function CgNodePtr
    */
-  CgNode* getMain();
+  CgNode* getMain(bool forceRecompute=false) const;
 
   /**
    * Inserts an edge from parentNode to childNode.
@@ -432,7 +432,7 @@ class Callgraph: public MetadataMixin {
   CalleeList calleeList;
 
   // Dedicated node pointer to main function
-  CgNode* mainNode = nullptr;
+  mutable CgNode* mainNode = nullptr;
   // Tracks if there is more than one node with the same function name
   bool hasDuplicates{false};
   // Tracks number of erased nodes
