@@ -36,7 +36,7 @@ class InstrumentationMetaData : public metacg::MetaData::Registrar<Instrumentati
 
   const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
+  void merge(const MetaData& toMerge, std::optional<MergeAction>, const GraphMapping&) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
       metacg::MCGLogger::instance().getErrConsole()->error(
           "The MetaData which was tried to merge with InstrumentationMetaData was of a different MetaData type");

@@ -76,7 +76,7 @@ public:
 
  const char* getKey() const final { return key; }
 
- void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
+ void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with BaseProfileData was of a different MetaData type");
@@ -197,7 +197,7 @@ public:
 
  const char* getKey() const final { return key; }
 
- void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
+ void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with PiraOneData was of a different MetaData type");
@@ -305,7 +305,7 @@ public:
 
  const char* getKey() const final { return key; }
 
- void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
+ void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with PiraTwoData was of a different MetaData type");
@@ -371,7 +371,7 @@ public:
 
  const char* getKey() const final { return key; }
 
- void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
+ void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with FilePropertiesMetaData was of a different MetaData type");
@@ -421,7 +421,7 @@ public:
    return j;
  }
 
- void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
+ void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with InlineMetaData was of a different MetaData type");
@@ -482,7 +482,7 @@ public:
    return j;
  }
 
- void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
+ void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with CallCountEstimationMetaData was of a different MetaData type");
@@ -572,7 +572,7 @@ private:
 public:
  nlohmann::json toJson(metacg::NodeToStrMapping& nodeToStr) const final { return {}; }
 
- void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
+ void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with TemporaryInstrumentationDecisionMetadata was of a different "
@@ -649,7 +649,7 @@ public:
    return j;
  }
 
- void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
+ void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
      metacg::MCGLogger::instance().getErrConsole()->error(
          "The MetaData which was tried to merge with InstrumentationResultMetaData was of a different MetaData type");

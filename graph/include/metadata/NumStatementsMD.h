@@ -33,7 +33,7 @@ class NumStatementsMD : public metacg::MetaData::Registrar<NumStatementsMD> {
 
   const char* getKey() const override { return key; }
 
-  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
+  void merge(const MetaData& toMerge, std::optional<MergeAction>, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge NumStatementsMD with meta data of different types");
 
     const NumStatementsMD* toMergeDerived = static_cast<const NumStatementsMD*>(&toMerge);

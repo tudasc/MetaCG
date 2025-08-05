@@ -36,6 +36,9 @@ class Callgraph: public MetadataMixin {
   using CallerList = std::unordered_map<NodeId, NodeList>;
   using CalleeList = std::unordered_map<NodeId, NodeList>;
 
+  // Required for automatic overload resolution
+  using MetadataMixin::erase;
+
   Callgraph() : nodes(), nameIdMap(), edges(), mainNode(nullptr) {}
 
   ~Callgraph() = default;

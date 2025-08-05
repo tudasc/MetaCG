@@ -35,7 +35,7 @@ class CodeStatisticsMD : public metacg::MetaData::Registrar<CodeStatisticsMD> {
 
   const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
+  void merge(const MetaData& toMerge, std::optional<MergeAction>, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge CodeStatisticsMD with meta data of different types");
 
     const CodeStatisticsMD* toMergeDerived = static_cast<const CodeStatisticsMD*>(&toMerge);

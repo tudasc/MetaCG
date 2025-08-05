@@ -35,7 +35,7 @@ struct SimpleTestMD final : metacg::MetaData::Registrar<SimpleTestMD> {
 
   const char* getKey() const override { return key; }
 
-  void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
+  void merge(const MetaData& toMerge, std::optional<metacg::MergeAction> action, const metacg::GraphMapping&) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
       metacg::MCGLogger::instance().getErrConsole()->error(
           "The MetaData which was tried to merge with SimpleTestMD was of a different MetaData type");
@@ -47,7 +47,7 @@ struct SimpleTestMD final : metacg::MetaData::Registrar<SimpleTestMD> {
 
   void applyMapping(const metacg::GraphMapping&) override {}
 
- private:
+ public:
   int stored_int;
   double stored_double;
   std::string stored_string;
@@ -75,13 +75,25 @@ struct RefTestMD final : metacg::MetaData::Registrar<RefTestMD> {
 
   const char* getKey() const override { return key; }
 
-  void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
+  void merge(const MetaData& toMerge, std::optional<metacg::MergeAction> action, const metacg::GraphMapping& mapping) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
       metacg::MCGLogger::instance().getErrConsole()->error(
           "The MetaData which was tried to merge with RefTestMD was of a different MetaData type");
       abort();
     }
-    // Not implemented
+    auto& toMergeDerived = static_cast<const RefTestMD&>(toMerge);
+
+    if (action) {
+      // There is a merge action -> this metadata is attached to a node.
+      // Behavior here is to overwrite the data if the node is replaced.
+      if (action->replace) {
+        this->nodeRef = mapping.at(toMergeDerived.nodeRef);
+      }
+    } else {
+      // There is no merge action -> this metadata is attached globally.
+      // Behavior: simply keep the existing node ref.
+    }
+
   }
 
   std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<RefTestMD>(new RefTestMD(*this)); }

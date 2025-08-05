@@ -31,7 +31,7 @@ class LoopDepthMD : public metacg::MetaData::Registrar<LoopDepthMD> {
 
   const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
+  void merge(const MetaData& toMerge, std::optional<MergeAction>, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge LoopDepthMD with meta data of different types");
 
     const LoopDepthMD* toMergeDerived = static_cast<const LoopDepthMD*>(&toMerge);
@@ -67,7 +67,7 @@ class GlobalLoopDepthMD : public metacg::MetaData::Registrar<GlobalLoopDepthMD> 
 
   const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
+  void merge(const MetaData& toMerge, std::optional<MergeAction>, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge GlobalLoopDepthMD with meta data of different types");
 
     metacg::MCGLogger::instance().getErrConsole()->warn(
@@ -110,7 +110,7 @@ class LoopCallDepthMD : public metacg::MetaData::Registrar<LoopCallDepthMD> {
 
   const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
+  void merge(const MetaData& toMerge, std::optional<MergeAction>, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge LoopCallDepthMD with meta data of different types");
 
     const LoopCallDepthMD* toMergeDerived = static_cast<const LoopCallDepthMD*>(&toMerge);

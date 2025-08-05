@@ -14,7 +14,7 @@ class DummyMD : public metacg::MetaData::Registrar<DummyMD> {
   explicit DummyMD(const nlohmann::json& j, metacg::StrToNodeMapping&) {}
 
   virtual void merge(const MetaData& toMerge) final {}
-  void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {}
+  void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {}
 
   virtual std::unique_ptr<MetaData> clone() const final { return std::make_unique<DummyMD>(*this); }
 
