@@ -216,6 +216,8 @@ static const OverheadSelectionOpt overheadSelection{"overhead-selection", "none"
 
 static const BoolOpt sortDotEdges{"sort-dot-edges", "true"};
 
+static const StringOpt mcgInput{"mcg-input", ""};
+
 template <typename OptObject>
 struct OptHelper {
   typedef typename std::remove_reference<typename std::remove_cv<OptObject>::type>::type::type type;
