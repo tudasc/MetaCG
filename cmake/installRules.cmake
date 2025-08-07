@@ -80,7 +80,9 @@ install(
 )
 
 # Install public graph library dependencies
-install(TARGETS nlohmann_json spdlog EXPORT metacgTargets)
+if (NOT METACG_USE_EXTERNAL_JSON)
+  install(TARGETS nlohmann_json spdlog EXPORT metacgTargets)
+endif()
 
 # Install the generated CustomMD.h header
 install(
