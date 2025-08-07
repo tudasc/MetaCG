@@ -2,7 +2,7 @@ include(CMakeFindDependencyMacro)
 
 find_dependency(Threads)
 
-if (@METACG_USE_EXTERNAL_JSON@) # only enabled when METACG_USE_EXTERNAL_JSON=ON
+if(@METACG_USE_EXTERNAL_JSON@) # only enabled when METACG_USE_EXTERNAL_JSON=ON
   find_dependency(nlohmann_json)
 endif()
 
