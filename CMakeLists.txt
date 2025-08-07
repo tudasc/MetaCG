@@ -74,7 +74,7 @@ endif()
 # Configure the file that holds version information
 configure_file(Config.h.in config.h)
 
-if (METACG_BUILD_UNIT_TESTS)
+if(METACG_BUILD_UNIT_TESTS)
   # Provide googletest library
   include(GoogleTest)
 endif()
