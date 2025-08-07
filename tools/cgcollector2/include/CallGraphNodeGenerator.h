@@ -84,13 +84,13 @@ class CallGraphNodeGenerator : public clang::RecursiveASTVisitor<CallGraphNodeGe
 
   bool VisitCXXBindTemporaryExpr(clang::CXXBindTemporaryExpr* CXXBTE);
 
+  bool shouldVisitTemplateInstantiations() const { return true; }
+
+  bool shouldWalkTypesOfTypeLocs() const { return true; }
+
   bool shouldVisitImplicitCode() const { return true; }
 
   bool shouldVisitLambdaBody() const { return true; }
-
-  bool shouldVisitTemplateInstantiations() const { return true; }
-
-  bool shouldWalkTypesOfTypeLocs() const { return false; }
 
  private:
   void addEdge(clang::Decl* Child);
@@ -113,16 +113,10 @@ class CallGraphNodeGenerator : public clang::RecursiveASTVisitor<CallGraphNodeGe
   bool inferCtorsDtors{false};
   bool standalone{false};
   AliasAnalysisLevel level = No;
-  std::vector<const clang::Decl*> inOrderDecls;
+  std::unordered_set<void*> traversedTemplates{};
 
   /// The Edge Gen Variables
   clang::NamedDecl* topLevelFD = nullptr;
-
-  inline bool ends_with(std::string const& value, std::string const& ending) {
-    if (ending.size() > value.size())
-      return false;
-    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
-  }
 
   clang::QualType getFinalPointee(clang::QualType pointerType);
 };
