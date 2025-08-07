@@ -8,7 +8,11 @@ if(METACG_USE_EXTERNAL_CXXOPTS)
     REQUIRED
   )
 
-  add_library(cxxopts ALIAS cxxopts::cxxopts)
+  add_library(
+    cxxopts
+    ALIAS
+    cxxopts::cxxopts
+  )
 else()
   message("Using fetched release version of cxxopts library")
 
