@@ -9,6 +9,11 @@ tools/cgpatch/test/pass-tests/vcall-detection-test/*.s
 
 
 .idea/
-build*/
+build*
 .cache/
 cmake-build*/
+
+# Spack
+spack.yaml
+spack.lock
+.spack-env/
