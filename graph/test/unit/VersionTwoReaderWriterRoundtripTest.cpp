@@ -69,7 +69,7 @@ TEST_F(VersionTwoReaderWriterRoundtripTest, TextGraphText) {
       "}"_json;
 
   metacg::io::JsonSource jsonSource(jsonCG);
-  metacg::io::VersionTwoMetaCGReader reader(jsonSource);
+  metacg::io::VersionTwoMCGReader reader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newCallgraph", reader.read());
   const std::string generatorName = "Test";
@@ -133,7 +133,7 @@ TEST_F(VersionTwoReaderWriterRoundtripTest, EmptyFilePropertyMetadata) {
       "}"_json;
 
   metacg::io::JsonSource jsonSource(jsonCG);
-  metacg::io::VersionTwoMetaCGReader reader(jsonSource);
+  metacg::io::VersionTwoMCGReader reader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newCallgraph", reader.read());
   const std::string generatorName = "Test";

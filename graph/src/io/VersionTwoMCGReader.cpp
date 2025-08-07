@@ -10,7 +10,7 @@
 #include "Util.h"
 #include "io/VersionFourMCGReader.h"
 
-std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
+std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMCGReader::read() {
   const metacg::RuntimeTimer rtt("VersionTwoMetaCGReader::read");
   const metacg::MCGFileFormatInfo ffInfo{2, 0};
   auto console = metacg::MCGLogger::instance().getConsole();
@@ -62,12 +62,12 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
   mcgInfo["version"] = "4.0";
 
   JsonSource v4JsonSrc(j);
-  VersionFourMetaCGReader v4Reader(v4JsonSrc);
+  VersionFourMCGReader v4Reader(v4JsonSrc);
   v4Reader.onFailedMetadataRead(this->failedMetadataCb);
   return v4Reader.read();
 }
 
-void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV4Format(nlohmann::json& j) {
+void metacg::io::VersionTwoMCGReader::upgradeV2FormatToV4Format(nlohmann::json& j) {
   auto jNodes = nlohmann::json::object();
 
   // Iterate over all nodes
