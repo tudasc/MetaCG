@@ -179,6 +179,19 @@ for tc in ${testGlob}; do
 done
 echo "Single file test failures: $fails"
 
+# Single File and for CXXRecordCalls
+echo -e "\n --- Running single file CXXRecord call tests ---"
+testGlob="./input/cxxRecordCalls/*.cpp"
+for tc in ${testGlob}; do
+  echo "Running test ${tc}"
+  #we need to capture implicits here, as some calls are to implicit constructors/destructors
+  applyFileFormatTwoToSingleTU ${tc} "--capture-ctors-dtors --capture-new-delete-calls --capture-implicits --infer-ctors-dtors --whole-program --prune --NumStatements"
+  fail=$?
+  fails=$((fails + fail))
+done
+echo "Single file test failures: $fails"
+
+
 # Single File and functionPointers
 echo -e "\n --- Running single file functionPointers tests ---"
 testGlob="./input/functionPointers/*.cpp"
