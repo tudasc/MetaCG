@@ -365,3 +365,16 @@ TEST_F(MCGManagerTest, GetMainTest) {
   detectedMain = cg->getMain(true);
   ASSERT_EQ(detectedMain->getId(), realMain.getId());
 }
+
+TEST_F(MCGManagerTest, EraseMainTest) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newCG", std::make_unique<metacg::Callgraph>(), true);
+
+  auto cg = mcgm.getCallgraph();
+  auto& main = cg->getOrInsertNode("thisIsMain");
+  cg->getOrCreate<metacg::EntryFunctionMD>(main);
+  ASSERT_EQ(cg->getMain(), &main);
+  cg->erase(main.id);
+  ASSERT_EQ(cg->getMain(), nullptr);
+  ASSERT_FALSE(cg->has<metacg::EntryFunctionMD>());
+}

@@ -71,6 +71,15 @@ bool Callgraph::erase(NodeId id) {
   // Check if this is the cached main function
   if (mainNode == ptr.get()) {
     mainNode = nullptr;
+    // Warn if the entry function metadata is still attached.
+    if (auto md = get<EntryFunctionMD>(); md && md->getEntryFunctionId() == id) {
+      MCGLogger::logWarn(
+          "The previous entry function '{}' was erased, but the global metadata entry still points to it."
+          "This metadata will be removed to maintain consistency. Remove or modfity the metadata explicitly to quiet "
+          "this warning.",
+          ptr->getFunctionName());
+      erase<EntryFunctionMD>();
+    }
   }
   std::string name = ptr->getFunctionName();
   nameIdMap[name].erase(std::find(nameIdMap[name].begin(), nameIdMap[name].end(), id));
