@@ -49,9 +49,15 @@ set(metacg_INSTALL_CMAKEDIR
 )
 mark_as_advanced(metacg_INSTALL_CMAKEDIR)
 
+configure_file(
+  ../cmake/install-config.cmake.in
+  ${CMAKE_BINARY_DIR}/install-config.cmake
+  @ONLY
+)
+
 # Install the install-config file as metacgConfig.cmake file
 install(
-  FILES ../cmake/install-config.cmake
+  FILES ${CMAKE_BINARY_DIR}/install-config.cmake
   DESTINATION "${metacg_INSTALL_CMAKEDIR}"
   RENAME "${package}Config.cmake"
   COMPONENT metacg_Development
