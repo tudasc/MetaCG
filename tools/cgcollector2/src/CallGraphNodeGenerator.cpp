@@ -41,6 +41,7 @@
 #include "metadata/Internal/FunctionSignatureMetadata.h"
 
 #include "LoggerUtil.h"
+
 using namespace clang;
 
 [[nodiscard]] inline bool starts_with(llvm::StringRef Str, llvm::StringRef Prefix) {
@@ -49,6 +50,13 @@ using namespace clang;
 #else
   return Str.starts_with(Prefix);
 #endif
+}
+
+inline bool ends_with(std::string const& value, std::string const& ending) {
+  if (ending.size() > value.size()) {
+    return false;
+  }
+  return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 }
 
 std::vector<std::string> getMangledNames(clang::Decl const* const nd) {
@@ -63,14 +71,6 @@ std::vector<std::string> getMangledNames(clang::Decl const* const nd) {
     return NG.getAllManglings(nd);
   }
   return {NG.getName(nd)};
-}
-
-template <typename T>
-std::string dumpToString(T elem, clang::ASTContext& ctx){
-  std::string dump;
-  auto rso= llvm::raw_string_ostream(dump);
-  elem->dump(rso,ctx);
-  return dump;
 }
 
 bool CallGraphNodeGenerator::TraverseFunctionDecl(clang::FunctionDecl* D) {
@@ -128,32 +128,35 @@ bool CallGraphNodeGenerator::TraverseCXXDestructorDecl(clang::CXXDestructorDecl*
 bool CallGraphNodeGenerator::TraverseFunctionTemplateDecl(clang::FunctionTemplateDecl* D) {
   SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)D);
   // In case the FunctionTemplateDecl is a CXXMemberFunctionTemplateDecl we expect them to be available
+
   for (const clang::FunctionDecl* const f : D->specializations()) {
-    // Has Specialisation (void *) f;
     if (!shouldIncludeFunction(f)) {
       // ignoring
       continue;
     }
     addNode(f);
   }
-  return RecursiveASTVisitor::TraverseFunctionTemplateDecl(D);
-}
-
-bool CallGraphNodeGenerator::TraverseClassTemplateDecl(clang::ClassTemplateDecl* D) {
-  // We do not traverse the uninstantiated class template description, but only their specialisations
-  for (clang::ClassTemplateSpecializationDecl* const c : D->specializations()) {
-    const auto& names = getMangledNames(c);
-    if(names.empty() || callgraph->hasNode(names.front())){
-      //This is to circumvent infinite recursive template walks
-      //If we already have the decl, we don't need to traverse again
-      continue ;
-    }
-    RecursiveASTVisitor::TraverseCXXRecordDecl(c);
-  }
 
   // We abort traversal of the template-class after traversing all specialisations
   // I don't think an uninstantiated template-class has any information left after this
-  return true;
+  return true;  // high cuts: RecursiveASTVisitor::TraverseFunctionTemplateDecl(D);
+}
+
+bool CallGraphNodeGenerator::TraverseClassTemplateDecl(clang::ClassTemplateDecl* D) {
+  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)D);
+  // We do not traverse the uninstantiated class template description, but only their specialisations
+  for (clang::ClassTemplateSpecializationDecl* const c : D->specializations()) {
+    if (isa<clang::ClassTemplatePartialSpecializationDecl>(c)) {
+      continue;  // Don't traverse partially specialized templates ?
+    }
+    if (traversedTemplates.find(c) == traversedTemplates.end()) {
+      traversedTemplates.insert(c);  // Stop infinite recursion
+      RecursiveASTVisitor::TraverseCXXRecordDecl(c);
+    }
+  }
+  // We abort traversal of the template-class after traversing all specialisations
+  // I don't think an uninstantiated template-class has any information left after this
+  return true // high cuts: RecursiveASTVisitor::TraverseClassTemplateDecl(D);
 }
 
 bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) {
@@ -191,7 +194,7 @@ bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) {
 
     IdentifierInfo* II = FD->getIdentifier();
     // TODO not sure whether we want to include __inline marked functions
-    if (II && starts_with(II->getName(),("__inline"))) {
+    if (II && starts_with(II->getName(), ("__inline"))) {
       return true;
     }
   } else {
@@ -275,11 +278,11 @@ bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
   } else {
     SPDLOG_WARN("Wierd cases encountered!");
     if (E->getCallee()->getType()->isDependentType()) {
+      assert(E->getCallee()->getType()->isDependentType() == E->getCallee()->isTypeDependent());
       SPDLOG_WARN(
-          "The callees {} type {} is not instantiated and is supposed to be resolved later. THIS SHOULD NOT HAPPEN "
-          "ANYMORE!!!",
-          dumpToString(E,topLevelFD->getASTContext()),
-          E->getCallee()->getType().getAsString());
+          "When calling from {} ({}) to {}, the callee type is uninstantiated and is supposed to be resolved later."
+          "We do not handle this.",
+          topLevelFD->getNameAsString(), (void*)topLevelFD, (void*)E->getCallee());
       return true;
     }
 
@@ -430,8 +433,10 @@ bool CallGraphNodeGenerator::VisitCXXBindTemporaryExpr(clang::CXXBindTemporaryEx
   if (!inferCtorsDtors) {
     return true;
   }
-  assert(CXXBTE->getType()->getAsCXXRecordDecl() && "Could not get the CXXRecordDeclaration from the temporary construct expression");
-  assert(CXXBTE->getType()->getAsCXXRecordDecl()->getDestructor() && "Could not get the Destructor from the temporarily constructed CXXRecord");
+  assert(CXXBTE->getType()->getAsCXXRecordDecl() &&
+         "Could not get the CXXRecordDeclaration from the temporary construct expression");
+  assert(CXXBTE->getType()->getAsCXXRecordDecl()->getDestructor() &&
+         "Could not get the Destructor from the temporarily constructed CXXRecord");
   const auto cxxbte = CXXBTE->getType()->getAsCXXRecordDecl()->getDestructor();
   addEdge(cxxbte);
   return true;
@@ -445,8 +450,8 @@ void CallGraphNodeGenerator::addNode(const clang::FunctionDecl* const D) {
     auto node = callgraph->getOrInsertNode(name);
     // This is so we overwrite if we ever find the body of a function after a predeclare
     node->setHasBody(D->hasBody());
-    if (auto cxxmethod = dyn_cast<CXXMethodDecl>(D); cxxmethod!= nullptr && cxxmethod->isVirtual()) {
-        node->getOrCreateMD<OverrideMD>();
+    if (auto cxxmethod = dyn_cast<CXXMethodDecl>(D); cxxmethod != nullptr && cxxmethod->isVirtual()) {
+      node->getOrCreateMD<OverrideMD>();
     }
     node->getOrCreateMD<ASTNodeMetadata>()->setFunctionDecl(D);
     if (!node->has<FunctionSignatureMetadata>()) {

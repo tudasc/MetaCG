@@ -19,13 +19,13 @@
 #include "metadata/Internal/AllAliasMetadata.h"
 #include "metadata/Internal/FunctionSignatureMetadata.h"
 
-void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Context) {
-  std::string dumpLoc;
-  llvm::raw_string_ostream rso(dumpLoc);
-  Context.getTranslationUnitDecl()->dump(rso,true);
-  SPDLOG_TRACE("\n{}\n", dumpLoc);
+#include "clang/AST/ASTDumper.h"
 
-  // Context.getTranslationUnitDecl()->dump();
+void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Context) {
+  std::string dumpString;
+  llvm::raw_string_ostream llvmStringOstream(dumpString);
+  Context.getTranslationUnitDecl()->dump(llvmStringOstream);
+  SPDLOG_TRACE("\n{}\n", dumpString);
 
   // Todo: maybe use multigraph managing and write only after all files have been processed
   auto& mcgm = metacg::graph::MCGManager::get();
@@ -72,7 +72,7 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
   metacg::io::JsonSink js;
   mcgWriter->write(callgraph, js);
   auto& sm = Context.getSourceManager();
-  std::string filename = sm.getFileEntryForID(sm.getMainFileID())->getName().str();
+  std::string filename = sm.getFileEntryRefForID(sm.getMainFileID())->getName().str();
   filename = filename.substr(0, filename.find_last_of('.')) + ".ipcg";
   SPDLOG_INFO("Writing to file: {}", filename);
   std::ofstream file(filename);
