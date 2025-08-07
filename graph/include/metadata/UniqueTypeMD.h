@@ -32,7 +32,7 @@ class UniqueTypeMD : public metacg::MetaData::Registrar<UniqueTypeMD> {
 
   const char* getKey() const override { return key; }
 
-  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping&) final {
+  void merge(const MetaData& toMerge, std::optional<MergeAction>, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge UniqueTypeMD with meta data of different types");
 
     const UniqueTypeMD* toMergeDerived = static_cast<const UniqueTypeMD*>(&toMerge);

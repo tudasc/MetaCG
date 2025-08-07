@@ -9,6 +9,7 @@
 #include "CgNode.h"
 #include "MergePolicy.h"
 #include "Util.h"
+#include "metadata/MetadataMixin.h"
 
 template <>
 struct std::hash<std::pair<size_t, size_t>> {
@@ -23,7 +24,7 @@ namespace metacg {
 
 using CgNodeRawPtrUSet = std::unordered_set<metacg::CgNode*>;
 
-class Callgraph {
+class Callgraph : public MetadataMixin {
  public:
   using NodeContainer = std::vector<CgNodePtr>;
   using NodeList = std::vector<NodeId>;
@@ -34,6 +35,9 @@ class Callgraph {
   using EdgeContainer = std::unordered_map<std::pair<NodeId, NodeId>, NamedMetadata>;
   using CallerList = std::unordered_map<NodeId, NodeList>;
   using CalleeList = std::unordered_map<NodeId, NodeList>;
+
+  // Required for automatic overload resolution
+  using MetadataMixin::erase;
 
   Callgraph() : nodes(), nameIdMap(), edges(), mainNode(nullptr) {}
 
@@ -49,7 +53,7 @@ class Callgraph {
    * @brief getMain
    * @return main function CgNodePtr
    */
-  CgNode* getMain();
+  CgNode* getMain(bool forceRecompute = false) const;
 
   /**
    * Inserts an edge from parentNode to childNode.
@@ -428,7 +432,7 @@ class Callgraph {
   CalleeList calleeList;
 
   // Dedicated node pointer to main function
-  CgNode* mainNode = nullptr;
+  mutable CgNode* mainNode = nullptr;
   // Tracks if there is more than one node with the same function name
   bool hasDuplicates{false};
   // Tracks number of erased nodes

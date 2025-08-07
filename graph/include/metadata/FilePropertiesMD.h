@@ -35,11 +35,11 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
 
   const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge, const MergeAction& action, const GraphMapping&) final {
+  void merge(const MetaData& toMerge, std::optional<MergeAction> action, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge FilePropertiesMD with metadata of different types");
 
     // Adopt file properties from the other node, if it's replacing this one
-    if (action.replace) {
+    if (action && action->replace) {
       const FilePropertiesMD* toMergeDerived = static_cast<const FilePropertiesMD*>(&toMerge);
       this->fromSystemInclude = toMergeDerived->fromSystemInclude;
     }

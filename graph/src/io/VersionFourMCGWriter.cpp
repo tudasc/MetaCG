@@ -110,7 +110,20 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
     jNodes[callerStr]["callees"][calleeStr] = jEdgeMD;
   }
 
-  j["_CG"] = std::move(jNodes);
+  j["_CG"] = nlohmann::json::object();
+  j["_CG"]["nodes"] = std::move(jNodes);
+
+  // Write global metadata
+  auto jMeta = nlohmann::json::object();
+  for (auto& [key, md] : cg->getMetaDataContainer()) {
+    // Metadata is not attached, if the generated field is empty or null.
+    if (auto jMetaEntry = md->toJson(nodeToStr); !jMetaEntry.empty() && !jMetaEntry.is_null()) {
+      jMeta[key] = std::move(jMetaEntry);
+    } else {
+      MCGLogger::logWarn("Could not serialize global metadata of type {}", key);
+    }
+  }
+  j["_CG"]["meta"] = std::move(jMeta);
 
   if (exportSorted) {
     sortCallgraph(j);

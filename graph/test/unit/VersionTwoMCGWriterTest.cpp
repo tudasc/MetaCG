@@ -48,7 +48,7 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
 
   const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge, const metacg::MergeAction&, const metacg::GraphMapping&) final {
+  void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
       metacg::MCGLogger::instance().getErrConsole()->error(
           "The MetaData which was tried to merge with TestMetaData was of a different MetaData type");

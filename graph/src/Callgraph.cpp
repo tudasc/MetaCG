@@ -6,6 +6,7 @@
 #include "Callgraph.h"
 
 #include "LoggerUtil.h"
+#include "metadata/EntryFunctionMD.h"
 #include "metadata/OverrideMD.h"
 
 #include <string>
@@ -14,11 +15,22 @@ int metacg_RegistryInstanceCounter{0};
 
 using namespace metacg;
 
-CgNode* Callgraph::getMain() {
-  if (mainNode) {
+CgNode* Callgraph::getMain(bool forceRecompute) const {
+  if (forceRecompute) {
+    mainNode = nullptr;
+  } else if (mainNode) {
     return mainNode;
   }
 
+  // First, check if there is "entryFunction" metadata.
+  if (const auto* md = get<EntryFunctionMD>(); md) {
+    auto id = md->getEntryFunctionId();
+    if (id && (mainNode = getNode(*id))) {
+      return mainNode;
+    }
+  }
+
+  // Otherwise, try to find by name.
   if ((mainNode = getFirstNode("main")) || (mainNode = getFirstNode("_Z4main")) ||
       (mainNode = getFirstNode("_ZSt4mainiPPc"))) {
     return mainNode;
@@ -56,6 +68,19 @@ bool Callgraph::erase(NodeId id) {
   // Destroy the node
   auto& ptr = nodes[id];
   assert(ptr && "The ID must correspond to a valid node");
+  // Check if this is the cached main function
+  if (mainNode == ptr.get()) {
+    mainNode = nullptr;
+    // Warn if the entry function metadata is still attached.
+    if (auto md = get<EntryFunctionMD>(); md && md->getEntryFunctionId() == id) {
+      MCGLogger::logWarn(
+          "The previous entry function '{}' was erased, but the global metadata entry still points to it."
+          "This metadata will be removed to maintain consistency. Remove or modfity the metadata explicitly to quiet "
+          "this warning.",
+          ptr->getFunctionName());
+      erase<EntryFunctionMD>();
+    }
+  }
   std::string name = ptr->getFunctionName();
   nameIdMap[name].erase(std::find(nameIdMap[name].begin(), nameIdMap[name].end(), id));
   ptr.reset();
@@ -295,6 +320,21 @@ MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::Mer
       }
     }
   }
+
+  // Step 5: merge global metadata
+  for (auto& md : other.getMetaDataContainer()) {
+    auto* existingMd = this->get(md.first);
+    if (existingMd) {
+      existingMd->merge(*(md.second), std::nullopt, mapping);
+    } else {
+      auto clonedMd = md.second->clone();
+      clonedMd->applyMapping(mapping);
+      this->addMetaData(std::move(clonedMd));
+    }
+  }
+
+  // Reset cached main function because this may have changed.
+  mainNode = nullptr;
 
   return recorder;
 }

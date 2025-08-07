@@ -1,25 +1,28 @@
 {
     "_CG": {
-        "0": {
-            "callees": {},
-            "functionName": "foo",
-            "hasBody": true,
-            "meta": null,
-            "origin": null
-        },
-        "1": {
-            "callees": {},
-            "functionName": "foo",
-            "hasBody": true,
-            "meta": null,
-            "origin": null
-        },
-        "2": {
-            "callees": {},
-            "functionName": "bar",
-            "hasBody": true,
-            "meta": null,
-            "origin": null
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": {},
+                "functionName": "foo",
+                "hasBody": true,
+                "meta": null,
+                "origin": null
+            },
+            "1": {
+                "callees": {},
+                "functionName": "foo",
+                "hasBody": true,
+                "meta": null,
+                "origin": null
+            },
+            "2": {
+                "callees": {},
+                "functionName": "bar",
+                "hasBody": true,
+                "meta": null,
+                "origin": null
+            }
         }
     },
     "_MetaCG": {

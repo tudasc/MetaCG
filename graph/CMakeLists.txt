@@ -20,6 +20,7 @@ set(MetacgGraphLibSources
     include/CgNode.h
     include/Callgraph.h
     include/metadata/MetaData.h
+    include/metadata/MetadataMixin.h
     include/MCGManager.h
     include/io/MCGWriter.h
     include/Util.h

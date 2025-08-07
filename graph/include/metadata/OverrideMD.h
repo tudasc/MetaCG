@@ -73,7 +73,7 @@ struct OverrideMD final : metacg::MetaData::Registrar<OverrideMD> {
   OverrideMD(const OverrideMD& other) : overrides(other.overrides), overriddenBy(other.overriddenBy) {}
 
  public:
-  void merge(const MetaData& toMerge, const MergeAction&, const GraphMapping& mapping) final {
+  void merge(const MetaData& toMerge, std::optional<MergeAction>, const GraphMapping& mapping) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge OverrideMD with meta data of different types");
 
     const OverrideMD* toMergeDerived = static_cast<const OverrideMD*>(&toMerge);

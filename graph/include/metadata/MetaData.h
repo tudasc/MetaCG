@@ -107,7 +107,7 @@ struct MetaData : MetaDataFactory<MetaData> {
   static constexpr const char* key = "BaseClass";
   virtual nlohmann::json toJson(NodeToStrMapping&) const = 0;
   virtual const char* getKey() const = 0;
-  virtual void merge(const MetaData&, const MergeAction&, const GraphMapping&) = 0;
+  virtual void merge(const MetaData&, std::optional<MergeAction>, const GraphMapping&) = 0;
   [[nodiscard]] virtual std::unique_ptr<MetaData> clone() const = 0;
 
   /**

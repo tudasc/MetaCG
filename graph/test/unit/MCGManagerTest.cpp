@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 
 #include "MCGManager.h"
+#include "metadata/EntryFunctionMD.h"
 #include "metadata/MetaData.h"
 #include "metadata/OverrideMD.h"
 
@@ -348,4 +349,32 @@ TEST_F(MCGManagerTest, FullIntoFullCallgraphMerge) {
   ASSERT_TRUE(mcgm.getCallgraph()->getFirstNode("child2")->getHasBody());
   ASSERT_TRUE(mcgm.getCallgraph()->existsAnyEdge("main", "child1"));
   ASSERT_TRUE(mcgm.getCallgraph()->existsAnyEdge("child1", "child2"));
+}
+
+TEST_F(MCGManagerTest, GetMainTest) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newCG", std::make_unique<metacg::Callgraph>(), true);
+
+  auto cg = mcgm.getCallgraph();
+  auto& main = cg->getOrInsertNode("main");
+  auto* detectedMain = cg->getMain();
+  ASSERT_EQ(detectedMain->getId(), main.getId());
+
+  auto& realMain = cg->getOrInsertNode("thisIsTheRealMain");
+  cg->getOrCreate<metacg::EntryFunctionMD>(realMain);
+  detectedMain = cg->getMain(true);
+  ASSERT_EQ(detectedMain->getId(), realMain.getId());
+}
+
+TEST_F(MCGManagerTest, EraseMainTest) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newCG", std::make_unique<metacg::Callgraph>(), true);
+
+  auto cg = mcgm.getCallgraph();
+  auto& main = cg->getOrInsertNode("thisIsMain");
+  cg->getOrCreate<metacg::EntryFunctionMD>(main);
+  ASSERT_EQ(cg->getMain(), &main);
+  cg->erase(main.id);
+  ASSERT_EQ(cg->getMain(), nullptr);
+  ASSERT_FALSE(cg->has<metacg::EntryFunctionMD>());
 }

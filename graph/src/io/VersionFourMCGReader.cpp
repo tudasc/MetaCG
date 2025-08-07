@@ -132,13 +132,19 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMetaCGReader::read() {
 
   auto cg = std::make_unique<Callgraph>();
 
+  auto& jNodes = jsonCG["nodes"];
+  if (jNodes.is_null()) {
+    errConsole->error("The 'nodes' entry was null.");
+    throw std::runtime_error("Nodes entry in MetaCG file was null.");
+  }
+
   std::vector<TempNodeData> tempNodeData;
   // Rough estimate of required size
-  tempNodeData.reserve(jsonCG.size());
+  tempNodeData.reserve(jNodes.size());
 
   V4StrToNodeMapping strToNode;
 
-  for (auto it = jsonCG.begin(); it != jsonCG.end(); ++it) {
+  for (auto it = jNodes.begin(); it != jNodes.end(); ++it) {
     auto& strId = it.key();
     auto& jNode = it.value();
 
@@ -190,6 +196,21 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMetaCGReader::read() {
         if (failedMetadataCb) {
           (*failedMetadataCb)(node->getId(), mdKey, mdVal);
         }
+      }
+    }
+  }
+
+  // Read global metadata
+  auto& jGlobalMeta = jsonCG["meta"];
+  for (const auto& mdElem : jGlobalMeta.items()) {
+    auto& mdKey = mdElem.key();
+    auto& mdValJ = mdElem.value();
+    if (auto md = metacg::MetaData::create<>(mdKey, mdValJ, strToNode); md) {
+      cg->addMetaData(std::move(md));
+    } else {
+      errConsole->warn("Could not create global metadata of type {}", mdKey);
+      if (failedMetadataCb) {
+        (*failedMetadataCb)(std::nullopt, mdKey, mdValJ);
       }
     }
   }

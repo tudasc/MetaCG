@@ -1,44 +1,47 @@
 {
     "_CG": {
-        "0": {
-            "callees": {
-                "1": {}
-            },
-            "functionName": "bar",
-            "hasBody": true,
-            "meta": {
-                "fileProperties": {
-                    "systemInclude": false
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": {
+                    "1": {}
                 },
-                "numStatements": 1
-            },
-            "origin": "/wrong/path/cgformat_test_01_input.c"
-        },
-        "1": {
-            "callees": {},
-            "functionName": "baz",
-            "hasBody": false,
-            "meta": {
-                "fileProperties": {
-                    "systemInclude": false
+                "functionName": "bar",
+                "hasBody": true,
+                "meta": {
+                    "fileProperties": {
+                        "systemInclude": false
+                    },
+                    "numStatements": 1
                 },
-                "numStatements": 0
+                "origin": "/wrong/path/cgformat_test_01_input.c"
             },
-            "origin": "/wrong/path/cgformat_test_01_input.c"
-        },
-        "2": {
-            "callees": {
-                "0": {}
-            },
-            "functionName": "foo",
-            "hasBody": true,
-            "meta": {
-                "fileProperties": {
-                    "systemInclude": false
+            "1": {
+                "callees": {},
+                "functionName": "baz",
+                "hasBody": false,
+                "meta": {
+                    "fileProperties": {
+                        "systemInclude": false
+                    },
+                    "numStatements": 0
                 },
-                "numStatements": 1
+                "origin": "/wrong/path/cgformat_test_01_input.c"
             },
-            "origin": "/wrong/path/cgformat_test_01_input.c"
+            "2": {
+                "callees": {
+                    "0": {}
+                },
+                "functionName": "foo",
+                "hasBody": true,
+                "meta": {
+                    "fileProperties": {
+                        "systemInclude": false
+                    },
+                    "numStatements": 1
+                },
+                "origin": "/wrong/path/cgformat_test_01_input.c"
+            }
         }
     },
     "_MetaCG": {
