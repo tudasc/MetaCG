@@ -1,8 +1,6 @@
 set(PROJECT_NAME CGCollector)
 set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 
-include(cxxopts)
-
 # include directories
 function(add_collector_include target)
   target_include_directories(
