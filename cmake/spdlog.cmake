@@ -12,7 +12,7 @@ set(SPDLOG_INSTALL
     CACHE INTERNAL ""
 )
 
-FetchContent_Declare(spdlog URL https://github.com/gabime/spdlog/archive/refs/tags/v1.8.2.tar.gz)
+FetchContent_Declare(spdlog URL https://github.com/gabime/spdlog/archive/refs/tags/v1.15.3.tar.gz)
 FetchContent_MakeAvailable(spdlog)
 
 if(DEFINED spdlog_SOURCE_DIR)
