@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
     (mcgInput.cliName, "MetaCG file containing the whole-program call graph", optType(mcgInput));
   // clang-format on
 
-  opts.parse_positional("mcgInput");
+  opts.parse_positional(mcgInput.cliName);
 
   Config c;
 
@@ -255,7 +255,8 @@ int main(int argc, char** argv) {
    */
 
   // Use the filesystem STL functions for all of the path bits
-  const std::filesystem::path metacgFile(result["mcgInput"].as<std::string>());
+  const std::string metacgFilepath = storeOpt(mcgInput, result);
+  const std::filesystem::path metacgFile(metacgFilepath);
   if (!std::filesystem::exists(metacgFile)) {
     errconsole->error("The file {} does not exist", metacgFile.string());
     exit(pgis::FileDoesNotExist);
