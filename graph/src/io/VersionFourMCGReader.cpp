@@ -99,7 +99,7 @@ struct TempNodeData {
 }  // namespace
 
 std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
-  const metacg::RuntimeTimer rtt("VersionFourMetaCGReader::read");
+  const metacg::RuntimeTimer rtt("VersionFourMCGReader::read");
   const MCGFileFormatInfo ffInfo{4, 0};
   auto console = metacg::MCGLogger::instance().getConsole();
   auto errConsole = metacg::MCGLogger::instance().getErrConsole();

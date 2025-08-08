@@ -11,7 +11,7 @@
 #include "io/VersionFourMCGReader.h"
 
 std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMCGReader::read() {
-  const metacg::RuntimeTimer rtt("VersionTwoMetaCGReader::read");
+  const metacg::RuntimeTimer rtt("VersionTwoMCGReader::read");
   const metacg::MCGFileFormatInfo ffInfo{2, 0};
   auto console = metacg::MCGLogger::instance().getConsole();
   auto errConsole = metacg::MCGLogger::instance().getErrConsole();

@@ -15,9 +15,9 @@ namespace metacg::pgis::io {
  * Class to read metacg files in file format v1.0.
  * The file format is also typically referred to as IPCG files.
  */
-class VersionOneMetaCGReader : public metacg::io::MetaCGReader {
+class VersionOneMCGReader : public metacg::io::MCGReader {
  public:
-  explicit VersionOneMetaCGReader(metacg::io::ReaderSource& source) : MetaCGReader(source) {}
+  explicit VersionOneMCGReader(metacg::io::ReaderSource& source) : MCGReader(source) {}
 
   /**
    * Internal data structure to create the metacg structure
