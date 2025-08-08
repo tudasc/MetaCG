@@ -47,5 +47,5 @@ $> pgis_pira --metacg-format 2 --parameter-file <parameter-file> --extrap extrap
 4. Evaluate and construct load-imbalance instrumentation configuration.
 
 ```{.sh}
-$> pgis_pira --metacg-format 2 --parameter-file <parameter-file> --lide 1 --cube cube-file mcg-file
+$> pgis_pira --metacg-format 2 --parameter-file <parameter-file> --lide --cube cube-file mcg-file
 ```

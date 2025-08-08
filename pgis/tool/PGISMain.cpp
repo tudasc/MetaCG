@@ -168,8 +168,11 @@ int main(int argc, char** argv) {
     (cuttoffSelection.cliName, "Select the algorithm to determine the cutoff for node selection", optType(cuttoffSelection)->default_value(cuttoffSelection.defaultValue))
     (fillGaps.cliName, "Fills gaps in the cg of instrumented functions", optType(fillGaps)->default_value(fillGaps.defaultValue))
     (overheadSelection.cliName, "Algorithm to deal with to high overheads", optType(overheadSelection)->default_value(overheadSelection.defaultValue))
-    (sortDotEdges.cliName, "Sort edges in DOT graph lexicographically", optType(sortDotEdges)->default_value(sortDotEdges.defaultValue));
+    (sortDotEdges.cliName, "Sort edges in DOT graph lexicographically", optType(sortDotEdges)->default_value(sortDotEdges.defaultValue))
+    (mcgInput.cliName, "MetaCG file containing the whole-program call graph", optType(mcgInput));
   // clang-format on
+
+  opts.parse_positional(mcgInput.cliName);
 
   Config c;
 
@@ -252,7 +255,8 @@ int main(int argc, char** argv) {
    */
 
   // Use the filesystem STL functions for all of the path bits
-  const std::filesystem::path metacgFile(argv[argc - 1]);
+  const std::string metacgFilepath = storeOpt(mcgInput, result);
+  const std::filesystem::path metacgFile(metacgFilepath);
   if (!std::filesystem::exists(metacgFile)) {
     errconsole->error("The file {} does not exist", metacgFile.string());
     exit(pgis::FileDoesNotExist);
