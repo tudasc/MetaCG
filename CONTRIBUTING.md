@@ -45,5 +45,5 @@ Please follow the naming schemes and capitalization.
 As described in the [graphlib's README](graph/README.md), we distinguish between multiple version of the JSON-based file format for serialized call graphs.
 The file format version numbers are not to be confused with the MetaCG version numbers.
 We consider a file format version to be final as soon as it has been merged into the `master` branch.
-While only on `devel`, a file format version may be subject to breaking changes.
-After being merged to `master`, breaking changes to the file format must be accompanied by an incremented version number.
+Before being merged to `master`, a file format version may be subject to breaking changes.
+As soon as a file format version is on `master` (and thereby is potentially part of a release), breaking changes to the file format must be accompanied by an incremented version number.
