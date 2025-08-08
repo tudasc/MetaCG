@@ -8,6 +8,7 @@ It uses the JSON file format and separates structure from information, i.e., cal
 The MetaCG graph library is the fundamental component, together with, e.g., I/O facilities.
 The repository also contains an experimental Clang-based tool for call-graph construction at the source-code level.
 As an example tool, the repository contains the PGIS analysis tool, which is used as the analysis backend in [PIRA](https://github.com/tudasc/pira).
+PGIS is currently deprecated and may be removed in a future version.
 
 The current default file format is MetaCG format version 4.
 More info on the different formats can be found in the [graph README](graph/README.md).
