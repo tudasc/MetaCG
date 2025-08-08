@@ -8,6 +8,7 @@ It uses the JSON file format and separates structure from information, i.e., cal
 The MetaCG graph library is the fundamental component, together with, e.g., I/O facilities.
 The repository also contains an experimental Clang-based tool for call-graph construction at the source-code level.
 As an example tool, the repository contains the PGIS analysis tool, which is used as the analysis backend in [PIRA](https://github.com/tudasc/pira).
+PGIS has been deprecated and may be removed in a future version.
 
 The current default file format is MetaCG format version 4.
 More info on the different formats can be found in the [graph README](graph/README.md).
@@ -52,9 +53,9 @@ $> cmake --build build --parallel
 $> cmake --install build
 ```
 
-#### Build Graph Library and Tools (CGCollector, PGIS)
+#### Build Graph Library and Tools (CGCollector, PGIS, ...)
 
-You can configure MetaCG to also build CGCollector and PGIS.
+You can configure MetaCG to also build CGCollector, PGIS and other tools based on the graphlib (cgconvert, cgformat, cgmerge2).
 This requires additional dependencies.
 Clang/LLVM (in a supported version) are assumed to be available on the system.
 Extra-P and Cube library can be built using the `build_submodules.sh` script provided in the repository, though the script is not tested outside of our CI system.
@@ -76,7 +77,8 @@ $> cmake -S . -B build \
   -DEXTRAP_INCLUDE="$extinstalldir/extrap/include" \
   -DEXTRAP_LIB="$extinstalldir/extrap/lib" \
   -DMETACG_BUILD_CGCOLLECTOR=ON \
-  -DMETACG_BUILD_PGIS=ON
+  -DMETACG_BUILD_PGIS=ON \
+  -DMETACG_BUILD_GRAPH_TOOLS=ON
 $> cmake --build build --parallel
 # Installation installs CGCollector, CGMerge, CGValidate, PGIS
 $> cmake --install build
