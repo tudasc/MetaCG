@@ -79,7 +79,7 @@ static bits<Collectors> collectorBits(
     cat(cgc));
 
 static opt<int> metacgFormatVersion("metacg-format-version",
-                                    desc("metacg file version to output, values={2,4}, default=4"), init(4), cat(cgc));
+                                    desc("metacg file version to output, values={2,4}, default=2"), init(2), cat(cgc));
 /**
  * The classic CG construction and the AA one work a bit differently. The classic one inserts nodes for all function,
  * even if they are never called and do not call any functions themself, the AA one does only include functions that
