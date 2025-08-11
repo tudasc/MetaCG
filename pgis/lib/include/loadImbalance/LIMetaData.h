@@ -55,7 +55,7 @@ class LIMetaData : public metacg::MetaData::Registrar<LIMetaData> {
         assessment(other.assessment) {}
 
  public:
-  virtual nlohmann::json toJson(metacg::NodeToStrMapping&) const;
+  virtual nlohmann::json toJson(metacg::NodeToStrMapping&) const override;
 
   [[nodiscard]] const char* getKey() const final { return key; }
 
