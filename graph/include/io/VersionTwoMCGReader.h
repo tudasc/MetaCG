@@ -16,9 +16,9 @@
 
 namespace metacg::io {
 
-class VersionTwoMetaCGReader : public metacg::io::MetaCGReader {
+class VersionTwoMCGReader : public metacg::io::MCGReader {
  public:
-  explicit VersionTwoMetaCGReader(metacg::io::ReaderSource& source) : MetaCGReader(source) {}
+  explicit VersionTwoMCGReader(metacg::io::ReaderSource& source) : MCGReader(source) {}
   std::unique_ptr<Callgraph> read() override;
   static void upgradeV2FormatToV4Format(nlohmann::json& j);
 };

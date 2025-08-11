@@ -25,7 +25,7 @@ struct LegacyStrToNodeMapping : public StrToNodeMapping {
   Callgraph& cg;
 };
 
-VersionOneMetaCGReader::FuncMapT::mapped_type& VersionOneMetaCGReader::getOrInsert(const std::string& key) {
+VersionOneMCGReader::FuncMapT::mapped_type& VersionOneMCGReader::getOrInsert(const std::string& key) {
   if (functions.find(key) != functions.end()) {
     auto& fi = functions[key];
     return fi;
@@ -38,8 +38,8 @@ VersionOneMetaCGReader::FuncMapT::mapped_type& VersionOneMetaCGReader::getOrInse
   }
 }
 
-void VersionOneMetaCGReader::buildGraph(metacg::graph::MCGManager& cgManager,
-                                        VersionOneMetaCGReader::StrStrMap& potentialTargets,
+void VersionOneMCGReader::buildGraph(metacg::graph::MCGManager& cgManager,
+                                        VersionOneMCGReader::StrStrMap& potentialTargets,
                                         StrToNodeMapping& strToNode) {
   const metacg::RuntimeTimer rtt("buildGraph");
   auto console = metacg::MCGLogger::instance().getConsole();
@@ -71,7 +71,7 @@ void VersionOneMetaCGReader::buildGraph(metacg::graph::MCGManager& cgManager,
   }
 }
 
-VersionOneMetaCGReader::StrStrMap VersionOneMetaCGReader::buildVirtualFunctionHierarchy(
+VersionOneMCGReader::StrStrMap VersionOneMCGReader::buildVirtualFunctionHierarchy(
     metacg::graph::MCGManager& cgManager) {
   const metacg::RuntimeTimer rtt("buildVirtualFunctionHierarchy");
   auto console = metacg::MCGLogger::instance().getConsole();
@@ -134,7 +134,7 @@ VersionOneMetaCGReader::StrStrMap VersionOneMetaCGReader::buildVirtualFunctionHi
 /**
  * Version one Reader
  */
-std::unique_ptr<Callgraph> VersionOneMetaCGReader::read() {
+std::unique_ptr<Callgraph> VersionOneMCGReader::read() {
   // This version of the reader is the only one, that actually requires access to the MCGManager.
   // Manually get the cgManager via the singleton, to retain backwards compatibility
   auto& cgManager = metacg::graph::MCGManager::get();
@@ -207,7 +207,7 @@ std::unique_ptr<Callgraph> VersionOneMetaCGReader::read() {
   return nullptr;
 }
 
-void VersionOneMetaCGReader::addNumStmts(metacg::graph::MCGManager& cgm) {
+void VersionOneMCGReader::addNumStmts(metacg::graph::MCGManager& cgm) {
   for (const auto& [k, fi] : functions) {
     auto g = cgm.getCallgraph();
     auto node = &g->getSingleNode(fi.functionName);

@@ -170,7 +170,7 @@ extern "C" int MPI_Finalize(void) {
       std::string jsonStr(buffer.begin(), buffer.end());
       nlohmann::json j = nlohmann::json::parse(jsonStr);
       metacg::io::JsonSource jsonSource(j);
-      metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+      metacg::io::VersionTwoMCGReader mcgReader(jsonSource);
 
       mcgManager.addToManagedGraphs(std::to_string(i), std::move(mcgReader.read()), false);
     }

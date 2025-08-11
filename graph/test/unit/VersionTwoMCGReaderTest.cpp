@@ -69,7 +69,7 @@ TEST_F(V2MCGReaderTest, NullCG) {
   nlohmann::json j;
   auto& mcgm = metacg::graph::MCGManager::get();
   metacg::io::JsonSource jsonSource(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionTwoMCGReader mcgReader(jsonSource);
   try {
     mcgReader.read();
     EXPECT_TRUE(false);  // should not reach here
@@ -85,7 +85,7 @@ TEST_F(V2MCGReaderTest, BrokenMetaInformation) {
       "   \"_MetaCG\": null\n"
       "}"_json;
   metacg::io::JsonSource jsonSource(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionTwoMCGReader mcgReader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
 
   try {
@@ -110,7 +110,7 @@ TEST_F(V2MCGReaderTest, WrongVersionInformation) {
       "         }\n"
       "      }"_json;
   metacg::io::JsonSource jsonSource(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionTwoMCGReader mcgReader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
 
   try {
@@ -136,7 +136,7 @@ TEST_F(V2MCGReaderTest, BrokenCG) {
       "      }"_json;
 
   metacg::io::JsonSource jsonSource(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionTwoMCGReader mcgReader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   try {
     mcgReader.read();
@@ -160,7 +160,7 @@ TEST_F(V2MCGReaderTest, EmptyCGRead) {
       "   }\n"
       "}"_json;
   metacg::io::JsonSource jsonSource(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionTwoMCGReader mcgReader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newGraph", mcgReader.read());
   EXPECT_EQ(mcgm.graphs_size(), 1);
@@ -193,7 +193,7 @@ TEST_F(V2MCGReaderTest, OneNodeCGRead) {
       "   }\n"
       "}"_json;
   metacg::io::JsonSource jsonSource(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionTwoMCGReader mcgReader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newGraph", mcgReader.read());
   EXPECT_EQ(mcgm.graphs_size(), 1);
@@ -245,7 +245,7 @@ TEST_F(V2MCGReaderTest, TwoNodeCGRead) {
       "}"_json;
 
   metacg::io::JsonSource jsonSource(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionTwoMCGReader mcgReader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newGraph", mcgReader.read());
   EXPECT_EQ(mcgm.graphs_size(), 1);
@@ -305,7 +305,7 @@ TEST_F(V2MCGReaderTest, TwoNodeOneEdgeCGRead) {
       "}"_json;
 
   metacg::io::JsonSource jsonSource(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionTwoMCGReader mcgReader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newGraph", mcgReader.read());
   EXPECT_EQ(mcgm.graphs_size(), 1);
@@ -384,7 +384,7 @@ TEST_F(V2MCGReaderTest, ThreeNodeOneEdgeCGRead) {
       "}"_json;
 
   metacg::io::JsonSource jsonSource(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionTwoMCGReader mcgReader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newGraph", mcgReader.read());
   EXPECT_EQ(mcgm.graphs_size(), 1);
@@ -452,7 +452,7 @@ TEST_F(V2MCGReaderTest, MetadataCGRead) {
       "}"_json;
 
   metacg::io::JsonSource jsonSource(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionTwoMCGReader mcgReader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newGraph", mcgReader.read());
   EXPECT_EQ(mcgm.graphs_size(), 1);
@@ -497,7 +497,7 @@ TEST_F(V2MCGReaderTest, OneNodeWithOriginCGRead) {
       "   }\n"
       "}"_json;
   metacg::io::JsonSource jsonSource(j);
-  metacg::io::VersionTwoMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionTwoMCGReader mcgReader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newGraph", mcgReader.read());
   EXPECT_EQ(mcgm.graphs_size(), 1);

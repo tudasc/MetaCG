@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
 
   auto& manager = metacg::graph::MCGManager::get();
   metacg::io::FileSource fSource(inFile);
-  metacg::io::VersionTwoMetaCGReader reader(fSource);
+  metacg::io::VersionTwoMCGReader reader(fSource);
   manager.addToManagedGraphs("testG", reader.read());
 
   metacg::io::VersionTwoMCGWriter writer;

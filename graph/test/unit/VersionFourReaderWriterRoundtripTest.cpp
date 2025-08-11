@@ -31,7 +31,7 @@ TEST_F(V4ReaderWriterRoundtripTest, TextGraphText) {
       "\"version\":\"4.0\"}}"_json;
 
   metacg::io::JsonSource jsonSource(jsonCG);
-  metacg::io::VersionFourMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionFourMCGReader mcgReader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newGraph", mcgReader.read());
 
@@ -55,7 +55,7 @@ TEST_F(V4ReaderWriterRoundtripTest, TextGraphTextUseName) {
       "\"version\":\"4.0\"}}"_json;
 
   metacg::io::JsonSource jsonSource(jsonCG);
-  metacg::io::VersionFourMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionFourMCGReader mcgReader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newGraph", mcgReader.read());
 
@@ -80,7 +80,7 @@ TEST_F(V4ReaderWriterRoundtripTest, TextGraphTextWithMetadata) {
       "\"version\":\"4.0\"}}"_json;
 
   metacg::io::JsonSource jsonSource(jsonCG);
-  metacg::io::VersionFourMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionFourMCGReader mcgReader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newGraph", mcgReader.read());
 
@@ -107,7 +107,7 @@ TEST_F(V4ReaderWriterRoundtripTest, TextGraphTextWithRefMetadata) {
       "\"version\":\"4.0\"}}"_json;
 
   metacg::io::JsonSource jsonSource(jsonCG);
-  metacg::io::VersionFourMetaCGReader mcgReader(jsonSource);
+  metacg::io::VersionFourMCGReader mcgReader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newGraph", mcgReader.read());
 

@@ -11,9 +11,9 @@
 
 namespace metacg::io {
 
-class VersionFourMetaCGReader : public metacg::io::MetaCGReader {
+class VersionFourMCGReader : public metacg::io::MCGReader {
  public:
-  explicit VersionFourMetaCGReader(metacg::io::ReaderSource& source) : MetaCGReader(source) {}
+  explicit VersionFourMCGReader(metacg::io::ReaderSource& source) : MCGReader(source) {}
   std::unique_ptr<Callgraph> read() override;
 };
 

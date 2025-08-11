@@ -101,16 +101,16 @@ struct JsonSource : ReaderSource {
  * Previously known as IPCG files, the metacg files are the serialized versions of the call graph.
  * This class implements basic functionality and is meant to be subclassed for different file versions.
  */
-class MetaCGReader {
+class MCGReader {
  public:
   using MetadataCB = std::function<void(std::optional<NodeId>, const std::string&, nlohmann::json&)>;
 
   /**
    * filename path to file
    */
-  explicit MetaCGReader(ReaderSource& src) : source(src) {}
+  explicit MCGReader(ReaderSource& src) : source(src) {}
 
-  virtual ~MetaCGReader() = default;
+  virtual ~MCGReader() = default;
 
   /**
    * PiraMCGProcessor object to be filled with the CG
@@ -146,7 +146,7 @@ class MetaCGReader {
  * @param src The source
  * @return A unique pointer to the instantiated reader. Empty, if there is no reader matching the format version.
  */
-std::unique_ptr<MetaCGReader> createReader(ReaderSource& src);
+std::unique_ptr<MCGReader> createReader(ReaderSource& src);
 
 }  // namespace metacg::io
 

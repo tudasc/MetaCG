@@ -46,7 +46,7 @@ TEST(V4MCGReaderTest, EmptyJSON) {
   mcgm.resetManager();
 
   metacg::io::JsonSource source(j);
-  metacg::io::VersionFourMetaCGReader reader(source);
+  metacg::io::VersionFourMCGReader reader(source);
   mcgm.addToManagedGraphs("newCallgraph", reader.read());
   const Callgraph& graph = *mcgm.getCallgraph();
   ASSERT_EQ(graph.size(), 0);
@@ -81,7 +81,7 @@ TEST(V4MCGReaderTest, SingleNode) {
   mcgm.resetManager();
 
   metacg::io::JsonSource source(j);
-  metacg::io::VersionFourMetaCGReader reader(source);
+  metacg::io::VersionFourMCGReader reader(source);
   mcgm.addToManagedGraphs("newCallgraph", reader.read());
   Callgraph& graph = *mcgm.getCallgraph();
   EXPECT_EQ(graph.size(), 1);
@@ -136,7 +136,7 @@ TEST(V4MCGReaderTest, NodesAndSingleEdge) {
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   metacg::io::JsonSource source(j);
-  metacg::io::VersionFourMetaCGReader reader(source);
+  metacg::io::VersionFourMCGReader reader(source);
   mcgm.addToManagedGraphs("newCallgraph", reader.read());
 
   const Callgraph& graph = *mcgm.getCallgraph();
@@ -211,7 +211,7 @@ TEST(V4MCGReaderTest, NodeMetaData) {
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   metacg::io::JsonSource source(j);
-  metacg::io::VersionFourMetaCGReader reader(source);
+  metacg::io::VersionFourMCGReader reader(source);
   mcgm.addToManagedGraphs("newCallgraph", reader.read());
   const Callgraph& graph = *mcgm.getCallgraph();
 
@@ -258,7 +258,7 @@ TEST(V4MCGReaderTest, NodeMetaDataWithRef) {
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   metacg::io::JsonSource source(j);
-  metacg::io::VersionFourMetaCGReader reader(source);
+  metacg::io::VersionFourMCGReader reader(source);
   mcgm.addToManagedGraphs("newCallgraph", reader.read());
   const Callgraph& graph = *mcgm.getCallgraph();
 
@@ -299,7 +299,7 @@ TEST(V4MCGReaderTest, GlobalMetadata) {
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   metacg::io::JsonSource source(j);
-  metacg::io::VersionFourMetaCGReader reader(source);
+  metacg::io::VersionFourMCGReader reader(source);
   mcgm.addToManagedGraphs("newCallgraph", reader.read());
   const Callgraph& graph = *mcgm.getCallgraph();
 
