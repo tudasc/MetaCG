@@ -50,7 +50,7 @@ class MCGLogger {
    */
   template <LogType lt = LogType::DEFAULT, Output outPutType = Output::StdConsole, typename MSG_t, typename... Args>
   void info(const MSG_t msg, Args&&... args) {
-    const std::string& formattedMessage = fmt::format(msg, args...);
+    const std::string& formattedMessage = fmt::vformat(std::string_view(msg), fmt::make_format_args(args...));
     if (ensureUnique<lt>(formattedMessage)) {
       return;
     }
@@ -73,7 +73,7 @@ class MCGLogger {
    */
   template <LogType lt = LogType::DEFAULT, Output outPutType = Output::StdConsole, typename MSG_t, typename... Args>
   void error(const MSG_t msg, Args&&... args) {
-    const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
+    const std::string& formattedMessage = fmt::vformat(std::string_view(msg), fmt::make_format_args(args...));
     if (ensureUnique<lt>(formattedMessage)) {
       return;
     }
@@ -96,7 +96,7 @@ class MCGLogger {
    */
   template <LogType lt = LogType::DEFAULT, Output outPutType = Output::StdConsole, typename MSG_t, typename... Args>
   void debug(const MSG_t msg, Args&&... args) {
-    const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
+    const std::string& formattedMessage = fmt::vformat(std::string_view(msg), fmt::make_format_args(args...));
     if (ensureUnique<lt>(formattedMessage)) {
       return;
     }
@@ -119,7 +119,7 @@ class MCGLogger {
    */
   template <LogType lt = LogType::DEFAULT, Output outPutType = Output::StdConsole, typename MSG_t, typename... Args>
   void warn(const MSG_t msg, Args&&... args) {
-    const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
+    const std::string& formattedMessage = fmt::vformat(std::string_view(msg), fmt::make_format_args(args...));
     if (ensureUnique<lt>(formattedMessage)) {
       return;
     }
@@ -142,7 +142,7 @@ class MCGLogger {
    */
   template <LogType lt = LogType::DEFAULT, Output outPutType = Output::StdConsole, typename MSG_t, typename... Args>
   void critical(const MSG_t msg, Args&&... args) {
-    const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
+    const std::string& formattedMessage = fmt::vformat(std::string_view(msg), fmt::make_format_args(args...));
     if (ensureUnique<lt>(formattedMessage)) {
       return;
     }
@@ -165,7 +165,7 @@ class MCGLogger {
    */
   template <LogType lt = LogType::DEFAULT, Output outPutType = Output::StdConsole, typename MSG_t, typename... Args>
   void trace(const MSG_t msg, Args&&... args) {
-    const std::string& formattedMessage = fmt::format(msg, std::forward<Args>(args)...);
+    const std::string& formattedMessage = fmt::vformat(std::string_view(msg), fmt::make_format_args(args...));
     if (ensureUnique<lt>(formattedMessage)) {
       return;
     }
