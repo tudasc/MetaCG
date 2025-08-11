@@ -18,14 +18,15 @@
 #include <memory>
 #include <string>
 
+#include <metadata/MetaData.h>
 namespace metacg {
-struct MetaData;
+
 class Callgraph;
 }  // namespace metacg
 
 namespace clang {
 class FunctionDecl;
-}
+} // namespace clang
 
 struct Plugin {
   explicit Plugin() {}
