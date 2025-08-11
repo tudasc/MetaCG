@@ -13,7 +13,7 @@
 
 struct GlobalLoopDepthCollector final : public Plugin {
  public:
-  GlobalLoopDepthMD* computeForDecl(const clang::FunctionDecl* const) override { return nullptr; }
+  std::unique_ptr<metacg::MetaData> computeForDecl(const clang::FunctionDecl* const) override { return nullptr; }
 
   void computeForGraph(const metacg::Callgraph* const) override {}
 

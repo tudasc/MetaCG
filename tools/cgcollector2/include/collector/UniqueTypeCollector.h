@@ -16,7 +16,7 @@ struct UniqueTypeCollector : public Plugin {
 
   static constexpr const char* key = "UniqueTypeCollector";
   std::set<const clang::Type*> globalTypes;
-  virtual UniqueTypeMD* computeForDecl(clang::FunctionDecl const* const decl) {
+  virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
     std::set<const clang::Type*> uniqueTypes;
 
     std::cout << "Processing function " << decl->getNameAsString() << std::endl;
@@ -67,13 +67,13 @@ struct UniqueTypeCollector : public Plugin {
     };
 
     if (!decl->hasBody()) {
-      return new UniqueTypeMD();
+      return std::make_unique<metacg::UniqueTypeMD>();
     }
 
     DeclRefExprVisitor dreV(uniqueTypes);
     dreV.Visit(decl->getBody());
 
-    auto uti = new UniqueTypeMD();
+    auto uti = std::make_unique<metacg::UniqueTypeMD>();
     uti->numTypes = uniqueTypes.size();
     globalTypes.insert(std::begin(uniqueTypes), std::end(uniqueTypes));
     if (decl->isMain()) {

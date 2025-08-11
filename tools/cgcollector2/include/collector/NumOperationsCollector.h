@@ -11,8 +11,8 @@
 #include "metadata/NumOperationsMD.h"
 
 struct NumOperationsCollector : public Plugin {
-  virtual NumOperationsMD* computeForDecl(clang::FunctionDecl const* const decl) override {
-    auto result = new NumOperationsMD;
+  virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) override {
+    std::unique_ptr<metacg::NumOperationsMD> result = std::make_unique<metacg::NumOperationsMD>();
     const auto counts = getNumOperationsInStmt(decl->getBody());
     result->numberOfIntOps = counts.numberOfIntOps;
     result->numberOfFloatOps = counts.numberOfFloatOps;

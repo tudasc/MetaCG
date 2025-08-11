@@ -22,29 +22,29 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
   AllAliasMetadata() = default;
   AllAliasMetadata(bool shouldExport) : shouldExport(shouldExport) {}
 
-  explicit AllAliasMetadata(const nlohmann::json& j) {
+  explicit AllAliasMetadata(const nlohmann::json& j, metacg::StrToNodeMapping&) {
     metacg::MCGLogger::instance().getConsole()->trace("AllAliasMetadata from json");
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", "AllAliasMetadata");
       return;
     }
+
     mightCall = j;
   }
 
   virtual const char* getKey() const { return key; }
 
- private:
   AllAliasMetadata(const AllAliasMetadata& other) : mightCall(other.mightCall), shouldExport(other.shouldExport) {}
 
  public:
-  nlohmann::json to_json() const final {
+  nlohmann::json toJson(metacg::NodeToStrMapping&) const final {
     if (shouldExport)
       return mightCall;
     else
       return {};
   };
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
       metacg::MCGLogger::instance().getErrConsole()->error(
           "The MetaData which was tried to merge with AllAliasMetadata was of a different MetaData type");
@@ -78,7 +78,11 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
 
   }
 
-  MetaData* clone() const final { return new AllAliasMetadata(*this); }
+  virtual void applyMapping(const metacg::GraphMapping&) {
+
+  }
+
+  std::unique_ptr<MetaData> clone() const final { return std::make_unique<AllAliasMetadata>(*this);}
 
   std::vector<FunctionSignature> mightCall;
   bool shouldExport = true;

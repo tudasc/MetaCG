@@ -16,7 +16,7 @@
 struct OverrideCollector : public Plugin {
   virtual void computeForGraph(const metacg::Callgraph* const cg) {
     for (auto& node : cg->getNodes()) {
-      auto decl = node.second->get<ASTNodeMetadata>()->getFunctionDecl();
+      auto decl = node->get<ASTNodeMetadata>()->getFunctionDecl();
 
       if (auto MD = llvm::dyn_cast<clang::CXXMethodDecl>(decl); !MD || !MD->isVirtual()) {
         continue;
@@ -28,13 +28,15 @@ struct OverrideCollector : public Plugin {
       // hierarchical overridden methods does not show up here
       for (auto om : MD->overridden_methods()) {
         for (auto& nodeName : getMangledName(om)) {
-          const auto omNode = cg->getNode(nodeName);
+          const auto& nodesWithMatchingName=cg->getNodes(nodeName);
+          assert(nodesWithMatchingName.size()==1 && "We currently only validated this for collision free names");
+          const auto omNode = cg->getNode(nodesWithMatchingName[0]);
           if (omNode == nullptr) {
             metacg::MCGLogger::logWarn("Node {} tries to override unknown node {} ",nodeName, om->getNameAsString());
             continue;
           }
-          omNode->getOrCreateMD<OverrideMD>()->overriddenBy.push_back(node.first);
-          node.second->getOrCreateMD<OverrideMD>()->overrides.push_back(omNode->getId());
+          omNode->getOrCreate<metacg::OverrideMD>().overriddenBy.push_back(node->getId());
+          node->getOrCreate<metacg::OverrideMD>().overrides.push_back(omNode->getId());
         }
       }
     }

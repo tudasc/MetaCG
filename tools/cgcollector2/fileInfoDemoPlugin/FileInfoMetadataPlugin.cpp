@@ -16,8 +16,8 @@
  */
 
 struct FileInfoMetadataPlugin : Plugin {
-  virtual FileInfoMetadata* computeForDecl(const clang::FunctionDecl* const functionDecl) {
-    auto result = new FileInfoMetadata();
+  virtual std::unique_ptr<metacg::MetaData> computeForDecl(const clang::FunctionDecl* const functionDecl) {
+    std::unique_ptr<FileInfoMetadata> result = std::make_unique<FileInfoMetadata>();
     const auto sourceLocation = functionDecl->getLocation();
     auto& astCtx = functionDecl->getASTContext();
     const auto fullSrcLoc = astCtx.getFullLoc(sourceLocation);

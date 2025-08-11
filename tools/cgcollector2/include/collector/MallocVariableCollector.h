@@ -1,8 +1,8 @@
 /**
-* File: MallocVariableCollector.cpp
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: MallocVariableCollector.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #ifndef CGCOLLECTOR2_MALLOCVARIABLECOLLECTOR_H
 #define CGCOLLECTOR2_MALLOCVARIABLECOLLECTOR_H
@@ -16,15 +16,15 @@
 struct MallocVariableCollector : public Plugin {
   virtual std::string getPluginName() { return "MallocVariableCollector"; }
 
-  virtual MallocVariableMD* computeForDecl(clang::FunctionDecl const* const decl) {
-    auto result = new MallocVariableMD();
+  virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
+    std::unique_ptr<metacg::MallocVariableMD> result = std::make_unique<metacg::MallocVariableMD>();
 
     class MallocFinder : public clang::StmtVisitor<MallocFinder> {
       clang::ASTContext& ctx;
       std::map<std::string, std::string>& allocs;
 
      public:
-      MallocFinder(clang::ASTContext& ctx, std::map<std::string, std::string>& allocs) : ctx(ctx), allocs(allocs) {};
+      MallocFinder(clang::ASTContext& ctx, std::map<std::string, std::string>& allocs) : ctx(ctx), allocs(allocs){};
       ~MallocFinder() = default;
 
       void VisitStmt(clang::Stmt* stmt) {
@@ -66,8 +66,8 @@ struct MallocVariableCollector : public Plugin {
 
                   std::string stmtStr;
                   llvm::raw_string_ostream oss(stmtStr);
-                  clang::PrintingPolicy pp(ctx.getLangOpts());
-                  int indent = 0;
+                  const clang::PrintingPolicy pp(ctx.getLangOpts());
+                  const int indent = 0;
                   ds->printPretty(oss, nullptr, pp, indent, "\n", &ctx);
                   oss.flush();
                   allocs.insert({d->getNameAsString(), stmtStr});
@@ -105,8 +105,8 @@ struct MallocVariableCollector : public Plugin {
               std::cout << "\n\n";
               std::string stmtStr;
               llvm::raw_string_ostream oss(stmtStr);
-              clang::PrintingPolicy pp(ctx.getLangOpts());
-              int indent = 0;
+              const clang::PrintingPolicy pp(ctx.getLangOpts());
+              const int indent = 0;
               bo->printPretty(oss, nullptr, pp, indent, "\n", &ctx);
               oss.flush();
               allocs.insert({vRef->getDecl()->getNameAsString(), stmtStr});

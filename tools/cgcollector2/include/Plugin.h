@@ -15,6 +15,7 @@
  * There are *no ordering guarantees given* for samely typed computations
  */
 
+#include <memory>
 #include <string>
 
 namespace metacg {
@@ -36,7 +37,7 @@ struct Plugin {
    * @param functionDecl a pointer to a non owned read only clang function declaration
    * @return your custom metadata (needs to inherit from this toplevel class)
    **/
-  virtual metacg::MetaData* computeForDecl([[maybe_unused]] const clang::FunctionDecl* const) { return nullptr; };
+  virtual std::unique_ptr<metacg::MetaData> computeForDecl([[maybe_unused]] const clang::FunctionDecl* const) { return nullptr; };
 
   /**
    * Overwrite if you compute metadata that needs other metadata or has a inter functional computation scope

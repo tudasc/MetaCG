@@ -18,7 +18,7 @@ class VersionTwoMCGWriter : public MCGWriter {
       metacg::MCGFileInfo fileInfo = metacg::getVersionTwoFileInfo({std::string("CGCollector"), MetaCG_VERSION_MAJOR,
                                                                     MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}),
       bool exportSorted = false)
-      : exportSorted(exportSorted), MCGWriter(std::move(fileInfo)) {}
+      : MCGWriter(std::move(fileInfo)), exportSorted(exportSorted) {}
 
   void write(const Callgraph* graph, JsonSink& js) override;
 

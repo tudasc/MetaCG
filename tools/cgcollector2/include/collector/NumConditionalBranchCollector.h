@@ -11,8 +11,8 @@
 #include "metadata/NumConditionalBranchMD.h"
 
 struct NumConditionalBranchCollector : public Plugin {
-  virtual NumConditionalBranchMD* computeForDecl(clang::FunctionDecl const* const decl) {
-    auto result = new NumConditionalBranchMD();
+  virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
+    std::unique_ptr<metacg::NumConditionalBranchMD> result = std::make_unique<metacg::NumConditionalBranchMD>();
     result->numConditionalBranches = getNumConditionalBranchesInStmt(decl->getBody());
     return result;
   }

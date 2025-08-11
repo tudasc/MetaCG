@@ -11,8 +11,8 @@
 #include <clang/AST/Decl.h>
 
 struct NumberOfStatementsCollector : public Plugin {
-  NumStatementsMD* computeForDecl(const clang::FunctionDecl* const functionDecl) override {
-    auto result = new NumStatementsMD();
+  std::unique_ptr<metacg::MetaData> computeForDecl(const clang::FunctionDecl* const functionDecl) override {
+    std::unique_ptr<metacg::NumStatementsMD> result = std::make_unique<metacg::NumStatementsMD>();
     result->setNumberOfStatements(getNumStmtsInStmt(functionDecl->getBody()));
     return result;
   }

@@ -12,8 +12,8 @@
 #include <clang/AST/Decl.h>
 
 struct CodeStatisticsCollector : public Plugin {
-  virtual CodeStatisticsMD* computeForDecl(clang::FunctionDecl const* const decl) {
-    auto result = new CodeStatisticsMD();
+  virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
+    std::unique_ptr<metacg::CodeStatisticsMD> result = std::make_unique<metacg::CodeStatisticsMD>();
     for (auto declIter = decl->decls_begin(); declIter != decl->decls_end(); ++declIter) {
       if (const auto varDecl = llvm::dyn_cast<clang::VarDecl>(*declIter)) {
         result->numVars++;

@@ -8,7 +8,6 @@
 #include <iostream>
 
 #include "MCGManager.h"
-#include "io/VersionThreeMCGWriter.h"
 #include "io/VersionTwoMCGWriter.h"
 
 #include "CallGraphCollectionAction.h"
@@ -48,14 +47,14 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
   for (auto& c : mcs) {
     SPDLOG_DEBUG("Running: {}", c->getPluginName());
     for (const auto& node : callgraph->getNodes()) {
-      if (!node.second->has<ASTNodeMetadata>()) {
+      if (!node->has<ASTNodeMetadata>()) {
         // This is because we currently do not attach ast node metadata to function pointers
         continue;
       }
-      auto nodeDecl = node.second->get<ASTNodeMetadata>()->getFunctionDecl();
+      auto nodeDecl = node->get<ASTNodeMetadata>()->getFunctionDecl();
       auto md = c->computeForDecl(nodeDecl);
       if (md) {
-        node.second->addMetaData(md);
+        node->addMetaData(std::move(md));
       }
     }
     c->computeForGraph(callgraph);
@@ -65,8 +64,6 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
 
   if (mcgVersion == 2) {
     mcgWriter = std::make_unique<metacg::io::VersionTwoMCGWriter>();
-  } else if (mcgVersion == 3) {
-    mcgWriter = std::make_unique<metacg::io::VersionThreeMCGWriter>();
   }
 
   metacg::io::JsonSink js;
@@ -99,14 +96,14 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
   // Build datastructure mapping a signature to all node id's with the same signature
   std::unordered_map<FunctionSignature, std::vector<size_t>> signatureToNodeIdMap;
   for (auto& node : callgraph->getNodes()) {
-    if (node.second->has<FunctionSignatureMetadata>()) {
+    if (node->has<FunctionSignatureMetadata>()) {
       std::ostringstream stream;
-      stream << node.second->get<FunctionSignatureMetadata>()->ownSignature;
-      SPDLOG_TRACE("{}'s signature is: {} with hash: {}", node.second->getFunctionName(), stream.str(),
-                   std::hash<FunctionSignature>()(node.second->get<FunctionSignatureMetadata>()->ownSignature));
-      signatureToNodeIdMap[node.second->get<FunctionSignatureMetadata>()->ownSignature].push_back(node.first);
+      stream << node->get<FunctionSignatureMetadata>()->ownSignature;
+      SPDLOG_TRACE("{}'s signature is: {} with hash: {}", node->getFunctionName(), stream.str(),
+                   std::hash<FunctionSignature>()(node->get<FunctionSignatureMetadata>()->ownSignature));
+      signatureToNodeIdMap[node->get<FunctionSignatureMetadata>()->ownSignature].push_back(node->getId());
     } else {
-      SPDLOG_ERROR("{} has no signature attached", node.second->getFunctionName());
+      SPDLOG_ERROR("{} has no signature attached", node->getFunctionName());
     }
   }
 
@@ -116,8 +113,8 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
   SPDLOG_INFO("Overestimate parameter function pointers from body-less functions");
   for (auto& node : callgraph->getNodes()) {
     // if the node has no body, we need to estimate potential callers via its parameters
-    if (!node.second->getHasBody() && node.second->has<ASTNodeMetadata>()) {
-      auto md = node.second->get<ASTNodeMetadata>()->getFunctionDecl();
+    if (!node->getHasBody() && node->has<ASTNodeMetadata>()) {
+      auto md = node->get<ASTNodeMetadata>()->getFunctionDecl();
       for (size_t i = 0; i < md->getNumParams(); i++) {
         if (md->getParamDecl(i)->getType()->isPointerType() && md->getParamDecl(i)
                                                                    ->getType()
@@ -128,14 +125,14 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
           auto protoType = clang::cast<clang::FunctionProtoType>(
               md->getParamDecl(i)->getType()->getPointeeType().getDesugaredType(md->getASTContext()).IgnoreParens());
 
-          SPDLOG_TRACE("The Node: {} has a pointer to a function as its {}th param", node.second->getFunctionName(), i);
+          SPDLOG_TRACE("The Node: {} has a pointer to a function as its {}th param", node->getFunctionName(), i);
           FunctionSignature functionSignature;
           functionSignature.retType = protoType->getReturnType().getAsString();
           std::transform(protoType->getParamTypes().begin(), protoType->getParamTypes().end(),
                          std::back_inserter(functionSignature.paramTypes),
                          [](auto type) { return type.getAsString(); });
           functionSignature.possibleFuncNames.emplace_back("");
-          node.second->getOrCreateMD<AllAliasMetadata>()->mightCall.push_back(functionSignature);
+          node->getOrCreate<AllAliasMetadata>().mightCall.push_back(functionSignature);
         }
       }
     }
@@ -150,12 +147,12 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
   SPDLOG_INFO("Interfunction overestimation begins");
   // For all nodes, get the signature of a possible call target and add all functions with same signature as edges
   for (auto& node : callgraph->getNodes()) {
-    SPDLOG_TRACE("Estimating for node {}", node.second->getFunctionName());
-    if (node.second->has<AllAliasMetadata>()) {
-      for (const auto& pCallTarget : node.second->get<AllAliasMetadata>()->mightCall) {
+    SPDLOG_TRACE("Estimating for node {}", node->getFunctionName());
+    if (node->has<AllAliasMetadata>()) {
+      for (const auto& pCallTarget : node->get<AllAliasMetadata>()->mightCall) {
         std::ostringstream stream;
         stream << pCallTarget;
-        SPDLOG_DEBUG("Node: {} might call: {} with hash: {}", node.second->getFunctionName(), stream.str(),
+        SPDLOG_DEBUG("Node: {} might call: {} with hash: {}", node->getFunctionName(), stream.str(),
                      std::hash<FunctionSignature>()(pCallTarget));
         if (signatureToNodeIdMap.find(pCallTarget) == signatureToNodeIdMap.end()) {
           SPDLOG_DEBUG("No function with matching signature found");
@@ -163,7 +160,7 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
         }
         for (const auto& id : signatureToNodeIdMap.at(pCallTarget)) {
           SPDLOG_DEBUG("Found function with matching signature: {}", callgraph->getNode(id)->getFunctionName());
-          callgraph->addEdge(node.first, id);
+          callgraph->addEdge(node->getId(), id);
         }
       }
     }

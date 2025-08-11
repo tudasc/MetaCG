@@ -39,6 +39,7 @@
 #include "metadata/Internal/ASTNodeMetadata.h"
 #include "metadata/Internal/AllAliasMetadata.h"
 #include "metadata/Internal/FunctionSignatureMetadata.h"
+#include "metadata/OverrideMD.h"
 
 #include "LoggerUtil.h"
 
@@ -156,7 +157,7 @@ bool CallGraphNodeGenerator::TraverseClassTemplateDecl(clang::ClassTemplateDecl*
   }
   // We abort traversal of the template-class after traversing all specialisations
   // I don't think an uninstantiated template-class has any information left after this
-  return true // high cuts: RecursiveASTVisitor::TraverseClassTemplateDecl(D);
+  return true; // high cuts: RecursiveASTVisitor::TraverseClassTemplateDecl(D);
 }
 
 bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) {
@@ -447,23 +448,23 @@ void CallGraphNodeGenerator::addNode(const clang::FunctionDecl* const D) {
                col2str(getMangledNames(D), "(", ",", ")"));
   for (auto& name : getMangledNames(D)) {
     // Add the function to the callgraph
-    auto node = callgraph->getOrInsertNode(name);
+    metacg::CgNode& node = callgraph->getOrInsertNode(name);
     // This is so we overwrite if we ever find the body of a function after a predeclare
-    node->setHasBody(D->hasBody());
+    node.setHasBody(D->hasBody());
     if (auto cxxmethod = dyn_cast<CXXMethodDecl>(D); cxxmethod != nullptr && cxxmethod->isVirtual()) {
-      node->getOrCreateMD<OverrideMD>();
+      node.getOrCreate<metacg::OverrideMD>();
     }
-    node->getOrCreateMD<ASTNodeMetadata>()->setFunctionDecl(D);
-    if (!node->has<FunctionSignatureMetadata>()) {
-      auto* md = new FunctionSignatureMetadata(!standalone);
-      // according to the standard constructor and destructor have return type void
+    node.getOrCreate<ASTNodeMetadata>().setFunctionDecl(D);
+    if (!node.has<FunctionSignatureMetadata>()) {
+      std::unique_ptr<FunctionSignatureMetadata> md = std::make_unique<FunctionSignatureMetadata>(!standalone);
+       //according to the standard constructor and destructor have return type void
       md->ownSignature.possibleFuncNames.push_back(D->getNameAsString());
       clang::isa<CXXDestructorDecl>(D) || clang::isa<CXXConstructorDecl>(D)
           ? md->ownSignature.retType = ""
           : md->ownSignature.retType = D->getReturnType().getAsString();
       std::transform(D->parameters().begin(), D->parameters().end(), std::back_inserter(md->ownSignature.paramTypes),
                      [](ParmVarDecl* p) { return p->getType().getAsString(); });
-      node->addMetaData(md);
+      node.addMetaData(std::move(md));
     }
   }
 }
@@ -479,7 +480,8 @@ void CallGraphNodeGenerator::addEdge(clang::Decl* Child) {
       assert(callgraph->hasNode(parentName));
       assert(callgraph->hasNode(childName));
       // If parent calls child multiple times inside its body this will be true the second time
-      if (callgraph->existEdgeFromTo(parentName, childName)) {
+      //Fixme: This is probably not a good idea but works for now
+      if (callgraph->existsAnyEdge(parentName, childName)) {
         // This is to silence warnings about existing edges
         continue;
       }
@@ -517,13 +519,15 @@ void CallGraphNodeGenerator::addOverestimationData(clang::Decl* nonDirectCallee)
 
 void CallGraphNodeGenerator::addPointerMetadataFromPrototype(const clang::FunctionProtoType* protoType) {
   for (const auto& possibleName : getMangledNames(topLevelFD)) {
-    auto* md = callgraph->getNode(possibleName)->getOrCreateMD<AllAliasMetadata>(!standalone);
+    assert(callgraph->getNodes(possibleName).size()==1 && "We currently only handle name-unique nodes");
+    auto anyNodeID =callgraph->getNodes(possibleName)[0];
+    auto& md = callgraph->getNode(anyNodeID)->getOrCreate<AllAliasMetadata>(!standalone);
     FunctionSignature functionSignature;
     functionSignature.retType = protoType->getReturnType().getAsString();
     std::transform(protoType->getParamTypes().begin(), protoType->getParamTypes().end(),
                    std::back_inserter(functionSignature.paramTypes), [](auto type) { return type.getAsString(); });
     functionSignature.possibleFuncNames.emplace_back("");
-    md->mightCall.push_back(functionSignature);
+    md.mightCall.push_back(functionSignature);
   }
 }
 

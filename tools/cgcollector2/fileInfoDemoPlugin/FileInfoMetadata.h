@@ -19,20 +19,25 @@ class FileInfoMetadata : public metacg::MetaData::Registrar<FileInfoMetadata> {
  public:
   static constexpr const char* key = "FilePropertiesMetaData";
   FileInfoMetadata() : origin("INVALID"), fromSystemInclude(false), lineNumber(0) {}
-  explicit FileInfoMetadata(const nlohmann::json& j);
+  explicit FileInfoMetadata(const nlohmann::json& j, metacg::StrToNodeMapping& strToNode);
 
- private:
   FileInfoMetadata(const FileInfoMetadata& other)
       : origin(other.origin), fromSystemInclude(other.fromSystemInclude), lineNumber(other.lineNumber) {}
 
  public:
-  nlohmann::json to_json() const final;
 
+
+  nlohmann::json toJson(metacg::NodeToStrMapping&) const final;
+
+  virtual void applyMapping(const metacg::GraphMapping&){
+      return;
+  }
+
+  virtual void merge(const MetaData&, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) ;
   virtual const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge) final;
 
-  MetaData* clone() const final { return new FileInfoMetadata(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::make_unique<FileInfoMetadata>(*this); }
 
   std::string origin;
   bool fromSystemInclude;

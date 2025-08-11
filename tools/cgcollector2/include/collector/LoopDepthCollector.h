@@ -12,8 +12,8 @@
 #include "metadata/LoopMD.h"
 
 struct LoopDepthCollector : public Plugin {
-  virtual LoopDepthMD* computeForDecl(clang::FunctionDecl const* const decl) {
-    auto result = new LoopDepthMD();
+  virtual  std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
+    std::unique_ptr<metacg::LoopDepthMD> result = std::make_unique<metacg::LoopDepthMD>();
     result->loopDepth = getLoopDepthInStmt(decl->getBody());
     return result;
   }
