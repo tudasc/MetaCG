@@ -9,6 +9,7 @@
 
 #include "MCGManager.h"
 #include "io/VersionTwoMCGWriter.h"
+#include "io/VersionFourMCGWriter.h"
 
 #include "CallGraphCollectionAction.h"
 #include "CallGraphNodeGenerator.h"
@@ -62,8 +63,18 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
 
   std::unique_ptr<metacg::io::MCGWriter> mcgWriter;
 
-  if (mcgVersion == 2) {
-    mcgWriter = std::make_unique<metacg::io::VersionTwoMCGWriter>();
+  switch (mcgVersion){
+    case 1: SPDLOG_INFO("This tool can not generate output files in the V1 format, using V2 instead");
+    case 2:
+      mcgWriter = std::make_unique<metacg::io::VersionTwoMCGWriter>();
+      break;
+    case 3: SPDLOG_INFO("V3 format was removed and is currently not supported, using V4 instead");
+    case 4: mcgWriter = std::make_unique<metacg::io::VersionFourMCGWriter>();
+      break;
+    default:
+      assert(false && "No output format specified");
+      SPDLOG_INFO("No output format specified, using V4");
+      mcgWriter = std::make_unique<metacg::io::VersionFourMCGWriter>();
   }
 
   metacg::io::JsonSink js;
