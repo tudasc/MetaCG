@@ -33,7 +33,7 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
   MallocVariableMD(const MallocVariableMD& other) : allocs(other.allocs) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
+  nlohmann::json toJson(NodeToStrMapping&) const final {
     std::vector<nlohmann::json> jArray;
     jArray.reserve(allocs.size());
     for (const auto& [k, v] : allocs) {

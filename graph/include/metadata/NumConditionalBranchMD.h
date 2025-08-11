@@ -27,7 +27,7 @@ class NumConditionalBranchMD : public metacg::MetaData::Registrar<NumConditional
   NumConditionalBranchMD(const NumConditionalBranchMD& other) : numConditionalBranches(other.numConditionalBranches) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final { return numConditionalBranches; }
+  nlohmann::json toJson(NodeToStrMapping&) const final { return numConditionalBranches; }
 
   const char* getKey() const final { return key; }
 
