@@ -1,3 +1,9 @@
+/**
+* File: CGCollector2.cpp
+* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+* https://github.com/tudasc/metacg/LICENSE.txt
+*/
+
 #include "collector/CodeStatisticsCollector.h"
 #include "collector/GlobalLoopDepthCollector.h"
 #include "collector/LoopDepthCollector.h"
@@ -12,7 +18,6 @@
 #include <clang/Tooling/Tooling.h>
 
 #include "CallGraphCollectionAction.h"
-#include "nlohmann/json.hpp"
 
 #include "Plugin.h"
 #include "SharedDefs.h"

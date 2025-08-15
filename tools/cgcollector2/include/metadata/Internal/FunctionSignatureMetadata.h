@@ -9,7 +9,6 @@
 
 #include <clang/AST/Type.h>
 
-//#include "SharedDefs.h"
 #include "metadata/MetaData.h"
 
 class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSignatureMetadata> {

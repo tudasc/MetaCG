@@ -9,8 +9,6 @@
 
 #include "metadata/LoopMD.h"
 
-#include <iostream>
-
 struct GlobalLoopDepthCollector final : public Plugin {
  public:
   std::unique_ptr<metacg::MetaData> computeForDecl(const clang::FunctionDecl* const) override { return nullptr; }

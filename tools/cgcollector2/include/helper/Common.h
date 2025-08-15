@@ -1,3 +1,10 @@
+/**
+* File: Common.h
+* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+* https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
+
 #ifndef CGCOLLECTOR2_HELPER_COMMON_H
 #define CGCOLLECTOR2_HELPER_COMMON_H
 
@@ -6,10 +13,7 @@
 
 #include <clang/AST/DeclCXX.h>
 #include <clang/AST/DeclObjC.h>
-#include <clang/AST/ExprCXX.h>
-#include <clang/AST/Mangle.h>
 
-#include <iostream>
 #include <string>
 #include <vector>
 

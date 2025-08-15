@@ -1,18 +1,8 @@
-//===- CallGraph.h - AST-based Call graph -----------------------*- C++ -*-===//
-//
-// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
-// See https://llvm.org/LICENSE.txt for license information.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//===----------------------------------------------------------------------===//
-//
-//  This file declares the AST-based CallGraph.
-//
-//  A call graph for functions whose definitions/bodies are available in the
-//  current translation unit. The graph has a "virtual" root node that contains
-//  edges to all externally available functions.
-//
-//===----------------------------------------------------------------------===//
+/**
+* File: CallGraphNodeGenerator.h
+* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+* https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #ifndef CGCOLLECTOR_CALLGRAPHNODEGENERATOR_H
 #define CGCOLLECTOR_CALLGRAPHNODEGENERATOR_H

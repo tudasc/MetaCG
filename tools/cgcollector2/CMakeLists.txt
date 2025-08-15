@@ -34,10 +34,10 @@ function(default_compile_options target)
 endfunction()
 
 add_executable(cgcollector2
+        src/CallGraphCollectionAction.cpp
+        src/CallGraphNodeGenerator.cpp
         src/CGCollector2.cpp
         src/MetaDataFunctions.cpp
-        src/CallGraphNodeGenerator.cpp
-        src/CallGraphCollectionAction.cpp
         src/Plugin.cpp
         src/SharedDefs.cpp)
 default_compile_options(cgcollector2)
