@@ -65,10 +65,13 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
 
   switch (mcgVersion){
     case 1: SPDLOG_INFO("This tool can not generate output files in the V1 format, using V2 instead");
+      __attribute__ ((fallthrough));
     case 2:
       mcgWriter = std::make_unique<metacg::io::VersionTwoMCGWriter>();
       break;
     case 3: SPDLOG_INFO("V3 format was removed and is currently not supported, using V4 instead");
+      __attribute__ ((fallthrough));
+
     case 4: mcgWriter = std::make_unique<metacg::io::VersionFourMCGWriter>();
       break;
     default:
