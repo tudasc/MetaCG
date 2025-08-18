@@ -53,6 +53,10 @@ option(
   ON
 )
 
+if(METACG_BUILD_UNIT_TESTS)
+  enable_testing()
+endif()
+
 include(ToolchainOptions)
 # Making packaging easier
 include(CMakePackageConfigHelpers)
