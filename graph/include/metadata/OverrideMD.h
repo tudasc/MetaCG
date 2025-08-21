@@ -7,21 +7,24 @@
 #ifndef METACG_OVERRIDEMD_H
 #define METACG_OVERRIDEMD_H
 
+#include "CgNode.h"
 #include "LoggerUtil.h"
 #include "metadata/MetaData.h"
 #include <vector>
 
+namespace metacg {
+
 /**
  * Copies items from the source vector into the destination vector. Removes duplicates.
- * @tparam T Vector type
  * @param dst Destination vector
  * @param src Source vector
  */
-template <typename T>
-void mergeVectors(std::vector<T>& dst, const std::vector<T>& src) {
+inline void mergeVectors(std::vector<NodeId>& dst, const std::vector<NodeId>& src, const GraphMapping& mapping) {
   for (const auto& entry : src) {
-    if (auto it = std::find(dst.begin(), dst.end(), entry); it == dst.end()) {
-      dst.push_back(entry);
+    assert(mapping.count(entry) == 1 && "Mapping must exist");
+    auto& mappedId = mapping.at(entry);
+    if (auto it = std::find(dst.begin(), dst.end(), mappedId); it == dst.end()) {
+      dst.push_back(mappedId);
     }
   }
 }
@@ -31,38 +34,72 @@ void mergeVectors(std::vector<T>& dst, const std::vector<T>& src) {
  *  MetaCG tries to generate this metadata whenever legacy file formats are read.
  *  It stores information about whether a function is virtual, or whether it overrides,
  *  and which function it overrides or gets overridden by
- *  The deprecated setIsVirtual and IsVirtual use this metadata to achieve compatibility with older API calls
+ *  The deprecated setVirtual and IsVirtual use this metadata to achieve compatibility with older API calls
  */
 struct OverrideMD final : metacg::MetaData::Registrar<OverrideMD> {
  public:
   static constexpr const char* key = "overrideMD";
   OverrideMD() = default;
 
-  explicit OverrideMD(const nlohmann::json& j) {
-    overrides = j.at("overrides").get<std::vector<size_t>>();
-    overriddenBy = j.at("overriddenBy").get<std::vector<size_t>>();
+  explicit OverrideMD(const nlohmann::json& j, StrToNodeMapping& strToNode) {
+    auto overrideStrs = j.at("overrides").get<std::vector<std::string>>();
+    for (auto& s : overrideStrs) {
+      auto* n = strToNode.getNodeFromStr(s);
+      assert(n && "Node is null");
+      overrides.push_back(n->getId());
+    }
+
+    auto overriddenByStrs = j.at("overriddenBy").get<std::vector<std::string>>();
+    for (auto& s : overriddenByStrs) {
+      auto* n = strToNode.getNodeFromStr(s);
+      assert(n && "Node is null");
+      overriddenBy.push_back(n->getId());
+    }
   }
 
-  nlohmann::json to_json() const final { return {{"overrides", overrides}, {"overriddenBy", overriddenBy}}; }
+  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
+    auto jOverrides = nlohmann::json::array();
+    for (auto& n : overrides) {
+      jOverrides.push_back(nodeToStr.getStrFromNode(n));
+    }
+    auto jOverriddenBy = nlohmann::json::array();
+    for (auto& n : overriddenBy) {
+      jOverriddenBy.push_back(nodeToStr.getStrFromNode(n));
+    }
+    return {{"overrides", jOverrides}, {"overriddenBy", jOverriddenBy}};
+  }
 
  private:
   OverrideMD(const OverrideMD& other) : overrides(other.overrides), overriddenBy(other.overriddenBy) {}
 
  public:
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, std::optional<MergeAction>, const GraphMapping& mapping) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge OverrideMD with meta data of different types");
 
     const OverrideMD* toMergeDerived = static_cast<const OverrideMD*>(&toMerge);
 
-    mergeVectors(overriddenBy, toMergeDerived->overriddenBy);
-    mergeVectors(overrides, toMergeDerived->overrides);
+    mergeVectors(overriddenBy, toMergeDerived->overriddenBy, mapping);
+    mergeVectors(overrides, toMergeDerived->overrides, mapping);
   }
 
-  MetaData* clone() const final { return new OverrideMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new OverrideMD(*this)); }
+
+  void applyMapping(const GraphMapping& mapping) override {
+    for (auto& overridesId : overrides) {
+      assert(mapping.count(overridesId) == 1 && "Incomplete mapping");
+      overridesId = mapping.at(overridesId);
+    }
+    for (auto& overriddenById : overriddenBy) {
+      assert(mapping.count(overriddenById) == 1 && "Incomplete mapping");
+      overriddenById = mapping.at(overriddenById);
+    }
+  }
 
   const char* getKey() const final { return key; }
 
-  std::vector<size_t> overrides;
-  std::vector<size_t> overriddenBy;
+  std::vector<NodeId> overrides;
+  std::vector<NodeId> overriddenBy;
 };
+
+}  // namespace metacg
 #endif  // METACG_OVERRIDEMD_H

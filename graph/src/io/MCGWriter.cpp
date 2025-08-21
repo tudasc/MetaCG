@@ -7,8 +7,10 @@
 #include "io/MCGWriter.h"
 #include "LoggerUtil.h"
 #include "MCGManager.h"
-#include "io/VersionThreeMCGWriter.h"
+#include "io/VersionFourMCGWriter.h"
 #include "io/VersionTwoMCGWriter.h"
+
+std::string metacg::NodeToStrMapping::getStrFromNode(const CgNode& node) { return getStrFromNode(node.getId()); }
 
 void metacg::io::MCGWriter::writeActiveGraph(metacg::io::JsonSink& js) {
   const auto* cg = metacg::graph::MCGManager::get().getCallgraph();
@@ -32,8 +34,8 @@ std::unique_ptr<metacg::io::MCGWriter> metacg::io::createWriter(int version) {
   if (version == 2) {
     return std::make_unique<metacg::io::VersionTwoMCGWriter>();
   }
-  if (version == 3) {
-    return std::make_unique<metacg::io::VersionThreeMCGWriter>();
+  if (version == 4) {
+    return std::make_unique<metacg::io::VersionFourMCGWriter>();
   }
   return {};
 }

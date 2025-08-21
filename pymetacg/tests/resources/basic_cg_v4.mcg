@@ -1,0 +1,43 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": {
+                    "0": null
+                },
+                "functionName": "bar",
+                "hasBody": true,
+                "meta": null,
+                "origin": null
+            },
+            "1": {
+                "callees": {
+                    "0": null
+                },
+                "functionName": "foo",
+                "hasBody": true,
+                "meta": null,
+                "origin": null
+            },
+            "2": {
+                "callees": {
+                    "0": null,
+                    "1": null
+                },
+                "functionName": "main",
+                "hasBody": true,
+                "meta": null,
+                "origin": null
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "bd29e40402af29b2ca5baf81f7edf26c2c4ed7d5",
+            "version": "0.7"
+        },
+        "version": "4.0"
+    }
+}

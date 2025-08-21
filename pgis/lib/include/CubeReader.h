@@ -48,8 +48,8 @@ void apply(metacg::graph::MCGManager& mcgm, [[maybe_unused]] cube::Cube& cu, [[m
            const std::string& cNodeName, [[maybe_unused]] cube::Cnode* pnode, const std::string& pNodeName,
            Largs... largs) {
   if constexpr (sizeof...(largs) > 0) {
-    auto target = mcgm.getCallgraph()->getOrInsertNode(cNodeName);
-    auto parent = mcgm.getCallgraph()->hasNode(pNodeName) ? mcgm.getCallgraph()->getNode(pNodeName) : nullptr;
+    auto target = &mcgm.getCallgraph()->getOrInsertNode(cNodeName);
+    auto parent = mcgm.getCallgraph()->hasNode(pNodeName) ? &mcgm.getCallgraph()->getSingleNode(pNodeName) : nullptr;
     applyOne(cu, cnode, target, pnode, parent, largs...);
   }
 }
@@ -175,7 +175,7 @@ void build(const std::filesystem::path& filePath, metacg::graph::MCGManager& mcg
 
       // Insert edge, if parent is not root
       if (pNode->get_parent()) {
-        if (!mcgm.getCallgraph()->existEdgeFromTo(pName, cName)) {
+        if (!mcgm.getCallgraph()->existsAnyEdge(pName, cName)) {
           mcgm.getCallgraph()->addEdge(pName, cName);
         } else {
           console->trace("Tried adding edge between {} and {} even though it already exists", pName, cName);

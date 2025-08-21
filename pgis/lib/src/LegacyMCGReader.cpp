@@ -5,6 +5,7 @@
  */
 
 #include "LegacyMCGReader.h"
+#include "Callgraph.h"
 #include "CgNode.h"
 #include "Timing.h"
 #include "Util.h"
@@ -15,7 +16,16 @@
 
 namespace metacg::pgis::io {
 
-VersionOneMetaCGReader::FuncMapT::mapped_type& VersionOneMetaCGReader::getOrInsert(const std::string& key) {
+struct LegacyStrToNodeMapping : public StrToNodeMapping {
+  LegacyStrToNodeMapping(Callgraph& cg) : cg(cg) {}
+
+  CgNode* getNodeFromStr(const std::string& nodeStr) override { return &cg.getSingleNode(nodeStr); }
+
+ private:
+  Callgraph& cg;
+};
+
+VersionOneMCGReader::FuncMapT::mapped_type& VersionOneMCGReader::getOrInsert(const std::string& key) {
   if (functions.find(key) != functions.end()) {
     auto& fi = functions[key];
     return fi;
@@ -28,39 +38,40 @@ VersionOneMetaCGReader::FuncMapT::mapped_type& VersionOneMetaCGReader::getOrInse
   }
 }
 
-void VersionOneMetaCGReader::buildGraph(metacg::graph::MCGManager& cgManager,
-                                        VersionOneMetaCGReader::StrStrMap& potentialTargets) {
+void VersionOneMCGReader::buildGraph(metacg::graph::MCGManager& cgManager,
+                                        VersionOneMCGReader::StrStrMap& potentialTargets,
+                                        StrToNodeMapping& strToNode) {
   const metacg::RuntimeTimer rtt("buildGraph");
   auto console = metacg::MCGLogger::instance().getConsole();
   // Register nodes in the actual graph
   for (const auto& [k, fi] : functions) {
     console->trace("Inserting MetaCG node for function {}", k);
-    auto node = cgManager.getCallgraph()->getOrInsertNode(k);  // node pointer currently unused
+    auto node = &cgManager.getCallgraph()->getOrInsertNode(k);  // node pointer currently unused
     assert(node && "node is present in call graph");
-    node->setIsVirtual(fi.isVirtual);
+    node->setVirtual(fi.isVirtual);
     node->setHasBody(fi.hasBody);
     for (const auto& c : fi.callees) {
-      auto calleeNode = cgManager.getCallgraph()->getOrInsertNode(c);
+      auto calleeNode = &cgManager.getCallgraph()->getOrInsertNode(c);
       assert(calleeNode && "calleeNode is present in call graph");
-      cgManager.getCallgraph()->addEdge(node, calleeNode);
+      cgManager.getCallgraph()->addEdge(*node, *calleeNode);
       auto& potTargets = potentialTargets[c];
       for (const auto& pt : potTargets) {
-        auto potentialCallee = cgManager.getCallgraph()->getOrInsertNode(pt);
+        auto potentialCallee = &cgManager.getCallgraph()->getOrInsertNode(pt);
         assert(potentialCallee && "potentialCallee is present in call graph");
-        cgManager.getCallgraph()->addEdge(node, potentialCallee);
+        cgManager.getCallgraph()->addEdge(*node, *potentialCallee);
       }
     }
 
-    std::unordered_map<std::string, metacg::MetaData*> metadataContainer;
+    std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>> metadataContainer;
     for (const auto& elem : fi.namedMetadata) {
-      if (auto obj = metacg::MetaData::create(elem.first, elem.second); obj != nullptr)
-        metadataContainer[elem.first] = obj;
+      if (auto obj = metacg::MetaData::create(elem.first, elem.second, strToNode); obj != nullptr)
+        metadataContainer[elem.first] = std::move(obj);
     }
-    node->setMetaDataContainer(metadataContainer);
+    node->setMetaDataContainer(std::move(metadataContainer));
   }
 }
 
-VersionOneMetaCGReader::StrStrMap VersionOneMetaCGReader::buildVirtualFunctionHierarchy(
+VersionOneMCGReader::StrStrMap VersionOneMCGReader::buildVirtualFunctionHierarchy(
     metacg::graph::MCGManager& cgManager) {
   const metacg::RuntimeTimer rtt("buildVirtualFunctionHierarchy");
   auto console = metacg::MCGLogger::instance().getConsole();
@@ -123,7 +134,7 @@ VersionOneMetaCGReader::StrStrMap VersionOneMetaCGReader::buildVirtualFunctionHi
 /**
  * Version one Reader
  */
-std::unique_ptr<Callgraph> VersionOneMetaCGReader::read() {
+std::unique_ptr<Callgraph> VersionOneMCGReader::read() {
   // This version of the reader is the only one, that actually requires access to the MCGManager.
   // Manually get the cgManager via the singleton, to retain backwards compatibility
   auto& cgManager = metacg::graph::MCGManager::get();
@@ -133,6 +144,8 @@ std::unique_ptr<Callgraph> VersionOneMetaCGReader::read() {
 
   console->trace("Reading");
   auto j = source.get();
+
+  LegacyStrToNodeMapping strToNode(*cgManager.getCallgraph());
 
   for (metacg::io::json::iterator it = j.begin(); it != j.end(); ++it) {
     console->trace("Inserting node for key {}", it.key());
@@ -171,35 +184,35 @@ std::unique_ptr<Callgraph> VersionOneMetaCGReader::read() {
   }
 
   auto potentialTargets = buildVirtualFunctionHierarchy(cgManager);
-  buildGraph(cgManager, potentialTargets);
+  buildGraph(cgManager, potentialTargets, strToNode);
   addNumStmts(cgManager);
 
   // set load imbalance flags in CgNode
   for (const auto& pfi : functions) {
-    std::optional<metacg::CgNode*> opt_f = cgManager.getCallgraph()->getNode(pfi.first);
+    std::optional<metacg::CgNode*> opt_f = &cgManager.getCallgraph()->getSingleNode(pfi.first);
     if (opt_f.has_value()) {
       metacg::CgNode* node = opt_f.value();
-      node->getOrCreateMD<LoadImbalance::LIMetaData>();
-      node->getOrCreateMD<LoadImbalance::LIMetaData>()->setVirtual(pfi.second.isVirtual);
+      node->getOrCreate<LoadImbalance::LIMetaData>();
+      node->getOrCreate<LoadImbalance::LIMetaData>().setVirtual(pfi.second.isVirtual);
 
       if (pfi.second.visited) {
-        node->getOrCreateMD<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Visited);
+        node->getOrCreate<LoadImbalance::LIMetaData>().flag(LoadImbalance::FlagType::Visited);
       }
 
       if (pfi.second.irrelevant) {
-        node->getOrCreateMD<LoadImbalance::LIMetaData>()->flag(LoadImbalance::FlagType::Irrelevant);
+        node->getOrCreate<LoadImbalance::LIMetaData>().flag(LoadImbalance::FlagType::Irrelevant);
       }
     }
   }
   return nullptr;
 }
 
-void VersionOneMetaCGReader::addNumStmts(metacg::graph::MCGManager& cgm) {
+void VersionOneMCGReader::addNumStmts(metacg::graph::MCGManager& cgm) {
   for (const auto& [k, fi] : functions) {
     auto g = cgm.getCallgraph();
-    auto node = g->getNode(fi.functionName);
-    node->getOrCreateMD<pira::PiraOneData>();
-    node->getOrCreateMD<pira::BaseProfileData>();
+    auto node = &g->getSingleNode(fi.functionName);
+    node->getOrCreate<pira::PiraOneData>();
+    node->getOrCreate<pira::BaseProfileData>();
     assert(node != nullptr && "Nodes with #statements attached should be available");
     if (node->has<pira::PiraOneData>()) {
       auto pod = node->get<pira::PiraOneData>();

@@ -16,7 +16,7 @@
                     "numVars": 1
                 },
                 "fileProperties": {
-                    "origin": "/home/j_lehr/all_repos/gl-sc-metacg/cgcollector/test/input/singleTU/0215.cpp",
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0215.cpp",
                     "systemInclude": false
                 },
                 "mallocCollector": [],
@@ -38,7 +38,7 @@
                     "numVars": 0
                 },
                 "fileProperties": {
-                    "origin": "/home/j_lehr/all_repos/gl-sc-metacg/cgcollector/test/input/singleTU/0215.cpp",
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0215.cpp",
                     "systemInclude": false
                 },
                 "mallocCollector": [],

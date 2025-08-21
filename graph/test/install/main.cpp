@@ -4,10 +4,10 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "Callgraph.h"
 #include "MCGManager.h"
 #include "io/VersionTwoMCGReader.h"
 #include "io/VersionTwoMCGWriter.h"
+#include "LoggerUtil.h"
 
 #include <fstream>
 #include <string>
@@ -16,9 +16,11 @@ int main(int argc, char** argv) {
   std::string inFile(argv[1]);
   std::string outFile(argv[2]);
 
+  metacg::MCGLogger::logInfo("Testing whether we can log {}!\n", "something");
+
   auto& manager = metacg::graph::MCGManager::get();
   metacg::io::FileSource fSource(inFile);
-  metacg::io::VersionTwoMetaCGReader reader(fSource);
+  metacg::io::VersionTwoMCGReader reader(fSource);
   manager.addToManagedGraphs("testG", reader.read());
 
   metacg::io::VersionTwoMCGWriter writer;

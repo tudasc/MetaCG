@@ -28,7 +28,7 @@ class LIMetaData : public metacg::MetaData::Registrar<LIMetaData> {
  public:
   static constexpr const char* key = "LIData";
   LIMetaData() = default;
-  explicit LIMetaData(const nlohmann::json& j) {
+  explicit LIMetaData(const nlohmann::json& j, metacg::StrToNodeMapping&) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", key);
       return;
@@ -55,11 +55,11 @@ class LIMetaData : public metacg::MetaData::Registrar<LIMetaData> {
         assessment(other.assessment) {}
 
  public:
-  virtual nlohmann::json to_json() const;
+  virtual nlohmann::json toJson(metacg::NodeToStrMapping&) const;
 
   [[nodiscard]] const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
       metacg::MCGLogger::instance().getErrConsole()->error(
           "The MetaData which was tried to merge with LIMetaData was of a different MetaData type");
@@ -71,7 +71,9 @@ class LIMetaData : public metacg::MetaData::Registrar<LIMetaData> {
     // TODO: Merge semantics?
   }
 
-  MetaData* clone() const final { return new LIMetaData(*this); }
+  void applyMapping(const metacg::GraphMapping&) override {}
+
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new LIMetaData(*this)); }
 
   void setNumberOfInclusiveStatements(pira::Statements inclusiveStatements) {
     this->inclusiveStatements = inclusiveStatements;

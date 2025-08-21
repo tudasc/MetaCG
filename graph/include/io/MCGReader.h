@@ -6,6 +6,7 @@
 #ifndef METACG_GRAPH_MCGREADER_H
 #define METACG_GRAPH_MCGREADER_H
 
+#include "IdMapping.h"
 #include "LoggerUtil.h"
 #include "MCGManager.h"
 
@@ -100,25 +101,40 @@ struct JsonSource : ReaderSource {
  * Previously known as IPCG files, the metacg files are the serialized versions of the call graph.
  * This class implements basic functionality and is meant to be subclassed for different file versions.
  */
-class MetaCGReader {
+class MCGReader {
  public:
+  using MetadataCB = std::function<void(std::optional<NodeId>, const std::string&, nlohmann::json&)>;
+
   /**
    * filename path to file
    */
-  explicit MetaCGReader(ReaderSource& src) : source(src) {}
+  explicit MCGReader(ReaderSource& src) : source(src) {}
 
-  virtual ~MetaCGReader() = default;
+  virtual ~MCGReader() = default;
 
   /**
    * PiraMCGProcessor object to be filled with the CG
    */
   [[nodiscard]] virtual std::unique_ptr<Callgraph> read() = 0;
 
+  /**
+   * Registers a callback that will be invoked, when reading metadata fails.
+   * Note that only one callback can be registered.
+   * Pass an empty optional to disable the callback.
+   * @param cb Callback function taking the ID of the currently processed node (or none if it is globally attached),
+   * the metadata type and the corresponding json.
+   */
+  void onFailedMetadataRead(std::optional<MetadataCB> cb) {
+    this->failedMetadataCb = cb;
+  }
+
  protected:
   /**
    * Abstraction from where to read-in the JSON.
    */
   ReaderSource& source;
+
+  std::optional<MetadataCB> failedMetadataCb;
 
  private:
   // filename of the metacg this instance parses
@@ -130,7 +146,7 @@ class MetaCGReader {
  * @param src The source
  * @return A unique pointer to the instantiated reader. Empty, if there is no reader matching the format version.
  */
-std::unique_ptr<MetaCGReader> createReader(ReaderSource& src);
+std::unique_ptr<MCGReader> createReader(ReaderSource& src);
 
 }  // namespace metacg::io
 

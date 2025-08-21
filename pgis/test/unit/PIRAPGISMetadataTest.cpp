@@ -9,17 +9,27 @@
 #include "gtest/gtest.h"
 
 #include "MetaData/PGISMetaData.h"
+#include "io/IdMapping.h"
 #include "nlohmann/json.hpp"
 
 using namespace metacg;
 using json = nlohmann::json;
+
+struct NoStrMapping : public metacg::StrToNodeMapping {
+  CgNode* getNodeFromStr(const std::string&) override { return nullptr; }
+};
+
+struct NoNodeMapping : public metacg::NodeToStrMapping {
+  std::string getStrFromNode(NodeId id) override { return ""; }
+};
 
 TEST(PIRAPGISMetadataTest, BaseProfileData) {
   // Generate "Real" Object
   const auto& origMetadata = new pira::BaseProfileData();
 
   // Export "Real" Object
-  const auto& j = origMetadata->to_json();
+  NoNodeMapping nodeMapping;
+  const auto& j = origMetadata->toJson(nodeMapping);
   // Compare all exported values
   EXPECT_TRUE(j.contains("numCalls"));
   EXPECT_EQ(j.at("numCalls"), origMetadata->getNumberOfCalls());
@@ -29,7 +39,8 @@ TEST(PIRAPGISMetadataTest, BaseProfileData) {
   EXPECT_EQ(j.at("inclusiveRtInSeconds"), origMetadata->getInclusiveRuntimeInSeconds());
 
   // Import Json into new Object
-  const auto& jsonMetadata = new pira::BaseProfileData(j);
+  NoStrMapping strMapping;
+  const auto& jsonMetadata = new pira::BaseProfileData(j, strMapping);
 
   // Compare all imported values
   EXPECT_EQ(jsonMetadata->getNumberOfCalls(), origMetadata->getNumberOfCalls());
@@ -45,14 +56,16 @@ TEST(PIRAPGISMetadataTest, PiraOneData) {
   // Generate "Real" Object
   const auto& origMetadata = new pira::PiraOneData();
   // Export "Real" Object
-  const auto& j = origMetadata->to_json();
+  NoNodeMapping nodeMapping;
+  const auto& j = origMetadata->toJson(nodeMapping);
 
   // Compare all exported values
   EXPECT_EQ(j.get<long long int>(), origMetadata->getNumberOfStatements());
 
   // Import Json Object
   // Note: due to historical reasons, PiraOne Data is not a json object, but only a single value
-  const auto& jsonMetadata = new pira::PiraOneData(j);
+  NoStrMapping strMapping;
+  const auto& jsonMetadata = new pira::PiraOneData(j, strMapping);
 
   // Compare all imported values
   EXPECT_EQ(jsonMetadata->getNumberOfStatements(), origMetadata->getNumberOfStatements());
@@ -65,13 +78,15 @@ TEST(PIRAPGISMetadataTest, PiraTwoData) {
   const auto& origMetadata = new pira::PiraTwoData();
 
   // Export "Real" Object
-  const auto& j = origMetadata->to_json();
+  NoNodeMapping nodeMapping;
+  const auto& j = origMetadata->toJson(nodeMapping);
 
   // Compare all exported values
   EXPECT_TRUE(j.is_null());
 
   // Import Json Object
-  const auto& jsonMetadata = new pira::PiraTwoData(j);
+  NoStrMapping strMapping;
+  const auto& jsonMetadata = new pira::PiraTwoData(j, strMapping);
 
   // Compare all exported / imported values
   delete origMetadata;
@@ -83,7 +98,8 @@ TEST(PIRAPGISMetadataTest, FilePropertiesMetaData) {
   const auto& origMetadata = new pira::FilePropertiesMetaData();
 
   // Export "Real" Object
-  const auto& j = origMetadata->to_json();
+  NoNodeMapping nodeMapping;
+  const auto& j = origMetadata->toJson(nodeMapping);
   // Compare all exported values
   EXPECT_TRUE(j.contains("origin"));
   EXPECT_EQ(j.at("origin"), origMetadata->origin);
@@ -91,7 +107,8 @@ TEST(PIRAPGISMetadataTest, FilePropertiesMetaData) {
   EXPECT_EQ(j.at("systemInclude"), origMetadata->fromSystemInclude);
 
   // Import Json into new Object
-  const auto& jsonMetadata = new pira::FilePropertiesMetaData(j);
+  NoStrMapping strMapping;
+  const auto& jsonMetadata = new pira::FilePropertiesMetaData(j, strMapping);
 
   // Compare all imported values
   EXPECT_EQ(jsonMetadata->origin, origMetadata->origin);
@@ -106,13 +123,15 @@ TEST(PIRAPGISMetadataTest, CodeStatisticsMD) {
   const auto& origMetadata = new CodeStatisticsMD();
 
   // Export "Real" Object
-  const auto& j = origMetadata->to_json();
+  NoNodeMapping nodeMapping;
+  const auto& j = origMetadata->toJson(nodeMapping);
   // Compare all exported values
   EXPECT_TRUE(j.contains("numVars"));
   EXPECT_EQ(j.at("numVars"), origMetadata->numVars);
 
   // Import Json into new Object
-  const auto& jsonMetadata = new CodeStatisticsMD(j);
+  NoStrMapping strMapping;
+  const auto& jsonMetadata = new CodeStatisticsMD(j, strMapping);
 
   // Compare all imported values
   EXPECT_EQ(jsonMetadata->numVars, origMetadata->numVars);
@@ -125,13 +144,15 @@ TEST(PIRAPGISMetadataTest, NumConditionalBranchMetaData) {
   const auto& origMetadata = new NumConditionalBranchMD();
 
   // Export "Real" Object
-  const auto& j = origMetadata->to_json();
+  NoNodeMapping nodeMapping;
+  const auto& j = origMetadata->toJson(nodeMapping);
   // Compare all exported values
   // Note: due to historical reasons, NumConditionalBranchMD is not a json object, but only a single value
   EXPECT_EQ(j.get<int>(), origMetadata->numConditionalBranches);
 
   // Import Json into new Object
-  const auto& jsonMetadata = new NumConditionalBranchMD(j);
+  NoStrMapping strMapping;
+  const auto& jsonMetadata = new NumConditionalBranchMD(j, strMapping);
 
   // Compare all imported values
   EXPECT_EQ(jsonMetadata->numConditionalBranches, origMetadata->numConditionalBranches);
@@ -143,7 +164,8 @@ TEST(PIRAPGISMetadataTest, NumOperationsMetaData) {
   // Generate "Real" Object
   const auto& origMetadata = new NumOperationsMD();
   // Export "Real" Object
-  const auto& j = origMetadata->to_json();
+  NoNodeMapping nodeMapping;
+  const auto& j = origMetadata->toJson(nodeMapping);
   // Compare all exported values
   EXPECT_TRUE(j.contains("numberOfIntOps"));
   EXPECT_EQ(j.at("numberOfIntOps"), origMetadata->numberOfIntOps);
@@ -155,7 +177,8 @@ TEST(PIRAPGISMetadataTest, NumOperationsMetaData) {
   EXPECT_EQ(j.at("numberOfMemoryAccesses"), origMetadata->numberOfMemoryAccesses);
 
   // Import Json into new Object
-  const auto& jsonMetadata = new NumOperationsMD(j);
+  NoStrMapping strMapping;
+  const auto& jsonMetadata = new NumOperationsMD(j, strMapping);
 
   // Compare all imported values
   EXPECT_EQ(jsonMetadata->numberOfIntOps, origMetadata->numberOfIntOps);
@@ -171,13 +194,15 @@ TEST(PIRAPGISMetadataTest, LoopDepthMD) {
   const auto& origMetadata = new LoopDepthMD();
 
   // Export "Real" Object
-  const auto& j = origMetadata->to_json();
+  NoNodeMapping nodeMapping;
+  const auto& j = origMetadata->toJson(nodeMapping);
   // Compare all exported values
   // Note: due to historical reasons, LoopDepthMD is not a json object, but only a single value
   EXPECT_EQ(j.get<int>(), origMetadata->loopDepth);
 
   // Import Json into new Object
-  const auto& jsonMetadata = new LoopDepthMD(j);
+  NoStrMapping strMapping;
+  const auto& jsonMetadata = new LoopDepthMD(j, strMapping);
 
   // Compare all imported values
   EXPECT_EQ(jsonMetadata->loopDepth, origMetadata->loopDepth);
@@ -190,14 +215,16 @@ TEST(PIRAPGISMetadataTest, GlobalLoopDepthMD) {
   const auto& origMetadata = new GlobalLoopDepthMD();
 
   // Export "Real" Object
-  const auto& j = origMetadata->to_json();
+  NoNodeMapping nodeMapping;
+  const auto& j = origMetadata->toJson(nodeMapping);
   // Compare all exported values
   // Note: due to historical reasons, GlobalLoopDepthMD is not a json object, but only a single value
   EXPECT_EQ(j.get<int>(), origMetadata->globalLoopDepth);
 
   // Import Json into new Object
 
-  const auto& jsonMetadata = new GlobalLoopDepthMD(j);
+  NoStrMapping strMapping;
+  const auto& jsonMetadata = new GlobalLoopDepthMD(j, strMapping);
 
   // Compare all imported values
   EXPECT_EQ(jsonMetadata->globalLoopDepth, origMetadata->globalLoopDepth);
@@ -210,12 +237,14 @@ TEST(PIRAPGISMetadataTest, InstrumentationMetaData) {
   const auto& origMetadata = new pgis::InstrumentationMetaData();
 
   // Export "Real" Object
-  const auto& j = origMetadata->to_json();
+  NoNodeMapping nodeMapping;
+  const auto& j = origMetadata->toJson(nodeMapping);
   // Compare all exported values
   EXPECT_TRUE(j.is_null());
 
   // Import Json into new Object
-  const auto& jsonMetadata = new pgis::InstrumentationMetaData(j);
+  NoStrMapping strMapping;
+  const auto& jsonMetadata = new pgis::InstrumentationMetaData(j, strMapping);
 
   // Compare all imported values
   delete origMetadata;

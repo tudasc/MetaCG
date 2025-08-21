@@ -9,11 +9,13 @@
 
 #include "metadata/MetaData.h"
 
+namespace metacg {
+
 class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
  public:
   static constexpr const char* key = "fileProperties";
   FilePropertiesMD() : fromSystemInclude(false) {}
-  explicit FilePropertiesMD(const nlohmann::json& j) {
+  explicit FilePropertiesMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
       return;
@@ -25,25 +27,33 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
   FilePropertiesMD(const FilePropertiesMD& other) : fromSystemInclude(other.fromSystemInclude) {}
 
  public:
-  nlohmann::json to_json() const final {
+  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
     nlohmann::json j;
     j["systemInclude"] = fromSystemInclude;
     return j;
   }
 
-  virtual const char* getKey() const final { return key; }
+  const char* getKey() const final { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, std::optional<MergeAction> action, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge FilePropertiesMD with metadata of different types");
 
-    const FilePropertiesMD* toMergeDerived = static_cast<const FilePropertiesMD*>(&toMerge);
-
-    this->fromSystemInclude |= toMergeDerived->fromSystemInclude;
+    // Adopt file properties from the other node, if it's replacing this one
+    if (action && action->replace) {
+      const FilePropertiesMD* toMergeDerived = static_cast<const FilePropertiesMD*>(&toMerge);
+      this->fromSystemInclude = toMergeDerived->fromSystemInclude;
+    }
   }
 
-  MetaData* clone() const final { return new FilePropertiesMD(*this); }
+  std::unique_ptr<MetaData> clone() const final {
+    return std::unique_ptr<FilePropertiesMD>(new FilePropertiesMD(*this));
+  }
+
+  void applyMapping(const GraphMapping&) override {}
 
   bool fromSystemInclude;
 };
+
+}  // namespace metacg
 
 #endif  // METACG_FILEPROPERTIESMD_H

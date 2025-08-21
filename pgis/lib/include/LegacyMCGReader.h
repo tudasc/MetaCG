@@ -15,9 +15,9 @@ namespace metacg::pgis::io {
  * Class to read metacg files in file format v1.0.
  * The file format is also typically referred to as IPCG files.
  */
-class VersionOneMetaCGReader : public metacg::io::MetaCGReader {
+class VersionOneMCGReader : public metacg::io::MCGReader {
  public:
-  explicit VersionOneMetaCGReader(metacg::io::ReaderSource& source) : MetaCGReader(source) {}
+  explicit VersionOneMCGReader(metacg::io::ReaderSource& source) : MCGReader(source) {}
 
   /**
    * Internal data structure to create the metacg structure
@@ -60,7 +60,7 @@ class VersionOneMetaCGReader : public metacg::io::MetaCGReader {
    * Inserts all nodes in the function map into the final call-graph.
    * Uses potentialTargets to include all potential virtual call targets for virtual functions.
    */
-  void buildGraph(metacg::graph::MCGManager& cgManager, StrStrMap& potentialTargets);
+  void buildGraph(metacg::graph::MCGManager& cgManager, StrStrMap& potentialTargets, metacg::StrToNodeMapping&);
 
   /**
    * Checks if the jsonValue contains a value for key and sets field accordingly

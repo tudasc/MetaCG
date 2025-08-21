@@ -8,9 +8,10 @@
 #include "MCGBaseInfo.h"
 #include "Timing.h"
 #include "Util.h"
+#include "io/VersionFourMCGReader.h"
 
-std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
-  const metacg::RuntimeTimer rtt("VersionTwoMetaCGReader::read");
+std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMCGReader::read() {
+  const metacg::RuntimeTimer rtt("VersionTwoMCGReader::read");
   const metacg::MCGFileFormatInfo ffInfo{2, 0};
   auto console = metacg::MCGLogger::instance().getConsole();
   auto errConsole = metacg::MCGLogger::instance().getErrConsole();
@@ -29,7 +30,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
     throw std::runtime_error(errorMsg);
   }
 
-  auto mcgInfo = j.at(ffInfo.metaInfoFieldName);
+  auto& mcgInfo = j.at(ffInfo.metaInfoFieldName);
   // from here on we assume, that if any file meta information is given, it is correct
 
   /// XXX How to make that we can use the MCGGeneratorVersionInfo to access the identifiers
@@ -56,87 +57,64 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMetaCGReader::read() {
   }
 
   auto& jsonCG = j[ffInfo.cgFieldName];
-  upgradeV2FormatToV3Format(jsonCG);
-  return std::make_unique<metacg::Callgraph>(jsonCG);
+  console->info("Lifting MetaCG version {} file to version 4", mcgVersion);
+  upgradeV2FormatToV4Format(jsonCG);
+  mcgInfo["version"] = "4.0";
+
+  JsonSource v4JsonSrc(j);
+  VersionFourMCGReader v4Reader(v4JsonSrc);
+  v4Reader.onFailedMetadataRead(this->failedMetadataCb);
+  return v4Reader.read();
 }
 
-void metacg::io::VersionTwoMetaCGReader::upgradeV2FormatToV3Format(nlohmann::json& j) {
-  // Add empty node container
-  j["nodes"] = nlohmann::json::array();
-  // Move nodes one layer deeper into node container
-  for (auto it = j.items().begin(); it != j.items().end();) {
-    if (it.key() == "nodes") {
-      it.operator++();
-      continue;
+void metacg::io::VersionTwoMCGReader::upgradeV2FormatToV4Format(nlohmann::json& j) {
+  auto jNodes = nlohmann::json::object();
+
+  // Iterate over all nodes
+  for (auto& it : j.items()) {
+    auto& jNode = it.value();
+
+    // In V2, the function name is the identifier
+    jNode["functionName"] = it.key();
+
+    // Convert callees and calllers entries
+    auto jNewCallees = nlohmann::json::object();
+    auto& jCallees = jNode["callees"];
+    for (auto& jCallee : jCallees) {
+      jNewCallees[jCallee] = {};
     }
-    j.at("nodes").push_back({it.key(), std::move(it.value())});
-    auto temp_It = it;
-    it.operator++();
-    j.erase(temp_It.key());
-  }
-  // Add empty edge container
-  j["edges"] = nlohmann::json::array();
+    jNode.erase("callees");
+    jNode.erase("callers");
+    jNode["callees"] = std::move(jNewCallees);
 
-  // Swap function name with hash id
-  for (auto& node : j["nodes"]) {
-    const std::string functionName = node.at(0);
-
-    // if by chance the V2 format contained origin data
-    // calculate the hash with known origin
-    // if the origin metadata exists, but is empty use unknownOrigin instead
-    if (node.at(1).at("meta").contains("fileProperties") &&
-        !node.at(1).at("meta").at("fileProperties").at("origin").get<std::string>().empty()) {
-      node.at(1)["origin"] = node.at(1).at("meta").at("fileProperties").at("origin");
-      node.at(1).at("meta").at("fileProperties").erase("origin");
+    // Create origin field by reading in fileProperties metadata
+    auto& jMeta = jNode.at("meta");
+    if (jMeta.contains("fileProperties") && !jMeta.at("fileProperties").at("origin").get<std::string>().empty()) {
+      jNode["origin"] = jMeta.at("fileProperties").at("origin");
+      jMeta.at("fileProperties").erase("origin");
     } else {
-      // if the V2 format did not contain origin data use unknownOrigin keyword
-      node.at(1)["origin"] = "unknownOrigin";
+      // if the V2 format did not contain origin data insert null
+      jNode["origin"] = nullptr;
     }
-    node.at(0) = std::hash<std::string>()(functionName + node.at(1)["origin"].get<std::string>());
-    node.at(1)["functionName"] = functionName;
-  }
 
-  // populate edge container and overwrites
-  for (auto& node : j["nodes"]) {
-    // edges
-    for (const auto& callee : node.at(1).at("callees")) {
-      for (const auto& calleeNode : j["nodes"]) {
-        if (calleeNode.at(1).at("functionName") == callee) {
-          assert(!calleeNode.at(1).at("origin").get<std::string>().empty());
-          j["edges"].push_back({{node.at(0), calleeNode.at(0)},{}});
-          break;
-        }
+    // Create OverrideMD if the function is virtual
+    if (jNode.at("isVirtual")) {
+      auto jOverrides = json::array();
+      for (const auto& overrideNode : jNode.at("overrides")) {
+        jOverrides.push_back(overrideNode);
       }
-    }
-    node.at(1).erase("callees");
-    node.at(1).erase("callers");
-
-    // if the V2 format node was virtual, we add override metadata
-    if (node.at(1).at("isVirtual")) {
-      nlohmann::json overrideHashes = nlohmann::json::array();
-      nlohmann::json overriddenByHashes = nlohmann::json::array();
-      for (const auto& nodeCandidate : j["nodes"]) {
-        for (const auto& overriddenNodeName : node.at(1).at("overrides")) {
-          //Format V2 can not handle duplicate node names
-          //We therefore assume functionName to be unique in a V2 file
-          //This means we can break after finding the first correctly named entry
-          if (nodeCandidate.at(1).at("functionName") == overriddenNodeName) {
-            overrideHashes.push_back(nodeCandidate.at(0));
-            break;
-          }
-        }
-        for (const auto& n : node.at(1).at("overriddenBy")) {
-          if (nodeCandidate.at(1).at("functionName") == n) {
-            overriddenByHashes.push_back(nodeCandidate.at(0));
-            break;
-          }
-        }
+      auto jOverriddenBy = json::array();
+      for (const auto& overridenByNode : jNode.at("overriddenBy")) {
+        jOverriddenBy.push_back(overridenByNode);
       }
-      node.at(1)["meta"]["overrideMD"] = {{"overrides", overrideHashes}, {"overriddenBy", overriddenByHashes}};
+      jMeta["overrideMD"] = {{"overrides", jOverrides}, {"overriddenBy", jOverriddenBy}};
     }
-    node.at(1).erase("isVirtual");
-    node.at(1).erase("doesOverride");
-    node.at(1).erase("overrides");
-    node.at(1).erase("overriddenBy");
+    jNode.erase("isVirtual");
+    jNode.erase("doesOverride");
+    jNode.erase("overrides");
+    jNode.erase("overriddenBy");
+    jNodes[it.key()] = std::move(jNode);
   }
+  j["nodes"] = std::move(jNodes);
+  j["meta"] = nlohmann::json::object();
 }

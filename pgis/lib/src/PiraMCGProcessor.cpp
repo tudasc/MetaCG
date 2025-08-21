@@ -25,7 +25,7 @@ using namespace pira;
 using namespace ::pgis::options;
 
 metacg::pgis::PiraMCGProcessor::PiraMCGProcessor(Config* config, extrapconnection::ExtrapConfig epCfg)
-    : graph(&getEmptyGraph()), configPtr(config), epModelProvider(std::move(epCfg)) {}
+    : graph(new Callgraph()), configPtr(config), epModelProvider(std::move(epCfg)) {}
 
 void metacg::pgis::PiraMCGProcessor::registerEstimatorPhase(EstimatorPhase* phase, bool noReport) {
   phases.push(phase);
@@ -105,7 +105,7 @@ int metacg::pgis::PiraMCGProcessor::getNumProcs() {
   int numProcs = 1;
   int prevNum = 0;
   for (const auto& elem : graph->getNodes()) {
-    const auto& node = elem.second.get();
+    const auto& node = elem.get();
     if (!node->get<BaseProfileData>()->getCgLocation().empty()) {
       for (const CgLocation& cgLoc : node->get<BaseProfileData>()->getCgLocation()) {
         if (cgLoc.getProcId() != prevNum) {
@@ -197,7 +197,7 @@ void metacg::pgis::PiraMCGProcessor::dumpInstrumentedNames(InstrumentationConfig
       ss << include << " " << name << "\n";
     }
     for (const auto& [name, node] : IC.instrumentedPaths) {
-      for (const auto& parent : graph->getCallers(node)) {
+      for (const auto& parent : graph->getCallers(*node)) {
         ss << include << " " << parent->getFunctionName() << " " << arrow << " " << name << "\n";
       }
     }
@@ -219,9 +219,9 @@ void metacg::pgis::PiraMCGProcessor::attachExtrapModels() {
   auto console = metacg::MCGLogger::instance().getConsole();
   epModelProvider.buildModels();
   for (const auto& elem : graph->getNodes()) {
-    const auto& n = elem.second.get();
+    const auto& n = elem.get();
     console->debug("Attaching models for {}", n->getFunctionName());
-    auto ptd = n->getOrCreateMD<PiraTwoData>(epModelProvider.getModelFor(n->getFunctionName()));
+    auto ptd = &n->getOrCreate<PiraTwoData>(epModelProvider.getModelFor(n->getFunctionName()));
     if (!ptd->getExtrapModelConnector().hasModels()) {
       console->trace("attachExtrapModels hasModels == false -> Setting new ModelConnector");
       ptd->setExtrapModelConnector(epModelProvider.getModelFor(n->getFunctionName()));

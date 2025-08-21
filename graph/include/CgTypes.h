@@ -1,5 +1,5 @@
 /**
- * File: CgNodePtr.h
+ * File: CgTypes.h
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
@@ -11,9 +11,13 @@
 
 namespace metacg {
 class CgNode;
-}  // namespace metacg
+class Callgraph;
 
-using CgNodePtr = std::unique_ptr<metacg::CgNode>;  // hopefully this typedef helps readability
+using NodeId = size_t;
+
+using CgNodePtr = std::unique_ptr<metacg::CgNode>;
 using CgNodeRawPtrUSet = std::unordered_set<metacg::CgNode*>;
+
+}  // namespace metacg
 
 #endif

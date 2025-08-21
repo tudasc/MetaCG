@@ -8,6 +8,8 @@
 
 #include "metadata/MetaData.h"
 
+namespace metacg {
+
 class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
  public:
   std::map<std::string, std::string> allocs;
@@ -16,7 +18,7 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
 
   MallocVariableMD() = default;
 
-  explicit MallocVariableMD(const nlohmann::json& j) {
+  explicit MallocVariableMD(const nlohmann::json& j, StrToNodeMapping&) {
     metacg::MCGLogger::instance().getConsole()->trace("Creating {} metadata from json", key);
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve metadata for {}", key);
@@ -31,7 +33,7 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
   MallocVariableMD(const MallocVariableMD& other) : allocs(other.allocs) {}
 
  public:
-  nlohmann::json to_json() const final {
+  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
     std::vector<nlohmann::json> jArray;
     jArray.reserve(allocs.size());
     for (const auto& [k, v] : allocs) {
@@ -41,9 +43,9 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
     return jArray;
   }
 
-  virtual const char* getKey() const { return key; }
+  const char* getKey() const override { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, std::optional<MergeAction>, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge MallocVariableMD with meta data of different types");
 
     const MallocVariableMD* toMergeDerived = static_cast<const MallocVariableMD*>(&toMerge);
@@ -51,7 +53,11 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
     // TODO: Merge not implemented as of now
   }
 
-  MetaData* clone() const final { return new MallocVariableMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new MallocVariableMD(*this)); }
+
+  void applyMapping(const GraphMapping&) override {}
 };
+
+}  // namespace metacg
 
 #endif  // CGCOLLECTOR2_MALLOCVARIABLEMD_H

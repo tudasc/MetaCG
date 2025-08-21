@@ -12,7 +12,7 @@ class MergeCountMD : public metacg::MetaData::Registrar<MergeCountMD> {
  public:
   static constexpr const char* key = "mergeCount";
   MergeCountMD() = default;
-  explicit MergeCountMD(const nlohmann::json& j) {
+  explicit MergeCountMD(const nlohmann::json& j, metacg::StrToNodeMapping&) {
     metacg::MCGLogger::instance().getConsole()->trace("Reading MergeCountMD from json");
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", "MergeCountMD");
@@ -26,11 +26,11 @@ class MergeCountMD : public metacg::MetaData::Registrar<MergeCountMD> {
   MergeCountMD(const MergeCountMD& other) : mergeCount(other.mergeCount) {}
 
  public:
-  nlohmann::json to_json() const final { return mergeCount; }
+  nlohmann::json toJson(metacg::NodeToStrMapping&) const override { return mergeCount; }
 
   const char* getKey() const override { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge MergeCountMD with meta data of different types");
 
     const MergeCountMD* toMergeDerived = static_cast<const MergeCountMD*>(&toMerge);
@@ -38,7 +38,9 @@ class MergeCountMD : public metacg::MetaData::Registrar<MergeCountMD> {
     this->mergeCount += toMergeDerived->mergeCount + 1;
   }
 
-  MetaData* clone() const final { return new MergeCountMD(*this); }
+  void applyMapping(const metacg::GraphMapping&) override {}
+
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new MergeCountMD(*this)); }
 
  private:
   int mergeCount{0};

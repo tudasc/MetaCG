@@ -46,14 +46,15 @@ int main(int argc, char** argv) {
   metacg::io::FileSource fsA(inputA);
   metacg::io::FileSource fsB(inputB);
 
-  metacg::io::VersionTwoMetaCGReader mcgReaderA(fsA);
-  metacg::io::VersionTwoMetaCGReader mcgReaderB(fsB);
+  metacg::io::VersionTwoMCGReader mcgReaderA(fsA);
+  metacg::io::VersionTwoMCGReader mcgReaderB(fsB);
 
   mcgManager.addToManagedGraphs("cg_a", mcgReaderA.read());
   mcgManager.addToManagedGraphs("cg_b", mcgReaderB.read());
 
   metacg::io::VersionTwoMCGWriter mcgWriter;
-  mcgManager.mergeIntoActiveGraph();
+  mcgWriter.setExportSorted(true);
+  mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
 
   metacg::io::JsonSink jsonSink;
   mcgWriter.writeActiveGraph(jsonSink);

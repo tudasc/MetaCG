@@ -3,14 +3,15 @@ add_executable(
   libtests
   CGNodeTests.cpp
   DotIOTest.cpp
+  GlobalMDTest.cpp
   LoggingTest.cpp
   MCGManagerTest.cpp
   ReachabilityAnalysisTest.cpp
   ReaderFactoryTest.cpp
   UtilTest.cpp
-  VersionThreeMCGReaderTest.cpp
-  VersionThreeMCGWriterTest.cpp
-  VersionThreeReaderWriterRoundtripTest.cpp
+  VersionFourMCGReaderTest.cpp
+  VersionFourMCGWriterTest.cpp
+  VersionFourReaderWriterRoundtripTest.cpp
   VersionTwoMCGReaderTest.cpp
   VersionTwoMCGWriterTest.cpp
   VersionTwoReaderWriterRoundtripTest.cpp
@@ -22,4 +23,4 @@ add_metacg(libtests)
 
 add_config_include(libtests)
 
-add_test(NAME libraryTests COMMAND libtests)
+add_test(NAME libtests COMMAND $<TARGET_FILE:libtests>)

@@ -7,20 +7,25 @@
 
 #include "io/MCGReader.h"
 #include "LoggerUtil.h"
-#include "io/VersionThreeMCGReader.h"
+#include "io/VersionFourMCGReader.h"
 #include "io/VersionTwoMCGReader.h"
 
 namespace metacg::io {
 
-std::unique_ptr<MetaCGReader> createReader(ReaderSource& src) {
+std::unique_ptr<MCGReader> createReader(ReaderSource& src) {
   auto versionStr = src.getFormatVersion();
   if (versionStr == "2" || versionStr == "2.0") {
-    return std::make_unique<VersionTwoMetaCGReader>(src);
-  } else if (versionStr == "3" || versionStr == "3.0") {
-    return std::make_unique<VersionThreeMetaCGReader>(src);
+    return std::make_unique<VersionTwoMCGReader>(src);
+  }
+  if (versionStr == "3" || versionStr == "3.0") {
+    metacg::MCGLogger::logError(
+        "Format version 3 is no longer supported. Please use the version 4 reader instead. Old version 3 files can be "
+        "converted using the 'cgconvert' tool included in the MetaCG v0.8 release.");
+    return {};
+  } else if (versionStr == "4" || versionStr == "4.0") {
+    return std::make_unique<VersionFourMCGReader>(src);
   } else {
-    metacg::MCGLogger::instance().getErrConsole()->error("Cannot create reader: format version '{}' is not suppported.",
-                                                         versionStr);
+    metacg::MCGLogger::logError("Cannot create reader: format version '{}' is not suppported.", versionStr);
     return {};
   }
 }

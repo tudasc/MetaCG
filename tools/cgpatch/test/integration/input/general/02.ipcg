@@ -1862,7 +1862,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "tools/cgpatch/test/integration/input/02_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/integration/input/02_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 1,
@@ -1909,7 +1909,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "tools/cgpatch/test/integration/input/02_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/integration/input/02_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 1,
@@ -1951,7 +1951,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "tools/cgpatch/test/integration/input/02_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/integration/input/02_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -1993,7 +1993,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "tools/cgpatch/test/integration/input/02_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/integration/input/02_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -6528,7 +6528,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "tools/cgpatch/test/integration/input/02_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/integration/input/02_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 1,
@@ -6579,7 +6579,7 @@
                     "codeRegions": {}
                 },
                 "fileProperties": {
-                    "origin": "tools/cgpatch/test/integration/input/02_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/integration/input/02_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 1,
@@ -82819,7 +82819,7 @@
                     }
                 },
                 "fileProperties": {
-                    "origin": "tools/cgpatch/test/integration/input/02_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/integration/input/02_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 2,

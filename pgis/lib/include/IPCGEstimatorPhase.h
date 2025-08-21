@@ -167,12 +167,12 @@ class RuntimeEstimatorPhase : public EstimatorPhase {
     bool operator()(const metacg::CgNode* lhs, const metacg::CgNode* rhs) const {
       const auto lhsNotKicked = !lhs->get<pira::TemporaryInstrumentationDecisionMetadata>()->isKicked;
       const auto rhsNotKicked = !rhs->get<pira::TemporaryInstrumentationDecisionMetadata>()->isKicked;
-      const auto lhsPrevData = lhs->checkAndGet<pira::InstrumentationResultMetaData>();
-      const auto rhsPrevData = rhs->checkAndGet<pira::InstrumentationResultMetaData>();
+      const auto lhsPrevData = lhs->get<pira::InstrumentationResultMetaData>();
+      const auto rhsPrevData = rhs->get<pira::InstrumentationResultMetaData>();
       const auto lhsTimePerCall =
-          (lhsPrevData.first ? lhsPrevData.second->inclusiveTimePerCallSum : std::numeric_limits<double>::max());
+          (lhsPrevData ? lhsPrevData->inclusiveTimePerCallSum : std::numeric_limits<double>::max());
       const auto rhsTimePerCall =
-          (rhsPrevData.first ? rhsPrevData.second->inclusiveTimePerCallSum : std::numeric_limits<double>::max());
+          (rhsPrevData ? rhsPrevData->inclusiveTimePerCallSum : std::numeric_limits<double>::max());
       const auto lhsInstroInfo = lhs->get<pira::TemporaryInstrumentationDecisionMetadata>()->info;
       const auto rhsInstroInfo = rhs->get<pira::TemporaryInstrumentationDecisionMetadata>()->info;
       const auto lhsParentHighRuntime =
@@ -200,12 +200,12 @@ class RuntimeEstimatorPhase : public EstimatorPhase {
       assert(rhs);
       const auto lhsNotKicked = !lhs->get<pira::TemporaryInstrumentationDecisionMetadata>()->isKicked;
       const auto rhsNotKicked = !rhs->get<pira::TemporaryInstrumentationDecisionMetadata>()->isKicked;
-      const auto lhsPrevData = lhs->checkAndGet<pira::InstrumentationResultMetaData>();
-      const auto rhsPrevData = rhs->checkAndGet<pira::InstrumentationResultMetaData>();
+      const auto lhsPrevData = lhs->get<pira::InstrumentationResultMetaData>();
+      const auto rhsPrevData = rhs->get<pira::InstrumentationResultMetaData>();
       const auto lhsTimePerCall =
-          (lhsPrevData.first ? lhsPrevData.second->inclusiveTimePerCallSum : std::numeric_limits<double>::max());
+          (lhsPrevData ? lhsPrevData->inclusiveTimePerCallSum : std::numeric_limits<double>::max());
       const auto rhsTimePerCall =
-          (rhsPrevData.first ? rhsPrevData.second->inclusiveTimePerCallSum : std::numeric_limits<double>::max());
+          (rhsPrevData ? rhsPrevData->inclusiveTimePerCallSum : std::numeric_limits<double>::max());
       const auto lhsInstroInfo = lhs->get<pira::TemporaryInstrumentationDecisionMetadata>()->info;
       const auto rhsInstroInfo = rhs->get<pira::TemporaryInstrumentationDecisionMetadata>()->info;
       const auto lhsParentHighRuntime =
@@ -229,9 +229,9 @@ class RuntimeEstimatorPhase : public EstimatorPhase {
   };
 
   inline static double getCallsToNode(const metacg::CgNode* N) {
-    const auto PrevInfo = N->checkAndGet<pira::InstrumentationResultMetaData>();
-    if (PrevInfo.first) {
-      return PrevInfo.second->callCount;
+    const auto PrevInfo = N->get<pira::InstrumentationResultMetaData>();
+    if (PrevInfo) {
+      return PrevInfo->callCount;
     }
     return N->get<pira::TemporaryInstrumentationDecisionMetadata>()->info.callsFromParents;
   }
@@ -314,7 +314,7 @@ class WLCallpathDifferentiationEstimatorPhase : public EstimatorPhase {
   void modifyGraph(metacg::CgNode* mainMethod) override;
 
  private:
-  CgNodeRawPtrUSet whitelist;  // all whitelisted nodes INCL. their paths to main
+  metacg::CgNodeRawPtrUSet whitelist;  // all whitelisted nodes INCL. their paths to main
   std::string whitelistName;
 
   void addNodeAndParentsToWhitelist(metacg::CgNode* node);

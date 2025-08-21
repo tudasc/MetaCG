@@ -198,17 +198,17 @@ struct CGDotEdgeComparator {
 template <typename EdgeContainerTy, typename NodeContainerTy>
 void fillNodesAndEdges(const Callgraph* cg, NodeContainerTy& nodeNames, EdgeContainerTy& edges) {
   for (const auto& node : cg->getNodes()) {
-    nodeNames.insert(node.second->getFunctionName());
+    nodeNames.insert(node->getFunctionName());
 
-    const auto childNodes = cg->getCallees(node.first);
-    const auto parentNodes = cg->getCallers(node.first);
+    const auto childNodes = cg->getCallees(*node);
+    const auto parentNodes = cg->getCallers(*node);
 
     for (const auto& c : childNodes) {
-      edges.emplace(std::make_pair(node.first, c->getId()));
+      edges.emplace(std::make_pair(node->getId(), c->getId()));
     }
 
     for (const auto& p : parentNodes) {
-      edges.emplace(std::make_pair(p->getId(), node.first));
+      edges.emplace(std::make_pair(p->getId(), node->getId()));
     }
   }
 }

@@ -1,0 +1,68 @@
+{
+    "_CG": {
+        "bar": {
+            "callees": [
+                "baz"
+            ],
+            "callers": [
+                "foo"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/wrong/path/cgformat_test_01_input.c",
+                    "systemInclude": false
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "baz": {
+            "callees": [],
+            "callers": [
+                "bar"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/wrong/path/cgformat_test_01_input.c",
+                    "systemInclude": false
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "foo": {
+            "callees": [
+                "bar"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "origin": "/wrong/path/cgformat_test_01_input.c",
+                    "systemInclude": false
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "d28254fde4e10e5682c097563d425bff04142510",
+            "version": "0.9"
+        },
+        "version": "2.0"
+    }
+}

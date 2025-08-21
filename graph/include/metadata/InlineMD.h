@@ -8,11 +8,13 @@
 
 #include "metadata/MetaData.h"
 
+namespace metacg {
+
 class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
  public:
   static constexpr const char* key = "inlineInfo";
   InlineMD() = default;
-  explicit InlineMD(const nlohmann::json& j) {
+  explicit InlineMD(const nlohmann::json& j, StrToNodeMapping&) {
     metacg::MCGLogger::instance().getConsole()->trace("Reading inlineInfo from json");
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", "inlineInfo");
@@ -28,7 +30,7 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
   InlineMD(const InlineMD& other) = default;
 
  public:
-  nlohmann::json to_json() const final {
+  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
     nlohmann::json j;
     j["markedInline"] = markedInline;
     j["likelyInline"] = likelyInline;
@@ -39,7 +41,7 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
 
   const char* getKey() const override { return key; }
 
-  void merge(const MetaData& toMerge) final {
+  void merge(const MetaData& toMerge, std::optional<MergeAction>, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge InlineMD with metadata of different types");
 
     const InlineMD* toMergeDerived = static_cast<const InlineMD*>(&toMerge);
@@ -52,7 +54,9 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
     markedAlwaysInline |= toMergeDerived->markedAlwaysInline;
   }
 
-  MetaData* clone() const final { return new InlineMD(*this); }
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new InlineMD(*this)); }
+
+  void applyMapping(const GraphMapping&) override {}
 
   bool isMarkedInline() const { return markedInline; }
 
@@ -68,5 +72,7 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
   bool markedAlwaysInline = false;
   bool isTemplateFunction = false;
 };
+
+}  // namespace metacg
 
 #endif  // METACG_INLINEMD_H

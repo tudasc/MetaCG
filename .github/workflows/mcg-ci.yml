@@ -74,6 +74,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: false
+      - name: Check for canonical test graph format
+        uses: addnab/docker-run-action@v3
+        with:
+          image: metacg-devel:latest
+          run: /opt/metacg/checkTests.sh  /opt/metacg/build/tools/cgformat/cgformat
       - name: Run MCG library tests 
         uses: addnab/docker-run-action@v3
         with: 
@@ -113,6 +118,13 @@ jobs:
           run: |
             cd /opt/metacg/cgcollector/test/integration
             ./runner.sh build
+      - name: Run cgformat tests
+        uses: addnab/docker-run-action@v3
+        with:
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/build/tools/cgformat/test
+            ./run_cgformat_tests.sh
       - name: Run pymetacg tests
         uses: addnab/docker-run-action@v3
         with: 

@@ -6,10 +6,17 @@
 
 #pragma once
 
+#include "io/IdMapping.h"
 #include <Callgraph.h>
 #include <CgNode.h>
-#include <CgNodePtr.h>
 #include <MCGManager.h>
+#include <metadata/MetaData.h>
+
+#include <memory>
+#include <string>
+#include <unordered_map>
+
+namespace metacg::pymetacg {
 
 /**
  * Helper type that wraps around CgNode* and keeps additional information about which call graph
@@ -24,15 +31,36 @@ struct CgNodeWrapper {
   const metacg::Callgraph& graph;
 };
 
+struct MetaDataContainer {
+  const std::unordered_map<std::string, std::unique_ptr<metacg::MetaData>>& map;
+  const metacg::Callgraph& graph;
+};
+
+struct MetaDataWrapper {
+  const metacg::MetaData* md;
+  const metacg::Callgraph& graph;
+};
+
+struct NameMapping : metacg::NodeToStrMapping {
+ public:
+  NameMapping(const metacg::Callgraph& graph) : _graph(graph) {}
+
+  virtual std::string getStrFromNode(metacg::NodeId id) override { return _graph.getNode(id)->getFunctionName(); }
+
+ private:
+  const metacg::Callgraph& _graph;
+};
+
 /**
  * Auxiliary iterator to iterate over metacg::Callgraph::NodeContainer and pack CgNode* into CgNodeWrapper
  */
-template <typename NodeIterator>
 class NodeContainerIteratorWrapper {
- public:
-  explicit NodeContainerIteratorWrapper(NodeIterator it, const metacg::Callgraph& graph) : iter(it), graph(graph) {}
+  using It = metacg::Callgraph::NodeContainer::const_iterator;
 
-  CgNodeWrapper operator*() const { return CgNodeWrapper{iter->second.get(), graph}; }
+ public:
+  explicit NodeContainerIteratorWrapper(It it, const metacg::Callgraph& graph) : iter(it), graph(graph) {}
+
+  CgNodeWrapper operator*() const { return CgNodeWrapper{iter->get(), graph}; }
 
   NodeContainerIteratorWrapper& operator++() {
     ++iter;
@@ -43,7 +71,31 @@ class NodeContainerIteratorWrapper {
   bool operator!=(const NodeContainerIteratorWrapper& other) const { return !(*this == other); }
 
  private:
-  NodeIterator iter;
+  It iter;
+  const metacg::Callgraph& graph;
+};
+
+/**
+ * Auxiliary iterator to iterate over metacg::Callgraph::NodeList and pack CgNode* into CgNodeWrapper
+ */
+class NodeListIteratorWrapper {
+  using It = metacg::Callgraph::NodeList::const_iterator;
+
+ public:
+  explicit NodeListIteratorWrapper(It it, const metacg::Callgraph& graph) : iter(it), graph(graph) {}
+
+  CgNodeWrapper operator*() const { return CgNodeWrapper{graph.getNode(*iter), graph}; }
+
+  NodeListIteratorWrapper& operator++() {
+    ++iter;
+    return *this;
+  }
+
+  bool operator==(const NodeListIteratorWrapper& other) const { return iter == other.iter; }
+  bool operator!=(const NodeListIteratorWrapper& other) const { return !(*this == other); }
+
+ private:
+  It iter;
   const metacg::Callgraph& graph;
 };
 
@@ -75,7 +127,7 @@ class CgNodeRawPtrUSetIteratorWrapper {
  * Helper function to attach the call graph reference to all CgNodes in a CgNodeRawPtrUSet
  * and return a std::unordered_set<CgNodeWrapper, ...>
  */
-inline auto attachGraphPointerToNodes(const CgNodeRawPtrUSet nodes, const metacg::Callgraph& graph) {
+inline auto attachGraphPointerToNodes(const metacg::CgNodeRawPtrUSet nodes, const metacg::Callgraph& graph) {
   constexpr auto hash = [](const CgNodeWrapper& p) { return p.node->getId(); };
   constexpr auto equal = [](const CgNodeWrapper& p1, const CgNodeWrapper& p2) {
     return p1.node->getId() == p2.node->getId();
@@ -85,3 +137,4 @@ inline auto attachGraphPointerToNodes(const CgNodeRawPtrUSet nodes, const metacg
       nodes.size(), hash, equal);
   return newSet;
 }
+}  // namespace metacg::pymetacg

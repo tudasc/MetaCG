@@ -69,7 +69,7 @@ TEST_F(VersionTwoReaderWriterRoundtripTest, TextGraphText) {
       "}"_json;
 
   metacg::io::JsonSource jsonSource(jsonCG);
-  metacg::io::VersionTwoMetaCGReader reader(jsonSource);
+  metacg::io::VersionTwoMCGReader reader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newCallgraph", reader.read());
   const std::string generatorName = "Test";
@@ -81,11 +81,10 @@ TEST_F(VersionTwoReaderWriterRoundtripTest, TextGraphText) {
   EXPECT_EQ(jsonSink.getJson(), jsonCG);
 }
 
-// If the source file does include a fileProperty metadata field which does not carry information,
-// we do not generate a fileProperty metadata filed with now information when outputting the file again.
+// Tests if the fileProperties metadata is recreated, if the origin is empty.
 // This is the current behaviour and subject to change. This test is here to find unwanted changes to this behaviour.
 TEST_F(VersionTwoReaderWriterRoundtripTest, EmptyFilePropertyMetadata) {
-  const nlohmann::json jsonCGin =
+  const nlohmann::json jsonCG =
       "{\n"
       "   \"_CG\":{\n"
       "      \"main\":{\n"
@@ -133,56 +132,8 @@ TEST_F(VersionTwoReaderWriterRoundtripTest, EmptyFilePropertyMetadata) {
       "   }\n"
       "}"_json;
 
-  const nlohmann::json jsonCGOut =
-      "{\n"
-      "   \"_CG\":{\n"
-      "      \"main\":{\n"
-      "         \"callees\":[\n"
-      "            \"foo\"\n"
-      "         ],\n"
-      "         \"callers\":[],\n"
-      "         \"doesOverride\":false,\n"
-      "         \"hasBody\":true,\n"
-      "         \"isVirtual\":false,\n"
-      "         \"meta\": null,\n"
-      "         \"overriddenBy\":[],\n"
-      "         \"overrides\":[]\n"
-      "      },\n"
-      "      \"foo\":{\n"
-      "         \"callees\":[],\n"
-      "         \"callers\":[\n"
-      "            \"main\"\n"
-      "         ],\n"
-      "         \"doesOverride\":false,\n"
-      "         \"hasBody\":false,\n"
-      "         \"isVirtual\":true,\n"
-      "         \"meta\":null,\n"
-      "         \"overriddenBy\":[\"bar\"],\n"
-      "         \"overrides\":[]\n"
-      "      },\n"
-      "      \"bar\":{\n"
-      "         \"callees\":[],\n"
-      "         \"callers\":[],\n"
-      "         \"doesOverride\":true,\n"
-      "         \"hasBody\":true,\n"
-      "         \"isVirtual\":true,\n"
-      "         \"meta\": null,\n"
-      "         \"overriddenBy\":[],\n"
-      "         \"overrides\":[\"foo\"]\n"
-      "      }\n"
-      "   },\n"
-      "   \"_MetaCG\":{\n"
-      "      \"generator\":{\n"
-      "         \"name\":\"Test\",\n"
-      "         \"sha\":\"TestSha\",\n"
-      "         \"version\":\"0.1\"\n"
-      "      },\n"
-      "      \"version\":\"2.0\"\n"
-      "   }\n"
-      "}"_json;
-
-  metacg::io::JsonSource jsonSource(jsonCGin);
-  metacg::io::VersionTwoMetaCGReader reader(jsonSource);
+  metacg::io::JsonSource jsonSource(jsonCG);
+  metacg::io::VersionTwoMCGReader reader(jsonSource);
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.addToManagedGraphs("newCallgraph", reader.read());
   const std::string generatorName = "Test";
@@ -191,5 +142,5 @@ TEST_F(VersionTwoReaderWriterRoundtripTest, EmptyFilePropertyMetadata) {
   metacg::io::JsonSink jsonSink;
   mcgWriter.writeActiveGraph(jsonSink);
 
-  EXPECT_EQ(jsonSink.getJson(), jsonCGOut);
+  EXPECT_EQ(jsonSink.getJson(), jsonCG);
 }

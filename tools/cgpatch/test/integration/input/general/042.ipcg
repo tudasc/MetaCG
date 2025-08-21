@@ -13,7 +13,7 @@
                     "numVars": 0
                 },
                 "fileProperties": {
-                    "origin": "042_b.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/input/general/042_b.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,
@@ -49,7 +49,7 @@
                     "numVars": 1
                 },
                 "fileProperties": {
-                    "origin": "042_b.cpp",
+                    "origin": "/opt/metacg/mcg-local/tools/cgpatch/test/input/general/042_b.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 0,

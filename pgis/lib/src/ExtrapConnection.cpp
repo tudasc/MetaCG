@@ -185,9 +185,9 @@ void ExtrapModelProvider::buildModels() {
   for (auto& fn : fns) {
     const auto attEpData = [&](auto& cube, auto cnode, auto n, [[maybe_unused]] auto pnode, [[maybe_unused]] auto pn) {
       console->debug("Attaching Cube info from file {}", fn);
-      auto ptd = n->template getOrCreateMD<pira::PiraTwoData>(ExtrapConnector({}, {}));
-      ptd->setExtrapParameters(config.params);
-      ptd->addToRuntimeVec(metacg::pgis::impl::time(cube, cnode));
+      auto ptd = n->template getOrCreate<pira::PiraTwoData>(ExtrapConnector({}, {}));
+      ptd.setExtrapParameters(config.params);
+      ptd.addToRuntimeVec(metacg::pgis::impl::time(cube, cnode));
     };
 
     auto& mcgManager = metacg::graph::MCGManager::get();
@@ -196,7 +196,7 @@ void ExtrapModelProvider::buildModels() {
   }
 
   for (const auto& elem : metacg::pgis::PiraMCGProcessor::get()) {
-    const auto& n = elem.second.get();
+    const auto& n = elem.get();
     console->trace("No PiraTwoData meta data");
     if (n->has<pira::PiraTwoData>()) {
       auto ptd = metacg::pgis::impl::get<pira::PiraTwoData>(n);

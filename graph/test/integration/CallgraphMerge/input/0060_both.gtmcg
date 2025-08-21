@@ -228,7 +228,7 @@
                     "numVars": 0
                 },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0060_b.cpp",
+                    "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0060_a.cpp",
                     "systemInclude": false
                 },
                 "globalLoopDepth": 3,

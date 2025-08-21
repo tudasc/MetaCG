@@ -7,7 +7,7 @@
 
 #include "LoggerUtil.h"
 #include "MCGManager.h"
-#include "io/VersionThreeMCGReader.h"
+#include "io/VersionFourMCGReader.h"
 #include "io/VersionTwoMCGReader.h"
 #include "nlohmann/json.hpp"
 
@@ -21,16 +21,15 @@ class MCGReaderFactoryTest : public ::testing::Test {
   }
 };
 
-TEST(MCGReaderFactoryTest, V3Reader) {
+TEST(MCGReaderFactoryTest, V4Reader) {
   const nlohmann::json j =
-      "{\"_CG\":"
-      "{\n"
-      "    \"edges\": [],\n"
-      "    \"nodes\": []\n"
-      "  }"
-      ",\"_MetaCG\":{"
+      "{\"_CG\": {"
+      "   \"meta\": {},"
+      "   \"nodes\": {}"
+      "   },"
+      " \"_MetaCG\":{"
       "   \"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},"
-      "    \"version\":\"3.0\"}"
+      "    \"version\":\"4.0\"}"
       "}"_json;
 
   auto& mcgm = metacg::graph::MCGManager::get();
@@ -98,7 +97,7 @@ TEST(MCGReaderFactoryTest, UnsupportedVersion) {
   const nlohmann::json j =
       "{\n"
       "   \"_MetaCG\":{\n"
-      "      \"version\":\"4.0\"\n"
+      "      \"version\":\"3.0\"\n"
       "   }\n"
       "}"_json;
   auto& mcgm = metacg::graph::MCGManager::get();
@@ -106,7 +105,7 @@ TEST(MCGReaderFactoryTest, UnsupportedVersion) {
 
   metacg::io::JsonSource source(j);
 
-  ASSERT_EQ(source.getFormatVersion(), "4.0");
+  ASSERT_EQ(source.getFormatVersion(), "3.0");
 
   auto reader = metacg::io::createReader(source);
   ASSERT_FALSE(reader);

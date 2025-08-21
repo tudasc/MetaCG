@@ -29,7 +29,7 @@ endif()
 # End of require out-of-source builds
 
 # Project information
-set(METACG_VERSION 0.8.0)
+set(METACG_VERSION 0.9.0)
 project(
   MetaCG
   VERSION ${METACG_VERSION}
@@ -53,6 +53,10 @@ option(
   ON
 )
 
+if(METACG_BUILD_UNIT_TESTS)
+  enable_testing()
+endif()
+
 include(ToolchainOptions)
 # Making packaging easier
 include(CMakePackageConfigHelpers)
@@ -74,8 +78,10 @@ endif()
 # Configure the file that holds version information
 configure_file(Config.h.in config.h)
 
-# Provide googletest library
-include(GoogleTest)
+if(METACG_BUILD_UNIT_TESTS)
+  # Provide googletest library
+  include(GoogleTest)
+endif()
 
 # Component options MetaCG graph library will always be built. The actual graph implementation
 add_subdirectory(graph)
