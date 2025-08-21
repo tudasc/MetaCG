@@ -43,6 +43,7 @@ foreach(tgt cgpatch-call-analysis cgpatch-inst-pass)
 endforeach()
 
 if(CGPATCH_USE_MPI)
+  target_include_directories(cgpatch-runtime PRIVATE ${MPI_C_INCLUDE_DIRS})
   target_compile_definitions(cgpatch-runtime PRIVATE USE_MPI=1)
 endif()
 
