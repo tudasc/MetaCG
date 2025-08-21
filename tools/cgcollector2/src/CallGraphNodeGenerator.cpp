@@ -5,31 +5,27 @@
  */
 
 #include "CallGraphNodeGenerator.h"
-#include <clang/AST/Decl.h>
-#include <clang/AST/DeclBase.h>
-#include <clang/AST/Expr.h>
-#include <clang/Basic/IdentifierTable.h>
-#include <clang/Basic/LLVM.h>
-#include <llvm/Support/Casting.h>
-#include <llvm/Support/Compiler.h>
-#include <llvm/Support/GraphWriter.h>
-
-#if LLVM_VERSION_MAJOR > 10
-
-#include <clang/AST/ParentMapContext.h>
-
-#endif
-
-#include <cassert>
-
-#include <clang/AST/Mangle.h>
-
+#include "LoggerUtil.h"
 #include "metadata/Internal/ASTNodeMetadata.h"
 #include "metadata/Internal/AllAliasMetadata.h"
 #include "metadata/Internal/FunctionSignatureMetadata.h"
 #include "metadata/OverrideMD.h"
 
-#include "LoggerUtil.h"
+#include <clang/AST/Decl.h>
+#include <clang/AST/DeclBase.h>
+#include <clang/AST/Expr.h>
+#include <clang/AST/Mangle.h>
+#include <clang/Basic/IdentifierTable.h>
+#include <clang/Basic/LLVM.h>
+#include <llvm/Support/Casting.h>
+#include <llvm/Support/Compiler.h>
+#include <llvm/Support/GraphWriter.h>
+#if LLVM_VERSION_MAJOR > 10
+#include <clang/AST/ParentMapContext.h>
+#endif
+
+#include <cassert>
+
 
 using namespace clang;
 
