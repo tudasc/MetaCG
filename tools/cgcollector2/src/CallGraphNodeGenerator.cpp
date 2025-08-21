@@ -46,7 +46,7 @@ inline bool ends_with(std::string const& value, std::string const& ending) {
 
 std::vector<std::string> getMangledNames(clang::Decl const* const nd) {
   if (!nd) {
-    std::cerr << "NamedDecl was nullptr" << std::endl;
+    llvm::errs() << "NamedDecl was nullptr\n";
     assert(nd && "NamedDecl and MangleContext must not be nullptr");
     return {"__NO_NAME__"};
   }
