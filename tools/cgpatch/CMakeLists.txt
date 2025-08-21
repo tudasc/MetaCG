@@ -1,6 +1,16 @@
-project(CGPatch)
-
 include(GNUInstallDirs)
+
+# Enable MPI for CGPatch
+option(
+  CGPATCH_USE_MPI
+  "On or Off"
+  ON
+)
+
+if(CGPATCH_USE_MPI)
+  find_package(MPI REQUIRED)
+  message(STATUS "MPI VERSION: ${MPI_C_VERSION}")
+endif()
 
 # LLVM
 option(
