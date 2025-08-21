@@ -11,10 +11,9 @@
 #include "metadata/MallocVariableMD.h"
 #include <clang/AST/StmtVisitor.h>
 
-#include <iostream>
 
 struct MallocVariableCollector : public Plugin {
-  virtual std::string getPluginName() { return "MallocVariableCollector"; }
+  std::string getPluginName() const final{ return "MallocVariableCollector"; }
 
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
     std::unique_ptr<metacg::MallocVariableMD> result = std::make_unique<metacg::MallocVariableMD>();

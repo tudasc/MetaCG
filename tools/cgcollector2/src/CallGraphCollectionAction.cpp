@@ -5,7 +5,6 @@
  */
 
 #include <fstream>
-#include <iostream>
 
 #include "MCGManager.h"
 #include "io/VersionTwoMCGWriter.h"
@@ -64,20 +63,18 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
   std::unique_ptr<metacg::io::MCGWriter> mcgWriter;
 
   switch (mcgVersion){
-    case 1: SPDLOG_INFO("This tool can not generate output files in the V1 format, using V2 instead");
+    case 1: SPDLOG_WARN("This tool can not generate output files in the V1 format, using V2 instead");
       __attribute__ ((fallthrough));
     case 2:
       mcgWriter = std::make_unique<metacg::io::VersionTwoMCGWriter>();
       break;
-    case 3: SPDLOG_INFO("V3 format was removed and is currently not supported, using V4 instead");
+    case 3: SPDLOG_WARN("V3 format was removed and is currently not supported, using V4 instead");
       __attribute__ ((fallthrough));
-
     case 4: mcgWriter = std::make_unique<metacg::io::VersionFourMCGWriter>();
       break;
     default:
-      assert(false && "No output format specified");
-      SPDLOG_INFO("No output format specified, using V4");
-      mcgWriter = std::make_unique<metacg::io::VersionFourMCGWriter>();
+      assert(false && "The selected output format is not recognized");
+      SPDLOG_ERROR("The selected output format {} is not recognized.",mcgVersion);
   }
 
   metacg::io::JsonSink js;
@@ -121,7 +118,7 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
     }
   }
 
-  // This is makes it so a potential function: foo(int (*funcptr)());
+  // This makes it so a potential function: foo(int (*funcptr)());
   // will potentially call all functions with the signature int (void)
   // This is behaviour that was implemented in the classic cgcollector
   SPDLOG_INFO("Overestimate parameter function pointers from body-less functions");

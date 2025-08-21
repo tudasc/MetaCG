@@ -14,7 +14,6 @@
  * The same restrictions apply:
  * Implement a static key, and the three virtual functions, and register your metadata via the Registrar
  */
-
 class FileInfoMetadata : public metacg::MetaData::Registrar<FileInfoMetadata> {
  public:
   static constexpr const char* key = "FilePropertiesMetaData";

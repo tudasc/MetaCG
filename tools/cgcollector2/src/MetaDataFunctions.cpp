@@ -1,7 +1,6 @@
 #include "MetaDataFunctions.h"
 #include <algorithm>
 #include <clang/AST/RecursiveASTVisitor.h>
-#include <iostream>
 
 int getNumStmtsInStmt(clang::Stmt* stmt) {
   int numStmts = 0;
@@ -609,7 +608,7 @@ class NumOperationsVisitor : public clang::RecursiveASTVisitor<NumOperationsVisi
       if (builtin && builtin->getKind() == clang::BuiltinType::Kind::BoundMember) {
         return;
       }
-      // std::cerr << "Unhandled type " << t.getAsString() << "\n";
+      // llvm::errs() << "Unhandled type " << t.getAsString() << "\n";
       //  t.dump();
       //  TODO Handle the rest as int
       if (mem_access) {

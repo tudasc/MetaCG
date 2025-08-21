@@ -21,7 +21,7 @@ struct NumOperationsCollector : public Plugin {
     return result;
   }
 
-  std::string getPluginName() override { return "NumOperationsCollector"; }
+  std::string getPluginName() const final { return "NumOperationsCollector"; }
 
   virtual ~NumOperationsCollector() = default;
 };

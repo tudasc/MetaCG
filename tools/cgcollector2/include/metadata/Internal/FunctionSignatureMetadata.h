@@ -31,15 +31,14 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
   FunctionSignatureMetadata(const FunctionSignatureMetadata& other)
       : ownSignature(other.ownSignature), shouldExport(other.shouldExport) {}
 
- public:
-  virtual const char* getKey() const final { return key; }
+  const char* getKey() const final { return key; }
 
   nlohmann::json toJson(metacg::NodeToStrMapping&) const final {
     if (shouldExport) {
       return ownSignature;
     }
     return {};
-  };
+  }
 
   void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {

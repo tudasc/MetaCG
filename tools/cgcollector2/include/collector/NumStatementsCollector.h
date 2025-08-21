@@ -7,9 +7,7 @@
 #define CGCOLLECTOR2_NUMSTATEMENTSCOLLECTOR_H
 
 #include "Callgraph.h"
-
 #include "Plugin.h"
-
 #include "MetaDataFunctions.h"
 #include "metadata/NumStatementsMD.h"
 
@@ -24,7 +22,7 @@ struct NumberOfStatementsCollector : public Plugin {
 
   void computeForGraph(const metacg::Callgraph* const) override {}
 
-  virtual std::string getPluginName() override { return "NumberOfStatementsCollector"; }
+  std::string getPluginName() const final { return "NumberOfStatementsCollector"; }
 };
 
 #endif  // CGCOLLECTOR2_NUMSTATEMENTSCOLLECTOR_H

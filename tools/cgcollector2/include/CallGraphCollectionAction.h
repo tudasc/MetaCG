@@ -14,7 +14,7 @@
 
 namespace metacg {
 class Callgraph;
-}
+} // namespace metacg
 
 class CallGraphCollectorConsumer : public clang::ASTConsumer {
  public:

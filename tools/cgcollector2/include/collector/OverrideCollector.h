@@ -9,8 +9,8 @@
 
 #include "helper/Common.h"
 #include "MetaDataFunctions.h"
-#include "metadata/Internal/ASTNodeMetadata.h"
 #include "Plugin.h"
+#include "metadata/Internal/ASTNodeMetadata.h"
 #include "metadata/OverrideMD.h"
 
 struct OverrideCollector : public Plugin {
@@ -42,7 +42,7 @@ struct OverrideCollector : public Plugin {
     }
   }
 
-  virtual std::string getPluginName() { return "OverrideCollector"; }
+  std::string getPluginName() const final { return "OverrideCollector"; }
 
   virtual ~OverrideCollector() = default;
 };

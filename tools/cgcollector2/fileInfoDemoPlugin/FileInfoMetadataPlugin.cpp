@@ -4,11 +4,13 @@
 * https://github.com/tudasc/metacg/LICENSE.txt
 */
 
+#include "FileInfoMetadata.h"
+#include "Plugin.h"
+
 #include <clang/AST/ASTContext.h>
 #include <clang/Basic/SourceManager.h>
 
-#include "FileInfoMetadata.h"
-#include "Plugin.h"
+
 
 /**
  * Plugin that only generates declaration based metadata

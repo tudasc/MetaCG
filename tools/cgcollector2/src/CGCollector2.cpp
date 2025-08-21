@@ -23,7 +23,6 @@
 #include "SharedDefs.h"
 
 #include "metadata/BuiltinMD.h"
-#include <iostream>
 
 #include "spdlog/spdlog.h"
 
@@ -128,7 +127,7 @@ int main(int argc, const char** argv) {
 #else
   auto ParseResult = clang::tooling::CommonOptionsParser::create(argc, argv, cgc);
   if (!ParseResult) {
-    std::cerr << toString(ParseResult.takeError());
+    llvm::errs() << toString(ParseResult.takeError())<<"\n";
     return -1;
   }
   clang::tooling::CommonOptionsParser& OP = ParseResult.get();
@@ -165,44 +164,41 @@ int main(int argc, const char** argv) {
     SPDLOG_INFO("No collector-suite specified, disabling all collectors");
   } else if (collectorBits.isSet(Collectors::All)) {
     SPDLOG_INFO("Enabling all built in collectors");
-    mcs = {new NumberOfStatementsCollector(), new CodeStatisticsCollector(),       new MallocVariableCollector(),
-           new UniqueTypeCollector(),         new NumConditionalBranchCollector(), new NumOperationsCollector(),
-           new LoopDepthCollector(),          new GlobalLoopDepthCollector(),      new OverrideCollector()};
   } else {
     // Builtin Metadata Collection
-    if (collectorBits.isSet(Collectors::NumStatements)) {
+    if (collectorBits.isSet(Collectors::NumStatements) || collectorBits.isSet(Collectors::All)) {
       mcs.push_back(new NumberOfStatementsCollector());
     }
 
-    if (collectorBits.isSet(Collectors::CodeStatistics)) {
+    if (collectorBits.isSet(Collectors::CodeStatistics) || collectorBits.isSet(Collectors::All)) {
       mcs.push_back(new CodeStatisticsCollector());
     }
 
-    if (collectorBits.isSet(Collectors::MallocVariable)) {
+    if (collectorBits.isSet(Collectors::MallocVariable) || collectorBits.isSet(Collectors::All)) {
       mcs.push_back(new MallocVariableCollector());
     }
 
-    if (collectorBits.isSet(Collectors::UniqueTypes)) {
+    if (collectorBits.isSet(Collectors::UniqueTypes) || collectorBits.isSet(Collectors::All)) {
       mcs.push_back(new UniqueTypeCollector());
     }
 
-    if (collectorBits.isSet(Collectors::NumConditionalBranches)) {
+    if (collectorBits.isSet(Collectors::NumConditionalBranches) || collectorBits.isSet(Collectors::All)) {
       mcs.push_back(new NumConditionalBranchCollector());
     }
 
-    if (collectorBits.isSet(Collectors::NumOperations)) {
+    if (collectorBits.isSet(Collectors::NumOperations) || collectorBits.isSet(Collectors::All)) {
       mcs.push_back(new NumOperationsCollector());
     }
 
-    if (collectorBits.isSet(Collectors::LoopDepth)) {
+    if (collectorBits.isSet(Collectors::LoopDepth) || collectorBits.isSet(Collectors::All)) {
       mcs.push_back(new LoopDepthCollector());
     }
 
-    if (collectorBits.isSet(Collectors::GlobalLoopDepth)) {
+    if (collectorBits.isSet(Collectors::GlobalLoopDepth) || collectorBits.isSet(Collectors::All)) {
       mcs.push_back(new GlobalLoopDepthCollector());
     }
 
-    if (collectorBits.isSet(Collectors::OverrideMD)) {
+    if (collectorBits.isSet(Collectors::OverrideMD) || collectorBits.isSet(Collectors::All)) {
       mcs.push_back(new OverrideCollector());
     }
   }

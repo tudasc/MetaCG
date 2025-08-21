@@ -22,7 +22,7 @@ struct CodeStatisticsCollector : public Plugin {
     return result;
   }
 
-  virtual std::string getPluginName() { return "CodeStatisticsCollector"; }
+  std::string getPluginName() const final { return "CodeStatisticsCollector"; }
 
  public:
   virtual ~CodeStatisticsCollector() = default;

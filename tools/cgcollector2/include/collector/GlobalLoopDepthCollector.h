@@ -15,9 +15,8 @@ struct GlobalLoopDepthCollector final : public Plugin {
 
   void computeForGraph(const metacg::Callgraph* const) override {}
 
-  std::string getPluginName() override { return "GlobalLoopDepthCollector"; }
+  std::string getPluginName() const final { return "GlobalLoopDepthCollector"; }
 
- private:
 };
 
 #endif  // CGCOLLECTOR2_GLOBALLOOPDEPTHCOLLECTOR_H

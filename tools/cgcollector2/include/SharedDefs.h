@@ -7,6 +7,7 @@
 #define CGCOLLECTOR2_SHAREDDEFS_H
 
 #include <nlohmann/json.hpp>
+
 #include <string>
 #include <vector>
 

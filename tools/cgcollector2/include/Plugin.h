@@ -15,10 +15,10 @@
  * There are *no ordering guarantees given* for samely typed computations
  */
 
+#include <metadata/MetaData.h>
+
 #include <memory>
 #include <string>
-
-#include <metadata/MetaData.h>
 namespace metacg {
 
 class Callgraph;
@@ -53,7 +53,7 @@ struct Plugin {
    * Overwrite this if you want your Plugin to be listed with a name in the debug logs
    * @return the logging name of your plugin
    */
-  virtual std::string getPluginName() { return "unnamed Plugin"; }
+  virtual std::string getPluginName() const{ return "unnamed Plugin"; }
   virtual ~Plugin() = default;
 };
 

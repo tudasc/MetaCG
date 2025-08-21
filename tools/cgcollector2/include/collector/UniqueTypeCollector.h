@@ -12,7 +12,7 @@
 
 struct UniqueTypeCollector : public Plugin {
  public:
-  virtual std::string getPluginName() { return key; }
+  std::string getPluginName() const final { return key; }
 
   static constexpr const char* key = "UniqueTypeCollector";
   std::set<const clang::Type*> globalTypes;
@@ -49,7 +49,7 @@ struct UniqueTypeCollector : public Plugin {
             fTypes.insert(ty);
           }
         } else {
-          std::cerr << "Found DeclGroup: Not Collecting Types." << std::endl;
+          llvm::errs() << "Found DeclGroup: Not Collecting Types.\n";
         }
       }
 
