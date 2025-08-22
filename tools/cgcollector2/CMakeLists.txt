@@ -64,7 +64,6 @@ add_subdirectory(test)
 
 # Plugin demo
 add_subdirectory(fileInfoDemoPlugin)
-add_subdirectory(USRPlugin)
 
 install(
         TARGETS
