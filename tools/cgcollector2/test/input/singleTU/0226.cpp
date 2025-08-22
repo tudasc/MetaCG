@@ -5,4 +5,5 @@ struct A {
   int b;
 };
 
-int boo(struct A a) { return a.b; }
+int boo(struct A a) { return a.b;
+}
