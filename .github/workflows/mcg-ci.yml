@@ -45,12 +45,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: cmake
-      run: cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -B build -S .
+      run: cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_INSTALL_PREFIX="$(pwd)/install" -B build -S .
     - name: build
       run: cmake --build build --parallel
     - name: install
       run: |
-        cmake --install build --prefix install
+        cmake  --install build --prefix install
         stat install/lib/libmetacg.so
         stat install/include/metadata/CustomMD.h
         stat install/lib/cmake/metacg/metacgConfig.cmake
@@ -58,6 +58,12 @@ jobs:
       run: |
         CMAKE_PREFIX_PATH=install/lib/cmake/metacg cmake -S graph/test/install -B build-install-test
         cmake --build build-install-test
+    - name: metacg-config-test
+      run: |
+        MCG_CFG=install/bin/metacg-config
+        stat $MCG_CFG
+        [[ "$($MCG_CFG --prefix)" == "$(cd install; pwd)" ]] || exit 1
+        [[ "$($MCG_CFG --revision)" == "$(git rev-parse HEAD)" ]] || exit 1
   
   build-container:
     runs-on: ubuntu-latest
