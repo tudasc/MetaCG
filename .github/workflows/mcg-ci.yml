@@ -50,7 +50,7 @@ jobs:
       run: cmake --build build --parallel
     - name: install
       run: |
-        cmake  --install build --prefix install
+        cmake --install build --prefix install
         stat install/lib/libmetacg.so
         stat install/include/metadata/CustomMD.h
         stat install/lib/cmake/metacg/metacgConfig.cmake

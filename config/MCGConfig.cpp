@@ -41,11 +41,6 @@ int main(int argc, char** argv) {
     return EXIT_SUCCESS;
   }
 
-  if (result.contains("version")) {
-    std::cout << MetaCG_VERSION_MAJOR << "." << MetaCG_VERSION_MINOR;
-    return EXIT_SUCCESS;
-  }
-
   if (result.contains("prefix")) {
     std::cout << INSTALL_PREFIX;
     return EXIT_SUCCESS;
