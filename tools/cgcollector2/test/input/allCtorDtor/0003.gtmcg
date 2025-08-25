@@ -1,0 +1,91 @@
+{
+    "_CG": {
+        "_Z6hiddenv": {
+            "callees": [],
+            "callers": [
+                "_ZN1BC1Ev",
+                "_ZN1BC2Ev"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1AC1Ev": {
+            "callees": [
+                "_ZN1BC1Ev",
+                "_ZN1BC2Ev"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1AC2Ev": {
+            "callees": [
+                "_ZN1BC1Ev",
+                "_ZN1BC2Ev"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1BC1Ev": {
+            "callees": [
+                "_Z6hiddenv"
+            ],
+            "callers": [
+                "_ZN1AC1Ev",
+                "_ZN1AC2Ev"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1BC2Ev": {
+            "callees": [
+                "_Z6hiddenv"
+            ],
+            "callers": [
+                "_ZN1AC1Ev",
+                "_ZN1AC2Ev"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "de5748d537c1e79cf1ea786deeb1830c325a5ad3",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}

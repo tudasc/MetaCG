@@ -4,7 +4,7 @@
 
 #if [ command -v $testerExe ]; then
 if [[ $(type -P $testerExe) ]]; then
-  echo "The CGSimpleTester binary (cgsimpletester) could not be found in path, testing with relative path."
+  echo "The MCGTester binary (mcgtester) could not be found in path, testing with relative path."
 fi
 stat ../../${build_dir}/cgcollector/test/mcgtester >>log/testrun.log 2>&1
 if [ $? -eq 1 ]; then

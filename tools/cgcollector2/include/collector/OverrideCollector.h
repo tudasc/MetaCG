@@ -1,0 +1,50 @@
+/**
+* File: OverrideCollector.h
+* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+* https://github.com/tudasc/metacg/LICENSE.txt
+*/
+
+#ifndef CGCOLLECTOR2_OVERRIDECOLLECTOR_H
+#define CGCOLLECTOR2_OVERRIDECOLLECTOR_H
+
+#include "helper/Common.h"
+#include "MetaDataFunctions.h"
+#include "Plugin.h"
+#include "metadata/Internal/ASTNodeMetadata.h"
+#include "metadata/OverrideMD.h"
+
+struct OverrideCollector : public Plugin {
+  virtual void computeForGraph(const metacg::Callgraph* const cg) {
+    for (auto& node : cg->getNodes()) {
+      auto decl = node->get<ASTNodeMetadata>()->getFunctionDecl();
+
+      if (auto MD = llvm::dyn_cast<clang::CXXMethodDecl>(decl); !MD || !MD->isVirtual()) {
+        continue;
+      }
+
+      auto MD = llvm::cast<clang::CXXMethodDecl>(decl);
+
+      // multiple inheritance causes multiple entries in overriden_methods
+      // hierarchical overridden methods does not show up here
+      for (auto om : MD->overridden_methods()) {
+        for (auto& nodeName : getMangledName(om)) {
+          const auto& nodesWithMatchingName=cg->getNodes(nodeName);
+          assert(nodesWithMatchingName.size()==1 && "We currently only validated this for collision free names");
+          const auto omNode = cg->getNode(nodesWithMatchingName[0]);
+          if (omNode == nullptr) {
+            metacg::MCGLogger::logWarn("Node {} tries to override unknown node {} ",nodeName, om->getNameAsString());
+            continue;
+          }
+          omNode->getOrCreate<metacg::OverrideMD>().overriddenBy.push_back(node->getId());
+          node->getOrCreate<metacg::OverrideMD>().overrides.push_back(omNode->getId());
+        }
+      }
+    }
+  }
+
+  std::string getPluginName() const final { return "OverrideCollector"; }
+
+  virtual ~OverrideCollector() = default;
+};
+
+#endif  // CGCOLLECTOR2_OVERRIDECOLLECTOR_H

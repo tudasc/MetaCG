@@ -1,0 +1,141 @@
+{
+    "_CG": {
+        "_Z3foov": {
+            "callees": [
+                "_Z5makeBv",
+                "_ZN1BD1Ev",
+                "_ZN1BD2Ev"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z5makeBv": {
+            "callees": [
+                "_ZN1BC2Ev",
+                "_ZN1BD1Ev",
+                "_ZN1BD2Ev",
+                "_ZN1BC1Ev"
+            ],
+            "callers": [
+                "_Z3foov"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1AD1Ev": {
+            "callees": [],
+            "callers": [
+                "_ZN1BD1Ev",
+                "_ZN1BD2Ev"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1AD2Ev": {
+            "callees": [],
+            "callers": [
+                "_ZN1BD1Ev",
+                "_ZN1BD2Ev"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1BC1Ev": {
+            "callees": [],
+            "callers": [
+                "_Z5makeBv"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1BC2Ev": {
+            "callees": [],
+            "callers": [
+                "_Z5makeBv"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1BD1Ev": {
+            "callees": [
+                "_ZN1AD1Ev",
+                "_ZN1AD2Ev"
+            ],
+            "callers": [
+                "_Z3foov",
+                "_Z5makeBv"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1BD2Ev": {
+            "callees": [
+                "_ZN1AD1Ev",
+                "_ZN1AD2Ev"
+            ],
+            "callers": [
+                "_Z5makeBv",
+                "_Z3foov"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "de5748d537c1e79cf1ea786deeb1830c325a5ad3",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}

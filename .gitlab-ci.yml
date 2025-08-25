@@ -251,7 +251,15 @@ test-cgformat:
   needs: [ "build-mcg" ]
   script:
     - cd $MCG_BUILD/tools/cgformat/test
-    - ./run_cgformat_tests.sh
+
+test-cgcollector2:
+  <<: *job-setup
+  stage: integration-test
+  needs: ["build-mcg"]
+  script:
+    - module load clang/$LLVM
+    - cd tools/cgcollector2/test/
+    - ./testBase.sh
 
 test-basic-pgis:
   <<: *job-setup

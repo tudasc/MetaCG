@@ -29,7 +29,7 @@ class InstrumentationMetaData : public metacg::MetaData::Registrar<Instrumentati
   InstrumentationMetaData(const InstrumentationMetaData& other) : state(other.state) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
+  nlohmann::json toJson(NodeToStrMapping&) const final {
     metacg::MCGLogger::instance().getConsole()->trace("Serializing InstrumentationMetaData to json is not implemented");
     return {};
   };

@@ -1,0 +1,199 @@
+{
+    "_CG": {
+        "_Z2f0PFvvE": {
+            "callees": [],
+            "callers": [
+                "_Z2f1PFvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z2f1PFvvE": {
+            "callees": [
+                "_Z2f0PFvvE"
+            ],
+            "callers": [
+                "_Z2f2PFvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z2f2PFvvE": {
+            "callees": [
+                "_Z2f1PFvvE"
+            ],
+            "callers": [
+                "_Z2f3PFvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z2f3PFvvE": {
+            "callees": [
+                "_Z2f2PFvvE"
+            ],
+            "callers": [
+                "_Z2f4PFvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z2f4PFvvE": {
+            "callees": [
+                "_Z2f3PFvvE"
+            ],
+            "callers": [
+                "_Z2f5PFvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z2f5PFvvE": {
+            "callees": [
+                "_Z2f4PFvvE"
+            ],
+            "callers": [
+                "_Z2f6PFvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z2f6PFvvE": {
+            "callees": [
+                "_Z2f5PFvvE"
+            ],
+            "callers": [
+                "_Z2f7PFvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z2f7PFvvE": {
+            "callees": [
+                "_Z2f6PFvvE"
+            ],
+            "callers": [
+                "_Z2f8PFvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z2f8PFvvE": {
+            "callees": [
+                "_Z2f7PFvvE"
+            ],
+            "callers": [
+                "_Z2f9PFvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z2f9PFvvE": {
+            "callees": [
+                "_Z2f8PFvvE"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z3foov": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z3foov",
+                "_Z2f9PFvvE"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 2
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "a12c2adc9482ef0062fd27f104ab4dfd679cb91f",
+            "version": "0.2"
+        },
+        "version": "2.0"
+    }
+}
