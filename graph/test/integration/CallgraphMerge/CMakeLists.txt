@@ -10,4 +10,8 @@ target_link_libraries(mergetester PUBLIC metacg::metacg)
 
 add_config_include(mergetester)
 
-add_test(NAME mergeTests COMMAND mergetester)
+add_test(
+  NAME mergeTests
+  COMMAND MergeTestRunner.sh
+  WORKING_DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)
