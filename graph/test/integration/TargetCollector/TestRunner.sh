@@ -27,7 +27,7 @@ done
 echo "Running integration test for TargetCollector script"
 
 echo "{}" > src/wholeProgramCG-${CI_CONCURRENT_ID}.ipcg
-test_command=(python3 ../../../../TargetCollector.py \
+test_command=(python3 ../../../../utils/TargetCollector.py \
      -a=".." \
      -g=both \
      -b=build-${CI_CONCURRENT_ID} \

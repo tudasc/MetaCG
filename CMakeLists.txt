@@ -192,4 +192,4 @@ if(METACG_BUILD_PYMETACG)
   add_subdirectory(pymetacg)
 endif()
 
-add_subdirectory(config)
+add_subdirectory(utils)
