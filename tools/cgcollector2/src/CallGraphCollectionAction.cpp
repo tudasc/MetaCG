@@ -4,11 +4,6 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include <fstream>
-
-#include "MCGManager.h"
-#include "io/VersionTwoMCGWriter.h"
-#include "io/VersionFourMCGWriter.h"
 
 #include "CallGraphCollectionAction.h"
 #include "CallGraphNodeGenerator.h"
@@ -18,7 +13,13 @@
 #include "metadata/Internal/AllAliasMetadata.h"
 #include "metadata/Internal/FunctionSignatureMetadata.h"
 
+#include "MCGManager.h"
+#include "io/VersionFourMCGWriter.h"
+#include "io/VersionTwoMCGWriter.h"
+
 #include "clang/AST/ASTDumper.h"
+
+#include <fstream>
 
 void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Context) {
   std::string dumpString;
