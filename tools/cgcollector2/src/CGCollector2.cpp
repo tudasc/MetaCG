@@ -1,8 +1,8 @@
 /**
-* File: CGCollector2.cpp
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: CGCollector2.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #include "collector/CodeStatisticsCollector.h"
 #include "collector/GlobalLoopDepthCollector.h"
@@ -49,9 +49,9 @@ static opt<bool> captureImplicits("capture-implicits",
                                   init(false), cat(cgc));
 
 static opt<bool> inferCtorsDtors("infer-ctors-dtors",
-                                  desc("Infer calls to constructors and destructurs through inheritance chains and  "
-                                       "infer calls to destructors based on scopes / lifetimes <default=false>"),
-                                  init(false), cat(cgc));
+                                 desc("Infer calls to constructors and destructurs through inheritance chains and  "
+                                      "infer calls to destructors based on scopes / lifetimes <default=false>"),
+                                 init(false), cat(cgc));
 
 enum class Collectors {
   None,
@@ -127,7 +127,7 @@ int main(int argc, const char** argv) {
 #else
   auto ParseResult = clang::tooling::CommonOptionsParser::create(argc, argv, cgc);
   if (!ParseResult) {
-    llvm::errs() << toString(ParseResult.takeError())<<"\n";
+    llvm::errs() << toString(ParseResult.takeError()) << "\n";
     return -1;
   }
   clang::tooling::CommonOptionsParser& OP = ParseResult.get();
@@ -162,9 +162,10 @@ int main(int argc, const char** argv) {
 
   if (collectorBits.getBits() == 0 || collectorBits.isSet(Collectors::None)) {
     SPDLOG_INFO("No collector-suite specified, disabling all collectors");
-  } else if (collectorBits.isSet(Collectors::All)) {
-    SPDLOG_INFO("Enabling all built in collectors");
   } else {
+    if (collectorBits.isSet(Collectors::All)) {
+      SPDLOG_INFO("Enabling all built in collectors");
+    }
     // Builtin Metadata Collection
     if (collectorBits.isSet(Collectors::NumStatements) || collectorBits.isSet(Collectors::All)) {
       mcs.push_back(new NumberOfStatementsCollector());

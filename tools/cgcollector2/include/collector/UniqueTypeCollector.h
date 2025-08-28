@@ -19,14 +19,13 @@ struct UniqueTypeCollector : public Plugin {
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
     std::set<const clang::Type*> uniqueTypes;
 
-    std::cout << "Processing function " << decl->getNameAsString() << std::endl;
+    SPDLOG_DEBUG("Processing function {}", decl->getNameAsString());
 
     class DeclRefExprVisitor : public clang::StmtVisitor<DeclRefExprVisitor> {
       std::set<const clang::Type*>& fTypes;
       const clang::Type* resolveToUnderlyingType(const clang::Type* ty) {
         if (!ty->isPointerType()) {
           return ty;
-          // std::cout << "resolveToUnderlyingType: isPointerType" << std::endl;
         }
         return resolveToUnderlyingType(ty->getPointeeType().getTypePtr());
       }
@@ -49,7 +48,7 @@ struct UniqueTypeCollector : public Plugin {
             fTypes.insert(ty);
           }
         } else {
-          llvm::errs() << "Found DeclGroup: Not Collecting Types.\n";
+          SPDLOG_DEBUG("Found DeclGroup: Not Collecting Types.");
         }
       }
 

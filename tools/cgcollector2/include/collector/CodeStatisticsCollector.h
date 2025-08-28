@@ -24,7 +24,6 @@ struct CodeStatisticsCollector : public Plugin {
 
   std::string getPluginName() const final { return "CodeStatisticsCollector"; }
 
- public:
   virtual ~CodeStatisticsCollector() = default;
 };
 #endif  // CGCOLLECTOR2_CODESTATISTICSCOLLECTOR_H

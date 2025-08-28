@@ -1,5 +1,5 @@
 /**
- * File: MallocVariableCollector.cpp
+ * File: MallocVariableCollector.h
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
@@ -38,8 +38,7 @@ struct MallocVariableCollector : public Plugin {
         if (ce->getCalleeDecl()) {
           if (const auto funSym = llvm::dyn_cast<clang::FunctionDecl>(ce->getCalleeDecl())) {
             if (!vd->isLocalVarDecl()) {
-              std::cout << "Found " << funSym->getNameAsString() << " call in assignment to " << vd->getNameAsString()
-                        << "\n";
+              SPDLOG_TRACE("Found {} call in assignment to {}", funSym->getNameAsString(),vd->getNameAsString());
               return true;
             }
           }
@@ -60,15 +59,13 @@ struct MallocVariableCollector : public Plugin {
             if (const auto init = llvm::dyn_cast<clang::ExplicitCastExpr>(d->getInit())) {
               if (const auto ce = llvm::dyn_cast<clang::CallExpr>(init->getSubExpr())) {
                 if (handleFuncCallForVar(ce, d)) {
-                  ds->dumpPretty(ctx);
-                  std::cout << "\n\n";
-
                   std::string stmtStr;
                   llvm::raw_string_ostream oss(stmtStr);
                   const clang::PrintingPolicy pp(ctx.getLangOpts());
                   const int indent = 0;
                   ds->printPretty(oss, nullptr, pp, indent, "\n", &ctx);
                   oss.flush();
+                  SPDLOG_TRACE("{}",stmtStr);
                   allocs.insert({d->getNameAsString(), stmtStr});
                 }
               }
@@ -99,15 +96,13 @@ struct MallocVariableCollector : public Plugin {
               }
             }
             if (const auto ne = llvm::dyn_cast<clang::CXXNewExpr>(rhs)) {
-              std::cout << "Found new expression for " << vRef->getDecl()->getNameAsString() << "\n";
-              bo->dumpPretty(ctx);
-              std::cout << "\n\n";
               std::string stmtStr;
               llvm::raw_string_ostream oss(stmtStr);
               const clang::PrintingPolicy pp(ctx.getLangOpts());
               const int indent = 0;
               bo->printPretty(oss, nullptr, pp, indent, "\n", &ctx);
               oss.flush();
+              SPDLOG_TRACE("Found new expression for {}\n{}\n",vRef->getDecl()->getNameAsString(),stmtStr);
               allocs.insert({vRef->getDecl()->getNameAsString(), stmtStr});
             }
           }
@@ -122,7 +117,6 @@ struct MallocVariableCollector : public Plugin {
     return result;
   }
 
- public:
   virtual ~MallocVariableCollector() = default;
 };
 

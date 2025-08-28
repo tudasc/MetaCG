@@ -43,7 +43,7 @@ class ASTNodeMetadata : public metacg::MetaData::Registrar<ASTNodeMetadata> {
   }
 
   std::unique_ptr<MetaData> clone() const final {
-    assert(false && "This should not be necesssary to use");
+    assert(false && "This should not be necessary to use");
     return std::make_unique<ASTNodeMetadata>();
   }
 

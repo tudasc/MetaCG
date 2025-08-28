@@ -23,18 +23,12 @@ class FileInfoMetadata : public metacg::MetaData::Registrar<FileInfoMetadata> {
   FileInfoMetadata(const FileInfoMetadata& other)
       : origin(other.origin), fromSystemInclude(other.fromSystemInclude), lineNumber(other.lineNumber) {}
 
- public:
-
-
   nlohmann::json toJson(metacg::NodeToStrMapping&) const final;
 
-  virtual void applyMapping(const metacg::GraphMapping&){
-      return;
-  }
+  virtual void applyMapping(const metacg::GraphMapping&){}
 
   virtual void merge(const MetaData&, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) ;
   virtual const char* getKey() const final { return key; }
-
 
   std::unique_ptr<MetaData> clone() const final { return std::make_unique<FileInfoMetadata>(*this); }
 

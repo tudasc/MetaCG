@@ -19,7 +19,6 @@ struct NumConditionalBranchCollector : public Plugin {
 
   std::string getPluginName() const final { return "NumConditionalBranchCollector"; }
 
- public:
   virtual ~NumConditionalBranchCollector() = default;
 };
 

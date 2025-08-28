@@ -75,7 +75,8 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
       break;
     default:
       assert(false && "The selected output format is not recognized");
-      SPDLOG_ERROR("The selected output format {} is not recognized.",mcgVersion);
+      SPDLOG_WARN("The selected output format {} is not recognized. Using default format (V2) instead",mcgVersion);
+      mcgWriter = std::make_unique<metacg::io::VersionTwoMCGWriter>();
   }
 
   metacg::io::JsonSink js;

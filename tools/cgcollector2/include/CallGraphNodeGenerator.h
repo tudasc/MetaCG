@@ -16,12 +16,12 @@
 #include <llvm/ADT/SetVector.h>
 #include <llvm/ADT/SmallVector.h>
 
+#include "SharedDefs.h"
+#include <Callgraph.h>
+
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
-
-#include "SharedDefs.h"
-#include <Callgraph.h>
 
 /// The AST-based call graph.
 ///
@@ -30,7 +30,6 @@
 /// declarations.
 
 class CallGraphNodeGenerator : public clang::RecursiveASTVisitor<CallGraphNodeGenerator> {
-  // We store unresolved symbols across function decl traverses
  public:
   CallGraphNodeGenerator(metacg::Callgraph* cg, bool captureCtorDtor, bool captureNewDelete, bool captureImplicits,
                          bool inferCtorsDtors, bool standalone, AliasAnalysisLevel level)
