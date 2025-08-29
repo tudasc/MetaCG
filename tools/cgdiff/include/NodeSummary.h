@@ -135,38 +135,24 @@ struct NodeDiff {
      * @param ignoring  List of difference categories that were ignored
      * @return Formatted string summarizing the differences
      */
-    static nlohmann::json emitAsJson(std::vector<NodeDiff>& diffs, std::vector<std::string>& ignoring) {
-        nlohmann::json j;                                                                                                                              
+    static nlohmann::ordered_json emitAsJson(const std::vector<NodeDiff>& diffs, const std::vector<std::string>& ignoring) {
+        nlohmann::ordered_json j;
+        j["ignoring"] = ignoring;
 
-        j["ignoring"] = ignoring;                                                                                                                      
+        for (const auto& diff : diffs) {
+            nlohmann::ordered_json inner;
+            inner["diffType"] = diff.diffType;
+            inner["calleesOnlyInA"] = diff.calleesOnlyInA;
+            inner["calleesOnlyInB"] = diff.calleesOnlyInB;
+            inner["metadataOnlyInA"] = diff.metadataOnlyInA;
+            inner["metadataOnlyInB"] = diff.metadataOnlyInB;
 
-        for (const auto& diff : diffs) {                                                                                                               
-            j.update(diff.toJson());                                                                                                                   
+            j[diff.name] = inner;
         }
 
-        nlohmann::json root;                                                                                                                           
+        nlohmann::ordered_json root;
         root["diff"] = j;
-
         return root;
-    }
-
-    nlohmann::json toJson() const {
-        nlohmann::json j;
-
-        j["diffType"] = diffType;
-        j["calleesOnlyInA"] = calleesOnlyInA;
-        j["calleesOnlyInB"] = calleesOnlyInB;
-
-        j["metadataOnlyInA"] = nlohmann::json::array();
-        for (const auto& meta : metadataOnlyInA) j["metadataOnlyInA"].push_back(meta);
-
-        j["metadataOnlyInB"] = nlohmann::json::array();
-        for (const auto& meta : metadataOnlyInB) j["metadataOnlyInB"].push_back(meta);
-
-
-        nlohmann::json res;
-        res[name] = j;
-        return res;
     }
 };
 
