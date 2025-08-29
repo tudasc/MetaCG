@@ -20,7 +20,6 @@ struct LoopDepthCollector : public Plugin {
 
   std::string getPluginName() const final { return "LoopDepthCollector"; }
 
- public:
   virtual ~LoopDepthCollector() = default;
 };
 
