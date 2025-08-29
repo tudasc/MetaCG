@@ -140,6 +140,7 @@ int main(int argc, char** argv) {
             ("ignoreMD" , "ignore Metadata", cxxopts::value<bool>()->default_value("false"))
             ("emitDiffAsJson", "emit json diff file", cxxopts::value<bool>()->default_value("false"))
             ("emitDiffAsText", "emit text diff file", cxxopts::value<bool>()->default_value("false"))
+            ("o,output", "Output file for diff", cxxopts::value<std::string>())
             ("h,help" , "Print help")
             ;
 
@@ -195,12 +196,24 @@ int main(int argc, char** argv) {
 
         auto diffs = compare(*mcgA, *mcgB, mode);
 
+        std::ostream* out = &std::cout;
+        std::ofstream ofs;
+
+        if (result.count("output")) {
+            ofs.open(result["output"].as<std::string>());
+            if (!ofs) {
+                std::cerr << "Error opening output file\n";
+                return 1;
+            }
+            out = &ofs;
+        }
+
         if (result["emitDiffAsJson"].as<bool>()) {
-            std::cout << NodeDiff::emitAsJson(diffs, ignoring).dump(-1);
+            *out << NodeDiff::emitAsJson(diffs, ignoring).dump(-1);
         }
 
         if (result["emitDiffAsText"].as<bool>()) {
-            std::cout << NodeDiff::emitAsText(diffs, ignoring);
+            *out << NodeDiff::emitAsText(diffs, ignoring);
         }
 
         return diffs.empty() ? 0 : 1;
