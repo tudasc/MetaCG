@@ -15,7 +15,8 @@
  * The hash is order-independent for sets (callees, metadata) using XOR,
  * and combines individual field hashes using boost's hash-combine.
  */
-struct NodeSummaryHasher {
+class NodeSummaryHasher {
+public:
     ComparisonMode mode;
 
     explicit NodeSummaryHasher(ComparisonMode mode) : mode(mode) {}
