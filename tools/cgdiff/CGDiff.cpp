@@ -115,11 +115,11 @@ int main(int argc, char** argv) {
                 "Returns 0 if call graphs are equal, 1 otherwise.\n");
 
         options.add_options()
-            ("ignoreEdges", "ignore Edges", cxxopts::value<bool>()->default_value("false"))
-            ("ignoreBody" , "ignore Body", cxxopts::value<bool>()->default_value("false"))
-            ("ignoreMD" , "ignore Metadata", cxxopts::value<bool>()->default_value("false"))
-            ("emitDiffAsJson", "emit json diff file", cxxopts::value<bool>()->default_value("false"))
-            ("emitDiffAsText", "emit text diff file", cxxopts::value<bool>()->default_value("false"))
+            ("ignore-edges", "ignore Edges", cxxopts::value<bool>()->default_value("false"))
+            ("ignore-body" , "ignore Body", cxxopts::value<bool>()->default_value("false"))
+            ("ignore-md" , "ignore Metadata", cxxopts::value<bool>()->default_value("false"))
+            ("emit-diff-as-json", "emit json diff file", cxxopts::value<bool>()->default_value("false"))
+            ("emit-diff-as-text", "emit text diff file", cxxopts::value<bool>()->default_value("false"))
             ("o,output", "Output file for diff", cxxopts::value<std::string>())
             ("h,help" , "Print help")
             ;
@@ -135,17 +135,17 @@ int main(int argc, char** argv) {
         }
 
 
-        if (result["ignoreEdges"].as<bool>()) {
+        if (result["ignore-edges"].as<bool>()) {
             mode = mode | ComparisonMode::ignoreEdges;
             ignoring.push_back("edges");
         }
 
-        if (result["ignoreBody"].as<bool>()) {
+        if (result["ignore-body"].as<bool>()) {
             mode = mode | ComparisonMode::ignoreBody;
             ignoring.push_back("body");
         }
 
-        if (result["ignoreMD"].as<bool>()) {
+        if (result["ignore-md"].as<bool>()) {
             mode = mode | ComparisonMode::ignoreMetadata;
             ignoring.push_back("metadata");
         }
@@ -188,11 +188,11 @@ int main(int argc, char** argv) {
             out = &ofs;
         }
 
-        if (result["emitDiffAsJson"].as<bool>()) {
+        if (result["emit-diff-as-json"].as<bool>()) {
             *out << NodeDiff::emitAsJson(diffs, ignoring).dump(-1);
         }
 
-        if (result["emitDiffAsText"].as<bool>()) {
+        if (result["emit-diff-as-text"].as<bool>()) {
             *out << NodeDiff::emitAsText(diffs, ignoring);
         }
 
