@@ -4,9 +4,9 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #pragma once
-#include <string>
 #include <Callgraph.h>
 #include "nlohmann/json.hpp"
+#include <string>
 
 /**
  * Summary of a node in a call graph for comparison purposes.

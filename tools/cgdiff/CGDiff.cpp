@@ -4,12 +4,12 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "io/MCGReader.h"
-#include <cxxopts.hpp>
-#include "CgNode.h"
 #include "NodeSummary.h"
 #include "NodeSummaryComparator.h"
 #include "NodeSummaryHasher.h"
+#include "io/MCGReader.h"
+#include "CgNode.h"
+#include <cxxopts.hpp>
 
 namespace metacg { 
     struct NodeNameToStrMapping : NodeToStrMapping {
