@@ -41,67 +41,47 @@ std::vector<NodeDiff> compare(const metacg::Callgraph& mcgA,
     metacg::NodeNameToStrMapping mappingA(mcgA);
     metacg::NodeNameToStrMapping mappingB(mcgB);
 
+    auto collectNodeSummaries = [&](const auto& mcg) -> Set {
+        Set nodes(0, nameHasher, nameComparator);
+        for (const auto& node : mcg.getNodes()) {
+
+            std::unordered_set<std::string> calleeNames;
+
+            auto callees = mcg.getCallees(*node);
+            calleeNames.reserve(callees.size());
+
+            std::transform(
+                    callees.begin(), callees.end(),
+                    std::inserter(calleeNames, calleeNames.end()),
+                    [](const metacg::CgNode* callee) { return callee->getFunctionName(); }
+                    );
+
+            // Metadata
+            if (!hasFlag(mode, ignoreMetadata)) {
+                std::unordered_set<std::string> metadataList;
+                for (const auto& metadata : node->getMetaDataContainer()) {
+                    metadataList.insert(metadata.first + ":" + metadata.second->toJson(mappingA).dump(-1));
+                }
+
+                nodes.insert(NodeSummary(node->getFunctionName(), node->getHasBody(), 
+                            std::move(calleeNames), std::move(metadataList)));
+            } else {
+                nodes.insert(NodeSummary(node->getFunctionName(), node->getHasBody(), 
+                            std::move(calleeNames)));
+            }
+        }
+
+
+        return nodes;
+
+    };
+
     // Compare nodes
-    // A
     Set nodesA(0, nameHasher, nameComparator);
-    for (const auto& node : mcgA.getNodes()) {
-
-        std::unordered_set<std::string> calleeNames;
-
-        auto callees = mcgA.getCallees(*node);
-        calleeNames.reserve(callees.size());
-
-        std::transform(
-                callees.begin(), callees.end(),
-                std::inserter(calleeNames, calleeNames.end()),
-                [](const metacg::CgNode* callee) { return callee->getFunctionName(); }
-                );
-
-        // Metadata
-        if (!hasFlag(mode, ignoreMetadata)) {
-            std::unordered_set<std::string> metadataList;
-            for (const auto& metadata : node->getMetaDataContainer()) {
-                metadataList.insert(metadata.first + ":" + metadata.second->toJson(mappingA).dump(-1));
-            }
-
-            nodesA.insert(NodeSummary(node->getFunctionName(), node->getHasBody(), 
-                        std::move(calleeNames), std::move(metadataList)));
-        } else {
-            nodesA.insert(NodeSummary(node->getFunctionName(), node->getHasBody(), 
-                        std::move(calleeNames)));
-        }
-    }
-
-    // B
     Set nodesB(0, nameHasher, nameComparator);
-    for (const auto& node : mcgB.getNodes()) {
-
-        std::unordered_set<std::string> calleeNames;
-
-        auto callees = mcgB.getCallees(*node);
-        calleeNames.reserve(callees.size());
-
-        // Convert callees to strings
-        std::transform(
-                callees.begin(), callees.end(),
-                std::inserter(calleeNames, calleeNames.end()),
-                [](const metacg::CgNode* callee) { return callee->getFunctionName(); }
-                );
-
-        if (!hasFlag(mode, ignoreMetadata)) {
-            std::unordered_set<std::string> metadataList;
-            for (const auto& metadata : node->getMetaDataContainer()) {
-                metadataList.insert(metadata.second->toJson(mappingA).dump(-1));
-            }
-
-            nodesB.insert(NodeSummary(node->getFunctionName(), node->getHasBody(), 
-                        std::move(calleeNames), std::move(metadataList)));
-        } else {
-            nodesB.insert(NodeSummary(node->getFunctionName(), node->getHasBody(), 
-                        std::move(calleeNames)));
-        }
-    }
-
+    nodesA = collectNodeSummaries(mcgA);
+    nodesB = collectNodeSummaries(mcgB);
+   
     // Creating Diffs
     std::vector<NodeDiff> diffs;
     for (const auto& nA : nodesA) {
