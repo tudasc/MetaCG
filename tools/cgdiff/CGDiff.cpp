@@ -8,24 +8,10 @@
 #include "NodeSummaryComparator.h"
 #include "NodeSummaryHasher.h"
 #include "io/MCGReader.h"
+#include "io/NameMapping.h"
 #include "CgNode.h"
 #include <cxxopts.hpp>
 
-namespace metacg { 
-    struct NodeNameToStrMapping : NodeToStrMapping {
-        const metacg::Callgraph& cg;
-
-        explicit NodeNameToStrMapping(const Callgraph& cg) : cg(cg) {}
-
-        std::string getStrFromNode(NodeId id) override {
-            return cg.getNode(id)->getFunctionName();
-        }
-
-        std::string getStrFromNode(const CgNode& node) {
-            return node.getFunctionName();
-        }
-    };
-}
 
 std::vector<NodeDiff> compare(const metacg::Callgraph& mcgA,
         const metacg::Callgraph& mcgB, ComparisonMode mode) {
@@ -38,8 +24,8 @@ std::vector<NodeDiff> compare(const metacg::Callgraph& mcgA,
 
     NodeSummaryComparator comparator{mode};
 
-    metacg::NodeNameToStrMapping mappingA(mcgA);
-    metacg::NodeNameToStrMapping mappingB(mcgB);
+    metacg::NameMapping mappingA(mcgA);
+    metacg::NameMapping mappingB(mcgB);
 
     auto collectNodeSummaries = [&](const auto& mcg) -> Set {
         Set nodes(0, nameHasher, nameComparator);
