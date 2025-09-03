@@ -176,7 +176,7 @@ NodeDiff createNodeDiff(const NodeSummary& nsA, const NodeSummary& nsB, Comparis
     NodeDiff diff;
     diff.name = nsA.name;
 
-    if (!hasFlag(mode, ignoreBody) && nsA.hasBody != nsB.hasBody) {
+    if (!hasFlag(mode, ignoreBody) && (nsA.hasBody != nsB.hasBody)) {
         diff.diffType.push_back("differentBody");
     }
 
@@ -189,8 +189,9 @@ NodeDiff createNodeDiff(const NodeSummary& nsA, const NodeSummary& nsB, Comparis
             }
         }
         for (const auto& callee : nsB.callees)
-            if (!nsA.callees.count(callee))
+            if (!nsA.callees.count(callee)) {
                 diff.calleesOnlyInB.insert(callee);
+            }
     }
 
     if (!hasFlag(mode, ignoreMetadata) && nsA.metadata != nsB.metadata) {

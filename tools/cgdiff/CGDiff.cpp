@@ -120,7 +120,6 @@ int main(int argc, char** argv) {
             exit(0);
         }
 
-
         if (result["ignore-edges"].as<bool>()) {
             mode = mode | ComparisonMode::ignoreEdges;
             ignoring.push_back("edges");

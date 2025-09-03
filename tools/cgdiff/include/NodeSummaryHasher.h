@@ -28,7 +28,7 @@ public:
             hash_combine(seed, ns.hasBody);
         }
         if (!hasFlag(mode, ignoreEdges)) {
-            // callees ist unordered_set<string>
+            // callees is unordered_set<string>
             for (const auto& callee : ns.callees) {
                 // use XOR to create order-independant hash of callees
                 seed ^= std::hash<std::string>{}(callee);
