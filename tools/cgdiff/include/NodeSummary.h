@@ -102,7 +102,7 @@ struct NodeDiff {
      * @param ignoring  List of difference categories that were ignored
      * @return Formatted string summarizing the differences
      */
-    static std::string emitAsText(const std::vector<NodeDiff>& nodeDiffs, std::vector<std::string> ignoring) {
+    static std::string emitAsText(const std::vector<NodeDiff>& nodeDiffs, std::vector<std::string> ignoring, std::string_view cgA, std::string_view cgB) {
         auto printList = [](const auto& container) -> std::string {
             std::ostringstream oss;
             oss << "[";
@@ -115,6 +115,10 @@ struct NodeDiff {
         };
 
         std::ostringstream os;
+
+        os << "cgA : " << cgA << ", \n";
+        os << "cgB : " << cgB << ", \n";
+        os << "ignoring : " << printList(ignoring);
 
         for (const auto& nd : nodeDiffs) {
             os << nd.name << ":\n"
@@ -135,8 +139,10 @@ struct NodeDiff {
      * @param ignoring  List of difference categories that were ignored
      * @return Formatted string summarizing the differences
      */
-    static nlohmann::ordered_json emitAsJson(const std::vector<NodeDiff>& diffs, const std::vector<std::string>& ignoring) {
+    static nlohmann::ordered_json emitAsJson(const std::vector<NodeDiff>& diffs, const std::vector<std::string>& ignoring, std::string_view cgA, std::string_view cgB) {
         nlohmann::ordered_json j;
+        j["cgA"] = cgA;
+        j["cgB"] = cgB;
         j["ignoring"] = ignoring;
 
         for (const auto& diff : diffs) {

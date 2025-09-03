@@ -175,11 +175,11 @@ int main(int argc, char** argv) {
         }
 
         if (result["emit-diff-as-json"].as<bool>()) {
-            *out << NodeDiff::emitAsJson(diffs, ignoring).dump(-1);
+            *out << NodeDiff::emitAsJson(diffs, ignoring, std::filesystem::absolute(cg1).string(), std::filesystem::absolute(cg2).string()).dump(-1);
         }
 
         if (result["emit-diff-as-text"].as<bool>()) {
-            *out << NodeDiff::emitAsText(diffs, ignoring);
+            *out << NodeDiff::emitAsText(diffs, ignoring, std::filesystem::absolute(cg1).string(), std::filesystem::absolute(cg2).string());
         }
 
         return diffs.empty() ? 0 : 1;
