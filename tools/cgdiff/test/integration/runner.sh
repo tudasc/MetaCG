@@ -54,36 +54,36 @@ run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_metadata.json 1
 run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_node_missing.json 1
 
 # ignoring "hasBody"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG.json 0 "--ignoreBody"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_body.json 0 "--ignoreBody"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_edge.json 1 "--ignoreBody"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_metadata.json 1 "--ignoreBody"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_node_missing.json 1 "--ignoreBody"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG.json 0 "--ignore-body"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_body.json 0 "--ignore-body"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_edge.json 1 "--ignore-body"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_metadata.json 1 "--ignore-body"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_node_missing.json 1 "--ignore-body"
 
 # ignoring "callees"
 
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG.json 0 "--ignoreEdges"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_body.json 1 "--ignoreEdges"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_edge.json 0 "--ignoreEdges"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_metadata.json 1 "--ignoreEdges"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_node_missing.json 1 "--ignoreEdges"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG.json 0 "--ignore-edges"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_body.json 1 "--ignore-edges"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_edge.json 0 "--ignore-edges"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_metadata.json 1 "--ignore-edges"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_node_missing.json 1 "--ignore-edges"
 
 # ignoring "metadata"
 
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG.json 0 "--ignoreMD"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_body.json 1 "--ignoreMD"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_edge.json 1 "--ignoreMD"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_metadata.json 0 "--ignoreMD"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_node_missing.json 1 "--ignoreMD"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG.json 0 "--ignore-md"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_body.json 1 "--ignore-md"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_edge.json 1 "--ignore-md"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_metadata.json 0 "--ignore-md"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_node_missing.json 1 "--ignore-md"
 
 # ignoring multiple
 
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_metadata.json 0 "--ignoreMD --ignoreBody"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_edge.json 0 "--ignoreEdges --ignoreBody"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_body.json 0 "--ignoreBody --ignoreEdges"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_metadata.json 0 "--ignore-md --ignore-body"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_edge.json 0 "--ignore-edges --ignore-body"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_body.json 0 "--ignore-body --ignore-edges"
 
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_metadata.json 1 "--ignoreEdges --ignoreBody"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_edge.json 1 "--ignoreBody --ignoreMD"
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_body.json 1 "--ignoreMD --ignoreEdges"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_metadata.json 1 "--ignore-edges --ignore-body"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_edge.json 1 "--ignore-body --ignore-md"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_body.json 1 "--ignore-md --ignore-edges"
 
-run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_node_missing.json 1 "--ignoreBody --ignoreEdges --ignoreMD"
+run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_node_missing.json 1 "--ignore-body --ignore-edges --ignore-md"
