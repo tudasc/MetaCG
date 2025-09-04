@@ -1,0 +1,23 @@
+# Compiler and flags
+CXX := clang++
+CXXFLAGS := -Wall -Wextra -O2 -std=c++17
+METACG_CONFIG := @METACG_CONFIG@
+
+# Sources and target
+SRCS := @TEST_SRC_DIR@/main.cpp @TEST_SRC_DIR@/bar.cpp
+OBJS := $(SRCS:.cpp=.o)
+TARGET := 01_simple
+
+# Link step
+$(TARGET): $(OBJS)
+	$(CXX) `$(METACG_CONFIG) --cage --ldflags` $(OBJS) -o $@
+
+# Compile step
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) `$(METACG_CONFIG) --cage --cxxflags` -c $< -o $@
+
+# Clean up build artifacts
+clean:
+	rm -f $(OBJS) $(TARGET)
+
+.PHONY: all clean
