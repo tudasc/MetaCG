@@ -97,8 +97,12 @@ void metacg::io::VersionTwoMCGReader::upgradeV2FormatToV4Format(nlohmann::json& 
       jNode["origin"] = nullptr;
     }
 
+    bool definesOverrideData = !jNode.at("overrides").empty() || !jNode.at("overriddenBy").empty();
+    if (!jNode.at("isVirtual").get<bool>() && definesOverrideData) {
+      MCGLogger::logWarn("Node {} is marked as non-virtual but defines overrides/overriddenBy entries", it.key());
+    }
     // Create OverrideMD if the function is virtual
-    if (jNode.at("isVirtual")) {
+    if (jNode.at("isVirtual").get<bool>() || definesOverrideData) {
       auto jOverrides = json::array();
       for (const auto& overrideNode : jNode.at("overrides")) {
         jOverrides.push_back(overrideNode);
