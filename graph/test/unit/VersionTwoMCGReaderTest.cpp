@@ -9,6 +9,7 @@
 
 #include "MCGManager.h"
 #include "io/VersionTwoMCGReader.h"
+#include "metadata/OverrideMD.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -511,6 +512,60 @@ TEST_F(V2MCGReaderTest, OneNodeWithOriginCGRead) {
   EXPECT_FALSE(cg->getMain()->isVirtual());
   EXPECT_TRUE(cg->getCallees(*cg->getMain()).empty());
   EXPECT_TRUE(cg->getCallers(*cg->getMain()).empty());
+}
+
+TEST_F(V2MCGReaderTest, FixInconsistentIsVirtual) {
+  nlohmann::json j =
+      "{\n"
+      "   \"_CG\":{\n"
+      "      \"foo\":{\n"
+      "         \"callees\":[],\n"
+      "         \"callers\":[],\n"
+      "         \"doesOverride\":false,\n"
+      "         \"hasBody\":true,\n"
+      "         \"isVirtual\":false,\n"
+      "         \"meta\":null,\n"
+      "         \"overriddenBy\":[\"bar\"],\n"
+      "         \"overrides\":[]\n"
+      "      },\n"
+      "      \"bar\":{\n"
+      "         \"callees\":[],\n"
+      "         \"callers\":[],\n"
+      "         \"doesOverride\":false,\n"
+      "         \"hasBody\":true,\n"
+      "         \"isVirtual\":false,\n"
+      "         \"meta\":null,\n"
+      "         \"overriddenBy\":[],\n"
+      "         \"overrides\":[\"foo\"]\n"
+      "      }\n"
+      "   },\n"
+      "   \"_MetaCG\":{\n"
+      "      \"generator\":{\n"
+      "         \"name\":\"Test\",\n"
+      "         \"sha\":\"TestSha\",\n"
+      "         \"version\":\"0.1\"\n"
+      "      },\n"
+      "      \"version\":\"2.0\"\n"
+      "   }\n"
+      "}"_json;
+  metacg::io::JsonSource jsonSource(j);
+  metacg::io::VersionTwoMCGReader mcgReader(jsonSource);
+  auto& mcgm = metacg::graph::MCGManager::get();
+  mcgm.addToManagedGraphs("newGraph", mcgReader.read());
+  EXPECT_EQ(mcgm.graphs_size(), 1);
+  const auto& cg = mcgm.getCallgraph();
+  EXPECT_EQ(cg->size(), 2);
+  EXPECT_TRUE(cg->hasNode("foo"));
+  EXPECT_TRUE(cg->hasNode("bar"));
+
+  auto* foo = cg->getFirstNode("foo");
+  auto* bar = cg->getFirstNode("bar");
+  EXPECT_TRUE(foo->isVirtual());
+  EXPECT_TRUE(bar->isVirtual());
+  EXPECT_TRUE(foo->has<metacg::OverrideMD>());
+  EXPECT_TRUE(bar->has<metacg::OverrideMD>());
+  EXPECT_TRUE(foo->get<metacg::OverrideMD>()->overriddenBy.front() == bar->id);
+  EXPECT_TRUE(bar->get<metacg::OverrideMD>()->overrides.front() == foo->id);
 }
 
 #pragma GCC diagnostic pop
