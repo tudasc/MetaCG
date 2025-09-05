@@ -28,7 +28,7 @@ class UniqueTypeMD : public metacg::MetaData::Registrar<UniqueTypeMD> {
   UniqueTypeMD(const UniqueTypeMD& other) : numTypes(other.numTypes) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final { return numTypes; }
+  nlohmann::json toJson(NodeToStrMapping&) const final { return numTypes; }
 
   const char* getKey() const override { return key; }
 

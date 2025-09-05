@@ -1,0 +1,24 @@
+{
+    "_CG": {
+        "main": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "470b9d4f8aa11a40a535bb01b744c6c355fac544",
+            "version": "0.3"
+        },
+        "version": "2.0"
+    }
+}

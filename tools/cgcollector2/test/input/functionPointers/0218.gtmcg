@@ -1,0 +1,83 @@
+{
+    "_CG": {
+        "_Z15libraryFunctionPFvvEii": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "AllAliasMetadata": [
+                    {
+                        "funcName": [
+                            ""
+                        ],
+                        "paramTypes": [],
+                        "retType": "void"
+                    }
+                ],
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "libraryFunction"
+                    ],
+                    "paramTypes": [
+                        "FuncT",
+                        "int",
+                        "int"
+                    ],
+                    "retType": "void"
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z3foov": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "foo"
+                    ],
+                    "paramTypes": [],
+                    "retType": "void"
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z15libraryFunctionPFvvEii"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "main"
+                    ],
+                    "paramTypes": [],
+                    "retType": "int"
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "GITDIR-NOTFOUND",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}

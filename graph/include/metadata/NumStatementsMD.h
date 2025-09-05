@@ -29,7 +29,7 @@ class NumStatementsMD : public metacg::MetaData::Registrar<NumStatementsMD> {
   NumStatementsMD(const NumStatementsMD& other) : numStmts(other.numStmts) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final { return getNumberOfStatements(); }
+  nlohmann::json toJson(NodeToStrMapping&) const final { return getNumberOfStatements(); }
 
   const char* getKey() const override { return key; }
 

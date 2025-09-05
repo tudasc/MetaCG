@@ -1,0 +1,6 @@
+*.ipcg
+.clion.source.upload.marker
+.idea/
+cmake-build-debug*/
+test/log/
+

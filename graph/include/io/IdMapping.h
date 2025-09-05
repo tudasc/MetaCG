@@ -11,7 +11,7 @@
 
 namespace metacg {
 
-struct CgNode;
+class CgNode;
 
 /**
  * Maps string identifiers used in the json file to the respective nodes in the internal call graph representation.
