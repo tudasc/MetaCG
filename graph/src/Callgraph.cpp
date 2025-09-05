@@ -9,6 +9,7 @@
 #include "metadata/EntryFunctionMD.h"
 #include "metadata/OverrideMD.h"
 
+#include <algorithm>
 #include <string>
 
 int metacg_RegistryInstanceCounter{0};
@@ -59,10 +60,14 @@ bool Callgraph::erase(NodeId id) {
   // Remove edges
   for (auto& calleeId : calleeList[id]) {
     edges.erase({id, calleeId});
+    auto& childCallerList = callerList.at(calleeId);
+    childCallerList.erase(std::find(childCallerList.begin(), childCallerList.end(), id));
   }
   calleeList.erase(id);
   for (auto& callerId : callerList[id]) {
     edges.erase({callerId, id});
+    auto& parentCalleeList = calleeList.at(callerId);
+    parentCalleeList.erase(std::find(parentCalleeList.begin(), parentCalleeList.end(), id));
   }
   callerList.erase(id);
   // Destroy the node
