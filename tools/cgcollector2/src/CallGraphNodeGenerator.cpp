@@ -167,7 +167,7 @@ bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) {
     }
 
     // if it is a constructor or destructor, and we don't capture those, return early
-    if ((isa<CXXConstructorDecl>(D) || isa<CXXDestructorDecl>(D)) && !captureCtorsDtors) {
+    if ((isa<CXXConstructorDecl>(D) || isa<CXXDestructorDecl>(D)) && !captureCtorsDtors ) {
       // The Node is a Constructor or Destructor, but we do not want to capture
       return false;
     }
@@ -376,6 +376,11 @@ bool CallGraphNodeGenerator::VisitCXXConstructExpr(clang::CXXConstructExpr* CE) 
     // We should capture the call to a ConstructExpr
     if (!shouldIncludeFunction(CE->getConstructor())) {
       // The constructor itself is not captured, so no call will be mapped
+      return true;
+    }
+
+    if(CE->isElidable()){
+      //We are interested in the constructor, but the construction is elided, so no call to the constructor will happen
       return true;
     }
 
