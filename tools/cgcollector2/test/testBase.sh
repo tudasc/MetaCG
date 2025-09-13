@@ -154,8 +154,6 @@ fi
 # Multi-file tests
 multiTests=(0042 0043 0044 0050 0053 0060)
 
-fails=0
-
 echo " --- Running single file tests [file format version 2.0]---"
 echo " --- Running basic tests ---"
 testGlob="./input/singleTU/*.cpp"
