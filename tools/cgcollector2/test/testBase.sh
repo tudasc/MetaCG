@@ -240,6 +240,6 @@ for tc in "${multiTests[@]}"; do
 done
 echo "Multi file test failures: $mfails"
 
-tfails=((sfails+mfails))
+tfails=$((sfails+mfails))
 echo -e "$tfails failures occured when running tests"
 exit $tfails
