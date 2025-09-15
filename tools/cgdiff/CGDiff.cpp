@@ -1,23 +1,22 @@
 /**
- * File: CGDiff.cpp 
+ * File: CGDiff.cpp
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
+#include "CgNode.h"
 #include "NodeSummary.h"
 #include "NodeSummaryComparator.h"
 #include "NodeSummaryHasher.h"
 #include "io/MCGReader.h"
 #include "io/NameMapping.h"
-#include "CgNode.h"
 #include <cxxopts.hpp>
 
-
-std::vector<NodeDiff> compare(const metacg::Callgraph& mcgA,
-        const metacg::Callgraph& mcgB, ComparisonMode mode) {
+std::vector<NodeDiff> compare(const metacg::Callgraph& mcgA, const metacg::Callgraph& mcgB, ComparisonMode mode) {
     using Set = std::unordered_set<NodeSummary, NodeSummaryHasher, NodeSummaryComparator>;
 
-    ComparisonMode nameOnlyMode = ComparisonMode::ignoreBody | ComparisonMode::ignoreEdges | ComparisonMode::ignoreMetadata;
+    ComparisonMode nameOnlyMode =
+        ComparisonMode::ignoreBody | ComparisonMode::ignoreEdges | ComparisonMode::ignoreMetadata | ComparisonMode:: ignoreEdgeMetadata;
 
     NodeSummaryHasher nameHasher{nameOnlyMode};
     NodeSummaryComparator nameComparator{nameOnlyMode};
@@ -27,64 +26,64 @@ std::vector<NodeDiff> compare(const metacg::Callgraph& mcgA,
     metacg::NameMapping mappingA(mcgA);
     metacg::NameMapping mappingB(mcgB);
 
-    auto collectNodeSummaries = [&](const auto& mcg) -> Set {
+    auto collectNodeSummaries = [&](const auto& mcg, metacg::NameMapping mapping) -> Set {
         Set nodes(0, nameHasher, nameComparator);
         for (const auto& node : mcg.getNodes()) {
-
             std::unordered_set<std::string> calleeNames;
 
             auto callees = mcg.getCallees(*node);
             calleeNames.reserve(callees.size());
 
-            std::transform(
-                    callees.begin(), callees.end(),
-                    std::inserter(calleeNames, calleeNames.end()),
-                    [](const metacg::CgNode* callee) { return callee->getFunctionName(); }
-                    );
+            std::transform(callees.begin(), callees.end(), std::inserter(calleeNames, calleeNames.end()),
+                           [](const metacg::CgNode* callee) { return callee->getFunctionName(); });
+
+            // Collect edge metadata
+            std::unordered_map<std::string, std::unordered_set<std::string>> edgeMetaData;
+            if (!hasFlag(mode, ignoreEdgeMetadata)) {
+                std::unordered_set<std::string> emd;
+                for (const metacg::CgNode* callee : callees) {
+                    for (auto& metadata : mcg.getAllEdgeMetaData(*node, *callee)) {
+                        emd.insert(metadata.first + metadata.second->toJson(mapping).dump(-1));
+                    }
+                    edgeMetaData.emplace(callee->getFunctionName(), std::move(emd));
+                }
+            }
 
             // Metadata
+            std::unordered_set<std::string> metadataList;
             if (!hasFlag(mode, ignoreMetadata)) {
-                std::unordered_set<std::string> metadataList;
                 for (const auto& metadata : node->getMetaDataContainer()) {
-                    metadataList.insert(metadata.first + ":" + metadata.second->toJson(mappingA).dump(-1));
+                    metadataList.insert(metadata.first + ":" + metadata.second->toJson(mapping).dump(-1));
                 }
-
-                nodes.insert(NodeSummary(node->getFunctionName(), node->getHasBody(), 
-                            std::move(calleeNames), std::move(metadataList)));
-            } else {
-                nodes.insert(NodeSummary(node->getFunctionName(), node->getHasBody(), 
-                            std::move(calleeNames)));
             }
+
+            nodes.insert(NodeSummary(node->getFunctionName(), node->getHasBody(), std::move(calleeNames),
+                                     std::move(metadataList), std::move(edgeMetaData)));
         }
 
-
         return nodes;
-
     };
 
     // Compare nodes
     Set nodesA(0, nameHasher, nameComparator);
     Set nodesB(0, nameHasher, nameComparator);
-    nodesA = collectNodeSummaries(mcgA);
-    nodesB = collectNodeSummaries(mcgB);
-   
+    nodesA = collectNodeSummaries(mcgA, mappingA);
+    nodesB = collectNodeSummaries(mcgB, mappingB);
+
     // Creating Diffs
     std::vector<NodeDiff> diffs;
     for (const auto& nA : nodesA) {
-        auto itB = nodesB.find(nA); // find nameA in B
-                                   
-        // node is completely missing 
+        auto itB = nodesB.find(nA);  // find nameA in B
+
+        // node is completely missing
         if (itB == nodesB.end()) {
             diffs.emplace_back(NodeDiff::onlyInA(nA));
+        } else if (!comparator(*itB, nA)) {  // check if nodes completely equal
+            diffs.emplace_back(createNodeDiff(nA, *itB, mode));
+            nodesB.erase(itB);
+        } else {
+            nodesB.erase(itB);
         }
-        else if (!comparator(*itB, nA)) { // check if nodes completely equal
-            diffs.emplace_back(createNodeDiff(nA, *itB, mode)); 
-            nodesB.erase(itB); 
-        }
-        else {
-            nodesB.erase(itB); 
-        }
-
     }
 
     for (const auto& nB : nodesB) {
@@ -96,19 +95,18 @@ std::vector<NodeDiff> compare(const metacg::Callgraph& mcgA,
 
 int main(int argc, char** argv) {
     try {
-        cxxopts::Options options("cgdiff", 
-                "Compare different Call-Graphs.\n"
-                "Returns 0 if call graphs are equal, 1 otherwise.\n");
+        cxxopts::Options options("cgdiff",
+                                 "Compare different Call-Graphs.\n"
+                                 "Returns 0 if call graphs are equal, 1 otherwise.\n");
 
-        options.add_options()
-            ("ignore-edges", "ignore Edges", cxxopts::value<bool>()->default_value("false"))
-            ("ignore-body" , "ignore Body", cxxopts::value<bool>()->default_value("false"))
-            ("ignore-md" , "ignore Metadata", cxxopts::value<bool>()->default_value("false"))
-            ("emit-diff-as-json", "emit json diff file", cxxopts::value<bool>()->default_value("false"))
-            ("emit-diff-as-text", "emit text diff file", cxxopts::value<bool>()->default_value("false"))
-            ("o,output", "Output file for diff", cxxopts::value<std::string>())
-            ("h,help" , "Print help")
-            ;
+        options.add_options()("ignore-edges", "ignore edges", cxxopts::value<bool>()->default_value("false"))(
+            "ignore-body", "ignore body", cxxopts::value<bool>()->default_value("false"))(
+                "ignore-md", "ignore metadata", cxxopts::value<bool>()->default_value("false"))(
+                "ignore-edge-md", "ignore metadata", cxxopts::value<bool>()->default_value("false"))(
+                "ignore-global-md", "ignore metadata", cxxopts::value<bool>()->default_value("false"))(
+                "emit-diff-as-json", "emit json diff file", cxxopts::value<bool>()->default_value("false"))(
+                "emit-diff-as-text", "emit text diff file", cxxopts::value<bool>()->default_value("false"))(
+                "o,output", "Output file for diff", cxxopts::value<std::string>())("h,help", "Print help");
 
         ComparisonMode mode = static_cast<ComparisonMode>(0);  // Start with 0
         std::vector<std::string> ignoring;
@@ -135,6 +133,16 @@ int main(int argc, char** argv) {
             ignoring.push_back("metadata");
         }
 
+        if (result["ignore-edge-md"].as<bool>()) {
+            mode = mode | ComparisonMode::ignoreEdgeMetadata;
+            ignoring.push_back("edge-metadata");
+        }
+
+        if (result["ignore-global-md"].as<bool>()) {
+            mode = mode | ComparisonMode::ignoreGlobalMetadata;
+            ignoring.push_back("global-metadata");
+        }
+
         if (argc < 3) {
             std::cerr << "Usage: ./cgdiff [options] <cg1.json> <cg2.json>\n";
             return 1;
@@ -149,7 +157,7 @@ int main(int argc, char** argv) {
         std::string cg1 = unmatched[0];
         std::string cg2 = unmatched[1];
 
-        // Read Call-Graphs  
+        // Read Call-Graphs
         metacg::io::FileSource fs1(cg1);
         metacg::io::FileSource fs2(cg2);
 
@@ -174,11 +182,14 @@ int main(int argc, char** argv) {
         }
 
         if (result["emit-diff-as-json"].as<bool>()) {
-            *out << NodeDiff::emitAsJson(diffs, ignoring, std::filesystem::absolute(cg1).string(), std::filesystem::absolute(cg2).string()).dump(-1);
+            *out << NodeDiff::emitAsJson(diffs, ignoring, std::filesystem::absolute(cg1).string(),
+                                         std::filesystem::absolute(cg2).string())
+                .dump(-1);
         }
 
         if (result["emit-diff-as-text"].as<bool>()) {
-            *out << NodeDiff::emitAsText(diffs, ignoring, std::filesystem::absolute(cg1).string(), std::filesystem::absolute(cg2).string());
+            *out << NodeDiff::emitAsText(diffs, ignoring, std::filesystem::absolute(cg1).string(),
+                                         std::filesystem::absolute(cg2).string());
         }
 
         return diffs.empty() ? 0 : 1;

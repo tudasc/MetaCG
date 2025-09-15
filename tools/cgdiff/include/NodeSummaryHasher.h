@@ -39,6 +39,12 @@ public:
                 seed ^= std::hash<std::string>{}(meta); // assumes that the hash for nlohmann::json is order-independant
             }
         }
+
+        if (!hasFlag(mode, ignoreEdgeMetadata)) {
+            for (const auto& meta : ns.edgeMetadata) {
+                seed ^= std::hash<std::string>{}(meta.first); // TODO: implement
+            }
+        }
         return seed;
     }
 

@@ -31,6 +31,9 @@ struct NodeSummaryComparator {
         if (!hasFlag(mode, ignoreMetadata)) {
             comparison &= a.metadata == b.metadata;
         }
+        if (!hasFlag(mode, ignoreEdgeMetadata)) {
+            comparison &= a.edgeMetadata == b.edgeMetadata;
+        }
 
         return comparison;
     }

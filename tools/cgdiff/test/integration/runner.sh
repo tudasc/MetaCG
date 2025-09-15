@@ -87,3 +87,9 @@ run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_edge.json 1 "--ignore-bod
 run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_body.json 1 "--ignore-md --ignore-edges"
 
 run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_node_missing.json 1 "--ignore-body --ignore-edges --ignore-md"
+
+
+# emit json
+#mkdir testOutput
+#run_cgdiff_test ./input/simpleCG.json ./input/simpleCG_edge.json 1 "--emit-diff-as-json -o testOutput/test1.json"
+#diff test1.json test2.json

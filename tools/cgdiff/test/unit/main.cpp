@@ -10,25 +10,25 @@ using std::unordered_set;
 TEST(NodeTest, EqualityNoneMode) {
     NodeSummaryComparator cmp(ComparisonMode::none);
 
-    NodeSummary foo1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo2("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo3("foo", true, unordered_set<std::string>{"bar", "baz"});
+    NodeSummary foo1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo2("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo3("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
 
     EXPECT_TRUE(cmp(foo1, foo2));
     EXPECT_TRUE(cmp(foo1, foo3));
 
-    NodeSummary foo_hasBody("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo_hasNoBody("foo", false, unordered_set<std::string>{"bar", "baz"});
+    NodeSummary foo_hasBody("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo_hasNoBody("foo", false, unordered_set<std::string>{"bar", "baz"}, {}, {});
 
     EXPECT_FALSE(cmp(foo_hasBody, foo_hasNoBody));
 
-    NodeSummary foo_name1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo_name2("fo", true, unordered_set<std::string>{"bar", "baz"});
+    NodeSummary foo_name1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo_name2("fo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
 
     EXPECT_FALSE(cmp(foo_name1, foo_name2));
 
-    NodeSummary foo_edges1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo_edges2("foo", true, unordered_set<std::string>{"bar", "bax"});
+    NodeSummary foo_edges1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo_edges2("foo", true, unordered_set<std::string>{"bar", "bax"}, {}, {});
 
     EXPECT_FALSE(cmp(foo_edges1, foo_edges2));
 
@@ -52,25 +52,25 @@ TEST(NodeTest, EqualityNoneMode) {
 TEST(NodeTest, HashNoneMode) {
     NodeSummaryHasher hasher(ComparisonMode::none);
 
-    NodeSummary foo1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo2("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo3("foo", true, unordered_set<std::string>{"bar", "baz"});
+    NodeSummary foo1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo2("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo3("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
 
     EXPECT_EQ(hasher(foo1), hasher(foo2));
     EXPECT_EQ(hasher(foo1), hasher(foo3));
 
-    NodeSummary foo_hasBody("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo_hasNoBody("foo", false, unordered_set<std::string>{"bar", "baz"});
+    NodeSummary foo_hasBody("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo_hasNoBody("foo", false, unordered_set<std::string>{"bar", "baz"}, {}, {});
 
     EXPECT_NE(hasher(foo_hasBody), hasher(foo_hasNoBody));
 
-    NodeSummary foo_name1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo_name2("fo", true, unordered_set<std::string>{"bar", "baz"});
+    NodeSummary foo_name1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo_name2("fo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
 
     EXPECT_NE(hasher(foo_name1), hasher(foo_name2));
 
-    NodeSummary foo_edges1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo_edges2("foo", true, unordered_set<std::string>{"bar", "bax"});
+    NodeSummary foo_edges1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo_edges2("foo", true, unordered_set<std::string>{"bar", "bax"}, {}, {});
 
     EXPECT_NE(hasher(foo_edges1), hasher(foo_edges2));
 
@@ -94,18 +94,18 @@ TEST(NodeTest, HashNoneMode) {
 TEST(NodeTest, EqualityIgnoreBody) {
     NodeSummaryComparator cmp_body(ComparisonMode::ignoreBody);
 
-    NodeSummary foo1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo2("foo", false, unordered_set<std::string>{"bar", "baz"});
+    NodeSummary foo1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo2("foo", false, unordered_set<std::string>{"bar", "baz"}, {}, {});
 
     EXPECT_TRUE(cmp_body(foo1, foo2));
 
-    NodeSummary foo_name1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo_name2("fo", true, unordered_set<std::string>{"bar", "baz"});
+    NodeSummary foo_name1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo_name2("fo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
 
     EXPECT_FALSE(cmp_body(foo_name1, foo_name2));
 
-    NodeSummary foo_edges1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo_edges2("foo", true, unordered_set<std::string>{"bar", "bax"});
+    NodeSummary foo_edges1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo_edges2("foo", true, unordered_set<std::string>{"bar", "bax"}, {}, {});
 
     EXPECT_FALSE(cmp_body(foo_edges1, foo_edges2));
 
@@ -129,18 +129,18 @@ TEST(NodeTest, EqualityIgnoreBody) {
 TEST(NodeTest, HashIgnoreBody) {
     NodeSummaryHasher hasher_body(ComparisonMode::ignoreBody);
 
-    NodeSummary foo1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo2("foo", false, unordered_set<std::string>{"bar", "baz"});
+    NodeSummary foo1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo2("foo", false, unordered_set<std::string>{"bar", "baz"}, {}, {});
 
     EXPECT_EQ(hasher_body(foo1), hasher_body(foo2));
 
-    NodeSummary foo_name1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo_name2("fo", true, unordered_set<std::string>{"bar", "baz"});
+    NodeSummary foo_name1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo_name2("fo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
 
     EXPECT_NE(hasher_body(foo_name1), hasher_body(foo_name2));
 
-    NodeSummary foo_edges1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo_edges2("foo", true, unordered_set<std::string>{"bar", "bax"});
+    NodeSummary foo_edges1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo_edges2("foo", true, unordered_set<std::string>{"bar", "bax"}, {}, {});
 
     EXPECT_NE(hasher_body(foo_edges1), hasher_body(foo_edges2));
 
@@ -164,18 +164,18 @@ TEST(NodeTest, HashIgnoreBody) {
 TEST(NodeTest, EqualityIgnoreEdges) {
     NodeSummaryComparator cmp_edges(ComparisonMode::ignoreEdges);
 
-    NodeSummary foo1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo2("foo", true, unordered_set<std::string>{"bar", "bax"});
+    NodeSummary foo1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo2("foo", true, unordered_set<std::string>{"bar", "bax"}, {}, {});
 
     EXPECT_TRUE(cmp_edges(foo1, foo2));
 
-    NodeSummary foo_hasBody("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo_hasNoBody("foo", false, unordered_set<std::string>{"bar", "baz"});
+    NodeSummary foo_hasBody("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo_hasNoBody("foo", false, unordered_set<std::string>{"bar", "baz"}, {}, {});
 
     EXPECT_FALSE(cmp_edges(foo_hasBody, foo_hasNoBody));
 
-    NodeSummary foo_name1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo_name2("fo", true, unordered_set<std::string>{"bar", "baz"});
+    NodeSummary foo_name1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo_name2("fo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
 
     EXPECT_FALSE(cmp_edges(foo_name1, foo_name2));
 }
@@ -183,18 +183,18 @@ TEST(NodeTest, EqualityIgnoreEdges) {
 TEST(NodeTest, HashIgnoreEdges) {
     NodeSummaryHasher hasher_edges(ComparisonMode::ignoreEdges);
 
-    NodeSummary foo1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo2("foo", true, unordered_set<std::string>{"bar", "bax"});
+    NodeSummary foo1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo2("foo", true, unordered_set<std::string>{"bar", "bax"}, {}, {});
 
     EXPECT_EQ(hasher_edges(foo1), hasher_edges(foo2));
 
-    NodeSummary foo_hasBody("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo_hasNoBody("foo", false, unordered_set<std::string>{"bar", "baz"});
+    NodeSummary foo_hasBody("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo_hasNoBody("foo", false, unordered_set<std::string>{"bar", "baz"}, {}, {});
 
     EXPECT_NE(hasher_edges(foo_hasBody), hasher_edges(foo_hasNoBody));
 
-    NodeSummary foo_name1("foo", true, unordered_set<std::string>{"bar", "baz"});
-    NodeSummary foo_name2("fo", true, unordered_set<std::string>{"bar", "baz"});
+    NodeSummary foo_name1("foo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
+    NodeSummary foo_name2("fo", true, unordered_set<std::string>{"bar", "baz"}, {}, {});
 
     EXPECT_NE(hasher_edges(foo_name1), hasher_edges(foo_name2));
 }
