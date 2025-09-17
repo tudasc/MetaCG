@@ -259,7 +259,7 @@ test-cgcollector2:
   script:
     - module load clang/$LLVM
     - cd tools/cgcollector2/test/
-    - ./testBase.sh
+    - ./testBase.sh -b $MCG_BUILD
 
 test-basic-pgis:
   <<: *job-setup
