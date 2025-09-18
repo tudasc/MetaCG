@@ -78,11 +78,15 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
     if (!hasFlag(ComparisonMode::ignoreGlobalMetadata, mode)) {
         for (const auto& [key, mdA] : mcgA.getMetaDataContainer()) {
             auto itB = mcgB.getMetaDataContainer().find(key);
+
+
+            std::cout << key  << std::endl;
+            std::cout << itB->first.c_str() << std::endl;
             if (itB == mcgB.getMetaDataContainer().end()) {
                 auto mdAasString = mdA->toJson(mappingA).dump(-1); 
                 diffs.emplace_back(std::make_unique<GlobalMDDiff>(
                     GlobalMDDiff(key, mdAasString, "")));
-            } else if (mdA != itB->second) {
+            } else if (mdA->toJson(mappingB).dump(-1) != itB->second->toJson(mappingB).dump(-1)) {
                 auto mdAasString = mdA->toJson(mappingA).dump(-1); 
                 auto mdBasString = itB->second->toJson(mappingB).dump(-1); 
                 diffs.emplace_back(std::make_unique<GlobalMDDiff>(
@@ -98,6 +102,7 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
             }
         }
     }
+
     // Creating Diffs
     for (const auto& nA : nodesA) {
         auto itB = nodesB.find(nA);  // find nameA in B
