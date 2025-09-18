@@ -5,18 +5,21 @@
  */
 
 #include "CgNode.h"
+#include "DiffFormatter.h"
 #include "NodeSummary.h"
 #include "NodeSummaryComparator.h"
 #include "NodeSummaryHasher.h"
 #include "io/MCGReader.h"
 #include "io/NameMapping.h"
+#include "GlobalMDDiff.h"
 #include <cxxopts.hpp>
+#include <memory>
 
-std::vector<NodeDiff> compare(const metacg::Callgraph& mcgA, const metacg::Callgraph& mcgB, ComparisonMode mode) {
+std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const metacg::Callgraph& mcgB, ComparisonMode mode) {
     using Set = std::unordered_set<NodeSummary, NodeSummaryHasher, NodeSummaryComparator>;
 
     ComparisonMode nameOnlyMode =
-        ComparisonMode::ignoreBody | ComparisonMode::ignoreEdges | ComparisonMode::ignoreMetadata | ComparisonMode:: ignoreEdgeMetadata;
+        ComparisonMode::ignoreBody | ComparisonMode::ignoreEdges | ComparisonMode::ignoreMetadata | ComparisonMode::ignoreEdgeMetadata | ComparisonMode::ignoreGlobalMetadata;
 
     NodeSummaryHasher nameHasher{nameOnlyMode};
     NodeSummaryComparator nameComparator{nameOnlyMode};
@@ -43,7 +46,7 @@ std::vector<NodeDiff> compare(const metacg::Callgraph& mcgA, const metacg::Callg
                 std::unordered_set<std::string> emd;
                 for (const metacg::CgNode* callee : callees) {
                     for (auto& metadata : mcg.getAllEdgeMetaData(*node, *callee)) {
-                        emd.insert(metadata.first + metadata.second->toJson(mapping).dump(-1));
+                        emd.insert(metadata.first + ":" + metadata.second->toJson(mapping).dump(-1));
                     }
                     edgeMetaData.emplace(callee->getFunctionName(), std::move(emd));
                 }
@@ -70,16 +73,40 @@ std::vector<NodeDiff> compare(const metacg::Callgraph& mcgA, const metacg::Callg
     nodesA = collectNodeSummaries(mcgA, mappingA);
     nodesB = collectNodeSummaries(mcgB, mappingB);
 
+    std::vector<std::unique_ptr<Diff>> diffs;
+    // Creating global call graphs
+    if (!hasFlag(ComparisonMode::ignoreGlobalMetadata, mode)) {
+        for (const auto& [key, mdA] : mcgA.getMetaDataContainer()) {
+            auto itB = mcgB.getMetaDataContainer().find(key);
+            if (itB == mcgB.getMetaDataContainer().end()) {
+                auto mdAasString = mdA->toJson(mappingA).dump(-1); 
+                diffs.emplace_back(std::make_unique<GlobalMDDiff>(
+                    GlobalMDDiff(key, mdAasString, "")));
+            } else if (mdA != itB->second) {
+                auto mdAasString = mdA->toJson(mappingA).dump(-1); 
+                auto mdBasString = itB->second->toJson(mappingB).dump(-1); 
+                diffs.emplace_back(std::make_unique<GlobalMDDiff>(
+                    GlobalMDDiff(key, mdAasString, mdBasString)));
+            }
+        }
+        for (const auto& [key, mdB] : mcgB.getMetaDataContainer()) {
+            auto itA = mcgA.getMetaDataContainer().find(key);
+            if (itA == mcgA.getMetaDataContainer().end()) {
+                auto mdBasString = mdB->toJson(mappingA).dump(-1); 
+                diffs.emplace_back(std::make_unique<GlobalMDDiff>(
+                    GlobalMDDiff{key, "", mdBasString}));
+            }
+        }
+    }
     // Creating Diffs
-    std::vector<NodeDiff> diffs;
     for (const auto& nA : nodesA) {
         auto itB = nodesB.find(nA);  // find nameA in B
 
         // node is completely missing
         if (itB == nodesB.end()) {
-            diffs.emplace_back(NodeDiff::onlyInA(nA));
+            diffs.emplace_back(std::make_unique<NodeDiff>(NodeDiff::onlyInA(nA)));
         } else if (!comparator(*itB, nA)) {  // check if nodes completely equal
-            diffs.emplace_back(createNodeDiff(nA, *itB, mode));
+            diffs.emplace_back(std::make_unique<NodeDiff>(createNodeDiff(nA, *itB, mode)));
             nodesB.erase(itB);
         } else {
             nodesB.erase(itB);
@@ -87,7 +114,7 @@ std::vector<NodeDiff> compare(const metacg::Callgraph& mcgA, const metacg::Callg
     }
 
     for (const auto& nB : nodesB) {
-        diffs.emplace_back(NodeDiff::onlyInB(nB));
+        diffs.emplace_back(std::make_unique<NodeDiff>(NodeDiff::onlyInB(nB)));
     }
 
     return diffs;
@@ -115,7 +142,7 @@ int main(int argc, char** argv) {
 
         if (result.count("help")) {
             std::cout << options.help() << std::endl;
-            exit(0);
+            return 0;
         }
 
         if (result["ignore-edges"].as<bool>()) {
@@ -182,14 +209,14 @@ int main(int argc, char** argv) {
         }
 
         if (result["emit-diff-as-json"].as<bool>()) {
-            *out << NodeDiff::emitAsJson(diffs, ignoring, std::filesystem::absolute(cg1).string(),
+            *out << DiffFormatter::emitAsJson(diffs, ignoring, std::filesystem::absolute(cg1).string(),
                                          std::filesystem::absolute(cg2).string())
                 .dump(-1);
         }
 
         if (result["emit-diff-as-text"].as<bool>()) {
-            *out << NodeDiff::emitAsText(diffs, ignoring, std::filesystem::absolute(cg1).string(),
-                                         std::filesystem::absolute(cg2).string());
+            //*out << DiffFormatter::emitAsText(diffs, ignoring, std::filesystem::absolute(cg1).string(),
+            //                             std::filesystem::absolute(cg2).string());
         }
 
         return diffs.empty() ? 0 : 1;
@@ -198,6 +225,6 @@ int main(int argc, char** argv) {
         return 1;
     } catch (const std::exception& e) {
         std::cerr << "Unexpected error: " << e.what() << std::endl;
-        return 1;
+        return 2;
     }
 }
