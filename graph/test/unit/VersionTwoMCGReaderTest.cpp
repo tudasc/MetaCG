@@ -564,8 +564,8 @@ TEST_F(V2MCGReaderTest, FixInconsistentIsVirtual) {
   EXPECT_TRUE(bar->isVirtual());
   EXPECT_TRUE(foo->has<metacg::OverrideMD>());
   EXPECT_TRUE(bar->has<metacg::OverrideMD>());
-  EXPECT_TRUE(foo->get<metacg::OverrideMD>()->overriddenBy.front() == bar->id);
-  EXPECT_TRUE(bar->get<metacg::OverrideMD>()->overrides.front() == foo->id);
+  EXPECT_TRUE(foo->get<metacg::OverrideMD>()->overriddenBy.front() == bar->getId());
+  EXPECT_TRUE(bar->get<metacg::OverrideMD>()->overrides.front() == foo->getId());
 }
 
 #pragma GCC diagnostic pop

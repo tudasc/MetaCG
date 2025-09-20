@@ -59,10 +59,10 @@ struct RefTestMD final : metacg::MetaData::Registrar<RefTestMD> {
   explicit RefTestMD(const nlohmann::json& j, metacg::StrToNodeMapping& strToNode) {
     auto nodeRefStr = j.at("node_ref");
     auto* node = strToNode.getNodeFromStr(nodeRefStr);
-    this->nodeRef = node->id;
+    this->nodeRef = node->getId();
   }
 
-  explicit RefTestMD(metacg::CgNode& node) { this->nodeRef = node.id; }
+  explicit RefTestMD(metacg::CgNode& node) : nodeRef(node.getId()) {}
 
  private:
   RefTestMD(const RefTestMD& other) = default;
