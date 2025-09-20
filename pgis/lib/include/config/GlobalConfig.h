@@ -9,11 +9,11 @@
 
 #include "LoggerUtil.h"
 
+#include <algorithm>
 #include <any>
 #include <sstream>
 #include <string>
 #include <unordered_map>
-#include <utility>
 
 namespace metacg::pgis {
 namespace options {
