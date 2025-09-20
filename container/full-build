@@ -57,4 +57,3 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
 RUN cmake --build build --parallel
 
 RUN cmake --install build
-

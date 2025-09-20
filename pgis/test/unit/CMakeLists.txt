@@ -17,4 +17,4 @@ add_metacg(pgistests)
 
 # add_library(ipcg) target_link_libraries(pgistests)
 
-add_test(NAME cgnode_test COMMAND pgistests)
+add_test(NAME pgis_unittests COMMAND pgistests)
