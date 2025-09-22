@@ -304,6 +304,6 @@ TEST(V4MCGReaderTest, GlobalMetadata) {
   const Callgraph& graph = *mcgm.getCallgraph();
 
   EXPECT_TRUE(graph.has<metacg::EntryFunctionMD>());
-  EXPECT_EQ(graph.get<metacg::EntryFunctionMD>()->getEntryFunctionId(), graph.getSingleNode("thisIsMain").id);
+  EXPECT_EQ(graph.get<metacg::EntryFunctionMD>()->getEntryFunctionId(), graph.getSingleNode("thisIsMain").getId());
   EXPECT_EQ(graph.getMain(), &graph.getSingleNode("thisIsMain"));
 }

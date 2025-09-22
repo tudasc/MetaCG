@@ -376,7 +376,7 @@ TEST_F(MCGManagerTest, EraseMainTest) {
   auto& main = cg->getOrInsertNode("thisIsMain");
   cg->getOrCreate<metacg::EntryFunctionMD>(main);
   ASSERT_EQ(cg->getMain(), &main);
-  cg->erase(main.id);
+  cg->erase(main.getId());
   ASSERT_EQ(cg->getMain(), nullptr);
   ASSERT_FALSE(cg->has<metacg::EntryFunctionMD>());
 }
