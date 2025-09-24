@@ -1,6 +1,11 @@
+/**
+ * File: DiffFormatter.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #pragma once
 
-#include "Callgraph.h"
 #include "NodeSummary.h"
 #include "Diff.h"
 #include "nlohmann/json_fwd.hpp"
@@ -51,7 +56,7 @@ struct NodeDiff : Diff {
      */
     static NodeDiff onlyInA(const NodeSummary& a) {
         NodeDiff nd = NodeDiff(a.name, {"missingNode"}, {}, {}, {});
-        nd.in = "cgB";
+        nd.in = "cgA";
         return nd;
     }
 
@@ -63,7 +68,7 @@ struct NodeDiff : Diff {
      */
     static NodeDiff onlyInB(const NodeSummary& b) {
         NodeDiff nd = NodeDiff(b.name, {"missingNode"}, {}, {}, {});
-        nd.in = "cgA";
+        nd.in = "cgB";
         return nd;
     }
 

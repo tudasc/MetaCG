@@ -1,7 +1,12 @@
-add_executable(main main.cpp)
+add_executable(
+    cgdiffTests
+    main.cpp
+    TestNodeDiff.cpp
+    TestNodeSummary.cpp
+    TestGlobalMDDiff.cpp
+)
 
-target_include_directories(main PRIVATE ../../include)
+target_include_directories(cgdiffTests PRIVATE ../../include)
 
-
-add_metacg(main)
-add_googletest_libraries(main)
+add_metacg(cgdiffTests)
+add_googletest_libraries(cgdiffTests)

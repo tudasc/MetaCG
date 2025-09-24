@@ -23,7 +23,6 @@ struct NodeSummaryComparator {
         bool comparison = a.name == b.name;
 
         if (!hasFlag(mode, ignoreBody)) {
-            comparison &= a.hasBody == b.hasBody;
         }
         if (!hasFlag(mode, ignoreEdges)) {
             comparison &= a.callees == b.callees;
@@ -31,7 +30,7 @@ struct NodeSummaryComparator {
         if (!hasFlag(mode, ignoreMetadata)) {
             comparison &= a.metadata == b.metadata;
         }
-        if (!hasFlag(mode, ignoreEdgeMetadata)) {
+        if (!hasFlag(mode, ignoreEdgeMetadata) && !hasFlag(mode, ignoreEdges)) {
             comparison &= a.edgeMetadata == b.edgeMetadata;
         }
 

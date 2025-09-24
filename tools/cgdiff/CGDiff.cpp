@@ -80,8 +80,6 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
             auto itB = mcgB.getMetaDataContainer().find(key);
 
 
-            std::cout << key  << std::endl;
-            std::cout << itB->first.c_str() << std::endl;
             if (itB == mcgB.getMetaDataContainer().end()) {
                 auto mdAasString = mdA->toJson(mappingA).dump(-1); 
                 diffs.emplace_back(std::make_unique<GlobalMDDiff>(
@@ -146,7 +144,6 @@ int main(int argc, char** argv) {
         auto result = options.parse(argc, argv);
 
         if (result.count("help")) {
-            std::cout << options.help() << std::endl;
             return 0;
         }
 

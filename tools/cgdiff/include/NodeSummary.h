@@ -22,11 +22,6 @@ struct NodeSummary {
     explicit NodeSummary(S&& name, bool hasBody, std::unordered_set<std::string> callees = {}, std::unordered_set<std::string> metadata = {}, 
                          std::unordered_map<std::string, std::unordered_set<std::string>> edgeMetadata = {}) 
         : name(std::forward<S>(name)), hasBody(hasBody), callees(std::move(callees)), metadata(std::move(metadata)), edgeMetadata(std::move(edgeMetadata)) {}
-
-
-    template<typename S>
-    explicit NodeSummary(S&& name, bool hasBody, std::unordered_set<std::string> callees) 
-    : name(std::forward<S>(name)), hasBody(hasBody), callees(std::move(callees)) {}
 };
 
 /**
