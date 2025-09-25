@@ -12,10 +12,12 @@
 #include "io/MCGReader.h"
 #include "io/NameMapping.h"
 #include "GlobalMDDiff.h"
+#include <cerrno>
 #include <cxxopts.hpp>
 #include <memory>
+#include <tuple>
 
-std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const metacg::Callgraph& mcgB, ComparisonMode mode) {
+std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const metacg::Callgraph& mcgB, ComparisonMode mode, const std::unordered_set<std::string>& ignoredMdKeys = {}) {
     using Set = std::unordered_set<NodeSummary, NodeSummaryHasher, NodeSummaryComparator>;
 
     ComparisonMode nameOnlyMode =
@@ -43,20 +45,34 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
             // Collect edge metadata
             std::unordered_map<std::string, std::unordered_set<std::string>> edgeMetaData;
             if (!hasFlag(mode, ignoreEdgeMetadata)) {
-                std::unordered_set<std::string> emd;
                 for (const metacg::CgNode* callee : callees) {
+                    std::unordered_set<std::string> emd;
                     for (auto& metadata : mcg.getAllEdgeMetaData(*node, *callee)) {
-                        emd.insert(metadata.first + ":" + metadata.second->toJson(mapping).dump(-1));
+                        std::string key = metadata.first;
+                        std::string value = metadata.second->toJson(mapping).dump(-1);
+
+                        if (ignoredMdKeys.count(key)) {
+                            continue;
+                        }
+
+                        emd.insert(key + ":" + value);
                     }
                     edgeMetaData.emplace(callee->getFunctionName(), std::move(emd));
                 }
             }
 
-            // Metadata
+            // Node metadata
             std::unordered_set<std::string> metadataList;
             if (!hasFlag(mode, ignoreMetadata)) {
                 for (const auto& metadata : node->getMetaDataContainer()) {
-                    metadataList.insert(metadata.first + ":" + metadata.second->toJson(mapping).dump(-1));
+                    std::string key = metadata.first;
+                    std::string value = metadata.second->toJson(mapping).dump(-1);
+
+                    if (ignoredMdKeys.count(key)) {
+                        continue;
+                    }
+
+                    metadataList.insert(key + ":" + value);
                 }
             }
 
@@ -74,9 +90,12 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
     nodesB = collectNodeSummaries(mcgB, mappingB);
 
     std::vector<std::unique_ptr<Diff>> diffs;
-    // Creating global call graphs
+    // Global metadata diff
     if (!hasFlag(ComparisonMode::ignoreGlobalMetadata, mode)) {
         for (const auto& [key, mdA] : mcgA.getMetaDataContainer()) {
+            if (ignoredMdKeys.count(key)) {
+                continue;
+            }
             auto itB = mcgB.getMetaDataContainer().find(key);
 
 
@@ -92,6 +111,10 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
             }
         }
         for (const auto& [key, mdB] : mcgB.getMetaDataContainer()) {
+            if (ignoredMdKeys.count(key)) {
+                continue;
+            }
+
             auto itA = mcgA.getMetaDataContainer().find(key);
             if (itA == mcgA.getMetaDataContainer().end()) {
                 auto mdBasString = mdB->toJson(mappingA).dump(-1); 
@@ -131,11 +154,12 @@ int main(int argc, char** argv) {
 
         options.add_options()("ignore-edges", "ignore edges", cxxopts::value<bool>()->default_value("false"))(
             "ignore-body", "ignore body", cxxopts::value<bool>()->default_value("false"))(
-                "ignore-md", "ignore metadata", cxxopts::value<bool>()->default_value("false"))(
-                "ignore-edge-md", "ignore metadata", cxxopts::value<bool>()->default_value("false"))(
-                "ignore-global-md", "ignore metadata", cxxopts::value<bool>()->default_value("false"))(
+                "ignore-md", "ignore node metadata", cxxopts::value<bool>()->default_value("false"))(
+                "ignore-edge-md", "ignore edge metadata", cxxopts::value<bool>()->default_value("false"))(
+                "ignore-global-md", "ignore global metadata", cxxopts::value<bool>()->default_value("false"))(
                 "emit-diff-as-json", "emit json diff file", cxxopts::value<bool>()->default_value("false"))(
                 "emit-diff-as-text", "emit text diff file", cxxopts::value<bool>()->default_value("false"))(
+                "ignore-md-key", "ignore specific metadata", cxxopts::value<std::vector<std::string>>())(
                 "o,output", "Output file for diff", cxxopts::value<std::string>())("h,help", "Print help");
 
         ComparisonMode mode = static_cast<ComparisonMode>(0);  // Start with 0
@@ -172,6 +196,14 @@ int main(int argc, char** argv) {
             ignoring.push_back("global-metadata");
         }
 
+        std::unordered_set<std::string> ignoredMdKeys;
+        if (result.count("ignore-md-key")) {
+            for (auto& k : result["ignore-md-key"].as<std::vector<std::string>>()) {
+                ignoredMdKeys.insert(k);
+                ignoring.push_back(k + "MD");
+            }
+        }
+
         if (argc < 3) {
             std::cerr << "Usage: ./cgdiff [options] <cg1.json> <cg2.json>\n";
             return 1;
@@ -196,7 +228,7 @@ int main(int argc, char** argv) {
         auto mcgA = r1->read();
         auto mcgB = r2->read();
 
-        auto diffs = compare(*mcgA, *mcgB, mode);
+        auto diffs = compare(*mcgA, *mcgB, mode, ignoredMdKeys);
 
         std::ostream* out = &std::cout;
         std::ofstream ofs;
