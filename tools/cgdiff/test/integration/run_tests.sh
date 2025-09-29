@@ -64,3 +64,5 @@ run_cgdiff_test ./input/cgA_global_md.mcg ./input/cgC_no_global_md.mcg 1 # md mi
 run_cgdiff_test ./input/cgA_global_md.mcg ./input/cgC_no_global_md.mcg 0 "--ignore-global-md" # md missing
 run_cgdiff_test ./input/cgA_global_md.mcg ./input/cgB_global_md.mcg 1  # md different
 run_cgdiff_test ./input/cgA_global_md.mcg ./input/cgB_global_md.mcg 0 "--ignore-global-md" # md different
+
+run_cgdiff_test ./input/cgA_basic.mcg ./input/cgA_empty_callees.mcg 0

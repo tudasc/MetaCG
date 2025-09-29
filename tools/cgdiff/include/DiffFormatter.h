@@ -1,5 +1,5 @@
 /**
- * File: DiffFormatter.cpp
+ * File: CGDiff.cpp
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
@@ -12,31 +12,6 @@
 
 struct DiffFormatter {
     /**
-     * Emit a textual representation of a list of NodeDiffs.
-     *
-     * @param nodeDiffs Vector of NodeDiff objects to format
-     * @param ignoring  List of difference categories that were ignored
-     * @return Formatted string summarizing the differences
-     */
-    static std::string emitAsText(const std::vector<Diff>& nodeDiffs, std::vector<std::string> ignoring, std::string_view cgA, std::string_view cgB) {
-        auto printList = [](const auto& container) -> std::string {
-            std::ostringstream oss;
-            oss << "[";
-            for (auto it = container.begin(); it != container.end(); ++it) {
-                oss << *it;
-                if (std::next(it) != container.end()) oss << ", ";
-            }
-            oss << "]";
-            return oss.str();
-        };
-
-        std::ostringstream os;
-
-        // TODO: implement
-        return "TODO: Not implemented yet!";
-    }
-
-    /**
      * Emit json representation of a list of NodeDiffs.
      *
      * @param nodeDiffs Vector of NodeDiff objects to format
@@ -45,6 +20,7 @@ struct DiffFormatter {
      */
     static nlohmann::ordered_json emitAsJson(
         const std::vector<std::unique_ptr<Diff>>& diffs,
+
         const std::vector<std::string>& ignoring,
         std::string_view cgA,
         std::string_view cgB)
@@ -77,8 +53,8 @@ struct DiffFormatter {
 
         // attach them to the root "diff" object
         nlohmann::ordered_json diffObj;
-        diffObj["globalMetaDiff"] = globalMetaDiffs;
         diffObj["nodeDiffs"] = nodeDiffs;
+        diffObj["globalMetaDiff"] = globalMetaDiffs;
 
         root["diff"] = diffObj;
         return root;
@@ -105,12 +81,14 @@ NodeDiff createNodeDiff(const NodeSummary& nsA, const NodeSummary& nsB, Comparis
 
     if (!hasFlag(mode, ignoreEdges)) {
 
+        std::cout << "2" << std::endl;
         std::unordered_set<std::string> allCallees = nsA.callees;
         allCallees.insert(nsB.callees.begin(), nsB.callees.end());
 
         bool edgeMetadataDifferent = !hasFlag(mode, ignoreEdgeMetadata) &&
             nsA.edgeMetadata != nsB.edgeMetadata;
 
+        std::cout << "creating NodeDiff: " << edgeMetadataDifferent << std::endl;
         for (const auto& callee : allCallees) {
             NodeDiff::EdgeDiff edgeDiff;
             edgeDiff.callee = callee;
@@ -122,8 +100,10 @@ NodeDiff createNodeDiff(const NodeSummary& nsA, const NodeSummary& nsB, Comparis
                 edgeDiff.onlyInB = true;
             }
 
+            std::cout << "creating NodeDiff" << edgeMetadataDifferent << std::endl;
             // edge metadata differences
             if (edgeMetadataDifferent) {
+                std::cout << "different edge md" << std::endl;
                 auto itA = nsA.edgeMetadata.find(callee);
                 auto itB = nsB.edgeMetadata.find(callee);
 
@@ -149,7 +129,7 @@ NodeDiff createNodeDiff(const NodeSummary& nsA, const NodeSummary& nsB, Comparis
             // only add if there is a difference
             if (edgeDiff.onlyInA || edgeDiff.onlyInB || !edgeDiff.metadataOnlyInA.empty() || !edgeDiff.metadataOnlyInB.empty()) {
                 diff.edgeDiffs.push_back(std::move(edgeDiff));
-            }
+            }		
         }
         bool hasStructuralEdgeDiff = std::any_of(
             diff.edgeDiffs.begin(), diff.edgeDiffs.end(),

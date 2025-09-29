@@ -157,10 +157,9 @@ int main(int argc, char** argv) {
                 "ignore-md", "ignore node metadata", cxxopts::value<bool>()->default_value("false"))(
                 "ignore-edge-md", "ignore edge metadata", cxxopts::value<bool>()->default_value("false"))(
                 "ignore-global-md", "ignore global metadata", cxxopts::value<bool>()->default_value("false"))(
-                "emit-diff-as-json", "emit json diff file", cxxopts::value<bool>()->default_value("false"))(
-                "emit-diff-as-text", "emit text diff file", cxxopts::value<bool>()->default_value("false"))(
+                "emit-diff-on-success", "emit json diff on success", cxxopts::value<bool>()->default_value("false"))(
                 "ignore-md-key", "ignore specific metadata", cxxopts::value<std::vector<std::string>>())(
-                "o,output", "Output file for diff", cxxopts::value<std::string>())("h,help", "Print help");
+                "o,output", "output file for diff", cxxopts::value<std::string>())("h,help", "Print help");
 
         ComparisonMode mode = static_cast<ComparisonMode>(0);  // Start with 0
         std::vector<std::string> ignoring;
@@ -168,6 +167,7 @@ int main(int argc, char** argv) {
         auto result = options.parse(argc, argv);
 
         if (result.count("help")) {
+            std::cout << options.help() << std::endl;
             return 0;
         }
 
@@ -233,24 +233,19 @@ int main(int argc, char** argv) {
         std::ostream* out = &std::cout;
         std::ofstream ofs;
 
-        if (result.count("output")) {
-            ofs.open(result["output"].as<std::string>());
-            if (!ofs) {
-                std::cerr << "Error opening output file\n";
-                return 1;
+        if ((!diffs.empty() || result["emit-diff-on-success"].as<bool>())) {
+            if (result.count("output")) {
+                ofs.open(result["output"].as<std::string>());
+                if (!ofs) {
+                    std::cerr << "Error opening output file\n";
+                    return 1;
+                }
+                out = &ofs;
             }
-            out = &ofs;
-        }
 
-        if (result["emit-diff-as-json"].as<bool>()) {
             *out << DiffFormatter::emitAsJson(diffs, ignoring, std::filesystem::absolute(cg1).string(),
                                          std::filesystem::absolute(cg2).string())
                 .dump(-1);
-        }
-
-        if (result["emit-diff-as-text"].as<bool>()) {
-            //*out << DiffFormatter::emitAsText(diffs, ignoring, std::filesystem::absolute(cg1).string(),
-            //                             std::filesystem::absolute(cg2).string());
         }
 
         return diffs.empty() ? 0 : 1;
