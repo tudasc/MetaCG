@@ -23,6 +23,7 @@ struct NodeSummaryComparator {
         bool comparison = a.name == b.name;
 
         if (!hasFlag(mode, ignoreBody)) {
+            comparison &= a.hasBody == b.hasBody;
         }
         if (!hasFlag(mode, ignoreEdges)) {
             comparison &= a.callees == b.callees;
