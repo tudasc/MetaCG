@@ -163,7 +163,7 @@ jobs:
           image: metacg-devel:latest
           run: |
             cd /opt/metacg/tools/cgdiff/test/integration/
-            ./runner.sh
+            ./run_tests.sh -b build
       - name: Run cgdiff unit tests
         uses: addnab/docker-run-action@v3
         with:
