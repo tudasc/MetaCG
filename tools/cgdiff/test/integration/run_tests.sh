@@ -26,7 +26,6 @@ done
 build="../../../../${build_dir}"
 cgdiff_exe=${build}/tools/cgdiff/cgdiff
 
-
 run_cgdiff_test() {
   local fileA="$1"
   local fileB="$2"
