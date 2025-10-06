@@ -62,7 +62,7 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
             }
 
             // Node metadata
-            std::unordered_set<std::string> metadataList;
+            std::unordered_set<std::string> nodeMetadata;
             if (!hasFlag(mode, ignoreMetadata)) {
                 for (const auto& metadata : node->getMetaDataContainer()) {
                     std::string key = metadata.first;
@@ -72,12 +72,12 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
                         continue;
                     }
 
-                    metadataList.insert(key + ":" + value);
+                    nodeMetadata.insert(key + ":" + value);
                 }
             }
 
             nodes.insert(NodeSummary(node->getFunctionName(), node->getHasBody(), std::move(calleeNames),
-                                     std::move(metadataList), std::move(edgeMetaData)));
+                                     std::move(nodeMetadata), std::move(edgeMetaData)));
         }
 
         return nodes;
@@ -110,6 +110,7 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
                     GlobalMDDiff(key, mdAasString, mdBasString)));
             }
         }
+
         for (const auto& [key, mdB] : mcgB.getMetaDataContainer()) {
             if (ignoredMdKeys.count(key)) {
                 continue;
@@ -251,9 +252,9 @@ int main(int argc, char** argv) {
         return diffs.empty() ? 0 : 1;
     } catch (const cxxopts::exceptions::invalid_option_syntax& e) {
         std::cerr << "Error parsing options: " << e.what() << std::endl;
-        return 1;
+        return 2;
     } catch (const std::exception& e) {
         std::cerr << "Unexpected error: " << e.what() << std::endl;
-        return 2;
+        return 3;
     }
 }

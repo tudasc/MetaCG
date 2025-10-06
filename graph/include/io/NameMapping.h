@@ -12,12 +12,12 @@
 namespace metacg {
     struct NameMapping : metacg::NodeToStrMapping {
         public:
-            explicit NameMapping(const metacg::Callgraph& graph) : _graph(graph) {}
+            explicit NameMapping(const metacg::Callgraph& graph) : graph(graph) {}
 
-            virtual std::string getStrFromNode(metacg::NodeId id) override { return _graph.getNode(id)->getFunctionName(); }
+            virtual std::string getStrFromNode(metacg::NodeId id) override { return graph.getNode(id)->getFunctionName(); }
 
         private:
-            const metacg::Callgraph& _graph;
+            const metacg::Callgraph& graph;
     };
 }
 
