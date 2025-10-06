@@ -168,5 +168,5 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: metacg-devel:latest
-          run: /opt/metacg/build/tools/cgdiff/test/unit/main
+          run: /opt/metacg/build/tools/cgdiff/test/unit/cgdifftests
 
