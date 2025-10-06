@@ -1,0 +1,14 @@
+{
+    "cgA": "/home/silasm/work/github/MetaCG/build2/../tools/cgdiff/test/integration/input/cgA_global_md.mcg",
+    "cgB": "/home/silasm/work/github/MetaCG/build2/../tools/cgdiff/test/integration/input/cgB_global_md.mcg",
+    "ignoring": [],
+    "diff": {
+        "nodeDiffs": {},
+        "globalMetaDiff": {
+            "entryFunction": {
+                "aValue": "\"thisIsMain\"",
+                "bValue": "\"thisIsNotMain\""
+            }
+        }
+    }
+}

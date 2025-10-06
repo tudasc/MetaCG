@@ -150,8 +150,8 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
 int main(int argc, char** argv) {
     try {
         cxxopts::Options options("cgdiff",
-                                 "Compare different Call-Graphs.\n"
-                                 "Returns 0 if call graphs are equal, 1 otherwise.\n");
+                                 "Compare two call-graphs.\n"
+                                 "Returns 0 if call-graphs are equal, 1 otherwise.\n");
 
         options.add_options()("ignore-edges", "ignore edges", cxxopts::value<bool>()->default_value("false"))(
             "ignore-body", "ignore body", cxxopts::value<bool>()->default_value("false"))(
