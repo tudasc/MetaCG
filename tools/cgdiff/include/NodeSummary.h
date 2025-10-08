@@ -11,17 +11,23 @@
  * Summary of a node in a call graph for comparison purposes.
  */
 struct NodeSummary {
-    std::string name;
-    bool hasBody;
-    std::unordered_set<std::string> callees; // use function names as unique identifier
-    std::unordered_set<std::string> metadata; // use strings instead of json to make non-order-dependant comparison easier
+  std::string name;
+  bool hasBody;
+  std::unordered_set<std::string> callees;  // use function names as unique identifier
+  std::unordered_set<std::string>
+      metadata;  // use strings instead of json to make non-order-dependant comparison easier
 
-    std::unordered_map<std::string, std::unordered_set<std::string>> edgeMetadata; // map callee -> metadata
+  std::unordered_map<std::string, std::unordered_set<std::string>> edgeMetadata;  // map callee -> metadata
 
-    template<typename S>
-    explicit NodeSummary(S&& name, bool hasBody, std::unordered_set<std::string> callees = {}, std::unordered_set<std::string> metadata = {}, 
-                         std::unordered_map<std::string, std::unordered_set<std::string>> edgeMetadata = {}) 
-        : name(std::forward<S>(name)), hasBody(hasBody), callees(std::move(callees)), metadata(std::move(metadata)), edgeMetadata(std::move(edgeMetadata)) {}
+  template <typename S>
+  explicit NodeSummary(S&& name, bool hasBody, std::unordered_set<std::string> callees = {},
+                       std::unordered_set<std::string> metadata = {},
+                       std::unordered_map<std::string, std::unordered_set<std::string>> edgeMetadata = {})
+      : name(std::forward<S>(name)),
+        hasBody(hasBody),
+        callees(std::move(callees)),
+        metadata(std::move(metadata)),
+        edgeMetadata(std::move(edgeMetadata)) {}
 };
 
 /**
@@ -30,19 +36,19 @@ struct NodeSummary {
  * Can be compined using bitwise OR to enable multiple options.
  */
 enum ComparisonMode {
-    ignoreEdges             = 1 << 0,
-    ignoreBody              = 1 << 1,
-    ignoreMetadata          = 1 << 2,
-    ignoreEdgeMetadata      = 1 << 3,
-    ignoreGlobalMetadata    = 1 << 4,
-    none                    = 1 << 5
+  ignoreEdges = 1 << 0,
+  ignoreBody = 1 << 1,
+  ignoreMetadata = 1 << 2,
+  ignoreEdgeMetadata = 1 << 3,
+  ignoreGlobalMetadata = 1 << 4,
+  none = 1 << 5
 };
 
 /**
  * Enable combining ComparisonMode flags with bitwise OR.
  */
 inline ComparisonMode operator|(ComparisonMode a, ComparisonMode b) {
-    return static_cast<ComparisonMode>(static_cast<int>(a) | static_cast<int>(b));
+  return static_cast<ComparisonMode>(static_cast<int>(a) | static_cast<int>(b));
 }
 
 /**
@@ -53,5 +59,5 @@ inline ComparisonMode operator|(ComparisonMode a, ComparisonMode b) {
  * @return true if the flag is set, false otherwise
  */
 inline bool hasFlag(ComparisonMode mode, ComparisonMode flag) {
-    return (static_cast<int>(mode) & static_cast<int>(flag)) != 0;
+  return (static_cast<int>(mode) & static_cast<int>(flag)) != 0;
 }
