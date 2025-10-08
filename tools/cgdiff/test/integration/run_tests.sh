@@ -22,7 +22,7 @@ done
 
 build="../../../../${build_dir}"
 cgdiff_exe="${build}/tools/cgdiff/cgdiff"
-output_dir="./output"
+output_dir="${build}/tools/cgdiff/output"
 mkdir -p "$output_dir"
 
 passed=0
