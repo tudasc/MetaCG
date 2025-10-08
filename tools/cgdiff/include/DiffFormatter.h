@@ -81,14 +81,12 @@ NodeDiff createNodeDiff(const NodeSummary& nsA, const NodeSummary& nsB, Comparis
 
     if (!hasFlag(mode, ignoreEdges)) {
 
-        std::cout << "2" << std::endl;
         std::unordered_set<std::string> allCallees = nsA.callees;
         allCallees.insert(nsB.callees.begin(), nsB.callees.end());
 
         bool edgeMetadataDifferent = !hasFlag(mode, ignoreEdgeMetadata) &&
             nsA.edgeMetadata != nsB.edgeMetadata;
 
-        std::cout << "creating NodeDiff: " << edgeMetadataDifferent << std::endl;
         for (const auto& callee : allCallees) {
             NodeDiff::EdgeDiff edgeDiff;
             edgeDiff.callee = callee;
@@ -100,10 +98,8 @@ NodeDiff createNodeDiff(const NodeSummary& nsA, const NodeSummary& nsB, Comparis
                 edgeDiff.onlyInB = true;
             }
 
-            std::cout << "creating NodeDiff" << edgeMetadataDifferent << std::endl;
             // edge metadata differences
             if (edgeMetadataDifferent) {
-                std::cout << "different edge md" << std::endl;
                 auto itA = nsA.edgeMetadata.find(callee);
                 auto itB = nsB.edgeMetadata.find(callee);
 
