@@ -4,18 +4,15 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "CgNode.h"
 #include "DiffFormatter.h"
 #include "NodeSummary.h"
 #include "NodeSummaryComparator.h"
 #include "NodeSummaryHasher.h"
+#include "GlobalMDDiff.h"
+#include "CgNode.h"
 #include "io/MCGReader.h"
 #include "io/NameMapping.h"
-#include "GlobalMDDiff.h"
-#include <cerrno>
 #include <cxxopts.hpp>
-#include <memory>
-#include <tuple>
 
 std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const metacg::Callgraph& mcgB, ComparisonMode mode, const std::unordered_set<std::string>& ignoredMdKeys = {}) {
     using Set = std::unordered_set<NodeSummary, NodeSummaryHasher, NodeSummaryComparator>;
