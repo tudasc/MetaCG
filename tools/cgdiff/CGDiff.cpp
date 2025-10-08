@@ -246,7 +246,14 @@ int main(int argc, char** argv) {
                 .dump(-1);
         }
 
-        return diffs.empty() ? 0 : 1;
+        if (diffs.empty()) {
+            std::cout << "File are equal" << std::endl;
+            return 0;
+        }
+        else {
+            std::cout << "Call-graphs differ" << std::endl;
+            return 1;
+        }
     } catch (const cxxopts::exceptions::invalid_option_syntax& e) {
         std::cerr << "Error parsing options: " << e.what() << std::endl;
         return 2;
