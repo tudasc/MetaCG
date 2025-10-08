@@ -1,9 +1,9 @@
 add_executable(
-    cgdifftests
-    main.cpp
-    TestNodeDiff.cpp
-    TestNodeSummary.cpp
-    TestGlobalMDDiff.cpp
+  cgdifftests
+  main.cpp
+  TestGlobalMDDiff.cpp
+  TestNodeDiff.cpp
+  TestNodeSummary.cpp
 )
 
 target_include_directories(cgdifftests PRIVATE ../../include)
