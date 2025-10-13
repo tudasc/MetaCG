@@ -20,23 +20,19 @@ struct NodeDiff : Diff {
     std::unordered_set<std::string> metadataOnlyInB;
   };
 
-  NodeDiff() = default;
   NodeDiff(std::string name, std::vector<std::string> diffType = {}, std::vector<EdgeDiff> edgeDiffs = {},
            std::unordered_set<std::string> metaA = {}, std::unordered_set<std::string> metaB = {})
-      : name(std::move(name_)),
-        diffType(std::move(diffType_)),
-        edgeDiffs(std::move(edgeDiffs_)),
-        metadataOnlyInA(std::move(metaA_)),
-        metadataOnlyInB(std::move(metaB_)) {}
+      : name(std::move(name)),
+        diffType(std::move(diffType)),
+        edgeDiffs(std::move(edgeDiffs)),
+        metadataOnlyInA(std::move(metaA)),
+        metadataOnlyInB(std::move(metaB)) {}
+
 
   std::string name;
-
   std::vector<std::string> diffType;
-
   std::string in;
-
   std::vector<EdgeDiff> edgeDiffs;
-
   std::unordered_set<std::string> metadataOnlyInA;
   std::unordered_set<std::string> metadataOnlyInB;
 

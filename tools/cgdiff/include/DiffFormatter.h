@@ -73,8 +73,7 @@ struct DiffFormatter {
  * @return NodeDiff describing the differences between nsA and nsB
  */
 NodeDiff createNodeDiff(const NodeSummary& nsA, const NodeSummary& nsB, ComparisonMode mode) {
-  NodeDiff diff;
-  diff.name = nsA.name;
+  NodeDiff diff(nsA.name);
 
   if (!hasFlag(mode, ignoreBody) && nsA.hasBody != nsB.hasBody) {
     diff.diffType.push_back("differentBody");
