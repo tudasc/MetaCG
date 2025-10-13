@@ -31,7 +31,8 @@ struct DiffFormatter {
     nlohmann::ordered_json globalMetaDiffs = nlohmann::ordered_json::object();
 
     for (const auto& diff : diffs) {
-      nlohmann::ordered_json inner = diff->toJson();  // each Diff subclass implements its own toJson()
+      // each Diff subclass implements its own toJson()
+      nlohmann::ordered_json inner = diff->toJson();
 
       switch (diff->kind()) {
         case Diff::Kind::Node: {
