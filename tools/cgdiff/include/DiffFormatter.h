@@ -45,6 +45,11 @@ struct DiffFormatter {
           globalMetaDiffs[md->key] = inner;
           break;
         }
+        default: {
+          assert(false && "Unhandled Diff::Kind");
+            __builtin_unreachable();
+          break;
+        }
       }
     }
 
