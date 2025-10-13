@@ -14,7 +14,7 @@
 #include "io/NameMapping.h"
 #include <cxxopts.hpp>
 
-std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const metacg::Callgraph& mcgB,
+std::vector<std::unique_ptr<metacg::Diff>> compare(const metacg::Callgraph& mcgA, const metacg::Callgraph& mcgB,
                                            ComparisonMode mode,
                                            const std::unordered_set<std::string>& ignoredMdKeys = {}) {
   using Set = std::unordered_set<NodeSummary, NodeSummaryHasher, NodeSummaryComparator>;
@@ -49,7 +49,7 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
           std::unordered_set<std::string> emd;
           for (auto& metadata : mcg.getAllEdgeMetaData(*node, *callee)) {
             std::string key = metadata.first;
-            std::string value = metadata.second->toJson(mapping).dump(); // no indentation
+            std::string value = metadata.second->toJson(mapping).dump(); 
 
             if (ignoredMdKeys.count(key)) {
               continue;
@@ -66,7 +66,7 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
       if (!hasFlag(mode, ignoreMetadata)) {
         for (const auto& metadata : node->getMetaDataContainer()) {
           std::string key = metadata.first;
-          std::string value = metadata.second->toJson(mapping).dump(-1); // no indentation
+          std::string value = metadata.second->toJson(mapping).dump(-1);
 
           if (ignoredMdKeys.count(key)) {
             continue;
@@ -89,7 +89,7 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
   nodesA = collectNodeSummaries(mcgA, mappingA);
   nodesB = collectNodeSummaries(mcgB, mappingB);
 
-  std::vector<std::unique_ptr<Diff>> diffs;
+  std::vector<std::unique_ptr<metacg::Diff>> diffs;
   // Global metadata diff
   if (!hasFlag(ComparisonMode::ignoreGlobalMetadata, mode)) {
     for (const auto& [key, mdA] : mcgA.getMetaDataContainer()) {

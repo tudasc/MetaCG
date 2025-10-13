@@ -11,7 +11,7 @@
 #include "nlohmann/json_fwd.hpp"
 #include <string>
 
-struct NodeDiff : Diff {
+struct NodeDiff : metacg::Diff {
   struct EdgeDiff {
     std::string callee;
     bool onlyInA = false;

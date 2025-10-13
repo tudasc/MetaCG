@@ -9,7 +9,7 @@
 #include "Diff.h"
 #include <string>
 
-struct GlobalMDDiff : Diff {
+struct GlobalMDDiff : metacg::Diff {
   GlobalMDDiff(std::string key_, std::string aValue_, std::string bValue_)
       : key(std::move(key_)), aValue(aValue_), bValue(bValue_) {}
 

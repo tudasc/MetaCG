@@ -16,7 +16,7 @@ TEST(GlobalMDDiff, ConstructorSetsAllFields) {
 
 TEST(GlobalMDDiff, KindReturnsGlobalMD) {
     GlobalMDDiff diff("k", "a", "b");
-    EXPECT_EQ(diff.kind(), Diff::Kind::GlobalMD);
+    EXPECT_EQ(diff.kind(), metacg::Diff::Kind::GlobalMD);
 }
 
 TEST(GlobalMDDiff, ToJsonContainsCorrectFields) {

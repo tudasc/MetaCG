@@ -15,7 +15,7 @@ TEST(NodeSummary, OnlyInA_ProducesCorrectJson) {
     EXPECT_TRUE(diff.edgeDiffs.empty());
     EXPECT_TRUE(diff.metadataOnlyInA.empty());
     EXPECT_TRUE(diff.metadataOnlyInB.empty());
-    EXPECT_EQ(diff.kind(), Diff::Kind::Node);
+    EXPECT_EQ(diff.kind(), metacg::Diff::Kind::Node);
     EXPECT_EQ(diff.in, "cgA");
 
 }
@@ -31,7 +31,7 @@ TEST(NodeDiff, OnlyInB_SetsMissingNodeCorrectly) {
     EXPECT_TRUE(diff.edgeDiffs.empty());
     EXPECT_TRUE(diff.metadataOnlyInA.empty());
     EXPECT_TRUE(diff.metadataOnlyInB.empty());
-    EXPECT_EQ(diff.kind(), Diff::Kind::Node);
+    EXPECT_EQ(diff.kind(), metacg::Diff::Kind::Node);
     EXPECT_EQ(diff.in, "cgB");
 }
 

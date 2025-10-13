@@ -17,7 +17,7 @@ struct DiffFormatter {
    * @param ignoring  List of difference categories that were ignored
    * @return Formatted string summarizing the differences
    */
-  static nlohmann::ordered_json emitAsJson(const std::vector<std::unique_ptr<Diff>>& diffs,
+  static nlohmann::ordered_json emitAsJson(const std::vector<std::unique_ptr<metacg::Diff>>& diffs,
 
                                            const std::vector<std::string>& ignoring, std::string_view cgA,
                                            std::string_view cgB) {
@@ -35,12 +35,12 @@ struct DiffFormatter {
       nlohmann::ordered_json inner = diff->toJson();
 
       switch (diff->kind()) {
-        case Diff::Kind::Node: {
+        case metacg::Diff::Kind::Node: {
           auto nd = static_cast<const NodeDiff*>(diff.get());
           nodeDiffs[nd->name] = inner;
           break;
         }
-        case Diff::Kind::GlobalMD: {
+        case metacg::Diff::Kind::GlobalMD: {
           auto md = static_cast<const GlobalMDDiff*>(diff.get());
           globalMetaDiffs[md->key] = inner;
           break;
