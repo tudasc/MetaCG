@@ -21,7 +21,7 @@ struct NodeDiff : Diff {
   };
 
   NodeDiff() = default;
-  NodeDiff(std::string name_, std::vector<std::string> diffType_ = {}, std::vector<EdgeDiff> edgeDiffs_ = {},
+  NodeDiff(std::string name, std::vector<std::string> diffType = {}, std::vector<EdgeDiff> edgeDiffs = {},
            std::unordered_set<std::string> metaA = {}, std::unordered_set<std::string> metaB = {})
       : name(std::move(name_)),
         diffType(std::move(diffType_)),
