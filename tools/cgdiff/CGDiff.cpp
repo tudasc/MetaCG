@@ -49,7 +49,7 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
           std::unordered_set<std::string> emd;
           for (auto& metadata : mcg.getAllEdgeMetaData(*node, *callee)) {
             std::string key = metadata.first;
-            std::string value = metadata.second->toJson(mapping).dump(-1);
+            std::string value = metadata.second->toJson(mapping).dump(); // no indentation
 
             if (ignoredMdKeys.count(key)) {
               continue;
@@ -66,7 +66,7 @@ std::vector<std::unique_ptr<Diff>> compare(const metacg::Callgraph& mcgA, const 
       if (!hasFlag(mode, ignoreMetadata)) {
         for (const auto& metadata : node->getMetaDataContainer()) {
           std::string key = metadata.first;
-          std::string value = metadata.second->toJson(mapping).dump(-1);
+          std::string value = metadata.second->toJson(mapping).dump(-1); // no indentation
 
           if (ignoredMdKeys.count(key)) {
             continue;
@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
                              "Returns 0 if call-graphs are equal, 1 otherwise.\n");
 
     options.add_options()("ignore-edges", "ignore edges", cxxopts::value<bool>()->default_value("false"))(
-        "ignore-body", "ignore body", cxxopts::value<bool>()->default_value("false"))(
+        "ignore-hasBody", "ignore hasBody", cxxopts::value<bool>()->default_value("false"))(
         "ignore-md", "ignore node metadata", cxxopts::value<bool>()->default_value("false"))(
         "ignore-edge-md", "ignore edge metadata", cxxopts::value<bool>()->default_value("false"))(
         "ignore-global-md", "ignore global metadata", cxxopts::value<bool>()->default_value("false"))(
@@ -173,7 +173,7 @@ int main(int argc, char** argv) {
       ignoring.push_back("edges");
     }
 
-    if (result["ignore-body"].as<bool>()) {
+    if (result["ignore-hasBody"].as<bool>()) {
       mode = mode | ComparisonMode::ignoreBody;
       ignoring.push_back("body");
     }
@@ -201,11 +201,6 @@ int main(int argc, char** argv) {
       }
     }
 
-    if (argc < 3) {
-      std::cerr << "Usage: ./cgdiff [options] <cg1.json> <cg2.json>\n";
-      return 1;
-    }
-    // positional arguments
     auto unmatched = result.unmatched();
     if (unmatched.size() < 2) {
       std::cerr << "Usage: ./cgdiff [options] <cg1.json> <cg2.json>\n";
@@ -242,7 +237,7 @@ int main(int argc, char** argv) {
 
       *out << DiffFormatter::emitAsJson(diffs, ignoring, std::filesystem::absolute(cg1).string(),
                                         std::filesystem::absolute(cg2).string())
-                  .dump(-1);
+                  .dump();
     }
 
     if (diffs.empty()) {

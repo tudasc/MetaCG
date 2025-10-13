@@ -91,7 +91,7 @@ run_cgdiff_test ./input/cgA_basic.mcg ./input/cgB_basic.mcg 1 " " "./groundtruth
 run_cgdiff_test ./input/cgA_basic.mcg ./input/cgC_basic.mcg 1 " " "./groundtruth/edge_missing_flag"
 run_cgdiff_test ./input/cgA_basic.mcg ./input/cgC_basic.mcg 0 "--ignore-edges" "./groundtruth/edge_missing_flag"
 run_cgdiff_test ./input/cgA_basic.mcg ./input/cgD_basic.mcg 1 " " "./groundtruth/body_different"
-run_cgdiff_test ./input/cgA_basic.mcg ./input/cgD_basic.mcg 0 "--ignore-body" "./groundtruth/body_different_flag"
+run_cgdiff_test ./input/cgA_basic.mcg ./input/cgD_basic.mcg 0 "--ignore-hasBody" "./groundtruth/body_different_flag"
 run_cgdiff_test ./input/cgA_basic.mcg ./input/cgE_basic.mcg 1 " " "./groundtruth/edge_different"
 run_cgdiff_test ./input/cgA_basic.mcg ./input/cgE_basic.mcg 0 "--ignore-edges" "./groundtruth/edge_different_flag"
 
