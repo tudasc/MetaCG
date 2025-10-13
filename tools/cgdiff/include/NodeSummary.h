@@ -13,7 +13,8 @@
 struct NodeSummary {
   std::string name;
   bool hasBody;
-  std::unordered_set<std::string> callees;  // use function names as unique identifier
+  // use function names as unique identifier
+  std::unordered_set<std::string> callees;
   std::unordered_set<std::string>
       metadata;  // use strings instead of json to make non-order-dependant comparison easier
 
