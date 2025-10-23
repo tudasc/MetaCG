@@ -42,7 +42,7 @@ NB_MODULE(pymetacg, m) {
   nb::class_<MetaDataWrapper>(m, "MetaData")
       .def_prop_ro("key", [](const MetaDataWrapper& self) { return self.md->getKey(); })
       .def_prop_ro("data", [](const MetaDataWrapper& self) {
-        NameMapping mapping(self.graph);
+              metacg::NameMapping mapping(self.graph);
         return self.md->toJson(mapping);
       });
 

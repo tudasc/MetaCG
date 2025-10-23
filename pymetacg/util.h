@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "io/IdMapping.h"
+#include "io/NameMapping.h"
 #include <Callgraph.h>
 #include <CgNode.h>
 #include <MCGManager.h>
@@ -39,16 +39,6 @@ struct MetaDataContainer {
 struct MetaDataWrapper {
   const metacg::MetaData* md;
   const metacg::Callgraph& graph;
-};
-
-struct NameMapping : metacg::NodeToStrMapping {
- public:
-  NameMapping(const metacg::Callgraph& graph) : _graph(graph) {}
-
-  virtual std::string getStrFromNode(metacg::NodeId id) override { return _graph.getNode(id)->getFunctionName(); }
-
- private:
-  const metacg::Callgraph& _graph;
 };
 
 /**

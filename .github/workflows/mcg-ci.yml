@@ -164,4 +164,16 @@ jobs:
             export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
             cd /opt/metacg/build/tools/cgpatch/test/integration/
             ./CGPIntegrationRunner.sh -d
+      - name: Run cgdiff integration tests
+        uses: addnab/docker-run-action@v3
+        with:
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/tools/cgdiff/test/integration/
+            ./run_tests.sh -b build
+      - name: Run cgdiff unit tests
+        uses: addnab/docker-run-action@v3
+        with:
+          image: metacg-devel:latest
+          run: /opt/metacg/build/tools/cgdiff/test/unit/cgdifftests
 
