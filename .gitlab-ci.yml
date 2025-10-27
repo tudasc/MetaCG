@@ -232,7 +232,7 @@ test-cgdiff:
   needs: ["build-mcg"]
   script:
     - module load clang/$LLVM
-    - cd tools/cgdiff/test/unit/
+    - cd $MCG_BUILD/tools/cgdiff/test/unit/
     - ./cgdifftests
 
 # Stage: integration-test
