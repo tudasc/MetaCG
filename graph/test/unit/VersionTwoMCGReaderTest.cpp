@@ -66,7 +66,7 @@ class TestMetaData : public metacg::MetaData::Registrar<TestMetaData> {
   float metadataFloat = 0.0f;
 };
 
-TEST_F(V2MCGReaderTest, NullCG) {
+TEST_F(V2MCGReaderTest, NoCG) {
   nlohmann::json j;
   auto& mcgm = metacg::graph::MCGManager::get();
   metacg::io::JsonSource jsonSource(j);
@@ -122,7 +122,7 @@ TEST_F(V2MCGReaderTest, WrongVersionInformation) {
   }
 }
 
-TEST_F(V2MCGReaderTest, BrokenCG) {
+TEST_F(V2MCGReaderTest, NullCG) {
   nlohmann::json j =
       "{\n"
       "         \"_CG\": null,\n"
@@ -141,9 +141,8 @@ TEST_F(V2MCGReaderTest, BrokenCG) {
   auto& mcgm = metacg::graph::MCGManager::get();
   try {
     mcgReader.read();
-    EXPECT_TRUE(false);  // should not reach here
   } catch (std::exception& e) {
-    EXPECT_TRUE(strcmp(e.what(), "The call graph in the metacg file was not found or null.") == 0);
+    EXPECT_TRUE(false);  // should not reach here
   }
 }
 
