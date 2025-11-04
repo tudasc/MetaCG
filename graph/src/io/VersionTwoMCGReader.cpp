@@ -50,7 +50,13 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMCGReader::read() {
                 generatorVersion);
 
   MCGFileInfo fileInfo{ffInfo, genVersionInfo};
-  if (!j.contains(ffInfo.cgFieldName) || j.at(ffInfo.cgFieldName).is_null()) {
+  if (j.at(ffInfo.cgFieldName).is_null()) {
+    j[ffInfo.cgFieldName] = nlohmann::json::object();
+    const std::string warningMsg = "Detected null call graph in metacg file; proceeding with an empty call graph.";
+    MCGLogger::logWarn(warningMsg);
+  }
+
+  if (!j.contains(ffInfo.cgFieldName)) {
     const std::string errorMsg = "The call graph in the metacg file was not found or null.";
     errConsole->error(errorMsg);
     throw std::runtime_error(errorMsg);
