@@ -1,6 +1,90 @@
 {
     "_CG": {
-        "_ZN11localStructclEiii": {
+        "_ZN3$_0C1ERKS_": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        ""
+                    ],
+                    "paramTypes": [
+                        "const class (lambda at /home/tim/Dokumente/MiniApp/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:7:21) &"
+                    ],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN3$_0C2ERKS_": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        ""
+                    ],
+                    "paramTypes": [
+                        "const class (lambda at /home/tim/Dokumente/MiniApp/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:7:21) &"
+                    ],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN3$_0D1Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "~"
+                    ],
+                    "paramTypes": [],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN3$_0D2Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "~"
+                    ],
+                    "paramTypes": [],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNK3$_0clEiii": {
             "callees": [],
             "callers": [
                 "main"
@@ -26,7 +110,11 @@
         },
         "main": {
             "callees": [
-                "_ZN11localStructclEiii"
+                "_ZN3$_0C1ERKS_",
+                "_ZN3$_0C2ERKS_",
+                "_ZN3$_0D1Ev",
+                "_ZN3$_0D2Ev",
+                "_ZNK3$_0clEiii"
             ],
             "callers": [],
             "doesOverride": false,
@@ -48,8 +136,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "GITDIR-NOTFOUND",
-            "version": "0.7"
+            "sha": "3b1d4887dc89636023b0efc8327d39162bcc6ee0",
+            "version": "0.9"
         },
         "version": "2.0"
     }

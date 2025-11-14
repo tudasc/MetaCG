@@ -1,14 +1,13 @@
 /**
-* File: LocalHeapClass.cpp
+* File: LocalHeapStruct.cpp
 * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
 * https://github.com/tudasc/metacg/LICENSE.txt
 */
 
 int main() {
-  class localClass {
-   public:
+  struct localStruct {
     int operator()(int a, int b, int c) { return a + b * c; }
   };
-  localClass* c = new localClass();
+  auto* c = new localStruct();
   return c->operator()(1, 2, 3);
 }

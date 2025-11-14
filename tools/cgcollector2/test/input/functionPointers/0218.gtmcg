@@ -1,7 +1,9 @@
 {
     "_CG": {
         "_Z15libraryFunctionPFvvEii": {
-            "callees": [],
+            "callees": [
+                "_Z3foov"
+            ],
             "callers": [
                 "main"
             ],
@@ -18,35 +20,21 @@
                         "retType": "void"
                     }
                 ],
-                "FunctionSignatureMetadata": {
-                    "funcName": [
-                        "libraryFunction"
-                    ],
-                    "paramTypes": [
-                        "FuncT",
-                        "int",
-                        "int"
-                    ],
-                    "retType": "void"
-                }
+                "numStatements": 0
             },
             "overriddenBy": [],
             "overrides": []
         },
         "_Z3foov": {
             "callees": [],
-            "callers": [],
+            "callers": [
+                "_Z15libraryFunctionPFvvEii"
+            ],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": false,
             "meta": {
-                "FunctionSignatureMetadata": {
-                    "funcName": [
-                        "foo"
-                    ],
-                    "paramTypes": [],
-                    "retType": "void"
-                }
+                "numStatements": 0
             },
             "overriddenBy": [],
             "overrides": []
@@ -60,13 +48,7 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
-                "FunctionSignatureMetadata": {
-                    "funcName": [
-                        "main"
-                    ],
-                    "paramTypes": [],
-                    "retType": "int"
-                }
+                "numStatements": 2
             },
             "overriddenBy": [],
             "overrides": []
@@ -75,8 +57,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "GITDIR-NOTFOUND",
-            "version": "0.7"
+            "sha": "3b1d4887dc89636023b0efc8327d39162bcc6ee0",
+            "version": "0.9"
         },
         "version": "2.0"
     }

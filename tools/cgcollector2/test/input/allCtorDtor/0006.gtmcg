@@ -18,10 +18,10 @@
         },
         "_Z5makeBv": {
             "callees": [
+                "_ZN1BC1Ev",
                 "_ZN1BC2Ev",
                 "_ZN1BD1Ev",
-                "_ZN1BD2Ev",
-                "_ZN1BC1Ev"
+                "_ZN1BD2Ev"
             ],
             "callers": [
                 "_Z3foov"
@@ -117,8 +117,8 @@
                 "_ZN1AD2Ev"
             ],
             "callers": [
-                "_Z5makeBv",
-                "_Z3foov"
+                "_Z3foov",
+                "_Z5makeBv"
             ],
             "doesOverride": false,
             "hasBody": true,
