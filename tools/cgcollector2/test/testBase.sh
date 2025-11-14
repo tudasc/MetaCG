@@ -20,7 +20,7 @@ function applyFileFormatTwoToSingleTU {
   gfile=${testCaseFile/cpp/ipcg}
   tgt=${testCaseFile/cpp/gtmcg}
 
-  $cgcollectorExe ${addFlags} $tfile -- >>log/testrun.log 2>&1
+  $cgcollectorExe ${addFlags} $tfile --extra-arg=-std=c++17 -- >>log/testrun.log 2>&1
   cat $gfile | python3 -m json.tool > ${gfile}_
   mv ${gfile}_ ${gfile}
   $testerExe $tgt $gfile >>log/testrun.log 2>&1
@@ -185,7 +185,7 @@ testGlob="./input/cxxRecordCalls/*.cpp"
 for tc in ${testGlob}; do
   echo "Running test ${tc}"
   #we need to capture implicits here, as some calls are to implicit constructors/destructors
-  applyFileFormatTwoToSingleTU ${tc} "--capture-ctors-dtors --capture-new-delete-calls --capture-implicits --infer-ctors-dtors --whole-program --prune --NumStatements"
+  applyFileFormatTwoToSingleTU ${tc} "--capture-ctors-dtors --capture-new-delete-calls --capture-implicits --prune --infer-ctors-dtors"
   fail=$?
   fails=$((fails + fail))
 done
