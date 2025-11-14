@@ -1,0 +1,252 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {
+            "c:@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@CALL_EXPR@@182-191": "c:@F@pointerCaller#*Fv(#I#I#I)#I#I#I#"
+        },
+        "CallInfoMap": {
+            "c:@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@CALL_EXPR@@182-191": {
+                "Arguments": [
+                    [
+                        "c:0041.cpp@159@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@a"
+                    ],
+                    [
+                        "c:0041.cpp@166@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@b"
+                    ],
+                    [
+                        "c:0041.cpp@173@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@c"
+                    ]
+                ],
+                "CalledObjects": [
+                    "c:0041.cpp@142@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@f"
+                ]
+            }
+        },
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@F@pointerCaller#*Fv(#I#I#I)#I#I#I#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#I#**C#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#I#**C#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0041.cpp@216@F@main#I#**C#@argv"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0041.cpp@206@F@main#I#**C#@argc"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0041.cpp@142@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@f",
+                    "c:@F@callTarget#I#I#I#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@main#I#**C#@CALL_EXPR@@266-299",
+                    "c:@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@CALL_EXPR@@182-191",
+                    "c:@F@callTarget#I#I#I#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0041.cpp@95@F@callTarget#I#I#I#@d",
+                    "c:0041.cpp@70@F@callTarget#I#I#I#@a",
+                    "c:0041.cpp@159@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@a",
+                    "c:0041.cpp@233@F@main#I#**C#@a",
+                    "c:0041.cpp@84@F@callTarget#I#I#I#@c",
+                    "c:0041.cpp@173@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@c",
+                    "c:0041.cpp@233@F@main#I#**C#@c",
+                    "c:0041.cpp@77@F@callTarget#I#I#I#@b",
+                    "c:0041.cpp@166@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@b",
+                    "c:0041.cpp@233@F@main#I#**C#@b"
+                ],
+                "Prefixes": []
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@callTarget#I#I#I#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z10callTargetiii"
+                ],
+                "Parameters": [
+                    "c:0041.cpp@70@F@callTarget#I#I#I#@a",
+                    "c:0041.cpp@77@F@callTarget#I#I#I#@b",
+                    "c:0041.cpp@84@F@callTarget#I#I#I#@c"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@callTarget#I#I#I#@SRETURN"
+                ]
+            },
+            "c:@F@main#I#**C#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "main"
+                ],
+                "Parameters": [
+                    "c:0041.cpp@206@F@main#I#**C#@argc",
+                    "c:0041.cpp@216@F@main#I#**C#@argv"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@main#I#**C#@SRETURN"
+                ]
+            },
+            "c:@F@pointerCaller#*Fv(#I#I#I)#I#I#I#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z13pointerCallerPFviiiEiii"
+                ],
+                "Parameters": [
+                    "c:0041.cpp@142@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@f",
+                    "c:0041.cpp@159@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@a",
+                    "c:0041.cpp@166@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@b",
+                    "c:0041.cpp@173@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@c"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@pointerCaller#*Fv(#I#I#I)#I#I#I#@SRETURN"
+                ]
+            }
+        },
+        "FunctionMap": {
+            "c:@F@callTarget#I#I#I#": "c:@F@callTarget#I#I#I#",
+            "c:@F@main#I#**C#": "c:@F@main#I#**C#",
+            "c:@F@pointerCaller#*Fv(#I#I#I)#I#I#I#": "c:@F@pointerCaller#*Fv(#I#I#I)#I#I#I#"
+        }
+    },
+    "_CG": {
+        "_Z10callTargetiii": {
+            "callees": [],
+            "callers": [
+                "_Z13pointerCallerPFviiiEiii"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 4
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/functionPointers/0041.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 4,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 2
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z13pointerCallerPFviiiEiii": {
+            "callees": [
+                "_Z10callTargetiii"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 4
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/functionPointers/0041.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z13pointerCallerPFviiiEiii"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 5
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/functionPointers/0041.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "_Z13pointerCallerPFviiiEiii": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 3,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 4
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

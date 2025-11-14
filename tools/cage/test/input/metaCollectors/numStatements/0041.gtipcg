@@ -1,0 +1,26 @@
+{
+  "_ZZ4mainENK3$_0clEv": {
+    "callees": [],
+    "doesOverride": false,
+    "hasBody": true,
+    "isVirtual": false,
+    "numStatements": 0,
+    "overriddenBy": [],
+    "overriddenFunctions": [],
+    "parents": [
+      "main"
+    ]
+  },
+  "main": {
+    "callees": [
+      "_ZZ4mainENK3$_0clEv"
+    ],
+    "doesOverride": false,
+    "hasBody": true,
+    "isVirtual": false,
+    "numStatements": 3,
+    "overriddenBy": [],
+    "overriddenFunctions": [],
+    "parents": []
+  }
+}

@@ -1,0 +1,186 @@
+{
+    "PointerEquivalenceData": {
+        "CallExprParentMap": {},
+        "CallInfoMap": {},
+        "EquivClasses": [
+            {
+                "Objects": [
+                    "c:@F@work#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@work#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@some_other_function#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@some_function#@SRETURN"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@f#*Fv()#S0_#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0240_a.cpp@194@F@f#*Fv()#S0_#@n",
+                    "c:@F@some_function#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:0240_a.cpp@219@F@f#*Fv()#S0_#@arg",
+                    "c:@F@some_other_function#"
+                ],
+                "Prefixes": []
+            },
+            {
+                "Objects": [
+                    "c:@F@work#@CALL_EXPR@@268-270",
+                    "c:@F@f#*Fv()#S0_#@SRETURN"
+                ],
+                "Prefixes": []
+            }
+        ],
+        "FunctionInfoMap": {
+            "c:@F@f#*Fv()#S0_#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z1fPFvvES0_"
+                ],
+                "Parameters": [
+                    "c:0240_a.cpp@194@F@f#*Fv()#S0_#@n",
+                    "c:0240_a.cpp@219@F@f#*Fv()#S0_#@arg"
+                ],
+                "ReferencedInReturnStmts": [
+                    "c:@F@f#*Fv()#S0_#@SRETURN"
+                ]
+            },
+            "c:@F@some_function#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z13some_functionv"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@some_function#@SRETURN"
+                ]
+            },
+            "c:@F@some_other_function#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z19some_other_functionv"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@some_other_function#@SRETURN"
+                ]
+            },
+            "c:@F@work#": {
+                "IsVariadic": false,
+                "MangledNames": [
+                    "_Z4workv"
+                ],
+                "Parameters": [],
+                "ReferencedInReturnStmts": [
+                    "c:@F@work#@SRETURN"
+                ]
+            }
+        },
+        "FunctionMap": {
+            "c:@F@f#*Fv()#S0_#": "c:@F@f#*Fv()#S0_#",
+            "c:@F@some_function#": "c:@F@some_function#",
+            "c:@F@some_other_function#": "c:@F@some_other_function#",
+            "c:@F@work#": "c:@F@work#"
+        }
+    },
+    "_CG": {
+        "_Z1fPFvvES0_": {
+            "callees": [],
+            "callers": [
+                "_Z4workv"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0240_a.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 0,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z4workv": {
+            "callees": [
+                "_Z1fPFvvES0_"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "fileProperties": {
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0240_a.cpp",
+                    "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "loopCallDepth": {
+                    "_Z1fPFvvES0_": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}
