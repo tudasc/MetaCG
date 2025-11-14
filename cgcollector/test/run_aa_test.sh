@@ -2,6 +2,8 @@
 
 . ./testBase.sh
 
+echo "WARNING: Alias analysis in CGC is deprecated. Tests are not actively maintained."
+
 #if [ command -v $testerExe ]; then
 if [[ $(type -P $testerExe) ]]; then
   echo "The MCGTester binary (mcgtester) could not be found in path, testing with relative path."
