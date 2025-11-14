@@ -55,6 +55,7 @@ option(
 
 if(METACG_BUILD_UNIT_TESTS)
   enable_testing()
+  include(GoogleTest)
 endif()
 
 include(ToolchainOptions)
@@ -77,11 +78,6 @@ endif()
 
 # Configure the file that holds version information
 configure_file(Config.h.in config.h)
-
-if(METACG_BUILD_UNIT_TESTS)
-  # Provide googletest library
-  include(GoogleTest)
-endif()
 
 # Component options MetaCG graph library will always be built. The actual graph implementation
 add_subdirectory(graph)
@@ -160,3 +156,5 @@ option(
 if(METACG_BUILD_PYMETACG)
   add_subdirectory(pymetacg)
 endif()
+
+add_subdirectory(utils)

@@ -1,0 +1,11 @@
+{
+    "cgA": "/home/silasm/work/github/MetaCG/build2/../tools/cgdiff/test/integration/input/cgA_basic.mcg",
+    "cgB": "/home/silasm/work/github/MetaCG/build2/../tools/cgdiff/test/integration/input/cgC_basic.mcg",
+    "ignoring": [
+        "edges"
+    ],
+    "diff": {
+        "nodeDiffs": {},
+        "globalMetaDiff": {}
+    }
+}

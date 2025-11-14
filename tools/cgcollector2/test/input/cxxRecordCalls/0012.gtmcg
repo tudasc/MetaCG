@@ -1,0 +1,56 @@
+{
+    "_CG": {
+        "_ZZ4mainEN10localClassclEiii": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "operator()"
+                    ],
+                    "paramTypes": [
+                        "int",
+                        "int",
+                        "int"
+                    ],
+                    "retType": "int"
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_ZZ4mainEN10localClassclEiii"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "main"
+                    ],
+                    "paramTypes": [],
+                    "retType": "int"
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "GITDIR-NOTFOUND",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}

@@ -27,7 +27,7 @@ class CodeStatisticsMD : public metacg::MetaData::Registrar<CodeStatisticsMD> {
   CodeStatisticsMD(const CodeStatisticsMD& other) : numVars(other.numVars) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
+  nlohmann::json toJson(NodeToStrMapping&) const final {
     nlohmann::json j;
     j["numVars"] = numVars;
     return j;

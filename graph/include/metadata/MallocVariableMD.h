@@ -33,7 +33,7 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
   MallocVariableMD(const MallocVariableMD& other) : allocs(other.allocs) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
+  nlohmann::json toJson(NodeToStrMapping&) const final {
     std::vector<nlohmann::json> jArray;
     jArray.reserve(allocs.size());
     for (const auto& [k, v] : allocs) {
@@ -47,9 +47,6 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
 
   void merge(const MetaData& toMerge, std::optional<MergeAction>, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge MallocVariableMD with meta data of different types");
-
-    const MallocVariableMD* toMergeDerived = static_cast<const MallocVariableMD*>(&toMerge);
-
     // TODO: Merge not implemented as of now
   }
 

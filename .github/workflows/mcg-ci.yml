@@ -45,7 +45,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: cmake
-      run: cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -B build -S .
+      run: cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_INSTALL_PREFIX="$(pwd)/install" -B build -S .
     - name: build
       run: cmake --build build --parallel
     - name: install
@@ -58,6 +58,12 @@ jobs:
       run: |
         CMAKE_PREFIX_PATH=install/lib/cmake/metacg cmake -S graph/test/install -B build-install-test
         cmake --build build-install-test
+    - name: metacg-config-test
+      run: |
+        MCG_CFG=install/bin/metacg-config
+        stat $MCG_CFG
+        [[ "$($MCG_CFG --prefix)" == "$(cd install; pwd)" ]] || exit 1
+        [[ "$($MCG_CFG --revision)" == "$(git rev-parse HEAD)" ]] || exit 1
   
   build-container:
     runs-on: ubuntu-latest
@@ -110,7 +116,14 @@ jobs:
           run: |
             cd /opt/metacg/cgcollector/test
             bash run_format_one_test.sh 
-            bash run_format_two_test.sh 
+            bash run_format_two_test.sh
+      - name: Run cgcollector2 tests
+        uses: addnab/docker-run-action@v3
+        with:
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/tools/cgcollector2/test
+            bash testBase.sh
       - name: Run cgvalidate tests
         uses: addnab/docker-run-action@v3
         with: 
@@ -151,4 +164,16 @@ jobs:
             export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
             cd /opt/metacg/build/tools/cgpatch/test/integration/
             ./CGPIntegrationRunner.sh -d
+      - name: Run cgdiff integration tests
+        uses: addnab/docker-run-action@v3
+        with:
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/tools/cgdiff/test/integration/
+            ./run_tests.sh -b build
+      - name: Run cgdiff unit tests
+        uses: addnab/docker-run-action@v3
+        with:
+          image: metacg-devel:latest
+          run: /opt/metacg/build/tools/cgdiff/test/unit/cgdifftests
 

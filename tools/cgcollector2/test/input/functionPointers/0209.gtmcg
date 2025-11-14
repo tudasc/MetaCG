@@ -1,0 +1,85 @@
+{
+    "_CG": {
+        "_Z5get_fb": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 5
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1A3barEv": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1A3bazEv": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1A3fooEv": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z5get_fb",
+                "_ZN1A3barEv",
+                "_ZN1A3bazEv",
+                "_ZN1A3fooEv"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "a12c2adc9482ef0062fd27f104ab4dfd679cb91f",
+            "version": "0.2"
+        },
+        "version": "2.0"
+    }
+}

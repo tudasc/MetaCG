@@ -1,0 +1,40 @@
+{
+    "_CG": {
+        "_Z3foov": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z3foov"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 4
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "470b9d4f8aa11a40a535bb01b744c6c355fac544",
+            "version": "0.3"
+        },
+        "version": "2.0"
+    }
+}

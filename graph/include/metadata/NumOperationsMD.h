@@ -38,7 +38,7 @@ class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
         numberOfMemoryAccesses(other.numberOfMemoryAccesses) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
+  nlohmann::json toJson(NodeToStrMapping&) const final {
     nlohmann::json j;
     j["numberOfIntOps"] = numberOfIntOps;
     j["numberOfFloatOps"] = numberOfFloatOps;

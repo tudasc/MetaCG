@@ -27,7 +27,7 @@ class LoopDepthMD : public metacg::MetaData::Registrar<LoopDepthMD> {
   LoopDepthMD(const LoopDepthMD& other) : loopDepth(other.loopDepth) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final { return loopDepth; }
+  nlohmann::json toJson(NodeToStrMapping&) const final { return loopDepth; }
 
   const char* getKey() const final { return key; }
 
@@ -63,7 +63,7 @@ class GlobalLoopDepthMD : public metacg::MetaData::Registrar<GlobalLoopDepthMD> 
   GlobalLoopDepthMD(const GlobalLoopDepthMD& other) : globalLoopDepth(other.globalLoopDepth) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final { return globalLoopDepth; }
+  nlohmann::json toJson(NodeToStrMapping&) const final { return globalLoopDepth; }
 
   const char* getKey() const final { return key; }
 
@@ -106,7 +106,7 @@ class LoopCallDepthMD : public metacg::MetaData::Registrar<LoopCallDepthMD> {
   LoopCallDepthMD(const LoopCallDepthMD& other) : loopFunctionMap(other.loopFunctionMap) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final { return loopFunctionMap; }
+  nlohmann::json toJson(NodeToStrMapping&) const final { return loopFunctionMap; }
 
   const char* getKey() const final { return key; }
 

@@ -15,6 +15,8 @@ if(METACG_BUILD_CGPATCH)
   endif()
 endif()
 
+add_subdirectory(cgcollector2)
 add_subdirectory(cgmerge2)
 add_subdirectory(cgconvert)
 add_subdirectory(cgformat)
+add_subdirectory(cgdiff)

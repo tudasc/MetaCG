@@ -131,6 +131,7 @@ TEST_F(MCGManagerTest, EraseNodeWithEdge) {
   int mainNodeId = mainNode.getId();
   int childNodeId = childNode.getId();
   ASSERT_TRUE(cg.addEdge(mainNodeId, childNodeId));
+  ASSERT_EQ(cg.getCallers(childNode).size(), 1);
   ASSERT_TRUE(cg.erase(mainNode.getId()));
   ASSERT_FALSE(cg.hasNode("main"));
   ASSERT_FALSE(cg.hasNode(mainNodeId));
@@ -138,6 +139,7 @@ TEST_F(MCGManagerTest, EraseNodeWithEdge) {
   ASSERT_EQ(cg.getNodeCount(), 1);
   ASSERT_FALSE(cg.isEmpty());
   ASSERT_FALSE(cg.existsEdge(mainNodeId, childNodeId));
+  ASSERT_EQ(cg.getCallers(childNode).size(), 0);
 }
 
 TEST_F(MCGManagerTest, RemoveEdge) {
@@ -374,7 +376,7 @@ TEST_F(MCGManagerTest, EraseMainTest) {
   auto& main = cg->getOrInsertNode("thisIsMain");
   cg->getOrCreate<metacg::EntryFunctionMD>(main);
   ASSERT_EQ(cg->getMain(), &main);
-  cg->erase(main.id);
+  cg->erase(main.getId());
   ASSERT_EQ(cg->getMain(), nullptr);
   ASSERT_FALSE(cg->has<metacg::EntryFunctionMD>());
 }

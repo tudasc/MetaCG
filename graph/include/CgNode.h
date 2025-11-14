@@ -105,10 +105,8 @@ class CgNode : public MetadataMixin {
 
   friend std::ostream& operator<<(std::ostream& stream, const CgNode& n);
 
- public:
-  const NodeId id;
-
  private:
+  const NodeId id;
   std::string functionName;
   std::optional<std::string> origin;
   bool hasBody;
