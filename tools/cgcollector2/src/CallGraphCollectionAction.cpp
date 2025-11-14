@@ -67,17 +67,20 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
     case 1: SPDLOG_WARN("This tool can not generate output files in the V1 format, using V2 instead");
       __attribute__ ((fallthrough));
     case 2:
-      mcgWriter = std::make_unique<metacg::io::VersionTwoMCGWriter>();
+      mcgWriter = std::make_unique<metacg::io::VersionTwoMCGWriter>(metacg::getVersionTwoFileInfo({std::string("CGCollector2"), MetaCG_VERSION_MAJOR,
+                                                                                                   MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}));
       break;
     case 3: SPDLOG_WARN("V3 format was removed and is currently not supported, using V4 instead");
       __attribute__ ((fallthrough));
-    case 4: mcgWriter = std::make_unique<metacg::io::VersionFourMCGWriter>();
+    case 4: mcgWriter = std::make_unique<metacg::io::VersionFourMCGWriter>(metacg::getVersionTwoFileInfo({std::string("CGCollector2"), MetaCG_VERSION_MAJOR,
+                                                                                                    MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}));
       break;
     default:
       assert(false && "The selected output format is not recognized");
       SPDLOG_WARN("The selected output format {} is not recognized. Using default format (V2) instead",mcgVersion);
       mcgWriter = std::make_unique<metacg::io::VersionTwoMCGWriter>();
   }
+
 
   metacg::io::JsonSink js;
   mcgWriter->write(callgraph, js);
