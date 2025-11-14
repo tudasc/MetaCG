@@ -14,7 +14,7 @@
                         ""
                     ],
                     "paramTypes": [
-                        "const class (lambda at /home/tim/Dokumente/MiniApp/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:7:21) &"
+                        "const class (lambda at /opt/metacg/mcg-local/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:7:21) &"
                     ],
                     "retType": ""
                 }
@@ -36,7 +36,7 @@
                         ""
                     ],
                     "paramTypes": [
-                        "const class (lambda at /home/tim/Dokumente/MiniApp/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:7:21) &"
+                        "const class (lambda at /opt/metacg/mcg-local/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:7:21) &"
                     ],
                     "retType": ""
                 }

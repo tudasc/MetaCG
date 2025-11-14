@@ -4,6 +4,8 @@
 * https://github.com/tudasc/metacg/LICENSE.txt
 */
 
+//This test is currently disabled as the math.h include differs between systems
+
 #include "math.h"
 
 int main() {
