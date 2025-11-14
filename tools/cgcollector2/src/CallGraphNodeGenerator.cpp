@@ -58,6 +58,7 @@ std::vector<std::string> getMangledNames(clang::Decl const* const nd) {
   return {NG.getName(nd)};
 }
 
+
 bool CallGraphNodeGenerator::TraverseFunctionDecl(clang::FunctionDecl* D) {
   SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)D);
   // If function is ignored, we don't need to traverse its content
@@ -218,12 +219,6 @@ bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
     if (!shouldIncludeFunction(directCallee)) {
       return true;
     }
-    if (!callgraph->hasNode(getMangledNames(directCallee).at(0))) {
-      SPDLOG_DEBUG("The call from {} ({}) into {} ({}) was to a previously unobserved function, adding node on the fly",
-                   topLevelFD->getNameAsString(), (void*)topLevelFD,
-                   clang::cast<clang::NamedDecl>(directCallee)->getNameAsString(), (void*)directCallee);
-      addNode(directCallee);
-    }
     addEdge(E->getDirectCallee());
   } else if (E->getCalleeDecl() != nullptr) {
     SPDLOG_TRACE("There is no direct callee, but we can get some declaration this is going to be doable");
@@ -353,14 +348,6 @@ bool CallGraphNodeGenerator::VisitCXXDeleteExpr(clang::CXXDeleteExpr* DE) {
     return true;
   }
 
-  if (!callgraph->hasNode(getMangledNames(DECxxDecl->getDestructor()).at(0))) {
-    SPDLOG_DEBUG("The call from {} ({}) into {} ({}) was to a previously unobserved function, adding node on the fly",
-                 topLevelFD->getNameAsString(), (void*)topLevelFD,
-                 clang::cast<clang::NamedDecl>(DECxxDecl->getDestructor())->getNameAsString(),
-                 (void*)DECxxDecl->getDestructor());
-    addNode(DECxxDecl->getDestructor());
-  }
-
   addEdge(DECxxDecl->getDestructor());
   return true;
 }
@@ -384,15 +371,6 @@ bool CallGraphNodeGenerator::VisitCXXConstructExpr(clang::CXXConstructExpr* CE) 
       return true;
     }
 
-    // We sometimes encounter a reference to a function, that has never been seen before
-    // This can happen for compiler generated functions
-    if (!callgraph->hasNode(getMangledNames(CE->getConstructor()).at(0))) {
-      SPDLOG_DEBUG("The call from {} ({}) into {} ({}) was to a previously unobserved function, adding node on the fly",
-                   topLevelFD->getNameAsString(), (void*)topLevelFD,
-                   clang::cast<clang::NamedDecl>(CE->getConstructor())->getNameAsString(), (void*)CE->getConstructor());
-      addNode(CE->getConstructor());
-    }
-
     addEdge(CE->getConstructor());
   }
   return true;
@@ -405,9 +383,11 @@ bool CallGraphNodeGenerator::VisitVarDecl(clang::VarDecl* VD) {
   if (!inferCtorsDtors) {
     return true;
   }
+
   if (!VD->hasLocalStorage()) {
     return true;  // Only check local variables
   }
+
   if (const clang::CXXRecordDecl* RD = VD->getType()->getAsCXXRecordDecl()) {
     if (RD->hasDefinition()) {
       if (auto Dtor = RD->getDestructor()) {
@@ -467,6 +447,16 @@ void CallGraphNodeGenerator::addEdge(clang::Decl* Child) {
   for (auto& parentName : getMangledNames(topLevelFD)) {
     for (auto& childName : getMangledNames(clang::cast<clang::NamedDecl>(Child))) {
       assert(callgraph->hasNode(parentName));
+      if(!callgraph->hasNode(childName)){
+        assert(isa<FunctionDecl>(Child));
+        //This can happen if we have an immediately invoked lambda,
+        // or infer a call to a destructor via a param variable declaration not referring to a definition
+        // FIXME: and other cases we do not understand.
+        SPDLOG_DEBUG("The call from {} ({}) into {} ({}) was to a previously unobserved function, adding node on the fly",
+                     parentName, (void*)topLevelFD,
+                     clang::cast<clang::NamedDecl>(Child)->getNameAsString(), (void*)Child);
+        addNode(cast<FunctionDecl>(Child));
+      }
       assert(callgraph->hasNode(childName));
       // If parent calls child multiple times inside its body this will be true the second time
       //Fixme: This is probably not a good idea but works for now
