@@ -4,8 +4,8 @@
 * https://github.com/tudasc/metacg/LICENSE.txt
 */
 
-//This test is currently disabled, as lambda parameter lists contain a full path to the definition
-//which differs from system to system
+//TODO: This test is currently disabled, as lambda parameter lists contain a full path to the definition
+// which differs from system to system
 
 auto globalLambda = [](int a, int b, int c) { return a + b + c; };
 

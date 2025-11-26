@@ -26,7 +26,6 @@
 
 #include <cassert>
 
-
 using namespace clang;
 
 [[nodiscard]] inline bool starts_with(llvm::StringRef Str, llvm::StringRef Prefix) {
@@ -57,7 +56,6 @@ std::vector<std::string> getMangledNames(clang::Decl const* const nd) {
   }
   return {NG.getName(nd)};
 }
-
 
 bool CallGraphNodeGenerator::TraverseFunctionDecl(clang::FunctionDecl* D) {
   SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)D);
@@ -142,7 +140,7 @@ bool CallGraphNodeGenerator::TraverseClassTemplateDecl(clang::ClassTemplateDecl*
   }
   // We abort traversal of the template-class after traversing all specialisations
   // I don't think an uninstantiated template-class has any information left after this
-  return true; // high cuts: RecursiveASTVisitor::TraverseClassTemplateDecl(D);
+  return true;  // high cuts: RecursiveASTVisitor::TraverseClassTemplateDecl(D);
 }
 
 bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) {
@@ -168,7 +166,7 @@ bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) {
     }
 
     // if it is a constructor or destructor, and we don't capture those, return early
-    if ((isa<CXXConstructorDecl>(D) || isa<CXXDestructorDecl>(D)) && !captureCtorsDtors ) {
+    if ((isa<CXXConstructorDecl>(D) || isa<CXXDestructorDecl>(D)) && !captureCtorsDtors) {
       // The Node is a Constructor or Destructor, but we do not want to capture
       return false;
     }
@@ -366,8 +364,8 @@ bool CallGraphNodeGenerator::VisitCXXConstructExpr(clang::CXXConstructExpr* CE) 
       return true;
     }
 
-    if(CE->isElidable()){
-      //We are interested in the constructor, but the construction is elided, so no call to the constructor will happen
+    if (CE->isElidable()) {
+      // We are interested in the constructor, but the construction is elided, so no call to the constructor will happen
       return true;
     }
 
@@ -426,7 +424,7 @@ void CallGraphNodeGenerator::addNode(const clang::FunctionDecl* const D) {
     node.getOrCreate<ASTNodeMetadata>().setFunctionDecl(D);
     if (!node.has<FunctionSignatureMetadata>()) {
       std::unique_ptr<FunctionSignatureMetadata> md = std::make_unique<FunctionSignatureMetadata>(!standalone);
-       //according to the standard constructor and destructor have return type void
+      // according to the standard constructor and destructor have return type void
       md->ownSignature.possibleFuncNames.push_back(D->getNameAsString());
       clang::isa<CXXDestructorDecl>(D) || clang::isa<CXXConstructorDecl>(D)
           ? md->ownSignature.retType = ""
@@ -447,19 +445,19 @@ void CallGraphNodeGenerator::addEdge(clang::Decl* Child) {
   for (auto& parentName : getMangledNames(topLevelFD)) {
     for (auto& childName : getMangledNames(clang::cast<clang::NamedDecl>(Child))) {
       assert(callgraph->hasNode(parentName));
-      if(!callgraph->hasNode(childName)){
+      if (!callgraph->hasNode(childName)) {
         assert(isa<FunctionDecl>(Child));
-        //This can happen if we have an immediately invoked lambda,
-        // or infer a call to a destructor via a param variable declaration not referring to a definition
-        // FIXME: and other cases we do not understand.
-        SPDLOG_DEBUG("The call from {} ({}) into {} ({}) was to a previously unobserved function, adding node on the fly",
-                     parentName, (void*)topLevelFD,
-                     clang::cast<clang::NamedDecl>(Child)->getNameAsString(), (void*)Child);
+        // This can happen if we have an immediately invoked lambda,
+        //  or infer a call to a destructor via a param variable declaration not referring to a definition
+        //  FIXME: and other cases we do not understand.
+        SPDLOG_DEBUG(
+            "The call from {} ({}) into {} ({}) was to a previously unobserved function, adding node on the fly",
+            parentName, (void*)topLevelFD, clang::cast<clang::NamedDecl>(Child)->getNameAsString(), (void*)Child);
         addNode(cast<FunctionDecl>(Child));
       }
       assert(callgraph->hasNode(childName));
       // If parent calls child multiple times inside its body this will be true the second time
-      //Fixme: This is probably not a good idea but works for now
+      // Fixme: This is probably not a good idea but works for now
       if (callgraph->existsAnyEdge(parentName, childName)) {
         // This is to silence warnings about existing edges
         continue;
@@ -498,8 +496,8 @@ void CallGraphNodeGenerator::addOverestimationData(clang::Decl* nonDirectCallee)
 
 void CallGraphNodeGenerator::addPointerMetadataFromPrototype(const clang::FunctionProtoType* protoType) {
   for (const auto& possibleName : getMangledNames(topLevelFD)) {
-    assert(callgraph->getNodes(possibleName).size()==1 && "We currently only handle name-unique nodes");
-    auto anyNodeID =callgraph->getNodes(possibleName)[0];
+    assert(callgraph->getNodes(possibleName).size() == 1 && "We currently only handle name-unique nodes");
+    auto anyNodeID = callgraph->getNodes(possibleName)[0];
     auto& md = callgraph->getNode(anyNodeID)->getOrCreate<AllAliasMetadata>(!standalone);
     FunctionSignature functionSignature;
     functionSignature.retType = protoType->getReturnType().getAsString();
