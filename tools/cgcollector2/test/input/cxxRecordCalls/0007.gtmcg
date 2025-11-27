@@ -1,6 +1,46 @@
 {
     "_CG": {
-        "_ZNK3$_0clEiii": {
+        "_ZN10localClassC1Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "localClass"
+                    ],
+                    "paramTypes": [],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN10localClassC2Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "localClass"
+                    ],
+                    "paramTypes": [],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN10localClassclEiii": {
             "callees": [],
             "callers": [
                 "main"
@@ -26,7 +66,9 @@
         },
         "main": {
             "callees": [
-                "_ZNK3$_0clEiii"
+                "_ZN10localClassC1Ev",
+                "_ZN10localClassC2Ev",
+                "_ZN10localClassclEiii"
             ],
             "callers": [],
             "doesOverride": false,
@@ -48,8 +90,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "GITDIR-NOTFOUND",
-            "version": "0.7"
+            "sha": "3b1d4887dc89636023b0efc8327d39162bcc6ee0",
+            "version": "0.9"
         },
         "version": "2.0"
     }

@@ -1,14 +1,13 @@
 /**
-* File: GlobalStackCallDirectCall.cpp
+* File: GlobalStackStructDirectCall.cpp
 * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
 * https://github.com/tudasc/metacg/LICENSE.txt
 */
 
-class localClass {
- public:
+struct localStruct {
   int operator()(int a, int b, int c) { return a + b * c; }
 };
 int main() {
-  auto c = localClass()(1, 2, 3);
+  auto c = localStruct()(1, 2, 3);
   return c;
 }

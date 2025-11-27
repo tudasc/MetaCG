@@ -108,6 +108,7 @@ class CallGraphNodeGenerator : public clang::RecursiveASTVisitor<CallGraphNodeGe
   clang::NamedDecl* topLevelFD = nullptr;
 
   clang::QualType getFinalPointee(clang::QualType pointerType);
+
 };
 
 #endif  // CGCOLLECTOR_CALLGRAPHNODEGENERATOR_H

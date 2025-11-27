@@ -1,6 +1,6 @@
 {
     "_CG": {
-        "_ZZ4mainEN11localStructclEiii": {
+        "_ZN1A3fooEv": {
             "callees": [],
             "callers": [
                 "main"
@@ -11,14 +11,90 @@
             "meta": {
                 "FunctionSignatureMetadata": {
                     "funcName": [
-                        "operator()"
+                        "foo"
                     ],
-                    "paramTypes": [
-                        "int",
-                        "int",
-                        "int"
-                    ],
+                    "paramTypes": [],
                     "retType": "int"
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1AC1Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "A"
+                    ],
+                    "paramTypes": [],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1AC2Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "A"
+                    ],
+                    "paramTypes": [],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1AD1Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "~A"
+                    ],
+                    "paramTypes": [],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1AD2Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "~A"
+                    ],
+                    "paramTypes": [],
+                    "retType": ""
                 }
             },
             "overriddenBy": [],
@@ -26,7 +102,11 @@
         },
         "main": {
             "callees": [
-                "_ZZ4mainEN11localStructclEiii"
+                "_ZN1A3fooEv",
+                "_ZN1AC1Ev",
+                "_ZN1AC2Ev",
+                "_ZN1AD1Ev",
+                "_ZN1AD2Ev"
             ],
             "callers": [],
             "doesOverride": false,
@@ -48,8 +128,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "GITDIR-NOTFOUND",
-            "version": "0.7"
+            "sha": "3b1d4887dc89636023b0efc8327d39162bcc6ee0",
+            "version": "0.9"
         },
         "version": "2.0"
     }

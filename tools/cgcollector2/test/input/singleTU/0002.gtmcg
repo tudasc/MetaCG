@@ -8,7 +8,20 @@
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": false,
-            "meta": {"numStatements": 0
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZL3barv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
             },
             "overriddenBy": [],
             "overrides": []
@@ -31,8 +44,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "a12c2adc9482ef0062fd27f104ab4dfd679cb91f",
-            "version": "0.2"
+            "sha": "42f1981257dcc1559d3bcade8b7e4b950b6237d0",
+            "version": "0.9"
         },
         "version": "2.0"
     }

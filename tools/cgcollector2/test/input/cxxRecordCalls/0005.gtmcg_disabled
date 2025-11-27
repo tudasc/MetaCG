@@ -1,6 +1,50 @@
 {
     "_CG": {
-        "_ZN11localStructC1Ev": {
+        "_ZN3$_0C1ERKS_": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        ""
+                    ],
+                    "paramTypes": [
+                        "const class (lambda at /opt/metacg/mcg-local/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:7:21) &"
+                    ],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN3$_0C2ERKS_": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        ""
+                    ],
+                    "paramTypes": [
+                        "const class (lambda at /opt/metacg/mcg-local/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:7:21) &"
+                    ],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN3$_0D1Ev": {
             "callees": [],
             "callers": [
                 "main"
@@ -11,7 +55,7 @@
             "meta": {
                 "FunctionSignatureMetadata": {
                     "funcName": [
-                        "localStruct"
+                        "~"
                     ],
                     "paramTypes": [],
                     "retType": ""
@@ -20,7 +64,7 @@
             "overriddenBy": [],
             "overrides": []
         },
-        "_ZN11localStructC2Ev": {
+        "_ZN3$_0D2Ev": {
             "callees": [],
             "callers": [
                 "main"
@@ -31,7 +75,7 @@
             "meta": {
                 "FunctionSignatureMetadata": {
                     "funcName": [
-                        "localStruct"
+                        "~"
                     ],
                     "paramTypes": [],
                     "retType": ""
@@ -40,7 +84,7 @@
             "overriddenBy": [],
             "overrides": []
         },
-        "_ZN11localStructclEiii": {
+        "_ZNK3$_0clEiii": {
             "callees": [],
             "callers": [
                 "main"
@@ -66,9 +110,11 @@
         },
         "main": {
             "callees": [
-                "_ZN11localStructC1Ev",
-                "_ZN11localStructC2Ev",
-                "_ZN11localStructclEiii"
+                "_ZN3$_0C1ERKS_",
+                "_ZN3$_0C2ERKS_",
+                "_ZN3$_0D1Ev",
+                "_ZN3$_0D2Ev",
+                "_ZNK3$_0clEiii"
             ],
             "callers": [],
             "doesOverride": false,

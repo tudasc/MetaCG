@@ -1,14 +1,14 @@
 /**
-* File: AllTheHeaderFiles.cpp
+* File: GlobalHeapClass.cpp
 * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
 * https://github.com/tudasc/metacg/LICENSE.txt
 */
 
-#include "math.h"
-
+class localClass {
+ public:
+  int operator()(int a, int b, int c) { return a + b * c; }
+};
 int main() {
-  int (*a)(int, int) = nullptr;
-  double (*b)(double, double) = nullptr;
-  double (*c)(double) = nullptr;
-  return b(c(2.0), 4.0);
+  localClass* c = new localClass();
+  return c->operator()(1, 2, 3);
 }
