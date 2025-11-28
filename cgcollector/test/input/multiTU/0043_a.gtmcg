@@ -10,31 +10,11 @@
                 "codeStatistics": {
                     "numVars": 0
                 },
-                "estimateCallCount": {
-                    "calls": {},
-                    "codeRegions": {}
-                },
                 "fileProperties": {
-                    "origin": "/home/sm41myca/work/github/MetaCG/cgcollector/test/input/multiTU/0043_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0043_a.cpp",
                     "systemInclude": false
                 },
-                "globalLoopDepth": 0,
-                "inlineInfo": {
-                    "isTemplate": false,
-                    "likelyInline": false,
-                    "markedAlwaysInline": false,
-                    "markedInline": false
-                },
-                "loopCallDepth": {},
-                "loopDepth": 0,
                 "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 1,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
                 "numStatements": 1
             },
             "overriddenBy": [],
@@ -50,31 +30,11 @@
                 "codeStatistics": {
                     "numVars": 0
                 },
-                "estimateCallCount": {
-                    "calls": {},
-                    "codeRegions": {}
-                },
                 "fileProperties": {
-                    "origin": "/home/sm41myca/work/github/MetaCG/cgcollector/test/input/multiTU/0043_a.cpp",
+                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0043_a.cpp",
                     "systemInclude": false
                 },
-                "globalLoopDepth": 0,
-                "inlineInfo": {
-                    "isTemplate": false,
-                    "likelyInline": false,
-                    "markedAlwaysInline": false,
-                    "markedInline": false
-                },
-                "loopCallDepth": {},
-                "loopDepth": 0,
                 "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 1,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
                 "numStatements": 1
             },
             "overriddenBy": [],
@@ -84,8 +44,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "fe7995b21e64bb53f46b3d7e3f899dd81315feec",
-            "version": "0.9"
+            "sha": "0d36c2c6619b53464d31d589be9bc2f9e11660f4",
+            "version": "0.2"
         },
         "version": "2.0"
     }

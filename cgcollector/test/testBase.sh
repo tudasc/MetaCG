@@ -9,7 +9,6 @@ timeStamp=$(date +%s)
 
 mkdir -p log
 
-
 only_metadata_diff() {
     local diffFile="$1"
 
@@ -133,7 +132,7 @@ function applyFileFormatTwoToMultiTU {
   cat ./input/multiTU/${ipcgTbFile} | python3 -m json.tool >./input/multiTU/${ipcgTbFile}_
   mv ./input/multiTU/${ipcgTbFile}_ ./input/multiTU/${ipcgTbFile}
 
-  $testerExe ./input/multiTU/${ipcgTaFile} ./input/multiTU/${gtaFile} >>log/testrun.log 2>&1
+  $testerExe  ./input/multiTU/${gtaFile} ./input/multiTU/${ipcgTaFile} >>log/testrun.log 2>&1
   aErr=$?
 
   if only_metadata_diff "$diffFile"; then
@@ -143,7 +142,7 @@ function applyFileFormatTwoToMultiTU {
     echo "Running $testerExe ./input/multiTU/${ipcgTaFile} ./input/multiTU/${gtaFile}"
   fi
 
-  $testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile} >>log/testrun.log 2>&1
+  $testerExe  ./input/multiTU/${gtbFile} ./input/multiTU/${ipcgTbFile} >>log/testrun.log 2>&1
   bErr=$?
 
   if only_metadata_diff "$diffFile"; then
@@ -162,7 +161,7 @@ function applyFileFormatTwoToMultiTU {
   cat ./input/multiTU/${combFile} | python3 -m json.tool >./input/multiTU/${combFile}_
   mv ./input/multiTU/${combFile}_ ./input/multiTU/${combFile}
 
-  ${testerExe} ./input/multiTU/${combFile} ./input/multiTU/${gtCombFile} >>log/testrun.log 2>&1
+  ${testerExe} ./input/multiTU/${gtCombFile} ./input/multiTU/${combFile} >>log/testrun.log 2>&1
   cErr=$?
 
   if only_metadata_diff "$diffFile"; then
