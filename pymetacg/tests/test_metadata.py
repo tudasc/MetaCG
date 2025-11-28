@@ -23,3 +23,9 @@ def test_custom_metadata(metadata_cg):
     md = n.meta_data["dummy_md"]
     assert md.key == "dummy_md"
     assert md.data == {"key1": "some string", "key2": 42}
+
+def test_global_metadata(v4_cg):
+    assert "dummy_md" in v4_cg.meta_data
+    md = v4_cg.meta_data["dummy_md"]
+    assert md.key == "dummy_md"
+    assert md.data == {"key1": "some string", "key2": 42}
