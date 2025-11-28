@@ -48,7 +48,7 @@ logFile=$logDir/cgpatch-${CI_CONCURRENT_ID}.log
 inputRoot=$test_root/input
 buildDir=${build_dir}/
 cgpatchExe=$buildDir/tools/cgpatch/wrapper/patchcxx
-testerExe=$buildDir/tools/cgpatch/test/cgtester
+testerExe=$buildDir/tools/cgdiff/cgdiff
 cgmerge2Exe="$buildDir/tools/cgmerge2/cgmerge2"
 outputDir=$buildDir/tools/cgpatch/test/integration
 

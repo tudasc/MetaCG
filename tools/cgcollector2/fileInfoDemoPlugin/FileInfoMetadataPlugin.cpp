@@ -34,7 +34,7 @@ struct FileInfoMetadataPlugin : Plugin {
       return result;
     }
 
-    const auto fileName = fileEntry->getName();
+    const auto fileName = fileEntry->tryGetRealPathName();
     std::string fileNameStr = fileName.str();
     result->fromSystemInclude = astCtx.getSourceManager().isInSystemHeader(sourceLocation);
     result->origin = fileNameStr;

@@ -1,5 +1,5 @@
 cgcollectorExe=cgcollector2
-testerExe=cgsimpletester2
+testerExe=cgdiff
 cgmergeExe=cgmerge2
 build_dir=build # may be changed with opt 'b'
 
@@ -23,7 +23,8 @@ function applyFileFormatTwoToSingleTU {
   $cgcollectorExe ${addFlags} $tfile --extra-arg=-std=c++17 -- >>log/testrun.log 2>&1
   cat $gfile | python3 -m json.tool > ${gfile}_
   mv ${gfile}_ ${gfile}
-  $testerExe $tgt $gfile >>log/testrun.log 2>&1
+
+  $testerExe -o temp.json $tgt $gfile >>log/testrun.log 2>&1
 
   if [ $? -ne 0 ]; then
     echo "Failure for file: $gfile. Keeping generated file for inspection"
@@ -114,13 +115,13 @@ done
 
 type -P $testerExe > /dev/null 2>&1
 if [[ $? -eq 1 ]]; then
-  echo "The CGSimpleTester2 binary (cgsimpletester2) could not be found in path, testing with relative path."
-  stat ${PWD}/../../../${build_dir}/tools/cgcollector2/test/cgsimpletester2 >> log/testrun.log 2>&1
+  echo "The CGDiff binary (cgdiff) could not be found in path, testing with relative path."
+  stat ${PWD}/../../../${build_dir}/tools/cgdiff/cgdiff >> log/testrun.log 2>&1
   if [ $? -eq 1 ]; then
-    echo "The file cgsimpletester2 seems also non-present in ../../../${build_dir}/tools/cgcollector2/test. Aborting test. Failure! Please build the tester first."
+    echo "The file cgdiff seems also non-present in ../../../${build_dir}/tools/cgdiff/cgdiff. Aborting test. Failure! Please build the tester first."
     exit 1
   else
-    testerExe=${PWD}/../../../${build_dir}/tools/cgcollector2/test/cgsimpletester2
+    testerExe=${PWD}/../../../${build_dir}/tools/cgdiff/cgdiff
   fi
 fi
 

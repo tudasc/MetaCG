@@ -13,9 +13,49 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {
+                        "_Z4leafv": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ],
+                        "_Z4loopv": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ]
+                    },
+                    "codeRegions": {}
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0060_a.cpp",
+                    "origin": "/home/sm41myca/work/github/MetaCG/cgcollector/test/input/multiTU/0060_a.cpp",
                     "systemInclude": false
+                },
+                "globalLoopDepth": 1,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {
+                    "_Z4leafv": 0,
+                    "_Z4loopv": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
                 },
                 "numStatements": 2
             },
@@ -31,9 +71,33 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {},
+                    "codeRegions": {}
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0060_a.cpp",
+                    "origin": "/home/sm41myca/work/github/MetaCG/cgcollector/test/input/multiTU/0060_a.cpp",
                     "systemInclude": false
+                },
+                "globalLoopDepth": 1,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {},
+                "loopDepth": 1,
+                "mallocCollector": [],
+                "numConditionalBranches": 1,
+                "numOperations": {
+                    "numberOfControlFlowOps": 3,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 0
                 },
                 "numStatements": 2
             },
@@ -52,9 +116,50 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {
+                        "_Z1xv": [
+                            [
+                                1.0,
+                                "@113-150"
+                            ]
+                        ]
+                    },
+                    "codeRegions": {
+                        "@113-150": {
+                            "functions": [
+                                "_Z1xv"
+                            ],
+                            "parent": "",
+                            "parentCalls": 100.0
+                        }
+                    }
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0060_a.cpp",
+                    "origin": "/home/sm41myca/work/github/MetaCG/cgcollector/test/input/multiTU/0060_a.cpp",
                     "systemInclude": false
+                },
+                "globalLoopDepth": 2,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {
+                    "_Z1xv": 1
+                },
+                "loopDepth": 1,
+                "mallocCollector": [],
+                "numConditionalBranches": 1,
+                "numOperations": {
+                    "numberOfControlFlowOps": 4,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 0
                 },
                 "numStatements": 3
             },
@@ -72,9 +177,50 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {
+                        "_Z5splitv": [
+                            [
+                                1.0,
+                                "@31-72"
+                            ]
+                        ]
+                    },
+                    "codeRegions": {
+                        "@31-72": {
+                            "functions": [
+                                "_Z5splitv"
+                            ],
+                            "parent": "",
+                            "parentCalls": 100.0
+                        }
+                    }
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0060_b.cpp",
+                    "origin": "/home/sm41myca/work/github/MetaCG/cgcollector/test/input/multiTU/0060_b.cpp",
                     "systemInclude": false
+                },
+                "globalLoopDepth": 1,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {
+                    "_Z5splitv": 1
+                },
+                "loopDepth": 1,
+                "mallocCollector": [],
+                "numConditionalBranches": 1,
+                "numOperations": {
+                    "numberOfControlFlowOps": 4,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 1,
+                    "numberOfMemoryAccesses": 0
                 },
                 "numStatements": 3
             },
@@ -93,9 +239,63 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {
+                        "_Z4leftv": [
+                            [
+                                1.0,
+                                "@329-390"
+                            ]
+                        ],
+                        "_Z5entryv": [
+                            [
+                                1.0,
+                                "@329-390"
+                            ]
+                        ]
+                    },
+                    "codeRegions": {
+                        "@310-405": {
+                            "functions": [],
+                            "parent": "",
+                            "parentCalls": 100.0
+                        },
+                        "@329-390": {
+                            "functions": [
+                                "_Z4leftv",
+                                "_Z5entryv"
+                            ],
+                            "parent": "@310-405",
+                            "parentCalls": 100.0
+                        }
+                    }
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0060_a.cpp",
+                    "origin": "/home/sm41myca/work/github/MetaCG/cgcollector/test/input/multiTU/0060_a.cpp",
                     "systemInclude": false
+                },
+                "globalLoopDepth": 2,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {
+                    "_Z4leftv": 2,
+                    "_Z5entryv": 2
+                },
+                "loopDepth": 2,
+                "mallocCollector": [],
+                "numConditionalBranches": 2,
+                "numOperations": {
+                    "numberOfControlFlowOps": 8,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 2,
+                    "numberOfMemoryAccesses": 0
                 },
                 "numStatements": 6
             },
@@ -113,9 +313,55 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {
+                        "_Z1xv": [
+                            [
+                                1.0,
+                                "@191-234"
+                            ]
+                        ]
+                    },
+                    "codeRegions": {
+                        "@172-249": {
+                            "functions": [],
+                            "parent": "",
+                            "parentCalls": 100.0
+                        },
+                        "@191-234": {
+                            "functions": [
+                                "_Z1xv"
+                            ],
+                            "parent": "@172-249",
+                            "parentCalls": 100.0
+                        }
+                    }
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0060_a.cpp",
+                    "origin": "/home/sm41myca/work/github/MetaCG/cgcollector/test/input/multiTU/0060_a.cpp",
                     "systemInclude": false
+                },
+                "globalLoopDepth": 3,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {
+                    "_Z1xv": 2
+                },
+                "loopDepth": 2,
+                "mallocCollector": [],
+                "numConditionalBranches": 2,
+                "numOperations": {
+                    "numberOfControlFlowOps": 7,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 2,
+                    "numberOfMemoryAccesses": 0
                 },
                 "numStatements": 5
             },
@@ -135,9 +381,49 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {
+                        "_Z4leftv": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ],
+                        "_Z5rightv": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ]
+                    },
+                    "codeRegions": {}
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0060_a.cpp",
+                    "origin": "/home/sm41myca/work/github/MetaCG/cgcollector/test/input/multiTU/0060_a.cpp",
                     "systemInclude": false
+                },
+                "globalLoopDepth": 3,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {
+                    "_Z4leftv": 0,
+                    "_Z5rightv": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
                 },
                 "numStatements": 2
             },
@@ -153,9 +439,42 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {
+                        "_Z5splitv": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ]
+                    },
+                    "codeRegions": {}
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0060_a.cpp",
+                    "origin": "/home/sm41myca/work/github/MetaCG/cgcollector/test/input/multiTU/0060_a.cpp",
                     "systemInclude": false
+                },
+                "globalLoopDepth": 3,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {
+                    "_Z5splitv": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
                 },
                 "numStatements": 2
             },
@@ -166,8 +485,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "278803e7a348ac944fc70175b96ff707f6faf03b",
-            "version": "0.2"
+            "sha": "fe7995b21e64bb53f46b3d7e3f899dd81315feec",
+            "version": "0.9"
         },
         "version": "2.0"
     }

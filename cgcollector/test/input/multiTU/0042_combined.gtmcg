@@ -9,9 +9,42 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {
+                        "_Z3boov": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ]
+                    },
+                    "codeRegions": {}
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0042_b.cpp",
+                    "origin": "/home/sm41myca/work/github/MetaCG/cgcollector/test/input/multiTU/0042_b.cpp",
                     "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {
+                    "_Z3boov": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
                 },
                 "numStatements": 1
             },
@@ -27,9 +60,42 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {
+                        "_Z3foov": [
+                            [
+                                1.0,
+                                ""
+                            ]
+                        ]
+                    },
+                    "codeRegions": {}
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0042_a.cpp",
+                    "origin": "/home/sm41myca/work/github/MetaCG/cgcollector/test/input/multiTU/0042_a.cpp",
                     "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {
+                    "_Z3foov": 0
+                },
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 2,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
                 },
                 "numStatements": 1
             },
@@ -45,9 +111,33 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "codeStatistics": {
+                    "numVars": 2
+                },
+                "estimateCallCount": {
+                    "calls": {},
+                    "codeRegions": {}
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0042_b.cpp",
+                    "origin": "/home/sm41myca/work/github/MetaCG/cgcollector/test/input/multiTU/0042_b.cpp",
                     "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 3,
+                    "numberOfMemoryAccesses": 0
                 },
                 "numStatements": 3
             },
@@ -63,9 +153,33 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "codeStatistics": {
+                    "numVars": 0
+                },
+                "estimateCallCount": {
+                    "calls": {},
+                    "codeRegions": {}
+                },
                 "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/multiTU/0042_a.cpp",
+                    "origin": "/home/sm41myca/work/github/MetaCG/cgcollector/test/input/multiTU/0042_a.cpp",
                     "systemInclude": false
+                },
+                "globalLoopDepth": 0,
+                "inlineInfo": {
+                    "isTemplate": false,
+                    "likelyInline": false,
+                    "markedAlwaysInline": false,
+                    "markedInline": false
+                },
+                "loopCallDepth": {},
+                "loopDepth": 0,
+                "mallocCollector": [],
+                "numConditionalBranches": 0,
+                "numOperations": {
+                    "numberOfControlFlowOps": 1,
+                    "numberOfFloatOps": 0,
+                    "numberOfIntOps": 0,
+                    "numberOfMemoryAccesses": 0
                 },
                 "numStatements": 1
             },
@@ -76,8 +190,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "0d36c2c6619b53464d31d589be9bc2f9e11660f4",
-            "version": "0.2"
+            "sha": "fe7995b21e64bb53f46b3d7e3f899dd81315feec",
+            "version": "0.9"
         },
         "version": "2.0"
     }

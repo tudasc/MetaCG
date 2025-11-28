@@ -69,16 +69,14 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
       __attribute__((fallthrough));
     case 2:
       mcgWriter = std::make_unique<metacg::io::VersionTwoMCGWriter>(metacg::MCGFileInfo(
-          {2, 0},
-          {std::string("CGCollector2"), MetaCG_VERSION_MAJOR, MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}));
+          {2, 0}, {std::string("CGCollector2"), MetaCG_VERSION_MAJOR, MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}));
       break;
     case 3:
       SPDLOG_WARN("V3 format was removed and is currently not supported, using V4 instead");
       __attribute__((fallthrough));
     case 4:
       mcgWriter = std::make_unique<metacg::io::VersionFourMCGWriter>(metacg::MCGFileInfo(
-          {4, 0},
-          {std::string("CGCollector2"), MetaCG_VERSION_MAJOR, MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}));
+          {4, 0}, {std::string("CGCollector2"), MetaCG_VERSION_MAJOR, MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}));
       break;
     default:
       assert(false && "The selected output format is not recognized");
