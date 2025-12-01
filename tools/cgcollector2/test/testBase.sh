@@ -24,7 +24,7 @@ function applyFileFormatTwoToSingleTU {
   cat $gfile | python3 -m json.tool > ${gfile}_
   mv ${gfile}_ ${gfile}
 
-  $testerExe -o temp.json $tgt $gfile >>log/testrun.log 2>&1
+  $testerExe $tgt $gfile >>log/testrun.log 2>&1
 
   if [ $? -ne 0 ]; then
     echo "Failure for file: $gfile. Keeping generated file for inspection"

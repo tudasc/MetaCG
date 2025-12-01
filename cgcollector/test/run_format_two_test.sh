@@ -10,7 +10,7 @@ if [ $? -eq 1 ]; then
   echo "The file seems also non-present in ../${build_dir}/cgdiff/. Aborting test. Failure! Please build the tester first."
   exit 1
 else
-  testerExe="../../${build_dir}/tools/cgdiff/cgdiff -o temp.json"
+  testerExe="../../${build_dir}/tools/cgdiff/cgdiff -o $diffFile"
 fi
 
 if [[ $(type -P $cgcollectorExe) ]]; then

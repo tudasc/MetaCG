@@ -2,7 +2,8 @@
 cgcollectorExe=cgcollector
 cgmergeExe=cgmerge
 build_dir=build # may be changed with opt 'b'
-diffFile=temp.json
+diffFile=$(mktemp temp.json.XXX)
+export diffFile
 
 timeStamp=$(date +%s)
 : ${CI_CONCURRENT_ID:=$timeStamp}
