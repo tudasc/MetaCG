@@ -76,7 +76,6 @@ std::vector<std::unique_ptr<metacg::Diff>> compare(const metacg::Callgraph& mcgA
             }
           }
           std::string value = json.dump(-1);
-          std::cout << "Key: " << key << " value: " << value << std::endl;
           if (ignoredMdKeys.count(key)) {
             continue;
           }
@@ -159,7 +158,7 @@ int main(int argc, char** argv) {
                              "Returns 0 if call-graphs are equal, 1 otherwise.\n");
 
     options.add_options()("ignore-edges", "ignore edges", cxxopts::value<bool>()->default_value("false"))(
-      "ignore-hasBody", "ignore hasBody", cxxopts::value<bool>()->default_value("false"))(
+        "ignore-hasBody", "ignore hasBody", cxxopts::value<bool>()->default_value("false"))(
         "ignore-md", "ignore node metadata", cxxopts::value<bool>()->default_value("false"))(
         "ignore-edge-md", "ignore edge metadata", cxxopts::value<bool>()->default_value("false"))(
         "ignore-global-md", "ignore global metadata", cxxopts::value<bool>()->default_value("false"))(
