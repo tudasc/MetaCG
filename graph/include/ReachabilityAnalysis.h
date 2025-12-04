@@ -29,6 +29,9 @@ class ReachabilityAnalysis {
   /** Compute if path exists between any two nodes in graph */
   bool existsPathBetween(const CgNode* const src, const CgNode* const dest, bool forceUpdate = false);
 
+  /** Retrieve reachable nodes from any node **/
+  const std::unordered_set<const CgNode*>& getReachableNodesFrom(const CgNode* const node, bool forceUpdate = false);
+
  private:
   void runForNode(const CgNode* const n);
 
