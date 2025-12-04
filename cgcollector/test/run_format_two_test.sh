@@ -7,7 +7,7 @@ if [[ $(type -P $testerExe) ]]; then
 fi
 stat ../../${build_dir}/tools/cgdiff/cgdiff >> log/testrun.log 2>&1
 if [ $? -eq 1 ]; then
-  echo "The file seems also non-present in ../${build_dir}/cgdiff/. Aborting test. Failure! Please build the tester first."
+  echo "The file seems also non-present in ../${build_dir}/cgdiff/. Aborting test. Failure! Please build CGDiff first."
   exit 1
 else
   testerExe="../../${build_dir}/tools/cgdiff/cgdiff -o $diffFile"
