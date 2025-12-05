@@ -24,7 +24,7 @@ struct FileInfoMetadataPlugin : Plugin {
     auto& astCtx = functionDecl->getASTContext();
     const auto fullSrcLoc = astCtx.getFullLoc(sourceLocation);
 
-#if LLVM_VERSION_MAJOR < 19
+#if LLVM_VERSION_MAJOR < 18
     const auto fileEntry = fullSrcLoc.getFileEntry();
 #else
     const auto fileEntry = fullSrcLoc.getFileEntryRef();
