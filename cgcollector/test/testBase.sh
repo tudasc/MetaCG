@@ -39,35 +39,25 @@ only_metadata_diff() {
         aJson=$(jq ".diff.nodeDiffs[\"$node\"].metadataOnlyInA" "$diffFile")
         bJson=$(jq ".diff.nodeDiffs[\"$node\"].metadataOnlyInB" "$diffFile")
 
-        # Filter out entries that contain numberOfControlFlowOps
-        local aFiltered bFiltered
-        aFiltered=$(echo "$aJson" | jq '[.[] | select(test("numberOfControlFlowOps") | not)]')
-        bFiltered=$(echo "$bJson" | jq '[.[] | select(test("numberOfControlFlowOps") | not)]')
-
-        # If A is empty after filtering → continue
-        local aLen
-        aLen=$(echo "$aFiltered" | jq 'length')
-        if [ "$aLen" -eq 0 ]; then
-            continue
-        fi
-
-        # Extract keys (everything before colon)
-        local aKeys bKeys
-        aKeys=$(echo "$aFiltered" | jq -r '.[] | split(":")[0]' | sort)
-        bKeys=$(echo "$bFiltered" | jq -r '.[] | split(":")[0]' | sort)
-
-        # Check if all keys in A exist in B
-        local missing
-        missing=$(comm -23 <(echo "$aKeys") <(echo "$bKeys"))
-        if [ -n "$missing" ]; then
-            return 1
+        if ! echo "$bJson" | jq -e --argjson a "$aJson" 'contains($a)' >/dev/null; then
+            return 1  # some metadata in A is missing or differs in value
         fi
     done
 
     return 0
 }
 
-
+jqExpr='if ._CG | type == "object" then
+      ._CG |= with_entries(
+        if (.value.meta.numOperations? // false) | type == "object" then
+          .value.meta.numOperations.numberOfControlFlowOps = "42"
+        else
+          .
+        end
+      )
+    else
+      .
+    end'
 
 # Function to invoke the CGCollector with file format version 2 to a target source code
 # Param 1: The relative path name to the test case.
@@ -89,15 +79,21 @@ function applyFileFormatTwoToSingleTU {
   tfile=$testCaseFile
   gfile=${testCaseFile/cpp/${infix}ipcg}-${CI_CONCURRENT_ID}
   tgt=${testCaseFile/cpp/${infix}gtmcg}
+  tgt2=$tgt-${CI_CONCURRENT_ID}
 
   $cgcollectorExe --metacg-format-version=2 ${addFlags} --output ${gfile} $tfile -- >>log/testrun.log 2>&1
   cat $gfile | python3 -m json.tool > ${gfile}_
   mv ${gfile}_ ${gfile}
-  $testerExe $tgt $gfile >>log/testrun.log 2>&1
+
+  jq "$jqExpr" $tgt > $tgt2
+  jq "$jqExpr" $gfile  >  $gfile
+
+  $testerExe $tgt2 $gfile >>log/testrun.log 2>&1
 
   if [ $? -ne 0 ]; then
     if only_metadata_diff $diffFile; then
         rm $gfile
+        rm $tgt2
     else 
         echo "Failure for file: $gfile. Keeping generated file for inspection"
         fail=$((fail + 1))
@@ -108,6 +104,7 @@ function applyFileFormatTwoToSingleTU {
 
   return $fail
 }
+
 
 function applyFileFormatTwoToMultiTU {
   fail=0
