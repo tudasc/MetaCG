@@ -1,4 +1,4 @@
-!/usr/bin/env bash
+#!/usr/bin/env bash
 
 test_src_dir="@TEST_SRC_DIR@"
 mcgconfig="@METACG_CONFIG@"
@@ -27,13 +27,28 @@ function runSingleTUTest {
 
   cg_outfilename=${tfilename/cpp/mcg}
   cg_outfile="$run_dir/$cg_outfilename"
-
   cg_gtfile=${tfile/cpp/gtmcg}
+  diff_file=${cg_outfile/mcg/cgdiff}
+  tfile_out="$run_dir/$tfilename.o"
 
-  CAGE_CG_NAME="$cg_outfile" clang++ `$mcgconfig --cage --ldflags` ${addFlags} $tfile -- >>log/testrun.log 2>&1
+  rm -f "$cg_outfile" "$diff_file" "$tfile_out"
 
-  "$cgdiff" --ignore-hasBody --ignore-md --ignore-edge-md "$cg_outfile" "$cg_gtfile" -- >>log/testrun.log 2>&1
+  CAGE_CG_NAME="$cg_outfile" clang++ `$mcgconfig --cage --ldflags` ${addFlags} $tfile -o  "$tfile_out" >> log/testrun.log 2>&1
+   if [[ $? -ne 0 ]]; then
+      echo "Compile command: CAGE_CG_NAME=$cg_outfile clang++ `$mcgconfig --cage --ldflags` ${addFlags} $tfile -o  $tfile_out >> log/testrun.log 2>&1"
+      if [[ ! -f "$cg_outfile" ]]; then
+        echo "Compilation failed! No call graph generated."
+        return 1
+      fi
+      echo "Compilation failed but call graph was generated."
+   fi
+
+  "$cgdiff" --ignore-hasBody --ignore-md --ignore-edge-md "$cg_outfile" "$cg_gtfile" -o "$diff_file" -- >>log/testrun.log 2>&1
   fail=$?
+
+  if [[ $fail -ne 0 ]]; then
+    echo "Test failed! See $diff_file for diff."
+  fi
 
   return $fail
 }

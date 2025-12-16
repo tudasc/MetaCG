@@ -40,6 +40,7 @@ void loop() {
   }
 }
 
+__attribute__((retain))
 void entry() {
   while (true) {
     while (true) {

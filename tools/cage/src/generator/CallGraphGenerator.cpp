@@ -52,6 +52,11 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
     }
   }
 
+  ~CallBaseVisitor() {
+
+    errs() << "CBV destroyed\n";
+  }
+
   void visitCallBase(llvm::CallBase& I) {
     if (I.getCalledFunction() != nullptr && I.getCalledFunction()->isIntrinsic())
       return;
@@ -80,6 +85,7 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
   void visitFunction(llvm::Function& F) {
     if (F.isIntrinsic())
       return;
+    llvm::outs() << "Processing function " << F.getName() << "\n";
     const std::string& funcName = F.getName().str();
     metacg::CgNode& currentNode = (metaDataAvail && functionInfoMap[&F] != nullptr
                                        ? mcg->getOrInsertNode(funcName, functionInfoMap[&F]->getFilename().str())
@@ -136,18 +142,20 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
 };
 
 bool Generator::run(Module& M, ModuleAnalysisManager* MA) {
-  auto& cgResult = MA->getResult<CallGraphAnalysis>(M);
-  auto cbv = CallBaseVisitor(&cgResult);
-  cbv.visit(M);
+  {
+    auto& cgResult = MA->getResult<CallGraphAnalysis>(M);
+    auto cbv = CallBaseVisitor(&cgResult);
+    cbv.visit(M);
 
-  // Take resulting metacg call graph
-  auto mcg = cbv.takeResult();
+    // Take resulting metacg call graph
+    auto mcg = cbv.takeResult();
 
-  // Run registered consumers
-  for (auto& consumer : consumers) {
-    consumer->consumeCallGraph(*mcg);
+    // Run registered consumers
+    for (auto& consumer : consumers) {
+      consumer->consumeCallGraph(*mcg);
+    }
+
   }
-
   return false;
 }
 }  // namespace cage
