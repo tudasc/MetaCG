@@ -1,180 +1,89 @@
 {
     "_CG": {
-        "_ZN13MyClassDerive3fooEv": {
-            "callees": [],
-            "callers": [],
-            "doesOverride": true,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 0
+        "meta": {},
+        "nodes": {
+            "_ZN11MyClassStepC2Ev": {
+                "callees": {
+                    "_ZN8MyClass2C2Ev": {}
                 },
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0017.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "loopCallDepth": {},
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 0,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
-                "numStatements": 0
+                "functionName": "_ZN11MyClassStepC2Ev",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
             },
-            "overriddenBy": [],
-            "overrides": [
-                "_ZN7MyClass3fooEv",
-                "_ZN8MyClass23fooEv"
-            ]
-        },
-        "_ZN7MyClass3fooEv": {
-            "callees": [],
-            "callers": [
-                "main"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 0
-                },
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0017.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "loopCallDepth": {},
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 0,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
-                "numStatements": 0
+            "_ZN13MyClassDerive3fooEv": {
+                "callees": {},
+                "functionName": "_ZN13MyClassDerive3fooEv",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
             },
-            "overriddenBy": [
-                "_ZN13MyClassDerive3fooEv",
-                "_ZThn8_N13MyClassDerive3fooEv"
-            ],
-            "overrides": []
-        },
-        "_ZN8MyClass23fooEv": {
-            "callees": [],
-            "callers": [],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 0
+            "_ZN13MyClassDeriveC2Ev": {
+                "callees": {
+                    "_ZN11MyClassStepC2Ev": {},
+                    "_ZN7MyClassC2Ev": {}
                 },
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0017.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "loopCallDepth": {},
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 0,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
-                "numStatements": 0
+                "functionName": "_ZN13MyClassDeriveC2Ev",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
             },
-            "overriddenBy": [
-                "_ZN13MyClassDerive3fooEv",
-                "_ZThn8_N13MyClassDerive3fooEv"
-            ],
-            "overrides": []
-        },
-        "_ZThn8_N13MyClassDerive3fooEv": {
-            "callees": [],
-            "callers": [],
-            "doesOverride": true,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 0
-                },
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0017.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "loopCallDepth": {},
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 0,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
-                "numStatements": 0
+            "_ZN7MyClass3fooEv": {
+                "callees": {},
+                "functionName": "_ZN7MyClass3fooEv",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
             },
-            "overriddenBy": [],
-            "overrides": [
-                "_ZN7MyClass3fooEv",
-                "_ZN8MyClass23fooEv"
-            ]
-        },
-        "main": {
-            "callees": [
-                "_ZN7MyClass3fooEv"
-            ],
-            "callers": [],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": false,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 4
-                },
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0017.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "loopCallDepth": {
-                    "_ZN7MyClass3fooEv": 0
-                },
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 7,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 1
-                },
-                "numStatements": 4
+            "_ZN7MyClassC2Ev": {
+                "callees": {},
+                "functionName": "_ZN7MyClassC2Ev",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
             },
-            "overriddenBy": [],
-            "overrides": []
+            "_ZN8MyClass23fooEv": {
+                "callees": {},
+                "functionName": "_ZN8MyClass23fooEv",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "_ZN8MyClass2C2Ev": {
+                "callees": {},
+                "functionName": "_ZN8MyClass2C2Ev",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "_ZThn8_N13MyClassDerive3fooEv": {
+                "callees": {
+                    "_ZN13MyClassDerive3fooEv": {}
+                },
+                "functionName": "_ZThn8_N13MyClassDerive3fooEv",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "main": {
+                "callees": {
+                    "_ZN13MyClassDeriveC2Ev": {},
+                    "_ZN7MyClass3fooEv": {},
+                    "_ZN7MyClassC2Ev": {}
+                },
+                "functionName": "main",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            }
         }
     },
     "_MetaCG": {
         "generator": {
-            "name": "CGCollector",
-            "sha": "fb0a2854b64e5ac27c0a2e8b3e2c1b413e79ab6d",
-            "version": "0.2"
+            "name": "CaGe",
+            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "version": "0.1"
         },
-        "version": "2.0"
+        "version": "4.0"
     }
 }

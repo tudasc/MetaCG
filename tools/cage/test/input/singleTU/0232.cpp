@@ -1,4 +1,5 @@
-// Test for the handling of new and delete and calling function pointers within them
+// Test for the handling of new and delete and calling function pointers within them.
+// The ground truth assumes that the pointer can be resolved.
 typedef void (*Fn)();
 
 void func1() {}

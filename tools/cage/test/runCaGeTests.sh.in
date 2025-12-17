@@ -6,41 +6,62 @@ build_dir="@CMAKE_BINARY_DIR@"
 cgdiff="$build_dir/tools/cgdiff/cgdiff"
 cgmerge="$build_dir/tools/cgmerge2/cgmerge2"
 
+suite_pattern=".*"
+
 mkdir -p log
 
 # Run single source test case.
 # Param 1: Path to the test case.
 # Param 2: Extra compile flags.
-function runSingleTUTest {
-  testCaseFile=$1
-  addFlags=$2
+# Param 3: multi TU.
+# Param 4: re-generate gt.
+function runTestCase {
+  testCaseName=$1
+  testCasePath=$2
+  addFlags=$3
+  regenerate_gt=$4
   fail=0
 
-  # Set up the different data files, we need:
-  # - The test case
-  # - The groundtruth data for reconciling the CG constructed by MetaCG
-  tfile=$testCaseFile
-  tfilename=$(basename "$tfile")
-
-  run_dir=$(dirname $(realpath --relative-to="$test_src_dir" "$tfile"))
+  run_dir=$(realpath --relative-to="$test_src_dir" "$testCasePath")
   mkdir -p $run_dir
 
-  cg_outfilename=${tfilename/cpp/mcg}
+  cg_outfilename=$testCaseName.mcg
   cg_outfile="$run_dir/$cg_outfilename"
-  cg_gtfile=${tfile/cpp/gtmcg}
+  cg_gtfile="$testCasePath/$testCaseName.gtmcg"
   diff_file=${cg_outfile/mcg/cgdiff}
-  tfile_out="$run_dir/$tfilename.o"
 
-  rm -f "$cg_outfile" "$diff_file" "$tfile_out"
+  rm -f "$cg_outfile" "$diff_file"
 
-  CAGE_CG_NAME="$cg_outfile" clang++ `$mcgconfig --cage --ldflags` ${addFlags} $tfile -o  "$tfile_out" >> log/testrun.log 2>&1
+  o_files=()
+
+  for testTU in $(ls $testCasePath | grep "$testCaseName.*\.cpp"); do
+    tfile_out="$run_dir/$testTU.o"
+    rm -f "$tfile_out"
+    clang++ -c `$mcgconfig --cage --cxxflags` ${addFlags} -fno-exceptions "$testCasePath/$testTU" -o  "$tfile_out" >> log/testrun.log 2>&1
+    if [[ $? -ne 0 ]]; then
+      echo "Compilation failed!"
+      echo "Compile command: clang++ -c `$mcgconfig --cage --cxxflags` ${addFlags} -fno-exceptions $testCasePath/$testTU -o $tfile_out"
+      return 1
+    fi
+    o_files+=($tfile_out)
+  done
+
+  tfile_out="$run_dir/$testCaseName.exe"
+  rm -f "$tfile_out"
+  CAGE_CG_NAME="$cg_outfile" clang++ `$mcgconfig --cage --ldflags` ${addFlags} -fno-exceptions ${o_files[@]} -o  "$tfile_out" >> log/testrun.log 2>&1
    if [[ $? -ne 0 ]]; then
-      echo "Compile command: CAGE_CG_NAME=$cg_outfile clang++ `$mcgconfig --cage --ldflags` ${addFlags} $tfile -o  $tfile_out >> log/testrun.log 2>&1"
+      echo "Link command: CAGE_CG_NAME=$cg_outfile clang++ `$mcgconfig --cage --ldflags` ${addFlags} -fno-exceptions ${o_files[@]} -o  $tfile_out"
       if [[ ! -f "$cg_outfile" ]]; then
-        echo "Compilation failed! No call graph generated."
+        echo "Linking failed! No call graph generated."
         return 1
       fi
-      echo "Compilation failed but call graph was generated."
+      echo "Linking failed but call graph was generated."
+   fi
+
+   if [[ $regenerate_gt -eq 1 ]]; then
+     echo "Using $cg_outfile as new ground truth"
+     cp "$cg_outfile" "$cg_gtfile"
+     return 0
    fi
 
   "$cgdiff" --ignore-hasBody --ignore-md --ignore-edge-md "$cg_outfile" "$cg_gtfile" -o "$diff_file" -- >>log/testrun.log 2>&1
@@ -48,72 +69,79 @@ function runSingleTUTest {
 
   if [[ $fail -ne 0 ]]; then
     echo "Test failed! See $diff_file for diff."
+    return 1
   fi
 
-  return $fail
+  return 0
 }
 
-#function applyFileFormatTwoToMultiTU {
-#  fail=0
-#  tc=$1
-#  taFile=${tc}_a.cpp
-#  tbFile=${tc}_b.cpp
-#
-#  # Result files
-#  ipcgTaFile="${taFile/cpp/ipcg}"
-#  ipcgTbFile="${tbFile/cpp/ipcg}"
-#
-#  # Groundtruth files
-#  gtaFile="${taFile/cpp/gtmcg}"
-#  gtbFile="${tbFile/cpp/gtmcg}"
-#  gtCombFile="${tc}_combined.gtmcg"
-#
-#  # Translation-unit-local
-#  # TODO: Ground truths currently only include numStatements metadata. Tests for old cgcollector also have fileProperties.
-#  #       What should be the general MD set tested here?
-#  #
-#  $cgcollectorExe --NumStatements --OverrideMD --whole-program ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
-#  $cgcollectorExe --NumStatements --OverrideMD --whole-program ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
-#
-#  cat ./input/multiTU/${ipcgTaFile} | python3 -m json.tool >./input/multiTU/${ipcgTaFile}_
-#  mv ./input/multiTU/${ipcgTaFile}_ ./input/multiTU/${ipcgTaFile}
-#  cat ./input/multiTU/${ipcgTbFile} | python3 -m json.tool >./input/multiTU/${ipcgTbFile}_
-#  mv ./input/multiTU/${ipcgTbFile}_ ./input/multiTU/${ipcgTbFile}
-#
-#  $testerExe ./input/multiTU/${ipcgTaFile} ./input/multiTU/${gtaFile} >>log/testrun.log 2>&1
-#  aErr=$?
-#  $testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile} >>log/testrun.log 2>&1
-#  bErr=$?
-#
-#  combFile=${tc}_combined.ipcg
-#  echo "null" >./input/multiTU/${combFile}
-#
-#  ${cgmergeExe} ./input/multiTU/${combFile} ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile} >>log/testrun.log 2>&1
-#  mErr=$?
-#
-#  cat ./input/multiTU/${combFile} | python3 -m json.tool >./input/multiTU/${combFile}_
-#  mv ./input/multiTU/${combFile}_ ./input/multiTU/${combFile}
-#
-#  ${testerExe} ./input/multiTU/${combFile} ./input/multiTU/${gtCombFile} >>log/testrun.log 2>&1
-#  cErr=$?
-#
-#  echo "$aErr or $bErr or $mErr or $cErr"
-#
-#  if [[ ${aErr} -ne 0 || ${bErr} -ne 0 || ${mErr} -ne 0 || ${cErr} -ne 0 ]]; then
-#    echo "Failure for file: $combFile. Keeping generated file for inspection"
-#    fail=$((fail + 1))
-#  else
-#    #echo "Success for file: $combFile. Deleting generated file"
-#    rm ./input/multiTU/$combFile ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile}
-#  fi
-#  return $fail
-#}
+function runSingleFileTests {
+  suiteName=$1
+  suitePath=$2
+  addFlags=$3
+  regenerateGt=$4
 
-while getopts ":h" opt; do
+  if [[ ! $suiteName =~ $suite_pattern ]]; then
+    echo "Skipping test suite '$suiteName'..."
+    return 0
+  fi
+
+  echo " --- Running single file tests: $suiteName ---"
+  testGlob="$suitePath/*.cpp"
+  fails=0
+  for tc in ${testGlob}; do
+    echo "Running test ${tc}"
+    tname=$(basename $tc)
+    tname=${tname%.*}
+    runTestCase $tname "$suitePath" "" $regenerateGt
+    fail=$?
+    fails=$((fails + fail))
+  done
+  echo "Failures in single file test suite '$suiteName': $fails"
+  return $fails
+}
+
+function runMultiFileTests {
+  suiteName=$1
+  suitePath=$2
+  addFlags=$3
+  regenerateGt=$4
+
+  if [[ ! $suiteName =~ $suite_pattern ]]; then
+    echo "Skipping test suite '$suiteName'..."
+    return 0
+  fi
+
+  echo -e "\n --- Running multi file tests: $suiteName ---"
+  multiTests=""
+  for f in $suitePath/*.cpp; do
+    ff=$(basename $f)
+    ff="${ff%%_*}"
+    multiTests="$multiTests\n$ff"
+  done
+  echo $multiTests
+  fails=0
+  for tc in $(echo -e $multiTests | uniq); do
+    echo "Running test ${tc}"
+    runTestCase "$tc" "$suitePath" "" $regenerateGt
+    fail=$?
+    fails=$((fails + fail))
+  done
+  echo "Failures in multi file test suite '$suiteName': $fails"
+  return $fails
+}
+
+while getopts ":hrs:" opt; do
   case $opt in
     h)
       echo "use -h to print this help"
       exit 0
+      ;;
+    r)
+      regenerate_gt=1
+      ;;
+    s)
+      suite_pattern=$OPTARG
       ;;
     \?)
       echo "Invalid option -$OPTARG"
@@ -122,43 +150,34 @@ while getopts ":h" opt; do
   esac
 done
 
-#type -P $testerExe > /dev/null 2>&1
-#if [[ $? -eq 1 ]]; then
-#  echo "The CGSimpleTester2 binary (cgsimpletester2) could not be found in path, testing with relative path."
-#  stat ${PWD}/../../../${build_dir}/tools/cgcollector2/test/cgsimpletester2 >> log/testrun.log 2>&1
-#  if [ $? -eq 1 ]; then
-#    echo "The file cgsimpletester2 seems also non-present in ../../../${build_dir}/tools/cgcollector2/test. Aborting test. Failure! Please build the tester first."
-#    exit 1
-#  else
-#    testerExe=${PWD}/../../../${build_dir}/tools/cgcollector2/test/cgsimpletester2
-#  fi
-#fi
+if [[ $regenerate_gt -eq 1 ]]; then
+  echo "Warning: you have chosen to regenerate the groundtruth files."
 
-
-type -P $cgmerge > /dev/null 2>&1
-if [[ $? -eq 1 ]]; then
-  echo "No cgmerge2 in directory $(dirname $cgmerge)"
-  exit 1
+  read -p "Do you wish to continue? [yN]" yn
+  case $yn in
+    [Yy]* ) ;;
+    * ) echo "Aborting."; exit 1;;
+  esac
 fi
 
-echo " --- Running single file tests ---"
-echo " --- Running basic tests ---"
-testGlob="$test_src_dir/input/singleTU/*.cpp"
-for tc in ${testGlob}; do
-  echo "Running test ${tc}"
-  runSingleTUTest ${tc} ""
-  fail=$?
-  fails=$((fails + fail))
-done
-echo "Single file test failures: $fails"
+total_fails=0
 
-exit 0
+runSingleFileTests "basic" "$test_src_dir/input/singleTU" "" $regenerate_gt
+fails=$?
+total_fails=$((total_fails + fails))
 
+runSingleFileTests "virtualCalls" "$test_src_dir/input/virtualCalls" "" $regenerate_gt
+fails=$?
+total_fails=$((total_fails + fails))
 
-# Multi-file tests
-multiTests=(0042 0043 0044 0050 0053 0060)
+runMultiFileTests "basicMulti" "$test_src_dir/input/multiTU" "" $regenerate_gt
+fails=$?
+total_fails=$((total_fails + fails))
 
-fails=0
+echo -e "---"
+echo -e "\n$total_fails test failures occurred"
+exit $total_fails
+
 
 echo " --- Running single file tests [file format version 2.0]---"
 echo " --- Running basic tests ---"
@@ -221,16 +240,7 @@ done
 
 echo "Single file test failures: $fails"
 
-# Single File virtualCalls
-echo -e "\n --- Running single file virtualCalls tests ---"
-testGlob="./input/virtualCalls/*.cpp"
-for tc in ${testGlob}; do
-  echo "Running test ${tc}"
-  applyFileFormatTwoToSingleTU ${tc} "--whole-program --capture-ctors-dtors --NumStatements --OverrideMD"
-  fail=$?
-  fails=$((fails + fail))
-done
-echo "Single file test failures: $fails"
+
 
 
 # Multi File

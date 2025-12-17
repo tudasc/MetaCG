@@ -7,7 +7,7 @@ class MyClass {
 
 class MyClass2 : public MyClass {
  public:
-  virtual void foo() override {}  // TODO core cump if override is missing
+  virtual void foo() override {}
 };
 
 class MyClassDerive : public MyClass, public MyClass2 {

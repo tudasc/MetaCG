@@ -1,6 +1,6 @@
 // Tests for c++ style constructor init
-int foo();
-int boo();
+int foo() {};
+int boo() {};
 using FType = decltype(foo);
 
 class B {

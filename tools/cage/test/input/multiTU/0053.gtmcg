@@ -11,17 +11,25 @@
             },
             "_ZN13MyClassDeriveC2Ev": {
                 "callees": {
-                    "_ZN7MyClassC2Ev": {},
-                    "_ZN8MyClass2C2Ev": {}
+                    "_ZN7MyClassC2Ev": {}
                 },
                 "functionName": "_ZN13MyClassDeriveC2Ev",
                 "hasBody": false,
                 "meta": {},
                 "origin": null
             },
-            "_ZN7MyClass3fooEv": {
+            "_ZN14MyClassDeriveD3fooEv": {
                 "callees": {},
-                "functionName": "_ZN7MyClass3fooEv",
+                "functionName": "_ZN14MyClassDeriveD3fooEv",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "_ZN14MyClassDeriveDC2Ev": {
+                "callees": {
+                    "_ZN13MyClassDeriveC2Ev": {}
+                },
+                "functionName": "_ZN14MyClassDeriveDC2Ev",
                 "hasBody": false,
                 "meta": {},
                 "origin": null
@@ -33,36 +41,26 @@
                 "meta": {},
                 "origin": null
             },
-            "_ZN8MyClass23fooEv": {
+            "_Znwm": {
                 "callees": {},
-                "functionName": "_ZN8MyClass23fooEv",
+                "functionName": "_Znwm",
                 "hasBody": false,
                 "meta": {},
                 "origin": null
             },
-            "_ZN8MyClass2C2Ev": {
-                "callees": {
-                    "_ZN7MyClassC2Ev": {}
-                },
-                "functionName": "_ZN8MyClass2C2Ev",
-                "hasBody": false,
-                "meta": {},
-                "origin": null
-            },
-            "_ZThn8_N13MyClassDerive3fooEv": {
-                "callees": {
-                    "_ZN13MyClassDerive3fooEv": {}
-                },
-                "functionName": "_ZThn8_N13MyClassDerive3fooEv",
+            "__cxa_pure_virtual": {
+                "callees": {},
+                "functionName": "__cxa_pure_virtual",
                 "hasBody": false,
                 "meta": {},
                 "origin": null
             },
             "main": {
                 "callees": {
-                    "_ZN13MyClassDeriveC2Ev": {},
-                    "_ZN7MyClass3fooEv": {},
-                    "_ZN7MyClassC2Ev": {}
+                    "_ZN13MyClassDerive3fooEv": {},
+                    "_ZN14MyClassDeriveD3fooEv": {},
+                    "_ZN14MyClassDeriveDC2Ev": {},
+                    "_Znwm": {}
                 },
                 "functionName": "main",
                 "hasBody": false,

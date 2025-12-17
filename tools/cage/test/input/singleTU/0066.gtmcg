@@ -1,79 +1,31 @@
 {
     "_CG": {
-        "_Z3foov": {
-            "callees": [],
-            "callers": [
-                "main"
-            ],
-            "doesOverride": false,
-            "hasBody": false,
-            "isVirtual": false,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 0
-                },
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0066.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "loopCallDepth": {},
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 0,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
-                "numStatements": 0
+        "meta": {},
+        "nodes": {
+            "_Z3foov": {
+                "callees": {},
+                "functionName": "_Z3foov",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
             },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "main": {
-            "callees": [
-                "_Z3foov"
-            ],
-            "callers": [],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": false,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 1
+            "main": {
+                "callees": {
+                    "_Z3foov": {}
                 },
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0066.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "loopCallDepth": {
-                    "_Z3foov": 0,
-                    "__builtin_expect": 0
-                },
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 1,
-                "numOperations": {
-                    "numberOfControlFlowOps": 4,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 2,
-                    "numberOfMemoryAccesses": 0
-                },
-                "numStatements": 4
-            },
-            "overriddenBy": [],
-            "overrides": []
+                "functionName": "main",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            }
         }
     },
     "_MetaCG": {
         "generator": {
-            "name": "CGCollector",
-            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
-            "version": "0.4"
+            "name": "CaGe",
+            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "version": "0.1"
         },
-        "version": "2.0"
+        "version": "4.0"
     }
 }

@@ -1,88 +1,73 @@
 {
     "_CG": {
-        "_ZN13MyClassDerive3fooEv": {
-            "callees": [],
-            "callers": [
-                "main"
-            ],
-            "doesOverride": true,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0021.cpp",
-                    "systemInclude": false
-                },
-                "numStatements": 0
+        "meta": {},
+        "nodes": {
+            "_ZN13MyClassDerive3fooEv": {
+                "callees": {},
+                "functionName": "_ZN13MyClassDerive3fooEv",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
             },
-            "overriddenBy": [
-                "_ZN19MyClassDeriveDerive3fooEv"
-            ],
-            "overrides": [
-                "_ZN7MyClass3fooEv"
-            ]
-        },
-        "_ZN19MyClassDeriveDerive3fooEv": {
-            "callees": [],
-            "callers": [],
-            "doesOverride": true,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0021.cpp",
-                    "systemInclude": false
+            "_ZN13MyClassDeriveC2Ev": {
+                "callees": {
+                    "_ZN7MyClassC2Ev": {}
                 },
-                "numStatements": 0
+                "functionName": "_ZN13MyClassDeriveC2Ev",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
             },
-            "overriddenBy": [],
-            "overrides": [
-                "_ZN13MyClassDerive3fooEv"
-            ]
-        },
-        "_ZN7MyClass3fooEv": {
-            "callees": [],
-            "callers": [],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0021.cpp",
-                    "systemInclude": false
+            "_ZN19MyClassDeriveDerive3fooEv": {
+                "callees": {},
+                "functionName": "_ZN19MyClassDeriveDerive3fooEv",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "_ZN19MyClassDeriveDeriveC2Ev": {
+                "callees": {
+                    "_ZN13MyClassDeriveC2Ev": {}
                 },
-                "numStatements": 0
+                "functionName": "_ZN19MyClassDeriveDeriveC2Ev",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
             },
-            "overriddenBy": [
-                "_ZN13MyClassDerive3fooEv"
-            ],
-            "overrides": []
-        },
-        "main": {
-            "callees": [
-                "_ZN13MyClassDerive3fooEv"
-            ],
-            "callers": [],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": false,
-            "meta": {
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0021.cpp",
-                    "systemInclude": false
+            "_ZN7MyClass3fooEv": {
+                "callees": {},
+                "functionName": "_ZN7MyClass3fooEv",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "_ZN7MyClassC2Ev": {
+                "callees": {},
+                "functionName": "_ZN7MyClassC2Ev",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "main": {
+                "callees": {
+                    "_ZN13MyClassDerive3fooEv": {},
+                    "_ZN13MyClassDeriveC2Ev": {},
+                    "_ZN19MyClassDeriveDerive3fooEv": {},
+                    "_ZN19MyClassDeriveDeriveC2Ev": {}
                 },
-                "numStatements": 5
-            },
-            "overriddenBy": [],
-            "overrides": []
+                "functionName": "main",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            }
         }
     },
     "_MetaCG": {
         "generator": {
-            "name": "CGCollector",
-            "sha": "a12c2adc9482ef0062fd27f104ab4dfd679cb91f",
-            "version": "0.2"
+            "name": "CaGe",
+            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "version": "0.1"
         },
-        "version": "2.0"
+        "version": "4.0"
     }
 }

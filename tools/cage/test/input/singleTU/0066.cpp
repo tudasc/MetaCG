@@ -1,5 +1,5 @@
 // Tests the handling of builtin functions
-extern void foo();
+void foo() {};
 
 int main() {
   int x = 0;

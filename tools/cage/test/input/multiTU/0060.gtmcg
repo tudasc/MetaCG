@@ -2,51 +2,63 @@
     "_CG": {
         "meta": {},
         "nodes": {
-            "_Z3boov": {
-                "callees": {},
-                "functionName": "_Z3boov",
-                "hasBody": false,
-                "meta": {},
-                "origin": null
-            },
-            "_Z3foov": {
-                "callees": {},
-                "functionName": "_Z3foov",
-                "hasBody": false,
-                "meta": {},
-                "origin": null
-            },
-            "_ZN1BC2EPFivE": {
-                "callees": {},
-                "functionName": "_ZN1BC2EPFivE",
-                "hasBody": false,
-                "meta": {},
-                "origin": null
-            },
-            "_ZN1C4workEv": {
+            "_Z1xv": {
                 "callees": {
-                    "_Z3boov": {},
-                    "_Z3foov": {},
-                    "main": {}
+                    "_Z4leafv": {},
+                    "_Z4loopv": {}
                 },
-                "functionName": "_ZN1C4workEv",
+                "functionName": "_Z1xv",
                 "hasBody": false,
                 "meta": {},
                 "origin": null
             },
-            "_ZN1CC2EPFivES1_": {
+            "_Z4leafv": {
+                "callees": {},
+                "functionName": "_Z4leafv",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "_Z4leftv": {
                 "callees": {
-                    "_ZN1BC2EPFivE": {}
+                    "_Z1xv": {}
                 },
-                "functionName": "_ZN1CC2EPFivES1_",
+                "functionName": "_Z4leftv",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "_Z4loopv": {
+                "callees": {
+                    "_Z5splitv": {}
+                },
+                "functionName": "_Z4loopv",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "_Z5rightv": {
+                "callees": {
+                    "_Z1xv": {}
+                },
+                "functionName": "_Z5rightv",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "_Z5splitv": {
+                "callees": {
+                    "_Z4leftv": {},
+                    "_Z5rightv": {}
+                },
+                "functionName": "_Z5splitv",
                 "hasBody": false,
                 "meta": {},
                 "origin": null
             },
             "main": {
                 "callees": {
-                    "_ZN1C4workEv": {},
-                    "_ZN1CC2EPFivES1_": {}
+                    "_Z5splitv": {}
                 },
                 "functionName": "main",
                 "hasBody": false,

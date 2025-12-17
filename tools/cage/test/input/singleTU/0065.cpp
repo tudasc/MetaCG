@@ -1,5 +1,5 @@
 /**
- * Testcase for a missing call in the load imbalance integration test
+ * Function pointer test
  */
 
 typedef void (*Fn)();

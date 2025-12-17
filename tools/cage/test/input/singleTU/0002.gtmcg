@@ -1,48 +1,31 @@
 {
     "_CG": {
-        "_Z3foov": {
-            "callees": [],
-            "callers": [
-                "main"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": false,
-            "meta": {
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0002.cpp",
-                    "systemInclude": false
-                },
-                "numStatements": 0
+        "meta": {},
+        "nodes": {
+            "_Z3foov": {
+                "callees": {},
+                "functionName": "_Z3foov",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
             },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "main": {
-            "callees": [
-                "_Z3foov"
-            ],
-            "callers": [],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": false,
-            "meta": {
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/singleTU/0002.cpp",
-                    "systemInclude": false
+            "main": {
+                "callees": {
+                    "_Z3foov": {}
                 },
-                "numStatements": 2
-            },
-            "overriddenBy": [],
-            "overrides": []
+                "functionName": "main",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            }
         }
     },
     "_MetaCG": {
         "generator": {
-            "name": "CGCollector",
-            "sha": "a12c2adc9482ef0062fd27f104ab4dfd679cb91f",
-            "version": "0.2"
+            "name": "CaGe",
+            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "version": "0.1"
         },
-        "version": "2.0"
+        "version": "4.0"
     }
 }

@@ -2,35 +2,40 @@
     "_CG": {
         "meta": {},
         "nodes": {
-            "_Z6middlev": {
+            "_Z3barv": {
                 "callees": {
-                    "_Z9lastChildv": {}
+                    "_Z3boov": {}
                 },
-                "functionName": "_Z6middlev",
+                "functionName": "_Z3barv",
                 "hasBody": false,
                 "meta": {},
                 "origin": null
             },
-            "_Z7middle2v": {
+            "_Z3bazv": {
                 "callees": {
-                    "_Z9lastChildv": {}
+                    "_Z3foov": {}
                 },
-                "functionName": "_Z7middle2v",
+                "functionName": "_Z3bazv",
                 "hasBody": false,
                 "meta": {},
                 "origin": null
             },
-            "_Z9lastChildv": {
+            "_Z3boov": {
                 "callees": {},
-                "functionName": "_Z9lastChildv",
+                "functionName": "_Z3boov",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "_Z3foov": {
+                "callees": {},
+                "functionName": "_Z3foov",
                 "hasBody": false,
                 "meta": {},
                 "origin": null
             },
             "main": {
-                "callees": {
-                    "_Z6middlev": {}
-                },
+                "callees": {},
                 "functionName": "main",
                 "hasBody": false,
                 "meta": {},

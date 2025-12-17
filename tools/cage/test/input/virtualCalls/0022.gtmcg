@@ -1,112 +1,56 @@
 {
     "_CG": {
-        "_ZN8BaseUsedIiE5good1Ev": {
-            "callees": [],
-            "callers": [
-                "main"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 0
-                },
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/virtualCalls/0022.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "loopCallDepth": {},
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 0,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
-                "numStatements": 0
+        "meta": {},
+        "nodes": {
+            "_ZN8BaseUsedIiE5good1Ev": {
+                "callees": {},
+                "functionName": "_ZN8BaseUsedIiE5good1Ev",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
             },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "_ZN9ChildUsedIiE5good2Ev": {
-            "callees": [],
-            "callers": [
-                "main"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": true,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 0
-                },
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/virtualCalls/0022.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "loopCallDepth": {},
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 0,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 0
-                },
-                "numStatements": 0
+            "_ZN8BaseUsedIiEC2Ev": {
+                "callees": {},
+                "functionName": "_ZN8BaseUsedIiEC2Ev",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
             },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "main": {
-            "callees": [
-                "_ZN8BaseUsedIiE5good1Ev",
-                "_ZN9ChildUsedIiE5good2Ev"
-            ],
-            "callers": [],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": false,
-            "meta": {
-                "codeStatistics": {
-                    "numVars": 1
-                },
-                "fileProperties": {
-                    "origin": "/opt/metacg/mcg-local/cgcollector/test/input/virtualCalls/0022.cpp",
-                    "systemInclude": false
-                },
-                "globalLoopDepth": 0,
-                "loopCallDepth": {
-                    "_ZN8BaseUsedIiE5good1Ev": 0,
-                    "_ZN9ChildUsedIiE5good2Ev": 0
-                },
-                "loopDepth": 0,
-                "mallocCollector": [],
-                "numConditionalBranches": 0,
-                "numOperations": {
-                    "numberOfControlFlowOps": 7,
-                    "numberOfFloatOps": 0,
-                    "numberOfIntOps": 0,
-                    "numberOfMemoryAccesses": 2
-                },
-                "numStatements": 4
+            "_ZN9ChildUsedIiE5good2Ev": {
+                "callees": {},
+                "functionName": "_ZN9ChildUsedIiE5good2Ev",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
             },
-            "overriddenBy": [],
-            "overrides": []
+            "_ZN9ChildUsedIiEC2Ev": {
+                "callees": {
+                    "_ZN8BaseUsedIiEC2Ev": {}
+                },
+                "functionName": "_ZN9ChildUsedIiEC2Ev",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "main": {
+                "callees": {
+                    "_ZN8BaseUsedIiE5good1Ev": {},
+                    "_ZN9ChildUsedIiE5good2Ev": {},
+                    "_ZN9ChildUsedIiEC2Ev": {}
+                },
+                "functionName": "main",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            }
         }
     },
     "_MetaCG": {
         "generator": {
-            "name": "CGCollector",
-            "sha": "0087ee2b3f0bb856239a64cb407a4c6e81699b8b",
-            "version": "0.4"
+            "name": "CaGe",
+            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "version": "0.1"
         },
-        "version": "2.0"
+        "version": "4.0"
     }
 }

@@ -2,9 +2,9 @@
     "_CG": {
         "meta": {},
         "nodes": {
-            "_Z3boov": {
+            "_Z3barv": {
                 "callees": {},
-                "functionName": "_Z3boov",
+                "functionName": "_Z3barv",
                 "hasBody": false,
                 "meta": {},
                 "origin": null
@@ -16,38 +16,24 @@
                 "meta": {},
                 "origin": null
             },
-            "_ZN1BC2EPFivE": {
+            "_Z3goov": {
+                "callees": {
+                    "_Z3barv": {}
+                },
+                "functionName": "_Z3goov",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "_Z3harv": {
                 "callees": {},
-                "functionName": "_ZN1BC2EPFivE",
-                "hasBody": false,
-                "meta": {},
-                "origin": null
-            },
-            "_ZN1C4workEv": {
-                "callees": {
-                    "_Z3boov": {},
-                    "_Z3foov": {},
-                    "main": {}
-                },
-                "functionName": "_ZN1C4workEv",
-                "hasBody": false,
-                "meta": {},
-                "origin": null
-            },
-            "_ZN1CC2EPFivES1_": {
-                "callees": {
-                    "_ZN1BC2EPFivE": {}
-                },
-                "functionName": "_ZN1CC2EPFivES1_",
+                "functionName": "_Z3harv",
                 "hasBody": false,
                 "meta": {},
                 "origin": null
             },
             "main": {
-                "callees": {
-                    "_ZN1C4workEv": {},
-                    "_ZN1CC2EPFivES1_": {}
-                },
+                "callees": {},
                 "functionName": "main",
                 "hasBody": false,
                 "meta": {},
