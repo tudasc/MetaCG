@@ -78,9 +78,11 @@ int main(int argc, char** argv) {
   }
 
   if (result.contains("ldflags")) {
+#ifdef HAVE_GRAPH_TOOLS
     if (useCaGe) {
       std::cout << " -flto -fuse-ld=lld -Wl,--load-pass-plugin=" << CAGE_PLUGIN << " ";
     }
+#endif
   }
 
   return EXIT_SUCCESS;
