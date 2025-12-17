@@ -62,13 +62,13 @@ int main(int argc, char** argv) {
 
   if (result.contains("cflags")) {
     if (useCaGe) {
-      std::cout << " -flto -fuse-ld=lld ";
+      std::cout << " -flto ";
     }
   }
 
   if (result.contains("cxxflags")) {
     if (useCaGe) {
-      std::cout << " -flto -fuse-ld=lld ";
+      std::cout << " -flto ";
     }
   }
 
