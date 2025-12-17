@@ -237,7 +237,7 @@ int main(int argc, char** argv) {
 
       *out << DiffFormatter::emitAsJson(diffs, ignoring, std::filesystem::absolute(cg1).string(),
                                         std::filesystem::absolute(cg2).string())
-                  .dump();
+                  .dump(2);
     }
 
     if (diffs.empty()) {
