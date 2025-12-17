@@ -9,6 +9,11 @@
 
 #include "cxxopts.hpp"
 
+// Setting default to prevent build errors when graph tools are not available.
+#ifndef CAGE_PLUGIN
+#define CAGE_PLUGIN
+#endif
+
 int main(int argc, char** argv) {
   cxxopts::Options options("metacg-config", "MetaCG configuration tool");
   options.add_options("commands")("v,version", "Prints the version of this MetaCG installation")(
