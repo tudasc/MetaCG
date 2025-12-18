@@ -14,9 +14,22 @@
 
 using namespace llvm;
 
+using namespace llvm::cl;
+
+static OptionCategory cageOpts("CaGe");
+
+static opt<cage::PTAType> pta(
+    "", desc("Points-to analysis of indirect calls:"),
+    values(clEnumVal(cage::PTAType::No, "Ignore indirect calls"),
+           clEnumVal(
+               cage::PTAType::All,
+               "Treat all available valid function signatures for a given function pointer as potential call target ")),
+    cat(cageOpts), init(cage::PTAType::No));
+
+
 namespace cage {
 PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
-  Generator gen;
+  Generator gen(pta);
   gen.addConsumer(std::make_unique<FileExporter>());
 
   if (!gen.run(M, &MA))

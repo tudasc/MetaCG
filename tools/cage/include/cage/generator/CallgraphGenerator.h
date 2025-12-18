@@ -12,15 +12,18 @@
 
 namespace cage {
 
+enum PTAType { No, All };
+
 class Generator {
  public:
-  Generator() = default;
+  Generator(PTAType ptaType) : ptaType(ptaType) {};
 
   void addConsumer(std::unique_ptr<CallGraphConsumer> consumer) { consumers.push_back(std::move(consumer)); }
 
   bool run(llvm::Module& M, llvm::ModuleAnalysisManager* MA);
 
  private:
+  PTAType ptaType;
   std::vector<std::unique_ptr<CallGraphConsumer>> consumers;
 };
 

@@ -29,7 +29,7 @@ using namespace llvm;
 namespace cage {
 
 struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
-  CallBaseVisitor(llvm::CallGraph* lcg) : lcg(lcg), mcg(std::make_unique<metacg::Callgraph>()) {
+  CallBaseVisitor(llvm::CallGraph* lcg, PTAType pta) : lcg(lcg), pta(pta), mcg(std::make_unique<metacg::Callgraph>()) {
     const Module& m = lcg->getModule();
     llvm::DebugInfoFinder dbg_finder{};
     dbg_finder.processModule(m);
@@ -47,13 +47,18 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
       }
     }
 
-    for (const auto& func : m.getFunctionList()) {
-      signatureFunctionMap[func.getFunctionType()].push_back(&func.getFunction());
+    // Only build signature map if required for PTA
+    if (pta == All) {
+      for (const auto& func : m.getFunctionList()) {
+        signatureFunctionMap[func.getFunctionType()].push_back(&func.getFunction());
+      }
     }
   }
 
   ~CallBaseVisitor() {
   }
+
+
 
   void visitCallBase(llvm::CallBase& I) {
     if (I.getCalledFunction() != nullptr && I.getCalledFunction()->isIntrinsic())
@@ -69,20 +74,13 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
 
     if (I.getCalledFunction() == nullptr) {
       // Was function pointer, where we can not get the called function
-      const auto& possibleFuncs = signatureFunctionMap[I.getFunctionType()];
-      for (const auto& func : possibleFuncs) {
-        StringRef nameToUse = func->getName();
-        std::optional<std::string> origin{};
-        if (metaDataAvail && functionInfoMap[func] != nullptr) {
-          auto linkageName = functionInfoMap[func]->getLinkageName();
-          if (!linkageName.empty()) {
-            nameToUse = linkageName;
-          }
-          origin = functionInfoMap[func]->getFilename().str();
+      if (pta == PTAType::All) {
+        const auto& possibleFuncs = signatureFunctionMap[I.getFunctionType()];
+        for (const auto& func : possibleFuncs) {
+          assert(func);
+          auto& childNode = getOrInsertNode(func);
+          mcg->addEdge(currentNode, childNode);
         }
-        metacg::CgNode& childNode = mcg->getOrInsertNode(nameToUse.str(),
-                                                                std::move(origin));
-        mcg->addEdge(currentNode, childNode);
       }
     }
   }
@@ -91,13 +89,11 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
     if (F.isIntrinsic())
       return;
     llvm::outs() << "Processing function " << F.getName() << "\n";
-    const std::string& funcName = F.getName().str();
-    metacg::CgNode& currentNode = (metaDataAvail && functionInfoMap[&F] != nullptr
-                                       ? mcg->getOrInsertNode(funcName, functionInfoMap[&F]->getFilename().str())
-                                       : mcg->getOrInsertNode(funcName));
+
+    auto& currentNode = getOrInsertNode(&F);
 
     auto* lcgNode = lcg->operator[](&F);
-    for (auto [key, elem] : *lcgNode) {
+    for (auto& [key, elem] : *lcgNode) {
       if (!key.has_value())
         continue;
       if (elem->getFunction() == nullptr)
@@ -106,10 +102,7 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
         continue;
       const Function* childFunc = elem->getFunction();
       assert(childFunc->hasName());
-      metacg::CgNode& childNode =
-          (metaDataAvail && functionInfoMap[childFunc] != nullptr
-               ? mcg->getOrInsertNode(childFunc->getName().str(), functionInfoMap[childFunc]->getFilename().str())
-               : mcg->getOrInsertNode(childFunc->getName().str()));
+      metacg::CgNode& childNode = getOrInsertNode(childFunc);
       mcg->addEdge(currentNode, childNode);
     }
   }
@@ -139,8 +132,23 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
 #endif
   }
 
+  metacg::CgNode& getOrInsertNode(const llvm::Function* F) {
+    StringRef nameToUse = F->getName();
+    std::optional<std::string> origin{};
+    if (metaDataAvail && functionInfoMap[F] != nullptr) {
+      auto linkageName = functionInfoMap[F]->getLinkageName();
+      if (!linkageName.empty()) {
+        nameToUse = linkageName;
+      }
+      origin = functionInfoMap[F]->getFilename().str();
+    }
+    return mcg->getOrInsertNode(nameToUse.str(),
+                                std::move(origin));
+  }
+
   std::unique_ptr<metacg::Callgraph> mcg;
   llvm::CallGraph* lcg;
+  PTAType pta;
   bool metaDataAvail = false;
   std::unordered_map<const Function*, const llvm::DISubprogram*> functionInfoMap;
   std::unordered_map<llvm::FunctionType*, std::vector<const Function*>> signatureFunctionMap;
@@ -149,7 +157,7 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
 bool Generator::run(Module& M, ModuleAnalysisManager* MA) {
   {
     auto& cgResult = MA->getResult<CallGraphAnalysis>(M);
-    auto cbv = CallBaseVisitor(&cgResult);
+    auto cbv = CallBaseVisitor(&cgResult, ptaType);
     cbv.visit(M);
 
     // Take resulting metacg call graph
