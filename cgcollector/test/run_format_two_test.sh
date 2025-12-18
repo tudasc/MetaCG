@@ -2,16 +2,15 @@
 
 . ./testBase.sh
 
-#if [ command -v $testerExe ]; then
 if [[ $(type -P $testerExe) ]]; then
-  echo "The MCGTester binary (mcgtester) could not be found in path, testing with relative path."
+  echo "The cgdiff binary (cgdiff) could not be found in path, testing with relative path."
 fi
-stat ../../${build_dir}/cgcollector/test/mcgtester >>log/testrun.log 2>&1
+stat ../../${build_dir}/tools/cgdiff/cgdiff >> log/testrun.log 2>&1
 if [ $? -eq 1 ]; then
-  echo "The file seems also non-present in ../${build_dir}/test. Aborting test. Failure! Please build the tester first."
+  echo "The file seems also non-present in ../${build_dir}/cgdiff/. Aborting test. Failure! Please build CGDiff first."
   exit 1
 else
-  testerExe=../../${build_dir}/cgcollector/test/mcgtester
+  testerExe="../../${build_dir}/tools/cgdiff/cgdiff -o $diffFile"
 fi
 
 if [[ $(type -P $cgcollectorExe) ]]; then

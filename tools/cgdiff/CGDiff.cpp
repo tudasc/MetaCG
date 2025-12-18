@@ -15,13 +15,13 @@
 #include <cxxopts.hpp>
 
 std::vector<std::unique_ptr<metacg::Diff>> compare(const metacg::Callgraph& mcgA, const metacg::Callgraph& mcgB,
-                                           ComparisonMode mode,
-                                           const std::unordered_set<std::string>& ignoredMdKeys = {}) {
+                                                   ComparisonMode mode,
+                                                   const std::unordered_set<std::string>& ignoredMdKeys = {}) {
   using Set = std::unordered_set<NodeSummary, NodeSummaryHasher, NodeSummaryComparator>;
 
   ComparisonMode nameOnlyMode = ComparisonMode::ignoreBody | ComparisonMode::ignoreEdges |
-                                ComparisonMode::ignoreMetadata | ComparisonMode::ignoreEdgeMetadata |
-                                ComparisonMode::ignoreGlobalMetadata;
+    ComparisonMode::ignoreMetadata | ComparisonMode::ignoreEdgeMetadata |
+    ComparisonMode::ignoreGlobalMetadata;
 
   NodeSummaryHasher nameHasher{nameOnlyMode};
   NodeSummaryComparator nameComparator{nameOnlyMode};
@@ -66,8 +66,16 @@ std::vector<std::unique_ptr<metacg::Diff>> compare(const metacg::Callgraph& mcgA
       if (!hasFlag(mode, ignoreMetadata)) {
         for (const auto& metadata : node->getMetaDataContainer()) {
           std::string key = metadata.first;
-          std::string value = metadata.second->toJson(mapping).dump(-1);
+          auto json = metadata.second->toJson(mapping);
 
+          if (json.is_object()) {
+            for (auto& [subKey, subValue] : json.items()) {
+              if (subValue.is_array()) {
+                std::sort(subValue.begin(), subValue.end());
+              }
+            }
+          }
+          std::string value = json.dump(-1);
           if (ignoredMdKeys.count(key)) {
             continue;
           }

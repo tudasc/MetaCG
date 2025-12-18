@@ -64,8 +64,6 @@ add_metacg(cgcollector2)
 add_spdlog_libraries(cgcollector2)
 add_json(cgcollector2)
 
-add_subdirectory(test)
-
 # Plugin demo
 add_subdirectory(fileInfoDemoPlugin)
 
