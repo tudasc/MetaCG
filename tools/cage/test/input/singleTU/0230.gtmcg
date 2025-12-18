@@ -5,14 +5,14 @@
             "_Z1fv": {
                 "callees": {},
                 "functionName": "_Z1fv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0230.cpp"
             },
             "_ZN1A14memberFunctionEv": {
                 "callees": {},
                 "functionName": "_ZN1A14memberFunctionEv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0230.cpp"
             },
@@ -21,7 +21,7 @@
                     "_ZN1A14memberFunctionEv": {}
                 },
                 "functionName": "main",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0230.cpp"
             }
@@ -30,7 +30,7 @@
     "_MetaCG": {
         "generator": {
             "name": "CaGe",
-            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
             "version": "0.1"
         },
         "version": "4.0"

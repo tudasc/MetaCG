@@ -15,8 +15,9 @@ mkdir -p log
 # Param 1: Name of the test case.
 # Param 2: Path to the test case.
 # Param 3: Variant name.
-# Param 3: Extra compile flags.
-# Param 4: re-generate gt.
+# Param 4: MCGConfig options.
+# Param 5: Extra compile flags.
+# Param 6: re-generate gt.
 function runTestCase {
   testCaseName=$1
   testCasePath=$2
@@ -80,7 +81,7 @@ function runTestCase {
    return 0
   fi
 
-  "$cgdiff" --ignore-hasBody --ignore-md --ignore-edge-md "$cg_outfile" "$cg_gtfile" -o "$diff_file" -- >>log/testrun.log 2>&1
+  "$cgdiff" --ignore-md --ignore-edge-md "$cg_outfile" "$cg_gtfile" -o "$diff_file" -- >>log/testrun.log 2>&1
   fail=$?
 
   if [[ $fail -ne 0 ]]; then

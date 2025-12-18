@@ -130,6 +130,7 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
   }
 
   metacg::CgNode& getOrInsertNode(const llvm::Function* F) {
+    bool hasBody = !F->isDeclaration();
     StringRef nameToUse = F->getName();
     std::optional<std::string> origin{};
     if (metaDataAvail && functionInfoMap[F] != nullptr) {
@@ -139,7 +140,7 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
       }
       origin = functionInfoMap[F]->getFilename().str();
     }
-    return mcg->getOrInsertNode(nameToUse.str(), std::move(origin));
+    return mcg->getOrInsertNode(nameToUse.str(), std::move(origin), false, hasBody);
   }
 
   std::unique_ptr<metacg::Callgraph> mcg;

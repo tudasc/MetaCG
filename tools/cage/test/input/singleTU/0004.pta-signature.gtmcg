@@ -5,14 +5,14 @@
             "_Z3foov": {
                 "callees": {},
                 "functionName": "_Z3foov",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0004.cpp"
             },
             "main": {
                 "callees": {},
                 "functionName": "main",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0004.cpp"
             }
@@ -21,7 +21,7 @@
     "_MetaCG": {
         "generator": {
             "name": "CaGe",
-            "sha": "3ea516e480f6fb78e2a48908795ff662b029bcb1",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
             "version": "0.1"
         },
         "version": "4.0"

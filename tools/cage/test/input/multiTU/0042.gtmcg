@@ -7,46 +7,46 @@
                     "_Z3boov": {}
                 },
                 "functionName": "_Z3barv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/multiTU/0042_b.cpp"
             },
             "_Z3bazv": {
                 "callees": {
                     "_Z3foov": {}
                 },
                 "functionName": "_Z3bazv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/multiTU/0042_a.cpp"
             },
             "_Z3boov": {
                 "callees": {},
                 "functionName": "_Z3boov",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/multiTU/0042_b.cpp"
             },
             "_Z3foov": {
                 "callees": {},
                 "functionName": "_Z3foov",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/multiTU/0042_a.cpp"
             },
             "main": {
                 "callees": {},
                 "functionName": "main",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/multiTU/0042_a.cpp"
             }
         }
     },
     "_MetaCG": {
         "generator": {
             "name": "CaGe",
-            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
             "version": "0.1"
         },
         "version": "4.0"

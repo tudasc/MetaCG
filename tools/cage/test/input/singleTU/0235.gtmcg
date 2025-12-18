@@ -5,21 +5,21 @@
             "_Z3barv": {
                 "callees": {},
                 "functionName": "_Z3barv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0235.cpp"
             },
             "_Z3foov": {
                 "callees": {},
                 "functionName": "_Z3foov",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0235.cpp"
             },
             "_ZN1CC2EPFvvE": {
                 "callees": {},
                 "functionName": "_ZN1CC2EPFvvE",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0235.cpp"
             },
@@ -28,7 +28,7 @@
                     "_ZN1CC2EPFvvE": {}
                 },
                 "functionName": "main",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0235.cpp"
             }
@@ -37,7 +37,7 @@
     "_MetaCG": {
         "generator": {
             "name": "CaGe",
-            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
             "version": "0.1"
         },
         "version": "4.0"

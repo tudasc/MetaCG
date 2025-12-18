@@ -5,7 +5,7 @@
             "_ZN4Base3barEv": {
                 "callees": {},
                 "functionName": "_ZN4Base3barEv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0300.cpp"
             },
@@ -19,7 +19,7 @@
             "_ZN4BaseC2Ev": {
                 "callees": {},
                 "functionName": "_ZN4BaseC2Ev",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0300.cpp"
             },
@@ -35,7 +35,7 @@
                     "_ZN4BaseC2Ev": {}
                 },
                 "functionName": "_ZN7DerivedC2Ev",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0300.cpp"
             },
@@ -54,7 +54,7 @@
                     "_Znwm": {}
                 },
                 "functionName": "main",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0300.cpp"
             }
@@ -63,7 +63,7 @@
     "_MetaCG": {
         "generator": {
             "name": "CaGe",
-            "sha": "c8642d7649764281bdbb582415161064fd444f32",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
             "version": "0.1"
         },
         "version": "4.0"

@@ -5,28 +5,28 @@
             "_Z3boov": {
                 "callees": {},
                 "functionName": "_Z3boov",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0237.cpp"
             },
             "_Z3foov": {
                 "callees": {},
                 "functionName": "_Z3foov",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0237.cpp"
             },
             "_ZN1BC2EPFivE": {
                 "callees": {},
                 "functionName": "_ZN1BC2EPFivE",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0237.cpp"
             },
             "_ZN1C4workEv": {
                 "callees": {},
                 "functionName": "_ZN1C4workEv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0237.cpp"
             },
@@ -35,7 +35,7 @@
                     "_ZN1BC2EPFivE": {}
                 },
                 "functionName": "_ZN1CC2EPFivES1_",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0237.cpp"
             },
@@ -45,7 +45,7 @@
                     "_ZN1CC2EPFivES1_": {}
                 },
                 "functionName": "main",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0237.cpp"
             }
@@ -54,7 +54,7 @@
     "_MetaCG": {
         "generator": {
             "name": "CaGe",
-            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
             "version": "0.1"
         },
         "version": "4.0"

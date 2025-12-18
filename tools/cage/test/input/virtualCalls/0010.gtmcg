@@ -7,53 +7,53 @@
                     "_ZN13MyClassDerive3barEv": {}
                 },
                 "functionName": "_Z8callsBarR13MyClassDerive",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/virtualCalls/0010.cpp"
             },
             "_ZN13MyClassDerive3barEv": {
                 "callees": {},
                 "functionName": "_ZN13MyClassDerive3barEv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/virtualCalls/0010.cpp"
             },
             "_ZN13MyClassDerive3fooEv": {
                 "callees": {},
                 "functionName": "_ZN13MyClassDerive3fooEv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/virtualCalls/0010.cpp"
             },
             "_ZN13MyClassDeriveC2Ev": {
                 "callees": {
                     "_ZN7MyClassC2Ev": {}
                 },
                 "functionName": "_ZN13MyClassDeriveC2Ev",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/virtualCalls/0010.cpp"
             },
             "_ZN7MyClass3barEv": {
                 "callees": {},
                 "functionName": "_ZN7MyClass3barEv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/virtualCalls/0010.cpp"
             },
             "_ZN7MyClass3fooEv": {
                 "callees": {},
                 "functionName": "_ZN7MyClass3fooEv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/virtualCalls/0010.cpp"
             },
             "_ZN7MyClassC2Ev": {
                 "callees": {},
                 "functionName": "_ZN7MyClassC2Ev",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/virtualCalls/0010.cpp"
             },
             "main": {
                 "callees": {
@@ -64,16 +64,16 @@
                     "_ZN7MyClassC2Ev": {}
                 },
                 "functionName": "main",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/virtualCalls/0010.cpp"
             }
         }
     },
     "_MetaCG": {
         "generator": {
             "name": "CaGe",
-            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
             "version": "0.1"
         },
         "version": "4.0"

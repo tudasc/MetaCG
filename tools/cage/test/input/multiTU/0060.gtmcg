@@ -8,43 +8,43 @@
                     "_Z4loopv": {}
                 },
                 "functionName": "_Z1xv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/multiTU/0060_a.cpp"
             },
             "_Z4leafv": {
                 "callees": {},
                 "functionName": "_Z4leafv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/multiTU/0060_a.cpp"
             },
             "_Z4leftv": {
                 "callees": {
                     "_Z1xv": {}
                 },
                 "functionName": "_Z4leftv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/multiTU/0060_a.cpp"
             },
             "_Z4loopv": {
                 "callees": {
                     "_Z5splitv": {}
                 },
                 "functionName": "_Z4loopv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/multiTU/0060_b.cpp"
             },
             "_Z5rightv": {
                 "callees": {
                     "_Z1xv": {}
                 },
                 "functionName": "_Z5rightv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/multiTU/0060_a.cpp"
             },
             "_Z5splitv": {
                 "callees": {
@@ -52,25 +52,25 @@
                     "_Z5rightv": {}
                 },
                 "functionName": "_Z5splitv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/multiTU/0060_a.cpp"
             },
             "main": {
                 "callees": {
                     "_Z5splitv": {}
                 },
                 "functionName": "main",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/multiTU/0060_a.cpp"
             }
         }
     },
     "_MetaCG": {
         "generator": {
             "name": "CaGe",
-            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
             "version": "0.1"
         },
         "version": "4.0"

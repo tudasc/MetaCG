@@ -5,25 +5,25 @@
             "_ZN13MyClassDerive3fooEv": {
                 "callees": {},
                 "functionName": "_ZN13MyClassDerive3fooEv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/virtualCalls/0011.cpp"
             },
             "main": {
                 "callees": {
                     "_ZN13MyClassDerive3fooEv": {}
                 },
                 "functionName": "main",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/virtualCalls/0011.cpp"
             }
         }
     },
     "_MetaCG": {
         "generator": {
             "name": "CaGe",
-            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
             "version": "0.1"
         },
         "version": "4.0"

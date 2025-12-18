@@ -5,21 +5,21 @@
             "_Z12get_func_ptri": {
                 "callees": {},
                 "functionName": "_Z12get_func_ptri",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0065.cpp"
             },
             "_Z5func1v": {
                 "callees": {},
                 "functionName": "_Z5func1v",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0065.cpp"
             },
             "_Z5func2v": {
                 "callees": {},
                 "functionName": "_Z5func2v",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0065.cpp"
             },
@@ -30,7 +30,7 @@
                     "_Z5func2v": {}
                 },
                 "functionName": "main",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/singleTU/0065.cpp"
             }
@@ -39,7 +39,7 @@
     "_MetaCG": {
         "generator": {
             "name": "CaGe",
-            "sha": "3ea516e480f6fb78e2a48908795ff662b029bcb1",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
             "version": "0.1"
         },
         "version": "4.0"
