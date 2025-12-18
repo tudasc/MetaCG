@@ -18,17 +18,24 @@ using namespace llvm::cl;
 
 static OptionCategory cageOpts("CaGe");
 
+static cl::opt<bool> cageVerbose("cage-verbose", cl::desc("Print debugging output"), cl::init(false));
+
 static opt<cage::PTAType> pta(
-    "", desc("Points-to analysis of indirect calls:"),
-    values(clEnumVal(cage::PTAType::No, "Ignore indirect calls"),
-           clEnumVal(
-               cage::PTAType::All,
+    "pta", desc("Points-to analysis of indirect calls:"),
+    values(clEnumValN(cage::PTAType::No, "no", "Ignore indirect calls"),
+           clEnumValN(
+               cage::PTAType::BySignature, "signature",
                "Treat all available valid function signatures for a given function pointer as potential call target ")),
     cat(cageOpts), init(cage::PTAType::No));
 
 
 namespace cage {
 PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
+
+  if (cageVerbose) {
+    outs() << "Running in verbose mode\n";
+  }
+
   Generator gen(pta);
   gen.addConsumer(std::make_unique<FileExporter>());
 
@@ -71,6 +78,7 @@ llvm::PassPluginLibraryInfo getPluginInfo() {
                 });
           }};
 }
+
 
 extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo llvmGetPassPluginInfo() {
 #ifndef NDEBUG

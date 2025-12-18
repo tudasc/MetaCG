@@ -48,7 +48,7 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
     }
 
     // Only build signature map if required for PTA
-    if (pta == All) {
+    if (pta == BySignature) {
       for (const auto& func : m.getFunctionList()) {
         signatureFunctionMap[func.getFunctionType()].push_back(&func.getFunction());
       }
@@ -74,7 +74,7 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
 
     if (I.getCalledFunction() == nullptr) {
       // Was function pointer, where we can not get the called function
-      if (pta == PTAType::All) {
+      if (pta == PTAType::BySignature) {
         const auto& possibleFuncs = signatureFunctionMap[I.getFunctionType()];
         for (const auto& func : possibleFuncs) {
           assert(func);

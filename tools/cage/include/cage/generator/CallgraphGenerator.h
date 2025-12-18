@@ -12,7 +12,7 @@
 
 namespace cage {
 
-enum PTAType { No, All };
+enum PTAType { No, BySignature };
 
 class Generator {
  public:

@@ -16,13 +16,14 @@
 
 int main(int argc, char** argv) {
   cxxopts::Options options("metacg-config", "MetaCG configuration tool");
-  options.add_options("commands")("v,version", "Prints the version of this MetaCG installation")(
+  options.add_options("commands")("v,version", "Prints the version of this MetaCG installation.")(
       "revision", "Prints the revision hash of this MetaCG installation")(
       "prefix", "Prints the installation prefix of this MetaCG installation.")(
       "ldflags", "Prints the necessary ld flags.")(
       "cflags", "Prints the necessary C compile flags.")(
       "cxxflags", "Prints the necessary C++ compile flags.")(
-      "cage", "Enables the CaGe LTO plugin (requires graph tools)")(
+      "cage", "Enables the CaGe LTO plugin (requires graph tools).")(
+      "pass-option", "Sets a pass option", cxxopts::value<std::vector<std::string>>())(
       "h,help", "Print help");
 
   const cxxopts::ParseResult result = options.parse(argc, argv);
@@ -65,6 +66,15 @@ int main(int argc, char** argv) {
     return EXIT_SUCCESS;
   }
 
+  std::stringstream passOptsStream;
+  if (result.count("pass-option")) {
+    const auto& passOpts = result["pass-option"].as<std::vector<std::string>>();
+    for (auto& opt : passOpts) {
+      passOptsStream << " -Wl,-mllvm=" << opt << " ";
+    }
+  }
+  std::string processedPassOpts = passOptsStream.str();
+
   if (result.contains("cflags")) {
     if (useCaGe) {
       std::cout << " -flto ";
@@ -80,7 +90,7 @@ int main(int argc, char** argv) {
   if (result.contains("ldflags")) {
 #ifdef HAVE_GRAPH_TOOLS
     if (useCaGe) {
-      std::cout << " -flto -fuse-ld=lld -Wl,--load-pass-plugin=" << CAGE_PLUGIN << " ";
+      std::cout << " -flto -fuse-ld=lld -Wl,-mllvm=-load=" << CAGE_PLUGIN << " -Wl,--load-pass-plugin=" << CAGE_PLUGIN << processedPassOpts << " ";
     }
 #endif
   }
