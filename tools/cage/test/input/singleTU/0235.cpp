@@ -4,8 +4,7 @@ typedef void (*Function)();
 
 void foo() {}
 
-__attribute__((retain))
-void bar() {}
+__attribute__((retain)) void bar() {}
 
 class C {
  public:

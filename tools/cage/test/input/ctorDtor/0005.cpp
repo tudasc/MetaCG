@@ -5,7 +5,7 @@ struct A {
 };
 
 struct B : A {
-  ~B(){};
+  ~B() {};
 };
 
 void foo() { B b; }

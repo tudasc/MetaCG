@@ -6,7 +6,7 @@ struct A {
 
 struct B {
   // ~A() should be called here.
-  ~B(){};
+  ~B() {};
   A a;
 };
 

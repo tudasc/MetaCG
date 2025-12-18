@@ -16,6 +16,7 @@
 
 int main(int argc, char** argv) {
   cxxopts::Options options("metacg-config", "MetaCG configuration tool");
+  // clang-format off
   options.add_options("commands")("v,version", "Prints the version of this MetaCG installation.")(
       "revision", "Prints the revision hash of this MetaCG installation")(
       "prefix", "Prints the installation prefix of this MetaCG installation.")(
@@ -25,6 +26,7 @@ int main(int argc, char** argv) {
       "cage", "Enables the CaGe LTO plugin (requires graph tools).")(
       "pass-option", "Sets a pass option", cxxopts::value<std::vector<std::string>>())(
       "h,help", "Print help");
+  // clang-format on
 
   const cxxopts::ParseResult result = options.parse(argc, argv);
 
@@ -34,7 +36,8 @@ int main(int argc, char** argv) {
   }
 
   // Exactly one of these is allowed at the same time
-  int optCount = result.count("version") + result.count("revision") + result.count("prefix") + result.count("ldflags") +result.count("cflags") + result.count("cxxflags");
+  int optCount = result.count("version") + result.count("revision") + result.count("prefix") + result.count("ldflags") +
+                 result.count("cflags") + result.count("cxxflags");
   if (optCount == 0) {
     std::cerr << "Error: No command specified.\n";
     return EXIT_FAILURE;
@@ -90,7 +93,8 @@ int main(int argc, char** argv) {
   if (result.contains("ldflags")) {
 #ifdef HAVE_GRAPH_TOOLS
     if (useCaGe) {
-      std::cout << " -flto -fuse-ld=lld -Wl,-mllvm=-load=" << CAGE_PLUGIN << " -Wl,--load-pass-plugin=" << CAGE_PLUGIN << processedPassOpts << " ";
+      std::cout << " -flto -fuse-ld=lld -Wl,-mllvm=-load=" << CAGE_PLUGIN << " -Wl,--load-pass-plugin=" << CAGE_PLUGIN
+                << processedPassOpts << " ";
     }
 #endif
   }

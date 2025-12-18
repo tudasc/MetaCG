@@ -28,10 +28,8 @@ static opt<cage::PTAType> pta(
                "Treat all available valid function signatures for a given function pointer as potential call target ")),
     cat(cageOpts), init(cage::PTAType::No));
 
-
 namespace cage {
 PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
-
   if (cageVerbose) {
     outs() << "Running in verbose mode\n";
   }
@@ -47,38 +45,39 @@ PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
 }  // namespace cage
 
 llvm::PassPluginLibraryInfo getPluginInfo() {
-  return {LLVM_PLUGIN_API_VERSION, "CaGe", "0.2", [](PassBuilder& PB) {
-            // allow registration via optlevel (non-lto)
+  return {
+    LLVM_PLUGIN_API_VERSION, "CaGe", "0.2", [](PassBuilder& PB) {
+    // allow registration via optlevel (non-lto)
 #if LLVM_VERSION_MAJOR >= 20
-            PB.registerOptimizerLastEPCallback([](ModulePassManager& PM, OptimizationLevel, ThinOrFullLTOPhase) {
+      PB.registerOptimizerLastEPCallback([](ModulePassManager& PM, OptimizationLevel, ThinOrFullLTOPhase) {
 #else
-            PB.registerOptimizerLastEPCallback([](ModulePassManager& PM, OptimizationLevel) {
+      PB.registerOptimizerLastEPCallback([](ModulePassManager& PM, OptimizationLevel) {
 #endif
-              outs() << "Registering CaGe to run during opt\n";
-              PM.addPass(cage::CaGe());
-            });
+        outs() << "Registering CaGe to run during opt\n";
+        PM.addPass(cage::CaGe());
+      });
 
-            // registering via optlevel during lto appears to still be broken
-            PB.registerFullLinkTimeOptimizationLastEPCallback([](ModulePassManager& PM, OptimizationLevel o) {
-              outs() << "Registering CaGe to run during full LTO\n";
-              PM.addPass(cage::CaGe());
-            });
+      // registering via optlevel during lto appears to still be broken
+      PB.registerFullLinkTimeOptimizationLastEPCallback([](ModulePassManager& PM, OptimizationLevel o) {
+        outs() << "Registering CaGe to run during full LTO\n";
+        PM.addPass(cage::CaGe());
+      });
 
-            // allow registration via pipeline parser
-            PB.registerPipelineParsingCallback(
-                [](StringRef Name, ModulePassManager& MPM, ArrayRef<llvm::PassBuilder::PipelineElement>) {
-                  if (Name == "CaGe") {
-                    outs() << "Registering CaGe to run as pipeline described\n";
-                    MPM.addPass(cage::CaGe());
-                    return true;
-                  } else {
-                    outs() << "Did not register CaGe\n";
-                  }
-                  return false;
-                });
-          }};
+      // allow registration via pipeline parser
+      PB.registerPipelineParsingCallback(
+          [](StringRef Name, ModulePassManager& MPM, ArrayRef<llvm::PassBuilder::PipelineElement>) {
+            if (Name == "CaGe") {
+              outs() << "Registering CaGe to run as pipeline described\n";
+              MPM.addPass(cage::CaGe());
+              return true;
+            } else {
+              outs() << "Did not register CaGe\n";
+            }
+            return false;
+          });
+    }
+  };
 }
-
 
 extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo llvmGetPassPluginInfo() {
 #ifndef NDEBUG

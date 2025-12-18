@@ -6,7 +6,7 @@
 #ifndef METACG_CALLGRAPHCONSUMER_H
 #define METACG_CALLGRAPHCONSUMER_H
 
-namespace metacg{
+namespace metacg {
 class Callgraph;
 }
 

@@ -1,4 +1,3 @@
 int foo() { return 2; }
 
-__attribute__((retain))
-int hf() { return foo(); }
+__attribute__((retain)) int hf() { return foo(); }

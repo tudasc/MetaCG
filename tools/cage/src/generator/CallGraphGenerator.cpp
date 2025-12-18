@@ -55,10 +55,7 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
     }
   }
 
-  ~CallBaseVisitor() {
-  }
-
-
+  ~CallBaseVisitor() {}
 
   void visitCallBase(llvm::CallBase& I) {
     if (I.getCalledFunction() != nullptr && I.getCalledFunction()->isIntrinsic())
@@ -142,8 +139,7 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
       }
       origin = functionInfoMap[F]->getFilename().str();
     }
-    return mcg->getOrInsertNode(nameToUse.str(),
-                                std::move(origin));
+    return mcg->getOrInsertNode(nameToUse.str(), std::move(origin));
   }
 
   std::unique_ptr<metacg::Callgraph> mcg;
@@ -167,7 +163,6 @@ bool Generator::run(Module& M, ModuleAnalysisManager* MA) {
     for (auto& consumer : consumers) {
       consumer->consumeCallGraph(*mcg);
     }
-
   }
   return false;
 }
