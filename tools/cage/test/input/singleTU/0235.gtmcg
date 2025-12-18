@@ -2,29 +2,35 @@
     "_CG": {
         "meta": {},
         "nodes": {
+            "_Z3barv": {
+                "callees": {},
+                "functionName": "_Z3barv",
+                "hasBody": false,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0235.cpp"
+            },
             "_Z3foov": {
                 "callees": {},
                 "functionName": "_Z3foov",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0235.cpp"
             },
             "_ZN1CC2EPFvvE": {
                 "callees": {},
                 "functionName": "_ZN1CC2EPFvvE",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0235.cpp"
             },
             "main": {
                 "callees": {
-                    "_Z3foov": {},
                     "_ZN1CC2EPFvvE": {}
                 },
                 "functionName": "main",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0235.cpp"
             }
         }
     },

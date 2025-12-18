@@ -7,23 +7,21 @@
                 "functionName": "_Z5func1v",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0234.cpp"
             },
             "_ZN1XC2EPFvvE": {
                 "callees": {},
                 "functionName": "_ZN1XC2EPFvvE",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0234.cpp"
             },
             "_ZN1XD2Ev": {
-                "callees": {
-                    "_Z5func1v": {}
-                },
+                "callees": {},
                 "functionName": "_ZN1XD2Ev",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0234.cpp"
             },
             "_Znwm": {
                 "callees": {},
@@ -41,7 +39,7 @@
                 "functionName": "main",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0234.cpp"
             }
         }
     },

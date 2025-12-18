@@ -7,14 +7,14 @@
                 "functionName": "_Z3foov",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0004.cpp"
             },
             "main": {
                 "callees": {},
                 "functionName": "main",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0004.cpp"
             }
         }
     },

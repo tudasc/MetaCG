@@ -7,28 +7,23 @@
                 "functionName": "_Z5func1v",
                 "hasBody": false,
                 "meta": {},
-                "origin": "tools/cage/test/input/singleTU/0232.cpp"
+                "origin": "tools/cage/test/input/singleTU/0234.cpp"
             },
             "_ZN1XC2EPFvvE": {
                 "callees": {},
                 "functionName": "_ZN1XC2EPFvvE",
                 "hasBody": false,
                 "meta": {},
-                "origin": "tools/cage/test/input/singleTU/0232.cpp"
+                "origin": "tools/cage/test/input/singleTU/0234.cpp"
             },
             "_ZN1XD2Ev": {
-                "callees": {},
+                "callees": {
+                    "_Z5func1v": {}
+                },
                 "functionName": "_ZN1XD2Ev",
                 "hasBody": false,
                 "meta": {},
-                "origin": "tools/cage/test/input/singleTU/0232.cpp"
-            },
-            "_ZdlPvm": {
-                "callees": {},
-                "functionName": "_ZdlPvm",
-                "hasBody": false,
-                "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0234.cpp"
             },
             "_Znwm": {
                 "callees": {},
@@ -41,20 +36,19 @@
                 "callees": {
                     "_ZN1XC2EPFvvE": {},
                     "_ZN1XD2Ev": {},
-                    "_ZdlPvm": {},
                     "_Znwm": {}
                 },
                 "functionName": "main",
                 "hasBody": false,
                 "meta": {},
-                "origin": "tools/cage/test/input/singleTU/0232.cpp"
+                "origin": "tools/cage/test/input/singleTU/0234.cpp"
             }
         }
     },
     "_MetaCG": {
         "generator": {
             "name": "CaGe",
-            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "sha": "3ea516e480f6fb78e2a48908795ff662b029bcb1",
             "version": "0.1"
         },
         "version": "4.0"

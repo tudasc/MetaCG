@@ -4,6 +4,9 @@ typedef void (*Function)();
 
 void foo() {}
 
+__attribute__((retain))
+void bar() {}
+
 class C {
  public:
   C(Function F) : member(F) {};

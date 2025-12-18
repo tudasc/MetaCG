@@ -12,23 +12,32 @@ verbose=0
 mkdir -p log
 
 # Run single source test case.
-# Param 1: Path to the test case.
-# Param 2: Extra compile flags.
-# Param 3: multi TU.
+# Param 1: Name of the test case.
+# Param 2: Path to the test case.
+# Param 3: Variant name.
+# Param 3: Extra compile flags.
 # Param 4: re-generate gt.
 function runTestCase {
   testCaseName=$1
   testCasePath=$2
-  addFlags=$3
-  regenerate_gt=$4
+  variant=$3
+  addOptions=$4
+  addFlags=$5
+  regenerate_gt=$6
   fail=0
 
   run_dir=$(realpath --relative-to="$test_src_dir" "$testCasePath")
   mkdir -p $run_dir
 
-  cg_outfilename=$testCaseName.mcg
+
+  extendedName=$testCaseName
+  if [[ -n "$variant" ]]; then
+    extendedName="$testCaseName.$variant"
+  fi
+
+  cg_outfilename=$extendedName.mcg
   cg_outfile="$run_dir/$cg_outfilename"
-  cg_gtfile="$testCasePath/$testCaseName.gtmcg"
+  cg_gtfile="$testCasePath/$extendedName.gtmcg"
   diff_file=${cg_outfile/mcg/cgdiff}
 
   rm -f "$cg_outfile" "$diff_file"
@@ -53,9 +62,9 @@ function runTestCase {
   failed=0
   tfile_out="$run_dir/$testCaseName.exe"
   rm -f "$tfile_out"
-  CAGE_CG_NAME="$cg_outfile" clang++ -g `$mcgconfig --cage --ldflags` ${addFlags} -fno-exceptions ${o_files[@]} -o  "$tfile_out" >> log/testrun.log 2>&1 || failed=1
+  CAGE_CG_NAME="$cg_outfile" clang++ -g `$mcgconfig --cage --ldflags ${addOptions}` ${addFlags} -fno-exceptions ${o_files[@]} -o  "$tfile_out" >> log/testrun.log 2>&1 || failed=1
   if [[ $failed -ne 0 ]] || [[ $verbose -eq 1 ]]; then
-    echo "Link command: CAGE_CG_NAME=$cg_outfile clang++ -g `$mcgconfig --cage --ldflags` ${addFlags} -fno-exceptions ${o_files[@]} -o  $tfile_out"
+    echo "Link command: CAGE_CG_NAME=$cg_outfile clang++ -g `$mcgconfig --cage --ldflags ${addOptions}` ${addFlags} -fno-exceptions ${o_files[@]} -o  $tfile_out"
   fi
   if [[ $failed -ne 0 ]]; then
     if [[ ! -f "$cg_outfile" ]]; then
@@ -85,8 +94,10 @@ function runTestCase {
 function runSingleFileTests {
   suiteName=$1
   suitePath=$2
-  addFlags=$3
-  regenerateGt=$4
+  variant=$3
+  addOptions=$4
+  addFlags=$5
+  regenerateGt=$6
 
   if [[ ! $suiteName =~ $suite_pattern ]]; then
     echo "Skipping test suite '$suiteName'..."
@@ -100,7 +111,7 @@ function runSingleFileTests {
     echo "Running test ${tc}"
     tname=$(basename $tc)
     tname=${tname%.*}
-    runTestCase $tname "$suitePath" "" $regenerateGt
+    runTestCase $tname "$suitePath" "$variant" "$addOptions" "$addFlags" $regenerateGt
     fail=$?
     fails=$((fails + fail))
   done
@@ -111,8 +122,10 @@ function runSingleFileTests {
 function runMultiFileTests {
   suiteName=$1
   suitePath=$2
-  addFlags=$3
-  regenerateGt=$4
+  variant=$3
+  addOptions=$4
+  addFlags=$5
+  regenerateGt=$6
 
   if [[ ! $suiteName =~ $suite_pattern ]]; then
     echo "Skipping test suite '$suiteName'..."
@@ -126,11 +139,10 @@ function runMultiFileTests {
     ff="${ff%%_*}"
     multiTests="$multiTests\n$ff"
   done
-  echo $multiTests
   fails=0
   for tc in $(echo -e $multiTests | uniq); do
     echo "Running test ${tc}"
-    runTestCase "$tc" "$suitePath" "" $regenerateGt
+    runTestCase "$tc" "$suitePath" "$variant" "$addOptions" "$addFlags" $regenerateGt
     fail=$?
     fails=$((fails + fail))
   done
@@ -172,15 +184,21 @@ fi
 
 total_fails=0
 
-runSingleFileTests "basic" "$test_src_dir/input/singleTU" "" $regenerate_gt
+# Default variant
+runSingleFileTests "basic" "$test_src_dir/input/singleTU" "" "" "" $regenerate_gt
 fails=$?
 total_fails=$((total_fails + fails))
 
-runSingleFileTests "virtualCalls" "$test_src_dir/input/virtualCalls" "" $regenerate_gt
+runSingleFileTests "virtual-calls" "$test_src_dir/input/virtualCalls" "" ""  "" $regenerate_gt
 fails=$?
 total_fails=$((total_fails + fails))
 
-runMultiFileTests "basicMulti" "$test_src_dir/input/multiTU" "" $regenerate_gt
+runMultiFileTests "basic-multi" "$test_src_dir/input/multiTU" "" "" "" $regenerate_gt
+fails=$?
+total_fails=$((total_fails + fails))
+
+# PTA set to 'signature'
+runSingleFileTests "basic-pta-by-signature" "$test_src_dir/input/singleTU" "pta-signature" "--pass-option -pta=signature" "" $regenerate_gt
 fails=$?
 total_fails=$((total_fails + fails))
 

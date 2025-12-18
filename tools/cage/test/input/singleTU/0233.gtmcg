@@ -16,7 +16,7 @@
                 "functionName": "main",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0233.cpp"
             }
         }
     },

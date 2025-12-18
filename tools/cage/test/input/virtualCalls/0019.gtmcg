@@ -36,8 +36,7 @@
                 "callees": {
                     "_ZN13MyClassDerive3fooEv": {},
                     "_ZN13MyClassDeriveC2Ev": {},
-                    "_ZN7MyClass3fooEv": {},
-                    "_ZN7MyClassC2Ev": {}
+                    "_ZN7MyClass3fooEv": {}
                 },
                 "functionName": "main",
                 "hasBody": false,

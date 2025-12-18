@@ -2,35 +2,36 @@
     "_CG": {
         "meta": {},
         "nodes": {
-            "_Z1fv": {
+            "_Z8childOnev": {
                 "callees": {},
-                "functionName": "_Z1fv",
+                "functionName": "_Z8childOnev",
                 "hasBody": false,
                 "meta": {},
-                "origin": "tools/cage/test/input/singleTU/0230.cpp"
+                "origin": "tools/cage/test/input/singleTU/0005.cpp"
             },
-            "_ZN1A14memberFunctionEv": {
+            "_Z8childTwov": {
                 "callees": {},
-                "functionName": "_ZN1A14memberFunctionEv",
+                "functionName": "_Z8childTwov",
                 "hasBody": false,
                 "meta": {},
-                "origin": "tools/cage/test/input/singleTU/0230.cpp"
+                "origin": "tools/cage/test/input/singleTU/0005.cpp"
             },
             "main": {
                 "callees": {
-                    "_ZN1A14memberFunctionEv": {}
+                    "_Z8childOnev": {},
+                    "_Z8childTwov": {}
                 },
                 "functionName": "main",
                 "hasBody": false,
                 "meta": {},
-                "origin": "tools/cage/test/input/singleTU/0230.cpp"
+                "origin": "tools/cage/test/input/singleTU/0005.cpp"
             }
         }
     },
     "_MetaCG": {
         "generator": {
             "name": "CaGe",
-            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "sha": "3ea516e480f6fb78e2a48908795ff662b029bcb1",
             "version": "0.1"
         },
         "version": "4.0"

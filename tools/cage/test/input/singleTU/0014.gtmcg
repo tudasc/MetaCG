@@ -9,7 +9,7 @@
                 "functionName": "_Z6middlev",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0014.cpp"
             },
             "_Z7middle2v": {
                 "callees": {
@@ -18,14 +18,14 @@
                 "functionName": "_Z7middle2v",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0014.cpp"
             },
             "_Z9lastChildv": {
                 "callees": {},
                 "functionName": "_Z9lastChildv",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0014.cpp"
             },
             "main": {
                 "callees": {
@@ -35,7 +35,7 @@
                 "functionName": "main",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0014.cpp"
             }
         }
     },

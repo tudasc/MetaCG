@@ -2,28 +2,28 @@
     "_CG": {
         "meta": {},
         "nodes": {
-            "_Z3foov": {
+            "_Znwm": {
                 "callees": {},
-                "functionName": "_Z3foov",
+                "functionName": "_Znwm",
                 "hasBody": false,
                 "meta": {},
-                "origin": "tools/cage/test/input/singleTU/0002.cpp"
+                "origin": null
             },
             "main": {
                 "callees": {
-                    "_Z3foov": {}
+                    "_Znwm": {}
                 },
                 "functionName": "main",
                 "hasBody": false,
                 "meta": {},
-                "origin": "tools/cage/test/input/singleTU/0002.cpp"
+                "origin": "tools/cage/test/input/singleTU/0233.cpp"
             }
         }
     },
     "_MetaCG": {
         "generator": {
             "name": "CaGe",
-            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "sha": "3ea516e480f6fb78e2a48908795ff662b029bcb1",
             "version": "0.1"
         },
         "version": "4.0"

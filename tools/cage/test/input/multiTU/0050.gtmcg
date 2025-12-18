@@ -42,7 +42,6 @@
             "main": {
                 "callees": {
                     "_ZN4Base3fooEv": {},
-                    "_ZN4BaseC2Ev": {},
                     "_ZN6Derive3fooEv": {},
                     "_ZN6DeriveC2Ev": {},
                     "_Znwm": {}

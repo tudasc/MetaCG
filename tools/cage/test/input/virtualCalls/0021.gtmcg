@@ -51,7 +51,6 @@
             "main": {
                 "callees": {
                     "_ZN13MyClassDerive3fooEv": {},
-                    "_ZN13MyClassDeriveC2Ev": {},
                     "_ZN19MyClassDeriveDerive3fooEv": {},
                     "_ZN19MyClassDeriveDeriveC2Ev": {}
                 },

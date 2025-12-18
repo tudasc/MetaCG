@@ -41,6 +41,13 @@
                 "meta": {},
                 "origin": null
             },
+            "_ZN7MyClass3fooEv": {
+                "callees": {},
+                "functionName": "_ZN7MyClass3fooEv",
+                "hasBody": false,
+                "meta": {},
+                "origin": "tools/cage/test/input/multiTU/0053.h"
+            },
             "_Znwm": {
                 "callees": {},
                 "functionName": "_Znwm",
@@ -57,8 +64,8 @@
             },
             "main": {
                 "callees": {
+                    "_ZN7MyClass3fooEv": {},
                     "_ZN13MyClassDerive3fooEv": {},
-                    "_ZN14MyClassDeriveD3fooEv": {},
                     "_ZN14MyClassDeriveDC2Ev": {},
                     "_Znwm": {}
                 },

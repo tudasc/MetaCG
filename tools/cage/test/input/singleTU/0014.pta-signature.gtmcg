@@ -4,12 +4,12 @@
         "nodes": {
             "_Z6middlev": {
                 "callees": {
-                    "_Z9lastChildv": {}
+                    "_Z7middle2v": {}
                 },
                 "functionName": "_Z6middlev",
                 "hasBody": false,
                 "meta": {},
-                "origin": "tools/cage/test/input/singleTU/0013.cpp"
+                "origin": "tools/cage/test/input/singleTU/0014.cpp"
             },
             "_Z7middle2v": {
                 "callees": {
@@ -18,30 +18,31 @@
                 "functionName": "_Z7middle2v",
                 "hasBody": false,
                 "meta": {},
-                "origin": "tools/cage/test/input/singleTU/0013.cpp"
+                "origin": "tools/cage/test/input/singleTU/0014.cpp"
             },
             "_Z9lastChildv": {
                 "callees": {},
                 "functionName": "_Z9lastChildv",
                 "hasBody": false,
                 "meta": {},
-                "origin": "tools/cage/test/input/singleTU/0013.cpp"
+                "origin": "tools/cage/test/input/singleTU/0014.cpp"
             },
             "main": {
                 "callees": {
-                    "_Z6middlev": {}
+                    "_Z6middlev": {},
+                    "_Z9lastChildv": {}
                 },
                 "functionName": "main",
                 "hasBody": false,
                 "meta": {},
-                "origin": "tools/cage/test/input/singleTU/0013.cpp"
+                "origin": "tools/cage/test/input/singleTU/0014.cpp"
             }
         }
     },
     "_MetaCG": {
         "generator": {
             "name": "CaGe",
-            "sha": "b63f2e8be7b99e4bae8400006037d57b7d183f01",
+            "sha": "3ea516e480f6fb78e2a48908795ff662b029bcb1",
             "version": "0.1"
         },
         "version": "4.0"

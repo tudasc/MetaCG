@@ -7,14 +7,14 @@
                 "functionName": "_Z8childOnev",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0005.cpp"
             },
             "_Z8childTwov": {
                 "callees": {},
                 "functionName": "_Z8childTwov",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0005.cpp"
             },
             "main": {
                 "callees": {
@@ -24,7 +24,7 @@
                 "functionName": "main",
                 "hasBody": false,
                 "meta": {},
-                "origin": null
+                "origin": "tools/cage/test/input/singleTU/0005.cpp"
             }
         }
     },
