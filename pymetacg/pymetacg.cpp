@@ -139,5 +139,7 @@ NB_MODULE(pymetacg, m) {
                return CgNodeWrapper{self.getNode(nodes[0]), self};
              }
            })
-      .def("__contains__", [](const metacg::Callgraph& self, const std::string& key) { return self.hasNode(key); });
+      .def("__contains__", [](const metacg::Callgraph& self, const std::string& key) { return self.hasNode(key); })
+      .def_prop_ro("meta_data",
+                   [](const metacg::Callgraph& self) { return MetaDataContainer{self.getMetaDataContainer(), self}; });
 }

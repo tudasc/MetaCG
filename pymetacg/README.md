@@ -83,6 +83,9 @@ main_has_statement_metadata = "numStatements" in main.meta_data
 
 # access JSON representation of node's meta data using `.data` (independent of meta data type)
 metadata = main.meta_data["numStatements"].data
+
+# global meta data can be accessed in the same way
+global_metadata = cg.meta_data["someGlobalMetaData"]
 ```
 
 ## Tests

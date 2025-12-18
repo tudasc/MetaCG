@@ -151,11 +151,10 @@ if [[ $? -eq 1 ]]; then
   fi
 fi
 
+sfails=0
 
 # Multi-file tests
 multiTests=(0042 0043 0044 0050 0053 0060)
-
-fails=0
 
 echo " --- Running single file tests [file format version 2.0]---"
 echo " --- Running basic tests ---"
@@ -164,9 +163,9 @@ for tc in ${testGlob}; do
   echo "Running test ${tc}"
   applyFileFormatTwoToSingleTU ${tc} "--whole-program --NumStatements"
   fail=$?
-  fails=$((fails + fail))
+  sfails=$((sfails + fail))
 done
-echo "Single file test failures: $fails"
+echo "Single file test failures: $sfails"
 
 # Single File and full Ctor/Dtor coverage
 echo -e "\n --- Running single file full ctor/dtor tests ---"
@@ -176,9 +175,9 @@ for tc in ${testGlob}; do
   #we need to capture implicits here, as some calls are to implicit constructors/destructors
   applyFileFormatTwoToSingleTU ${tc} "--capture-ctors-dtors --capture-new-delete-calls --capture-implicits --infer-ctors-dtors --whole-program --prune --NumStatements"
   fail=$?
-  fails=$((fails + fail))
+  sfails=$((sfails + fail))
 done
-echo "Single file test failures: $fails"
+echo "Single file test failures: $sfails"
 
 # Single File and for CXXRecordCalls
 echo -e "\n --- Running single file CXXRecord call tests ---"
@@ -188,9 +187,9 @@ for tc in ${testGlob}; do
   #we need to capture implicits here, as some calls are to implicit constructors/destructors
   applyFileFormatTwoToSingleTU ${tc} "--capture-ctors-dtors --capture-new-delete-calls --capture-implicits --prune --infer-ctors-dtors"
   fail=$?
-  fails=$((fails + fail))
+  sfails=$((sfails + fail))
 done
-echo "Single file test failures: $fails"
+echo "Single file test failures: $sfails"
 
 
 # Single File and functionPointers
@@ -200,9 +199,9 @@ for tc in ${testGlob}; do
   echo "Running test ${tc}"
   applyFileFormatTwoToSingleTU ${tc} "--whole-program --NumStatements"
   fail=$?
-  fails=$((fails + fail))
+  sfails=$((sfails + fail))
 done
-echo "Single file test failures: $fails"
+echo "Single file test failures: $sfails"
 
 
 
@@ -213,10 +212,10 @@ for tc in ${testGlob}; do
   echo "Running test ${tc}"
   applyFileFormatTwoToSingleTU ${tc}  "--whole-program --NumStatements"
   fail=$?
-  fails=$((fails + fail))
+  sfails=$((sfails + fail))
 done
 
-echo "Single file test failures: $fails"
+echo "Single file test failures: $sfails"
 
 # Single File virtualCalls
 echo -e "\n --- Running single file virtualCalls tests ---"
@@ -225,22 +224,23 @@ for tc in ${testGlob}; do
   echo "Running test ${tc}"
   applyFileFormatTwoToSingleTU ${tc} "--whole-program --capture-ctors-dtors --NumStatements --OverrideMD"
   fail=$?
-  fails=$((fails + fail))
+  sfails=$((sfails + fail))
 done
-echo "Single file test failures: $fails"
+echo "Single file test failures: $sfails"
 
 
 # Multi File
-fails=0
+mfails=0
 echo -e "\n --- Running multi file tests ---"
 for tc in "${multiTests[@]}"; do
   echo "Running test ${tc}"
   # Input files
   applyFileFormatTwoToMultiTU ${tc} ""
   fail=$?
-  fails=$((fails + fail))
+  mfails=$((mfails + fail))
 done
-echo "Multi file test failures: $fails"
+echo "Multi file test failures: $mfails"
 
-echo -e "$fails failures occured when running tests"
-exit $fails
+tfails=$((sfails+mfails))
+echo -e "$tfails failures occured when running tests"
+exit $tfails
