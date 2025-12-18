@@ -42,6 +42,7 @@ CgNode* Callgraph::getMain(bool forceRecompute) const {
 
 CgNode& Callgraph::insert(const std::string& function, std::optional<std::string> origin, bool isVirtual,
                           bool hasBody) {
+  assert(!function.empty() && "Function name must not be empty");
   NodeId id = nodes.size();
   // Note: Can't use make_unique here because make_unqiue is not (and should not be) a friend of the CgNode constructor.
   nodes.emplace_back(new CgNode(id, function, std::move(origin), isVirtual, hasBody));

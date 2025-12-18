@@ -53,8 +53,6 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
   }
 
   ~CallBaseVisitor() {
-
-    errs() << "CBV destroyed\n";
   }
 
   void visitCallBase(llvm::CallBase& I) {
@@ -73,10 +71,17 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
       // Was function pointer, where we can not get the called function
       const auto& possibleFuncs = signatureFunctionMap[I.getFunctionType()];
       for (const auto& func : possibleFuncs) {
-        metacg::CgNode& childNode = (metaDataAvail && functionInfoMap[func] != nullptr
-                                         ? mcg->getOrInsertNode(functionInfoMap[func]->getLinkageName().str(),
-                                                                functionInfoMap[func]->getFilename().str())
-                                         : mcg->getOrInsertNode(func->getName().str()));
+        StringRef nameToUse = func->getName();
+        std::optional<std::string> origin{};
+        if (metaDataAvail && functionInfoMap[func] != nullptr) {
+          auto linkageName = functionInfoMap[func]->getLinkageName();
+          if (!linkageName.empty()) {
+            nameToUse = linkageName;
+          }
+          origin = functionInfoMap[func]->getFilename().str();
+        }
+        metacg::CgNode& childNode = mcg->getOrInsertNode(nameToUse.str(),
+                                                                std::move(origin));
         mcg->addEdge(currentNode, childNode);
       }
     }
