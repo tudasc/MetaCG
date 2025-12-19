@@ -15,8 +15,8 @@ void FileExporter::consumeCallGraph(metacg::Callgraph& graph) {
   metacg::io::JsonSink jsSink;
   metacg::io::VersionFourMCGWriter mcgw({{4, 0}, {"CaGe", 0, 1, MetaCG_GIT_SHA}}, true, true);
   mcgw.write(&graph, jsSink);
-  const auto* cgName = std::getenv("CAGE_CG_NAME");
-  std::ofstream out(cgName ? cgName : "cage_callgraph.mcg");
+
+  std::ofstream out(outfile);
   out << jsSink.getJson().dump(4);
   out.flush();
   out.close();

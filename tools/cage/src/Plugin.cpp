@@ -18,7 +18,7 @@ using namespace llvm::cl;
 
 static OptionCategory cageOpts("CaGe");
 
-static cl::opt<bool> cageVerbose("cage-verbose", cl::desc("Print debugging output"), cl::init(false));
+static opt<bool> cageVerbose("cage-verbose", desc("Print debugging output"), cat(cageOpts), init(false));
 
 static opt<cage::PTAType> pta(
     "pta", desc("Points-to analysis of indirect calls:"),
@@ -28,14 +28,30 @@ static opt<cage::PTAType> pta(
                "Treat all available valid function signatures for a given function pointer as potential call target ")),
     cat(cageOpts), init(cage::PTAType::No));
 
+static opt<std::string> cgout("cg-file", desc("Output file for the generated call graph"), cat(cageOpts), init(""));
+
+
 namespace cage {
 PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
   if (cageVerbose) {
     outs() << "Running in verbose mode\n";
   }
 
+  // First check explicit option
+  std::string outfile = cgout.getValue();
+  if (outfile.empty()) {
+    // If empty, check environment variable
+    const auto* cgNameEnv = std::getenv("CAGE_CG");
+    if (cgNameEnv) {
+      outfile = cgNameEnv;
+    } else {
+      // Default output file
+      outfile = "cage_callgraph.mcg";
+    }
+  }
+
   Generator gen(pta);
-  gen.addConsumer(std::make_unique<FileExporter>());
+  gen.addConsumer(std::make_unique<FileExporter>(cgout));
 
   if (!gen.run(M, &MA))
     return PreservedAnalyses::all();
