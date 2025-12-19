@@ -2,6 +2,49 @@
 
 This folder contains tools for creating and merging call graphs using the MetaCG graph library.
 
+## CaGe
+
+CaGe is MetaCG's link-time call graph generator.
+To use it, the target applications needs to be built with (full) LTO using the LLD linker.
+
+### Basic Usage
+Let's consider a project that consists of two source files, `example_a.cpp` and `example_b.cpp`.
+A standard build process consists of a compile and a link step:
+```
+# Compile step
+clang++ example_a.cpp -o example_a.o
+clang++ example_b.cpp -o example_b.o
+
+# Link step
+clang++ example_a.o example_b.o -o example
+```
+
+Modifying this build process to generate a call graph with CaGe is straightforward.
+All necessary compile flags can be generated with `metacg-config`:
+
+```
+# Compile step
+clang++ $(metacg-config --cage --cxxflags) example_a.cpp -o example_a.o
+clang++ $(metacg-config --cage --cxxflags) example_b.cpp -o example_b.o
+
+# Link step
+clang++ $(metacg-config --cage --ldflags --pass-option -cg-file=example.mcg) example_a.o example_b.o -o example
+```
+
+### Build system integration
+Integrating CaGe into build systems, e.g. Make and CMake, is simple.
+Many Make projects already define `CXXFLAGS` and `LDFLAGS` variables, which can be extended with the respective 
+`metacg-config` output.
+For CMake projects, the relevant options are `CMAKE_CXX_FLAGS`, `CMAKE_EXE_LINKER_FLAGS` and `CMAKE_SHARED_LINKER_FLAGS`.
+
+### Pass options
+Pass options can be set by passing `--pass-option <option>(=<val>)`  to `metacg-config`.
+Available options:
+- `-cg-file=<filename>`: The output file for the generated call graph.
+- `-pta=no/signature`: Controls the behavior of the points-to analysis for resolving indirect calls. Available options are:
+  - `no`: Indirect calls are ignored.
+  - `signature`: Adds all functions with matching signature as potential call targets.
+
 ## CGMerge2
 
 CGMerge2 is a front-end for MetaCG's call graph merging functionality. 
