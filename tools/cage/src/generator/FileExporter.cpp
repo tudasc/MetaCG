@@ -5,6 +5,8 @@
  */
 #include "cage/generator/FileExporter.h"
 
+#include "llvm/Support/raw_ostream.h"
+
 #include "config.h"
 #include "io/MCGWriter.h"
 #include "io/VersionFourMCGWriter.h"
@@ -16,6 +18,7 @@ void FileExporter::consumeCallGraph(metacg::Callgraph& graph) {
   metacg::io::VersionFourMCGWriter mcgw({{4, 0}, {"CaGe", 0, 1, MetaCG_GIT_SHA}}, true, true);
   mcgw.write(&graph, jsSink);
 
+  llvm::outs() << "Writing generated call graph to: " << outfile << "\n";
   std::ofstream out(outfile);
   out << jsSink.getJson().dump(4);
   out.flush();
