@@ -1,11 +1,19 @@
 #include "Callgraph.h"
 #include "CgNode.h"
 #include "CgTypes.h"
+#include "LoggerUtil.h"
 #include "ReachabilityAnalysis.h"
 #include "io/MCGReader.h"
 #include <cxxopts.hpp>
 #include <iostream>
 
+
+bool is_number(const std::string& s)
+{
+    return !s.empty() &&
+           std::all_of(s.begin(), s.end(),
+               [](unsigned char c) { return std::isdigit(c); });
+}
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -66,8 +74,21 @@ int main(int argc, char** argv) {
 
 
 
+        auto sourceStr = result["source"].as<std::string>();
+        metacg::CgNode* sourceNode = nullptr;
 
-        auto* sourceNode = cg->getFirstNode(result["source"].as<std::string>());
+        if (is_number(sourceStr)) {
+            sourceNode = cg->getNode(std::stoul(sourceStr));
+        } else {
+            if (cg->countNodes(sourceStr) > 1) {
+                metacg::MCGLogger::logWarn(
+                    "To node name '" + sourceStr +
+                    "' is not unique; using first matching node. "
+                    "Please provide a unique node ID.");
+
+            };
+            sourceNode = cg->getFirstNode(sourceStr);
+        }
         if (!sourceNode) {
             std::cerr << "Node '" << result["source"].as<std::string>() << "' not found in CG.\n";
             return 1;
@@ -77,8 +98,19 @@ int main(int argc, char** argv) {
 
         if (result.count("to")) {
             std::string toName = result["to"].as<std::string>();
+            metacg::CgNode* toNode = nullptr;
+            if (is_number(toName)) {
+                toNode = cg->getNode(std::stoul(toName));
+            } else {
+                if (cg->countNodes(toName) > 1) {
+                    metacg::MCGLogger::logWarn(
+                        "To node name '" + toName +
+                        "' is not unique; using first matching node. "
+                        "Please provide a unique node ID.");
+                };
+                toNode = cg->getFirstNode(toName);
+            }
 
-            auto* toNode = cg->getFirstNode(toName);
             if (!toNode) {
                 std::cerr << "Entry node '" << toName << "' not found in CG.\n";
                 return 1;
