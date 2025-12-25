@@ -57,7 +57,6 @@ int main(int argc, char** argv) {
         auto result = options.parse(static_cast<int>(args.size()), args.data());
 
         if (result.count("help")) {
-            std::cout << "help" << std::endl;
             std::cout << options.help() << "\n";
             return 0;
         }
