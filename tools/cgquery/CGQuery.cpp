@@ -28,10 +28,6 @@ int main(int argc, char** argv) {
         std::cerr << "Use cgquery help for available commands." << std::endl;
         return 1;
     }
-    auto fs = metacg::io::FileSource(cg_name);
-    std::unique_ptr<metacg::io::MCGReader> r1 = metacg::io::createReader(fs);
-    auto cg = r1->read();
-
     // Build argv vector including program name for cxxopts
     std::vector<char*> args;
     args.push_back(argv[0]); // Program name
@@ -42,13 +38,18 @@ int main(int argc, char** argv) {
     if (command == "reaches") {
         cxxopts::Options options("cgquery reaches", "Query reachable nodes or check if a node is reachable from a certain node");
         options.add_options()
-            ("s, source", "Start function. Lists all functions reachable from this node.", cxxopts::value<std::string>())
-            ("t, to", "If given, only checks whether this function is reachable from --source.", cxxopts::value<std::string>())
-            ("h,help", "Print help");
+            ("s,source", "Start node", cxxopts::value<std::string>())
+            ("t,to", "Target node", cxxopts::value<std::string>())
+            ("h,help", "Print help")
+            ("input", "Call graph file", cxxopts::value<std::string>());
+
+        options.parse_positional({"input"});
+        options.positional_help("<input_file>");
 
         auto result = options.parse(static_cast<int>(args.size()), args.data());
 
         if (result.count("help")) {
+            std::cout << "help" << std::endl;
             std::cout << options.help() << "\n";
             return 0;
         }
@@ -58,6 +59,11 @@ int main(int argc, char** argv) {
             std::cout << options.help() << std::endl;
             return 2;
         }
+
+        auto fs = metacg::io::FileSource(cg_name);
+        std::unique_ptr<metacg::io::MCGReader> r1 = metacg::io::createReader(fs);
+        auto cg = r1->read();
+
 
 
 
