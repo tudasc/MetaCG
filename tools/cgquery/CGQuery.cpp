@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
                 return 1;
             }
 
-            return reachabilityAnalysis.existsPathBetween(sourceNode, toNode, true) ? 0 : 1;
+            return !reachabilityAnalysis.existsPathBetween(sourceNode, toNode, true);
         }
         else {
             auto reachableNodes = reachabilityAnalysis.getReachableNodesFrom(sourceNode, true);
