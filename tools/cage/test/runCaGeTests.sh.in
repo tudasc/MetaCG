@@ -81,6 +81,10 @@ function runTestCase {
    return 0
   fi
 
+  # LLVM versions 19+ emit _ZdlPvm, while versions before that use _ZdlPv instead.
+  # For consistency, we change all instances to _ZdlPvm.
+  sed -i 's/_ZdlPv\"/_ZdlPvm\"/g' "$cg_outfile"
+
   "$cgdiff" --ignore-md --ignore-edge-md "$cg_outfile" "$cg_gtfile" -o "$diff_file" -- >>log/testrun.log 2>&1
   fail=$?
 
