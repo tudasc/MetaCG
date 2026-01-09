@@ -271,6 +271,10 @@ test-cgcollector2:
 
 test-cage:
   <<: *job-setup
+  parallel:
+    matrix:
+      - GCC: 11
+        LLVM: [15.0.7, 16.0.6, 17.0.6, 18.1.8]
   stage: integration-test
   needs: ["build-mcg"]
   script:
