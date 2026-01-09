@@ -34,8 +34,8 @@ int main(int argc, char** argv) {
     return EXIT_SUCCESS;
   }
 
-  bool cageOptionSet = result.count("cage-ldflags") +
-                    result.count("cage-cflags") + result.count("cage-cxxflags") + result.count("cage-pass-option");
+  bool cageOptionSet = result.count("cage-ldflags") + result.count("cage-cflags") + result.count("cage-cxxflags") +
+                       result.count("cage-pass-option");
 
 #ifndef HAVE_CAGE
   if (cageOptionSet) {
@@ -79,17 +79,16 @@ int main(int argc, char** argv) {
   std::string processedPassOpts = passOptsStream.str();
 
   if (result.contains("cage-cflags")) {
-      std::cout << " -flto ";
+    std::cout << " -flto ";
   }
 
   if (result.contains("cage-cxxflags")) {
-      std::cout << " -flto ";
+    std::cout << " -flto ";
   }
 
   if (result.contains("cage-ldflags")) {
     std::cout << " -flto -fuse-ld=lld -Wl,-mllvm=-load=" << CAGE_PLUGIN << " -Wl,--load-pass-plugin=" << CAGE_PLUGIN
               << processedPassOpts << " ";
-
   }
 #endif
 

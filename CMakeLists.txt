@@ -93,15 +93,15 @@ if(METACG_BUILD_GRAPH_TOOLS)
   include(ClangLLVM)
 
   # Determine if we can build CaGe
-  if (${LLVM_PACKAGE_VERSION}
-          GREATER
-          14)
+  if(${LLVM_PACKAGE_VERSION}
+     GREATER
+     14
+  )
     set(BUILD_CAGE ON)
   else()
     set(BUILD_CAGE OFF)
     message(STATUS "Skipping CaGe: requires LLVM version 15 or higher")
   endif()
-
 
   add_subdirectory(tools)
 endif()

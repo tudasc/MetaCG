@@ -30,7 +30,6 @@ static opt<cage::PTAType> pta(
 
 static opt<std::string> cgout("cg-file", desc("Output file for the generated call graph"), cat(cageOpts), init(""));
 
-
 namespace cage {
 PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
   if (cageVerbose) {

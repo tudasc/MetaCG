@@ -4,7 +4,7 @@ struct Base {
   virtual void bar() {};
 };
 
-struct Derived: public Base {
+struct Derived : public Base {
   void foo() override {}
 };
 

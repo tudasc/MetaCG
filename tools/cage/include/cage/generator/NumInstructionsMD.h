@@ -59,6 +59,6 @@ class NumInstructionsMD : public metacg::MetaData::Registrar<NumInstructionsMD> 
  private:
   int numInstructions{0};
 };
-}  // namespace metacg
+}  // namespace cage
 
 #endif  // CAGE_NUMINSTRUCTIONSMD_H

@@ -1,9 +1,9 @@
 /**
-* File: NumInstructionsCollector.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: NumInstructionsCollector.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
- 
+
 #ifndef METACG_NUMINSTRUCTIONSCOLLECTOR_H
 #define METACG_NUMINSTRUCTIONSCOLLECTOR_H
 
@@ -12,12 +12,12 @@
 
 namespace cage {
 
-class NumInstructionsCollector: public FunctionLocalMetaCollector {
+class NumInstructionsCollector : public FunctionLocalMetaCollector {
  public:
   std::unique_ptr<metacg::MetaData> runOnFunction(llvm::Function& F) override {
     return std::make_unique<NumInstructionsMD>(F.getInstructionCount());
   }
 };
 
-}
-#endif 
+}  // namespace cage
+#endif

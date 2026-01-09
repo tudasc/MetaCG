@@ -16,6 +16,7 @@ class FileExporter : public CallGraphConsumer {
  public:
   FileExporter(std::string outfile) : outfile(outfile) {}
   void consumeCallGraph(metacg::Callgraph&) override;
+
  private:
   std::string outfile;
 };
