@@ -49,9 +49,9 @@ function runTestCase {
     failed=0
     tfile_out="$run_dir/$testTU.o"
     rm -f "$tfile_out"
-    clang++ -c -g `$mcgconfig --cage --cxxflags` ${addFlags} -fno-exceptions "$testCasePath/$testTU" -o  "$tfile_out" >> log/testrun.log 2>&1 || failed=1
+    clang++ -c -g `$mcgconfig --cage-cxxflags` ${addFlags} -fno-exceptions "$testCasePath/$testTU" -o  "$tfile_out" >> log/testrun.log 2>&1 || failed=1
     if [[ $failed -ne 0 ]] || [[ $verbose -eq 1 ]]; then
-      echo "Compile command: clang++ -c -g `$mcgconfig --cage --cxxflags` ${addFlags} -fno-exceptions $testCasePath/$testTU -o $tfile_out"
+      echo "Compile command: clang++ -c -g `$mcgconfig --cage-cxxflags` ${addFlags} -fno-exceptions $testCasePath/$testTU -o $tfile_out"
     fi
     if [[ $failed -ne 0 ]]; then
       echo "Compilation failed!"
@@ -63,9 +63,9 @@ function runTestCase {
   failed=0
   tfile_out="$run_dir/$testCaseName.exe"
   rm -f "$tfile_out"
-  clang++ -g `$mcgconfig --cage --ldflags --pass-option "-cg-file=${cg_outfile}" ${addOptions}` ${addFlags} -fno-exceptions ${o_files[@]} -o  "$tfile_out" >> log/testrun.log 2>&1 || failed=1
+  clang++ -g `$mcgconfig --cage-ldflags --cage-pass-option "-cg-file=${cg_outfile}" ${addOptions}` ${addFlags} -fno-exceptions ${o_files[@]} -o  "$tfile_out" >> log/testrun.log 2>&1 || failed=1
   if [[ $failed -ne 0 ]] || [[ $verbose -eq 1 ]]; then
-    echo "Link command: clang++ -g `$mcgconfig --cage --ldflags --pass-option "-cg-file=${cg_outfile}" ${addOptions}` ${addFlags} -fno-exceptions ${o_files[@]} -o  $tfile_out"
+    echo "Link command: clang++ -g `$mcgconfig --cage-ldflags --cage-pass-option "-cg-file=${cg_outfile}" ${addOptions}` ${addFlags} -fno-exceptions ${o_files[@]} -o  $tfile_out"
   fi
   if [[ $failed -ne 0 ]]; then
     if [[ ! -f "$cg_outfile" ]]; then
@@ -199,7 +199,7 @@ fails=$?
 total_fails=$((total_fails + fails))
 
 # PTA set to 'signature'
-runSingleFileTests "basic-pta-by-signature" "$test_src_dir/input/singleTU" "pta-signature" "--pass-option -pta=signature" "" $regenerate_gt
+runSingleFileTests "basic-pta-by-signature" "$test_src_dir/input/singleTU" "pta-signature" "--cage-pass-option -pta=signature" "" $regenerate_gt
 fails=$?
 total_fails=$((total_fails + fails))
 
