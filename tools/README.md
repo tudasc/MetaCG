@@ -24,11 +24,11 @@ All necessary compile flags can be generated with `metacg-config`:
 
 ```
 # Compile step
-clang++ $(metacg-config --cage --cxxflags) example_a.cpp -o example_a.o
-clang++ $(metacg-config --cage --cxxflags) example_b.cpp -o example_b.o
+clang++ $(metacg-config --cage-cxxflags) example_a.cpp -o example_a.o
+clang++ $(metacg-config --cage-cxxflags) example_b.cpp -o example_b.o
 
 # Link step
-clang++ $(metacg-config --cage --ldflags --pass-option -cg-file=example.mcg) example_a.o example_b.o -o example
+clang++ $(metacg-config --cage-ldflags --cage-pass-option -cg-file=example.mcg) example_a.o example_b.o -o example
 ```
 
 ### Build system integration
@@ -38,7 +38,7 @@ Many Make projects already define `CXXFLAGS` and `LDFLAGS` variables, which can 
 For CMake projects, the relevant options are `CMAKE_CXX_FLAGS`, `CMAKE_EXE_LINKER_FLAGS` and `CMAKE_SHARED_LINKER_FLAGS`.
 
 ### Pass options
-Pass options can be set by passing `--pass-option <option>(=<val>)`  to `metacg-config`.
+Pass options can be set by passing `--cage-pass-option <option>(=<val>)`  to `metacg-config`.
 Available options:
 - `-cg-file=<filename>`: The output file for the generated call graph.
 - `-pta=no/signature`: Controls the behavior of the points-to analysis for resolving indirect calls. Available options are:
