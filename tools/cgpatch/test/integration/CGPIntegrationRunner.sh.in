@@ -53,6 +53,13 @@ cgmerge2Exe="$buildDir/tools/cgmerge2/cgmerge2"
 outputDir=$buildDir/tools/cgpatch/test/integration
 
 
+if [ "$CGPATCH_USE_MPI" == "ON" ]; then
+    compiler=mpicxx
+else
+    compiler=clang++
+fi
+
+
 if [ ! -d "${logDir}" ]; then
     mkdir "${logDir}"
 fi
@@ -71,14 +78,14 @@ function build_and_run_mpi_testcase {
     local testDir="$3"
     local testExe="$outputDir/${testName}.out"
     local testPG="$outputDir/${testName}.pg"
-    local testGT="$test_root/input/mpi/{testName}.gtpg"
+    local testGT="$test_root/input/mpi/${testName}.gtpg"
     local testMCG="$outputDir/${testName}.mcg"
-    local testSCG="$test_root/input/general/${testName}.ipcg"
+    local testSCG="$test_root/input/mpi/${testName}.ipcg"
 
     export CGPATCH_CG_NAME="${testPG}"
 
     log "Compiling MPI testcase: $testSources"
-    $cgpatchExe mpicxx $testSources -o "$testExe" >> "$logFile"
+    $cgpatchExe $compiler $testSources -o "$testExe" >> "$logFile"
     if [ $? -ne 0 ]; then
         echo "Compilation failed for $testName"
         fails=$((fails + 1))
@@ -109,7 +116,7 @@ function build_and_run_regular_testcase {
     export CGPATCH_CG_NAME="${testPG}"
 
     log "Compiling regular testcase: $testSources"
-    $cgpatchExe clang++ $testSources -o "$testExe" >> "$logFile"
+    $cgpatchExe $compiler $testSources -o "$testExe" >> "$logFile"
     if [ $? -ne 0 ]; then
         echo "Compilation failed for $testName"
         fails=$((fails + 1))
