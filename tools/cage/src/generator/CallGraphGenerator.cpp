@@ -4,7 +4,6 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #include "cage/generator/CallgraphGenerator.h"
-#include "cage/generator/NumInstructionsCollector.h"
 
 #include "Callgraph.h"
 
@@ -160,10 +159,6 @@ bool Generator::run(Module& M, ModuleAnalysisManager* MA) {
 
     // Take resulting metacg call graph
     auto mcg = cbv.takeResult();
-
-    // Run metadata collectors
-    NumInstructionsCollector nic;
-    nic.run(M, *mcg);
 
     // Run registered consumers
     for (auto& consumer : consumers) {
