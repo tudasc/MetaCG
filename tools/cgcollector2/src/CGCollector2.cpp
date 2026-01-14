@@ -220,8 +220,6 @@ int main(int argc, const char** argv) {
     cgoutPath = std::filesystem::absolute(
         std::filesystem::path(cgout.getValue())
     );
-  } else {
-    cgoutPath.clear();
   }
 
   std::unique_ptr<CallGraphCollectorAction> const cgca2 =
