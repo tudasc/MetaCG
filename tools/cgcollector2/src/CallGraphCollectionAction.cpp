@@ -88,12 +88,16 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
 
   metacg::io::JsonSink js;
   mcgWriter->write(callgraph, js);
-  auto& sm = Context.getSourceManager();
-  std::string filename = sm.getFileEntryRefForID(sm.getMainFileID())->getName().str();
-  filename = filename.substr(0, filename.find_last_of('.')) + ".ipcg";
+  std::string filename;
+  if (cgout.empty()) {
+    auto& sm = Context.getSourceManager();
+    filename = sm.getFileEntryRefForID(sm.getMainFileID())->getName().str();
+    filename = filename.substr(0, filename.find_last_of('.')) + ".ipcg";
+  } else {
+    filename = cgout;
+  }
   SPDLOG_INFO("Writing to file: {}", filename);
   std::ofstream file(filename);
-
   // Fixme: may be a very expensive copy;
   nlohmann::json newJ = js.getJson();
   if (prune) {
