@@ -3,7 +3,9 @@ testerExe=cgdiff
 cgmergeExe=cgmerge2
 build_dir=build # may be changed with opt 'b'
 
-mkdir -p log
+WORKDIR=$(mktemp -d "$(pwd)/run_XXXXXX")
+LOGDIR="$WORKDIR/log"
+mkdir -p "$LOGDIR"
 
 # Function to invoke the CGCollector with file format version 2 to a target source code
 # Param 1: The relative path name to the test case.
@@ -17,14 +19,17 @@ function applyFileFormatTwoToSingleTU {
   # - The test case
   # - The groundtruth data for reconciling the CG constructed by MetaCG
   tfile=$testCaseFile
-  gfile=${testCaseFile/cpp/ipcg}
+  rel=${testCaseFile#./}
+  gfile="$WORKDIR/${rel/cpp/ipcg}"
+  mkdir -p "$(dirname "$gfile")"
   tgt=${testCaseFile/cpp/gtmcg}
 
-  $cgcollectorExe ${addFlags} $tfile --extra-arg=-std=c++17 -- >>log/testrun.log 2>&1
+  $cgcollectorExe ${addFlags} $tfile --cg-file=$gfile --extra-arg=-std=c++17 -- >> $LOGDIR/testrun.log 2>&1
+
   cat $gfile | python3 -m json.tool > ${gfile}_
   mv ${gfile}_ ${gfile}
 
-  $testerExe $tgt $gfile >>log/testrun.log 2>&1
+  $testerExe $tgt $gfile >> $LOGDIR/testrun.log 2>&1
 
   if [ $? -ne 0 ]; then
     echo "Failure for file: $gfile. Keeping generated file for inspection"
@@ -44,8 +49,13 @@ function applyFileFormatTwoToMultiTU {
   tbFile=${tc}_b.cpp
 
   # Result files
-  ipcgTaFile="${taFile/cpp/ipcg}"
-  ipcgTbFile="${tbFile/cpp/ipcg}"
+  rel=${taFile#./}
+  ipcgTaFile="$WORKDIR/${rel/cpp/ipcg}"
+  mkdir -p "$(dirname "$ipcgTaFile")"
+
+  rel=${tbFile#./}
+  ipcgTbFile="$WORKDIR/${rel/cpp/ipcg}"
+  mkdir -p "$(dirname "$ipcgTbFile")"
 
   # Groundtruth files
   gtaFile="${taFile/cpp/gtmcg}"
@@ -56,39 +66,47 @@ function applyFileFormatTwoToMultiTU {
   # TODO: Ground truths currently only include numStatements metadata. Tests for old cgcollector also have fileProperties.
   #       What should be the general MD set tested here?
   #
-  $cgcollectorExe --NumStatements --OverrideMD --whole-program ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
-  $cgcollectorExe --NumStatements --OverrideMD --whole-program ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
+  $cgcollectorExe --NumStatements --OverrideMD --whole-program ./input/multiTU/$taFile --cg-file=$ipcgTaFile -- >> $LOGDIR/testrun.log 2>&1
+  $cgcollectorExe --NumStatements --OverrideMD --whole-program ./input/multiTU/$tbFile --cg-file=$ipcgTbFile -- >> $LOGDIR/testrun.log 2>&1
 
-  cat ./input/multiTU/${ipcgTaFile} | python3 -m json.tool >./input/multiTU/${ipcgTaFile}_
-  mv ./input/multiTU/${ipcgTaFile}_ ./input/multiTU/${ipcgTaFile}
-  cat ./input/multiTU/${ipcgTbFile} | python3 -m json.tool >./input/multiTU/${ipcgTbFile}_
-  mv ./input/multiTU/${ipcgTbFile}_ ./input/multiTU/${ipcgTbFile}
+  cat ${ipcgTaFile} | python3 -m json.tool > ${ipcgTaFile}_
+  mv ${ipcgTaFile}_ ${ipcgTaFile}
+  cat ${ipcgTbFile} | python3 -m json.tool > ${ipcgTbFile}_
+  mv ${ipcgTbFile}_ ${ipcgTbFile}
 
-  $testerExe ./input/multiTU/${ipcgTaFile} ./input/multiTU/${gtaFile} >>log/testrun.log 2>&1
+  $testerExe ${ipcgTaFile} ./input/multiTU/${gtaFile} >> $LOGDIR/testrun.log 2>&1
   aErr=$?
-  $testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile} >>log/testrun.log 2>&1
+  $testerExe ${ipcgTbFile} ./input/multiTU/${gtbFile} >> $LOGDIR/testrun.log 2>&1
   bErr=$?
 
-  combFile=${tc}_combined.ipcg
-  echo "null" >./input/multiTU/${combFile}
 
-  ${cgmergeExe} ./input/multiTU/${combFile} ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile} >>log/testrun.log 2>&1
+  rel_tc=${tc#./}
+  combFile="$WORKDIR/${rel_tc}_combined.ipcg"
+  mkdir -p "$(dirname "$combFile")"
+
+  echo "null" > ${combFile}
+
+  ${cgmergeExe} ${combFile} ${ipcgTaFile} ${ipcgTbFile} >> $LOGDIR/testrun.log 2>&1
   mErr=$?
 
-  cat ./input/multiTU/${combFile} | python3 -m json.tool >./input/multiTU/${combFile}_
-  mv ./input/multiTU/${combFile}_ ./input/multiTU/${combFile}
+  cat ${combFile} | python3 -m json.tool > ${combFile}_
+  mv ${combFile}_ ${combFile}
 
-  ${testerExe} ./input/multiTU/${combFile} ./input/multiTU/${gtCombFile} >>log/testrun.log 2>&1
+  ${testerExe} ${combFile} ./input/multiTU/${gtCombFile} >> $LOGDIR/testrun.log 2>&1
   cErr=$?
 
   echo "$aErr or $bErr or $mErr or $cErr"
 
   if [[ ${aErr} -ne 0 || ${bErr} -ne 0 || ${mErr} -ne 0 || ${cErr} -ne 0 ]]; then
     echo "Failure for file: $combFile. Keeping generated file for inspection"
+    mv ${combFile} $LOGDIR
+    mv ${ipcgTaFile} $LOGDIR
+    mv ${ipcgTbFile} $LOGDIR
+
     fail=$((fail + 1))
   else
     #echo "Success for file: $combFile. Deleting generated file"
-    rm ./input/multiTU/$combFile ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile}
+    rm $combFile ${ipcgTaFile} ${ipcgTbFile}
   fi
   return $fail
 }
@@ -113,10 +131,11 @@ while getopts ":b:h" opt; do
   esac
 done
 
+
 type -P $testerExe > /dev/null 2>&1
 if [[ $? -eq 1 ]]; then
   echo "The CGDiff binary (cgdiff) could not be found in path, testing with relative path."
-  stat ${PWD}/../../../${build_dir}/tools/cgdiff/cgdiff >> log/testrun.log 2>&1
+  stat ${PWD}/../../../${build_dir}/tools/cgdiff/cgdiff >> $LOGDIR/testrun.log 2>&1
   if [ $? -eq 1 ]; then
     echo "The file cgdiff seems also non-present in ../../../${build_dir}/tools/cgdiff/cgdiff. Aborting test. Failure! Please build the tester first."
     exit 1
@@ -130,7 +149,7 @@ type -P $cgcollectorExe > /dev/null 2>&1
 if [[ $? -eq 1 ]]; then
   echo "No cgcollector2 in PATH. Trying relative path ../../../${build_dir}/tools/cgcollector2/"
 
-  stat ${PWD}/../../../${build_dir}/tools/cgcollector2/cgcollector2 >> log/testrun.log 2>&1
+  stat ${PWD}/../../../${build_dir}/tools/cgcollector2/cgcollector2 >> $LOGDIR/testrun.log 2>&1
   if [ $? -eq 1 ]; then
     echo "The file seems also non-present in ../../../${build_dir}/tools/cgcollector2/ Aborting test. Failure! Please build the collector first."
     exit 1
@@ -142,7 +161,7 @@ fi
 type -P $cgmergeExe > /dev/null 2>&1
 if [[ $? -eq 1 ]]; then
   echo "No cgmerge2 in PATH. Trying relative path ../${build_dir}/test"
-  stat ${PWD}/../../../${build_dir}/tools/cgmerge2/cgmerge2 >> log/testrun.log 2>&1
+  stat ${PWD}/../../../${build_dir}/tools/cgmerge2/cgmerge2 >> $LOGDIR/testrun.log 2>&1
   if [ $? -eq 1 ]; then
     echo "The file seems also non-present in ../../../${build_dir}/tools/cgmerge2/. Aborting test. Failure! Please build the collector first."
     exit 1
@@ -159,6 +178,8 @@ multiTests=(0042 0043 0044 0050 0053 0060)
 echo " --- Running single file tests [file format version 2.0]---"
 echo " --- Running basic tests ---"
 testGlob="./input/singleTU/*.cpp"
+
+
 for tc in ${testGlob}; do
   echo "Running test ${tc}"
   applyFileFormatTwoToSingleTU ${tc} "--whole-program --NumStatements"
@@ -234,7 +255,6 @@ mfails=0
 echo -e "\n --- Running multi file tests ---"
 for tc in "${multiTests[@]}"; do
   echo "Running test ${tc}"
-  # Input files
   applyFileFormatTwoToMultiTU ${tc} ""
   fail=$?
   mfails=$((mfails + fail))
@@ -243,4 +263,6 @@ echo "Multi file test failures: $mfails"
 
 tfails=$((sfails+mfails))
 echo -e "$tfails failures occured when running tests"
+#Clean up empty directories in run dir
+find "$WORKDIR" -type d -empty -delete
 exit $tfails
