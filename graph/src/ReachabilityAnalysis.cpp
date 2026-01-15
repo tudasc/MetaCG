@@ -65,4 +65,15 @@ bool ReachabilityAnalysis::existsPathBetween(const CgNode* const src, const CgNo
   return reachableSet.find(dest) != reachableSet.end();
 }
 
+
+const std::unordered_set<const CgNode*>& ReachabilityAnalysis::getReachableNodesFrom(const CgNode* const node, bool forceUpdate) {
+  if (forceUpdate || computedFor.count(node) == 0) {
+    runForNode(node);
+  }
+
+  auto it = reachableNodes.find(node);
+  assert(it != reachableNodes.end());
+  return it->second;
+}
+
 }  // namespace metacg::analysis
