@@ -5,7 +5,7 @@ This folder contains tools for creating and merging call graphs using the MetaCG
 ## CaGe
 
 CaGe is MetaCG's link-time call graph generator.
-To use it, the target applications needs to be built with (full) LTO using the LLD linker.
+To use it, the target application needs to be built with (full) LTO using the LLD linker.
 
 ### Basic Usage
 Let's consider a project that consists of two source files, `example_a.cpp` and `example_b.cpp`.
