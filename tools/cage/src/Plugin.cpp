@@ -94,6 +94,4 @@ llvm::PassPluginLibraryInfo getPluginInfo() {
   };
 }
 
-extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo llvmGetPassPluginInfo() {
-  return getPluginInfo();
-}
+extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo llvmGetPassPluginInfo() { return getPluginInfo(); }

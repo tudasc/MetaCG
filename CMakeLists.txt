@@ -100,9 +100,9 @@ if(METACG_BUILD_GRAPH_TOOLS)
     set(BUILD_CAGE ON)
 
     option(
-            CAGE_USE_METAVIRT
-            ON
-            "Rely on metavirt for virtual call handling"
+      CAGE_USE_METAVIRT
+      ON
+      "Rely on metavirt for virtual call handling"
     )
 
     if(${CAGE_USE_METAVIRT})
