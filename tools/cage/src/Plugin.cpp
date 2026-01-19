@@ -33,7 +33,7 @@ static opt<std::string> cgout("cg-file", desc("Output file for the generated cal
 namespace cage {
 PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
   if (cageVerbose) {
-    outs() << "Running in verbose mode\n";
+    outs() << "Running CaGe in verbose mode\n";
   }
 
   // First check explicit option
@@ -95,10 +95,5 @@ llvm::PassPluginLibraryInfo getPluginInfo() {
 }
 
 extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo llvmGetPassPluginInfo() {
-#ifndef NDEBUG
-  outs() << "Loading debug version of CaGe-Plugin\n";
-#else
-  outs() << "Loading release version of CaGe-Plugin\n";
-#endif
   return getPluginInfo();
 }

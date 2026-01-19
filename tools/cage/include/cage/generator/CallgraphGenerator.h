@@ -16,7 +16,7 @@ enum PTAType { No, BySignature };
 
 class Generator {
  public:
-  Generator(PTAType ptaType) : ptaType(ptaType) {};
+  explicit Generator(PTAType ptaType) : ptaType(ptaType) {};
 
   void addConsumer(std::unique_ptr<CallGraphConsumer> consumer) { consumers.push_back(std::move(consumer)); }
 
