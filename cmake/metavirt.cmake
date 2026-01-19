@@ -1,7 +1,6 @@
-
 set(METAVIRT_LOG_LEVEL
-        "0"
-        CACHE STRING "MetaVirt log level from 0 (least verbose) to 4 (most verbose)"
+    "0"
+    CACHE STRING "MetaVirt log level from 0 (least verbose) to 4 (most verbose)"
 )
 
 FetchContent_Declare(
