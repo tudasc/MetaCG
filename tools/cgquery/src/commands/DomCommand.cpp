@@ -57,7 +57,8 @@ int DomCommand::run(const std::vector<char*>& args) {
 
     const auto& data = dom[targetNodePtr];
     if (!data.initialized) {
-      std::cerr << "Dominator analysis not initialized for node '" << nodeName << "'\n";
+      std::cerr << "Node '" << nodeName << "' is not reachable from entry node '" << refName
+                << "' in dominator analysis.\n";
       return ExitCode::Error;
     }
 

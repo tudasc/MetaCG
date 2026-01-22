@@ -57,7 +57,8 @@ int PostDomCommand::run(const std::vector<char*>& args) {
 
     const auto& data = dom[targetNodePtr];
     if (!data.initialized) {
-      std::cerr << "Postdominator analysis not initialized for node '" << nodeName << "'\n";
+      std::cerr << "Node '" << nodeName << "' is not reachable from entry node '" << refName
+                << "' in post-dominator analysis.\n";
       return ExitCode::Error;
     }
 
