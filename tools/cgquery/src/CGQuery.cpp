@@ -1,15 +1,14 @@
+/**
+* File: CGQuery.h
+* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+* https://github.com/tudasc/metacg/LICENSE.txt
+*/
 #include "commands/PostDomCommand.h"
 #include "commands/ReachesCommand.h"
 #include "commands/DomCommand.h"
 #include "utils.h"
 
-#include "Callgraph.h"
-#include "CgNode.h"
-#include "CgTypes.h"
-#include "io/MCGReader.h"
-
 #include <cxxopts.hpp>
-
 #include <iostream>
 #include <memory>
 #include <ostream>
