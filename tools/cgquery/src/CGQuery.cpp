@@ -50,8 +50,7 @@ int main(int argc, char** argv) {
     cmd = std::make_unique<ReachesCommand>();
   } else if (command == "dom") {
     cmd = std::make_unique<DomCommand>();
-  }
-  if (command == "postdom") {
+  } else if (command == "postdom") {
     cmd = std::make_unique<PostDomCommand>();
   } else {
     std::cerr << "Unknown command " << command << "." << std::endl;
