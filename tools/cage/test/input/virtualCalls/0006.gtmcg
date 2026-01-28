@@ -1,0 +1,31 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "_ZN7MyClass3fooEv": {
+                "callees": {},
+                "functionName": "_ZN7MyClass3fooEv",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/virtualCalls/0006.cpp"
+            },
+            "main": {
+                "callees": {
+                    "_ZN7MyClass3fooEv": {}
+                },
+                "functionName": "main",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/virtualCalls/0006.cpp"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CaGe",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
+            "version": "0.1"
+        },
+        "version": "4.0"
+    }
+}

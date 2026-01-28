@@ -1,0 +1,212 @@
+#!/usr/bin/env bash
+
+test_src_dir="@TEST_SRC_DIR@"
+mcgconfig="@METACG_CONFIG@"
+build_dir="@CMAKE_BINARY_DIR@"
+cgdiff="$build_dir/tools/cgdiff/cgdiff"
+cgmerge="$build_dir/tools/cgmerge2/cgmerge2"
+
+suite_pattern=".*"
+verbose=0
+
+mkdir -p log
+
+# Run single source test case.
+# Param 1: Name of the test case.
+# Param 2: Path to the test case.
+# Param 3: Variant name.
+# Param 4: MCGConfig options.
+# Param 5: Extra compile flags.
+# Param 6: re-generate gt.
+function runTestCase {
+  testCaseName=$1
+  testCasePath=$2
+  variant=$3
+  addOptions=$4
+  addFlags=$5
+  regenerate_gt=$6
+  fail=0
+
+  run_dir=$(realpath --relative-to="$test_src_dir" "$testCasePath")
+  mkdir -p $run_dir
+
+
+  extendedName=$testCaseName
+  if [[ -n "$variant" ]]; then
+    extendedName="$testCaseName.$variant"
+  fi
+
+  cg_outfilename=$extendedName.mcg
+  cg_outfile="$run_dir/$cg_outfilename"
+  cg_gtfile="$testCasePath/$extendedName.gtmcg"
+  diff_file=${cg_outfile/mcg/cgdiff}
+
+  rm -f "$cg_outfile" "$diff_file"
+
+  o_files=()
+
+  for testTU in $(ls $testCasePath | grep "$testCaseName.*\.cpp"); do
+    failed=0
+    tfile_out="$run_dir/$testTU.o"
+    rm -f "$tfile_out"
+    clang++ -c -g `$mcgconfig --cage-cxxflags` ${addFlags} -fno-exceptions "$testCasePath/$testTU" -o  "$tfile_out" >> log/testrun.log 2>&1 || failed=1
+    if [[ $failed -ne 0 ]] || [[ $verbose -eq 1 ]]; then
+      echo "Compile command: clang++ -c -g `$mcgconfig --cage-cxxflags` ${addFlags} -fno-exceptions $testCasePath/$testTU -o $tfile_out"
+    fi
+    if [[ $failed -ne 0 ]]; then
+      echo "Compilation failed!"
+      return 1
+    fi
+    o_files+=($tfile_out)
+  done
+
+  failed=0
+  tfile_out="$run_dir/$testCaseName.exe"
+  rm -f "$tfile_out"
+  clang++ -g `$mcgconfig --cage-ldflags --cage-pass-option "-cg-file=${cg_outfile}" ${addOptions}` ${addFlags} -fno-exceptions ${o_files[@]} -o  "$tfile_out" >> log/testrun.log 2>&1 || failed=1
+  if [[ $failed -ne 0 ]] || [[ $verbose -eq 1 ]]; then
+    echo "Link command: clang++ -g `$mcgconfig --cage-ldflags --cage-pass-option "-cg-file=${cg_outfile}" ${addOptions}` ${addFlags} -fno-exceptions ${o_files[@]} -o  $tfile_out"
+  fi
+  if [[ $failed -ne 0 ]]; then
+    if [[ ! -f "$cg_outfile" ]]; then
+      echo "Linking failed! No call graph generated."
+      return 1
+    fi
+    echo "Linking failed but call graph was generated."
+  fi
+
+  if [[ $regenerate_gt -eq 1 ]]; then
+   echo "Using $cg_outfile as new ground truth"
+   cp "$cg_outfile" "$cg_gtfile"
+   return 0
+  fi
+
+  # LLVM versions 19+ emit _ZdlPvm, while versions before that use _ZdlPv instead.
+  # For consistency, we change all instances to _ZdlPvm.
+  sed -i 's/_ZdlPv\"/_ZdlPvm\"/g' "$cg_outfile"
+
+  "$cgdiff" --ignore-md --ignore-edge-md "$cg_outfile" "$cg_gtfile" -o "$diff_file" -- >>log/testrun.log 2>&1
+  fail=$?
+
+  if [[ $fail -ne 0 ]]; then
+    echo "Test failed! See $diff_file for diff."
+    return 1
+  fi
+
+  return 0
+}
+
+function runSingleFileTests {
+  suiteName=$1
+  suitePath=$2
+  variant=$3
+  addOptions=$4
+  addFlags=$5
+  regenerateGt=$6
+
+  if [[ ! $suiteName =~ $suite_pattern ]]; then
+    echo "Skipping test suite '$suiteName'..."
+    return 0
+  fi
+
+  echo " --- Running single file tests: $suiteName ---"
+  testGlob="$suitePath/*.cpp"
+  fails=0
+  for tc in ${testGlob}; do
+    echo "Running test ${tc}"
+    tname=$(basename $tc)
+    tname=${tname%.*}
+    runTestCase $tname "$suitePath" "$variant" "$addOptions" "$addFlags" $regenerateGt
+    fail=$?
+    fails=$((fails + fail))
+  done
+  echo "Failures in single file test suite '$suiteName': $fails"
+  return $fails
+}
+
+function runMultiFileTests {
+  suiteName=$1
+  suitePath=$2
+  variant=$3
+  addOptions=$4
+  addFlags=$5
+  regenerateGt=$6
+
+  if [[ ! $suiteName =~ $suite_pattern ]]; then
+    echo "Skipping test suite '$suiteName'..."
+    return 0
+  fi
+
+  echo -e "\n --- Running multi file tests: $suiteName ---"
+  multiTests=""
+  for f in $suitePath/*.cpp; do
+    ff=$(basename $f)
+    ff="${ff%%_*}"
+    multiTests="$multiTests\n$ff"
+  done
+  fails=0
+  for tc in $(echo -e $multiTests | uniq); do
+    echo "Running test ${tc}"
+    runTestCase "$tc" "$suitePath" "$variant" "$addOptions" "$addFlags" $regenerateGt
+    fail=$?
+    fails=$((fails + fail))
+  done
+  echo "Failures in multi file test suite '$suiteName': $fails"
+  return $fails
+}
+
+while getopts ":hvrs:" opt; do
+  case $opt in
+    h)
+      echo "use -h to print this help"
+      exit 0
+      ;;
+    v)
+      verbose=1
+      ;;
+    r)
+      regenerate_gt=1
+      ;;
+    s)
+      suite_pattern=$OPTARG
+      ;;
+    \?)
+      echo "Invalid option -$OPTARG"
+      exit 1
+      ;;
+  esac
+done
+
+if [[ $regenerate_gt -eq 1 ]]; then
+  echo "Warning: you have chosen to regenerate the groundtruth files."
+
+  read -p "Do you wish to continue? [yN]" yn
+  case $yn in
+    [Yy]* ) ;;
+    * ) echo "Aborting."; exit 1;;
+  esac
+fi
+
+total_fails=0
+
+# Default variant
+runSingleFileTests "basic" "$test_src_dir/input/singleTU" "" "" "" $regenerate_gt
+fails=$?
+total_fails=$((total_fails + fails))
+
+runSingleFileTests "virtual-calls" "$test_src_dir/input/virtualCalls" "" ""  "" $regenerate_gt
+fails=$?
+total_fails=$((total_fails + fails))
+
+runMultiFileTests "basic-multi" "$test_src_dir/input/multiTU" "" "" "" $regenerate_gt
+fails=$?
+total_fails=$((total_fails + fails))
+
+# PTA set to 'signature'
+runSingleFileTests "basic-pta-by-signature" "$test_src_dir/input/singleTU" "pta-signature" "--cage-pass-option -pta=signature" "" $regenerate_gt
+fails=$?
+total_fails=$((total_fails + fails))
+
+echo -e "---"
+echo -e "\n$total_fails test failures occurred"
+exit $total_fails

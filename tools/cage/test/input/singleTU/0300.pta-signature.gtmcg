@@ -1,0 +1,71 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "_ZN4Base3barEv": {
+                "callees": {},
+                "functionName": "_ZN4Base3barEv",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0300.cpp"
+            },
+            "_ZN4Base3fooEv": {
+                "callees": {},
+                "functionName": "_ZN4Base3fooEv",
+                "hasBody": false,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0300.cpp"
+            },
+            "_ZN4BaseC2Ev": {
+                "callees": {},
+                "functionName": "_ZN4BaseC2Ev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0300.cpp"
+            },
+            "_ZN7Derived3fooEv": {
+                "callees": {},
+                "functionName": "_ZN7Derived3fooEv",
+                "hasBody": false,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0300.cpp"
+            },
+            "_ZN7DerivedC2Ev": {
+                "callees": {
+                    "_ZN4BaseC2Ev": {}
+                },
+                "functionName": "_ZN7DerivedC2Ev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0300.cpp"
+            },
+            "_Znwm": {
+                "callees": {},
+                "functionName": "_Znwm",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "main": {
+                "callees": {
+                    "_ZN4Base3fooEv": {},
+                    "_ZN7Derived3fooEv": {},
+                    "_ZN7DerivedC2Ev": {},
+                    "_Znwm": {}
+                },
+                "functionName": "main",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0300.cpp"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CaGe",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
+            "version": "0.1"
+        },
+        "version": "4.0"
+    }
+}
