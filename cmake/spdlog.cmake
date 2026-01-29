@@ -12,6 +12,11 @@ set(SPDLOG_INSTALL
     CACHE INTERNAL ""
 )
 
+set(SPDLOG_NO_EXCEPTIONS
+    ON
+    CACHE BOOL "Disable exceptions in spdlog"
+)
+
 FetchContent_Declare(spdlog URL https://github.com/gabime/spdlog/archive/refs/tags/v1.15.3.tar.gz)
 FetchContent_MakeAvailable(spdlog)
 

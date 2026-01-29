@@ -14,7 +14,6 @@ spack:
 
     # Basic dependencies
     - 'nlohmann-json@3.12:'
-    - spdlog
     - cxxopts
 
     # For cgvalidate

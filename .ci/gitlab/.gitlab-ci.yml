@@ -242,7 +242,6 @@ test-cage:
         LLVM: [16.0.6, 17.0.6, 18.1.8]
   stage: integration-test
   script:
-    - module load clang/$LLVM
     - cd $BUILD/tools/cage/test
     - ./runCaGeTests.sh
 
