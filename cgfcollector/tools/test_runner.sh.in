@@ -37,7 +37,11 @@ function should_be_run()
     return 1
 }
 
-find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "output.json" \; | while read -r dir; do
+test_case_count=0
+skipped_test_case_count=0
+failed_test_case_count=0
+
+while read -r dir; do
     dir="$(dirname "$dir")"
     output_file="$dir/output.json"
 
@@ -49,9 +53,11 @@ find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "outpu
     fi
 
     echo "Test case: $test_case_name"
+    ((test_case_count++))
 
-    if [ ! -s "$output_file" ]; then
-        echo "Skipping empty or missing output file: $output_file"
+    if [ ! -f "$output_file" ]; then
+        echo "Skipping. Because missing output file: $output_file"
+        ((skipped_test_case_count++))
         continue
     fi
 
@@ -61,16 +67,21 @@ find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "outpu
 
         (
             cd "$dir"
-            cmake -S . -B "$tmp_dir"
+            cmake -S . -B "$tmp_dir" || {
+                echo "Error: cmake config failed"
+                exit 1
+            }
             cd "$tmp_dir"
-            make
+            make || {
+                echo "Error: cmake build failed"
+                exit 1
+            }
             find . -maxdepth 1 -name '*.json' | while read -r file; do
                 cp "$file" "$out_dir/$test_case_name.json"
             done
         ) || {
             echo "Error: could not generate CG"
             rm -rf "$tmp_dir"
-            continue
         }
 
         rm -rf "$tmp_dir"
@@ -80,7 +91,10 @@ find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "outpu
 
         (
             cd "$dir"
-            make BUILD_DIR="$tmp_dir"
+            make BUILD_DIR="$tmp_dir" || {
+                echo "Error: make build failed"
+                exit 1
+            }
             cd "$tmp_dir"
             find . -maxdepth 1 -name '*output.json' | while read -r file; do
                 cp "$file" "$out_dir/$test_case_name.json"
@@ -88,7 +102,6 @@ find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "outpu
         ) || {
             echo "Error: could not generate CG"
             rm -rf "$tmp_dir"
-            continue
         }
 
         rm -rf "$tmp_dir"
@@ -99,7 +112,6 @@ find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "outpu
 
             if ! @FCOLLECTOR_WRAPPER@ -dot -o "$out_dir/$test_case_name.json" "${input_files[@]}"; then
                 echo "Error: failed to generate callgraph"
-                continue
             fi
         fi
     fi
@@ -107,7 +119,13 @@ find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "outpu
     if @FCOLLECTOR_CG_COMPARE@ "$output_file" "$out_dir/$test_case_name.json"; then
         echo "Test case passed"
     else
+        ((failed_test_case_count++))
         echo "Error: Output mismatch"
     fi
 
-done
+done < <(find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "output.json" \;)
+
+echo ""
+echo "Test cases run: $test_case_count"
+echo "Skipped test cases: $skipped_test_case_count"
+echo "Failed test cases: $failed_test_case_count"
