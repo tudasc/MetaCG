@@ -14,14 +14,12 @@ std::string ParseTreeVisitor::mangleSymbol(const Symbol* sym) {
   // I have to do this manually because normally it would run as
   // a pass (ExternalNameConversionPass).
   //
-  // Disabling underscoring to be compatiable with C.
-  // WARNING: Fortran normally uses a underscore as postfix with external names.
   // NOTE: underscoring can be disabled with `-fno-underscoring`
   auto result = fir::NameUniquer::deconstruct(mangledName);
   if (fir::NameUniquer::isExternalFacingUniquedName(result)) {
     if (result.first == fir::NameUniquer::NameKind::COMMON && result.second.name.empty())
       mangledName = Fortran::common::blankCommonObjectName;
-    mangledName = Fortran::common::GetExternalAssemblyName(result.second.name, false);
+    mangledName = Fortran::common::GetExternalAssemblyName(result.second.name, true);
   }
 
   return mangledName;
