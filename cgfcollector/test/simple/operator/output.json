@@ -4,14 +4,14 @@
         "nodes": {
             "0": {
                 "callees": {},
-                "functionName": "compare",
+                "functionName": "compare_",
                 "hasBody": false,
                 "meta": {},
                 "origin": "main.f90"
             },
             "1": {
                 "callees": {},
-                "functionName": "not",
+                "functionName": "not_",
                 "hasBody": false,
                 "meta": {},
                 "origin": "main.f90"

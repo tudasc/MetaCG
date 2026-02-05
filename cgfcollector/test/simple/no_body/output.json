@@ -11,7 +11,7 @@
             },
             "1": {
                 "callees": {},
-                "functionName": "print_stuff",
+                "functionName": "print_stuff_",
                 "hasBody": false,
                 "meta": {},
                 "origin": "main.f90"
@@ -25,7 +25,7 @@
             },
             "3": {
                 "callees": {},
-                "functionName": "print_stuff2",
+                "functionName": "print_stuff2_",
                 "hasBody": false,
                 "meta": {},
                 "origin": "main.f90"

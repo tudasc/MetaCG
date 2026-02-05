@@ -18,14 +18,14 @@
             },
             "2": {
                 "callees": {},
-                "functionName": "vector_norm2",
+                "functionName": "vector_norm2_",
                 "hasBody": true,
                 "meta": {},
                 "origin": "main.f90"
             },
             "3": {
                 "callees": {},
-                "functionName": "size",
+                "functionName": "size_",
                 "hasBody": true,
                 "meta": {},
                 "origin": "main.f90"
