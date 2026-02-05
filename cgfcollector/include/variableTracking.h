@@ -10,14 +10,14 @@
 using namespace Fortran::semantics;
 
 struct trackedVar {
-  Symbol* var;
-  Symbol* procedure;  // procedure in which var was defined
+  const Symbol* var;
+  const Symbol* procedure;  // procedure in which var was defined
   bool hasBeenInitialized = false;
   bool addFinalizers = false;
 
-  trackedVar(Symbol* var, Symbol* procedure)
+  trackedVar(const Symbol* var, const Symbol* procedure)
       : var(var), procedure(procedure), hasBeenInitialized(false), addFinalizers(false) {}
-  trackedVar(Symbol* var, Symbol* procedure, bool initialized, bool addFinalizers)
+  trackedVar(const Symbol* var, const Symbol* procedure, bool initialized, bool addFinalizers)
       : var(var), procedure(procedure), hasBeenInitialized(initialized), addFinalizers(addFinalizers) {}
 };
 
@@ -33,7 +33,7 @@ struct variableTracking {
    * @param sourceName
    * @return trackedVar* or nullptr if not found
    */
-  trackedVar* getTrackedVarFromSourceName(Symbol* currentFunctionSymbol, SourceName sourceName);
+  trackedVar* getTrackedVarFromSourceName(const Symbol* currentFunctionSymbol, SourceName sourceName);
 
   /**
    * @brief Search trackedVars for a canditate and set it as initialized.
@@ -41,7 +41,7 @@ struct variableTracking {
    * @param currentFunctionSymbol
    * @param sourceName
    */
-  void handleTrackedVarAssignment(Symbol* currentFunctionSymbol, SourceName sourceName);
+  void handleTrackedVarAssignment(const Symbol* currentFunctionSymbol, SourceName sourceName);
 
   /**
    * @brief Is called at the end of a function/subroutine end statement. It checks trackedVars for any initialized
@@ -50,7 +50,7 @@ struct variableTracking {
    * @param currentFunctionSymbol
    * @param edgeM TODO: remove dep
    */
-  void handleTrackedVars(Symbol* currentFunctionSymbol, std::unique_ptr<edgeManager>& edgeM);
+  void handleTrackedVars(const Symbol* currentFunctionSymbol, std::unique_ptr<edgeManager>& edgeM);
 
   /**
    * @brief Register a variable for tracking.
@@ -65,7 +65,7 @@ struct variableTracking {
    *
    * @param procedureSymbol
    */
-  void removeTrackedVars(Symbol* procedureSymbol);
+  void removeTrackedVars(const Symbol* procedureSymbol);
 
  private:
   std::vector<trackedVar>& trackedVars;

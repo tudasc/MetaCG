@@ -49,9 +49,9 @@ bool holds_any_of(const Variant& v) {
  */
 template <typename T>
 const Name* getNameFromClassWithDesignator(const T& t) {
-  if (const auto* designator = std::get_if<Indirection<Designator>>(&t.u)) {
-    if (const auto* dataRef = std::get_if<DataRef>(&designator->value().u)) {
-      if (const auto* name = std::get_if<Name>(&dataRef->u)) {
+  if (const Indirection<Designator>* designator = std::get_if<Indirection<Designator>>(&t.u)) {
+    if (const DataRef* dataRef = std::get_if<DataRef>(&designator->value().u)) {
+      if (const Name* name = std::get_if<Name>(&dataRef->u)) {
         return name;
       }
     }
@@ -135,4 +135,4 @@ const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol);
  * @param typeSymbol symbol to search for
  * @return vector with type and all derived types
  */
-std::vector<const type*> findTypeWithDerivedTypes(std::vector<type>& types, const Symbol* symbol);
+std::vector<const type*> findTypeWithDerivedTypes(const std::vector<type>& types, const Symbol* symbol);

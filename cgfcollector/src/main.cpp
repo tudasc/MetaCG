@@ -3,8 +3,10 @@
 #include <DotIO.h>
 
 using namespace metacg;
+using namespace metacg::graph;
+using namespace metacg::io;
 
-static auto& mcgManager = metacg::graph::MCGManager::get();
+static MCGManager& mcgManager = MCGManager::get();
 
 /**
  * @brief Create output file with given extension
@@ -66,13 +68,13 @@ std::string dumpCG() {
     return "";
   }
 
-  auto mcgWriter = metacg::io::createWriter(4);
+  std::unique_ptr<MCGWriter> mcgWriter = createWriter(4);
   if (!mcgWriter) {
     MCGLogger::logError("Unable to create a writer");
     return "";
   };
 
-  metacg::io::JsonSink jsonSink;
+  JsonSink jsonSink;
   mcgWriter->writeActiveGraph(jsonSink);
 
   return jsonSink.getJson().dump();
@@ -89,7 +91,7 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
     generateCG(getParsing().parseTree(), getCurrentFile());
 
     std::string cgString = dumpCG();
-    auto file = ::createOutputFile(getInstance(), getCurrentFile(), "json");
+    std::unique_ptr<llvm::raw_pwrite_stream> file = ::createOutputFile(getInstance(), getCurrentFile(), "json");
     file->write(cgString.c_str(), cgString.size());
   }
 };
@@ -105,20 +107,20 @@ class CollectCGwithDot : public Fortran::frontend::PluginParseTreeAction {
     generateCG(getParsing().parseTree(), getCurrentFile());
 
     std::string cgString = dumpCG();
-    auto file = ::createOutputFile(getInstance(), getCurrentFile(), "json");
+    std::unique_ptr<llvm::raw_pwrite_stream> file = ::createOutputFile(getInstance(), getCurrentFile(), "json");
     file->write(cgString.c_str(), cgString.size());
 
     // dot file
-    metacg::Callgraph* cg = mcgManager.getCallgraph("cg");
+    Callgraph* cg = mcgManager.getCallgraph("cg");
     if (cg == nullptr) {
       MCGLogger::logError("No callgraph generated");
       return;
     }
 
-    metacg::io::dot::DotGenerator dotGen(cg);
+    dot::DotGenerator dotGen(cg);
     dotGen.generate();
 
-    auto dotfile = ::createOutputFile(getInstance(), getCurrentFile(), "dot");
+    std::unique_ptr<llvm::raw_pwrite_stream> dotfile = ::createOutputFile(getInstance(), getCurrentFile(), "dot");
     std::string dotString = dotGen.getDotString();
     dotfile->write(dotString.c_str(), dotString.size());
   }
@@ -136,7 +138,7 @@ class CollectCGNoRename : public Fortran::frontend::PluginParseTreeAction {
 
     std::string cgString = dumpCG();
 
-    auto file = ::createOutputFile(getInstance(), getCurrentFile(), "");
+    std::unique_ptr<llvm::raw_pwrite_stream> file = ::createOutputFile(getInstance(), getCurrentFile(), "");
     file->write(cgString.c_str(), cgString.size());
   }
 };

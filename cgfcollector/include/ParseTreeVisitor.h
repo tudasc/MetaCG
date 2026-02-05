@@ -231,8 +231,8 @@ class ParseTreeVisitor {
 
   std::vector<type> types;  // all types
 
-  std::vector<std::pair<std::variant<Symbol*, DefinedOperator::IntrinsicOperator>,
-                        std::vector<Symbol*>>>
+  std::vector<std::pair<std::variant<const Symbol*, DefinedOperator::IntrinsicOperator>,
+                        std::vector<const Symbol*>>>
       interfaceOperators;  // all interface operators. First is either a symbol of a DefinedOpName or
                            // IntrinsicOperator. Second is a vector procedure symbols, bound to that operator.
 

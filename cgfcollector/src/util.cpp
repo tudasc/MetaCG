@@ -202,13 +202,13 @@ DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(const GenericKind
 }
 
 const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol) {
-  auto* type = symbol->GetType();
+  const DeclTypeSpec* type = symbol->GetType();
   if (!type)
     return nullptr;
-  auto* derived = type->AsDerived();
+  const Fortran::semantics::DerivedTypeSpec* derived = type->AsDerived();
   if (!derived)
     return nullptr;
-  auto* typeSymbol = &derived->typeSymbol();
+  const Symbol* typeSymbol = &derived->typeSymbol();
   if (!typeSymbol)
     return nullptr;
   return typeSymbol;
@@ -221,7 +221,7 @@ const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol) {
  * @param typeSymbol symbol to search for
  * @return vector with type and all derived types
  */
-std::vector<const type*> findTypeWithDerivedTypes(std::vector<type>& types, const Symbol* symbol) {
+std::vector<const type*> findTypeWithDerivedTypes(const std::vector<type>& types, const Symbol* symbol) {
   std::vector<const type*> typesWithDerived;
   std::unordered_set<const Symbol*> visited;
 
@@ -242,7 +242,7 @@ std::vector<const type*> findTypeWithDerivedTypes(std::vector<type>& types, cons
 
   // collect descendants
   std::function<void(const type*)> collectDescendants = [&](const type* parent) {
-    for (const auto& t : types) {
+    for (const type& t : types) {
       if (t.extendsFrom == parent->typeSymbol && !visited.count(t.typeSymbol)) {
         visited.insert(t.typeSymbol);
         typesWithDerived.push_back(&t);

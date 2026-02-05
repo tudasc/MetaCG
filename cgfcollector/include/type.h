@@ -11,8 +11,8 @@ using namespace Fortran::parser;
 using namespace metacg;
 
 struct type {
-  Symbol* typeSymbol;
-  Symbol* extendsFrom;
-  std::vector<std::pair<Symbol*, Symbol*>> procedures;                            // name(symbol) => optname(symbol)
-  std::vector<std::pair<DefinedOperator::IntrinsicOperator, Symbol*>> operators;  // operator => name(symbol)
+  const Symbol* typeSymbol;
+  const Symbol* extendsFrom;
+  std::vector<std::pair<const Symbol*, const Symbol*>> procedures;  // name(symbol) => optname(symbol)
+  std::vector<std::pair<DefinedOperator::IntrinsicOperator, const Symbol*>> operators;  // operator => name(symbol)
 };
