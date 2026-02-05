@@ -4,9 +4,18 @@ flang_bin="flang-new"
 
 @FCOLLECTOR_WRAPPER_EXPORT_LINE@
 
+flang_args=("$@")
+plugin_name="genCG"
+
+if [[ "$1" == "-dot" ]]; then
+  plugin_name="genCGwithDot"
+  shift
+  flang_args=("$@")
+fi
+
 if ! command -v "$flang_bin" &>/dev/null; then
   echo "Error: $flang_bin not found in PATH."
   exit 1
 fi
 
-$flang_bin -fc1 -load "@FCOLLECTOR_FILE_NAME@" -plugin "genCG" "$@"
+$flang_bin -fc1 -load "@FCOLLECTOR_FILE_NAME@" -plugin "$plugin_name" "${flang_args[@]}"
