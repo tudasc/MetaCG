@@ -13,6 +13,14 @@ add_metacg(${PROJECT_NAME})
 add_spdlog_libraries(${PROJECT_NAME})
 # add_json(${PROJECT_NAME})
 
+target_precompile_headers(
+  ${PROJECT_NAME}
+  PRIVATE
+  include/headers.h
+)
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 install(
   TARGETS ${PROJECT_NAME}
   EXPORT ${TARGETS_EXPORT_NAME}
@@ -29,7 +37,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATIO
 
 # generate wrapper script with build dir for easy of use during development
 set(FCOLLECTOR_WRAPPER_SCRIPT_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/cgfcollector_wrapper.sh.in")
-set(FCOLLECTOR_WRAPPER_SCRIPT_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/cgfcollector_wrapper.sh.in")
+set(FCOLLECTOR_WRAPPER_SCRIPT_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/cgfcollector_wrapper.sh")
 
 option(
   FCOLLECTOR_ADD_BUILD_TO_LIB_PATH
