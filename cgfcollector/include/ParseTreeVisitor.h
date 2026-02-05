@@ -84,17 +84,6 @@ class ParseTreeVisitor {
   void addEdgesForFinalizers(std::vector<edge>* edges, const Symbol* typeSymbol);
   std::vector<std::pair<Symbol*, const Symbol*>> getEdgesForFinalizers(const Symbol* typeSymbol);
 
-  template <typename Variant, typename... Ts>
-  bool holds_any_of(const Variant& v) {
-    return (std::holds_alternative<Ts>(v) || ...);
-  }
-
-  bool isOperator(const Expr* e);
-
-  bool compareExprIntrinsicOperator(const Expr* expr, DefinedOperator::IntrinsicOperator op);
-  bool isBinaryOperator(const Expr* e);
-  bool isUnaryOperator(const Expr* e);
-
   template <typename T>
   const Name* getNameFromClassWithDesignator(const T& t) {
     if (const auto* designator = std::get_if<Indirection<Designator>>(&t.u)) {
@@ -117,10 +106,6 @@ class ParseTreeVisitor {
 
   void addTrackedVar(trackedVar var);
   void removeTrackedVars(Symbol* procedureSymbol);
-
-  // map RelationalOperator, LogicalOperator, NumericOperator to DefinedOperator::IntrinsicOperator
-  template <typename Variant>
-  DefinedOperator::IntrinsicOperator mapToIntrinsicOperator(const Variant& op);
 
   template <typename A>
   bool Pre(const A&) {

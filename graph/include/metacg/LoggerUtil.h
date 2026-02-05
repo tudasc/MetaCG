@@ -253,6 +253,16 @@ class MCGLogger {
     metacg::MCGLogger::instance().warn<LogType::UNIQUE, Output::StdConsole>(msg, std::forward<Args>(args)...);
   }
 
+  template <typename MSG_t, typename... Args>
+  static void logDebug(const MSG_t msg, Args&&... args) {
+    metacg::MCGLogger::instance().debug<LogType::DEFAULT, Output::StdConsole>(msg, std::forward<Args>(args)...);
+  }
+
+  template <typename MSG_t, typename... Args>
+  static void logDebugUnique(const MSG_t msg, Args&&... args) {
+    metacg::MCGLogger::instance().debug<LogType::UNIQUE, Output::StdConsole>(msg, std::forward<Args>(args)...);
+  }
+
   /**
    * Resets the uniqueness-property for all messages.
    * Any message that has been previously logged as unique can now appear again

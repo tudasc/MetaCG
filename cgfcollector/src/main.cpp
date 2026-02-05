@@ -15,8 +15,11 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
 
     AL* al = AL::getInstance();
 
-    // TODO: remove
-    if (std::getenv("CUSTOM_DEBUG")) {
+    if (std::getenv("DEBUG")) {
+      metacg::MCGLogger::instance().getConsole()->set_level(spdlog::level::debug);
+      metacg::MCGLogger::instance().getConsole()->set_pattern("%v");
+
+      // TODO: remove
       spdlog::set_pattern("%v");
       spdlog::set_level(spdlog::level::debug);
     }
@@ -28,7 +31,7 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
     for (const auto pf : visitor.getPotentialFinalizers()) {
       auto functions = visitor.getFunctions();
       auto calledIt = std::find_if(functions.begin(), functions.end(),
-                                   [&](const auto& f) { return mangleName(*f.symbol) == pf.procedureCalled; });
+                                   [&](const auto& f) { return mangleSymbol(f.symbol) == pf.procedureCalled; });
       if (calledIt == functions.end())
         continue;
 

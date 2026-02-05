@@ -165,83 +165,6 @@ std::vector<std::pair<Symbol*, const Symbol*>> ParseTreeVisitor::getEdgesForFina
   return edges;
 }
 
-bool ParseTreeVisitor::isOperator(const Expr* e) {
-  /* Operators: see 15.4.3.4.2, 10.1.6.1, 6.2.4 (https://j3-fortran.org/doc/year/23/23-007r1.pdf)
-     Negate, NOT, Power, Multiply, Divide, Add, Subtract, Concat,
-     LT, LE, EQ, NE, GE, GT, AND, OR, EQV, NEQV,
-     DefinedUnary, DefinedBinary
-   */
-
-  return holds_any_of<decltype(e->u), Expr::UnaryPlus, Expr::Negate, Expr::NOT, Expr::Power, Expr::Multiply,
-                      Expr::Divide, Expr::Add, Expr::Subtract, Expr::Concat, Expr::LT, Expr::LE, Expr::EQ, Expr::NE,
-                      Expr::GE, Expr::GT, Expr::AND, Expr::OR, Expr::EQV, Expr::NEQV, Expr::DefinedUnary,
-                      Expr::DefinedBinary>(e->u);
-}
-
-bool ParseTreeVisitor::compareExprIntrinsicOperator(const Expr* expr, DefinedOperator::IntrinsicOperator op) {
-  if (!expr)
-    return false;
-
-  using IO = DefinedOperator::IntrinsicOperator;
-
-  switch (op) {
-    case IO::NOT:
-      return std::get_if<Expr::NOT>(&expr->u) != nullptr;
-    case IO::Power:
-      return std::get_if<Expr::Power>(&expr->u) != nullptr;
-    case IO::Multiply:
-      return std::get_if<Expr::Multiply>(&expr->u) != nullptr;
-    case IO::Divide:
-      return std::get_if<Expr::Divide>(&expr->u) != nullptr;
-    case IO::Add:
-      return std::get_if<Expr::Add>(&expr->u) != nullptr ||
-             std::get_if<Expr::UnaryPlus>(&expr->u) != nullptr;  // UnaryPlus also uses +
-    case IO::Subtract:
-      return std::get_if<Expr::Subtract>(&expr->u) != nullptr ||
-             std::get_if<Expr::Negate>(&expr->u) != nullptr;  // Negate also uses -
-    case IO::Concat:
-      return std::get_if<Expr::Concat>(&expr->u) != nullptr;
-    case IO::LT:
-      return std::get_if<Expr::LT>(&expr->u) != nullptr;
-    case IO::LE:
-      return std::get_if<Expr::LE>(&expr->u) != nullptr;
-    case IO::EQ:
-      return std::get_if<Expr::EQ>(&expr->u) != nullptr;
-    case IO::NE:
-      return std::get_if<Expr::NE>(&expr->u) != nullptr;
-    case IO::GE:
-      return std::get_if<Expr::GE>(&expr->u) != nullptr;
-    case IO::GT:
-      return std::get_if<Expr::GT>(&expr->u) != nullptr;
-    case IO::AND:
-      return std::get_if<Expr::AND>(&expr->u) != nullptr;
-    case IO::OR:
-      return std::get_if<Expr::OR>(&expr->u) != nullptr;
-    case IO::EQV:
-      return std::get_if<Expr::EQV>(&expr->u) != nullptr;
-    case IO::NEQV:
-      return std::get_if<Expr::NEQV>(&expr->u) != nullptr;
-    default:
-      return false;
-  }
-}
-
-bool ParseTreeVisitor::isBinaryOperator(const Expr* e) {
-  if (!e)
-    return false;
-
-  return holds_any_of<decltype(e->u), Expr::Power, Expr::Multiply, Expr::Divide, Expr::Add, Expr::Subtract,
-                      Expr::Concat, Expr::LT, Expr::LE, Expr::EQ, Expr::NE, Expr::GE, Expr::GT, Expr::AND, Expr::OR,
-                      Expr::EQV, Expr::NEQV, Expr::DefinedBinary>(e->u);
-}
-
-bool ParseTreeVisitor::isUnaryOperator(const Expr* e) {
-  if (!e)
-    return false;
-
-  return holds_any_of<decltype(e->u), Expr::UnaryPlus, Expr::Negate, Expr::NOT, Expr::DefinedUnary>(e->u);
-}
-
 const Symbol* ParseTreeVisitor::getTypeSymbolFromSymbol(const Symbol* symbol) {
   auto* type = symbol->GetType();
   if (!type)
@@ -298,77 +221,6 @@ void ParseTreeVisitor::removeTrackedVars(Symbol* procedureSymbol) {
   trackedVars.erase(std::remove_if(trackedVars.begin(), trackedVars.end(),
                                    [&](const trackedVar& t) { return t.procedure == procedureSymbol; }),
                     trackedVars.end());
-}
-
-template <typename Variant>
-DefinedOperator::IntrinsicOperator ParseTreeVisitor::mapToIntrinsicOperator(const Variant& op) {
-  return std::visit(visitors{[this](const RelationalOperator& op) {
-                               using RO = RelationalOperator;
-                               using IO = DefinedOperator::IntrinsicOperator;
-
-                               switch (op) {
-                                 case RO::LT:
-                                   return IO::LT;
-                                 case RO::LE:
-                                   return IO::LE;
-                                 case RO::EQ:
-                                   return IO::EQ;
-                                 case RO::NE:
-                                   return IO::NE;
-                                 case RO::GE:
-                                   return IO::GE;
-                                 case RO::GT:
-                                   return IO::GT;
-                                 default:
-                                   al->error("Error: Unknown RelationalOperator in mapToIntrinsicOperator");
-                                   return IO::LT;  // avoid warning
-                               }
-                             },
-                             [this](const LogicalOperator& op) {
-                               using LO = LogicalOperator;
-                               using IO = DefinedOperator::IntrinsicOperator;
-
-                               switch (op) {
-                                 case LO::And:
-                                   return IO::AND;
-                                 case LO::Or:
-                                   return IO::OR;
-                                 case LO::Eqv:
-                                   return IO::EQV;
-                                 case LO::Neqv:
-                                   return IO::NEQV;
-                                 case LO::Not:
-                                   return IO::NOT;
-                                 default:
-                                   al->error("Error: Unknown LogicalOperator in mapToIntrinsicOperator");
-                                   return IO::AND;  // avoid warning
-                               }
-                             },
-                             [this](const NumericOperator& op) {
-                               using NO = NumericOperator;
-                               using IO = DefinedOperator::IntrinsicOperator;
-
-                               switch (op) {
-                                 case NO::Power:
-                                   return IO::Power;
-                                 case NO::Multiply:
-                                   return IO::Multiply;
-                                 case NO::Divide:
-                                   return IO::Divide;
-                                 case NO::Add:
-                                   return IO::Add;
-                                 case NO::Subtract:
-                                   return IO::Subtract;
-                                 default:
-                                   al->error("Error: Unknown NumericOperator in mapToIntrinsicOperator");
-                                   return IO::Add;  // avoid warning
-                               }
-                             },
-                             [this](const auto& op) {
-                               al->error("Error: Unknown operator type in mapToIntrinsicOperator");
-                               return DefinedOperator::IntrinsicOperator::Add;  // avoid warning
-                             }},
-                    op);
 }
 
 // Visitor implementations
@@ -951,7 +803,7 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
             if (!gen->kind().IsIntrinsicOperator())
               continue;
 
-            DefinedOperator::IntrinsicOperator intrinsicOp = mapToIntrinsicOperator(gen->kind().u);
+            DefinedOperator::IntrinsicOperator intrinsicOp = variantGetIntrinsicOperator(gen->kind().u);
 
             if (gen->specificProcs().size() != 1)
               al->error("Type-bound generic more than one specific proc not handled. Should not happen.");
@@ -976,7 +828,7 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
         std::vector<Symbol*> procs;
 
         if (gen->kind().IsIntrinsicOperator()) {
-          interfaceOp = mapToIntrinsicOperator(gen->kind().u);
+          interfaceOp = variantGetIntrinsicOperator(gen->kind().u);
           al->debug("Found interface operator in module: {}",
                     DefinedOperator::EnumToString(std::get<DefinedOperator::IntrinsicOperator>(interfaceOp)));
         } else if (gen->kind().IsDefinedOperator()) {
