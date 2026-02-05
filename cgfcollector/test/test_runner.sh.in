@@ -27,6 +27,7 @@ find "$test_case_dir" . -mindepth 1 -type d | while read -r dir; do
             continue
         fi
 
+        # TODO: check origin
         jq_string='del(._MetaCG) | ._CG.nodes |= map([.[0], (.[1] | del(.origin))])'
 
         if ! diff -q <(jq "$jq_string" "$out_dir/$test_case_name.json") <(jq "$jq_string" "$output_file") >/dev/null; then
