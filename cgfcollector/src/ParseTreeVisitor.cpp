@@ -112,7 +112,8 @@ std::vector<type> ParseTreeVisitor::findTypeWithDerivedTypes(const Symbol* typeS
       auto currentType = std::find_if(types.begin(), types.end(),
                                       [&currentExtendsFrom](const type& t) { return t.type == currentExtendsFrom; });
       if (currentType == types.end()) {
-        al->error("Error: Types array (extendsFrom) field entry missing.");
+        al->error("Error: Types array (extendsFrom) field entry for \"" + currentExtendsFrom->name().ToString() +
+                  "\" missing.");
         return typeWithDerived;
       }
 
