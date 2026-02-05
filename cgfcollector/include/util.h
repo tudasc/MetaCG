@@ -7,6 +7,8 @@
 #include <flang/Parser/parse-tree.h>
 #include <flang/Semantics/symbol.h>
 
+#include "type.h"
+
 using namespace Fortran::parser;
 using namespace Fortran::semantics;
 using namespace Fortran::common;
@@ -125,3 +127,12 @@ DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(const GenericKind
  * @return
  */
 const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol);
+
+/**
+ * @brief Searches the types vector for given symbol and returns pointers to vectors of type with derived types. The
+ * type symbol is derived from the given symbol.
+ *
+ * @param typeSymbol symbol to search for
+ * @return vector with type and all derived types
+ */
+std::vector<const type*> findTypeWithDerivedTypes(std::vector<type>& types, const Symbol* symbol);

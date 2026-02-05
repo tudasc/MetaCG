@@ -1,9 +1,14 @@
+#pragma once
+
+#include <LoggerUtil.h>
 #include <flang/Parser/parse-tree.h>
 #include <flang/Semantics/symbol.h>
+#include <unordered_set>
 #include <vector>
 
 using namespace Fortran::semantics;
 using namespace Fortran::parser;
+using namespace metacg;
 
 struct type {
   Symbol* type;

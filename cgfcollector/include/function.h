@@ -1,3 +1,5 @@
+#pragma once
+
 #include <flang/Semantics/symbol.h>
 #include <vector>
 

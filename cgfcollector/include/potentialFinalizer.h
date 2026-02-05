@@ -1,7 +1,9 @@
+#pragma once
+
 #include <string>
 #include <vector>
 
-using edge = std::pair<std::string, std::string>;  // (caller, callee)
+#include "edge.h"
 
 struct potentialFinalizer {
   std::size_t argPos;

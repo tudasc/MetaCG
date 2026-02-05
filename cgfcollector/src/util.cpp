@@ -213,3 +213,67 @@ const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol) {
     return nullptr;
   return typeSymbol;
 }
+
+/**
+ * @brief Searches the types vector for given symbol and returns pointers to vectors of type with derived types. The
+ * type symbol is derived from the given symbol.
+ *
+ * @param typeSymbol symbol to search for
+ * @return vector with type and all derived types
+ */
+std::vector<const type*> findTypeWithDerivedTypes(std::vector<type>& types, const Symbol* symbol) {
+  std::vector<const type*> typesWithDerived;
+  std::unordered_set<const Symbol*> visited;
+
+  const Symbol* typeSymbol = getTypeSymbolFromSymbol(symbol);
+  if (!typeSymbol) {
+    return typesWithDerived;
+  }
+
+  auto findTypeIt =
+      std::find_if(types.begin(), types.end(), [&typeSymbol](const type& t) { return t.type == typeSymbol; });
+
+  if (findTypeIt == types.end()) {
+    return typesWithDerived;
+  }
+
+  typesWithDerived.push_back(&(*findTypeIt));  // Add the initial type
+  visited.insert(typeSymbol);
+
+  // collect descendants
+  std::function<void(const type*)> collectDescendants = [&](const type* parent) {
+    for (const auto& t : types) {
+      if (t.extendsFrom == parent->type && !visited.count(t.type)) {
+        visited.insert(t.type);
+        typesWithDerived.push_back(&t);
+        collectDescendants(&t);  // recursive call to find further descendants
+      }
+    }
+  };
+  collectDescendants(&(*findTypeIt));
+
+  // collect ancestors
+  const Symbol* currentExtendsFrom = findTypeIt->extendsFrom;
+  while (currentExtendsFrom) {
+    // not sure if Fortran even allows this. But better be safe
+    if (!visited.insert(currentExtendsFrom).second) {
+      MCGLogger::logError("Error: Detected cyclic inheritance involving type \"" +
+                          (currentExtendsFrom ? currentExtendsFrom->name().ToString() : "null") + "\"");
+      break;
+    }
+
+    auto currentTypeIt = std::find_if(types.begin(), types.end(),
+                                      [&](const type& t) { return compareSymbols(t.type, currentExtendsFrom); });
+
+    if (currentTypeIt == types.end()) {
+      MCGLogger::logError("Error: Types array (extendsFrom) field entry for \"" +
+                          (currentExtendsFrom ? currentExtendsFrom->name().ToString() : "null") + "\" missing");
+      break;
+    }
+
+    typesWithDerived.push_back(&(*currentTypeIt));
+    currentExtendsFrom = currentTypeIt->extendsFrom;
+  }
+
+  return typesWithDerived;
+}

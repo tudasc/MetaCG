@@ -20,18 +20,17 @@
 #include <variant>
 #include <vector>
 
+#include "edge.h"
 #include "function.h"
 #include "potentialFinalizer.h"
-#include "trackedVar.h"
 #include "type.h"
 #include "util.h"
+#include "variableTracking.h"
 
 using namespace Fortran::parser;
 using namespace Fortran::semantics;
 using namespace Fortran::common;
 using namespace metacg;
-
-using edge = std::pair<std::string, std::string>;  // (caller, callee)
 
 /**
  * @class ParseTreeVisitor
@@ -40,7 +39,11 @@ using edge = std::pair<std::string, std::string>;  // (caller, callee)
  */
 class ParseTreeVisitor {
  public:
-  ParseTreeVisitor(Callgraph* cg, std::string currentFileName) : cg(cg), currentFileName(currentFileName) {};
+  ParseTreeVisitor(Callgraph* cg, std::string currentFileName)
+      : cg(cg),
+        currentFileName(currentFileName),
+        edgeM(std::make_unique<edgeManager>(edges)),
+        varTracking(std::make_unique<variableTracking>(trackedVars)) {};
 
   /**
    * @brief Collects function/subroutine statements (begin) and their dummy args.
@@ -56,14 +59,6 @@ class ParseTreeVisitor {
   void handleEndFuncSubStmt();
 
   /**
-   * @brief Searches the types vector for given typeSymbol and returns pointers to vectors of type with derived types.
-   *
-   * @param typeSymbol symbol to search for
-   * @return vector with type and all derived types
-   */
-  std::vector<const type*> findTypeWithDerivedTypes(const Symbol* typeSymbol);
-
-  /**
    * @brief Searches with typeSymbol for a type in types vector and adds edges for procedures that matches
    * procedureSymbol. And also adds edges from types that extends from typeSymbol.
    *
@@ -71,32 +66,6 @@ class ParseTreeVisitor {
    * @param procedureSymbol
    */
   void addEdgesForProducesAndDerivedTypes(std::vector<const type*> typeWithDerived, const Symbol* procedureSymbol);
-
-  void addEdgesForFinalizers(const Symbol* typeSymbol);
-  /**
-   * @brief For a given type symbol, returns a list of edges from the current function to all finalizers of that type.
-   *
-   * @param typeSymbol
-   */
-  std::vector<std::pair<Symbol*, const Symbol*>> getEdgesForFinalizers(const Symbol* typeSymbol);
-
-  trackedVar* getTrackedVarFromSourceName(SourceName sourceName);
-
-  /**
-   * @brief Search trackedVars for a canditate and set it as initialized.
-   * Prefers local variables when (shadowed).
-   *
-   * @param sourceName
-   */
-  void handleTrackedVarAssignment(SourceName sourceName);
-
-  void addTrackedVar(trackedVar var);
-  void removeTrackedVars(Symbol* procedureSymbol);
-
-  /**
-   * @brief Go through trackedVars vector and
-   */
-  void handleTrackedVars();
 
   void postProcess();
 
@@ -212,6 +181,8 @@ class ParseTreeVisitor {
  private:
   Callgraph* cg;
   std::string currentFileName;
+  std::unique_ptr<edgeManager> edgeM;
+  std::unique_ptr<variableTracking> varTracking;
 
   bool inFunctionOrSubroutineSubProgram = false;
   bool inMainProgram = false;

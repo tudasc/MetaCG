@@ -1,0 +1,81 @@
+#include "variableTracking.h"
+
+trackedVar* variableTracking::getTrackedVarFromSourceName(Symbol* currentFunctionSymbol, SourceName sourceName) {
+  auto anyTrackedVarIt =
+      std::find_if(trackedVars.begin(), trackedVars.end(), [&](const auto& t) { return t.var->name() == sourceName; });
+  if (anyTrackedVarIt == trackedVars.end())
+    return nullptr;
+
+  // find local variable with the same name in the current function scope (shadowed)
+  auto localVarIt = std::find_if(trackedVars.begin(), trackedVars.end(), [&](const auto& t) {
+    return t.var->name() == sourceName && t.procedure == currentFunctionSymbol;
+  });
+
+  // prefer local var if found
+  return (localVarIt != trackedVars.end()) ? &(*localVarIt) : &(*anyTrackedVarIt);
+}
+
+void variableTracking::handleTrackedVarAssignment(Symbol* currentFunctionSymbol, SourceName sourceName) {
+  auto* trackedVar = getTrackedVarFromSourceName(currentFunctionSymbol, sourceName);
+  if (!trackedVar)
+    return;
+
+  trackedVar->hasBeenInitialized = true;
+
+  MCGLogger::logDebug("Tracked var assigned: {} ({})", trackedVar->var->name(), fmt::ptr(trackedVar->var));
+}
+
+void variableTracking::handleTrackedVars(std::unique_ptr<edgeManager>& edgeM, std::vector<type>& types,
+                                         std::vector<function>& functions, Symbol* currentFunctionSymbol) {
+  if (mangleSymbol(currentFunctionSymbol) != "_QQmain") {
+    if (!trackedVars.empty())
+      MCGLogger::logDebug("Handle tracked vars for function");
+
+    for (auto& trackedVar : trackedVars) {
+      if (!trackedVar.hasBeenInitialized)
+        continue;
+      if (trackedVar.procedure != currentFunctionSymbol)
+        continue;
+
+      // add edge for deconstruction (finalizer)
+      if (trackedVar.addFinalizers) {
+        edgeM->addEdges(
+            edgeManager::getEdgesForFinalizers(findTypeWithDerivedTypes(types, trackedVar.var), currentFunctionSymbol));
+      }
+
+      // set init on dummy function args
+      auto functionIt = std::find_if(functions.begin(), functions.end(),
+                                     [&](const auto& f) { return f.symbol == currentFunctionSymbol; });
+      if (functionIt != functions.end()) {
+        auto dummyArgIt = std::find_if(functionIt->dummyArgs.begin(), functionIt->dummyArgs.end(),
+                                       [&](const auto& d) { return d.symbol == trackedVar.var; });
+        if (dummyArgIt != functionIt->dummyArgs.end()) {
+          dummyArgIt->hasBeenInitialized = true;
+        }
+      }
+    }
+  }
+
+  // cleanup trackedVars
+  removeTrackedVars(currentFunctionSymbol);
+}
+
+void variableTracking::addTrackedVar(trackedVar var) {
+  auto it = std::find_if(trackedVars.begin(), trackedVars.end(), [&](const trackedVar& t) { return t.var == var.var; });
+  if (it != trackedVars.end()) {
+    // update info
+    it->addFinalizers = var.addFinalizers;
+    it->hasBeenInitialized = var.hasBeenInitialized;
+    MCGLogger::logDebug("Update tracked variable: {} ({})", var.var->name(), fmt::ptr(var.var));
+    return;
+  }
+
+  trackedVars.push_back(var);
+  MCGLogger::logDebug("Add tracking for variable: {} ({})", var.var->name(), fmt::ptr(var.var));
+}
+
+void variableTracking::removeTrackedVars(Symbol* procedureSymbol) {
+  trackedVars.erase(std::remove_if(trackedVars.begin(), trackedVars.end(),
+                                   [&](const trackedVar& t) { return t.procedure == procedureSymbol; }),
+                    trackedVars.end());
+}

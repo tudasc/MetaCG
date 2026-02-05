@@ -1,5 +1,8 @@
 #include "ParseTreeVisitor.h"
 
+template void ParseTreeVisitor::handleFuncSubStmt<FunctionStmt>(const FunctionStmt&);
+template void ParseTreeVisitor::handleFuncSubStmt<SubroutineStmt>(const SubroutineStmt&);
+
 template <typename T>
 void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
   if (auto* sym = std::get<Name>(stmt.t).symbol) {
@@ -11,105 +14,12 @@ void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
   }
 }
 
-template void ParseTreeVisitor::handleFuncSubStmt<FunctionStmt>(const FunctionStmt&);
-template void ParseTreeVisitor::handleFuncSubStmt<SubroutineStmt>(const SubroutineStmt&);
-
 void ParseTreeVisitor::handleEndFuncSubStmt() {
-  handleTrackedVars();
+  varTracking->handleTrackedVars(edgeM, types, functions, currentFunctions.back().symbol);
 
   if (!currentFunctions.empty()) {
     currentFunctions.pop_back();
   }
-}
-
-void ParseTreeVisitor::handleTrackedVars() {
-  auto* currentFunctionSymbol = currentFunctions.back().symbol;
-
-  if (mangleSymbol(currentFunctionSymbol) != "_QQmain") {
-    if (!trackedVars.empty())
-      MCGLogger::logDebug("Handle tracked vars for function");
-
-    for (auto& trackedVar : trackedVars) {
-      if (!trackedVar.hasBeenInitialized)
-        continue;
-      if (trackedVar.procedure != currentFunctionSymbol)
-        continue;
-
-      // add edge for deconstruction (finalizer)
-      if (trackedVar.addFinalizers) {
-        auto* typeSymbol = getTypeSymbolFromSymbol(trackedVar.var);
-        if (!typeSymbol)
-          continue;
-        addEdgesForFinalizers(typeSymbol);
-      }
-
-      // set init on dummy function args
-      auto functionIt = std::find_if(functions.begin(), functions.end(),
-                                     [&](const auto& f) { return f.symbol == currentFunctionSymbol; });
-      if (functionIt != functions.end()) {
-        auto dummyArgIt = std::find_if(functionIt->dummyArgs.begin(), functionIt->dummyArgs.end(),
-                                       [&](const auto& d) { return d.symbol == trackedVar.var; });
-        if (dummyArgIt != functionIt->dummyArgs.end()) {
-          dummyArgIt->hasBeenInitialized = true;
-        }
-      }
-    }
-  }
-
-  // cleanup trackedVars
-  removeTrackedVars(currentFunctionSymbol);
-}
-
-std::vector<const type*> ParseTreeVisitor::findTypeWithDerivedTypes(const Symbol* typeSymbol) {
-  std::vector<const type*> typesWithDerived;
-  std::unordered_set<const Symbol*> visited;
-
-  auto findTypeIt =
-      std::find_if(types.begin(), types.end(), [&typeSymbol](const type& t) { return t.type == typeSymbol; });
-
-  if (findTypeIt == types.end()) {
-    return typesWithDerived;
-  }
-
-  typesWithDerived.push_back(&(*findTypeIt));  // Add the initial type
-  visited.insert(typeSymbol);
-
-  // collect descendants
-  std::function<void(const type*)> collectDescendants = [&](const type* parent) {
-    for (const auto& t : types) {
-      if (t.extendsFrom == parent->type && !visited.count(t.type)) {
-        visited.insert(t.type);
-        typesWithDerived.push_back(&t);
-        collectDescendants(&t);  // recursive call to find further descendants
-      }
-    }
-  };
-  collectDescendants(&(*findTypeIt));
-
-  // collect ancestors
-  const Symbol* currentExtendsFrom = findTypeIt->extendsFrom;
-  while (currentExtendsFrom) {
-    // not sure if Fortran even allows this. But better be safe
-    if (!visited.insert(currentExtendsFrom).second) {
-      MCGLogger::logError("Error: Detected cyclic inheritance involving type \"" +
-                          (currentExtendsFrom ? currentExtendsFrom->name().ToString() : "null") + "\"");
-      break;
-    }
-
-    auto currentTypeIt = std::find_if(types.begin(), types.end(),
-                                      [&](const type& t) { return compareSymbols(t.type, currentExtendsFrom); });
-
-    if (currentTypeIt == types.end()) {
-      MCGLogger::logError("Error: Types array (extendsFrom) field entry for \"" +
-                          (currentExtendsFrom ? currentExtendsFrom->name().ToString() : "null") + "\" missing");
-      break;
-    }
-
-    typesWithDerived.push_back(&(*currentTypeIt));
-    currentExtendsFrom = currentTypeIt->extendsFrom;
-  }
-
-  return typesWithDerived;
 }
 
 void ParseTreeVisitor::addEdgesForProducesAndDerivedTypes(std::vector<const type*> typeWithDerived,
@@ -130,80 +40,6 @@ void ParseTreeVisitor::addEdgesForProducesAndDerivedTypes(std::vector<const type
   }
 }
 
-void ParseTreeVisitor::addEdgesForFinalizers(const Symbol* typeSymbol) {
-  for (const auto& edge : getEdgesForFinalizers(typeSymbol)) {
-    edges.emplace_back(mangleSymbol(edge.first), mangleSymbol(edge.second));
-
-    MCGLogger::logDebug("Add edge for finalizer: {} ({}) -> {} ({})", mangleSymbol(edge.first), fmt::ptr(edge.first),
-                        mangleSymbol(edge.second), fmt::ptr(edge.second));
-  }
-}
-
-std::vector<std::pair<Symbol*, const Symbol*>> ParseTreeVisitor::getEdgesForFinalizers(const Symbol* typeSymbol) {
-  std::vector<std::pair<Symbol*, const Symbol*>> edges;
-  std::vector<const type*> typeSymbols = findTypeWithDerivedTypes(typeSymbol);
-
-  for (const type* type : typeSymbols) {
-    const Symbol* typeSymbol = type->type;
-
-    const auto* details = std::get_if<DerivedTypeDetails>(&typeSymbol->details());
-    if (!details)
-      continue;
-
-    // add edges for finalizers
-    for (const auto& final : details->finals()) {
-      edges.emplace_back(currentFunctions.back().symbol, &final.second.get());
-    }
-  }
-
-  return edges;
-}
-
-trackedVar* ParseTreeVisitor::getTrackedVarFromSourceName(SourceName sourceName) {
-  auto anyTrackedVarIt =
-      std::find_if(trackedVars.begin(), trackedVars.end(), [&](const auto& t) { return t.var->name() == sourceName; });
-  if (anyTrackedVarIt == trackedVars.end())
-    return nullptr;
-
-  // find local variable with the same name in the current function scope (shadowed)
-  auto localVarIt = std::find_if(trackedVars.begin(), trackedVars.end(), [&](const auto& t) {
-    return t.var->name() == sourceName && t.procedure == currentFunctions.back().symbol;
-  });
-
-  // prefer local var if found
-  return (localVarIt != trackedVars.end()) ? &(*localVarIt) : &(*anyTrackedVarIt);
-}
-
-void ParseTreeVisitor::handleTrackedVarAssignment(SourceName sourceName) {
-  auto* trackedVar = getTrackedVarFromSourceName(sourceName);
-  if (!trackedVar)
-    return;
-
-  trackedVar->hasBeenInitialized = true;
-
-  MCGLogger::logDebug("Tracked var assigned: {} ({})", trackedVar->var->name(), fmt::ptr(trackedVar->var));
-}
-
-void ParseTreeVisitor::addTrackedVar(trackedVar var) {
-  auto it = std::find_if(trackedVars.begin(), trackedVars.end(), [&](const trackedVar& t) { return t.var == var.var; });
-  if (it != trackedVars.end()) {
-    // update info
-    it->addFinalizers = var.addFinalizers;
-    it->hasBeenInitialized = var.hasBeenInitialized;
-    MCGLogger::logDebug("Update tracked variable: {} ({})", var.var->name(), fmt::ptr(var.var));
-    return;
-  }
-
-  trackedVars.push_back(var);
-  MCGLogger::logDebug("Add tracking for variable: {} ({})", var.var->name(), fmt::ptr(var.var));
-}
-
-void ParseTreeVisitor::removeTrackedVars(Symbol* procedureSymbol) {
-  trackedVars.erase(std::remove_if(trackedVars.begin(), trackedVars.end(),
-                                   [&](const trackedVar& t) { return t.procedure == procedureSymbol; }),
-                    trackedVars.end());
-}
-
 void ParseTreeVisitor::postProcess() {
   // handle potential finalizers from function calls
   for (const auto pf : potentialFinalizers) {
@@ -218,8 +54,8 @@ void ParseTreeVisitor::postProcess() {
       continue;
 
     for (const auto& edge : pf.finalizerEdges) {
-      edges.emplace_back(edge.first, edge.second);
-      MCGLogger::logDebug("Add edge for potential finalizer: {} -> {}", edge.first, edge.second);
+      edgeM->addEdge(edge);
+      MCGLogger::logDebug("Add edge for potential finalizer: {} -> {}", edge.caller, edge.callee);
     }
   }
 
@@ -230,8 +66,8 @@ void ParseTreeVisitor::postProcess() {
 
   // add edges
   for (auto edge : edges) {
-    const auto& callerNode = cg->getOrInsertNode(edge.first);
-    const auto& calleeNode = cg->getOrInsertNode(edge.second);
+    const auto& callerNode = cg->getOrInsertNode(edge.caller);
+    const auto& calleeNode = cg->getOrInsertNode(edge.callee);
 
     cg->addEdge(callerNode, calleeNode);
   }
@@ -257,7 +93,7 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
 }
 
 void ParseTreeVisitor::Post(const MainProgram&) {
-  handleTrackedVars();
+  varTracking->handleTrackedVars(edgeM, types, functions, currentFunctions.back().symbol);
 
   auto* currentFunctionSymbol = currentFunctions.back().symbol;
 
@@ -324,7 +160,7 @@ void ParseTreeVisitor::Post(const FunctionStmt& f) {
     currentFunctions.back().addDummyArg(name.symbol);
     if (functionsIt != functions.end()) {
       functionsIt->addDummyArg(name.symbol);
-      addTrackedVar({name.symbol, currentFunctionSymbol, false, false});
+      varTracking->addTrackedVar({name.symbol, currentFunctionSymbol});
     }
   }
 }
@@ -357,7 +193,7 @@ void ParseTreeVisitor::Post(const SubroutineStmt& s) {
     currentFunctions.back().addDummyArg(name->symbol);
     if (functionsIt != functions.end()) {
       functionsIt->addDummyArg(name->symbol);
-      addTrackedVar({name->symbol, currentFunctionSymbol, false, false});
+      varTracking->addTrackedVar({name->symbol, currentFunctionSymbol});
     }
   }
 }
@@ -411,11 +247,7 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
 
     // handle derived types edges
 
-    auto* typeSymbol = getTypeSymbolFromSymbol(symbolBase);
-    if (!typeSymbol)
-      return;
-
-    addEdgesForProducesAndDerivedTypes(findTypeWithDerivedTypes(typeSymbol), symbolComp);
+    addEdgesForProducesAndDerivedTypes(findTypeWithDerivedTypes(types, symbolBase), symbolComp);
   }
 }
 
@@ -426,7 +258,7 @@ void ParseTreeVisitor::Post(const AssignmentStmt& a) {
   if (!name || !name->symbol)
     return;
 
-  handleTrackedVarAssignment(name->symbol->name());
+  varTracking->handleTrackedVarAssignment(currentFunctions.back().symbol, name->symbol->name());
 }
 
 void ParseTreeVisitor::Post(const AllocateStmt& a) {
@@ -439,7 +271,7 @@ void ParseTreeVisitor::Post(const AllocateStmt& a) {
       continue;
     }
 
-    handleTrackedVarAssignment(name->symbol->name());
+    varTracking->handleTrackedVarAssignment(currentFunctions.back().symbol, name->symbol->name());
   }
 }
 
@@ -463,20 +295,23 @@ void ParseTreeVisitor::Post(const Call& c) {
 
     // handle move_alloc intrinsic for allocatable vars
     if (procName->symbol->attrs().test(Attr::INTRINSIC) && procName->symbol->name() == "move_alloc") {
-      handleTrackedVarAssignment(name->symbol->name());
+      varTracking->handleTrackedVarAssignment(currentFunctions.back().symbol, name->symbol->name());
     } else {
       // handle finalizers for allocatable vars.
       // This collects info from variables that are parse as arguments to functions. Function are defined below the
       // execution part, so this need to be handled at the end of the parse tree traversal.
-      auto* trackedVar = getTrackedVarFromSourceName(name->symbol->name());
+      auto* trackedVar = varTracking->getTrackedVarFromSourceName(currentFunctions.back().symbol, name->symbol->name());
       if (!trackedVar)
         continue;
 
+      MCGLogger::logDebug("Add potential finalizers for var: {} ({})", name->symbol->name(), fmt::ptr(name->symbol));
       potentialFinalizer& pf = potentialFinalizers.emplace_back(argPos, mangleSymbol(procName->symbol));
-      for (const auto& edge : getEdgesForFinalizers(getTypeSymbolFromSymbol(trackedVar->var))) {
-        pf.addFinalizerEdge({mangleSymbol(edge.first), mangleSymbol(edge.second)});
+      for (const auto& edge : edgeM->getEdgesForFinalizers(findTypeWithDerivedTypes(types, trackedVar->var),
+                                                           currentFunctions.back().symbol)) {
+        pf.addFinalizerEdge({mangleSymbol(edge.caller), mangleSymbol(edge.callee)});
+        MCGLogger::logDebug("  Potential finalizer edge: {} -> {}", mangleSymbol(edge.caller),
+                            mangleSymbol(edge.callee));
       }
-      MCGLogger::logDebug("Add potential finalizer for var: {} ({})", name->symbol->name(), fmt::ptr(name->symbol));
     }
   }
 }
@@ -502,10 +337,6 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
         isFunctionArg = true;
     }
 
-    auto* typeSymbol = getTypeSymbolFromSymbol(name.symbol);
-    if (!typeSymbol)
-      continue;
-
     bool holds_allocatable = false;
     const IntentSpec* holds_intent = nullptr;
     bool holds_save = false;
@@ -529,15 +360,16 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
           // no intent attr, if not set does not call finalizer. Why? idk.
           MCGLogger::logDebug("Add tracking for function argument: {} ({})", name.symbol->name(),
                               fmt::ptr(name.symbol));
-          addTrackedVar({name.symbol, currentFunctionSymbol, false, true});
+          varTracking->addTrackedVar({name.symbol, currentFunctionSymbol, false, true});
         } else {
           if (holds_intent->v == IntentSpec::Intent::Out) {
             // intent out, calls finalizer because (7.5.6.3 line 21 and onwards)
-            addEdgesForFinalizers(typeSymbol);
+            edgeM->addEdges(edgeManager::getEdgesForFinalizers(findTypeWithDerivedTypes(types, name.symbol),
+                                                               currentFunctionSymbol));
           } else if (holds_intent->v == IntentSpec::Intent::InOut) {
             // intent inout, calls finalizer when set.
             MCGLogger::logDebug("Add tracking for inout argument: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
-            addTrackedVar({name.symbol, currentFunctionSymbol, false, true});
+            varTracking->addTrackedVar({name.symbol, currentFunctionSymbol, false, true});
           }
         }
       }
@@ -545,11 +377,12 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
       if (holds_allocatable) {
         MCGLogger::logDebug("Add tracking for allocatable variable: {} ({})", name.symbol->name(),
                             fmt::ptr(name.symbol));
-        addTrackedVar({name.symbol, currentFunctionSymbol, false, true});
+        varTracking->addTrackedVar({name.symbol, currentFunctionSymbol, false, true});
         // skip var with allocatable attr.
         // Add to trackedVars because it needs to be assigned at least once before calling a finalizers make sense.
       } else {
-        addEdgesForFinalizers(typeSymbol);
+        edgeM->addEdges(
+            edgeManager::getEdgesForFinalizers(findTypeWithDerivedTypes(types, name.symbol), currentFunctionSymbol));
       }
     }
   }
@@ -762,11 +595,8 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
     }
 
     // search in derived types
-    auto* typeSymbol = getTypeSymbolFromSymbol(name->symbol);
-    if (!typeSymbol)
-      continue;
 
-    auto typeWithDerived = findTypeWithDerivedTypes(typeSymbol);
+    auto typeWithDerived = findTypeWithDerivedTypes(types, name->symbol);
 
     for (const type* t : typeWithDerived) {
       auto opIt = std::find_if(t->operators.begin(), t->operators.end(),
@@ -774,7 +604,7 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
       if (opIt == t->operators.end())
         continue;
 
-      auto funcSymbol = opIt->second;
+      Symbol* funcSymbol = opIt->second;
 
       bool skipSelfCall = false;
       for (const type* t : typeWithDerived) {
