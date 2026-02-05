@@ -2,6 +2,11 @@
 
 test_case_dir="@FCOLLECTOR_TEST_CASES_DIR@"
 
+if ! [ -d "$test_case_dir" ]; then
+    echo "Error: Test case directory '$test_case_dir' does not exist."
+    exit 1
+fi
+
 scriptdir="$(cd "$(dirname "$0")" && pwd -P)"
 out_dir="$scriptdir/out"
 

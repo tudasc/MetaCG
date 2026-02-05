@@ -2,8 +2,6 @@
 
 flang_bin="flang-new"
 
-@FCOLLECTOR_WRAPPER_EXPORT_LINE@
-
 flang_args=("$@")
 plugin_name="genCG"
 
