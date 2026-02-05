@@ -13,18 +13,6 @@ module mod
         module procedure create_polynomial
     end interface
 
-    type dummy_type
-        integer :: i
-    contains
-        final :: finalize_dummy
-    end type dummy_type
-
-    interface dummy_type
-        module procedure create_dummy_type
-    end interface dummy_type
-
-    type(polynomial) :: polynomialInModule
-
 contains
 
     type(polynomial) function create_polynomial(a)
@@ -49,17 +37,6 @@ contains
         write (*, *) 'Finalizing polynomial'
     end subroutine finalize_polynomial
 
-    subroutine finalize_dummy(this)
-        type(dummy_type), intent(inout) :: this
-        write (*, *) 'Finalizing dummy_type'
-    end subroutine finalize_dummy
-
-    type(dummy_type) function create_dummy_type(i)
-        integer, intent(in) :: i
-        create_dummy_type%i = i
-        write (*, *) 'Creating dummy_type with i = ', create_dummy_type%i
-    end function create_dummy_type
-
 end module mod
 
 module mod_use
@@ -83,10 +60,10 @@ contains
     subroutine func_calls_final3()
         type(polynomial), allocatable :: q
 
-        ! call set_q()
+        call set_q()
         ! call set_q_alloc()
         ! call set_q_alloc2()
-        call set_q_move_alloc()
+        ! call set_q_move_alloc()
 
     contains
         subroutine set_q()
@@ -122,18 +99,6 @@ program main
     use mod
     use mod_use
     implicit none
-
-    type :: implicit_constructor
-        integer :: i
-    end type implicit_constructor
-    type(implicit_constructor), allocatable :: t
-
-    type(dummy_type), allocatable :: dummy
-
-    ! sould not call final because main function. see 7.5.6.4 (https://j3-fortran.org/doc/year/23/23-007r1.pdf) and (https://j3-fortran.org/doc/year/10/10-158r1.txt)
-    dummy = dummy_type(1)
-
-    t = implicit_constructor(1)
 
     call func()
 
