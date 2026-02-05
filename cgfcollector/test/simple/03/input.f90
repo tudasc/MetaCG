@@ -13,6 +13,14 @@ module mod
         module procedure create_polynomial
     end interface
 
+    type dummy_type
+        integer :: i
+    contains
+        final :: finalize_dummy
+    end type dummy_type
+
+    type(polynomial) :: polynomialInModule
+
 contains
 
     type(polynomial) function create_polynomial(a)
@@ -37,6 +45,11 @@ contains
         write (*, *) 'Finalizing polynomial'
     end subroutine finalize_polynomial
 
+    subroutine finalize_dummy(this)
+        type(dummy_type), intent(inout) :: this
+        write (*, *) 'Finalizing dummy_type'
+    end subroutine finalize_dummy
+
 end module mod
 
 module mod_use
@@ -53,6 +66,23 @@ contains
         call q%print_polynomial()
     end subroutine func_calls_final
 
+    subroutine func_calls_final2()
+        type(polynomial) :: q
+    end subroutine func_calls_final2
+
+    subroutine func_calls_final3()
+        type(polynomial), allocatable :: q
+
+        call set_q()
+
+    contains
+        subroutine set_q()
+            q = polynomial([2., 3., 1., 0., 0.])
+        end subroutine set_q
+        subroutine set_a()
+        end subroutine set_a
+    end subroutine func_calls_final3
+
     subroutine func_does_not_call_final()
         type(polynomial), allocatable :: q
     end subroutine func_does_not_call_final
@@ -61,7 +91,11 @@ end module mod_use
 
 program main
     use mod
+    use mod_use
     implicit none
+
+    type(dummy_type), allocatable :: dummy
+    dummy = dummy_type(1)
 
     work: block
         type(polynomial), allocatable :: q
@@ -69,6 +103,15 @@ program main
         q = polynomial([2., 3., 1., 0., 0.])
         call q%print_polynomial()
     end block work
+
+    print *, 'Calling func_calls_final'
+    call func_calls_final()
+    print *, 'Calling func_calls_final2'
+    call func_calls_final2()
+    print *, 'Calling func_does_not_call_final'
+    call func_does_not_call_final()
+    print *, 'Calling func_calls_final3'
+    call func_calls_final3()
 
     ! sould not call final because main. see 7.5.6.4 (https://j3-fortran.org/doc/year/23/23-007r1.pdf) and (https://j3-fortran.org/doc/year/10/10-158r1.txt)
 

@@ -13,6 +13,12 @@ typedef struct type {
   std::vector<std::pair<const DefinedOperator::IntrinsicOperator*, Symbol*>> operators;  // operator => name(symbol)
 } type_t;
 
+typedef struct trackedVar {
+  Symbol* var;
+  Symbol* procedure;  // procedure in which var was defined
+  bool hasBeenInitialized = false;
+} trackedVar_t;
+
 class ParseTreeVisitor {
  public:
   ParseTreeVisitor(metacg::Callgraph* cg, std::string currentFileName) : cg(cg), currentFileName(currentFileName) {};
@@ -22,6 +28,8 @@ class ParseTreeVisitor {
   template <typename T>
   void handleFuncSubStmt(const T& stmt);
   void handleEndFuncSubStmt();
+
+  void handleTrackedVars();
 
   // searches the types vector for given typeSymbol and returns pointers to vectors of type with derived types.
   std::vector<type_t> find_type_with_derived_types(const Symbol* typeSymbol);
@@ -51,6 +59,8 @@ class ParseTreeVisitor {
     return nullptr;
   }
 
+  const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol);
+
   template <typename A>
   bool Pre(const A&) {
     return true;
@@ -74,6 +84,8 @@ class ParseTreeVisitor {
   void Post(const EndSubroutineStmt&);
 
   void Post(const ProcedureDesignator& p);
+
+  void Post(const AssignmentStmt& a);
 
   // handle destructors (finalizers) TODO: test i definitely missed some edges cases
   void Post(const TypeDeclarationStmt& t);
@@ -102,6 +114,7 @@ class ParseTreeVisitor {
   void Post(const DefinedOperator& op);
   void Post(const ProcedureStmt& p);
 
+  // parse operators in expressions
   bool Pre(const Expr& e);
   void Post(const Expr& e);
 
@@ -127,4 +140,6 @@ class ParseTreeVisitor {
       interfaceOperators;  // operator name (symbol) => [procedure names (symbols)]
 
   std::vector<const Expr*> exprStmtWithOps;
+
+  std::vector<trackedVar_t> trackedVars;
 };

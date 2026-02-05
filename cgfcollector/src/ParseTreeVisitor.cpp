@@ -18,12 +18,45 @@ template void ParseTreeVisitor::handleFuncSubStmt<FunctionStmt>(const FunctionSt
 template void ParseTreeVisitor::handleFuncSubStmt<SubroutineStmt>(const SubroutineStmt&);
 
 void ParseTreeVisitor::handleEndFuncSubStmt() {
+  handleTrackedVars();
+
   if (!functionSymbols.empty()) {
     functionSymbols.pop_back();
   }
   if (!functionDummyArgs.empty()) {
     functionDummyArgs.pop_back();
   }
+}
+
+void ParseTreeVisitor::handleTrackedVars() {
+  for (auto& trackedVar : trackedVars) {
+    if (trackedVar.hasBeenInitialized) {
+      if (trackedVar.procedure != functionSymbols.back()) {
+        continue;
+      }
+
+      // add edge for deconstruction (finalizer)
+      auto* typeSymbol = getTypeSymbolFromSymbol(trackedVar.var);
+      if (!typeSymbol)
+        continue;
+      auto* details = std::get_if<DerivedTypeDetails>(&typeSymbol->details());
+      if (!details)
+        continue;
+
+      for (const auto& final : details->finals()) {
+        edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
+                           Fortran::lower::mangle::mangleName(*final.second));
+
+        llvm::outs() << "Add edge: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << " -> "
+                     << Fortran::lower::mangle::mangleName(*final.second) << "\n";
+      }
+    }
+  }
+
+  // cleanup trackedVars
+  trackedVars.erase(std::remove_if(trackedVars.begin(), trackedVars.end(),
+                                   [&](const trackedVar_t& t) { return t.procedure == functionSymbols.back(); }),
+                    trackedVars.end());
 }
 
 std::vector<type_t> ParseTreeVisitor::find_type_with_derived_types(const Symbol* typeSymbol) {
@@ -148,6 +181,19 @@ bool ParseTreeVisitor::compare_expr_IntrinsicOperator(const Expr* expr, const De
   }
 }
 
+const Symbol* ParseTreeVisitor::getTypeSymbolFromSymbol(const Symbol* symbol) {
+  auto* type = symbol->GetType();
+  if (!type)
+    return nullptr;
+  auto* derived = type->AsDerived();
+  if (!derived)
+    return nullptr;
+  auto* typeSymbol = &derived->typeSymbol();
+  if (!typeSymbol)
+    return nullptr;
+  return typeSymbol;
+}
+
 // Visitor implementations
 
 bool ParseTreeVisitor::Pre(const MainProgram& p) {
@@ -166,6 +212,8 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
 
 void ParseTreeVisitor::Post(const MainProgram&) {
   inMainProgram = false;
+
+  handleTrackedVars();
 
   if (!functionSymbols.empty()) {
     functionSymbols.pop_back();
@@ -277,13 +325,7 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
 
     // handle derived types edges
 
-    auto* type = symbolBase->GetType();
-    if (!type)
-      return;
-    auto* derived = type->AsDerived();
-    if (!derived)
-      return;
-    auto* typeSymbol = &derived->typeSymbol();
+    auto* typeSymbol = getTypeSymbolFromSymbol(symbolBase);
     if (!typeSymbol)
       return;
 
@@ -291,14 +333,27 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
   }
 }
 
+void ParseTreeVisitor::Post(const AssignmentStmt& a) {
+  const auto* var = &std::get<Variable>(a.t);
+
+  auto* name = getNameFromClassWithDesignator(*var);
+  if (!name || !name->symbol)
+    return;
+
+  auto trackedVarIt = std::find_if(trackedVars.begin(), trackedVars.end(),
+                                   [&name](const auto& t) { return t.var->name() == name->symbol->name(); });
+  if (trackedVarIt == trackedVars.end()) {
+    return;
+  }
+
+  trackedVarIt->hasBeenInitialized = true;
+}
+
 void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
-  // TODO: allocatable case
-  // const auto& attrSpec = std::get<std::list<AttrSpec>>(t.t);
-  // for (const auto& attr : attrSpec) {
-  //   if (std::holds_alternative<Allocatable>(attr.u)) {
-  //     return;  // skip allocatable because no finalizer called
-  //   }
-  // }
+  if (functionSymbols.empty()) {
+    // type declaration inside a module TODO:
+    return;
+  }
 
   for (const auto& entity : std::get<std::list<EntityDecl>>(t.t)) {
     const auto& name = std::get<ObjectName>(entity.t);
@@ -314,24 +369,25 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
         continue;
     }
 
-    auto* type = name.symbol->GetType();
-    if (!type)
-      continue;
-    auto* derived = type->AsDerived();
-    if (!derived)
-      continue;
-    auto* typeSymbol = &derived->typeSymbol();
+    auto* typeSymbol = getTypeSymbolFromSymbol(name.symbol);
     if (!typeSymbol)
       continue;
+
+    const auto& attrSpec = std::get<std::list<AttrSpec>>(t.t);
+    auto it = std::find_if(attrSpec.begin(), attrSpec.end(),
+                           [](const AttrSpec& a) { return std::holds_alternative<Allocatable>(a.u); });
+    if (it != attrSpec.end()) {
+      trackedVars.push_back({name.symbol, functionSymbols.back(), false});
+      llvm::outs() << "Track variable: " << name.symbol->name() << "\n";
+      continue;  // skip var with allocatable attr
+    }
 
     const auto* details = std::get_if<DerivedTypeDetails>(&typeSymbol->details());
     if (!details)
       continue;
 
-    // derived->HasDefaultInitialization();
-
     // add edges for finalizers
-    for (auto final : details->finals()) {
+    for (const auto& final : details->finals()) {
       edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
                          Fortran::lower::mangle::mangleName(*final.second));
 
@@ -471,10 +527,6 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
     return true;
   }
 
-  auto* type = name->symbol->GetType();
-  if (!type)
-    return true;
-
   for (auto e : exprStmtWithOps) {
     // search in interface operators TODO improve this just add everything in the interface instead of comparing
     // types
@@ -512,13 +564,9 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
     }
 
     // search in derived types
-    auto* derived = type->AsDerived();
-    if (!derived)
-      return true;
-
-    auto* typeSymbol = &derived->typeSymbol();
+    auto* typeSymbol = getTypeSymbolFromSymbol(name->symbol);
     if (!typeSymbol)
-      return true;
+      continue;
 
     auto typeWithDerived = find_type_with_derived_types(typeSymbol);
 
