@@ -77,7 +77,8 @@ class CollectCallersAndCallees : public Fortran::frontend::PluginParseTreeAction
     void Post(const Fortran::parser::EndSubroutineStmt&) { handleEndFuncSubStmt(); }
 
     void Post(const Fortran::parser::ProcedureDesignator& p) {
-      std::string callee = "";
+      if (functionNames.empty())
+        return;
 
       // if just the name is called. (as subroutine with call and as function without call)
       if (auto* name = std::get_if<Fortran::parser::Name>(&p.u)) {
@@ -88,64 +89,61 @@ class CollectCallersAndCallees : public Fortran::frontend::PluginParseTreeAction
         if (name->symbol->attrs().test(Fortran::semantics::Attr::INTRINSIC))
           return;
 
-        callee = Fortran::lower::mangle::mangleName(*name->symbol);
-      }
+        edges.emplace_back(functionNames.back(), Fortran::lower::mangle::mangleName(*name->symbol));
 
-      // if called from a object with %
-      if (auto* compRef = std::get_if<Fortran::parser::ProcComponentRef>(&p.u)) {
-        auto* symbolComp = compRef->v.thing.component.symbol;
+        // if called from a object with %. (base % component)
+      } else if (auto* procCompRef = std::get_if<Fortran::parser::ProcComponentRef>(&p.u)) {
+        auto* symbolComp = procCompRef->v.thing.component.symbol;
         if (!symbolComp)
           return;
 
-        callee = Fortran::lower::mangle::mangleName(*compRef->v.thing.component.symbol);
+        edges.emplace_back(functionNames.back(),
+                           Fortran::lower::mangle::mangleName(*procCompRef->v.thing.component.symbol));
 
-        auto* baseName = std::get_if<Fortran::parser::Name>(&compRef->v.thing.base.u);
+        auto* baseName = std::get_if<Fortran::parser::Name>(&procCompRef->v.thing.base.u);
         if (!baseName || !baseName->symbol)
           return;
         auto* symbolBase = baseName->symbol;
 
-        // handle derived types edges TODO test
-        if (auto* type = symbolBase->GetType()) {
-          if (auto* derived = type->AsDerived()) {
-            auto& typeSymbol = derived->typeSymbol();
+        // handle derived types edges
 
-            auto findTypeIt = std::find_if(types.begin(), types.end(),
-                                           [&typeSymbol](const type_t& t) { return t.type == &typeSymbol; });
-            if (findTypeIt == types.end())
-              return;  // TODO would i want to return here? yes this breaks the nesting tests
+        auto* type = symbolBase->GetType();
+        if (!type)
+          return;
+        auto* derived = type->AsDerived();
+        if (!derived)
+          return;
+        auto* typeSymbol = &derived->typeSymbol();
+        if (!typeSymbol)
+          return;
 
-            // handle base type
-            auto& baseProcs = findTypeIt->procedures;
+        auto findTypeIt =
+            std::find_if(types.begin(), types.end(), [&typeSymbol](const type_t& t) { return t.type == typeSymbol; });
+        if (findTypeIt == types.end())
+          return;
 
-            auto baseProcIt = std::find_if(baseProcs.begin(), baseProcs.end(), [&symbolComp](const auto& p) {
-              return p.first->name() == symbolComp->name();
-            });
-            if (baseProcIt == baseProcs.end())
-              return;  // also here
+        // handle base type
+        auto baseProcIt = std::find_if(findTypeIt->procedures.begin(), findTypeIt->procedures.end(),
+                                       [&symbolComp](const auto& p) { return p.first->name() == symbolComp->name(); });
+        if (baseProcIt == findTypeIt->procedures.end())
+          return;
 
-            edges.emplace_back(functionNames.back(), Fortran::lower::mangle::mangleName(*baseProcIt->second));
+        edges.emplace_back(functionNames.back(), Fortran::lower::mangle::mangleName(*baseProcIt->second));
 
-            // handle derived types
-            for (const auto& t : types) {
-              if (t.extendsFrom != &typeSymbol)
-                continue;
+        // handle derived types
+        for (const auto& t : types) {
+          if (t.extendsFrom != typeSymbol)
+            continue;
 
-              auto dProcIt = std::find_if(t.procedures.begin(), t.procedures.end(), [&symbolComp](const auto& p) {
-                return p.first->name() == symbolComp->name();
-              });
-              if (dProcIt == t.procedures.end())
-                continue;
+          auto dProcIt = std::find_if(t.procedures.begin(), t.procedures.end(), [&symbolComp](const auto& p) {
+            return p.first->name() == symbolComp->name();
+          });  // TODO: use statement
+          if (dProcIt == t.procedures.end())
+            continue;
 
-              edges.emplace_back(functionNames.back(), Fortran::lower::mangle::mangleName(*dProcIt->second));
-            }
-          }
+          edges.emplace_back(functionNames.back(), Fortran::lower::mangle::mangleName(*dProcIt->second));
         }
       }
-
-      if (functionNames.empty())
-        return;
-
-      edges.emplace_back(functionNames.back(), callee);
     }
 
     // TODO: handle destructors (finalizers)
@@ -254,8 +252,8 @@ class CollectCallersAndCallees : public Fortran::frontend::PluginParseTreeAction
 
     // add edges
     for (auto edge : visitor.getEdges()) {
-      auto* callerNode = cg->getNode(edge.first);
-      auto* calleeNode = cg->getNode(edge.second);
+      auto* callerNode = cg->getOrInsertNode(edge.first);
+      auto* calleeNode = cg->getOrInsertNode(edge.second);
       if (!calleeNode || !callerNode) {
         llvm::outs() << "No nodes found for edge: " << edge.first << " -> " << edge.second << "\n";
         continue;
