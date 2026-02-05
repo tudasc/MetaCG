@@ -1,7 +1,6 @@
 #pragma once
 
 #include <flang/Parser/parse-tree.h>
-#include <fmt/core.h>
 #include <spdlog/spdlog.h>
 
 template <>
