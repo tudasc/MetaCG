@@ -1,0 +1,17 @@
+#pragma once
+
+#include <Callgraph.h>
+#include <MCGManager.h>
+#include <flang/Frontend/FrontendAction.h>
+#include <flang/Frontend/FrontendActions.h>
+#include <flang/Frontend/FrontendPluginRegistry.h>
+#include <flang/Lower/Mangler.h>
+#include <flang/Optimizer/Support/InternalNames.h>
+#include <flang/Parser/dump-parse-tree.h>
+#include <flang/Parser/parse-tree.h>
+#include <flang/Parser/parsing.h>
+#include <io/MCGReader.h>
+#include <io/MCGWriter.h>
+#include <io/VersionTwoMCGWriter.h>
+#include <llvm/Support/raw_ostream.h>
+#include <vector>
