@@ -1,0 +1,45 @@
+{
+    "_CG": {
+        "edges": [
+            [[156073635694004542, 15462925951592547380], null],
+            [[156073635694004542, 8395601259825836172], null]
+        ],
+        "nodes": [
+            [
+                156073635694004542,
+                {
+                    "functionName": "_QQmain",
+                    "hasBody": true,
+                    "meta": null,
+                    "origin": "main.f90"
+                }
+            ],
+            [
+                15462925951592547380,
+                {
+                    "functionName": "_QMmodPset_var_derived",
+                    "hasBody": true,
+                    "meta": null,
+                    "origin": "main.f90"
+                }
+            ],
+            [
+                8395601259825836172,
+                {
+                    "functionName": "_QMmodPset_var_base",
+                    "hasBody": true,
+                    "meta": null,
+                    "origin": "main.f90"
+                }
+            ]
+        ]
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "bcce43c481a129077e674aaa2aa736946bcf925a",
+            "version": "0.7"
+        },
+        "version": "3.0"
+    }
+}
