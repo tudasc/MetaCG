@@ -1,13 +1,31 @@
 #pragma once
 
-#include "headers.h"
+#include <Callgraph.h>
+#include <MCGManager.h>
+#include <flang/Frontend/CompilerInstance.h>
+#include <flang/Frontend/FrontendAction.h>
+#include <flang/Frontend/FrontendActions.h>
+#include <flang/Frontend/FrontendPluginRegistry.h>
+#include <flang/Parser/dump-parse-tree.h>
+#include <flang/Parser/parse-tree.h>
+#include <flang/Parser/parsing.h>
+#include <flang/Semantics/tools.h>
+#include <io/MCGReader.h>
+#include <io/MCGWriter.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Path.h>
+#include <llvm/Support/raw_ostream.h>
+#include <type_traits>
+#include <typeindex>
+#include <variant>
+#include <vector>
 
 #include "AL.h"
+#include "util.h"
 
 using namespace Fortran::parser;
 using namespace Fortran::semantics;
 using namespace Fortran::common;
-using Fortran::lower::mangle::mangleName;
 
 using edge = std::pair<std::string, std::string>;  // (caller, callee)
 
@@ -48,8 +66,6 @@ class ParseTreeVisitor {
   std::vector<edge>& getEdges() { return edges; }
   std::vector<potentialFinalizer>& getPotentialFinalizers() { return potentialFinalizers; }
   std::vector<function>& getFunctions() { return functions; }
-
-  std::string mangleSymbol(const Symbol* sym);
 
   template <typename T>
   void handleFuncSubStmt(const T& stmt);
