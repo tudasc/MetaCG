@@ -8,7 +8,7 @@ void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
     functionSymbols.emplace_back(sym);
     functionDummyArgs.emplace_back(std::vector<const Name*>());
     cg->insert(std::make_unique<metacg::CgNode>(mangleName(*sym), currentFileName, false, false));
-    functions.push_back({sym, std::vector<function::dummyArg_t>()});
+    functions.push_back({sym, std::vector<function::dummyArg>()});
 
     al->debug("Add node: {} ({})", mangleName(*sym), fmt::ptr(sym));
   }
@@ -64,11 +64,11 @@ void ParseTreeVisitor::handleTrackedVars() {
   removeTrackedVars(functionSymbols.back());
 }
 
-std::vector<type_t> ParseTreeVisitor::findTypeWithDerivedTypes(const Symbol* typeSymbol) {
-  std::vector<type_t> typeWithDerived;
+std::vector<type> ParseTreeVisitor::findTypeWithDerivedTypes(const Symbol* typeSymbol) {
+  std::vector<type> typeWithDerived;
 
   auto findTypeIt =
-      std::find_if(types.begin(), types.end(), [&typeSymbol](const type_t& t) { return t.type == typeSymbol; });
+      std::find_if(types.begin(), types.end(), [&typeSymbol](const type& t) { return t.type == typeSymbol; });
   if (findTypeIt == types.end())
     return typeWithDerived;
 
@@ -87,7 +87,7 @@ std::vector<type_t> ParseTreeVisitor::findTypeWithDerivedTypes(const Symbol* typ
     auto* currentExtendsFrom = (*findTypeIt).extendsFrom;
     while (currentExtendsFrom) {
       auto currentType = std::find_if(types.begin(), types.end(),
-                                      [&currentExtendsFrom](const type_t& t) { return t.type == currentExtendsFrom; });
+                                      [&currentExtendsFrom](const type& t) { return t.type == currentExtendsFrom; });
       if (currentType == types.end()) {
         al->error("Error: Types array (extendsFrom) field entry missing.");
         return typeWithDerived;
@@ -106,9 +106,9 @@ std::vector<type_t> ParseTreeVisitor::findTypeWithDerivedTypes(const Symbol* typ
   return typeWithDerived;
 }
 
-void ParseTreeVisitor::addEdgesForProducesAndDerivedTypes(std::vector<type_t> typeWithDerived,
+void ParseTreeVisitor::addEdgesForProducesAndDerivedTypes(std::vector<type> typeWithDerived,
                                                           const Symbol* procedureSymbol) {
-  for (type_t t : typeWithDerived) {
+  for (type t : typeWithDerived) {
     auto procIt = std::find_if(t.procedures.begin(), t.procedures.end(), [&procedureSymbol](const auto& p) {
       return p.first->name() == procedureSymbol->name();
     });
@@ -139,7 +139,7 @@ void ParseTreeVisitor::addEdgesForFinalizers(std::vector<edge>* edges, const Sym
 
 std::vector<std::pair<Symbol*, const Symbol*>> ParseTreeVisitor::getEdgesForFinalizers(const Symbol* typeSymbol) {
   std::vector<std::pair<Symbol*, const Symbol*>> edges;
-  std::vector<type_t> typeSymbols = findTypeWithDerivedTypes(typeSymbol);
+  std::vector<type> typeSymbols = findTypeWithDerivedTypes(typeSymbol);
 
   for (const auto& type : typeSymbols) {
     const Symbol* typeSymbol = type.type;
@@ -247,7 +247,7 @@ const Symbol* ParseTreeVisitor::getTypeSymbolFromSymbol(const Symbol* symbol) {
   return typeSymbol;
 }
 
-trackedVar_t* ParseTreeVisitor::getTrackedVarFromSourceName(SourceName sourceName) {
+trackedVar* ParseTreeVisitor::getTrackedVarFromSourceName(SourceName sourceName) {
   auto anyTrackedVarIt =
       std::find_if(trackedVars.begin(), trackedVars.end(), [&](const auto& t) { return t.var->name() == sourceName; });
   if (anyTrackedVarIt == trackedVars.end())
@@ -274,9 +274,8 @@ void ParseTreeVisitor::handleTrackedVarAssignment(SourceName sourceName) {
   al->debug("Tracked var assigned: {} ({})", trackedVar->var->name(), fmt::ptr(trackedVar->var));
 }
 
-void ParseTreeVisitor::addTrackedVar(trackedVar_t var) {
-  auto it =
-      std::find_if(trackedVars.begin(), trackedVars.end(), [&](const trackedVar_t& t) { return t.var == var.var; });
+void ParseTreeVisitor::addTrackedVar(trackedVar var) {
+  auto it = std::find_if(trackedVars.begin(), trackedVars.end(), [&](const trackedVar& t) { return t.var == var.var; });
   if (it != trackedVars.end()) {
     // update info
     it->addFinalizers = var.addFinalizers;
@@ -291,7 +290,7 @@ void ParseTreeVisitor::addTrackedVar(trackedVar_t var) {
 
 void ParseTreeVisitor::removeTrackedVars(Symbol* procedureSymbol) {
   trackedVars.erase(std::remove_if(trackedVars.begin(), trackedVars.end(),
-                                   [&](const trackedVar_t& t) { return t.procedure == procedureSymbol; }),
+                                   [&](const trackedVar& t) { return t.procedure == procedureSymbol; }),
                     trackedVars.end());
 }
 
@@ -796,7 +795,7 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
       auto funcSymbol = opIt->second;
 
       bool skipSelfCall = false;
-      for (type_t t : typeWithDerived) {
+      for (type t : typeWithDerived) {
         auto procIt = std::find_if(t.procedures.begin(), t.procedures.end(),
                                    [&funcSymbol](const auto& p) { return p.first->name() == funcSymbol->name(); });
         if (procIt == t.procedures.end())

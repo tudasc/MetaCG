@@ -9,45 +9,45 @@ using namespace Fortran::semantics;
 using namespace Fortran::common;
 using Fortran::lower::mangle::mangleName;
 
-typedef std::pair<std::string, std::string> edge;  // (caller, callee)
+using edge = std::pair<std::string, std::string>;  // (caller, callee)
 
-typedef struct type {
+struct type {
   Symbol* type;
   Symbol* extendsFrom;
   std::vector<std::pair<Symbol*, Symbol*>> procedures;  // name(symbol) => optname(symbol)
   std::vector<std::pair<const DefinedOperator::IntrinsicOperator*, Symbol*>> operators;  // operator => name(symbol)
-} type_t;
+};
 
-typedef struct trackedVar {
+struct trackedVar {
   Symbol* var;
   Symbol* procedure;  // procedure in which var was defined
   bool hasBeenInitialized = false;
   bool addFinalizers = false;
-} trackedVar_t;
+};
 
-typedef struct function {
-  typedef struct dummyArg {
+struct function {
+  struct dummyArg {
     Symbol* symbol;
     bool hasBeenInitialized = false;
-  } dummyArg_t;
+  };
 
   Symbol* symbol;  // function
-  std::vector<dummyArg_t> dummyArgs;
-} function_t;
+  std::vector<dummyArg> dummyArgs;
+};
 
-typedef struct potentialFinalizer {
+struct potentialFinalizer {
   std::size_t argPos;
   std::string procedureCalled;
   std::vector<edge> finalizerEdges;
-} potentialFinalizer_t;
+};
 
 class ParseTreeVisitor {
  public:
   ParseTreeVisitor(metacg::Callgraph* cg, std::string currentFileName) : cg(cg), currentFileName(currentFileName) {};
 
   std::vector<edge>& getEdges() { return edges; }
-  std::vector<potentialFinalizer_t>& getPotentialFinalizers() { return potentialFinalizers; }
-  std::vector<function_t>& getFunctions() { return functions; }
+  std::vector<potentialFinalizer>& getPotentialFinalizers() { return potentialFinalizers; }
+  std::vector<function>& getFunctions() { return functions; }
 
   template <typename T>
   void handleFuncSubStmt(const T& stmt);
@@ -56,11 +56,11 @@ class ParseTreeVisitor {
   void handleTrackedVars();
 
   // searches the types vector for given typeSymbol and returns pointers to vectors of type with derived types.
-  std::vector<type_t> findTypeWithDerivedTypes(const Symbol* typeSymbol);
+  std::vector<type> findTypeWithDerivedTypes(const Symbol* typeSymbol);
 
   // this function searches with typeSymbol for a type in types vector and adds edges for procedures that matches
   // procedureSymbol. And also adds edges from types that extends from typeSymbol.
-  void addEdgesForProducesAndDerivedTypes(std::vector<type_t> typeWithDerived, const Symbol* procedureSymbol);
+  void addEdgesForProducesAndDerivedTypes(std::vector<type> typeWithDerived, const Symbol* procedureSymbol);
 
   void addEdgesForFinalizers(const Symbol* typeSymbol);
   void addEdgesForFinalizers(std::vector<edge>* edges, const Symbol* typeSymbol);
@@ -91,10 +91,10 @@ class ParseTreeVisitor {
 
   const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol);
 
-  trackedVar_t* getTrackedVarFromSourceName(SourceName sourceName);
+  trackedVar* getTrackedVarFromSourceName(SourceName sourceName);
   void handleTrackedVarAssignment(SourceName sourceName);
 
-  void addTrackedVar(trackedVar_t var);
+  void addTrackedVar(trackedVar var);
   void removeTrackedVars(Symbol* procedureSymbol);
 
   template <typename A>
@@ -173,7 +173,7 @@ class ParseTreeVisitor {
   std::vector<Symbol*> functionSymbols;
   std::vector<std::vector<const Name*>> functionDummyArgs;
 
-  std::vector<type_t> types;
+  std::vector<type> types;
 
   std::vector<std::pair<const std::variant<DefinedOpName, DefinedOperator::IntrinsicOperator>*,
                         std::vector<Symbol*>>>
@@ -182,11 +182,11 @@ class ParseTreeVisitor {
   std::vector<const Expr*> exprStmtWithOps;
 
   // mainly used for destructor handling
-  std::vector<trackedVar_t> trackedVars;
+  std::vector<trackedVar> trackedVars;
 
   AL* al = AL::getInstance();
 
-  std::vector<function_t> functions;
+  std::vector<function> functions;
 
-  std::vector<potentialFinalizer_t> potentialFinalizers;
+  std::vector<potentialFinalizer> potentialFinalizers;
 };
