@@ -74,6 +74,8 @@ class ParseTreeVisitor {
   bool isOperator(const Expr* e);
 
   bool compareExprIntrinsicOperator(const Expr* expr, const DefinedOperator::IntrinsicOperator* op);
+  bool isBinaryOperator(const Expr* e);
+  bool isUnaryOperator(const Expr* e);
 
   template <typename T>
   const Name* getNameFromClassWithDesignator(const T& t) {

@@ -177,10 +177,6 @@ bool ParseTreeVisitor::compareExprIntrinsicOperator(const Expr* expr, const Defi
   using IO = DefinedOperator::IntrinsicOperator;
 
   switch (*op) {
-    // case IO::UnaryPlus:
-    //   return std::get_if<Expr::UnaryPlus>(&expr->u) != nullptr;
-    // case IO::Negate:
-    //   return std::get_if<Expr::Negate>(&expr->u) != nullptr;
     case IO::NOT:
       return std::get_if<Expr::NOT>(&expr->u) != nullptr;
     case IO::Power:
@@ -190,9 +186,11 @@ bool ParseTreeVisitor::compareExprIntrinsicOperator(const Expr* expr, const Defi
     case IO::Divide:
       return std::get_if<Expr::Divide>(&expr->u) != nullptr;
     case IO::Add:
-      return std::get_if<Expr::Add>(&expr->u) != nullptr;
+      return std::get_if<Expr::Add>(&expr->u) != nullptr ||
+             std::get_if<Expr::UnaryPlus>(&expr->u) != nullptr;  // UnaryPlus also uses +
     case IO::Subtract:
-      return std::get_if<Expr::Subtract>(&expr->u) != nullptr;
+      return std::get_if<Expr::Subtract>(&expr->u) != nullptr ||
+             std::get_if<Expr::Negate>(&expr->u) != nullptr;  // Negate also uses -
     case IO::Concat:
       return std::get_if<Expr::Concat>(&expr->u) != nullptr;
     case IO::LT:
@@ -218,6 +216,22 @@ bool ParseTreeVisitor::compareExprIntrinsicOperator(const Expr* expr, const Defi
     default:
       return false;
   }
+}
+
+bool ParseTreeVisitor::isBinaryOperator(const Expr* e) {
+  if (!e)
+    return false;
+
+  return holds_any_of<decltype(e->u), Expr::Power, Expr::Multiply, Expr::Divide, Expr::Add, Expr::Subtract,
+                      Expr::Concat, Expr::LT, Expr::LE, Expr::EQ, Expr::NE, Expr::GE, Expr::GT, Expr::AND, Expr::OR,
+                      Expr::EQV, Expr::NEQV, Expr::DefinedBinary>(e->u);
+}
+
+bool ParseTreeVisitor::isUnaryOperator(const Expr* e) {
+  if (!e)
+    return false;
+
+  return holds_any_of<decltype(e->u), Expr::UnaryPlus, Expr::Negate, Expr::NOT, Expr::DefinedUnary>(e->u);
 }
 
 const Symbol* ParseTreeVisitor::getTypeSymbolFromSymbol(const Symbol* symbol) {
@@ -726,32 +740,38 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
   }
 
   for (auto e : exprStmtWithOps) {
-    // search in interface operators TODO improve this just add everything in the interface instead of comparing
-    // types
-    auto it = std::find_if(interfaceOperators.begin(), interfaceOperators.end(), [&](const auto& p) {
-      if (auto* intrinsicOp = std::get_if<DefinedOperator::IntrinsicOperator>(p.first)) {
+    // search in interfaceOperators first before search in derived types
+    auto interfaceOp = std::find_if(interfaceOperators.begin(), interfaceOperators.end(), [&](const auto& op) {
+      if (const auto* intrinsicOp = std::get_if<DefinedOperator::IntrinsicOperator>(op.first)) {
         return compareExprIntrinsicOperator(e, intrinsicOp);
-      }
-      if (auto* definedOpName = std::get_if<DefinedOpName>(p.first)) {
+      } else if (const auto* definedOpName = std::get_if<DefinedOpName>(op.first)) {
         if (auto* definedUnary = std::get_if<Expr::DefinedUnary>(&e->u)) {
           auto* exprOpName = &std::get<DefinedOpName>(definedUnary->t);
           return definedOpName->v.symbol->name() == exprOpName->v.symbol->name();
-        }
-        if (auto* definedBinary = std::get_if<Expr::DefinedBinary>(&e->u)) {
+        } else if (auto* definedBinary = std::get_if<Expr::DefinedBinary>(&e->u)) {
           auto* exprOpName = &std::get<DefinedOpName>(definedBinary->t);
           return definedOpName->v.symbol->name() == exprOpName->v.symbol->name();
         }
-        return false;
       }
       return false;
     });
-    if (it != interfaceOperators.end()) {
-      // iterate over all procedures in interface (this vastly overestimates the calls). TODO: look into procdure
-      // params to identify only the onces that could be called.
-      for (auto* sym : it->second) {
+    if (interfaceOp != interfaceOperators.end()) {
+      bool isUnaryOp = isUnaryOperator(e);
+      bool isBinaryOp = isBinaryOperator(e);
+
+      for (auto* sym : interfaceOp->second) {
         // skip self calls
         if (mangleName(*sym) == mangleName(*functionSymbols.back()))
           continue;
+
+        // if unary only add potential unary operators. Same for binary operators.
+        auto functionIt =
+            std::find_if(functions.begin(), functions.end(), [&](const auto& f) { return f.symbol == sym; });
+        if (functionIt != functions.end()) {
+          if ((!isUnaryOp || functionIt->dummyArgs.size() != 1) && (!isBinaryOp || functionIt->dummyArgs.size() != 2)) {
+            continue;
+          }
+        }
 
         edges.emplace_back(mangleName(*functionSymbols.back()), mangleName(*sym));
 
