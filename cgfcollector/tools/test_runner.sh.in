@@ -50,7 +50,7 @@ find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "outpu
 
     echo "Test case: $test_case_name"
 
-    if [ ! -f "$output_file" ] || [ ! -s "$output_file" ] || grep -q '{}' "$output_file"; then
+    if [ ! -s "$output_file" ]; then
         echo "Skipping empty or missing output file: $output_file"
         continue
     fi
@@ -59,7 +59,7 @@ find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "outpu
         # cmake managed test
         tmp_dir="$(mktemp -d)"
 
-        {
+        (
             cd "$dir"
             cmake -S . -B "$tmp_dir"
             cd "$tmp_dir"
@@ -67,7 +67,7 @@ find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "outpu
             find . -maxdepth 1 -name '*.json' | while read -r file; do
                 cp "$file" "$out_dir/$test_case_name.json"
             done
-        } || {
+        ) || {
             echo "Error: could not generate CG"
             rm -rf "$tmp_dir"
             continue
@@ -78,13 +78,14 @@ find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "outpu
         # make managed with fortdepend test
         tmp_dir="$(mktemp -d)"
 
-        {
+        (
             cd "$dir"
             make BUILD_DIR="$tmp_dir"
-            find . -maxdepth 1 -name '*.json' | while read -r file; do
+            cd "$tmp_dir"
+            find . -maxdepth 1 -name '*.json' ! -name '*.o.json' | while read -r file; do
                 cp "$file" "$out_dir/$test_case_name.json"
             done
-        } || {
+        ) || {
             echo "Error: could not generate CG"
             rm -rf "$tmp_dir"
             continue

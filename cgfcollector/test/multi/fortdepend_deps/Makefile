@@ -16,7 +16,7 @@ $(TARGET): $(OBJS)
 	$(LD) $(TARGET).json $(OBJS_JSON)
 
 $(BUILD_DIR)/%.o: %.f90 | $(BUILD_DIR)
-	$(FC) $< -o $@.json -module-dir $(BUILD_DIR)
+	$(FC) -module-dir $(BUILD_DIR) -o $@.json $<
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
