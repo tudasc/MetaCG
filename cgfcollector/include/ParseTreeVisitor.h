@@ -24,16 +24,28 @@ typedef struct trackedVar {
 } trackedVar_t;
 
 typedef struct function {
-  Symbol* symbol;
-  std::vector<Symbol*> dummyArgs;
-  std::vector<bool> dummyArgsHasBeenInitialized;
+  typedef struct dummyArg {
+    Symbol* symbol;
+    bool hasBeenInitialized = false;
+  } dummyArg_t;
+
+  Symbol* symbol;  // function
+  std::vector<dummyArg_t> dummyArgs;
 } function_t;
+
+typedef struct potentialFinalizer {
+  std::size_t argPos;
+  std::string procedureCalled;
+  std::vector<std::pair<std::string, std::string>> finalizerEdges;
+} potentialFinalizer_t;
 
 class ParseTreeVisitor {
  public:
   ParseTreeVisitor(metacg::Callgraph* cg, std::string currentFileName) : cg(cg), currentFileName(currentFileName) {};
 
-  std::vector<std::pair<std::string, std::string>> getEdges() const { return edges; }
+  std::vector<std::pair<std::string, std::string>>& getEdges() { return edges; }
+  std::vector<potentialFinalizer_t>& getPotentialFinalizers() { return potentialFinalizers; }
+  std::vector<function_t>& getFunctions() { return functions; }
 
   template <typename T>
   void handleFuncSubStmt(const T& stmt);
@@ -73,7 +85,11 @@ class ParseTreeVisitor {
 
   const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol);
 
+  trackedVar_t* getTrackedVarFromSourceName(SourceName sourceName);
   void handleTrackedVarAssignment(SourceName sourceName);
+
+  void addTrackedVar(trackedVar_t var);
+  void removeTrackedVars(Symbol* procedureSymbol);
 
   template <typename A>
   bool Pre(const A&) {
@@ -163,4 +179,8 @@ class ParseTreeVisitor {
   std::vector<trackedVar_t> trackedVars;
 
   AL* al = AL::getInstance();
+
+  std::vector<function_t> functions;
+
+  std::vector<potentialFinalizer_t> potentialFinalizers;
 };

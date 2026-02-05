@@ -5,6 +5,8 @@
 class CollectCG : public Fortran::frontend::PluginParseTreeAction {
  public:
   void executeAction() override {
+    AL* al = AL::getInstance();
+
     auto cg = std::make_unique<metacg::Callgraph>();
 
     // TODO: remove
@@ -15,6 +17,25 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
 
     ParseTreeVisitor visitor(cg.get(), getCurrentFile().str());
     Fortran::parser::Walk(getParsing().parseTree(), visitor);
+
+    // handle potential finalizers from function calls
+    for (const auto pf : visitor.getPotentialFinalizers()) {
+      auto functions = visitor.getFunctions();
+      auto calledIt = std::find_if(functions.begin(), functions.end(),
+                                   [&](const auto& f) { return mangleName(*f.symbol) == pf.procedureCalled; });
+      if (calledIt == functions.end())
+        continue;
+
+      auto arg = calledIt->dummyArgs.begin() + pf.argPos;
+
+      if (!arg->hasBeenInitialized)
+        continue;
+
+      for (const auto& edge : pf.finalizerEdges) {
+        visitor.getEdges().emplace_back(edge.first, edge.second);
+        al->debug("Add edge for potential finalizer: {} -> {}", edge.first, edge.second);
+      }
+    }
 
     // add edges
     for (auto edge : visitor.getEdges()) {
@@ -46,7 +67,6 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
     auto file = createOutputFile("json");
     file->write(jsonSink.getJson().dump().c_str(), jsonSink.getJson().dump().size());
 
-    AL* al = AL::getInstance();
     al->flush();
   }
 };

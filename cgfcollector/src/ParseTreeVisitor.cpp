@@ -8,6 +8,7 @@ void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
     functionSymbols.emplace_back(sym);
     functionDummyArgs.emplace_back(std::vector<const Name*>());
     cg->insert(std::make_unique<metacg::CgNode>(mangleName(*sym), currentFileName, false, false));
+    functions.push_back({sym, std::vector<function::dummyArg_t>()});
 
     al->debug("Add node: {} ({})", mangleName(*sym), fmt::ptr(sym));
   }
@@ -33,27 +34,34 @@ void ParseTreeVisitor::handleTrackedVars() {
       al->debug("Handle tracked vars for function");
 
     for (auto& trackedVar : trackedVars) {
-      if (trackedVar.addFinalizers) {
-        if (!trackedVar.hasBeenInitialized)
-          continue;
-        if (trackedVar.procedure != functionSymbols.back())
-          continue;
+      if (!trackedVar.hasBeenInitialized)
+        continue;
+      if (trackedVar.procedure != functionSymbols.back())
+        continue;
 
-        // add edge for deconstruction (finalizer)
+      // add edge for deconstruction (finalizer)
+      if (trackedVar.addFinalizers) {
         auto* typeSymbol = getTypeSymbolFromSymbol(trackedVar.var);
         if (!typeSymbol)
           continue;
-
         add_edges_for_finalizers(typeSymbol);
-      } else {
+      }
+
+      // set init on dummy function args
+      auto functionIt = std::find_if(functions.begin(), functions.end(),
+                                     [&](const auto& f) { return f.symbol == functionSymbols.back(); });
+      if (functionIt != functions.end()) {
+        auto dummyArgIt = std::find_if(functionIt->dummyArgs.begin(), functionIt->dummyArgs.end(),
+                                       [&](const auto& d) { return d.symbol == trackedVar.var; });
+        if (dummyArgIt != functionIt->dummyArgs.end()) {
+          dummyArgIt->hasBeenInitialized = true;
+        }
       }
     }
   }
 
   // cleanup trackedVars
-  trackedVars.erase(std::remove_if(trackedVars.begin(), trackedVars.end(),
-                                   [&](const trackedVar_t& t) { return t.procedure == functionSymbols.back(); }),
-                    trackedVars.end());
+  removeTrackedVars(functionSymbols.back());
 }
 
 std::vector<type_t> ParseTreeVisitor::find_type_with_derived_types(const Symbol* typeSymbol) {
@@ -210,13 +218,11 @@ const Symbol* ParseTreeVisitor::getTypeSymbolFromSymbol(const Symbol* symbol) {
   return typeSymbol;
 }
 
-// search trackedVars for a canditate and set it as initialized.
-// Prefers local variables when (shadowed)
-void ParseTreeVisitor::handleTrackedVarAssignment(SourceName sourceName) {
+trackedVar_t* ParseTreeVisitor::getTrackedVarFromSourceName(SourceName sourceName) {
   auto anyTrackedVarIt =
       std::find_if(trackedVars.begin(), trackedVars.end(), [&](const auto& t) { return t.var->name() == sourceName; });
   if (anyTrackedVarIt == trackedVars.end())
-    return;
+    return nullptr;
 
   // find local variable with the same name in the current function scope (shadowed)
   auto localVarIt = std::find_if(trackedVars.begin(), trackedVars.end(), [&](const auto& t) {
@@ -224,10 +230,40 @@ void ParseTreeVisitor::handleTrackedVarAssignment(SourceName sourceName) {
   });
 
   // prefer local var if found
-  auto& trackedVar = (localVarIt != trackedVars.end()) ? *localVarIt : *anyTrackedVarIt;
-  trackedVar.hasBeenInitialized = true;
+  return (localVarIt != trackedVars.end()) ? &(*localVarIt) : &(*anyTrackedVarIt);
+}
 
-  al->debug("Tracked var assigned: {} ({})", trackedVar.var->name(), fmt::ptr(trackedVar.var));
+// search trackedVars for a canditate and set it as initialized.
+// Prefers local variables when (shadowed)
+void ParseTreeVisitor::handleTrackedVarAssignment(SourceName sourceName) {
+  auto* trackedVar = getTrackedVarFromSourceName(sourceName);
+  if (!trackedVar)
+    return;
+
+  trackedVar->hasBeenInitialized = true;
+
+  al->debug("Tracked var assigned: {} ({})", trackedVar->var->name(), fmt::ptr(trackedVar->var));
+}
+
+void ParseTreeVisitor::addTrackedVar(trackedVar_t var) {
+  auto it =
+      std::find_if(trackedVars.begin(), trackedVars.end(), [&](const trackedVar_t& t) { return t.var == var.var; });
+  if (it != trackedVars.end()) {
+    // update info
+    it->addFinalizers = var.addFinalizers;
+    it->hasBeenInitialized = var.hasBeenInitialized;
+    al->debug("Update tracked variable: {} ({})", var.var->name(), fmt::ptr(var.var));
+    return;
+  }
+
+  trackedVars.push_back(var);
+  al->debug("Add tracking for variable: {} ({})", var.var->name(), fmt::ptr(var.var));
+}
+
+void ParseTreeVisitor::removeTrackedVars(Symbol* procedureSymbol) {
+  trackedVars.erase(std::remove_if(trackedVars.begin(), trackedVars.end(),
+                                   [&](const trackedVar_t& t) { return t.procedure == procedureSymbol; }),
+                    trackedVars.end());
 }
 
 // Visitor implementations
@@ -300,10 +336,17 @@ void ParseTreeVisitor::Post(const FunctionStmt& f) {
 
   handleFuncSubStmt(f);
 
+  auto functionsIt = std::find_if(functions.begin(), functions.end(),
+                                  [&](const auto& func) { return func.symbol == functionSymbols.back(); });
+
   // collect function arguments
   const auto& name_list = std::get<std::list<Name>>(f.t);
   for (auto name : name_list) {
     functionDummyArgs.back().push_back(&name);
+    if (functionsIt != functions.end()) {
+      functionsIt->dummyArgs.push_back({name.symbol, false});
+      addTrackedVar({name.symbol, functionSymbols.back(), false, false});
+    }
   }
 }
 
@@ -320,11 +363,18 @@ void ParseTreeVisitor::Post(const SubroutineStmt& s) {
 
   handleFuncSubStmt(s);
 
+  auto functionsIt = std::find_if(functions.begin(), functions.end(),
+                                  [&](const auto& func) { return func.symbol == functionSymbols.back(); });
+
   // collect subroutine arguments (dummy args)
   const auto* dummyArg_list = &std::get<std::list<DummyArg>>(s.t);
   for (const auto& dummyArg : *dummyArg_list) {
     const auto* name = std::get_if<Name>(&dummyArg.u);
     functionDummyArgs.back().push_back(name);
+    if (functionsIt != functions.end()) {
+      functionsIt->dummyArgs.push_back({name->symbol, false});
+      addTrackedVar({name->symbol, functionSymbols.back(), false, false});
+    }
   }
 }
 
@@ -405,19 +455,14 @@ void ParseTreeVisitor::Post(const AllocateStmt& a) {
 }
 
 void ParseTreeVisitor::Post(const Call& c) {
-  // handle move_alloc intrinsic for allocatable vars
   const auto* designator = &std::get<ProcedureDesignator>(c.t);
   const auto* args = &std::get<std::list<ActualArgSpec>>(c.t);
 
-  const auto* name = std::get_if<Name>(&designator->u);
-  if (!name || !name->symbol)
-    return;
-  if (!name->symbol->attrs().test(Attr::INTRINSIC) && name->symbol->name() != "move_alloc")
+  const auto* procName = std::get_if<Name>(&designator->u);
+  if (!procName || !procName->symbol)
     return;
 
-  if (args->size() < 2)
-    return;
-
+  std::size_t argPos = 0;
   for (const auto& arg : *args) {
     const auto* actualArg = &std::get<ActualArg>(arg.t);
     const auto* expr = std::get_if<Indirection<Expr>>(&actualArg->u);
@@ -427,7 +472,36 @@ void ParseTreeVisitor::Post(const Call& c) {
     if (!name || !name->symbol)
       return;
 
-    handleTrackedVarAssignment(name->symbol->name());
+    // handle move_alloc intrinsic for allocatable vars
+    if (procName->symbol->attrs().test(Attr::INTRINSIC) && procName->symbol->name() == "move_alloc") {
+      handleTrackedVarAssignment(name->symbol->name());
+    } else {
+      auto* trackedVar = getTrackedVarFromSourceName(name->symbol->name());
+      if (!trackedVar)
+        continue;
+
+      auto* typeSymbol = getTypeSymbolFromSymbol(trackedVar->var);
+      // TODO: rework
+      potentialFinalizer pf = {argPos, mangleName(*procName->symbol)};
+
+      std::vector<type_t> typeSymbols = find_type_with_derived_types(typeSymbol);
+
+      for (const auto& type : typeSymbols) {
+        const Symbol* typeSymbol = type.type;
+
+        const auto* details = std::get_if<DerivedTypeDetails>(&typeSymbol->details());
+        if (!details)
+          return;
+
+        // add edges for finalizers
+        for (const auto& final : details->finals()) {
+          pf.finalizerEdges.emplace_back(mangleName(*functionSymbols.back()), mangleName(*final.second));
+        }
+      }
+
+      potentialFinalizers.push_back(pf);
+      al->debug("Add potential finalizer for var: {} ({})", name->symbol->name(), fmt::ptr(name->symbol));
+    }
   }
 }
 
@@ -475,25 +549,23 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
       if (!holds_allocatable) {
         if (!holds_intent) {
           // no intent attr, if not set does not call finalizer. Why? idk.
-          trackedVars.push_back({name.symbol, functionSymbols.back(), false, true});
           al->debug("Add tracking for function argument: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
+          addTrackedVar({name.symbol, functionSymbols.back(), false, true});
         } else {
           if (holds_intent->v == IntentSpec::Intent::Out) {
             // intent out, calls finalizer because (7.5.6.3 line 21 and onwards)
             add_edges_for_finalizers(typeSymbol);
           } else if (holds_intent->v == IntentSpec::Intent::InOut) {
             // intent inout, calls finalizer when set.
-            trackedVars.push_back({name.symbol, functionSymbols.back(), false, true});
             al->debug("Add tracking for inout argument: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
+            addTrackedVar({name.symbol, functionSymbols.back(), false, true});
           }
         }
-      } else {
-        // needs to be check at the end of prog TODO: allocatable attr as function argument
       }
     } else {
       if (holds_allocatable) {
-        trackedVars.push_back({name.symbol, functionSymbols.back(), false, true});
         al->debug("Add tracking for allocatable variable: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
+        addTrackedVar({name.symbol, functionSymbols.back(), false, true});
         // skip var with allocatable attr.
         // Add to trackedVars because it needs to be assigned at least once before calling a finalizers make sense.
       } else {
