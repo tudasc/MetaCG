@@ -107,8 +107,3 @@ function(
     )
   endif()
 endfunction()
-
-function(add_flang target)
-  target_compile_definitions(${target} PRIVATE FLANG_LITTLE_ENDIAN)
-  target_link_libraries(${target} PUBLIC flangFrontendTool)
-endfunction()

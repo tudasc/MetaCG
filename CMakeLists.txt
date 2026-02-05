@@ -222,6 +222,6 @@ option(
 )
 
 if(METACG_BUILD_CGFCOLLECTOR)
-  include(ClangLLVM)
+  include(FlangLLVM)
   add_subdirectory(cgfcollector)
 endif()
