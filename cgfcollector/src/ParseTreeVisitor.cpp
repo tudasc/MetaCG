@@ -335,7 +335,7 @@ DefinedOperator::IntrinsicOperator ParseTreeVisitor::mapToIntrinsicOperator(cons
                                  case RO::GT:
                                    return IO::GT;
                                  default:
-                                   al->error("Error: Unknown RelationalOperator in getIntrinsicOperator");
+                                   al->error("Error: Unknown RelationalOperator in mapToIntrinsicOperator");
                                    return IO::LT;  // avoid warning
                                }
                              },
@@ -355,7 +355,7 @@ DefinedOperator::IntrinsicOperator ParseTreeVisitor::mapToIntrinsicOperator(cons
                                  case LO::Not:
                                    return IO::NOT;
                                  default:
-                                   al->error("Error: Unknown LogicalOperator in getIntrinsicOperator");
+                                   al->error("Error: Unknown LogicalOperator in mapToIntrinsicOperator");
                                    return IO::AND;  // avoid warning
                                }
                              },
@@ -375,12 +375,12 @@ DefinedOperator::IntrinsicOperator ParseTreeVisitor::mapToIntrinsicOperator(cons
                                  case NO::Subtract:
                                    return IO::Subtract;
                                  default:
-                                   al->error("Error: Unknown NumericOperator in getIntrinsicOperator");
+                                   al->error("Error: Unknown NumericOperator in mapToIntrinsicOperator");
                                    return IO::Add;  // avoid warning
                                }
                              },
                              [this](const auto& op) {
-                               al->error("Error: Unknown operator type in getIntrinsicOperator");
+                               al->error("Error: Unknown operator type in mapToIntrinsicOperator");
                                return DefinedOperator::IntrinsicOperator::Add;  // avoid warning
                              }},
                     op);
@@ -963,6 +963,9 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
 
           // type generic operators
           if (GenericDetails* gen = component.detailsIf<GenericDetails>()) {
+            if (!gen->kind().IsIntrinsicOperator())
+              continue;
+
             DefinedOperator::IntrinsicOperator intrinsicOp = mapToIntrinsicOperator(gen->kind().u);
 
             if (gen->specificProcs().size() != 1)
@@ -994,6 +997,8 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
         } else if (gen->kind().IsDefinedOperator()) {
           interfaceOp = &symbol;
           al->debug("Found interface operator in module: {}", symbol.name());
+        } else {
+          continue;
         }
 
         for (const auto& p : gen->specificProcs()) {
