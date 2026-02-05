@@ -1006,7 +1006,7 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
 
       // same but with functions
       if (const auto* details = symbol.detailsIf<SubprogramDetails>()) {
-        if (!details->isFunction() && !details->isInterface())
+        if (!details->isFunction() && !details->isInterface())  // function and function dummy definition in interface
           continue;
 
         std::vector<function::dummyArg> dummyArgs;
