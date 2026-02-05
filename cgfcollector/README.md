@@ -1,16 +1,17 @@
-# CG fortran collector
+# CG Fortran collector
 
 ## Usage
 
-The parse plugin is compiled into a dynamic library and can be run with the
+The plugin is compiled into a dynamic library and can be run with the
 Flang compiler like so:
 
 `flang -fc1 -load "build/cgfcollector/libfcollector.so" -plugin "genCG"`
 
-There are two kind of plugins:
+There are three kinds of plugins:
 
-- `genCG`: generates a call graphs in the MetaCG json format.
+- `genCG`: generates a call graph in the MetaCG json format.
 - `genCGwithDot`: like `genCG` but also generate a `.dot` file. Mostly used for debugging.
+- `genCGNoRename`: like `genCG` but does not rename the output file.
 
 Additionally these other tools are included:
 
@@ -61,8 +62,6 @@ run `test_runner.sh`
 NOTE: The test `test/multi/fortdepend_deps` has a dependency on [fortdepend](https://fortdepend.readthedocs.io/en/latest/)
 
 ## Debugging
-
-Set `CUSTOM_DEBUG` as an environment variable to get more debug output.
 
 ### print parse tree
 
