@@ -7,21 +7,21 @@
         "functionName": "_QMmodPset_var_base",
         "hasBody": true,
         "meta": {},
-        "origin": "1mod.f90"
+        "origin": "mod.f90"
       },
       "1": {
         "callees": {},
         "functionName": "_QMmodPset_var_derived",
         "hasBody": true,
         "meta": {},
-        "origin": "1mod.f90"
+        "origin": "mod.f90"
       },
       "2": {
         "callees": { "0": {}, "1": {} },
         "functionName": "_QQmain",
         "hasBody": true,
         "meta": {},
-        "origin": "2main.f90"
+        "origin": "main.f90"
       }
     }
   },

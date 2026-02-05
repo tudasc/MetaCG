@@ -7,28 +7,28 @@
         "functionName": "compare_",
         "hasBody": false,
         "meta": {},
-        "origin": "1mod.f90"
+        "origin": "mod.f90"
       },
       "1": {
         "callees": {},
         "functionName": "_QMmodPless_then_integer",
         "hasBody": true,
         "meta": {},
-        "origin": "1mod.f90"
+        "origin": "mod.f90"
       },
       "2": {
         "callees": { "3": {} },
         "functionName": "_QQmain",
         "hasBody": true,
         "meta": {},
-        "origin": "2main.f90"
+        "origin": "main.f90"
       },
       "3": {
         "callees": { "0": {}, "1": {} },
         "functionName": "_QFPtest_compare",
         "hasBody": true,
         "meta": {},
-        "origin": "2main.f90"
+        "origin": "main.f90"
       }
     }
   },
