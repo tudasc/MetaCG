@@ -1,7 +1,5 @@
 #include "util.h"
 
-// Compares two symbols for equality also resolves the original contruct the symbol comes from. This could have been
-// defined in another module/file
 bool compareSymbols(const Symbol* a, const Symbol* b) {
   if (a == b)
     return true;

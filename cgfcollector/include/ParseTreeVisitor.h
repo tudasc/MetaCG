@@ -25,6 +25,7 @@
 using namespace Fortran::parser;
 using namespace Fortran::semantics;
 using namespace Fortran::common;
+using namespace metacg;
 
 using edge = std::pair<std::string, std::string>;  // (caller, callee)
 

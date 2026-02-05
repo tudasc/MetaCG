@@ -6,6 +6,14 @@ using namespace metacg;
 
 static auto& mcgManager = metacg::graph::MCGManager::get();
 
+/**
+ * @brief Create output file with given extension
+ *
+ * @param compInst
+ * @param currentFile
+ * @param extension
+ * @return
+ */
 std::unique_ptr<llvm::raw_pwrite_stream> createOutputFile(Fortran::frontend::CompilerInstance& compInst,
                                                           llvm::StringRef currentFile, llvm::StringRef extension) {
   llvm::SmallString<128> outputPath(compInst.getFrontendOpts().outputFile);
@@ -24,6 +32,12 @@ std::unique_ptr<llvm::raw_pwrite_stream> createOutputFile(Fortran::frontend::Com
   return os;
 }
 
+/**
+ * @brief Create callgraph in mcgManager and populate it by traversing the parse tree
+ *
+ * @param parseTree
+ * @param currentFile
+ */
 void generateCG(std::optional<Program>& parseTree, llvm::StringRef currentFile) {
   mcgManager.addToManagedGraphs("cg", std::make_unique<metacg::Callgraph>(), true);
   Callgraph* cg = mcgManager.getCallgraph("cg");
@@ -40,6 +54,11 @@ void generateCG(std::optional<Program>& parseTree, llvm::StringRef currentFile) 
   mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
 }
 
+/**
+ * @brief Dump callgraph as JSON string
+ *
+ * @return
+ */
 std::string dumpCG() {
   Callgraph* cg = mcgManager.getCallgraph("cg");
   if (cg == nullptr) {
@@ -59,6 +78,11 @@ std::string dumpCG() {
   return jsonSink.getJson().dump();
 }
 
+/**
+ * @class CollectCG
+ * @brief Plugin action to collect callgraph and dump it as JSON file
+ *
+ */
 class CollectCG : public Fortran::frontend::PluginParseTreeAction {
  public:
   void executeAction() override {
@@ -70,6 +94,11 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
   }
 };
 
+/**
+ * @class CollectCGwithDot
+ * @brief Like CollectCG but also generates a DOT file of callgraph
+ *
+ */
 class CollectCGwithDot : public Fortran::frontend::PluginParseTreeAction {
  public:
   void executeAction() override {
@@ -90,6 +119,11 @@ class CollectCGwithDot : public Fortran::frontend::PluginParseTreeAction {
   }
 };
 
+/**
+ * @class CollectCGNoRename
+ * @brief Like CollectCG but does not rename output file
+ *
+ */
 class CollectCGNoRename : public Fortran::frontend::PluginParseTreeAction {
  public:
   void executeAction() override {

@@ -12,6 +12,9 @@ using namespace Fortran::semantics;
 using namespace Fortran::common;
 using namespace metacg;
 
+/**
+ * @brief Formatter for CharBlock
+ */
 template <>
 struct fmt::formatter<Fortran::parser::CharBlock> {
   constexpr auto parse(fmt::format_parse_context& ctx) { return ctx.begin(); }
@@ -22,20 +25,85 @@ struct fmt::formatter<Fortran::parser::CharBlock> {
   }
 };
 
+/**
+ * @brief Variant check if it holds any of the given types
+ *
+ * @tparam Variant
+ * @tparam Ts
+ * @param v
+ * @return
+ */
 template <typename Variant, typename... Ts>
 bool holds_any_of(const Variant& v) {
   return (std::holds_alternative<Ts>(v) || ...);
 }
 
+/**
+ * @brief Compares two symbols for equality also resolves the original construct the symbol comes from.
+ * This could have been defined in another module/file
+ *
+ * @param a
+ * @param b
+ * @return true if both symbols are equal
+ */
 bool compareSymbols(const Symbol* a, const Symbol* b);
+
+/**
+ * @brief Generate mangled name from symbol
+ *
+ * @param sym
+ * @return
+ */
 std::string mangleSymbol(const Symbol* sym);
+
+/**
+ * @brief Check if expression is an operator expression
+ *
+ * @param e
+ * @return
+ */
 bool isOperator(const Expr* e);
+
+/**
+ * @brief Compare if expression match given intrinsic operator
+ *
+ * @param expr
+ * @param op
+ * @return
+ */
 bool compareExprIntrinsicOperator(const Expr* expr, DefinedOperator::IntrinsicOperator op);
+
+/**
+ * @brief Check if binary operator expression
+ *
+ * @param e
+ * @return
+ */
 bool isBinaryOperator(const Expr* e);
+
+/**
+ * @brief Check if unary operator expression
+ *
+ * @param e
+ * @return
+ */
 bool isUnaryOperator(const Expr* e);
 
-// map RelationalOperator, LogicalOperator, NumericOperator to DefinedOperator::IntrinsicOperator
+/**
+ * @brief Get intrinsic operator from a variant of several operator types (RelationalOperator, LogicalOperator,
+ * NumericOperator)
+ *
+ * @tparam Variant
+ * @param op
+ * @return
+ */
 template <typename Variant>
 DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(const Variant& op);
 
+/**
+ * @brief Get type symbol from a given symbol
+ *
+ * @param symbol
+ * @return
+ */
 const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol);
