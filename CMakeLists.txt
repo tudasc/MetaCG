@@ -213,3 +213,15 @@ if(METACG_BUILD_PYMETACG)
 endif()
 
 add_subdirectory(utils)
+
+# Build fortran collector
+option(
+  METACG_BUILD_CGFCOLLECTOR
+  "On or off"
+  OFF
+)
+
+if(METACG_BUILD_CGFCOLLECTOR)
+  include(ClangLLVM)
+  add_subdirectory(cgfcollector)
+endif()
