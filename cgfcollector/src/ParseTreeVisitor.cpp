@@ -735,10 +735,11 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
       if (auto* definedOpName = std::get_if<DefinedOpName>(p.first)) {
         if (auto* definedUnary = std::get_if<Expr::DefinedUnary>(&e->u)) {
           auto* exprOpName = &std::get<DefinedOpName>(definedUnary->t);
-
           return definedOpName->v.symbol->name() == exprOpName->v.symbol->name();
         }
         if (auto* definedBinary = std::get_if<Expr::DefinedBinary>(&e->u)) {
+          auto* exprOpName = &std::get<DefinedOpName>(definedBinary->t);
+          return definedOpName->v.symbol->name() == exprOpName->v.symbol->name();
         }
         return false;
       }
@@ -749,7 +750,7 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
       // params to identify only the onces that could be called.
       for (auto* sym : it->second) {
         // skip self calls
-        if (sym->name() == functionSymbols.back()->name())
+        if (mangleName(*sym) == mangleName(*functionSymbols.back()))
           continue;
 
         edges.emplace_back(mangleName(*functionSymbols.back()), mangleName(*sym));
@@ -796,16 +797,6 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
 }
 
 void ParseTreeVisitor::Post(const Expr& e) {
-  // find out if this is a constructor
-  // auto* functionRef = std::get_if<Indirection<FunctionReference>>(&e.u);
-  // if (functionRef) {
-  //   auto* designator = &std::get<ProcedureDesignator>(functionRef->value().v.t);
-  //   auto* name = std::get_if<Name>(&designator->u);
-  //   if (!name || !name->symbol) {
-  //     return;
-  //   }
-  // }
-
   if (!isOperator(&e)) {
     return;
   }
