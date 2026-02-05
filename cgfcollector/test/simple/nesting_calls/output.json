@@ -1,45 +1,36 @@
 {
     "_CG": {
-        "edges": [
-            [[3467742329716980950, 17909528412272728826], null],
-            [[3467742329716980950, 3828209433738255338], null]
-        ],
-        "nodes": [
-            [
-                3467742329716980950,
-                {
-                    "functionName": "_QQmain",
-                    "hasBody": true,
-                    "meta": null,
-                    "origin": "main.f90"
-                }
-            ],
-            [
-                17909528412272728826,
-                {
-                    "functionName": "_QMmPsay",
-                    "hasBody": true,
-                    "meta": null,
-                    "origin": "main.f90"
-                }
-            ],
-            [
-                3828209433738255338,
-                {
-                    "functionName": "_QMmPreturn_ptr",
-                    "hasBody": true,
-                    "meta": null,
-                    "origin": "main.f90"
-                }
-            ]
-        ]
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": {},
+                "functionName": "_QMmPreturn_ptr",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "1": {
+                "callees": {},
+                "functionName": "_QMmPsay",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "2": {
+                "callees": { "0": {}, "1": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            }
+        }
     },
     "_MetaCG": {
         "generator": {
             "name": "MetaCG",
-            "sha": "e7db04da1660956f8319a3d2fa80d30dad332800",
-            "version": "0.7"
+            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "version": "0.9"
         },
-        "version": "3.0"
+        "version": "4.0"
     }
 }

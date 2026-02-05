@@ -1,162 +1,121 @@
 {
-  "_CG": {
-    "edges": [
-      [[10431988963324364992, 6149613639027182890], null],
-      [[10431988963324364992, 5064320190928089604], null],
-      [[10431988963324364992, 13979031587664314780], null],
-      [[10431988963324364992, 16645470703084508464], null],
-      [[911036281617746681, 2052109649073365059], null],
-      [[10431988963324364992, 2052109649073365059], null],
-      [[6149613639027182890, 2052109649073365059], null],
-      [[911036281617746681, 13979031587664314780], null],
-      [[11433580247649436846, 2052109649073365059], null],
-      [[6149613639027182890, 5064320190928089604], null],
-      [[16645470703084508464, 4934351978831295596], null],
-      [[6149613639027182890, 13979031587664314780], null],
-      [[2915883528470775764, 2052109649073365059], null],
-      [[10431988963324364992, 16280562401692851033], null],
-      [[10552440586870006343, 2052109649073365059], null],
-      [[10431988963324364992, 11433580247649436846], null],
-      [[4934351978831295596, 13979031587664314780], null],
-      [[16645470703084508464, 2052109649073365059], null],
-      [[10552440586870006343, 13979031587664314780], null],
-      [[15456597401670502006, 10431988963324364992], null]
-    ],
-    "nodes": [
-      [
-        10431988963324364992,
-        {
-          "functionName": "_QFPfunc",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": {
+                    "1": {},
+                    "10": {},
+                    "11": {},
+                    "12": {},
+                    "2": {},
+                    "3": {},
+                    "9": {}
+                },
+                "functionName": "_QFPfunc",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            },
+            "1": {
+                "callees": {},
+                "functionName": "_QMmodPcreate_polynomial",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            },
+            "10": {
+                "callees": { "2": {} },
+                "functionName": "_QMmod_usePfunc_calls_final2",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            },
+            "11": {
+                "callees": { "2": {}, "5": {} },
+                "functionName": "_QMmod_usePfunc_calls_final3",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            },
+            "12": {
+                "callees": {},
+                "functionName": "_QMmod_usePfunc_does_not_call_final",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            },
+            "13": {
+                "callees": { "0": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            },
+            "2": {
+                "callees": {},
+                "functionName": "_QMmodPfinalize_polynomial",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            },
+            "3": {
+                "callees": {},
+                "functionName": "_QMmodPprint_polynomial",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            },
+            "4": {
+                "callees": {},
+                "functionName": "_QMmod_useFfunc_calls_final3Pset_nothing",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            },
+            "5": {
+                "callees": { "1": {} },
+                "functionName": "_QMmod_useFfunc_calls_final3Pset_q",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            },
+            "6": {
+                "callees": { "1": {}, "2": {} },
+                "functionName": "_QMmod_useFfunc_calls_final3Pset_q_alloc",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            },
+            "7": {
+                "callees": { "2": {} },
+                "functionName": "_QMmod_useFfunc_calls_final3Pset_q_alloc2",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            },
+            "8": {
+                "callees": { "1": {}, "2": {} },
+                "functionName": "_QMmod_useFfunc_calls_final3Pset_q_move_alloc",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            },
+            "9": {
+                "callees": { "1": {}, "2": {}, "3": {} },
+                "functionName": "_QMmod_usePfunc_calls_final",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            }
         }
-      ],
-      [
-        13979031587664314780,
-        {
-          "functionName": "_QMmodPcreate_polynomial",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
-        }
-      ],
-      [
-        5064320190928089604,
-        {
-          "functionName": "_QMmodPprint_polynomial",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
-        }
-      ],
-      [
-        2052109649073365059,
-        {
-          "functionName": "_QMmodPfinalize_polynomial",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
-        }
-      ],
-      [
-        6149613639027182890,
-        {
-          "functionName": "_QMmod_usePfunc_calls_final",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
-        }
-      ],
-      [
-        11433580247649436846,
-        {
-          "functionName": "_QMmod_usePfunc_calls_final2",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
-        }
-      ],
-      [
-        4934351978831295596,
-        {
-          "functionName": "_QMmod_useFfunc_calls_final3Pset_q",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
-        }
-      ],
-      [
-        2915883528470775764,
-        {
-          "functionName": "_QMmod_useFfunc_calls_final3Pset_q_alloc2",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
-        }
-      ],
-      [
-        16280562401692851033,
-        {
-          "functionName": "_QMmod_usePfunc_does_not_call_final",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
-        }
-      ],
-      [
-        911036281617746681,
-        {
-          "functionName": "_QMmod_useFfunc_calls_final3Pset_q_alloc",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
-        }
-      ],
-      [
-        15456597401670502006,
-        {
-          "functionName": "_QQmain",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
-        }
-      ],
-      [
-        16645470703084508464,
-        {
-          "functionName": "_QMmod_usePfunc_calls_final3",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
-        }
-      ],
-      [
-        1914061080208569539,
-        {
-          "functionName": "_QMmod_useFfunc_calls_final3Pset_nothing",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
-        }
-      ],
-      [
-        10552440586870006343,
-        {
-          "functionName": "_QMmod_useFfunc_calls_final3Pset_q_move_alloc",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
-        }
-      ]
-    ]
-  },
-  "_MetaCG": {
-    "generator": {
-      "name": "MetaCG",
-      "sha": "535f208aefbf510c4c3536f9bf9e6978e2adc2e5",
-      "version": "0.7"
     },
-    "version": "3.0"
-  }
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "version": "0.9"
+        },
+        "version": "4.0"
+    }
 }

@@ -1,74 +1,57 @@
 {
-  "_CG": {
-    "edges": [
-      [[1083670836535463101, 11444295161927196599], null],
-      [[11444295161927196599, 9530012462595688619], null],
-      [[2308780131476637806, 1083670836535463101], null],
-      [[6753505644903624250, 9530012462595688619], null]
-    ],
-    "nodes": [
-      [
-        9603846864033343388,
-        {
-          "functionName": "_QMmy_modulePsubsub",
-          "hasBody": true,
-          "meta": null,
-          "origin": "module.f90"
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": { "1": {} },
+                "functionName": "_QMmodule0_5Pfunc",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "module0_5.f90"
+            },
+            "1": {
+                "callees": {},
+                "functionName": "_QMmodule2Pfunc",
+                "hasBody": true,
+                "meta": {},
+                "origin": null
+            },
+            "2": {
+                "callees": { "1": {} },
+                "functionName": "_QMmodule3Pfunc",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "module3.f90"
+            },
+            "3": {
+                "callees": { "0": {} },
+                "functionName": "_QMmy_modulePmy_subroutine",
+                "hasBody": true,
+                "meta": {},
+                "origin": null
+            },
+            "4": {
+                "callees": {},
+                "functionName": "_QMmy_modulePsubsub",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "module.f90"
+            },
+            "5": {
+                "callees": { "3": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            }
         }
-      ],
-      [
-        11444295161927196599,
-        {
-          "functionName": "_QMmodule0_5Pfunc",
-          "hasBody": true,
-          "meta": null,
-          "origin": "module0_5.f90"
-        }
-      ],
-      [
-        1083670836535463101,
-        {
-          "functionName": "_QMmy_modulePmy_subroutine",
-          "hasBody": true,
-          "meta": null,
-          "origin": "unknownOrigin"
-        }
-      ],
-      [
-        2308780131476637806,
-        {
-          "functionName": "_QQmain",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        6753505644903624250,
-        {
-          "functionName": "_QMmodule3Pfunc",
-          "hasBody": true,
-          "meta": null,
-          "origin": "module3.f90"
-        }
-      ],
-      [
-        9530012462595688619,
-        {
-          "functionName": "_QMmodule2Pfunc",
-          "hasBody": true,
-          "meta": null,
-          "origin": "unknownOrigin"
-        }
-      ]
-    ]
-  },
-  "_MetaCG": {
-    "generator": {
-      "name": "MetaCG",
-      "sha": "d76681a62ca400b6d9ff4a24bde16f373326f998",
-      "version": "0.7"
     },
-    "version": "3.0"
-  }
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "version": "0.9"
+        },
+        "version": "4.0"
+    }
 }

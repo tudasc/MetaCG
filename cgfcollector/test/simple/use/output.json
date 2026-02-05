@@ -1,45 +1,36 @@
 {
     "_CG": {
-        "edges": [
-            [[156073635694004542, 15462925951592547380], null],
-            [[156073635694004542, 8395601259825836172], null]
-        ],
-        "nodes": [
-            [
-                156073635694004542,
-                {
-                    "functionName": "_QQmain",
-                    "hasBody": true,
-                    "meta": null,
-                    "origin": "main.f90"
-                }
-            ],
-            [
-                15462925951592547380,
-                {
-                    "functionName": "_QMmodPset_var_derived",
-                    "hasBody": true,
-                    "meta": null,
-                    "origin": "main.f90"
-                }
-            ],
-            [
-                8395601259825836172,
-                {
-                    "functionName": "_QMmodPset_var_base",
-                    "hasBody": true,
-                    "meta": null,
-                    "origin": "main.f90"
-                }
-            ]
-        ]
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": {},
+                "functionName": "_QMmodPset_var_base",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "1": {
+                "callees": {},
+                "functionName": "_QMmodPset_var_derived",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "2": {
+                "callees": { "0": {}, "1": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            }
+        }
     },
     "_MetaCG": {
         "generator": {
             "name": "MetaCG",
-            "sha": "bcce43c481a129077e674aaa2aa736946bcf925a",
-            "version": "0.7"
+            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "version": "0.9"
         },
-        "version": "3.0"
+        "version": "4.0"
     }
 }

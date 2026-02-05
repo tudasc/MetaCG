@@ -1,45 +1,36 @@
 {
-  "_CG": {
-    "edges": [
-      [[12261419144365086168, 12651824050695698132], null],
-      [[12261419144365086168, 1355953991221275603], null]
-    ],
-    "nodes": [
-      [
-        12261419144365086168,
-        {
-          "functionName": "_QQmain",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": {},
+                "functionName": "_QMmodPadd_int",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "1": {
+                "callees": {},
+                "functionName": "_QMmodPadd_real",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "2": {
+                "callees": { "0": {}, "1": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            }
         }
-      ],
-      [
-        12651824050695698132,
-        {
-          "functionName": "_QMmodPadd_real",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        1355953991221275603,
-        {
-          "functionName": "_QMmodPadd_int",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ]
-    ]
-  },
-  "_MetaCG": {
-    "generator": {
-      "name": "MetaCG",
-      "sha": "535f208aefbf510c4c3536f9bf9e6978e2adc2e5",
-      "version": "0.7"
     },
-    "version": "3.0"
-  }
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "version": "0.9"
+        },
+        "version": "4.0"
+    }
 }

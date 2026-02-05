@@ -1,84 +1,64 @@
 {
-  "_CG": {
-    "edges": [
-      [[14247392955135821084, 10265585301451757595], null],
-      [[14247392955135821084, 9264498473018160840], null],
-      [[14247392955135821084, 8180353735812950427], null],
-      [[3560107481050335624, 8180353735812950427], null],
-      [[18176357673246278819, 8180353735812950427], null]
-    ],
-    "nodes": [
-      [
-        18176357673246278819,
-        {
-          "functionName": "_QFsizePfunc1",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": { "4": {} },
+                "functionName": "_QFsizePfunc1",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "1": {
+                "callees": { "4": {} },
+                "functionName": "_QFsizePfunc2",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "2": {
+                "callees": {},
+                "functionName": "_QMvector_operationsPvector_add",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "3": {
+                "callees": {},
+                "functionName": "_QMvector_operationsPvector_norm",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "4": {
+                "callees": {},
+                "functionName": "_QPsize",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "5": {
+                "callees": {},
+                "functionName": "_QPvector_norm2",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "6": {
+                "callees": { "2": {}, "3": {}, "4": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            }
         }
-      ],
-      [
-        8180353735812950427,
-        {
-          "functionName": "_QPsize",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        4612314267457897323,
-        {
-          "functionName": "_QPvector_norm2",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        14247392955135821084,
-        {
-          "functionName": "_QQmain",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        3560107481050335624,
-        {
-          "functionName": "_QFsizePfunc2",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        10265585301451757595,
-        {
-          "functionName": "_QMvector_operationsPvector_norm",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        9264498473018160840,
-        {
-          "functionName": "_QMvector_operationsPvector_add",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ]
-    ]
-  },
-  "_MetaCG": {
-    "generator": {
-      "name": "MetaCG",
-      "sha": "e484641c4a9cc749eef4bfa01fca86020321e52d",
-      "version": "0.7"
     },
-    "version": "3.0"
-  }
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "version": "0.9"
+        },
+        "version": "4.0"
+    }
 }

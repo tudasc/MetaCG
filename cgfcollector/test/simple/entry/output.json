@@ -1,55 +1,43 @@
 {
-  "_CG": {
-    "edges": [
-      [[3941336225589151125, 11585286096804977045], null],
-      [[3941336225589151125, 11158142119152065688], null],
-      [[3941336225589151125, 2512112026932646668], null]
-    ],
-    "nodes": [
-      [
-        3941336225589151125,
-        {
-          "functionName": "_QQmain",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": {},
+                "functionName": "_QMmodPentry1",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "1": {
+                "callees": {},
+                "functionName": "_QMmodPentry2",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "2": {
+                "callees": {},
+                "functionName": "_QMmodPfunc",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "3": {
+                "callees": { "0": {}, "1": {}, "2": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            }
         }
-      ],
-      [
-        11585286096804977045,
-        {
-          "functionName": "_QMmodPentry2",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        11158142119152065688,
-        {
-          "functionName": "_QMmodPentry1",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        2512112026932646668,
-        {
-          "functionName": "_QMmodPfunc",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ]
-    ]
-  },
-  "_MetaCG": {
-    "generator": {
-      "name": "MetaCG",
-      "sha": "58079ff194dddcb21778f4c423db10fccc27ebae",
-      "version": "0.7"
     },
-    "version": "3.0"
-  }
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "version": "0.9"
+        },
+        "version": "4.0"
+    }
 }

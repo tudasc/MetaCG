@@ -1,33 +1,29 @@
 {
-  "_CG": {
-    "edges": [[[10932468432584512985, 15390318080014301756], null]],
-    "nodes": [
-      [
-        15390318080014301756,
-        {
-          "functionName": "add",
-          "hasBody": false,
-          "meta": null,
-          "origin": "main.f90"
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": { "1": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "1": {
+                "callees": {},
+                "functionName": "add",
+                "hasBody": false,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            }
         }
-      ],
-      [
-        10932468432584512985,
-        {
-          "functionName": "_QQmain",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ]
-    ]
-  },
-  "_MetaCG": {
-    "generator": {
-      "name": "MetaCG",
-      "sha": "16c60e49d2f6547d0493529a47951ca207bb5d3d",
-      "version": "0.7"
     },
-    "version": "3.0"
-  }
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "version": "0.9"
+        },
+        "version": "4.0"
+    }
 }

@@ -1,125 +1,92 @@
 {
-  "_CG": {
-    "edges": [
-      [[13057133462220643391, 1454521131396630178], null],
-      [[14650538270171694253, 4796010356411637051], null],
-      [[14650538270171694253, 16491118580773965493], null],
-      [[14650538270171694253, 7396763912426530726], null],
-      [[13057133462220643391, 4051482389717363313], null],
-      [[13057133462220643391, 8008070197589690300], null],
-      [[13057133462220643391, 15912510891746475667], null],
-      [[13057133462220643391, 3412517584417964141], null],
-      [[16336895082892013384, 14650538270171694253], null],
-      [[16336895082892013384, 13057133462220643391], null]
-    ],
-    "nodes": [
-      [
-        14650538270171694253,
-        {
-          "functionName": "_QFPfunc_no_finalize",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": { "2": {}, "3": {}, "4": {}, "6": {}, "8": {} },
+                "functionName": "_QFPfunc",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "1": {
+                "callees": { "5": {}, "7": {}, "9": {} },
+                "functionName": "_QFPfunc_no_finalize",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "10": {
+                "callees": { "0": {}, "1": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "2": {
+                "callees": {},
+                "functionName": "_QMmodPfinalize_base",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "3": {
+                "callees": {},
+                "functionName": "_QMmodPfinalize_derived",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "4": {
+                "callees": {},
+                "functionName": "_QMmodPfunc_arg",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "5": {
+                "callees": {},
+                "functionName": "_QMmodPfunc_arg2",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "6": {
+                "callees": {},
+                "functionName": "_QMmodPfunc_arg_inout",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "7": {
+                "callees": {},
+                "functionName": "_QMmodPfunc_arg_inout2",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "8": {
+                "callees": {},
+                "functionName": "_QMmodPfunc_arg_out",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "9": {
+                "callees": {},
+                "functionName": "_QMmodPfunc_arg_out2",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            }
         }
-      ],
-      [
-        4796010356411637051,
-        {
-          "functionName": "_QMmodPfunc_arg_inout2",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        16336895082892013384,
-        {
-          "functionName": "_QQmain",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        16491118580773965493,
-        {
-          "functionName": "_QMmodPfunc_arg_out2",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        7396763912426530726,
-        {
-          "functionName": "_QMmodPfunc_arg2",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        3412517584417964141,
-        {
-          "functionName": "_QMmodPfunc_arg",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        8008070197589690300,
-        {
-          "functionName": "_QMmodPfinalize_derived",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        13057133462220643391,
-        {
-          "functionName": "_QFPfunc",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        15912510891746475667,
-        {
-          "functionName": "_QMmodPfunc_arg_inout",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        4051482389717363313,
-        {
-          "functionName": "_QMmodPfunc_arg_out",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        1454521131396630178,
-        {
-          "functionName": "_QMmodPfinalize_base",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ]
-    ]
-  },
-  "_MetaCG": {
-    "generator": {
-      "name": "MetaCG",
-      "sha": "65b007fe24367861c97fcadcc94cc1c6a165c074",
-      "version": "0.7"
     },
-    "version": "3.0"
-  }
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "version": "0.9"
+        },
+        "version": "4.0"
+    }
 }

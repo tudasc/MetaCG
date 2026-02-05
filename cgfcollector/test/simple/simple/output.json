@@ -1,33 +1,29 @@
 {
-  "_CG": {
-    "edges": [[[386379624964062775, 12232342110680008091], null]],
-    "nodes": [
-      [
-        12232342110680008091,
-        {
-          "functionName": "_QFPprint_stars",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": {},
+                "functionName": "_QFPprint_stars",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            },
+            "1": {
+                "callees": { "0": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "input.f90"
+            }
         }
-      ],
-      [
-        386379624964062775,
-        {
-          "functionName": "_QQmain",
-          "hasBody": true,
-          "meta": null,
-          "origin": "input.f90"
-        }
-      ]
-    ]
-  },
-  "_MetaCG": {
-    "generator": {
-      "name": "MetaCG",
-      "sha": "e8fbd9caa11ea3da8a149732eeb7b9c88ba5249f",
-      "version": "0.7"
     },
-    "version": "3.0"
-  }
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "version": "0.9"
+        },
+        "version": "4.0"
+    }
 }

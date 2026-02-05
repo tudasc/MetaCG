@@ -1,55 +1,43 @@
 {
-  "_CG": {
-    "edges": [
-      [[10447073260129445604, 5161265265095615880], null],
-      [[10447073260129445604, 12495205984704274385], null],
-      [[10447073260129445604, 9011580163634161557], null]
-    ],
-    "nodes": [
-      [
-        5161265265095615880,
-        {
-          "functionName": "_QMshapesPdraw_rectangle",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": {},
+                "functionName": "_QMshapesPdraw",
+                "hasBody": false,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "1": {
+                "callees": {},
+                "functionName": "_QMshapesPdraw_circle",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "2": {
+                "callees": {},
+                "functionName": "_QMshapesPdraw_rectangle",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            },
+            "3": {
+                "callees": { "0": {}, "1": {}, "2": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": { "fileProperties": { "systemInclude": false } },
+                "origin": "main.f90"
+            }
         }
-      ],
-      [
-        12495205984704274385,
-        {
-          "functionName": "_QMshapesPdraw_circle",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        10447073260129445604,
-        {
-          "functionName": "_QQmain",
-          "hasBody": true,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ],
-      [
-        9011580163634161557,
-        {
-          "functionName": "_QMshapesPdraw",
-          "hasBody": false,
-          "meta": null,
-          "origin": "main.f90"
-        }
-      ]
-    ]
-  },
-  "_MetaCG": {
-    "generator": {
-      "name": "MetaCG",
-      "sha": "38e3c2db60ec72712056eabd89642e3a6fb631cc",
-      "version": "0.7"
     },
-    "version": "3.0"
-  }
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "version": "0.9"
+        },
+        "version": "4.0"
+    }
 }
