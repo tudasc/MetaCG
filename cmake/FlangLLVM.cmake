@@ -1,4 +1,10 @@
 find_package(
+  Clang
+  REQUIRED
+  CONFIG
+)
+
+find_package(
   MLIR
   REQUIRED
   CONFIG
