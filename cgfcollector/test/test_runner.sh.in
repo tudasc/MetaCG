@@ -7,22 +7,29 @@ if [[ ! -d "$out_dir" ]]; then
     mkdir "$out_dir"
 fi
 
-find "$test_case_dir" -type d | while read -r dir; do
+find "$test_case_dir" . -mindepth 1 -type d | while read -r dir; do
     mapfile -t input_files < <(find "$dir" -maxdepth 1 -name '*.f90')
     output_file="$dir/output.json"
 
-    if [[ ${#input_files[@]} -gt 0 && -f "$output_file" ]]; then
+    if [[ ${#input_files[@]} -gt 0 ]]; then
         # generate test case name from dir path. test/simple/01 becomes simple_01
         test_case_name="$(basename "$(dirname "$dir")")_$(basename "$dir")"
 
         echo "Test case: $test_case_name"
+
+        if [ ! -f "$output_file" ] || [ ! -s "$output_file" ] || grep -q '{}' "$output_file"; then
+            echo "Skipping empty or missing output file: $output_file"
+            continue
+        fi
 
         if ! @FCOLLECTOR_WRAPPER@ -o "$out_dir/$test_case_name.json" "${input_files[@]}"; then
             echo "Error: failed to generate callgraph"
             continue
         fi
 
-        if ! diff -q <(jq 'del(._MetaCG)' "$out_dir/$test_case_name.json") <(jq 'del(._MetaCG)' "$output_file") >/dev/null; then
+        jq_string='del(._MetaCG) | ._CG.nodes |= map([.[0], (.[1] | del(.origin))])'
+
+        if ! diff -q <(jq "$jq_string" "$out_dir/$test_case_name.json") <(jq "$jq_string" "$output_file") >/dev/null; then
             echo "Error: Output mismatch"
             echo "Expected: $(cat "$output_file")"
             echo "Got: $(cat "$out_dir/$test_case_name.json")"

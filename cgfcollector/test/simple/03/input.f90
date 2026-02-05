@@ -43,12 +43,11 @@ program main
     use mod
     implicit none
 
-    type(polynomial) :: q
-
     work: block
-        q = polynomial([2., 3., 1., 0., 0.])
+        type(polynomial), allocatable :: q
 
-        call q%print_polynomial
+        q = polynomial([2., 3., 1., 0., 0.])
+        call q%print_polynomial()
     end block work
 
 end program main
