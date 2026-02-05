@@ -8,7 +8,7 @@ void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
     cg->getOrInsertNode(mangleSymbol(sym), currentFileName, false, false);
     functions.push_back({sym, std::vector<function::dummyArg>()});
 
-    al->debug("Add node: {} ({})", mangleSymbol(sym), fmt::ptr(sym));
+    MCGLogger::logDebug("Add node: {} ({})", mangleSymbol(sym), fmt::ptr(sym));
   }
 }
 
@@ -29,7 +29,7 @@ void ParseTreeVisitor::handleEndFuncSubStmt() {
 void ParseTreeVisitor::handleTrackedVars() {
   if (mangleSymbol(functionSymbols.back()) != "_QQmain") {
     if (!trackedVars.empty())
-      al->debug("Handle tracked vars for function");
+      MCGLogger::logDebug("Handle tracked vars for function");
 
     for (auto& trackedVar : trackedVars) {
       if (!trackedVar.hasBeenInitialized)
@@ -93,8 +93,8 @@ std::vector<const type*> ParseTreeVisitor::findTypeWithDerivedTypes(const Symbol
   while (currentExtendsFrom) {
     // not sure if Fortran even allows this. But better be safe
     if (!visited.insert(currentExtendsFrom).second) {
-      al->error("Error: Detected cyclic inheritance involving type \"" +
-                (currentExtendsFrom ? currentExtendsFrom->name().ToString() : "null") + "\"");
+      MCGLogger::logError("Error: Detected cyclic inheritance involving type \"" +
+                          (currentExtendsFrom ? currentExtendsFrom->name().ToString() : "null") + "\"");
       break;
     }
 
@@ -102,8 +102,8 @@ std::vector<const type*> ParseTreeVisitor::findTypeWithDerivedTypes(const Symbol
                                       [&](const type& t) { return compareSymbols(t.type, currentExtendsFrom); });
 
     if (currentTypeIt == types.end()) {
-      al->error("Error: Types array (extendsFrom) field entry for \"" +
-                (currentExtendsFrom ? currentExtendsFrom->name().ToString() : "null") + "\" missing");
+      MCGLogger::logError("Error: Types array (extendsFrom) field entry for \"" +
+                          (currentExtendsFrom ? currentExtendsFrom->name().ToString() : "null") + "\" missing");
       break;
     }
 
@@ -125,8 +125,8 @@ void ParseTreeVisitor::addEdgesForProducesAndDerivedTypes(std::vector<const type
 
     edges.emplace_back(mangleSymbol(functionSymbols.back()), mangleSymbol(procIt->second));
 
-    al->debug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()), fmt::ptr(functionSymbols.back()),
-              mangleSymbol(procIt->second), fmt::ptr(procIt->second));
+    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()),
+                        fmt::ptr(functionSymbols.back()), mangleSymbol(procIt->second), fmt::ptr(procIt->second));
   }
 }
 
@@ -134,8 +134,8 @@ void ParseTreeVisitor::addEdgesForFinalizers(const Symbol* typeSymbol) {
   for (const auto& edge : getEdgesForFinalizers(typeSymbol)) {
     edges.emplace_back(mangleSymbol(edge.first), mangleSymbol(edge.second));
 
-    al->debug("Add edge for finalizer: {} ({}) -> {} ({})", mangleSymbol(edge.first), fmt::ptr(edge.first),
-              mangleSymbol(edge.second), fmt::ptr(edge.second));
+    MCGLogger::logDebug("Add edge for finalizer: {} ({}) -> {} ({})", mangleSymbol(edge.first), fmt::ptr(edge.first),
+                        mangleSymbol(edge.second), fmt::ptr(edge.second));
   }
 }
 
@@ -165,19 +165,6 @@ std::vector<std::pair<Symbol*, const Symbol*>> ParseTreeVisitor::getEdgesForFina
   return edges;
 }
 
-const Symbol* ParseTreeVisitor::getTypeSymbolFromSymbol(const Symbol* symbol) {
-  auto* type = symbol->GetType();
-  if (!type)
-    return nullptr;
-  auto* derived = type->AsDerived();
-  if (!derived)
-    return nullptr;
-  auto* typeSymbol = &derived->typeSymbol();
-  if (!typeSymbol)
-    return nullptr;
-  return typeSymbol;
-}
-
 trackedVar* ParseTreeVisitor::getTrackedVarFromSourceName(SourceName sourceName) {
   auto anyTrackedVarIt =
       std::find_if(trackedVars.begin(), trackedVars.end(), [&](const auto& t) { return t.var->name() == sourceName; });
@@ -200,7 +187,7 @@ void ParseTreeVisitor::handleTrackedVarAssignment(SourceName sourceName) {
 
   trackedVar->hasBeenInitialized = true;
 
-  al->debug("Tracked var assigned: {} ({})", trackedVar->var->name(), fmt::ptr(trackedVar->var));
+  MCGLogger::logDebug("Tracked var assigned: {} ({})", trackedVar->var->name(), fmt::ptr(trackedVar->var));
 }
 
 void ParseTreeVisitor::addTrackedVar(trackedVar var) {
@@ -209,12 +196,12 @@ void ParseTreeVisitor::addTrackedVar(trackedVar var) {
     // update info
     it->addFinalizers = var.addFinalizers;
     it->hasBeenInitialized = var.hasBeenInitialized;
-    al->debug("Update tracked variable: {} ({})", var.var->name(), fmt::ptr(var.var));
+    MCGLogger::logDebug("Update tracked variable: {} ({})", var.var->name(), fmt::ptr(var.var));
     return;
   }
 
   trackedVars.push_back(var);
-  al->debug("Add tracking for variable: {} ({})", var.var->name(), fmt::ptr(var.var));
+  MCGLogger::logDebug("Add tracking for variable: {} ({})", var.var->name(), fmt::ptr(var.var));
 }
 
 void ParseTreeVisitor::removeTrackedVars(Symbol* procedureSymbol) {
@@ -235,7 +222,8 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
     functionSymbols.emplace_back(maybeStmt->statement.v.symbol);
     cg->getOrInsertNode(mangleSymbol(functionSymbols.back()), currentFileName, false, false);
 
-    al->debug("\nIn main program: {} ({})", mangleSymbol(functionSymbols.back()), fmt::ptr(functionSymbols.back()));
+    MCGLogger::logDebug("\nIn main program: {} ({})", mangleSymbol(functionSymbols.back()),
+                        fmt::ptr(functionSymbols.back()));
   }
   return true;
 }
@@ -243,7 +231,8 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
 void ParseTreeVisitor::Post(const MainProgram&) {
   handleTrackedVars();
 
-  al->debug("End main program: {} ({})", mangleSymbol(functionSymbols.back()), fmt::ptr(functionSymbols.back()));
+  MCGLogger::logDebug("End main program: {} ({})", mangleSymbol(functionSymbols.back()),
+                      fmt::ptr(functionSymbols.back()));
 
   if (!functionSymbols.empty()) {
     functionSymbols.pop_back();
@@ -283,13 +272,14 @@ void ParseTreeVisitor::Post(const EntryStmt& e) {
   if (!name->symbol)
     return;
 
-  al->debug("Add Entry point: {} ({})", mangleSymbol(name->symbol), fmt::ptr(name->symbol));
+  MCGLogger::logDebug("Add Entry point: {} ({})", mangleSymbol(name->symbol), fmt::ptr(name->symbol));
 
   cg->getOrInsertNode(mangleSymbol(name->symbol), currentFileName, false, true);
 }
 
 void ParseTreeVisitor::Post(const FunctionStmt& f) {
-  al->debug("\nIn function: {} ({})", mangleSymbol(std::get<Name>(f.t).symbol), fmt::ptr(std::get<Name>(f.t).symbol));
+  MCGLogger::logDebug("\nIn function: {} ({})", mangleSymbol(std::get<Name>(f.t).symbol),
+                      fmt::ptr(std::get<Name>(f.t).symbol));
 
   handleFuncSubStmt(f);
 
@@ -309,14 +299,16 @@ void ParseTreeVisitor::Post(const FunctionStmt& f) {
 
 void ParseTreeVisitor::Post(const EndFunctionStmt&) {
   if (!functionSymbols.empty()) {
-    al->debug("End function: {} ({})", mangleSymbol(functionSymbols.back()), fmt::ptr(functionSymbols.back()));
+    MCGLogger::logDebug("End function: {} ({})", mangleSymbol(functionSymbols.back()),
+                        fmt::ptr(functionSymbols.back()));
   }
 
   handleEndFuncSubStmt();
 }
 
 void ParseTreeVisitor::Post(const SubroutineStmt& s) {
-  al->debug("\nIn subroutine: {} ({})", mangleSymbol(std::get<Name>(s.t).symbol), fmt::ptr(std::get<Name>(s.t).symbol));
+  MCGLogger::logDebug("\nIn subroutine: {} ({})", mangleSymbol(std::get<Name>(s.t).symbol),
+                      fmt::ptr(std::get<Name>(s.t).symbol));
 
   handleFuncSubStmt(s);
 
@@ -337,7 +329,8 @@ void ParseTreeVisitor::Post(const SubroutineStmt& s) {
 
 void ParseTreeVisitor::Post(const EndSubroutineStmt&) {
   if (!functionSymbols.empty()) {
-    al->debug("End subroutine: {} ({})", mangleSymbol(functionSymbols.back()), fmt::ptr(functionSymbols.back()));
+    MCGLogger::logDebug("End subroutine: {} ({})", mangleSymbol(functionSymbols.back()),
+                        fmt::ptr(functionSymbols.back()));
   }
 
   handleEndFuncSubStmt();
@@ -358,8 +351,8 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
 
     edges.emplace_back(mangleSymbol(functionSymbols.back()), mangleSymbol(name->symbol));
 
-    al->debug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()), fmt::ptr(functionSymbols.back()),
-              mangleSymbol(name->symbol), fmt::ptr(name->symbol));
+    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()),
+                        fmt::ptr(functionSymbols.back()), mangleSymbol(name->symbol), fmt::ptr(name->symbol));
 
     // if called from a object with %. (base % component)
   } else if (auto* procCompRef = std::get_if<ProcComponentRef>(&p.u)) {
@@ -369,8 +362,8 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
 
     edges.emplace_back(mangleSymbol(functionSymbols.back()), mangleSymbol(symbolComp));
 
-    al->debug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()), fmt::ptr(functionSymbols.back()),
-              mangleSymbol(symbolComp), fmt::ptr(symbolComp));
+    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()),
+                        fmt::ptr(functionSymbols.back()), mangleSymbol(symbolComp), fmt::ptr(symbolComp));
 
     auto* baseName = std::get_if<Name>(&procCompRef->v.thing.base.u);
     if (!baseName || !baseName->symbol)
@@ -444,7 +437,7 @@ void ParseTreeVisitor::Post(const Call& c) {
       addEdgesForFinalizers(&pf.finalizerEdges, getTypeSymbolFromSymbol(trackedVar->var));
 
       potentialFinalizers.push_back(pf);
-      al->debug("Add potential finalizer for var: {} ({})", name->symbol->name(), fmt::ptr(name->symbol));
+      MCGLogger::logDebug("Add potential finalizer for var: {} ({})", name->symbol->name(), fmt::ptr(name->symbol));
     }
   }
 }
@@ -492,7 +485,8 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
       if (!holds_allocatable) {
         if (!holds_intent) {
           // no intent attr, if not set does not call finalizer. Why? idk.
-          al->debug("Add tracking for function argument: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
+          MCGLogger::logDebug("Add tracking for function argument: {} ({})", name.symbol->name(),
+                              fmt::ptr(name.symbol));
           addTrackedVar({name.symbol, functionSymbols.back(), false, true});
         } else {
           if (holds_intent->v == IntentSpec::Intent::Out) {
@@ -500,14 +494,15 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
             addEdgesForFinalizers(typeSymbol);
           } else if (holds_intent->v == IntentSpec::Intent::InOut) {
             // intent inout, calls finalizer when set.
-            al->debug("Add tracking for inout argument: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
+            MCGLogger::logDebug("Add tracking for inout argument: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
             addTrackedVar({name.symbol, functionSymbols.back(), false, true});
           }
         }
       }
     } else {
       if (holds_allocatable) {
-        al->debug("Add tracking for allocatable variable: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
+        MCGLogger::logDebug("Add tracking for allocatable variable: {} ({})", name.symbol->name(),
+                            fmt::ptr(name.symbol));
         addTrackedVar({name.symbol, functionSymbols.back(), false, true});
         // skip var with allocatable attr.
         // Add to trackedVars because it needs to be assigned at least once before calling a finalizers make sense.
@@ -527,7 +522,7 @@ bool ParseTreeVisitor::Pre(const DerivedTypeDef&) {
 
 void ParseTreeVisitor::Post(const DerivedTypeDef&) {
   inDerivedTypeDef = false;
-  al->debug("End derived type: {} ({})", types.back().type->name(), fmt::ptr(types.back().type));
+  MCGLogger::logDebug("End derived type: {} ({})", types.back().type->name(), fmt::ptr(types.back().type));
 }
 
 bool ParseTreeVisitor::Pre(const DerivedTypeStmt& t) {
@@ -538,7 +533,7 @@ bool ParseTreeVisitor::Pre(const DerivedTypeStmt& t) {
   const auto& name = std::get<Name>(t.t);
   currentType.type = name.symbol;
 
-  al->debug("\nIn derived type: {} ({})", currentType.type->name(), fmt::ptr(currentType.type));
+  MCGLogger::logDebug("\nIn derived type: {} ({})", currentType.type->name(), fmt::ptr(currentType.type));
 
   return true;
 }
@@ -552,7 +547,7 @@ void ParseTreeVisitor::Post(const TypeAttrSpec& a) {
     const auto& extends = std::get<TypeAttrSpec::Extends>(a.u);
     currentType.extendsFrom = extends.v.symbol;
 
-    al->debug("Extends from: {} ({})", currentType.extendsFrom->name(), fmt::ptr(currentType.extendsFrom));
+    MCGLogger::logDebug("Extends from: {} ({})", currentType.extendsFrom->name(), fmt::ptr(currentType.extendsFrom));
   }
 }
 
@@ -574,8 +569,8 @@ void ParseTreeVisitor::Post(const TypeBoundProcedureStmt& s) {
       auto& currentType = types.back();
       currentType.procedures.emplace_back(name.symbol, optname->symbol);
 
-      al->debug("Add procedure: {} ({}) -> {} ({})", name.symbol->name(), fmt::ptr(name.symbol),
-                optname->symbol->name(), fmt::ptr(optname->symbol));
+      MCGLogger::logDebug("Add procedure: {} ({}) -> {} ({})", name.symbol->name(), fmt::ptr(name.symbol),
+                          optname->symbol->name(), fmt::ptr(optname->symbol));
     }
 
     // only for abstract types, with deferred in binding attr list
@@ -587,8 +582,8 @@ void ParseTreeVisitor::Post(const TypeBoundProcedureStmt& s) {
       auto& currentType = types.back();
       currentType.procedures.emplace_back(n.symbol, n.symbol);
 
-      al->debug("Add procedure: {} ({}) -> {} ({})", n.symbol->name(), fmt::ptr(n.symbol), n.symbol->name(),
-                fmt::ptr(n.symbol));
+      MCGLogger::logDebug("Add procedure: {} ({}) -> {} ({})", n.symbol->name(), fmt::ptr(n.symbol), n.symbol->name(),
+                          fmt::ptr(n.symbol));
     }
   }
 }
@@ -610,8 +605,8 @@ void ParseTreeVisitor::Post(const TypeBoundGenericStmt& s) {
 
         currentType.operators.emplace_back(*intrinsicOp, name.symbol);
 
-        al->debug("Add operator: {} -> {} ({})", DefinedOperator::EnumToString(*intrinsicOp), name.symbol->name(),
-                  fmt::ptr(name.symbol));
+        MCGLogger::logDebug("Add operator: {} -> {} ({})", DefinedOperator::EnumToString(*intrinsicOp),
+                            name.symbol->name(), fmt::ptr(name.symbol));
       }
     }
   }
@@ -656,7 +651,7 @@ void ParseTreeVisitor::Post(const ProcedureStmt& p) {
       continue;
 
     if (interfaceOperators.empty()) {
-      al->error("This should no happen. Likely there is a bug with parsing DefinedOperator's");
+      MCGLogger::logError("This should no happen. Likely there is a bug with parsing DefinedOperator's");
       continue;
     }
 
@@ -717,8 +712,8 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
 
         edges.emplace_back(mangleSymbol(functionSymbols.back()), mangleSymbol(sym));
 
-        al->debug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()),
-                  fmt::ptr(functionSymbols.back()), mangleSymbol(sym), fmt::ptr(sym));
+        MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()),
+                            fmt::ptr(functionSymbols.back()), mangleSymbol(sym), fmt::ptr(sym));
       }
     }
 
@@ -771,7 +766,7 @@ void ParseTreeVisitor::Post(const Expr& e) {
 void ParseTreeVisitor::Post(const UseStmt& u) {
   auto* useSymbol = u.moduleName.symbol;
 
-  al->debug("Use module: {} ({})", useSymbol->name(), fmt::ptr(useSymbol));
+  MCGLogger::logDebug("Use module: {} ({})", useSymbol->name(), fmt::ptr(useSymbol));
 
   if (const Scope* modScope = useSymbol->scope()) {
     for (const auto& pair : *modScope) {
@@ -794,7 +789,8 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
           // type bound procedures
           if (component.has<ProcBindingDetails>()) {
             const auto& procDetails = component.get<ProcBindingDetails>();
-            al->debug("Found procedure in module derived type: {} ({})", component.name(), fmt::ptr(&component));
+            MCGLogger::logDebug("Found procedure in module derived type: {} ({})", component.name(),
+                                fmt::ptr(&component));
             procedures.emplace_back(&component, &component);
           }
 
@@ -806,20 +802,20 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
             DefinedOperator::IntrinsicOperator intrinsicOp = variantGetIntrinsicOperator(gen->kind().u);
 
             if (gen->specificProcs().size() != 1)
-              al->error("Type-bound generic more than one specific proc not handled. Should not happen.");
+              MCGLogger::logError("Type-bound generic more than one specific proc not handled. Should not happen.");
 
             Symbol* op_func_sym = nullptr;
             op_func_sym = const_cast<Symbol*>(&gen->specificProcs().front().get());
 
-            al->debug("Found operator in module derived type: {} -> {} ({})",
-                      DefinedOperator::EnumToString(intrinsicOp), op_func_sym->name(), fmt::ptr(op_func_sym));
+            MCGLogger::logDebug("Found operator in module derived type: {} -> {} ({})",
+                                DefinedOperator::EnumToString(intrinsicOp), op_func_sym->name(), fmt::ptr(op_func_sym));
 
             operators.push_back({intrinsicOp, op_func_sym});
           }
         }
 
         types.push_back({&symbol, extendsFrom, procedures, operators});
-        al->debug("Found derived type in module: {} ({})", symbol.name(), fmt::ptr(&symbol));
+        MCGLogger::logDebug("Found derived type in module: {} ({})", symbol.name(), fmt::ptr(&symbol));
       }
 
       // same but with interface operators
@@ -829,18 +825,18 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
 
         if (gen->kind().IsIntrinsicOperator()) {
           interfaceOp = variantGetIntrinsicOperator(gen->kind().u);
-          al->debug("Found interface operator in module: {}",
-                    DefinedOperator::EnumToString(std::get<DefinedOperator::IntrinsicOperator>(interfaceOp)));
+          MCGLogger::logDebug("Found interface operator in module: {}",
+                              DefinedOperator::EnumToString(std::get<DefinedOperator::IntrinsicOperator>(interfaceOp)));
         } else if (gen->kind().IsDefinedOperator()) {
           interfaceOp = &symbol;
-          al->debug("Found interface operator in module: {}", symbol.name());
+          MCGLogger::logDebug("Found interface operator in module: {}", symbol.name());
         } else {
           continue;
         }
 
         for (const auto& p : gen->specificProcs()) {
           procs.push_back(const_cast<Symbol*>(&p.get()));
-          al->debug("  with procedure: {} ({})", p.get().name(), fmt::ptr(&p.get()));
+          MCGLogger::logDebug("  with procedure: {} ({})", p.get().name(), fmt::ptr(&p.get()));
         }
 
         interfaceOperators.push_back({interfaceOp, procs});
@@ -857,10 +853,10 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
         }
 
         functions.push_back({&symbol, dummyArgs});
-        al->debug("Found function in module: {} ({})", symbol.name(), fmt::ptr(&symbol));
+        MCGLogger::logDebug("Found function in module: {} ({})", symbol.name(), fmt::ptr(&symbol));
       }
     }
   }
 
-  al->debug("Finished Use module: {} ({})", useSymbol->name(), fmt::ptr(useSymbol));
+  MCGLogger::logDebug("Finished Use module: {} ({})", useSymbol->name(), fmt::ptr(useSymbol));
 }

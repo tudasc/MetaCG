@@ -13,16 +13,10 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
       cg = mcgManager.getCallgraph("cg");
     }
 
-    AL* al = AL::getInstance();
-
-    if (std::getenv("DEBUG")) {
-      metacg::MCGLogger::instance().getConsole()->set_level(spdlog::level::debug);
-      metacg::MCGLogger::instance().getConsole()->set_pattern("%v");
-
-      // TODO: remove
-      spdlog::set_pattern("%v");
-      spdlog::set_level(spdlog::level::debug);
-    }
+#ifndef NDEBUG
+    metacg::MCGLogger::instance().getConsole()->set_level(spdlog::level::debug);
+    metacg::MCGLogger::instance().getConsole()->set_pattern("%v");
+#endif
 
     ParseTreeVisitor visitor(cg, getCurrentFile().str());
     Fortran::parser::Walk(getParsing().parseTree(), visitor);
@@ -42,7 +36,7 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
 
       for (const auto& edge : pf.finalizerEdges) {
         visitor.getEdges().emplace_back(edge.first, edge.second);
-        al->debug("Add edge for potential finalizer: {} -> {}", edge.first, edge.second);
+        MCGLogger::logDebug("Add edge for potential finalizer: {} -> {}", edge.first, edge.second);
       }
     }
 
@@ -58,8 +52,6 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
 
       cg->addEdge(callerNode, calleeNode);
     }
-
-    al->flush();
 
     mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
 

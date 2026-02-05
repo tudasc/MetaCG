@@ -20,7 +20,6 @@
 #include <variant>
 #include <vector>
 
-#include "AL.h"
 #include "util.h"
 
 using namespace Fortran::parser;
@@ -95,8 +94,6 @@ class ParseTreeVisitor {
     }
     return nullptr;
   }
-
-  const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol);
 
   trackedVar* getTrackedVarFromSourceName(SourceName sourceName);
 
@@ -198,8 +195,6 @@ class ParseTreeVisitor {
 
   // mainly used for destructor handling
   std::vector<trackedVar> trackedVars;
-
-  AL* al = AL::getInstance();
 
   std::vector<function> functions;  // all functions
 

@@ -203,3 +203,16 @@ DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(const Variant& op
                              }},
                     op);
 }
+
+const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol) {
+  auto* type = symbol->GetType();
+  if (!type)
+    return nullptr;
+  auto* derived = type->AsDerived();
+  if (!derived)
+    return nullptr;
+  auto* typeSymbol = &derived->typeSymbol();
+  if (!typeSymbol)
+    return nullptr;
+  return typeSymbol;
+}
