@@ -4,10 +4,23 @@
 
 class CollectCG : public Fortran::frontend::PluginParseTreeAction {
  public:
-  void executeAction() override {
+  metacg::Callgraph* cg = nullptr;
+
+  ~CollectCG() override {
+    // if (cg != nullptr) {
+    //   delete cg;
+    //   cg = nullptr;
+    // }
+  }
+
+  void generateCG() {
+    if (cg != nullptr) {
+      return;
+    }
+
     AL* al = AL::getInstance();
 
-    auto cg = std::make_unique<metacg::Callgraph>();
+    cg = new metacg::Callgraph();
 
     // TODO: remove
     if (std::getenv("CUSTOM_DEBUG")) {
@@ -15,7 +28,7 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
       spdlog::set_level(spdlog::level::debug);
     }
 
-    ParseTreeVisitor visitor(cg.get(), getCurrentFile().str());
+    ParseTreeVisitor visitor(cg, getCurrentFile().str());
     Fortran::parser::Walk(getParsing().parseTree(), visitor);
 
     // handle potential finalizers from function calls
@@ -45,25 +58,52 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
       cg->addEdge(callerNode, calleeNode);
     }
 
+    al->flush();
+  }
+
+  std::string cgToString(metacg::Callgraph* cg) {
     auto& mcgManager = metacg::graph::MCGManager::get();
 
     mcgManager.resetManager();
-    mcgManager.addToManagedGraphs("test", std::move(cg), true);
+    mcgManager.addToManagedGraphs("test", std::unique_ptr<metacg::Callgraph>(cg), true);
     mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
 
     auto mcgWriter = metacg::io::createWriter(4);
     if (!mcgWriter) {
       llvm::errs() << "Unable to create a writer\n";
-      return;
+      return "";
     };
 
     metacg::io::JsonSink jsonSink;
     mcgWriter->writeActiveGraph(jsonSink);
 
-    auto file = createOutputFile("json");
-    file->write(jsonSink.getJson().dump().c_str(), jsonSink.getJson().dump().size());
+    return jsonSink.getJson().dump();
+  }
 
-    al->flush();
+  std::unique_ptr<llvm::raw_pwrite_stream> createOutputFile(llvm::StringRef extension) {
+    llvm::SmallString<128> outputPath(getInstance().getFrontendOpts().outputFile);
+    if (outputPath.empty()) {
+      outputPath = getCurrentFile();
+    }
+    if (extension != "")
+      llvm::sys::path::replace_extension(outputPath, extension);
+    std::unique_ptr<llvm::raw_fd_ostream> os;
+    std::error_code ec;
+    os.reset(new llvm::raw_fd_ostream(outputPath.str(), ec, llvm::sys::fs::OF_TextWithCRLF));
+    if (ec) {
+      llvm::errs() << "Error opening output file: " << ec.message() << "\n";
+      return nullptr;
+    }
+    return os;
+  }
+
+  void executeAction() override {
+    generateCG();
+
+    std::string cgString = cgToString(cg);
+
+    auto file = createOutputFile("json");
+    file->write(cgString.c_str(), cgString.size());
   }
 };
 
@@ -72,25 +112,28 @@ class CollectCGwithDot : public CollectCG {
   void executeAction() override {
     CollectCG::executeAction();
 
-    auto& mcgManager = metacg::graph::MCGManager::get();
-
-    metacg::io::dot::DotGenerator dotGen(mcgManager.getCallgraph("test"));
+    metacg::io::dot::DotGenerator dotGen(cg);
     dotGen.generate();
 
-    llvm::SmallString<128> outputPath(getInstance().getFrontendOpts().outputFile);
-    if (outputPath.empty()) {
-      outputPath = getCurrentFile();
-    }
-    llvm::sys::path::replace_extension(outputPath, "dot");
-    std::error_code ec;
-    llvm::raw_fd_ostream out(outputPath.str(), ec);
-    if (ec) {
-      llvm::errs() << "Error opening output file: " << ec.message() << "\n";
-      return;
-    }
-    out << dotGen.getDotString();
+    auto file = CollectCG::createOutputFile("dot");
+    std::string dotString = dotGen.getDotString();
+    file->write(dotString.c_str(), dotString.size());
+  }
+};
+
+class CollectCGNoRename : public CollectCG {
+ public:
+  void executeAction() override {
+    generateCG();
+
+    std::string cgString = cgToString(cg);
+
+    auto file = createOutputFile("");
+    file->write(cgString.c_str(), cgString.size());
   }
 };
 
 static Fortran::frontend::FrontendPluginRegistry::Add<CollectCG> X("genCG", "Generate Callgraph");
 static Fortran::frontend::FrontendPluginRegistry::Add<CollectCGwithDot> Y("genCGwithDot", "Generate Callgraph");
+static Fortran::frontend::FrontendPluginRegistry::Add<CollectCGNoRename> Z(
+    "genCGNoRename", "Generate Callgraph without renaming output file");
