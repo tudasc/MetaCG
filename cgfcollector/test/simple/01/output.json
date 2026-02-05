@@ -1,32 +1,33 @@
 {
     "_CG": {
-        "_QFPprint_stars": {
-            "callees": [],
-            "callers": ["_QQmain"],
-            "doesOverride": false,
-            "hasBody": false,
-            "isVirtual": false,
-            "meta": null,
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "_QQmain": {
-            "callees": ["_QFPprint_stars"],
-            "callers": [],
-            "doesOverride": false,
-            "hasBody": false,
-            "isVirtual": false,
-            "meta": null,
-            "overriddenBy": [],
-            "overrides": []
-        }
+        "edges": [[[386379624964062775, 12232342110680008091], null]],
+        "nodes": [
+            [
+                12232342110680008091,
+                {
+                    "functionName": "_QFPprint_stars",
+                    "hasBody": true,
+                    "meta": null,
+                    "origin": "input.f90"
+                }
+            ],
+            [
+                386379624964062775,
+                {
+                    "functionName": "_QQmain",
+                    "hasBody": true,
+                    "meta": null,
+                    "origin": "input.f90"
+                }
+            ]
+        ]
     },
     "_MetaCG": {
         "generator": {
-            "name": "CGCollector",
-            "sha": "",
+            "name": "MetaCG",
+            "sha": "e8fbd9caa11ea3da8a149732eeb7b9c88ba5249f",
             "version": "0.7"
         },
-        "version": "2.0"
+        "version": "3.0"
     }
 }
