@@ -1,7 +1,9 @@
 #pragma once
 
 #include <Callgraph.h>
+#include <DotIO.h>
 #include <MCGManager.h>
+#include <flang/Frontend/CompilerInstance.h>
 #include <flang/Frontend/FrontendAction.h>
 #include <flang/Frontend/FrontendActions.h>
 #include <flang/Frontend/FrontendPluginRegistry.h>
@@ -13,5 +15,6 @@
 #include <io/MCGReader.h>
 #include <io/MCGWriter.h>
 #include <io/VersionTwoMCGWriter.h>
+#include <llvm/Support/Path.h>
 #include <llvm/Support/raw_ostream.h>
 #include <vector>

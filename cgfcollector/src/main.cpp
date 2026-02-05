@@ -83,20 +83,38 @@ class CollectCallersAndCallees : public Fortran::frontend::PluginParseTreeAction
     void Post(const Fortran::parser::EndSubroutineStmt&) { handleEndFuncSubStmt(); }
 
     void Post(const Fortran::parser::ProcedureDesignator& p) {
+      std::string callee = "";
+
+      // if just the name is called. (as subroutine with call and as function without call)
       if (auto* name = std::get_if<Fortran::parser::Name>(&p.u)) {
         if (!name->symbol)
           return;
-
-        std::string callee = Fortran::lower::mangle::mangleName(*name->symbol);
 
         // ignore intrinsic functions
         if (name->symbol->attrs().test(Fortran::semantics::Attr::INTRINSIC))
           return;
 
-        if (functionNames.empty())
+        callee = Fortran::lower::mangle::mangleName(*name->symbol);
+      }
+
+      // if called from a object with %
+      if (auto* compRef = std::get_if<Fortran::parser::ProcComponentRef>(&p.u)) {
+        if (!compRef->v.thing.component.symbol)
           return;
 
-        edges.emplace_back(functionNames.back(), callee);
+        // ignore intrinsic functions TODO check
+        // if (compRef->v.thing.component.symbol->attrs().test(Fortran::semantics::Attr::INTRINSIC))
+        //   return;
+
+        callee = Fortran::lower::mangle::mangleName(*compRef->v.thing.component.symbol);
+      }
+
+      if (functionNames.empty())
+        return;
+
+      edges.emplace_back(functionNames.back(), callee);
+    }
+
       }
     }
 
@@ -145,6 +163,20 @@ class CollectCallersAndCallees : public Fortran::frontend::PluginParseTreeAction
 
     auto file = createOutputFile("json");
     file->write(jsonSink.getJson().dump().c_str(), jsonSink.getJson().dump().size());
+
+    // TODO: only debug ?
+    metacg::io::dot::DotGenerator dotGen(mcgManager.getCallgraph("test"));
+    dotGen.generate();
+
+    llvm::SmallString<128> outputPath(getInstance().getFrontendOpts().outputFile);
+    llvm::sys::path::replace_extension(outputPath, "dot");
+    std::error_code ec;
+    llvm::raw_fd_ostream out(outputPath.str(), ec);
+    if (ec) {
+      llvm::errs() << "Error opening output file: " << ec.message() << "\n";
+      return;
+    }
+    out << dotGen.getDotString();
   }
 };
 
