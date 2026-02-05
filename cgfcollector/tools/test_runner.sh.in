@@ -82,7 +82,7 @@ find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "outpu
             cd "$dir"
             make BUILD_DIR="$tmp_dir"
             cd "$tmp_dir"
-            find . -maxdepth 1 -name '*.json' ! -name '*.o.json' | while read -r file; do
+            find . -maxdepth 1 -name '*output.json' | while read -r file; do
                 cp "$file" "$out_dir/$test_case_name.json"
             done
         ) || {
