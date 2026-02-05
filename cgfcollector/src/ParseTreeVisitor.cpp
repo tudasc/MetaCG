@@ -737,6 +737,10 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
     return true;
   }
 
+  // not in a function. So no overloaded operator is called.
+  if (functionSymbols.empty())
+    return true;
+
   for (auto e : exprStmtWithOps) {
     // search in interfaceOperators first before search in derived types
     auto interfaceOp = std::find_if(interfaceOperators.begin(), interfaceOperators.end(), [&](const auto& op) {
