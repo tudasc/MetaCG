@@ -48,7 +48,7 @@ struct variableTracking {
    * variables and adds edges. Currently only adds finalizer edges.
    *
    * @param currentFunctionSymbol
-   * @param edgeM TODO: change dep
+   * @param edgeM TODO: remove dep
    */
   void handleTrackedVars(Symbol* currentFunctionSymbol, std::unique_ptr<edgeManager>& edgeM);
 
