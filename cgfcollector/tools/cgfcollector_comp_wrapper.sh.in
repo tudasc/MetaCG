@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# Wrapper script for running cgfcollector plugin with flang.
+# This script acts as a drop-in replacement for the flang compiler
+# while addtionally generating call graphs for each source file.
+#
+# Note: The plugin requires the `-fc1` flag to be passed to flang.
+# However, flang invokations with and without `-fc1` accept different
+# sets of options. This script filters the original compiler options,
+# keeping only those compatible with `-fc1`, and invokes flang with
+# the plugin to generate call graphs. Finally, it invokes flang again
+# with the original arguments to perform the actual compilation.
+#
+# Usage:
+#     cgfcollector_comp_wrapper.sh [flang options and source files]
+
 flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang-new"}
 flang_fc1_bin=${CGFCOLLECTOR_FLANG_FC1_BIN:-"flang-new"}
 

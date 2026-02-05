@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Test runner for fcollector
+#
+# Usage:
+#     test_runner.sh                      # run all tests
+#     test_runner.sh [test_case_name]     # run specific test cases
+
 test_case_dir="@FCOLLECTOR_TEST_CASES_DIR@"
 
 if ! [ -d "$test_case_dir" ]; then

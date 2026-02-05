@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Wrapper script for running cgfcollector plugin with flang.
+#
+# Usage:
+#     cgfcollector_wrapper.sh [-dot|-norename] [flang options and source files]
+#
+# Options:
+#     -dot         # Generate call graph with dot format
+#     -norename    # Do not rename output files
+
 flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang-new"}
 
 flang_args=("$@")
