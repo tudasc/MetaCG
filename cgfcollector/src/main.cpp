@@ -8,12 +8,16 @@ class ParseTreeVisitor {
   void handleFuncSubStmt(const T& stmt) {
     if (auto* sym = std::get<Fortran::parser::Name>(stmt.t).symbol) {
       functionNames.emplace_back(Fortran::lower::mangle::mangleName(*sym));
+      functionDummyArgs.emplace_back(std::vector<const Fortran::parser::Name*>());
       cg->insert(std::make_unique<metacg::CgNode>(functionNames.back(), currentFileName, false, false));
     }
   }
   void handleEndFuncSubStmt() {
     if (!functionNames.empty()) {
       functionNames.pop_back();
+    }
+    if (!functionDummyArgs.empty()) {
+      functionDummyArgs.pop_back();
     }
   }
 
@@ -70,9 +74,26 @@ class ParseTreeVisitor {
     node->setHasBody(true);
   }
 
-  void Post(const Fortran::parser::FunctionStmt& f) { handleFuncSubStmt(f); }
+  void Post(const Fortran::parser::FunctionStmt& f) {
+    handleFuncSubStmt(f);
+
+    // collect function arguments
+    const auto& name_list = std::get<std::list<Fortran::parser::Name>>(f.t);
+    for (auto name : name_list) {
+      functionDummyArgs.back().push_back(&name);
+    }
+  }
   void Post(const Fortran::parser::EndFunctionStmt&) { handleEndFuncSubStmt(); }
-  void Post(const Fortran::parser::SubroutineStmt& s) { handleFuncSubStmt(s); }
+  void Post(const Fortran::parser::SubroutineStmt& s) {
+    handleFuncSubStmt(s);
+
+    // collect subroutine arguments (dummy args)
+    const auto* dummyArg_list = &std::get<std::list<Fortran::parser::DummyArg>>(s.t);
+    for (const auto& dummyArg : *dummyArg_list) {
+      const auto* name = std::get_if<Fortran::parser::Name>(&dummyArg.u);
+      functionDummyArgs.back().push_back(name);
+    }
+  }
   void Post(const Fortran::parser::EndSubroutineStmt&) { handleEndFuncSubStmt(); }
 
   void Post(const Fortran::parser::ProcedureDesignator& p) {
@@ -145,36 +166,55 @@ class ParseTreeVisitor {
     }
   }
 
-  // TODO: handle destructors (finalizers)
+  // handle destructors (finalizers) TODO: test i definitely missed some edges cases
   void Post(const Fortran::parser::TypeDeclarationStmt& t) {
-    // TODO they dont need to hold intent
-    // const auto& attrs = std::get<std::list<Fortran::parser::AttrSpec>>(t.t);
-    // for (const auto& attr : attrs) {
-    //   if (std::holds_alternative<Fortran::parser::IntentSpec>(attr.u)) {
-    //     return;
+    // TODO: allocatable case
+    // const auto& attrSpec = std::get<std::list<Fortran::parser::AttrSpec>>(t.t);
+    // for (const auto& attr : attrSpec) {
+    //   if (std::holds_alternative<Fortran::parser::Allocatable>(attr.u)) {
+    //     return;  // skip allocatable because no finalizer called
     //   }
     // }
 
-    // const auto& entityDecls = std::get<std::list<Fortran::parser::EntityDecl>>(t.t);
-    // for (const auto& entity : entityDecls) {
-    //   const auto& name = std::get<Fortran::parser::ObjectName>(entity.t);
-    //   if (!name.symbol)
-    //     continue;
+    for (const auto& entity : std::get<std::list<Fortran::parser::EntityDecl>>(t.t)) {
+      const auto& name = std::get<Fortran::parser::ObjectName>(entity.t);
+      if (!name.symbol)
+        continue;
 
-    //   // TODO they dont need to hold intent
-    //   if (name.symbol->attrs().test(Fortran::semantics::Attr::INTENT_IN))
-    //     continue;  // skip intent in
+      // skip if name is an argument to a function or subroutine
+      if (!functionDummyArgs.empty()) {
+        auto it =
+            std::find_if(functionDummyArgs.back().begin(), functionDummyArgs.back().end(),
+                         [&name](const Fortran::parser::Name* dummyArg) { return dummyArg->symbol == name.symbol; });
 
-    //   llvm::outs() << "Found type declaration: " << name.symbol->name().ToString() << "\n";
-    //   if (auto* type = name.symbol->GetType()) {
-    //     if (auto* derived = type->AsDerived()) {
-    //       if (derived->HasDestruction()) {
-    //         llvm::outs() << "Found derived type with destruction: " << name.symbol->name().ToString() << "\n";
-    //       }
-    //     }
-    //   }
-    // }
+        if (it != functionDummyArgs.back().end())
+          continue;
+      }
+
+      auto* type = name.symbol->GetType();
+      if (!type)
+        continue;
+      auto* derived = type->AsDerived();
+      if (!derived)
+        continue;
+      auto* typeSymbol = &derived->typeSymbol();
+      if (!typeSymbol)
+        continue;
+
+      const auto* details = std::get_if<Fortran::semantics::DerivedTypeDetails>(&typeSymbol->details());
+      if (!details)
+        continue;
+
+      // derived->HasDefaultInitialization();
+
+      // add edges for finalizers
+      for (auto final : details->finals()) {
+        edges.emplace_back(functionNames.back(), Fortran::lower::mangle::mangleName(*final.second));
+      }
+    }
   }
+
+  // following 4 methods are for collecting types and their procedures. see type struct and vector.
 
   // type def
   bool Pre(const Fortran::parser::DerivedTypeDef&) {
@@ -231,6 +271,7 @@ class ParseTreeVisitor {
   std::string currentFileName;
 
   std::vector<std::string> functionNames;
+  std::vector<std::vector<const Fortran::parser::Name*>> functionDummyArgs;
   bool inFunctionOrSubroutineSubProgram = false;
   bool inMainProgram = false;
   bool inDerivedTypeDef = false;
