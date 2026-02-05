@@ -155,9 +155,8 @@ class ParseTreeVisitor {
         if (t.extendsFrom != typeSymbol)
           continue;
 
-        auto dProcIt = std::find_if(t.procedures.begin(), t.procedures.end(), [&symbolComp](const auto& p) {
-          return p.first->name() == symbolComp->name();
-        });  // TODO: use statement
+        auto dProcIt = std::find_if(t.procedures.begin(), t.procedures.end(),
+                                    [&symbolComp](const auto& p) { return p.first->name() == symbolComp->name(); });
         if (dProcIt == t.procedures.end())
           continue;
 
@@ -214,7 +213,7 @@ class ParseTreeVisitor {
     }
   }
 
-  // following 4 methods are for collecting types and their procedures. see type struct and vector.
+  // following 5 methods are for collecting types and their procedures. see type struct and vector.
 
   // type def
   bool Pre(const Fortran::parser::DerivedTypeDef&) {
@@ -248,21 +247,35 @@ class ParseTreeVisitor {
   }
 
   // procedures in type defs
-  void Post(const Fortran::parser::TypeBoundProcDecl& d) {
+  void Post(const Fortran::parser::TypeBoundProcedureStmt& s) {
     if (!inDerivedTypeDef)
       return;
 
-    auto& name = std::get<Fortran::parser::Name>(d.t);
-    if (!name.symbol)
-      return;
+    if (auto* withoutInterface = std::get_if<Fortran::parser::TypeBoundProcedureStmt::WithoutInterface>(&s.u)) {
+      for (const auto& d : withoutInterface->declarations) {
+        auto& name = std::get<Fortran::parser::Name>(d.t);
+        if (!name.symbol)
+          return;
 
-    auto& optname = std::get<std::optional<Fortran::parser::Name>>(d.t);
-    if (!optname || !optname->symbol) {
-      return;
+        auto& optname = std::get<std::optional<Fortran::parser::Name>>(d.t);
+        if (!optname || !optname->symbol) {
+          return;
+        }
+
+        auto& currentType = types.back();
+        currentType.procedures.emplace_back(name.symbol, optname->symbol);
+      }
+
+      // only for abstract types, with deferred in binding attr list
+    } else if (auto* withInterface = std::get_if<Fortran::parser::TypeBoundProcedureStmt::WithInterface>(&s.u)) {
+      for (const auto& n : withInterface->bindingNames) {
+        if (!n.symbol)
+          return;
+
+        auto& currentType = types.back();
+        currentType.procedures.emplace_back(n.symbol, n.symbol);
+      }
     }
-
-    auto& currentType = types.back();
-    currentType.procedures.emplace_back(name.symbol, optname->symbol);
   }
 
  private:
@@ -279,7 +292,7 @@ class ParseTreeVisitor {
   typedef struct type {
     Fortran::semantics::Symbol* type;
     Fortran::semantics::Symbol* extendsFrom;
-    std::vector<std::pair<Fortran::semantics::Symbol*, Fortran::semantics::Symbol*>> procedures;
+    std::vector<std::pair<Fortran::semantics::Symbol*, Fortran::semantics::Symbol*>> procedures;  // name [=> optname]
   } type_t;
   std::vector<type> types;
 };
