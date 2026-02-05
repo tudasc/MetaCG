@@ -458,12 +458,18 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
 
     bool holds_allocatable = false;
     const IntentSpec* holds_intent = nullptr;
+    bool holds_save = false;
     for (const auto& attr : std::get<std::list<AttrSpec>>(t.t)) {
       if (std::holds_alternative<Allocatable>(attr.u))
         holds_allocatable = true;
       else if (std::holds_alternative<IntentSpec>(attr.u))
         holds_intent = &std::get<IntentSpec>(attr.u);
+      else if (std::holds_alternative<Save>(attr.u))
+        holds_save = true;
     }
+
+    if (holds_save)
+      continue;  // vars with save attr are not destructed
 
     if (isFunctionArg) {
       if (!holds_allocatable) {
