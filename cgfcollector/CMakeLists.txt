@@ -112,6 +112,12 @@ configure_file_and_install(
 )
 
 configure_file_and_install(
+  "${CMAKE_CURRENT_SOURCE_DIR}/tools/cgfcollector_comp_wrapper.sh.in"
+  "cgfcollector_comp_wrapper.sh"
+  "bin"
+)
+
+configure_file_and_install(
   "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_runner.sh.in"
   "test_runner.sh"
   ""
