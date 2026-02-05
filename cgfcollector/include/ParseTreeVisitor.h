@@ -53,6 +53,7 @@ class ParseTreeVisitor {
    */
   template <typename T>
   void handleFuncSubStmt(const T& stmt);
+
   /**
    * @brief Handles function/subroutine end statements.
    */
@@ -67,6 +68,9 @@ class ParseTreeVisitor {
    */
   void addEdgesForProducesAndDerivedTypes(std::vector<const type*> typeWithDerived, const Symbol* procedureSymbol);
 
+  /**
+   * @brief Adds edges and potential finalizers edges to cg.
+   */
   void postProcess();
 
   // visitor methods
@@ -86,6 +90,11 @@ class ParseTreeVisitor {
   bool Pre(const SubroutineSubprogram&);
   void Post(const SubroutineSubprogram&);
 
+  /**
+   * @brief Set hasBody field.
+   *
+   * @param e
+   */
   void Post(const ExecutionPart& e);
 
   void Post(const EntryStmt& e);
@@ -95,20 +104,43 @@ class ParseTreeVisitor {
   void Post(const SubroutineStmt& s);
   void Post(const EndSubroutineStmt&);
 
+  /**
+   * @brief ProcedureDesignator: A procedure being called. Handles both cases a call with call statement and without.
+   *
+   * @param p
+   */
   void Post(const ProcedureDesignator& p);
 
+  /**
+   * @brief Handle trackedVar assignment
+   *
+   * @param a
+   */
   void Post(const AssignmentStmt& a);
+
+  /**
+   * @brief Handle trackedVar assignment through allocate statement.
+   *
+   * @param a
+   */
   void Post(const AllocateStmt& a);
+
+  /**
+   * @brief Mostly add potential finalizers for variables that get initialized through procedure arguments.
+   *
+   * @param c
+   */
   void Post(const Call& c);
 
   /**
-   * @brief Handle finalizers (destructors ).
+   * @brief Mostly handles finalizers. Handles the different ways a variable can be parsed to a procedure and gets
+   * initialized.
    *
    * @param t
    */
   void Post(const TypeDeclarationStmt& t);
 
-  // The following methods are for collecting types and their procedures. see type struct and vector.
+  // The following methods are for collecting types and their procedures. See type struct and vector.
 
   /**
    * @brief Type definition start

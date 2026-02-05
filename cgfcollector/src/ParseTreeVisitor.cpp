@@ -140,6 +140,7 @@ void ParseTreeVisitor::Post(const EntryStmt& e) {
 
   MCGLogger::logDebug("Add Entry point: {} ({})", mangleSymbol(name->symbol), fmt::ptr(name->symbol));
 
+  // handle entry statement as normal function.
   cg->getOrInsertNode(mangleSymbol(name->symbol), currentFileName, false, true);
 }
 
