@@ -1,0 +1,111 @@
+{
+  "_CG": {
+    "edges": [
+      [[13845067782904566984, 12261923257537545416], null],
+      [[9132368188186752179, 12261923257537545416], null],
+      [[8812770886124818036, 9132368188186752179], null],
+      [[13845067782904566984, 9634951400506836789], null],
+      [[15997684825707339448, 9634951400506836789], null],
+      [[11592059056552374804, 8812770886124818036], null],
+      [[15997684825707339448, 12261923257537545416], null],
+      [[8812770886124818036, 9634951400506836789], null],
+      [[8812770886124818036, 15997684825707339448], null],
+      [[9132368188186752179, 9634951400506836789], null],
+      [[8812770886124818036, 17137297412558704458], null],
+      [[8812770886124818036, 12261923257537545416], null],
+      [[8812770886124818036, 6215837638387017975], null],
+      [[8812770886124818036, 13845067782904566984], null]
+    ],
+    "nodes": [
+      [
+        11592059056552374804,
+        {
+          "functionName": "_QQmain",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        15997684825707339448,
+        {
+          "functionName": "_QMmodPfunc_arg_inout2",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        17137297412558704458,
+        {
+          "functionName": "_QMmodPfunc_arg_inout",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        13845067782904566984,
+        {
+          "functionName": "_QMmodPfunc_arg2",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        6215837638387017975,
+        {
+          "functionName": "_QMmodPfunc_arg",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        8812770886124818036,
+        {
+          "functionName": "_QFPfunc",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        9132368188186752179,
+        {
+          "functionName": "_QMmodPfunc_arg_out",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        9634951400506836789,
+        {
+          "functionName": "_QMmodPfinalize_derived",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        12261923257537545416,
+        {
+          "functionName": "_QMmodPfinalize_base",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ]
+    ]
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "535f208aefbf510c4c3536f9bf9e6978e2adc2e5",
+      "version": "0.7"
+    },
+    "version": "3.0"
+  }
+}
