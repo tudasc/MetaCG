@@ -7,6 +7,29 @@ if [[ ! -d "$out_dir" ]]; then
     mkdir "$out_dir"
 fi
 
+run_tests_with_name=()
+while [[ $# -gt 0 ]]; do
+    run_tests_with_name+=("$1")
+    shift
+done
+
+function should_be_run()
+{
+    local test_case_name="$1"
+
+    if [[ ${#run_tests_with_name[@]} -eq 0 ]]; then
+        return 0
+    fi
+
+    for name in "${run_tests_with_name[@]}"; do
+        if [[ "$test_case_name" == "$name" ]]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 # cmake managed test dirs
 find "$test_case_dir" -mindepth 1 -type d \! -exec test -e "{}/output.json" \; \! -exec test -e "{}/*.f90" \; -exec find {} -maxdepth 1 -name 'CMakeLists.txt' \; | while read -r dir; do
     dir="$(dirname "$dir")"
@@ -29,6 +52,10 @@ find "$test_case_dir" -mindepth 1 -type d \! -exec test -e "{}/output.json" \; \
             cp "$file" "$copy_to/$(basename "$dir")_$(basename "$file")"
 
             test_case_name="$(basename "$dir")_$(basename -s .json "$file")"
+
+            if ! should_be_run "$test_case_name"; then
+                continue
+            fi
 
             echo "Test case: $test_case_name"
 
@@ -64,6 +91,10 @@ find "$test_case_dir" -mindepth 1 -type d \! -exec test -e "{}/CMakeLists.txt" \
     if [[ ${#input_files[@]} -gt 0 ]]; then
         # generate test case name from dir path. test/simple/01 becomes simple_01
         test_case_name="$(basename "$(dirname "$dir")")_$(basename "$dir")"
+
+        if ! should_be_run "$test_case_name"; then
+            continue
+        fi
 
         echo "Test case: $test_case_name"
 

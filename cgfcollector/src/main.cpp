@@ -7,6 +7,9 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
   void executeAction() override {
     auto cg = std::make_unique<metacg::Callgraph>();
 
+    spdlog::set_pattern("%v");
+    spdlog::set_level(spdlog::level::debug);
+
     ParseTreeVisitor visitor(cg.get(), getCurrentFile().str());
     Fortran::parser::Walk(getParsing().parseTree(), visitor);
 
@@ -39,6 +42,9 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
 
     auto file = createOutputFile("json");
     file->write(jsonSink.getJson().dump().c_str(), jsonSink.getJson().dump().size());
+
+    AL* al = AL::getInstance();
+    al->flush();
   }
 };
 

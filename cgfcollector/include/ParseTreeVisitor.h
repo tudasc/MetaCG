@@ -2,9 +2,12 @@
 
 #include "headers.h"
 
+#include "AL.h"
+
 using namespace Fortran::parser;
 using namespace Fortran::semantics;
 using namespace Fortran::common;
+using Fortran::lower::mangle::mangleName;
 
 typedef struct type {
   Symbol* type;
@@ -37,6 +40,8 @@ class ParseTreeVisitor {
   // this function searches with typeSymbol for a type in types vector and adds edges for procedures that matches
   // procedureSymbol. And also adds edges from types that extends from typeSymbol.
   void add_edges_for_produces_and_derived_types(std::vector<type_t> typeWithDerived, const Symbol* procedureSymbol);
+
+  void add_edges_for_finalizers(const Symbol* typeSymbol);
 
   template <typename Variant, typename... Ts>
   bool holds_any_of(const Variant& v) {
@@ -101,7 +106,7 @@ class ParseTreeVisitor {
   void Post(const DerivedTypeDef&);
 
   // type stmt like type [, extends(...)] :: body (not exhaustive and not extends)
-  void Post(const DerivedTypeStmt& t);
+  bool Pre(const DerivedTypeStmt& t);
 
   // type attrs like extends
   void Post(const TypeAttrSpec& a);
@@ -147,4 +152,6 @@ class ParseTreeVisitor {
 
   // mainly used for destructor handling
   std::vector<trackedVar_t> trackedVars;
+
+  AL* al = AL::getInstance();
 };

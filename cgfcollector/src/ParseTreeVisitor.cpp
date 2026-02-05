@@ -7,10 +7,9 @@ void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
   if (auto* sym = std::get<Name>(stmt.t).symbol) {
     functionSymbols.emplace_back(sym);
     functionDummyArgs.emplace_back(std::vector<const Name*>());
-    cg->insert(
-        std::make_unique<metacg::CgNode>(Fortran::lower::mangle::mangleName(*sym), currentFileName, false, false));
+    cg->insert(std::make_unique<metacg::CgNode>(mangleName(*sym), currentFileName, false, false));
 
-    llvm::outs() << "Add node: " << Fortran::lower::mangle::mangleName(*sym) << "\n";
+    al->debug("Add node: {} ({})", mangleName(*sym), fmt::ptr(sym));
   }
 }
 
@@ -29,7 +28,10 @@ void ParseTreeVisitor::handleEndFuncSubStmt() {
 }
 
 void ParseTreeVisitor::handleTrackedVars() {
-  if (!inMainProgram) {
+  if (mangleName(*functionSymbols.back()) != "_QQmain") {
+    if (!trackedVars.empty())
+      al->debug("Handle tracked vars for function");
+
     for (auto& trackedVar : trackedVars) {
       if (!trackedVar.hasBeenInitialized)
         continue;
@@ -40,17 +42,8 @@ void ParseTreeVisitor::handleTrackedVars() {
       auto* typeSymbol = getTypeSymbolFromSymbol(trackedVar.var);
       if (!typeSymbol)
         continue;
-      auto* details = std::get_if<DerivedTypeDetails>(&typeSymbol->details());
-      if (!details)
-        continue;
 
-      for (const auto& final : details->finals()) {
-        edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
-                           Fortran::lower::mangle::mangleName(*final.second));
-
-        llvm::outs() << "Add edge: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << " -> "
-                     << Fortran::lower::mangle::mangleName(*final.second) << "\n";
-      }
+      add_edges_for_finalizers(typeSymbol);
     }
   }
 
@@ -85,7 +78,7 @@ std::vector<type_t> ParseTreeVisitor::find_type_with_derived_types(const Symbol*
       auto currentType = std::find_if(types.begin(), types.end(),
                                       [&currentExtendsFrom](const type_t& t) { return t.type == currentExtendsFrom; });
       if (currentType == types.end()) {
-        llvm::errs() << "Error: Types array (extendsFrom) field entry missing.";
+        al->error("Error: Types array (extendsFrom) field entry missing.");
         return typeWithDerived;
       }
 
@@ -111,11 +104,30 @@ void ParseTreeVisitor::add_edges_for_produces_and_derived_types(std::vector<type
     if (procIt == t.procedures.end())
       continue;
 
-    edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
-                       Fortran::lower::mangle::mangleName(*procIt->second));
+    edges.emplace_back(mangleName(*functionSymbols.back()), mangleName(*procIt->second));
 
-    llvm::outs() << "Add edge: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << " -> "
-                 << Fortran::lower::mangle::mangleName(*procIt->second) << "\n";
+    al->debug("Add edge: {} ({}) -> {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()),
+              mangleName(*procIt->second), fmt::ptr(procIt->second));
+  }
+}
+
+void ParseTreeVisitor::add_edges_for_finalizers(const Symbol* typeSymbol) {
+  std::vector<type_t> typeSymbols = find_type_with_derived_types(typeSymbol);
+
+  for (const auto& type : typeSymbols) {
+    const Symbol* typeSymbol = type.type;
+
+    const auto* details = std::get_if<DerivedTypeDetails>(&typeSymbol->details());
+    if (!details)
+      return;
+
+    // add edges for finalizers
+    for (const auto& final : details->finals()) {
+      edges.emplace_back(mangleName(*functionSymbols.back()), mangleName(*final.second));
+
+      al->debug("Add edge: {} ({}) -> {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()),
+                mangleName(*final.second), fmt::ptr(&final.second.get()));
+    }
   }
 }
 
@@ -211,6 +223,8 @@ void ParseTreeVisitor::handleTrackedVarAssignment(SourceName sourceName) {
   // prefer local var if found
   auto& trackedVar = (localVarIt != trackedVars.end()) ? *localVarIt : *anyTrackedVarIt;
   trackedVar.hasBeenInitialized = true;
+
+  al->debug("Tracked var assigned: {} ({})", trackedVar.var->name(), fmt::ptr(trackedVar.var));
 }
 
 // Visitor implementations
@@ -223,14 +237,17 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
       return true;
 
     functionSymbols.emplace_back(maybeStmt->statement.v.symbol);
-    cg->insert(std::make_unique<metacg::CgNode>(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
-                                                currentFileName, false, false));
+    cg->insert(std::make_unique<metacg::CgNode>(mangleName(*functionSymbols.back()), currentFileName, false, false));
+
+    al->debug("\nIn main program: {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()));
   }
   return true;
 }
 
 void ParseTreeVisitor::Post(const MainProgram&) {
   handleTrackedVars();
+
+  al->debug("End main program: {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()));
 
   if (!functionSymbols.empty()) {
     functionSymbols.pop_back();
@@ -257,7 +274,7 @@ void ParseTreeVisitor::Post(const ExecutionPart& e) {
   if (!inFunctionOrSubroutineSubProgram && !inMainProgram)
     return;
 
-  auto* node = cg->getNode(Fortran::lower::mangle::mangleName(*functionSymbols.back()));
+  auto* node = cg->getNode(mangleName(*functionSymbols.back()));
   if (!node) {
     return;
   }
@@ -266,7 +283,7 @@ void ParseTreeVisitor::Post(const ExecutionPart& e) {
 }
 
 void ParseTreeVisitor::Post(const FunctionStmt& f) {
-  llvm::outs() << "In function: " << Fortran::lower::mangle::mangleName(*std::get<Name>(f.t).symbol) << "\n";
+  al->debug("\nIn function: {} ({})", mangleName(*std::get<Name>(f.t).symbol), fmt::ptr(std::get<Name>(f.t).symbol));
 
   handleFuncSubStmt(f);
 
@@ -279,14 +296,14 @@ void ParseTreeVisitor::Post(const FunctionStmt& f) {
 
 void ParseTreeVisitor::Post(const EndFunctionStmt&) {
   if (!functionSymbols.empty()) {
-    llvm::outs() << "End function: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << "\n";
+    al->debug("End function: {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()));
   }
 
   handleEndFuncSubStmt();
 }
 
 void ParseTreeVisitor::Post(const SubroutineStmt& s) {
-  llvm::outs() << "In subroutine: " << Fortran::lower::mangle::mangleName(*std::get<Name>(s.t).symbol) << "\n";
+  al->debug("\nIn subroutine: {} ({})", mangleName(*std::get<Name>(s.t).symbol), fmt::ptr(std::get<Name>(s.t).symbol));
 
   handleFuncSubStmt(s);
 
@@ -300,7 +317,7 @@ void ParseTreeVisitor::Post(const SubroutineStmt& s) {
 
 void ParseTreeVisitor::Post(const EndSubroutineStmt&) {
   if (!functionSymbols.empty()) {
-    llvm::outs() << "End subroutine: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << "\n";
+    al->debug("End subroutine: {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()));
   }
 
   handleEndFuncSubStmt();
@@ -319,11 +336,10 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
     if (name->symbol->attrs().test(Attr::INTRINSIC))
       return;
 
-    edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
-                       Fortran::lower::mangle::mangleName(*name->symbol));
+    edges.emplace_back(mangleName(*functionSymbols.back()), mangleName(*name->symbol));
 
-    llvm::outs() << "Add edge: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << " -> "
-                 << Fortran::lower::mangle::mangleName(*name->symbol) << "\n";
+    al->debug("Add edge: {} ({}) -> {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()),
+              mangleName(*name->symbol), fmt::ptr(name->symbol));
 
     // if called from a object with %. (base % component)
   } else if (auto* procCompRef = std::get_if<ProcComponentRef>(&p.u)) {
@@ -331,11 +347,10 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
     if (!symbolComp)
       return;
 
-    edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
-                       Fortran::lower::mangle::mangleName(*symbolComp));
+    edges.emplace_back(mangleName(*functionSymbols.back()), mangleName(*symbolComp));
 
-    llvm::outs() << "Add edge: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << " -> "
-                 << Fortran::lower::mangle::mangleName(*symbolComp) << "\n";
+    al->debug("Add edge: {} ({}) -> {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()),
+              mangleName(*symbolComp), fmt::ptr(symbolComp));
 
     auto* baseName = std::get_if<Name>(&procCompRef->v.thing.base.u);
     if (!baseName || !baseName->symbol)
@@ -399,7 +414,6 @@ void ParseTreeVisitor::Post(const Call& c) {
     if (!name || !name->symbol)
       return;
 
-    llvm::outs() << "Tracked Var: " << name->symbol->name() << "\n";
     handleTrackedVarAssignment(name->symbol->name());
   }
 }
@@ -433,22 +447,14 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
                            [](const AttrSpec& a) { return std::holds_alternative<Allocatable>(a.u); });
     if (it != attrSpec.end()) {
       trackedVars.push_back({name.symbol, functionSymbols.back(), false});
-      llvm::outs() << "Track variable: " << name.symbol->name() << "\n";
-      continue;  // skip var with allocatable attr
-    }
+      al->debug("Add tracking for allocatable variable: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
 
-    const auto* details = std::get_if<DerivedTypeDetails>(&typeSymbol->details());
-    if (!details)
       continue;
-
-    // add edges for finalizers
-    for (const auto& final : details->finals()) {
-      edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
-                         Fortran::lower::mangle::mangleName(*final.second));
-
-      llvm::outs() << "Add edge: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << " -> "
-                   << Fortran::lower::mangle::mangleName(*final.second) << "\n";
+      // skip var with allocatable attr.
+      // Add to trackedVars because it needs to be assigned at least once before calling a finalizers make sense.
     }
+
+    add_edges_for_finalizers(typeSymbol);
   }
 }
 
@@ -459,15 +465,22 @@ bool ParseTreeVisitor::Pre(const DerivedTypeDef&) {
   return true;
 }
 
-void ParseTreeVisitor::Post(const DerivedTypeDef&) { inDerivedTypeDef = false; }
+void ParseTreeVisitor::Post(const DerivedTypeDef&) {
+  inDerivedTypeDef = false;
+  al->debug("End derived type: {} ({})", types.back().type->name(), fmt::ptr(types.back().type));
+}
 
-void ParseTreeVisitor::Post(const DerivedTypeStmt& t) {
+bool ParseTreeVisitor::Pre(const DerivedTypeStmt& t) {
   if (!inDerivedTypeDef)
-    return;
+    return true;
 
   auto& currentType = types.back();
   const auto& name = std::get<Name>(t.t);
   currentType.type = name.symbol;
+
+  al->debug("\nIn derived type: {} ({})", currentType.type->name(), fmt::ptr(currentType.type));
+
+  return true;
 }
 
 void ParseTreeVisitor::Post(const TypeAttrSpec& a) {
@@ -478,6 +491,8 @@ void ParseTreeVisitor::Post(const TypeAttrSpec& a) {
   if (std::holds_alternative<TypeAttrSpec::Extends>(a.u)) {
     const auto& extends = std::get<TypeAttrSpec::Extends>(a.u);
     currentType.extendsFrom = extends.v.symbol;
+
+    al->debug("Extends from: {} ({})", currentType.extendsFrom->name(), fmt::ptr(currentType.extendsFrom));
   }
 }
 
@@ -498,6 +513,9 @@ void ParseTreeVisitor::Post(const TypeBoundProcedureStmt& s) {
 
       auto& currentType = types.back();
       currentType.procedures.emplace_back(name.symbol, optname->symbol);
+
+      al->debug("Add procedure: {} ({}) -> {} ({})", name.symbol->name(), fmt::ptr(name.symbol),
+                optname->symbol->name(), fmt::ptr(optname->symbol));
     }
 
     // only for abstract types, with deferred in binding attr list
@@ -508,6 +526,9 @@ void ParseTreeVisitor::Post(const TypeBoundProcedureStmt& s) {
 
       auto& currentType = types.back();
       currentType.procedures.emplace_back(n.symbol, n.symbol);
+
+      al->debug("Add procedure: {} ({}) -> {} ({})", n.symbol->name(), fmt::ptr(n.symbol), n.symbol->name(),
+                fmt::ptr(n.symbol));
     }
   }
 }
@@ -528,6 +549,9 @@ void ParseTreeVisitor::Post(const TypeBoundGenericStmt& s) {
           continue;
 
         currentType.operators.emplace_back(intrinsicOp, name.symbol);
+
+        al->debug("Add operator: {} -> {} ({})", DefinedOperator::EnumToString(*intrinsicOp), name.symbol->name(),
+                  fmt::ptr(name.symbol));
       }
     }
   }
@@ -563,7 +587,7 @@ void ParseTreeVisitor::Post(const ProcedureStmt& p) {
       continue;
 
     if (interfaceOperators.empty()) {
-      llvm::errs() << "This should no happen. Likely there is a bug with parsing DefinedOperator's\n";
+      al->error("This should no happen. Likely there is a bug with parsing DefinedOperator's");
       continue;
     }
 
@@ -596,7 +620,6 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
           return definedOpName->v.symbol->name() == exprOpName->v.symbol->name();
         }
         if (auto* definedBinary = std::get_if<Expr::DefinedBinary>(&e->u)) {
-          llvm::outs() << "definedbinary" << "\n";
         }
         return false;
       }
@@ -610,11 +633,10 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
         if (sym->name() == functionSymbols.back()->name())
           continue;
 
-        edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
-                           Fortran::lower::mangle::mangleName(*sym));
+        edges.emplace_back(mangleName(*functionSymbols.back()), mangleName(*sym));
 
-        llvm::outs() << "Add edge: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << " -> "
-                     << Fortran::lower::mangle::mangleName(*sym) << "\n";
+        al->debug("Add edge: {} ({}) -> {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()),
+                  mangleName(*sym), fmt::ptr(sym));
       }
     }
 
@@ -655,6 +677,16 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
 }
 
 void ParseTreeVisitor::Post(const Expr& e) {
+  // find out if this is a constructor
+  // auto* functionRef = std::get_if<Indirection<FunctionReference>>(&e.u);
+  // if (functionRef) {
+  //   auto* designator = &std::get<ProcedureDesignator>(functionRef->value().v.t);
+  //   auto* name = std::get_if<Name>(&designator->u);
+  //   if (!name || !name->symbol) {
+  //     return;
+  //   }
+  // }
+
   if (!isOperator(&e)) {
     return;
   }
