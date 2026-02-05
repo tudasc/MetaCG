@@ -1,11 +1,26 @@
 #!/bin/bash
 
-flang_bin="flang-new"
+flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang-new"}
 
 if ! command -v "$flang_bin" &>/dev/null; then
     echo "Error: $flang_bin not found in PATH."
     exit 1
 fi
 
-$flang_bin -fc1 -load "@FCOLLECTOR_FILE_NAME@" -plugin "genCG"
+source_files=()
+
+for arg in "$@"; do
+    # skip options
+    [[ "$arg" == -* ]] && continue
+
+    case "$arg" in
+    *.f90 | *.F90)
+        source_files+=("$arg")
+        ;;
+    esac
+done
+
+if [ ${#source_files[@]} -gt 0 ]; then
+    $flang_bin -fc1 -load "@FCOLLECTOR_FILE_NAME@" -plugin "genCG" "${source_files[@]}"
+fi
 $flang_bin "$@"
