@@ -7,8 +7,11 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
   void executeAction() override {
     auto cg = std::make_unique<metacg::Callgraph>();
 
-    spdlog::set_pattern("%v");
-    spdlog::set_level(spdlog::level::debug);
+    // TODO: remove
+    if (std::getenv("CUSTOM_DEBUG")) {
+      spdlog::set_pattern("%v");
+      spdlog::set_level(spdlog::level::debug);
+    }
 
     ParseTreeVisitor visitor(cg.get(), getCurrentFile().str());
     Fortran::parser::Walk(getParsing().parseTree(), visitor);

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(02 LANGUAGES Fortran)
+project(deps LANGUAGES Fortran)
 
 include(../cmake_base.txt)
 
