@@ -1,0 +1,32 @@
+{
+    "_CG": {
+        "_QFPprint_stars": {
+            "callees": [],
+            "callers": ["_QQmain"],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": null,
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_QQmain": {
+            "callees": ["_QFPprint_stars"],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": null,
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "",
+            "version": "0.7"
+        },
+        "version": "2.0"
+    }
+}
