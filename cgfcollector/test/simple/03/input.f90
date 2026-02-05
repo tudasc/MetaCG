@@ -19,6 +19,10 @@ module mod
         final :: finalize_dummy
     end type dummy_type
 
+    interface dummy_type
+        module procedure create_dummy_type
+    end interface dummy_type
+
     type(polynomial) :: polynomialInModule
 
 contains
@@ -50,6 +54,12 @@ contains
         write (*, *) 'Finalizing dummy_type'
     end subroutine finalize_dummy
 
+    type(dummy_type) function create_dummy_type(i)
+        integer, intent(in) :: i
+        create_dummy_type%i = i
+        write (*, *) 'Creating dummy_type with i = ', create_dummy_type%i
+    end function create_dummy_type
+
 end module mod
 
 module mod_use
@@ -73,14 +83,33 @@ contains
     subroutine func_calls_final3()
         type(polynomial), allocatable :: q
 
-        call set_q()
+        ! call set_q()
+        ! call set_q_alloc()
+        ! call set_q_alloc2()
+        call set_q_move_alloc()
 
     contains
         subroutine set_q()
             q = polynomial([2., 3., 1., 0., 0.])
         end subroutine set_q
-        subroutine set_a()
-        end subroutine set_a
+        subroutine set_q_alloc()
+            type(polynomial), allocatable :: p
+            p = polynomial([2., 3., 1., 0., 0.])
+
+            allocate (q, source=p)
+        end subroutine set_q_alloc
+        subroutine set_q_alloc2()
+            type(polynomial), allocatable :: q
+            allocate (q)
+        end subroutine set_q_alloc2
+        subroutine set_nothing()
+        end subroutine set_nothing
+        subroutine set_q_move_alloc()
+            type(polynomial), allocatable :: p
+            p = polynomial([2., 3., 1., 0., 0.])
+
+            call move_alloc(p, q)
+        end subroutine set_q_move_alloc
     end subroutine func_calls_final3
 
     subroutine func_does_not_call_final()
@@ -94,25 +123,36 @@ program main
     use mod_use
     implicit none
 
+    type :: implicit_constructor
+        integer :: i
+    end type implicit_constructor
+    type(implicit_constructor), allocatable :: t
+
     type(dummy_type), allocatable :: dummy
+
+    ! sould not call final because main function. see 7.5.6.4 (https://j3-fortran.org/doc/year/23/23-007r1.pdf) and (https://j3-fortran.org/doc/year/10/10-158r1.txt)
     dummy = dummy_type(1)
 
-    work: block
-        type(polynomial), allocatable :: q
+    t = implicit_constructor(1)
 
-        q = polynomial([2., 3., 1., 0., 0.])
-        call q%print_polynomial()
-    end block work
+    call func()
 
-    print *, 'Calling func_calls_final'
-    call func_calls_final()
-    print *, 'Calling func_calls_final2'
-    call func_calls_final2()
-    print *, 'Calling func_does_not_call_final'
-    call func_does_not_call_final()
-    print *, 'Calling func_calls_final3'
-    call func_calls_final3()
+contains
+    subroutine func()
+        work: block
+            type(polynomial), allocatable :: q
 
-    ! sould not call final because main. see 7.5.6.4 (https://j3-fortran.org/doc/year/23/23-007r1.pdf) and (https://j3-fortran.org/doc/year/10/10-158r1.txt)
+            q = polynomial([2., 3., 1., 0., 0.])
+            call q%print_polynomial()
+        end block work
 
+        print *, 'Calling func_calls_final'
+        call func_calls_final()
+        print *, 'Calling func_calls_final2'
+        call func_calls_final2()
+        print *, 'Calling func_does_not_call_final'
+        call func_does_not_call_final()
+        print *, 'Calling func_calls_final3'
+        call func_calls_final3()
+    end subroutine func
 end program main

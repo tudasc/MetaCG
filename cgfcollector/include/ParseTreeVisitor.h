@@ -61,6 +61,8 @@ class ParseTreeVisitor {
 
   const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol);
 
+  void handleTrackedVarAssignment(SourceName sourceName);
+
   template <typename A>
   bool Pre(const A&) {
     return true;
@@ -86,6 +88,8 @@ class ParseTreeVisitor {
   void Post(const ProcedureDesignator& p);
 
   void Post(const AssignmentStmt& a);
+  void Post(const AllocateStmt& a);
+  void Post(const Call& c);
 
   // handle destructors (finalizers) TODO: test i definitely missed some edges cases
   void Post(const TypeDeclarationStmt& t);
@@ -141,5 +145,6 @@ class ParseTreeVisitor {
 
   std::vector<const Expr*> exprStmtWithOps;
 
+  // mainly used for destructor handling
   std::vector<trackedVar_t> trackedVars;
 };

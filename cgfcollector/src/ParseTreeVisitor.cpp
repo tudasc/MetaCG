@@ -29,11 +29,12 @@ void ParseTreeVisitor::handleEndFuncSubStmt() {
 }
 
 void ParseTreeVisitor::handleTrackedVars() {
-  for (auto& trackedVar : trackedVars) {
-    if (trackedVar.hasBeenInitialized) {
-      if (trackedVar.procedure != functionSymbols.back()) {
+  if (!inMainProgram) {
+    for (auto& trackedVar : trackedVars) {
+      if (!trackedVar.hasBeenInitialized)
         continue;
-      }
+      if (trackedVar.procedure != functionSymbols.back())
+        continue;
 
       // add edge for deconstruction (finalizer)
       auto* typeSymbol = getTypeSymbolFromSymbol(trackedVar.var);
@@ -194,6 +195,24 @@ const Symbol* ParseTreeVisitor::getTypeSymbolFromSymbol(const Symbol* symbol) {
   return typeSymbol;
 }
 
+// search trackedVars for a canditate and set it as initialized.
+// Prefers local variables when (shadowed)
+void ParseTreeVisitor::handleTrackedVarAssignment(SourceName sourceName) {
+  auto anyTrackedVarIt =
+      std::find_if(trackedVars.begin(), trackedVars.end(), [&](const auto& t) { return t.var->name() == sourceName; });
+  if (anyTrackedVarIt == trackedVars.end())
+    return;
+
+  // find local variable with the same name in the current function scope (shadowed)
+  auto localVarIt = std::find_if(trackedVars.begin(), trackedVars.end(), [&](const auto& t) {
+    return t.var->name() == sourceName && t.procedure == functionSymbols.back();
+  });
+
+  // prefer local var if found
+  auto& trackedVar = (localVarIt != trackedVars.end()) ? *localVarIt : *anyTrackedVarIt;
+  trackedVar.hasBeenInitialized = true;
+}
+
 // Visitor implementations
 
 bool ParseTreeVisitor::Pre(const MainProgram& p) {
@@ -211,13 +230,13 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
 }
 
 void ParseTreeVisitor::Post(const MainProgram&) {
-  inMainProgram = false;
-
   handleTrackedVars();
 
   if (!functionSymbols.empty()) {
     functionSymbols.pop_back();
   }
+
+  inMainProgram = false;
 }
 
 bool ParseTreeVisitor::Pre(const FunctionSubprogram&) {
@@ -340,13 +359,49 @@ void ParseTreeVisitor::Post(const AssignmentStmt& a) {
   if (!name || !name->symbol)
     return;
 
-  auto trackedVarIt = std::find_if(trackedVars.begin(), trackedVars.end(),
-                                   [&name](const auto& t) { return t.var->name() == name->symbol->name(); });
-  if (trackedVarIt == trackedVars.end()) {
-    return;
-  }
+  handleTrackedVarAssignment(name->symbol->name());
+}
 
-  trackedVarIt->hasBeenInitialized = true;
+void ParseTreeVisitor::Post(const AllocateStmt& a) {
+  const auto* allocs = &std::get<std::list<Allocation>>(a.t);
+
+  for (const auto& alloc : *allocs) {
+    const auto* allocObj = &std::get<AllocateObject>(alloc.t);
+    const auto* name = std::get_if<Name>(&allocObj->u);
+    if (!name || !name->symbol) {
+      continue;
+    }
+
+    handleTrackedVarAssignment(name->symbol->name());
+  }
+}
+
+void ParseTreeVisitor::Post(const Call& c) {
+  // handle move_alloc intrinsic for allocatable vars
+  const auto* designator = &std::get<ProcedureDesignator>(c.t);
+  const auto* args = &std::get<std::list<ActualArgSpec>>(c.t);
+
+  const auto* name = std::get_if<Name>(&designator->u);
+  if (!name || !name->symbol)
+    return;
+  if (!name->symbol->attrs().test(Attr::INTRINSIC) && name->symbol->name() != "move_alloc")
+    return;
+
+  if (args->size() < 2)
+    return;
+
+  for (const auto& arg : *args) {
+    const auto* actualArg = &std::get<ActualArg>(arg.t);
+    const auto* expr = std::get_if<Indirection<Expr>>(&actualArg->u);
+    if (!expr)
+      return;
+    auto* name = getNameFromClassWithDesignator(expr->value());
+    if (!name || !name->symbol)
+      return;
+
+    llvm::outs() << "Tracked Var: " << name->symbol->name() << "\n";
+    handleTrackedVarAssignment(name->symbol->name());
+  }
 }
 
 void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
