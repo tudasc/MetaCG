@@ -1,0 +1,36 @@
+{
+  "_CG": {
+    "meta": {},
+    "nodes": {
+      "0": {
+        "callees": {},
+        "functionName": "_QMmodPset_var_base",
+        "hasBody": true,
+        "meta": {},
+        "origin": "1mod.f90"
+      },
+      "1": {
+        "callees": {},
+        "functionName": "_QMmodPset_var_derived",
+        "hasBody": true,
+        "meta": {},
+        "origin": "1mod.f90"
+      },
+      "2": {
+        "callees": { "0": {}, "1": {} },
+        "functionName": "_QQmain",
+        "hasBody": true,
+        "meta": {},
+        "origin": "2main.f90"
+      }
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "b2cf8d25b16310481bf5ba0fda1c99fbe2e69267",
+      "version": "0.9"
+    },
+    "version": "4.0"
+  }
+}

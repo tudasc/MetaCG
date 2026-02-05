@@ -193,13 +193,13 @@ bool ParseTreeVisitor::isOperator(const Expr* e) {
                       Expr::DefinedBinary>(e->u);
 }
 
-bool ParseTreeVisitor::compareExprIntrinsicOperator(const Expr* expr, const DefinedOperator::IntrinsicOperator* op) {
-  if (!expr || !op)
+bool ParseTreeVisitor::compareExprIntrinsicOperator(const Expr* expr, DefinedOperator::IntrinsicOperator op) {
+  if (!expr)
     return false;
 
   using IO = DefinedOperator::IntrinsicOperator;
 
-  switch (*op) {
+  switch (op) {
     case IO::NOT:
       return std::get_if<Expr::NOT>(&expr->u) != nullptr;
     case IO::Power:
@@ -255,6 +255,71 @@ bool ParseTreeVisitor::isUnaryOperator(const Expr* e) {
     return false;
 
   return holds_any_of<decltype(e->u), Expr::UnaryPlus, Expr::Negate, Expr::NOT, Expr::DefinedUnary>(e->u);
+}
+
+DefinedOperator::IntrinsicOperator ParseTreeVisitor::mapToIntrinsicOperator(const RelationalOperator& op) {
+  using RO = RelationalOperator;
+  using IO = DefinedOperator::IntrinsicOperator;
+
+  switch (op) {
+    case RO::LT:
+      return IO::LT;
+    case RO::LE:
+      return IO::LE;
+    case RO::EQ:
+      return IO::EQ;
+    case RO::NE:
+      return IO::NE;
+    case RO::GE:
+      return IO::GE;
+    case RO::GT:
+      return IO::GT;
+    default:
+      al->error("Error: Unknown RelationalOperator in mapToIntrinsicOperator");
+      return IO::LT;  // avoid warning
+  }
+}
+
+DefinedOperator::IntrinsicOperator ParseTreeVisitor::mapToIntrinsicOperator(const LogicalOperator& op) {
+  using LO = LogicalOperator;
+  using IO = DefinedOperator::IntrinsicOperator;
+
+  switch (op) {
+    case LO::And:
+      return IO::AND;
+    case LO::Or:
+      return IO::OR;
+    case LO::Eqv:
+      return IO::EQV;
+    case LO::Neqv:
+      return IO::NEQV;
+    case LO::Not:
+      return IO::NOT;
+    default:
+      al->error("Error: Unknown LogicalOperator in mapToIntrinsicOperator");
+      return IO::AND;  // avoid warning
+  }
+}
+
+DefinedOperator::IntrinsicOperator mapToIntrinsicOperator(const NumericOperator& op) {
+  using NO = NumericOperator;
+  using IO = DefinedOperator::IntrinsicOperator;
+
+  switch (op) {
+    case NO::Power:
+      return IO::Power;
+    case NO::Multiply:
+      return IO::Multiply;
+    case NO::Divide:
+      return IO::Divide;
+    case NO::Add:
+      return IO::Add;
+    case NO::Subtract:
+      return IO::Subtract;
+    default:
+      // should never happen
+      return IO::Add;  // avoid warning
+  }
 }
 
 const Symbol* ParseTreeVisitor::getTypeSymbolFromSymbol(const Symbol* symbol) {
@@ -702,7 +767,7 @@ void ParseTreeVisitor::Post(const TypeBoundGenericStmt& s) {
         if (!name.symbol)
           continue;
 
-        currentType.operators.emplace_back(intrinsicOp, name.symbol);
+        currentType.operators.emplace_back(*intrinsicOp, name.symbol);
 
         al->debug("Add operator: {} -> {} ({})", DefinedOperator::EnumToString(*intrinsicOp), name.symbol->name(),
                   fmt::ptr(name.symbol));
@@ -768,7 +833,7 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
     // search in interfaceOperators first before search in derived types
     auto interfaceOp = std::find_if(interfaceOperators.begin(), interfaceOperators.end(), [&](const auto& op) {
       if (const auto* intrinsicOp = std::get_if<DefinedOperator::IntrinsicOperator>(op.first)) {
-        return compareExprIntrinsicOperator(e, intrinsicOp);
+        return compareExprIntrinsicOperator(e, *intrinsicOp);
       } else if (const auto* definedOpName = std::get_if<DefinedOpName>(op.first)) {
         if (auto* definedUnary = std::get_if<Expr::DefinedUnary>(&e->u)) {
           auto* exprOpName = &std::get<DefinedOpName>(definedUnary->t);
@@ -849,4 +914,71 @@ void ParseTreeVisitor::Post(const Expr& e) {
   if (!exprStmtWithOps.empty()) {
     exprStmtWithOps.pop_back();
   }
+}
+
+// extract additional information from use statements
+void ParseTreeVisitor::Post(const UseStmt& u) {
+  auto* useSymbol = u.moduleName.symbol;
+
+  al->debug("Use module: {} ({})", useSymbol->name(), fmt::ptr(useSymbol));
+
+  if (const Scope* modScope = useSymbol->scope()) {
+    for (const auto& pair : *modScope) {
+      Symbol& symbol = *pair.second;
+
+      // extract derived types from module and populate types var
+      if (const auto* details = symbol.detailsIf<DerivedTypeDetails>()) {
+        Symbol* extendsFrom = nullptr;
+        std::vector<std::pair<Symbol*, Symbol*>> procedures;
+        std::vector<std::pair<DefinedOperator::IntrinsicOperator, Symbol*>> operators;
+
+        for (auto& pair : *symbol.scope()) {
+          Symbol& component = *pair.second;
+
+          // extends
+          if (component.test(Symbol::Flag::ParentComp)) {
+            extendsFrom = const_cast<Symbol*>(getTypeSymbolFromSymbol(&component));  // TODO: avoid const cast. ugly.
+          }
+
+          // type bound procedures
+          if (component.has<ProcBindingDetails>()) {
+            const auto& procDetails = component.get<ProcBindingDetails>();
+            al->debug("Found procedure in module derived type: {} ({})", component.name(), fmt::ptr(&component));
+            procedures.emplace_back(&component, &component);
+          }
+
+          // type generic operators
+          if (GenericDetails* gen = component.detailsIf<GenericDetails>()) {
+            auto op = gen->kind().u;
+            DefinedOperator::IntrinsicOperator intrinsicOp;
+            std::visit(
+                [&](auto&& opVal) {
+                  using T = std::decay_t<decltype(opVal)>;
+                  if constexpr (std::is_same_v<T, RelationalOperator> || std::is_same_v<T, LogicalOperator> ||
+                                std::is_same_v<T, NumericOperator>) {
+                    intrinsicOp = mapToIntrinsicOperator(opVal);
+                  }
+                },
+                op);
+
+            if (gen->specificProcs().size() != 1)
+              al->error("Generic more than one specific proc not handled. Should not happen.");
+
+            Symbol* op_func_sym = nullptr;
+            op_func_sym = const_cast<Symbol*>(&gen->specificProcs().front().get());
+
+            al->debug("Found operator in module derived type: {} -> {} ({})",
+                      DefinedOperator::EnumToString(intrinsicOp), op_func_sym->name(), fmt::ptr(op_func_sym));
+
+            operators.push_back({intrinsicOp, op_func_sym});
+          }
+        }
+
+        types.push_back({&symbol, extendsFrom, procedures, operators});
+        al->debug("Add derived type from module: {} ({})", symbol.name(), fmt::ptr(&symbol));
+      }
+    }
+  }
+
+  al->debug("Finished Use module: {} ({})", useSymbol->name(), fmt::ptr(useSymbol));
 }

@@ -14,8 +14,8 @@ using edge = std::pair<std::string, std::string>;  // (caller, callee)
 struct type {
   Symbol* type;
   Symbol* extendsFrom;
-  std::vector<std::pair<Symbol*, Symbol*>> procedures;  // name(symbol) => optname(symbol)
-  std::vector<std::pair<const DefinedOperator::IntrinsicOperator*, Symbol*>> operators;  // operator => name(symbol)
+  std::vector<std::pair<Symbol*, Symbol*>> procedures;                            // name(symbol) => optname(symbol)
+  std::vector<std::pair<DefinedOperator::IntrinsicOperator, Symbol*>> operators;  // operator => name(symbol)
 };
 
 struct trackedVar {
@@ -75,9 +75,13 @@ class ParseTreeVisitor {
 
   bool isOperator(const Expr* e);
 
-  bool compareExprIntrinsicOperator(const Expr* expr, const DefinedOperator::IntrinsicOperator* op);
+  bool compareExprIntrinsicOperator(const Expr* expr, DefinedOperator::IntrinsicOperator op);
   bool isBinaryOperator(const Expr* e);
   bool isUnaryOperator(const Expr* e);
+
+  DefinedOperator::IntrinsicOperator mapToIntrinsicOperator(const RelationalOperator& op);
+  DefinedOperator::IntrinsicOperator mapToIntrinsicOperator(const LogicalOperator& op);
+  DefinedOperator::IntrinsicOperator mapToIntrinsicOperator(const NumericOperator& op);
 
   template <typename T>
   const Name* getNameFromClassWithDesignator(const T& t) {
@@ -160,6 +164,8 @@ class ParseTreeVisitor {
   bool Pre(const Expr& e);
   void Post(const Expr& e);
 
+  void Post(const UseStmt& u);
+
  private:
   metacg::Callgraph* cg;
   std::vector<edge> edges;
@@ -172,14 +178,15 @@ class ParseTreeVisitor {
   bool inInterfaceStmtDefinedOperator = false;
   bool inInterfaceSpecification = false;
 
-  std::vector<Symbol*> functionSymbols;
-  std::vector<std::vector<const Name*>> functionDummyArgs;
+  std::vector<Symbol*> functionSymbols;  // intended as a stack. It holds the current procedure symbol when the AST
+                                         // walker is in the respective procedure.
+  std::vector<std::vector<const Name*>> functionDummyArgs;  // some idea, but for dummy args
 
-  std::vector<type> types;
+  std::vector<type> types;  // all types
 
   std::vector<std::pair<const std::variant<DefinedOpName, DefinedOperator::IntrinsicOperator>*,
                         std::vector<Symbol*>>>
-      interfaceOperators;  // operator name (symbol) => [procedure names (symbols)]
+      interfaceOperators;  // all interface operators. operator name (symbol) => [procedure names (symbols)]
 
   std::vector<const Expr*> exprStmtWithOps;
 
@@ -188,7 +195,7 @@ class ParseTreeVisitor {
 
   AL* al = AL::getInstance();
 
-  std::vector<function> functions;
+  std::vector<function> functions;  // all functions
 
   std::vector<potentialFinalizer> potentialFinalizers;
 };
