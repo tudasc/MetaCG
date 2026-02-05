@@ -86,10 +86,16 @@ void ParseTreeVisitor::add_edges_for_produces_and_derived_types(std::vector<type
 }
 
 bool ParseTreeVisitor::isOperator(const Expr* e) {
-  using PE = Expr;
-  return holds_any_of<decltype(e->u), PE::UnaryPlus, PE::Negate, PE::NOT, PE::Power, PE::Multiply, PE::Divide, PE::Add,
-                      PE::Subtract, PE::Concat, PE::LT, PE::LE, PE::EQ, PE::NE, PE::GE, PE::GT, PE::AND, PE::OR,
-                      PE::EQV, PE::NEQV, PE::DefinedBinary, PE::DefinedUnary>(e->u);
+  /* Operators: see 15.4.3.4.2, 10.1.6.1, 6.2.4 (https://j3-fortran.org/doc/year/23/23-007r1.pdf)
+     Negate, NOT, Power, Multiply, Divide, Add, Subtract, Concat,
+     LT, LE, EQ, NE, GE, GT, AND, OR, EQV, NEQV,
+     DefinedUnary, DefinedBinary
+   */
+
+  return holds_any_of<decltype(e->u), Expr::UnaryPlus, Expr::Negate, Expr::NOT, Expr::Power, Expr::Multiply,
+                      Expr::Divide, Expr::Add, Expr::Subtract, Expr::Concat, Expr::LT, Expr::LE, Expr::EQ, Expr::NE,
+                      Expr::GE, Expr::GT, Expr::AND, Expr::OR, Expr::EQV, Expr::NEQV, Expr::DefinedUnary,
+                      Expr::DefinedBinary>(e->u);
 }
 
 bool ParseTreeVisitor::compare_expr_IntrinsicOperator(const Expr* expr, const DefinedOperator::IntrinsicOperator* op) {
@@ -399,7 +405,7 @@ void ParseTreeVisitor::Post(const TypeBoundGenericStmt& s) {
   if (!inDerivedTypeDef)
     return;
 
-  const auto& genericSpec = std::get<Fortran::common::Indirection<GenericSpec>>(s.t);
+  const auto& genericSpec = std::get<Indirection<GenericSpec>>(s.t);
   if (auto* definedOperator = std::get_if<DefinedOperator>(&genericSpec.value().u)) {
     if (auto* intrinsicOp = std::get_if<DefinedOperator::IntrinsicOperator>(&definedOperator->u)) {
       const auto& names = std::get<std::list<Name>>(s.t);
@@ -455,25 +461,57 @@ void ParseTreeVisitor::Post(const ProcedureStmt& p) {
 }
 
 bool ParseTreeVisitor::Pre(const Expr& e) {
-  /* Operators: see 15.4.3.4.2, 10.1.6.1, 6.2.4 (https://j3-fortran.org/doc/year/23/23-007r1.pdf)
-     Negate, NOT, Power, Multiply, Divide, Add, Subtract, Concat,
-     LT, LE, EQ, NE, GE, GT, AND, OR, EQV, NEQV,
-     DefinedUnary, DefinedBinary
-   */
-  auto* designator = std::get_if<Fortran::common::Indirection<Designator>>(&e.u);
-  if (designator && !exprStmtWithOps.empty()) {
-    auto* dataRef = std::get_if<DataRef>(&designator->value().u);
-    if (!dataRef)
-      return true;
+  const auto* name = getNameFromClassWithDesignator(e);
+  // true if not in a designator expr
+  if (!name || !name->symbol || exprStmtWithOps.empty()) {
+    if (isOperator(&e)) {
+      exprStmtWithOps.emplace_back(&e);
+    }
 
-    auto* name = std::get_if<Name>(&dataRef->u);
-    if (!name || !name->symbol)
-      return true;
+    return true;
+  }
 
-    auto* type = name->symbol->GetType();
-    if (!type)
-      return true;
+  auto* type = name->symbol->GetType();
+  if (!type)
+    return true;
 
+  for (auto e : exprStmtWithOps) {
+    // search in interface operators TODO improve this just add everything in the interface instead of comparing
+    // types
+    auto it = std::find_if(interfaceOperators.begin(), interfaceOperators.end(), [&](const auto& p) {
+      if (auto* intrinsicOp = std::get_if<DefinedOperator::IntrinsicOperator>(p.first)) {
+        return compare_expr_IntrinsicOperator(e, intrinsicOp);
+      }
+      if (auto* definedOpName = std::get_if<DefinedOpName>(p.first)) {
+        if (auto* definedUnary = std::get_if<Expr::DefinedUnary>(&e->u)) {
+          auto* exprOpName = &std::get<DefinedOpName>(definedUnary->t);
+
+          return definedOpName->v.symbol->name() == exprOpName->v.symbol->name();
+        }
+        if (auto* definedBinary = std::get_if<Expr::DefinedBinary>(&e->u)) {
+          llvm::outs() << "definedbinary" << "\n";
+        }
+        return false;
+      }
+      return false;
+    });
+    if (it != interfaceOperators.end()) {
+      // iterate over all procedures in interface (this vastly overestimates the calls). TODO: look into procdure
+      // params to identify only the onces that could be called.
+      for (auto* sym : it->second) {
+        // skip self calls
+        if (sym->name() == functionSymbols.back()->name())
+          continue;
+
+        edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
+                           Fortran::lower::mangle::mangleName(*sym));
+
+        llvm::outs() << "Add edge: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << " -> "
+                     << Fortran::lower::mangle::mangleName(*sym) << "\n";
+      }
+    }
+
+    // search in derived types
     auto* derived = type->AsDerived();
     if (!derived)
       return true;
@@ -484,82 +522,30 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
 
     auto typeWithDerived = find_type_with_derived_types(typeSymbol);
 
-    for (auto e : exprStmtWithOps) {
-      // search in derived types
-      for (const auto& t : typeWithDerived) {
-        auto opIt = std::find_if(t.operators.begin(), t.operators.end(),
-                                 [&](const auto& p) { return compare_expr_IntrinsicOperator(e, p.first); });
-        if (opIt == t.operators.end())
+    for (const auto& t : typeWithDerived) {
+      auto opIt = std::find_if(t.operators.begin(), t.operators.end(),
+                               [&](const auto& p) { return compare_expr_IntrinsicOperator(e, p.first); });
+      if (opIt == t.operators.end())
+        continue;
+
+      auto funcSymbol = opIt->second;
+
+      bool skipSelfCall = false;
+      for (type_t t : typeWithDerived) {
+        auto procIt = std::find_if(t.procedures.begin(), t.procedures.end(),
+                                   [&funcSymbol](const auto& p) { return p.first->name() == funcSymbol->name(); });
+        if (procIt == t.procedures.end())
           continue;
 
-        auto funcSymbol = opIt->second;
-
-        bool skipSelfCall = false;
-        for (type_t t : typeWithDerived) {
-          auto procIt = std::find_if(t.procedures.begin(), t.procedures.end(),
-                                     [&funcSymbol](const auto& p) { return p.first->name() == funcSymbol->name(); });
-          if (procIt == t.procedures.end())
-            continue;
-
-          if (procIt->second->name() == functionSymbols.back()->name()) {
-            skipSelfCall = true;
-            break;
-          }
-        }
-
-        if (!skipSelfCall)
-          add_edges_for_produces_and_derived_types(typeWithDerived, funcSymbol);
-      }
-
-      // search in interface operators TODO improve this just add everything in the interface instead of comparing
-      // types
-      auto it = std::find_if(interfaceOperators.begin(), interfaceOperators.end(), [&](const auto& p) {
-        if (auto* intrinsicOp = std::get_if<DefinedOperator::IntrinsicOperator>(p.first)) {
-          return compare_expr_IntrinsicOperator(e, intrinsicOp);
-        }
-        if (auto* definedOpName = std::get_if<DefinedOpName>(p.first)) {
-          llvm::outs() << "definedOpName: " << definedOpName->v.symbol->name() << "\n";
-
-          // TODO: Designator is in another expression
-
-          // auto* designator = std::get_if<Fortran::common::Indirection<Designator>>(&e->u);
-          // if (!designator)
-          //   return false;
-          // auto* dataRef = std::get_if<DataRef>(&designator->value().u);
-          // if (!dataRef)
-          //   return false;
-          // auto* name = std::get_if<Name>(&dataRef->u);
-          // if (!name || !name->symbol)
-          //   return false;
-
-          // llvm::outs() << "defineOpName: " << definedOpName->v.symbol->name() << " vs " << name->symbol->name()
-          //              << "\n";
-
-          // return definedOpName->v.symbol->name() == name->symbol->name();  // doesnt work
-          return false;
-        }
-        return false;
-      });
-      if (it != interfaceOperators.end()) {
-        for (auto* sym : it->second) {
-          // skip self calls
-          if (sym->name() == functionSymbols.back()->name())
-            continue;
-
-          edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
-                             Fortran::lower::mangle::mangleName(*sym));
-
-          llvm::outs() << "Add edge: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << " -> "
-                       << Fortran::lower::mangle::mangleName(*sym) << "\n";
+        if (procIt->second->name() == functionSymbols.back()->name()) {
+          skipSelfCall = true;
+          break;
         }
       }
+
+      if (!skipSelfCall)
+        add_edges_for_produces_and_derived_types(typeWithDerived, funcSymbol);
     }
-
-    return true;
-  }
-
-  if (isOperator(&e)) {
-    exprStmtWithOps.emplace_back(&e);
   }
 
   return true;

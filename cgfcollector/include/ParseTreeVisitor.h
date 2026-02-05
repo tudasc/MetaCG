@@ -4,6 +4,7 @@
 
 using namespace Fortran::parser;
 using namespace Fortran::semantics;
+using namespace Fortran::common;
 
 typedef struct type {
   Symbol* type;
@@ -37,6 +38,18 @@ class ParseTreeVisitor {
   bool isOperator(const Expr* e);
 
   bool compare_expr_IntrinsicOperator(const Expr* expr, const DefinedOperator::IntrinsicOperator* op);
+
+  template <typename T>
+  const Name* getNameFromClassWithDesignator(const T& t) {
+    if (const auto* designator = std::get_if<Indirection<Designator>>(&t.u)) {
+      if (const auto* dataRef = std::get_if<DataRef>(&designator->value().u)) {
+        if (const auto* name = std::get_if<Name>(&dataRef->u)) {
+          return name;
+        }
+      }
+    }
+    return nullptr;
+  }
 
   template <typename A>
   bool Pre(const A&) {
