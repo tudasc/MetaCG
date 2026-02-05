@@ -278,6 +278,123 @@ class ParseTreeVisitor {
     }
   }
 
+  // collect defined operators in a type def (operator overloading)
+  void Post(const Fortran::parser::TypeBoundGenericStmt& s) {
+    if (!inDerivedTypeDef)
+      return;
+
+    const auto& genericSpec = std::get<Fortran::common::Indirection<Fortran::parser::GenericSpec>>(s.t);
+    if (auto* definedOperator = std::get_if<Fortran::parser::DefinedOperator>(&genericSpec.value().u)) {
+      if (auto* intrinsicOp = std::get_if<Fortran::parser::DefinedOperator::IntrinsicOperator>(&definedOperator->u)) {
+        const auto& names = std::get<std::list<Fortran::parser::Name>>(s.t);
+
+        auto& currentType = types.back();
+
+        for (auto name : names) {
+          if (!name.symbol)
+            continue;
+
+          currentType.operators.emplace_back(intrinsicOp, name.symbol);
+        }
+      }
+    }
+  }
+
+  template <typename Variant, typename... Ts>
+  bool holds_any_of(const Variant& v) {
+    return (std::holds_alternative<Ts>(v) || ...);
+  }
+
+  void Post(const Fortran::parser::Expr& e) {
+    /* Operators: see 15.4.3.4.2, 10.1.6.1, 6.2.4 (https://j3-fortran.org/doc/year/23/23-007r1.pdf)
+      Negate, NOT, Power, Multiply, Divide, Add, Subtract, Concat,
+      LT, LE, EQ, NE, GE, GT, AND, OR, EQV, NEQV,
+      DefinedUnary, DefinedBinary
+    */
+    using PE = Fortran::parser::Expr;
+
+    if (holds_any_of<decltype(e.u), PE::DefinedUnary, PE::DefinedBinary>(e.u)) {
+      if (const auto* definedUnary = std::get_if<PE::DefinedUnary>(&e.u)) {
+        const auto& opname = std::get<Fortran::parser::DefinedOpName>(definedUnary->t);
+        if (!opname.v.symbol)
+          return;
+      }
+      if (const auto* definedBinary = std::get_if<PE::DefinedBinary>(&e.u)) {
+        const auto& opname = std::get<Fortran::parser::DefinedOpName>(definedBinary->t);
+        if (!opname.v.symbol)
+          return;
+      }
+    }
+
+    if (holds_any_of<decltype(e.u), PE::Negate, PE::NOT, PE::Power, PE::Multiply, PE::Divide, PE::Add, PE::Subtract,
+                     PE::Concat, PE::LT, PE::LE, PE::EQ, PE::NE, PE::GE, PE::GT, PE::AND, PE::OR, PE::EQV, PE::NEQV>(
+            e.u)) {
+      std::visit(
+          [&](auto&& arg) {
+            using T = std::decay_t<decltype(arg)>;
+            const Fortran::common::Indirection<Fortran::parser::Expr>* expr = nullptr;
+            if constexpr (std::is_base_of_v<PE::IntrinsicBinary, T>) {
+              expr = &std::get<0>(arg.t);
+            } else if constexpr (std::is_base_of_v<PE::IntrinsicUnary, T>) {
+              expr = &arg.v;
+            } else {
+              return;  // not a unary or binary operator
+            }
+
+            auto* designator = std::get_if<Fortran::common::Indirection<Fortran::parser::Designator>>(&expr->value().u);
+            if (!designator)
+              return;
+
+            auto* dataRef = std::get_if<Fortran::parser::DataRef>(&designator->value().u);
+            if (!dataRef)
+              return;
+
+            auto* name = std::get_if<Fortran::parser::Name>(&dataRef->u);
+            if (!name || !name->symbol)
+              return;
+
+            auto* type = name->symbol->GetType();
+            if (!type)
+              return;
+
+            auto* derived = type->AsDerived();
+            if (!derived)
+              return;
+
+            auto* typeSymbol = &derived->typeSymbol();
+            if (!typeSymbol)
+              return;
+
+            auto findTypeIt =
+                std::find_if(types.begin(), types.end(), [=](const type_t& t) { return t.type == typeSymbol; });
+            if (findTypeIt == types.end())
+              return;
+
+            for (const auto& ops : findTypeIt->operators) {
+              auto* op = ops.first;
+              auto* sym = ops.second;
+
+              auto baseProcIt = std::find_if(findTypeIt->procedures.begin(), findTypeIt->procedures.end(),
+                                             [&](const auto& p) { return p.first->name() == sym->name(); });
+              if (baseProcIt != findTypeIt->procedures.end()) {
+                edges.emplace_back(functionNames.back(), Fortran::lower::mangle::mangleName(*baseProcIt->second));
+              }
+
+              for (const auto& t : types) {
+                if (t.extendsFrom != typeSymbol)
+                  continue;
+                auto dProcIt = std::find_if(t.procedures.begin(), t.procedures.end(),
+                                            [&](const auto& p) { return p.first->name() == sym->name(); });
+                if (dProcIt != t.procedures.end()) {
+                  edges.emplace_back(functionNames.back(), Fortran::lower::mangle::mangleName(*dProcIt->second));
+                }
+              }
+            }
+          },
+          e.u);
+    }
+  }
+
  private:
   metacg::Callgraph* cg;
   std::vector<std::pair<std::string, std::string>> edges;  // (caller, callee)
@@ -292,7 +409,10 @@ class ParseTreeVisitor {
   typedef struct type {
     Fortran::semantics::Symbol* type;
     Fortran::semantics::Symbol* extendsFrom;
-    std::vector<std::pair<Fortran::semantics::Symbol*, Fortran::semantics::Symbol*>> procedures;  // name [=> optname]
+    std::vector<std::pair<Fortran::semantics::Symbol*, Fortran::semantics::Symbol*>>
+        procedures;  // name(symbol) => optname(symbol)
+    std::vector<std::pair<const Fortran::parser::DefinedOperator::IntrinsicOperator*, Fortran::semantics::Symbol*>>
+        operators;  // operator => name(symbol) TODO: do i need IntrinsicOperator
   } type_t;
   std::vector<type> types;
 };
