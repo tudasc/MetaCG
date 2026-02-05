@@ -54,13 +54,13 @@ class ParseTreeVisitor {
   void handleTrackedVars();
 
   // searches the types vector for given typeSymbol and returns pointers to vectors of type with derived types.
-  std::vector<type_t> find_type_with_derived_types(const Symbol* typeSymbol);
+  std::vector<type_t> findTypeWithDerivedTypes(const Symbol* typeSymbol);
 
   // this function searches with typeSymbol for a type in types vector and adds edges for procedures that matches
   // procedureSymbol. And also adds edges from types that extends from typeSymbol.
-  void add_edges_for_produces_and_derived_types(std::vector<type_t> typeWithDerived, const Symbol* procedureSymbol);
+  void addEdgesForProducesAndDerivedTypes(std::vector<type_t> typeWithDerived, const Symbol* procedureSymbol);
 
-  void add_edges_for_finalizers(const Symbol* typeSymbol);
+  void addEdgesForFinalizers(const Symbol* typeSymbol);
 
   template <typename Variant, typename... Ts>
   bool holds_any_of(const Variant& v) {
@@ -69,7 +69,7 @@ class ParseTreeVisitor {
 
   bool isOperator(const Expr* e);
 
-  bool compare_expr_IntrinsicOperator(const Expr* expr, const DefinedOperator::IntrinsicOperator* op);
+  bool compareExprIntrinsicOperator(const Expr* expr, const DefinedOperator::IntrinsicOperator* op);
 
   template <typename T>
   const Name* getNameFromClassWithDesignator(const T& t) {

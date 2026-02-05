@@ -44,7 +44,7 @@ void ParseTreeVisitor::handleTrackedVars() {
         auto* typeSymbol = getTypeSymbolFromSymbol(trackedVar.var);
         if (!typeSymbol)
           continue;
-        add_edges_for_finalizers(typeSymbol);
+        addEdgesForFinalizers(typeSymbol);
       }
 
       // set init on dummy function args
@@ -64,7 +64,7 @@ void ParseTreeVisitor::handleTrackedVars() {
   removeTrackedVars(functionSymbols.back());
 }
 
-std::vector<type_t> ParseTreeVisitor::find_type_with_derived_types(const Symbol* typeSymbol) {
+std::vector<type_t> ParseTreeVisitor::findTypeWithDerivedTypes(const Symbol* typeSymbol) {
   std::vector<type_t> typeWithDerived;
 
   auto findTypeIt =
@@ -106,8 +106,8 @@ std::vector<type_t> ParseTreeVisitor::find_type_with_derived_types(const Symbol*
   return typeWithDerived;
 }
 
-void ParseTreeVisitor::add_edges_for_produces_and_derived_types(std::vector<type_t> typeWithDerived,
-                                                                const Symbol* procedureSymbol) {
+void ParseTreeVisitor::addEdgesForProducesAndDerivedTypes(std::vector<type_t> typeWithDerived,
+                                                          const Symbol* procedureSymbol) {
   for (type_t t : typeWithDerived) {
     auto procIt = std::find_if(t.procedures.begin(), t.procedures.end(), [&procedureSymbol](const auto& p) {
       return p.first->name() == procedureSymbol->name();
@@ -122,8 +122,8 @@ void ParseTreeVisitor::add_edges_for_produces_and_derived_types(std::vector<type
   }
 }
 
-void ParseTreeVisitor::add_edges_for_finalizers(const Symbol* typeSymbol) {
-  std::vector<type_t> typeSymbols = find_type_with_derived_types(typeSymbol);
+void ParseTreeVisitor::addEdgesForFinalizers(const Symbol* typeSymbol) {
+  std::vector<type_t> typeSymbols = findTypeWithDerivedTypes(typeSymbol);
 
   for (const auto& type : typeSymbols) {
     const Symbol* typeSymbol = type.type;
@@ -155,7 +155,7 @@ bool ParseTreeVisitor::isOperator(const Expr* e) {
                       Expr::DefinedBinary>(e->u);
 }
 
-bool ParseTreeVisitor::compare_expr_IntrinsicOperator(const Expr* expr, const DefinedOperator::IntrinsicOperator* op) {
+bool ParseTreeVisitor::compareExprIntrinsicOperator(const Expr* expr, const DefinedOperator::IntrinsicOperator* op) {
   if (!expr || !op)
     return false;
 
@@ -426,7 +426,7 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
     if (!typeSymbol)
       return;
 
-    add_edges_for_produces_and_derived_types(find_type_with_derived_types(typeSymbol), symbolComp);
+    addEdgesForProducesAndDerivedTypes(findTypeWithDerivedTypes(typeSymbol), symbolComp);
   }
 }
 
@@ -484,7 +484,7 @@ void ParseTreeVisitor::Post(const Call& c) {
       // TODO: rework
       potentialFinalizer pf = {argPos, mangleName(*procName->symbol)};
 
-      std::vector<type_t> typeSymbols = find_type_with_derived_types(typeSymbol);
+      std::vector<type_t> typeSymbols = findTypeWithDerivedTypes(typeSymbol);
 
       for (const auto& type : typeSymbols) {
         const Symbol* typeSymbol = type.type;
@@ -554,7 +554,7 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
         } else {
           if (holds_intent->v == IntentSpec::Intent::Out) {
             // intent out, calls finalizer because (7.5.6.3 line 21 and onwards)
-            add_edges_for_finalizers(typeSymbol);
+            addEdgesForFinalizers(typeSymbol);
           } else if (holds_intent->v == IntentSpec::Intent::InOut) {
             // intent inout, calls finalizer when set.
             al->debug("Add tracking for inout argument: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
@@ -569,7 +569,7 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
         // skip var with allocatable attr.
         // Add to trackedVars because it needs to be assigned at least once before calling a finalizers make sense.
       } else {
-        add_edges_for_finalizers(typeSymbol);
+        addEdgesForFinalizers(typeSymbol);
       }
     }
   }
@@ -728,7 +728,7 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
     // types
     auto it = std::find_if(interfaceOperators.begin(), interfaceOperators.end(), [&](const auto& p) {
       if (auto* intrinsicOp = std::get_if<DefinedOperator::IntrinsicOperator>(p.first)) {
-        return compare_expr_IntrinsicOperator(e, intrinsicOp);
+        return compareExprIntrinsicOperator(e, intrinsicOp);
       }
       if (auto* definedOpName = std::get_if<DefinedOpName>(p.first)) {
         if (auto* definedUnary = std::get_if<Expr::DefinedUnary>(&e->u)) {
@@ -762,11 +762,11 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
     if (!typeSymbol)
       continue;
 
-    auto typeWithDerived = find_type_with_derived_types(typeSymbol);
+    auto typeWithDerived = findTypeWithDerivedTypes(typeSymbol);
 
     for (const auto& t : typeWithDerived) {
       auto opIt = std::find_if(t.operators.begin(), t.operators.end(),
-                               [&](const auto& p) { return compare_expr_IntrinsicOperator(e, p.first); });
+                               [&](const auto& p) { return compareExprIntrinsicOperator(e, p.first); });
       if (opIt == t.operators.end())
         continue;
 
@@ -786,7 +786,7 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
       }
 
       if (!skipSelfCall)
-        add_edges_for_produces_and_derived_types(typeWithDerived, funcSymbol);
+        addEdgesForProducesAndDerivedTypes(typeWithDerived, funcSymbol);
     }
   }
 
