@@ -31,6 +31,9 @@ for arg in "${all_args[@]}"; do
     fi
 
     case "$arg" in
+    -fPIC)
+        # skip
+        ;;
     -I* | -J* | -std=* | -O* | -D* | -f* | -cpp)
         options+=("$arg")
         ;;
