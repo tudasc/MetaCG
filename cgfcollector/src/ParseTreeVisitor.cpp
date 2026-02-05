@@ -33,10 +33,7 @@ void ParseTreeVisitor::addEdgesForProducesAndDerivedTypes(std::vector<const type
 
     auto* currentFunctionSymbol = currentFunctions.back().symbol;
 
-    edges.emplace_back(mangleSymbol(currentFunctionSymbol), mangleSymbol(procIt->second));
-
-    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(currentFunctionSymbol),
-                        fmt::ptr(currentFunctionSymbol), mangleSymbol(procIt->second), fmt::ptr(procIt->second));
+    edgeM->addEdge(currentFunctionSymbol, procIt->second);
   }
 }
 
@@ -54,7 +51,7 @@ void ParseTreeVisitor::postProcess() {
       continue;
 
     for (const auto& edge : pf.finalizerEdges) {
-      edgeM->addEdge(edge);
+      edgeM->addEdge(edge, false);
       MCGLogger::logDebug("Add edge for potential finalizer: {} -> {}", edge.caller, edge.callee);
     }
   }
@@ -225,10 +222,7 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
     if (name->symbol->attrs().test(Attr::INTRINSIC))
       return;
 
-    edges.emplace_back(mangleSymbol(currentFunctionSymbol), mangleSymbol(name->symbol));
-
-    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(currentFunctionSymbol),
-                        fmt::ptr(currentFunctionSymbol), mangleSymbol(name->symbol), fmt::ptr(name->symbol));
+    edgeM->addEdge(currentFunctionSymbol, name->symbol);
 
     // if called from a object with %. (base % component)
   } else if (auto* procCompRef = std::get_if<ProcComponentRef>(&p.u)) {
@@ -236,10 +230,7 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
     if (!symbolComp)
       return;
 
-    edges.emplace_back(mangleSymbol(currentFunctionSymbol), mangleSymbol(symbolComp));
-
-    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(currentFunctionSymbol),
-                        fmt::ptr(currentFunctionSymbol), mangleSymbol(symbolComp), fmt::ptr(symbolComp));
+    edgeM->addEdge(currentFunctionSymbol, symbolComp);
 
     auto* baseName = std::get_if<Name>(&procCompRef->v.thing.base.u);
     if (!baseName || !baseName->symbol)
@@ -588,10 +579,7 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
           }
         }
 
-        edges.emplace_back(mangleSymbol(currentFunctionSymbol), mangleSymbol(sym));
-
-        MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(currentFunctionSymbol),
-                            fmt::ptr(currentFunctionSymbol), mangleSymbol(sym), fmt::ptr(sym));
+        edgeM->addEdge(currentFunctionSymbol, sym);
       }
     }
 

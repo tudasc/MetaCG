@@ -42,28 +42,18 @@ struct edgeManager {
 
   edgeManager(std::vector<edge>& edges) : edges(edges) {}
 
-  void addEdge(const edgeSymbol& e) { edges.emplace_back(mangleSymbol(e.caller), mangleSymbol(e.callee)); }
-  void addEdge(const edge& e) { edges.emplace_back(e.caller, e.callee); }
-  void addEdges(const std::vector<edge>& newEdges, bool debug = false) {
-    for (const auto& e : newEdges) {
-      edges.emplace_back(e.caller, e.callee);
+  void addEdge(const edgeSymbol& e, bool debug = true);
+  void addEdge(Symbol* caller, Symbol* callee, bool debug = true);
+  void addEdge(const edge& e, bool debug = true);
+  void addEdge(const std::string& caller, const std::string& callee, bool debug = true);
+  void addEdges(const std::vector<edge>& newEdges, bool debug = true);
+  void addEdges(const std::vector<edgeSymbol>& newEdges, bool debug = true);
 
-      if (debug) {
-        MCGLogger::logDebug("Add edge: {} -> {}", e.caller, e.callee);
-      }
-    }
-  }
-  void addEdges(const std::vector<edgeSymbol>& newEdges, bool debug = true) {
-    for (const auto& e : newEdges) {
-      edges.emplace_back(mangleSymbol(e.caller), mangleSymbol(e.callee));
-
-      if (debug) {
-        MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(e.caller), fmt::ptr(e.caller),
-                            mangleSymbol(e.callee), fmt::ptr(e.callee));
-      }
-    }
-  }
-
+  /**
+   * @brief For a given type symbol, returns a list of edges from the current function to all finalizers of that type.
+   *
+   * @param typeSymbol
+   */
   static std::vector<edgeSymbol> getEdgesForFinalizers(std::vector<const type*> types,
                                                        const Symbol* currentFunctionSymbol);
   // void addEdgesForFinalizers(std::vector<const type*> types, const Symbol* currentFunctionSymbol);

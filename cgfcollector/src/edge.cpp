@@ -1,14 +1,8 @@
 #include "edge.h"
 
-/**
- * @brief For a given type symbol, returns a list of edges from the current function to all finalizers of that type.
- *
- * @param typeSymbol
- */
 std::vector<edgeSymbol> edgeManager::getEdgesForFinalizers(std::vector<const type*> types,
                                                            const Symbol* currentFunctionSymbol) {
   std::vector<edgeSymbol> edges;
-  // std::vector<const type*> typeSymbols = findTypeWithDerivedTypes(typeSymbol);
 
   for (const type* type : types) {
     const Symbol* typeSymbol = type->type;
@@ -37,3 +31,54 @@ std::vector<edgeSymbol> edgeManager::getEdgesForFinalizers(std::vector<const typ
 //                         mangleSymbol(edge.callee), fmt::ptr(edge.callee));
 //   }
 // }
+
+void edgeManager::addEdge(const edgeSymbol& e, bool debug) {
+  edges.emplace_back(mangleSymbol(e.caller), mangleSymbol(e.callee));
+  if (debug) {
+    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(e.caller), fmt::ptr(e.caller),
+                        mangleSymbol(e.callee), fmt::ptr(e.callee));
+  }
+}
+
+void edgeManager::addEdge(Symbol* caller, Symbol* callee, bool debug) {
+  edges.emplace_back(mangleSymbol(caller), mangleSymbol(callee));
+  if (debug) {
+    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(caller), fmt::ptr(caller), mangleSymbol(callee),
+                        fmt::ptr(callee));
+  }
+}
+
+void edgeManager::addEdge(const edge& e, bool debug) {
+  edges.emplace_back(e.caller, e.callee);
+  if (debug) {
+    MCGLogger::logDebug("Add edge: {} -> {}", e.caller, e.callee);
+  }
+}
+
+void edgeManager::addEdge(const std::string& caller, const std::string& callee, bool debug) {
+  edges.emplace_back(caller, callee);
+  if (debug) {
+    MCGLogger::logDebug("Add edge: {} -> {}", caller, callee);
+  }
+}
+
+void edgeManager::addEdges(const std::vector<edge>& newEdges, bool debug) {
+  for (const auto& e : newEdges) {
+    edges.emplace_back(e.caller, e.callee);
+
+    if (debug) {
+      MCGLogger::logDebug("Add edge: {} -> {}", e.caller, e.callee);
+    }
+  }
+}
+
+void edgeManager::addEdges(const std::vector<edgeSymbol>& newEdges, bool debug) {
+  for (const auto& e : newEdges) {
+    edges.emplace_back(mangleSymbol(e.caller), mangleSymbol(e.callee));
+
+    if (debug) {
+      MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(e.caller), fmt::ptr(e.caller),
+                          mangleSymbol(e.callee), fmt::ptr(e.callee));
+    }
+  }
+}
