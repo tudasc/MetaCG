@@ -214,13 +214,6 @@ const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol) {
   return typeSymbol;
 }
 
-/**
- * @brief Searches the types vector for given symbol and returns pointers to vectors of type with derived types. The
- * type symbol is derived from the given symbol.
- *
- * @param typeSymbol symbol to search for
- * @return vector with type and all derived types
- */
 std::vector<const type*> findTypeWithDerivedTypes(const std::vector<type>& types, const Symbol* symbol) {
   std::vector<const type*> typesWithDerived;
   std::unordered_set<const Symbol*> visited;
