@@ -16,16 +16,17 @@ class ParseTreeVisitor {
   template <typename T>
   void handleFuncSubStmt(const T& stmt) {
     if (auto* sym = std::get<Fortran::parser::Name>(stmt.t).symbol) {
-      functionNames.emplace_back(Fortran::lower::mangle::mangleName(*sym));
+      functionSymbols.emplace_back(sym);
       functionDummyArgs.emplace_back(std::vector<const Fortran::parser::Name*>());
-      cg->insert(std::make_unique<metacg::CgNode>(functionNames.back(), currentFileName, false, false));
+      cg->insert(
+          std::make_unique<metacg::CgNode>(Fortran::lower::mangle::mangleName(*sym), currentFileName, false, false));
 
       llvm::outs() << "Add node: " << Fortran::lower::mangle::mangleName(*sym) << "\n";
     }
   }
   void handleEndFuncSubStmt() {
-    if (!functionNames.empty()) {
-      functionNames.pop_back();
+    if (!functionSymbols.empty()) {
+      functionSymbols.pop_back();
     }
     if (!functionDummyArgs.empty()) {
       functionDummyArgs.pop_back();
@@ -45,11 +46,34 @@ class ParseTreeVisitor {
 
     typeWithDerived.push_back(*findTypeIt);
 
-    for (auto t : types) {
-      if (t.extendsFrom != typeSymbol)
-        continue;
+    // base type
+    if ((*findTypeIt).extendsFrom == nullptr) {
+      for (auto t : types) {
+        if (t.extendsFrom != typeSymbol)
+          continue;
 
-      typeWithDerived.push_back(t);
+        typeWithDerived.push_back(t);
+      }
+      // not a base type, go back recursively to find all "base" types
+    } else {
+      auto* currentExtendsFrom = (*findTypeIt).extendsFrom;
+      while (currentExtendsFrom) {
+        auto currentType = std::find_if(types.begin(), types.end(), [&currentExtendsFrom](const type_t& t) {
+          return t.type == currentExtendsFrom;
+        });
+        if (currentType == types.end()) {
+          llvm::errs() << "Error: Types array (extendsFrom) field entry missing.";
+          return typeWithDerived;
+        }
+
+        typeWithDerived.push_back(*currentType);
+
+        if ((*currentType).extendsFrom != nullptr) {
+          currentExtendsFrom = (*currentType).extendsFrom;
+        } else {
+          currentExtendsFrom = nullptr;
+        }
+      }
     }
 
     return typeWithDerived;
@@ -66,9 +90,10 @@ class ParseTreeVisitor {
       if (procIt == t.procedures.end())
         continue;
 
-      edges.emplace_back(functionNames.back(), Fortran::lower::mangle::mangleName(*procIt->second));
+      edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
+                         Fortran::lower::mangle::mangleName(*procIt->second));
 
-      llvm::outs() << "Add edge: " << functionNames.back() << " -> "
+      llvm::outs() << "Add edge: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << " -> "
                    << Fortran::lower::mangle::mangleName(*procIt->second) << "\n";
     }
   }
@@ -87,8 +112,9 @@ class ParseTreeVisitor {
       if (!maybeStmt->statement.v.symbol)
         return true;
 
-      functionNames.emplace_back(Fortran::lower::mangle::mangleName(*maybeStmt->statement.v.symbol));
-      cg->insert(std::make_unique<metacg::CgNode>(functionNames.back(), currentFileName, false, false));
+      functionSymbols.emplace_back(maybeStmt->statement.v.symbol);
+      cg->insert(std::make_unique<metacg::CgNode>(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
+                                                  currentFileName, false, false));
     }
     return true;
   }
@@ -96,8 +122,8 @@ class ParseTreeVisitor {
   void Post(const Fortran::parser::MainProgram&) {
     inMainProgram = false;
 
-    if (!functionNames.empty()) {
-      functionNames.pop_back();
+    if (!functionSymbols.empty()) {
+      functionSymbols.pop_back();
     }
   }
 
@@ -116,7 +142,7 @@ class ParseTreeVisitor {
     if (!inFunctionOrSubroutineSubProgram && !inMainProgram)
       return;
 
-    auto* node = cg->getNode(functionNames.back());
+    auto* node = cg->getNode(Fortran::lower::mangle::mangleName(*functionSymbols.back()));
     if (!node) {
       return;
     }
@@ -137,8 +163,8 @@ class ParseTreeVisitor {
     }
   }
   void Post(const Fortran::parser::EndFunctionStmt&) {
-    if (!functionNames.empty()) {
-      llvm::outs() << "End function: " << functionNames.back() << "\n";
+    if (!functionSymbols.empty()) {
+      llvm::outs() << "End function: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << "\n";
     }
 
     handleEndFuncSubStmt();
@@ -157,15 +183,15 @@ class ParseTreeVisitor {
     }
   }
   void Post(const Fortran::parser::EndSubroutineStmt&) {
-    if (!functionNames.empty()) {
-      llvm::outs() << "End subroutine: " << functionNames.back() << "\n";
+    if (!functionSymbols.empty()) {
+      llvm::outs() << "End subroutine: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << "\n";
     }
 
     handleEndFuncSubStmt();
   }
 
   void Post(const Fortran::parser::ProcedureDesignator& p) {
-    if (functionNames.empty())
+    if (functionSymbols.empty())
       return;
 
     // if just the name is called. (as subroutine with call and as function without call)
@@ -177,9 +203,10 @@ class ParseTreeVisitor {
       if (name->symbol->attrs().test(Fortran::semantics::Attr::INTRINSIC))
         return;
 
-      edges.emplace_back(functionNames.back(), Fortran::lower::mangle::mangleName(*name->symbol));
+      edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
+                         Fortran::lower::mangle::mangleName(*name->symbol));
 
-      llvm::outs() << "Add edge: " << functionNames.back() << " -> "
+      llvm::outs() << "Add edge: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << " -> "
                    << Fortran::lower::mangle::mangleName(*name->symbol) << "\n";
 
       // if called from a object with %. (base % component)
@@ -188,10 +215,11 @@ class ParseTreeVisitor {
       if (!symbolComp)
         return;
 
-      edges.emplace_back(functionNames.back(), Fortran::lower::mangle::mangleName(*symbolComp));
+      edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
+                         Fortran::lower::mangle::mangleName(*symbolComp));
 
-      llvm::outs() << "Add edge: " << functionNames.back() << " -> " << Fortran::lower::mangle::mangleName(*symbolComp)
-                   << "\n";
+      llvm::outs() << "Add edge: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << " -> "
+                   << Fortran::lower::mangle::mangleName(*symbolComp) << "\n";
 
       auto* baseName = std::get_if<Fortran::parser::Name>(&procCompRef->v.thing.base.u);
       if (!baseName || !baseName->symbol)
@@ -257,9 +285,10 @@ class ParseTreeVisitor {
 
       // add edges for finalizers
       for (auto final : details->finals()) {
-        edges.emplace_back(functionNames.back(), Fortran::lower::mangle::mangleName(*final.second));
+        edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
+                           Fortran::lower::mangle::mangleName(*final.second));
 
-        llvm::outs() << "Add edge: " << functionNames.back() << " -> "
+        llvm::outs() << "Add edge: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << " -> "
                      << Fortran::lower::mangle::mangleName(*final.second) << "\n";
       }
     }
@@ -393,6 +422,13 @@ class ParseTreeVisitor {
     return (std::holds_alternative<Ts>(v) || ...);
   }
 
+  bool isOperator(const Fortran::parser::Expr* e) {
+    using PE = Fortran::parser::Expr;
+    return holds_any_of<decltype(e->u), PE::UnaryPlus, PE::Negate, PE::NOT, PE::Power, PE::Multiply, PE::Divide,
+                        PE::Add, PE::Subtract, PE::Concat, PE::LT, PE::LE, PE::EQ, PE::NE, PE::GE, PE::GT, PE::AND,
+                        PE::OR, PE::EQV, PE::NEQV, PE::DefinedBinary, PE::DefinedUnary>(e->u);
+  }
+
   bool compare_expr_IntrinsicOperator(const Fortran::parser::Expr* expr,
                                       const Fortran::parser::DefinedOperator::IntrinsicOperator* op) {
     if (!expr || !op)
@@ -445,96 +481,128 @@ class ParseTreeVisitor {
     }
   }
 
-  void Post(const Fortran::parser::Expr& e) {
+  bool Pre(const Fortran::parser::Expr& e) {
     /* Operators: see 15.4.3.4.2, 10.1.6.1, 6.2.4 (https://j3-fortran.org/doc/year/23/23-007r1.pdf)
-      Negate, NOT, Power, Multiply, Divide, Add, Subtract, Concat,
-      LT, LE, EQ, NE, GE, GT, AND, OR, EQV, NEQV,
-      DefinedUnary, DefinedBinary
-    */
+       Negate, NOT, Power, Multiply, Divide, Add, Subtract, Concat,
+       LT, LE, EQ, NE, GE, GT, AND, OR, EQV, NEQV,
+       DefinedUnary, DefinedBinary
+     */
     using PE = Fortran::parser::Expr;
 
-    if (holds_any_of<decltype(e.u), PE::DefinedUnary, PE::DefinedBinary>(e.u)) {
-      if (const auto* definedUnary = std::get_if<PE::DefinedUnary>(&e.u)) {
-        const auto& opname = std::get<Fortran::parser::DefinedOpName>(definedUnary->t);
-        if (!opname.v.symbol)
-          return;
+    auto* designator = std::get_if<Fortran::common::Indirection<Fortran::parser::Designator>>(&e.u);
+    if (designator && !exprStmtWithOps.empty()) {
+      auto* dataRef = std::get_if<Fortran::parser::DataRef>(&designator->value().u);
+      if (!dataRef)
+        return true;
+
+      auto* name = std::get_if<Fortran::parser::Name>(&dataRef->u);
+      if (!name || !name->symbol)
+        return true;
+
+      auto* type = name->symbol->GetType();
+      if (!type)
+        return true;
+
+      auto* derived = type->AsDerived();
+      if (!derived)
+        return true;
+
+      auto* typeSymbol = &derived->typeSymbol();
+      if (!typeSymbol)
+        return true;
+
+      auto typeWithDerived = find_type_with_derived_types(typeSymbol);
+
+      for (auto e : exprStmtWithOps) {
+        // search in derived types
+        for (const auto& t : typeWithDerived) {
+          auto opIt = std::find_if(t.operators.begin(), t.operators.end(),
+                                   [&](const auto& p) { return compare_expr_IntrinsicOperator(e, p.first); });
+          if (opIt == t.operators.end())
+            continue;
+
+          auto funcSymbol = opIt->second;
+
+          bool skipSelfCall = false;
+          for (type_t t : typeWithDerived) {
+            auto procIt = std::find_if(t.procedures.begin(), t.procedures.end(),
+                                       [&funcSymbol](const auto& p) { return p.first->name() == funcSymbol->name(); });
+            if (procIt == t.procedures.end())
+              continue;
+
+            if (procIt->second->name() == functionSymbols.back()->name()) {
+              skipSelfCall = true;
+              break;
+            }
+          }
+
+          if (!skipSelfCall)
+            add_edges_for_produces_and_derived_types(typeWithDerived, funcSymbol);
+        }
+
+        // search in interface operators TODO improve this just add everything in the interface instead of comparing
+        // types
+        auto it = std::find_if(interfaceOperators.begin(), interfaceOperators.end(), [&](const auto& p) {
+          if (auto* intrinsicOp = std::get_if<Fortran::parser::DefinedOperator::IntrinsicOperator>(p.first)) {
+            return compare_expr_IntrinsicOperator(e, intrinsicOp);
+          }
+          if (auto* definedOpName = std::get_if<Fortran::parser::DefinedOpName>(p.first)) {
+            llvm::outs() << "definedOpName: " << definedOpName->v.symbol->name() << "\n";
+
+            // TODO: Designator is in another expression
+
+            // auto* designator = std::get_if<Fortran::common::Indirection<Fortran::parser::Designator>>(&e->u);
+            // if (!designator)
+            //   return false;
+            // auto* dataRef = std::get_if<Fortran::parser::DataRef>(&designator->value().u);
+            // if (!dataRef)
+            //   return false;
+            // auto* name = std::get_if<Fortran::parser::Name>(&dataRef->u);
+            // if (!name || !name->symbol)
+            //   return false;
+
+            // llvm::outs() << "defineOpName: " << definedOpName->v.symbol->name() << " vs " << name->symbol->name()
+            //              << "\n";
+
+            // return definedOpName->v.symbol->name() == name->symbol->name();  // doesnt work
+            return false;
+          }
+          return false;
+        });
+        if (it != interfaceOperators.end()) {
+          for (auto* sym : it->second) {
+            // skip self calls
+            if (sym->name() == functionSymbols.back()->name())
+              continue;
+
+            edges.emplace_back(Fortran::lower::mangle::mangleName(*functionSymbols.back()),
+                               Fortran::lower::mangle::mangleName(*sym));
+
+            llvm::outs() << "Add edge: " << Fortran::lower::mangle::mangleName(*functionSymbols.back()) << " -> "
+                         << Fortran::lower::mangle::mangleName(*sym) << "\n";
+          }
+        }
       }
-      if (const auto* definedBinary = std::get_if<PE::DefinedBinary>(&e.u)) {
-        const auto& opname = std::get<Fortran::parser::DefinedOpName>(definedBinary->t);
-        if (!opname.v.symbol)
-          return;
-      }
+
+      return true;
     }
 
-    // UnaryPlus and Negate are not in IntrinsicOperator whyyyyyyyyy ??????? Can they be overridden?
+    if (isOperator(&e)) {
+      exprStmtWithOps.emplace_back(&e);
+    }
 
-    if (holds_any_of<decltype(e.u), PE::Negate, PE::NOT, PE::Power, PE::Multiply, PE::Divide, PE::Add, PE::Subtract,
-                     PE::Concat, PE::LT, PE::LE, PE::EQ, PE::NE, PE::GE, PE::GT, PE::AND, PE::OR, PE::EQV, PE::NEQV>(
-            e.u)) {
-      std::visit(
-          [&](auto&& arg) {
-            using T = std::decay_t<decltype(arg)>;
-            const Fortran::common::Indirection<Fortran::parser::Expr>* expr = nullptr;
-            if constexpr (std::is_base_of_v<PE::IntrinsicBinary, T>) {
-              expr = &std::get<0>(arg.t);
-            } else if constexpr (std::is_base_of_v<PE::IntrinsicUnary, T>) {
-              expr = &arg.v;
-            } else {
-              return;  // not a unary or binary operator
-            }
+    return true;
+  }
 
-            llvm::outs() << "Expr: " << expr->value().source.ToString() << "\n";
+  void Post(const Fortran::parser::Expr& e) {
+    using PE = Fortran::parser::Expr;
 
-            auto* designator = std::get_if<Fortran::common::Indirection<Fortran::parser::Designator>>(&expr->value().u);
-            if (!designator)
-              return;
+    if (!isOperator(&e)) {
+      return;
+    }
 
-            auto* dataRef = std::get_if<Fortran::parser::DataRef>(&designator->value().u);
-            if (!dataRef)
-              return;
-
-            auto* name = std::get_if<Fortran::parser::Name>(&dataRef->u);
-            if (!name || !name->symbol)
-              return;
-
-            auto* type = name->symbol->GetType();
-            if (!type)
-              return;
-
-            auto* derived = type->AsDerived();
-            if (!derived)
-              return;
-
-            auto* typeSymbol = &derived->typeSymbol();
-            if (!typeSymbol)
-              return;
-
-            auto typeWithDerived = find_type_with_derived_types(typeSymbol);
-
-            auto findOpIt = std::find_if(typeWithDerived.begin(), typeWithDerived.end(), [&](const type_t& t) {
-              return std::any_of(t.operators.begin(), t.operators.end(), [&](const auto& op) {
-                llvm::outs() << "Checking operator: " << Fortran::parser::DefinedOperator::EnumToString(*op.first)
-                             << " with expr: " << expr->value().source.ToString() << "\n";
-
-                return compare_expr_IntrinsicOperator(&expr->value(), op.first);
-              });
-            });
-            if (findOpIt == typeWithDerived.end())
-              return;
-
-            llvm::outs() << "Found operator: " << findOpIt->type->name() << "\n";
-
-            auto operatorIt = std::find_if(findOpIt->operators.begin(), findOpIt->operators.end(), [&](const auto& op) {
-              return compare_expr_IntrinsicOperator(&expr->value(), op.first);
-            });
-            if (operatorIt == findOpIt->operators.end())
-              return;
-
-            auto* procedureSymbol = operatorIt->second;
-
-            add_edges_for_produces_and_derived_types(typeWithDerived, procedureSymbol);
-          },
-          e.u);
+    if (!exprStmtWithOps.empty()) {
+      exprStmtWithOps.pop_back();
     }
   }
 
@@ -550,7 +618,7 @@ class ParseTreeVisitor {
   bool inInterfaceStmtDefinedOperator = false;
   bool inInterfaceSpecification = false;
 
-  std::vector<std::string> functionNames;
+  std::vector<Fortran::semantics::Symbol*> functionSymbols;
   std::vector<std::vector<const Fortran::parser::Name*>> functionDummyArgs;
 
   std::vector<type_t> types;
@@ -559,6 +627,8 @@ class ParseTreeVisitor {
       const std::variant<Fortran::parser::DefinedOpName, Fortran::parser::DefinedOperator::IntrinsicOperator>*,
       std::vector<Fortran::semantics::Symbol*>>>
       interfaceOperators;  // operator name (symbol) => [procedure names (symbols)]
+
+  std::vector<const Fortran::parser::Expr*> exprStmtWithOps;
 };
 
 class CollectCG : public Fortran::frontend::PluginParseTreeAction {

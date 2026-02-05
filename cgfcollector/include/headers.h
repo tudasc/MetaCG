@@ -12,6 +12,7 @@
 #include <flang/Parser/dump-parse-tree.h>
 #include <flang/Parser/parse-tree.h>
 #include <flang/Parser/parsing.h>
+#include <flang/Semantics/tools.h>
 #include <io/MCGReader.h>
 #include <io/MCGWriter.h>
 #include <io/VersionTwoMCGWriter.h>
