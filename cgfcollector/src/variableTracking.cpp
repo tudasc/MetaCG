@@ -38,8 +38,7 @@ void variableTracking::handleTrackedVars(Symbol* currentFunctionSymbol, std::uni
 
       // add edge for deconstruction (finalizer)
       if (trackedVar.addFinalizers) {
-        edgeM->addEdges(
-            edgeManager::getEdgesForFinalizers(findTypeWithDerivedTypes(types, trackedVar.var), currentFunctionSymbol));
+        edgeM->addEdgesForFinalizers(types, currentFunctionSymbol, trackedVar.var);
       }
 
       // set init on dummy function args

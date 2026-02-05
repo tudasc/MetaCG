@@ -50,11 +50,20 @@ struct edgeManager {
   void addEdges(const std::vector<edgeSymbol>& newEdges, bool debug = true);
 
   /**
-   * @brief For a given type symbol, returns a list of edges from the current function to all finalizers of that type.
+   * @brief For a given symbol, returns a list of edges from the current function to all finalizers of that type.
    *
-   * @param typeSymbol
+   * @param types
+   * @param currentFunctionSymbol
+   * @param symbol
    */
-  static std::vector<edgeSymbol> getEdgesForFinalizers(std::vector<const type*> types,
-                                                       const Symbol* currentFunctionSymbol);
-  // void addEdgesForFinalizers(std::vector<const type*> types, const Symbol* currentFunctionSymbol);
+  std::vector<edgeSymbol> getEdgesForFinalizers(std::vector<type>& types, const Symbol* currentFunctionSymbol,
+                                                const Symbol* symbol);
+  /**
+   * @brief Calls getEdgesForFinalizers and adds them to the edges vector.
+   *
+   * @param types
+   * @param currentFunctionSymbol
+   * @param symbol
+   */
+  void addEdgesForFinalizers(std::vector<type>& types, const Symbol* currentFunctionSymbol, const Symbol* symbol);
 };

@@ -270,6 +270,7 @@ void ParseTreeVisitor::Post(const AllocateStmt& a) {
 void ParseTreeVisitor::Post(const Call& c) {
   const auto* designator = &std::get<ProcedureDesignator>(c.t);
   const auto* args = &std::get<std::list<ActualArgSpec>>(c.t);
+  auto* currentFunctionSymbol = currentFunctions.back().symbol;
 
   const auto* procName = std::get_if<Name>(&designator->u);
   if (!procName || !procName->symbol)
@@ -287,19 +288,18 @@ void ParseTreeVisitor::Post(const Call& c) {
 
     // handle move_alloc intrinsic for allocatable vars
     if (procName->symbol->attrs().test(Attr::INTRINSIC) && procName->symbol->name() == "move_alloc") {
-      varTracking->handleTrackedVarAssignment(currentFunctions.back().symbol, name->symbol->name());
+      varTracking->handleTrackedVarAssignment(currentFunctionSymbol, name->symbol->name());
     } else {
       // handle finalizers for allocatable vars.
       // This collects info from variables that are parse as arguments to functions. Function are defined below the
       // execution part, so this need to be handled at the end of the parse tree traversal.
-      auto* trackedVar = varTracking->getTrackedVarFromSourceName(currentFunctions.back().symbol, name->symbol->name());
+      auto* trackedVar = varTracking->getTrackedVarFromSourceName(currentFunctionSymbol, name->symbol->name());
       if (!trackedVar)
         continue;
 
       MCGLogger::logDebug("Add potential finalizers for var: {} ({})", name->symbol->name(), fmt::ptr(name->symbol));
       potentialFinalizer& pf = potentialFinalizers.emplace_back(argPos, mangleSymbol(procName->symbol));
-      for (const auto& edge : edgeM->getEdgesForFinalizers(findTypeWithDerivedTypes(types, trackedVar->var),
-                                                           currentFunctions.back().symbol)) {
+      for (const auto& edge : edgeM->getEdgesForFinalizers(types, currentFunctionSymbol, trackedVar->var)) {
         pf.addFinalizerEdge({mangleSymbol(edge.caller), mangleSymbol(edge.callee)});
         MCGLogger::logDebug("  Potential finalizer edge: {} -> {}", mangleSymbol(edge.caller),
                             mangleSymbol(edge.callee));
@@ -356,8 +356,7 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
         } else {
           if (holds_intent->v == IntentSpec::Intent::Out) {
             // intent out, calls finalizer because (7.5.6.3 line 21 and onwards)
-            edgeM->addEdges(edgeManager::getEdgesForFinalizers(findTypeWithDerivedTypes(types, name.symbol),
-                                                               currentFunctionSymbol));
+            edgeM->addEdgesForFinalizers(types, currentFunctionSymbol, name.symbol);
           } else if (holds_intent->v == IntentSpec::Intent::InOut) {
             // intent inout, calls finalizer when set.
             MCGLogger::logDebug("Add tracking for inout argument: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
@@ -373,8 +372,7 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
         // skip var with allocatable attr.
         // Add to trackedVars because it needs to be assigned at least once before calling a finalizers make sense.
       } else {
-        edgeM->addEdges(
-            edgeManager::getEdgesForFinalizers(findTypeWithDerivedTypes(types, name.symbol), currentFunctionSymbol));
+        edgeM->addEdgesForFinalizers(types, currentFunctionSymbol, name.symbol);
       }
     }
   }
