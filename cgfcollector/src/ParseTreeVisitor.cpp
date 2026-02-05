@@ -1,5 +1,41 @@
 #include "ParseTreeVisitor.h"
 
+// private functions
+
+static bool compareSymbols(const Symbol* a, const Symbol* b) {
+  if (a == b)
+    return true;
+  if (!a || !b)
+    return false;
+  if (a->name() != b->name())
+    return false;
+
+  auto resolveHostAssoc = [](const Symbol* sym) -> const Symbol* {
+    while (sym) {
+      if (sym->has<HostAssocDetails>()) {
+        sym = &sym->get<HostAssocDetails>().symbol();
+      } else if (sym->has<UseDetails>()) {
+        sym = &sym->get<UseDetails>().symbol();
+      } else {
+        break;
+      }
+    }
+    return sym;
+  };
+  if (resolveHostAssoc(a) != resolveHostAssoc(b))
+    return false;
+
+  if (a->attrs() != b->attrs())
+    return false;
+
+  // this only compares only the type and not all details like variables, procedures, generics, etc. But should be
+  // enough for now.
+  if (a->GetType() != b->GetType())
+    return false;
+
+  return true;
+}
+
 // util functions
 
 std::string ParseTreeVisitor::mangleSymbol(const Symbol* sym) {
@@ -87,56 +123,65 @@ void ParseTreeVisitor::handleTrackedVars() {
   removeTrackedVars(functionSymbols.back());
 }
 
-std::vector<type> ParseTreeVisitor::findTypeWithDerivedTypes(const Symbol* typeSymbol) {
-  std::vector<type> typeWithDerived;
+std::vector<const type*> ParseTreeVisitor::findTypeWithDerivedTypes(const Symbol* typeSymbol) {
+  std::vector<const type*> typesWithDerived;
+  std::unordered_set<const Symbol*> visited;
 
   auto findTypeIt =
       std::find_if(types.begin(), types.end(), [&typeSymbol](const type& t) { return t.type == typeSymbol; });
-  if (findTypeIt == types.end())
-    return typeWithDerived;
 
-  typeWithDerived.push_back(*findTypeIt);
-
-  // base type
-  if ((*findTypeIt).extendsFrom == nullptr) {
-    for (auto t : types) {
-      if (t.extendsFrom != typeSymbol)
-        continue;
-
-      typeWithDerived.push_back(t);
-    }
-    // not a base type, go back recursively to find all "base" types
-  } else {
-    auto* currentExtendsFrom = (*findTypeIt).extendsFrom;
-    while (currentExtendsFrom) {
-      auto currentType = std::find_if(types.begin(), types.end(),
-                                      [&currentExtendsFrom](const type& t) { return t.type == currentExtendsFrom; });
-      if (currentType == types.end()) {
-        al->error("Error: Types array (extendsFrom) field entry for \"" + currentExtendsFrom->name().ToString() +
-                  "\" missing.");
-        return typeWithDerived;
-      }
-
-      typeWithDerived.push_back(*currentType);
-
-      if ((*currentType).extendsFrom != nullptr) {
-        currentExtendsFrom = (*currentType).extendsFrom;
-      } else {
-        currentExtendsFrom = nullptr;
-      }
-    }
+  if (findTypeIt == types.end()) {
+    return typesWithDerived;
   }
 
-  return typeWithDerived;
+  typesWithDerived.push_back(&(*findTypeIt));  // Add the initial type
+  visited.insert(typeSymbol);
+
+  // collect descendants
+  std::function<void(const type*)> collectDescendants = [&](const type* parent) {
+    for (const auto& t : types) {
+      if (t.extendsFrom == parent->type && !visited.count(t.type)) {
+        visited.insert(t.type);
+        typesWithDerived.push_back(&t);
+        collectDescendants(&t);  // recursive call to find further descendants
+      }
+    }
+  };
+  collectDescendants(&(*findTypeIt));
+
+  // collect ancestors
+  const Symbol* currentExtendsFrom = findTypeIt->extendsFrom;
+  while (currentExtendsFrom) {
+    // not sure if Fortran even allows this. But better be safe
+    if (!visited.insert(currentExtendsFrom).second) {
+      al->error("Error: Detected cyclic inheritance involving type \"" +
+                (currentExtendsFrom ? currentExtendsFrom->name().ToString() : "null") + "\"");
+      break;
+    }
+
+    auto currentTypeIt = std::find_if(types.begin(), types.end(),
+                                      [&](const type& t) { return compareSymbols(t.type, currentExtendsFrom); });
+
+    if (currentTypeIt == types.end()) {
+      al->error("Error: Types array (extendsFrom) field entry for \"" +
+                (currentExtendsFrom ? currentExtendsFrom->name().ToString() : "null") + "\" missing");
+      break;
+    }
+
+    typesWithDerived.push_back(&(*currentTypeIt));
+    currentExtendsFrom = currentTypeIt->extendsFrom;
+  }
+
+  return typesWithDerived;
 }
 
-void ParseTreeVisitor::addEdgesForProducesAndDerivedTypes(std::vector<type> typeWithDerived,
+void ParseTreeVisitor::addEdgesForProducesAndDerivedTypes(std::vector<const type*> typeWithDerived,
                                                           const Symbol* procedureSymbol) {
-  for (type t : typeWithDerived) {
-    auto procIt = std::find_if(t.procedures.begin(), t.procedures.end(), [&procedureSymbol](const auto& p) {
+  for (const type* t : typeWithDerived) {
+    auto procIt = std::find_if(t->procedures.begin(), t->procedures.end(), [&procedureSymbol](const auto& p) {
       return p.first->name() == procedureSymbol->name();
     });
-    if (procIt == t.procedures.end())
+    if (procIt == t->procedures.end())
       continue;
 
     edges.emplace_back(mangleSymbol(functionSymbols.back()), mangleSymbol(procIt->second));
@@ -163,10 +208,10 @@ void ParseTreeVisitor::addEdgesForFinalizers(std::vector<edge>* edges, const Sym
 
 std::vector<std::pair<Symbol*, const Symbol*>> ParseTreeVisitor::getEdgesForFinalizers(const Symbol* typeSymbol) {
   std::vector<std::pair<Symbol*, const Symbol*>> edges;
-  std::vector<type> typeSymbols = findTypeWithDerivedTypes(typeSymbol);
+  std::vector<const type*> typeSymbols = findTypeWithDerivedTypes(typeSymbol);
 
-  for (const auto& type : typeSymbols) {
-    const Symbol* typeSymbol = type.type;
+  for (const type* type : typeSymbols) {
+    const Symbol* typeSymbol = type->type;
 
     const auto* details = std::get_if<DerivedTypeDetails>(&typeSymbol->details());
     if (!details)
@@ -893,19 +938,19 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
 
     auto typeWithDerived = findTypeWithDerivedTypes(typeSymbol);
 
-    for (const auto& t : typeWithDerived) {
-      auto opIt = std::find_if(t.operators.begin(), t.operators.end(),
+    for (const type* t : typeWithDerived) {
+      auto opIt = std::find_if(t->operators.begin(), t->operators.end(),
                                [&](const auto& p) { return compareExprIntrinsicOperator(e, p.first); });
-      if (opIt == t.operators.end())
+      if (opIt == t->operators.end())
         continue;
 
       auto funcSymbol = opIt->second;
 
       bool skipSelfCall = false;
-      for (type t : typeWithDerived) {
-        auto procIt = std::find_if(t.procedures.begin(), t.procedures.end(),
+      for (const type* t : typeWithDerived) {
+        auto procIt = std::find_if(t->procedures.begin(), t->procedures.end(),
                                    [&funcSymbol](const auto& p) { return p.first->name() == funcSymbol->name(); });
-        if (procIt == t.procedures.end())
+        if (procIt == t->procedures.end())
           continue;
 
         if (procIt->second->name() == functionSymbols.back()->name()) {

@@ -58,11 +58,11 @@ class ParseTreeVisitor {
   void handleTrackedVars();
 
   // searches the types vector for given typeSymbol and returns pointers to vectors of type with derived types.
-  std::vector<type> findTypeWithDerivedTypes(const Symbol* typeSymbol);
+  std::vector<const type*> findTypeWithDerivedTypes(const Symbol* typeSymbol);
 
   // this function searches with typeSymbol for a type in types vector and adds edges for procedures that matches
   // procedureSymbol. And also adds edges from types that extends from typeSymbol.
-  void addEdgesForProducesAndDerivedTypes(std::vector<type> typeWithDerived, const Symbol* procedureSymbol);
+  void addEdgesForProducesAndDerivedTypes(std::vector<const type*> typeWithDerived, const Symbol* procedureSymbol);
 
   void addEdgesForFinalizers(const Symbol* typeSymbol);
   void addEdgesForFinalizers(std::vector<edge>* edges, const Symbol* typeSymbol);

@@ -43,6 +43,11 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
       }
     }
 
+    // sort unique
+    std::sort(visitor.getEdges().begin(), visitor.getEdges().end());
+    auto it = std::unique(visitor.getEdges().begin(), visitor.getEdges().end());
+    visitor.getEdges().erase(it, visitor.getEdges().end());
+
     // add edges
     for (auto edge : visitor.getEdges()) {
       const auto& callerNode = cg->getOrInsertNode(edge.first);
