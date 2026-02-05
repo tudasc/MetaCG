@@ -62,10 +62,6 @@ class ParseTreeVisitor {
  public:
   ParseTreeVisitor(metacg::Callgraph* cg, std::string currentFileName) : cg(cg), currentFileName(currentFileName) {};
 
-  std::vector<edge>& getEdges() { return edges; }
-  std::vector<potentialFinalizer>& getPotentialFinalizers() { return potentialFinalizers; }
-  std::vector<function>& getFunctions() { return functions; }
-
   template <typename T>
   void handleFuncSubStmt(const T& stmt);
   void handleEndFuncSubStmt();
@@ -103,6 +99,8 @@ class ParseTreeVisitor {
 
   void addTrackedVar(trackedVar var);
   void removeTrackedVars(Symbol* procedureSymbol);
+
+  void postProcess();
 
   template <typename A>
   bool Pre(const A&) {

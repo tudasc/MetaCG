@@ -210,6 +210,39 @@ void ParseTreeVisitor::removeTrackedVars(Symbol* procedureSymbol) {
                     trackedVars.end());
 }
 
+void ParseTreeVisitor::postProcess() {
+  // handle potential finalizers from function calls
+  for (const auto pf : potentialFinalizers) {
+    auto calledIt = std::find_if(functions.begin(), functions.end(),
+                                 [&](const auto& f) { return mangleSymbol(f.symbol) == pf.procedureCalled; });
+    if (calledIt == functions.end())
+      continue;
+
+    auto arg = calledIt->dummyArgs.begin() + pf.argPos;
+
+    if (!arg->hasBeenInitialized)
+      continue;
+
+    for (const auto& edge : pf.finalizerEdges) {
+      edges.emplace_back(edge.first, edge.second);
+      MCGLogger::logDebug("Add edge for potential finalizer: {} -> {}", edge.first, edge.second);
+    }
+  }
+
+  // sort unique edges
+  std::sort(edges.begin(), edges.end());
+  auto it = std::unique(edges.begin(), edges.end());
+  edges.erase(it, edges.end());
+
+  // add edges
+  for (auto edge : edges) {
+    const auto& callerNode = cg->getOrInsertNode(edge.first);
+    const auto& calleeNode = cg->getOrInsertNode(edge.second);
+
+    cg->addEdge(callerNode, calleeNode);
+  }
+}
+
 // Visitor implementations
 
 bool ParseTreeVisitor::Pre(const MainProgram& p) {

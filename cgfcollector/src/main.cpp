@@ -2,122 +2,102 @@
 
 #include <DotIO.h>
 
-class CollectCG : public Fortran::frontend::PluginParseTreeAction {
- public:
-  std::string generateCG() {
-    auto& mcgManager = metacg::graph::MCGManager::get();
-    metacg::Callgraph* cg = mcgManager.getCallgraph("cg");
+using namespace metacg;
 
-    if (cg == nullptr) {
-      mcgManager.addToManagedGraphs("cg", std::make_unique<metacg::Callgraph>(), true);
-      cg = mcgManager.getCallgraph("cg");
-    }
+static auto& mcgManager = metacg::graph::MCGManager::get();
+
+std::unique_ptr<llvm::raw_pwrite_stream> createOutputFile(Fortran::frontend::CompilerInstance& compInst,
+                                                          llvm::StringRef currentFile, llvm::StringRef extension) {
+  llvm::SmallString<128> outputPath(compInst.getFrontendOpts().outputFile);
+  if (outputPath.empty()) {
+    outputPath = currentFile;
+  }
+  if (extension != "")
+    llvm::sys::path::replace_extension(outputPath, extension);
+  std::unique_ptr<llvm::raw_fd_ostream> os;
+  std::error_code ec;
+  os.reset(new llvm::raw_fd_ostream(outputPath.str(), ec, llvm::sys::fs::OF_TextWithCRLF));
+  if (ec) {
+    MCGLogger::logError("Error opening output file: {}", ec.message());
+    return nullptr;
+  }
+  return os;
+}
+
+void generateCG(std::optional<Program>& parseTree, llvm::StringRef currentFile) {
+  mcgManager.addToManagedGraphs("cg", std::make_unique<metacg::Callgraph>(), true);
+  Callgraph* cg = mcgManager.getCallgraph("cg");
 
 #ifndef NDEBUG
-    metacg::MCGLogger::instance().getConsole()->set_level(spdlog::level::debug);
-    metacg::MCGLogger::instance().getConsole()->set_pattern("%v");
+  metacg::MCGLogger::instance().getConsole()->set_level(spdlog::level::debug);
+  metacg::MCGLogger::instance().getConsole()->set_pattern("%v");
 #endif
 
-    ParseTreeVisitor visitor(cg, getCurrentFile().str());
-    Fortran::parser::Walk(getParsing().parseTree(), visitor);
+  ParseTreeVisitor visitor(cg, currentFile.str());
+  Fortran::parser::Walk(parseTree, visitor);
+  visitor.postProcess();
 
-    // handle potential finalizers from function calls
-    for (const auto pf : visitor.getPotentialFinalizers()) {
-      auto functions = visitor.getFunctions();
-      auto calledIt = std::find_if(functions.begin(), functions.end(),
-                                   [&](const auto& f) { return mangleSymbol(f.symbol) == pf.procedureCalled; });
-      if (calledIt == functions.end())
-        continue;
+  mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
+}
 
-      auto arg = calledIt->dummyArgs.begin() + pf.argPos;
-
-      if (!arg->hasBeenInitialized)
-        continue;
-
-      for (const auto& edge : pf.finalizerEdges) {
-        visitor.getEdges().emplace_back(edge.first, edge.second);
-        MCGLogger::logDebug("Add edge for potential finalizer: {} -> {}", edge.first, edge.second);
-      }
-    }
-
-    // sort unique
-    std::sort(visitor.getEdges().begin(), visitor.getEdges().end());
-    auto it = std::unique(visitor.getEdges().begin(), visitor.getEdges().end());
-    visitor.getEdges().erase(it, visitor.getEdges().end());
-
-    // add edges
-    for (auto edge : visitor.getEdges()) {
-      const auto& callerNode = cg->getOrInsertNode(edge.first);
-      const auto& calleeNode = cg->getOrInsertNode(edge.second);
-
-      cg->addEdge(callerNode, calleeNode);
-    }
-
-    mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
-
-    auto mcgWriter = metacg::io::createWriter(4);
-    if (!mcgWriter) {
-      llvm::errs() << "Unable to create a writer\n";
-      return "";
-    };
-
-    metacg::io::JsonSink jsonSink;
-    mcgWriter->writeActiveGraph(jsonSink);
-
-    return jsonSink.getJson().dump();
+std::string dumpCG() {
+  Callgraph* cg = mcgManager.getCallgraph("cg");
+  if (cg == nullptr) {
+    MCGLogger::logError("No callgraph generated");
+    return "";
   }
 
-  std::unique_ptr<llvm::raw_pwrite_stream> createOutputFile(llvm::StringRef extension) {
-    llvm::SmallString<128> outputPath(getInstance().getFrontendOpts().outputFile);
-    if (outputPath.empty()) {
-      outputPath = getCurrentFile();
-    }
-    if (extension != "")
-      llvm::sys::path::replace_extension(outputPath, extension);
-    std::unique_ptr<llvm::raw_fd_ostream> os;
-    std::error_code ec;
-    os.reset(new llvm::raw_fd_ostream(outputPath.str(), ec, llvm::sys::fs::OF_TextWithCRLF));
-    if (ec) {
-      llvm::errs() << "Error opening output file: " << ec.message() << "\n";
-      return nullptr;
-    }
-    return os;
-  }
+  auto mcgWriter = metacg::io::createWriter(4);
+  if (!mcgWriter) {
+    MCGLogger::logError("Unable to create a writer");
+    return "";
+  };
 
+  metacg::io::JsonSink jsonSink;
+  mcgWriter->writeActiveGraph(jsonSink);
+
+  return jsonSink.getJson().dump();
+}
+
+class CollectCG : public Fortran::frontend::PluginParseTreeAction {
+ public:
   void executeAction() override {
-    std::string cgString = generateCG();
+    generateCG(getParsing().parseTree(), getCurrentFile());
 
-    auto file = createOutputFile("json");
+    std::string cgString = dumpCG();
+    auto file = ::createOutputFile(getInstance(), getCurrentFile(), "json");
     file->write(cgString.c_str(), cgString.size());
   }
 };
 
-class CollectCGwithDot : public CollectCG {
+class CollectCGwithDot : public Fortran::frontend::PluginParseTreeAction {
  public:
   void executeAction() override {
-    CollectCG::executeAction();
+    generateCG(getParsing().parseTree(), getCurrentFile());
 
-    auto& mcgManager = metacg::graph::MCGManager::get();
     metacg::Callgraph* cg = mcgManager.getCallgraph("cg");
     if (cg == nullptr) {
+      MCGLogger::logError("No callgraph generated");
       return;
     }
 
     metacg::io::dot::DotGenerator dotGen(cg);
     dotGen.generate();
 
-    auto file = CollectCG::createOutputFile("dot");
+    auto file = ::createOutputFile(getInstance(), getCurrentFile(), "dot");
     std::string dotString = dotGen.getDotString();
     file->write(dotString.c_str(), dotString.size());
   }
 };
 
-class CollectCGNoRename : public CollectCG {
+class CollectCGNoRename : public Fortran::frontend::PluginParseTreeAction {
  public:
   void executeAction() override {
-    std::string cgString = generateCG();
+    generateCG(getParsing().parseTree(), getCurrentFile());
 
-    auto file = createOutputFile("");
+    std::string cgString = dumpCG();
+
+    auto file = ::createOutputFile(getInstance(), getCurrentFile(), "");
     file->write(cgString.c_str(), cgString.size());
   }
 };
