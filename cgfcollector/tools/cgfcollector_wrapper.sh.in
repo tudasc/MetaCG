@@ -1,6 +1,6 @@
 #!/bin/bash
 
-flang_bin="flang-new"
+flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang-new"}
 
 flang_args=("$@")
 plugin_name="genCG"
