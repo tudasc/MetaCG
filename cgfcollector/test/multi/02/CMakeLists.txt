@@ -1,8 +1,13 @@
+cmake_minimum_required(VERSION 3.20)
+
+project(02 LANGUAGES Fortran)
+
+include(../cmake_base.txt)
+
 file(
   GLOB
   SOURCES
   "*.f90"
 )
-add_executable(02 ${SOURCES})
 
-set_target_properties(02 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})

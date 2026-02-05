@@ -1,7 +1,9 @@
 #!/bin/bash
 
 test_case_dir="@FCOLLECTOR_TEST_CASES_DIR@"
-out_dir="out"
+
+scriptdir="$(cd "$(dirname "$0")" && pwd -P)"
+out_dir="$scriptdir/out"
 
 if [[ ! -d "$out_dir" ]]; then
     mkdir "$out_dir"
@@ -30,88 +32,59 @@ function should_be_run()
     return 1
 }
 
-# cmake managed test dirs
-find "$test_case_dir" -mindepth 1 -type d \! -exec test -e "{}/output.json" \; \! -exec test -e "{}/*.f90" \; -exec find {} -maxdepth 1 -name 'CMakeLists.txt' \; | while read -r dir; do
+find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "output.json" \; | while read -r dir; do
     dir="$(dirname "$dir")"
-
-    tmp_dir="$(mktemp -d)"
-
-    copy_to="$(pwd)/$out_dir"
-    if [[ ! -d "$copy_to" ]]; then
-        echo "Error: $copy_to does not exist"
-    fi
-
-    echo "Running cmake managed tests from dir: $(basename "$dir")"
-
-    {
-        cd "$dir"
-        cmake -S . -B "$tmp_dir"
-        cd "$tmp_dir"
-        make
-        find . -maxdepth 1 -name '*.json' | while read -r file; do
-            cp "$file" "$copy_to/$(basename "$dir")_$(basename "$file")"
-
-            test_case_name="$(basename "$dir")_$(basename -s .json "$file")"
-
-            if ! should_be_run "$test_case_name"; then
-                continue
-            fi
-
-            echo "Test case: $test_case_name"
-
-            output_file="$dir/$(basename -s .json "$file")/output.json"
-
-            if [[ -f "$output_file" ]] && [[ -s "$output_file" ]] && grep -q '{}' "$output_file"; then
-                echo "Skipping empty or missing output file: $output_file"
-                continue
-            fi
-
-            if @FCOLLECTOR_CG_COMPARE@ "$output_file" "$copy_to/$(basename "$dir")_$(basename "$file")"; then
-                echo "Test case passed"
-            else
-                echo "Error: Output mismatch"
-            fi
-
-        done
-    } || {
-        echo "Error: could not generate CG"
-        rm -rf "$tmp_dir"
-        continue
-    }
-
-    rm -rf "$tmp_dir"
-done
-
-# no cmake managed test dirs
-find "$test_case_dir" -mindepth 1 -type d \! -exec test -e "{}/CMakeLists.txt" \; -exec find {} -maxdepth 1 -name "output.json" \; | while read -r dir; do
-    dir="$(dirname "$dir")"
-    mapfile -t input_files < <(find "$dir" -maxdepth 1 -name '*.f90')
     output_file="$dir/output.json"
 
-    if [[ ${#input_files[@]} -gt 0 ]]; then
-        # generate test case name from dir path. test/simple/01 becomes simple_01
-        test_case_name="$(basename "$(dirname "$dir")")_$(basename "$dir")"
+    # generate test case name from dir path. test/simple/01 becomes simple_01
+    test_case_name="$(basename "$(dirname "$dir")")_$(basename "$dir")"
 
-        if ! should_be_run "$test_case_name"; then
+    if ! should_be_run "$test_case_name"; then
+        continue
+    fi
+
+    echo "Test case: $test_case_name"
+
+    if [ ! -f "$output_file" ] || [ ! -s "$output_file" ] || grep -q '{}' "$output_file"; then
+        echo "Skipping empty or missing output file: $output_file"
+        continue
+    fi
+
+    if find "$dir" -maxdepth 1 -name 'CMakeLists.txt' | grep -q .; then
+        # cmake managed test
+        tmp_dir="$(mktemp -d)"
+
+        {
+            cd "$dir"
+            cmake -S . -B "$tmp_dir"
+            cd "$tmp_dir"
+            make
+            find . -maxdepth 1 -name '*.json' | while read -r file; do
+                cp "$file" "$out_dir/$test_case_name.json"
+            done
+        } || {
+            echo "Error: could not generate CG"
+            rm -rf "$tmp_dir"
             continue
-        fi
+        }
 
-        echo "Test case: $test_case_name"
+        rm -rf "$tmp_dir"
+    else
+        # not cmake managed test
+        mapfile -t input_files < <(find "$dir" -maxdepth 1 -name '*.f90')
+        if [[ ${#input_files[@]} -gt 0 ]]; then
 
-        if [ ! -f "$output_file" ] || [ ! -s "$output_file" ] || grep -q '{}' "$output_file"; then
-            echo "Skipping empty or missing output file: $output_file"
-            continue
-        fi
-
-        if ! @FCOLLECTOR_WRAPPER@ -dot -o "$out_dir/$test_case_name.json" "${input_files[@]}"; then
-            echo "Error: failed to generate callgraph"
-            continue
-        fi
-
-        if @FCOLLECTOR_CG_COMPARE@ "$output_file" "$out_dir/$test_case_name.json"; then
-            echo "Test case passed"
-        else
-            echo "Error: Output mismatch"
+            if ! @FCOLLECTOR_WRAPPER@ -dot -o "$out_dir/$test_case_name.json" "${input_files[@]}"; then
+                echo "Error: failed to generate callgraph"
+                continue
+            fi
         fi
     fi
+
+    if @FCOLLECTOR_CG_COMPARE@ "$output_file" "$out_dir/$test_case_name.json"; then
+        echo "Test case passed"
+    else
+        echo "Error: Output mismatch"
+    fi
+
 done
