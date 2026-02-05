@@ -18,4 +18,5 @@ spack.yaml
 spack.lock
 .spack-env/
 
-cgfcollector/test/cmake_base.txt
+cgfcollector/test/multi/cmake_base.txt
+cgfcollector/test/multi/make_base
