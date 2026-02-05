@@ -522,7 +522,6 @@ void ParseTreeVisitor::Post(const Call& c) {
 
 void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
   if (functionSymbols.empty()) {
-    // type declaration inside a module TODO:
     return;
   }
 
@@ -763,7 +762,7 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
         if (mangleName(*sym) == mangleName(*functionSymbols.back()))
           continue;
 
-        // if unary only add potential unary operators. Same for binary operators.
+        // if unary, add potential unary operators. Same for binary operators.
         auto functionIt =
             std::find_if(functions.begin(), functions.end(), [&](const auto& f) { return f.symbol == sym; });
         if (functionIt != functions.end()) {
