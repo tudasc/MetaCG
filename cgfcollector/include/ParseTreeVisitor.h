@@ -20,6 +20,10 @@
 #include <variant>
 #include <vector>
 
+#include "function.h"
+#include "potentialFinalizer.h"
+#include "trackedVar.h"
+#include "type.h"
 #include "util.h"
 
 using namespace Fortran::parser;
@@ -29,49 +33,26 @@ using namespace metacg;
 
 using edge = std::pair<std::string, std::string>;  // (caller, callee)
 
-struct type {
-  Symbol* type;
-  Symbol* extendsFrom;
-  std::vector<std::pair<Symbol*, Symbol*>> procedures;                            // name(symbol) => optname(symbol)
-  std::vector<std::pair<DefinedOperator::IntrinsicOperator, Symbol*>> operators;  // operator => name(symbol)
-};
-
-struct trackedVar {
-  Symbol* var;
-  Symbol* procedure;  // procedure in which var was defined
-  bool hasBeenInitialized = false;
-  bool addFinalizers = false;
-};
-
-struct function {
-  struct dummyArg {
-    Symbol* symbol;
-    bool hasBeenInitialized = false;
-
-    explicit dummyArg(Symbol* sym) : symbol(sym) {}
-    explicit dummyArg(Symbol* sym, bool init) : symbol(sym), hasBeenInitialized(init) {}
-  };
-
-  Symbol* symbol;  // function symbol
-  std::vector<dummyArg> dummyArgs;
-
-  explicit function(Symbol* sym) : symbol(sym) {}
-  explicit function(Symbol* sym, std::vector<dummyArg> args) : symbol(sym), dummyArgs(std::move(args)) {}
-  void addDummyArg(Symbol* sym) { dummyArgs.emplace_back(sym); }
-};
-
-struct potentialFinalizer {
-  std::size_t argPos;
-  std::string procedureCalled;
-  std::vector<edge> finalizerEdges;
-};
-
+/**
+ * @class ParseTreeVisitor
+ * @brief Implements visitor methods to traverse parse tree and generate callgraph
+ *
+ */
 class ParseTreeVisitor {
  public:
   ParseTreeVisitor(Callgraph* cg, std::string currentFileName) : cg(cg), currentFileName(currentFileName) {};
 
+  /**
+   * @brief Collects function/subroutine statements (begin) and their dummy args.
+   *
+   * @tparam T
+   * @param stmt
+   */
   template <typename T>
   void handleFuncSubStmt(const T& stmt);
+  /**
+   * @brief Handles function/subroutine end statements.
+   */
   void handleEndFuncSubStmt();
 
   /**
@@ -92,7 +73,11 @@ class ParseTreeVisitor {
   void addEdgesForProducesAndDerivedTypes(std::vector<const type*> typeWithDerived, const Symbol* procedureSymbol);
 
   void addEdgesForFinalizers(const Symbol* typeSymbol);
-  void addEdgesForFinalizers(std::vector<edge>* edges, const Symbol* typeSymbol);
+  /**
+   * @brief For a given type symbol, returns a list of edges from the current function to all finalizers of that type.
+   *
+   * @param typeSymbol
+   */
   std::vector<std::pair<Symbol*, const Symbol*>> getEdgesForFinalizers(const Symbol* typeSymbol);
 
   trackedVar* getTrackedVarFromSourceName(SourceName sourceName);
@@ -108,6 +93,9 @@ class ParseTreeVisitor {
   void addTrackedVar(trackedVar var);
   void removeTrackedVars(Symbol* procedureSymbol);
 
+  /**
+   * @brief Go through trackedVars vector and
+   */
   void handleTrackedVars();
 
   void postProcess();
@@ -247,8 +235,7 @@ class ParseTreeVisitor {
 
   std::vector<const Expr*> exprStmtWithOps;
 
-  // mainly used for destructor handling
-  std::vector<trackedVar> trackedVars;
+  std::vector<trackedVar> trackedVars;  // mainly used for destructor handling
 
   std::vector<potentialFinalizer> potentialFinalizers;
 };

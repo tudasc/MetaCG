@@ -139,12 +139,6 @@ void ParseTreeVisitor::addEdgesForFinalizers(const Symbol* typeSymbol) {
   }
 }
 
-void ParseTreeVisitor::addEdgesForFinalizers(std::vector<edge>* edges, const Symbol* typeSymbol) {
-  for (const auto& edge : getEdgesForFinalizers(typeSymbol)) {
-    edges->emplace_back(mangleSymbol(edge.first), mangleSymbol(edge.second));
-  }
-}
-
 std::vector<std::pair<Symbol*, const Symbol*>> ParseTreeVisitor::getEdgesForFinalizers(const Symbol* typeSymbol) {
   std::vector<std::pair<Symbol*, const Symbol*>> edges;
   std::vector<const type*> typeSymbols = findTypeWithDerivedTypes(typeSymbol);
@@ -478,10 +472,10 @@ void ParseTreeVisitor::Post(const Call& c) {
       if (!trackedVar)
         continue;
 
-      potentialFinalizer pf = {argPos, mangleSymbol(procName->symbol), std::vector<edge>()};
-      addEdgesForFinalizers(&pf.finalizerEdges, getTypeSymbolFromSymbol(trackedVar->var));
-
-      potentialFinalizers.push_back(pf);
+      potentialFinalizer& pf = potentialFinalizers.emplace_back(argPos, mangleSymbol(procName->symbol));
+      for (const auto& edge : getEdgesForFinalizers(getTypeSymbolFromSymbol(trackedVar->var))) {
+        pf.addFinalizerEdge({mangleSymbol(edge.first), mangleSymbol(edge.second)});
+      }
       MCGLogger::logDebug("Add potential finalizer for var: {} ({})", name->symbol->name(), fmt::ptr(name->symbol));
     }
   }
