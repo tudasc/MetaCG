@@ -257,71 +257,6 @@ bool ParseTreeVisitor::isUnaryOperator(const Expr* e) {
   return holds_any_of<decltype(e->u), Expr::UnaryPlus, Expr::Negate, Expr::NOT, Expr::DefinedUnary>(e->u);
 }
 
-DefinedOperator::IntrinsicOperator ParseTreeVisitor::mapToIntrinsicOperator(const RelationalOperator& op) {
-  using RO = RelationalOperator;
-  using IO = DefinedOperator::IntrinsicOperator;
-
-  switch (op) {
-    case RO::LT:
-      return IO::LT;
-    case RO::LE:
-      return IO::LE;
-    case RO::EQ:
-      return IO::EQ;
-    case RO::NE:
-      return IO::NE;
-    case RO::GE:
-      return IO::GE;
-    case RO::GT:
-      return IO::GT;
-    default:
-      al->error("Error: Unknown RelationalOperator in mapToIntrinsicOperator");
-      return IO::LT;  // avoid warning
-  }
-}
-
-DefinedOperator::IntrinsicOperator ParseTreeVisitor::mapToIntrinsicOperator(const LogicalOperator& op) {
-  using LO = LogicalOperator;
-  using IO = DefinedOperator::IntrinsicOperator;
-
-  switch (op) {
-    case LO::And:
-      return IO::AND;
-    case LO::Or:
-      return IO::OR;
-    case LO::Eqv:
-      return IO::EQV;
-    case LO::Neqv:
-      return IO::NEQV;
-    case LO::Not:
-      return IO::NOT;
-    default:
-      al->error("Error: Unknown LogicalOperator in mapToIntrinsicOperator");
-      return IO::AND;  // avoid warning
-  }
-}
-
-DefinedOperator::IntrinsicOperator mapToIntrinsicOperator(const NumericOperator& op) {
-  using NO = NumericOperator;
-  using IO = DefinedOperator::IntrinsicOperator;
-
-  switch (op) {
-    case NO::Power:
-      return IO::Power;
-    case NO::Multiply:
-      return IO::Multiply;
-    case NO::Divide:
-      return IO::Divide;
-    case NO::Add:
-      return IO::Add;
-    case NO::Subtract:
-      return IO::Subtract;
-    default:
-      // should never happen
-      return IO::Add;  // avoid warning
-  }
-}
-
 const Symbol* ParseTreeVisitor::getTypeSymbolFromSymbol(const Symbol* symbol) {
   auto* type = symbol->GetType();
   if (!type)
@@ -350,8 +285,6 @@ trackedVar* ParseTreeVisitor::getTrackedVarFromSourceName(SourceName sourceName)
   return (localVarIt != trackedVars.end()) ? &(*localVarIt) : &(*anyTrackedVarIt);
 }
 
-// search trackedVars for a canditate and set it as initialized.
-// Prefers local variables when (shadowed)
 void ParseTreeVisitor::handleTrackedVarAssignment(SourceName sourceName) {
   auto* trackedVar = getTrackedVarFromSourceName(sourceName);
   if (!trackedVar)
@@ -380,6 +313,77 @@ void ParseTreeVisitor::removeTrackedVars(Symbol* procedureSymbol) {
   trackedVars.erase(std::remove_if(trackedVars.begin(), trackedVars.end(),
                                    [&](const trackedVar& t) { return t.procedure == procedureSymbol; }),
                     trackedVars.end());
+}
+
+template <typename Variant>
+DefinedOperator::IntrinsicOperator ParseTreeVisitor::mapToIntrinsicOperator(const Variant& op) {
+  return std::visit(visitors{[this](const RelationalOperator& op) {
+                               using RO = RelationalOperator;
+                               using IO = DefinedOperator::IntrinsicOperator;
+
+                               switch (op) {
+                                 case RO::LT:
+                                   return IO::LT;
+                                 case RO::LE:
+                                   return IO::LE;
+                                 case RO::EQ:
+                                   return IO::EQ;
+                                 case RO::NE:
+                                   return IO::NE;
+                                 case RO::GE:
+                                   return IO::GE;
+                                 case RO::GT:
+                                   return IO::GT;
+                                 default:
+                                   al->error("Error: Unknown RelationalOperator in getIntrinsicOperator");
+                                   return IO::LT;  // avoid warning
+                               }
+                             },
+                             [this](const LogicalOperator& op) {
+                               using LO = LogicalOperator;
+                               using IO = DefinedOperator::IntrinsicOperator;
+
+                               switch (op) {
+                                 case LO::And:
+                                   return IO::AND;
+                                 case LO::Or:
+                                   return IO::OR;
+                                 case LO::Eqv:
+                                   return IO::EQV;
+                                 case LO::Neqv:
+                                   return IO::NEQV;
+                                 case LO::Not:
+                                   return IO::NOT;
+                                 default:
+                                   al->error("Error: Unknown LogicalOperator in getIntrinsicOperator");
+                                   return IO::AND;  // avoid warning
+                               }
+                             },
+                             [this](const NumericOperator& op) {
+                               using NO = NumericOperator;
+                               using IO = DefinedOperator::IntrinsicOperator;
+
+                               switch (op) {
+                                 case NO::Power:
+                                   return IO::Power;
+                                 case NO::Multiply:
+                                   return IO::Multiply;
+                                 case NO::Divide:
+                                   return IO::Divide;
+                                 case NO::Add:
+                                   return IO::Add;
+                                 case NO::Subtract:
+                                   return IO::Subtract;
+                                 default:
+                                   al->error("Error: Unknown NumericOperator in getIntrinsicOperator");
+                                   return IO::Add;  // avoid warning
+                               }
+                             },
+                             [this](const auto& op) {
+                               al->error("Error: Unknown operator type in getIntrinsicOperator");
+                               return DefinedOperator::IntrinsicOperator::Add;  // avoid warning
+                             }},
+                    op);
 }
 
 // Visitor implementations
@@ -793,7 +797,16 @@ void ParseTreeVisitor::Post(const DefinedOperator& op) {
 
   inInterfaceStmtDefinedOperator = true;
 
-  interfaceOperators.emplace_back(&op.u, std::vector<Symbol*>());
+  if (std::holds_alternative<DefinedOperator::IntrinsicOperator>(op.u)) {
+    auto intrinsicOp = std::get<DefinedOperator::IntrinsicOperator>(op.u);
+    interfaceOperators.emplace_back(intrinsicOp, std::vector<Symbol*>());
+  } else if (std::holds_alternative<DefinedOpName>(op.u)) {
+    const auto& opName = std::get<DefinedOpName>(op.u);
+    if (!opName.v.symbol)
+      return;
+
+    interfaceOperators.emplace_back(opName.v.symbol, std::vector<Symbol*>());
+  }
 }
 
 void ParseTreeVisitor::Post(const ProcedureStmt& p) {
@@ -832,15 +845,17 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
   for (auto e : exprStmtWithOps) {
     // search in interfaceOperators first before search in derived types
     auto interfaceOp = std::find_if(interfaceOperators.begin(), interfaceOperators.end(), [&](const auto& op) {
-      if (const auto* intrinsicOp = std::get_if<DefinedOperator::IntrinsicOperator>(op.first)) {
-        return compareExprIntrinsicOperator(e, *intrinsicOp);
-      } else if (const auto* definedOpName = std::get_if<DefinedOpName>(op.first)) {
-        if (auto* definedUnary = std::get_if<Expr::DefinedUnary>(&e->u)) {
-          auto* exprOpName = &std::get<DefinedOpName>(definedUnary->t);
-          return definedOpName->v.symbol->name() == exprOpName->v.symbol->name();
+      if (std::holds_alternative<DefinedOperator::IntrinsicOperator>(op.first)) {
+        auto intrinsicOp = std::get<DefinedOperator::IntrinsicOperator>(op.first);
+        return compareExprIntrinsicOperator(e, intrinsicOp);
+      } else if (std::holds_alternative<Symbol*>(op.first)) {
+        Symbol* definedOpNameSym = std::get<Symbol*>(op.first);
+        if (const auto* definedUnary = std::get_if<Expr::DefinedUnary>(&e->u)) {
+          const auto& exprOpName = std::get<0>(definedUnary->t);
+          return definedOpNameSym->name() == exprOpName.v.symbol->name();
         } else if (auto* definedBinary = std::get_if<Expr::DefinedBinary>(&e->u)) {
-          auto* exprOpName = &std::get<DefinedOpName>(definedBinary->t);
-          return definedOpName->v.symbol->name() == exprOpName->v.symbol->name();
+          const auto& exprOpName = std::get<0>(definedBinary->t);
+          return definedOpNameSym->name() == exprOpName.v.symbol->name();
         }
       }
       return false;
@@ -916,7 +931,6 @@ void ParseTreeVisitor::Post(const Expr& e) {
   }
 }
 
-// extract additional information from use statements
 void ParseTreeVisitor::Post(const UseStmt& u) {
   auto* useSymbol = u.moduleName.symbol;
 
@@ -949,20 +963,10 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
 
           // type generic operators
           if (GenericDetails* gen = component.detailsIf<GenericDetails>()) {
-            auto op = gen->kind().u;
-            DefinedOperator::IntrinsicOperator intrinsicOp;
-            std::visit(
-                [&](auto&& opVal) {
-                  using T = std::decay_t<decltype(opVal)>;
-                  if constexpr (std::is_same_v<T, RelationalOperator> || std::is_same_v<T, LogicalOperator> ||
-                                std::is_same_v<T, NumericOperator>) {
-                    intrinsicOp = mapToIntrinsicOperator(opVal);
-                  }
-                },
-                op);
+            DefinedOperator::IntrinsicOperator intrinsicOp = mapToIntrinsicOperator(gen->kind().u);
 
             if (gen->specificProcs().size() != 1)
-              al->error("Generic more than one specific proc not handled. Should not happen.");
+              al->error("Type-bound generic more than one specific proc not handled. Should not happen.");
 
             Symbol* op_func_sym = nullptr;
             op_func_sym = const_cast<Symbol*>(&gen->specificProcs().front().get());
@@ -975,7 +979,43 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
         }
 
         types.push_back({&symbol, extendsFrom, procedures, operators});
-        al->debug("Add derived type from module: {} ({})", symbol.name(), fmt::ptr(&symbol));
+        al->debug("Found derived type in module: {} ({})", symbol.name(), fmt::ptr(&symbol));
+      }
+
+      // same but with interface operators
+      if (const auto* gen = symbol.detailsIf<GenericDetails>()) {
+        std::variant<Symbol*, DefinedOperator::IntrinsicOperator> interfaceOp;
+        std::vector<Symbol*> procs;
+
+        if (gen->kind().IsIntrinsicOperator()) {
+          interfaceOp = mapToIntrinsicOperator(gen->kind().u);
+          al->debug("Found interface operator in module: {}",
+                    DefinedOperator::EnumToString(std::get<DefinedOperator::IntrinsicOperator>(interfaceOp)));
+        } else if (gen->kind().IsDefinedOperator()) {
+          interfaceOp = &symbol;
+          al->debug("Found interface operator in module: {}", symbol.name());
+        }
+
+        for (const auto& p : gen->specificProcs()) {
+          procs.push_back(const_cast<Symbol*>(&p.get()));
+          al->debug("  with procedure: {} ({})", p.get().name(), fmt::ptr(&p.get()));
+        }
+
+        interfaceOperators.push_back({interfaceOp, procs});
+      }
+
+      // same but with functions
+      if (const auto* details = symbol.detailsIf<SubprogramDetails>()) {
+        if (!details->isFunction() && !details->isInterface())
+          continue;
+
+        std::vector<function::dummyArg> dummyArgs;
+        for (Symbol* arg : details->dummyArgs()) {
+          dummyArgs.push_back({arg, false});
+        }
+
+        functions.push_back({&symbol, dummyArgs});
+        al->debug("Found function in module: {} ({})", symbol.name(), fmt::ptr(&symbol));
       }
     }
   }

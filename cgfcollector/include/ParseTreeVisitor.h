@@ -79,10 +79,6 @@ class ParseTreeVisitor {
   bool isBinaryOperator(const Expr* e);
   bool isUnaryOperator(const Expr* e);
 
-  DefinedOperator::IntrinsicOperator mapToIntrinsicOperator(const RelationalOperator& op);
-  DefinedOperator::IntrinsicOperator mapToIntrinsicOperator(const LogicalOperator& op);
-  DefinedOperator::IntrinsicOperator mapToIntrinsicOperator(const NumericOperator& op);
-
   template <typename T>
   const Name* getNameFromClassWithDesignator(const T& t) {
     if (const auto* designator = std::get_if<Indirection<Designator>>(&t.u)) {
@@ -98,10 +94,17 @@ class ParseTreeVisitor {
   const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol);
 
   trackedVar* getTrackedVarFromSourceName(SourceName sourceName);
+
+  // search trackedVars for a canditate and set it as initialized.
+  // Prefers local variables when (shadowed)
   void handleTrackedVarAssignment(SourceName sourceName);
 
   void addTrackedVar(trackedVar var);
   void removeTrackedVars(Symbol* procedureSymbol);
+
+  // map RelationalOperator, LogicalOperator, NumericOperator to DefinedOperator::IntrinsicOperator
+  template <typename Variant>
+  DefinedOperator::IntrinsicOperator mapToIntrinsicOperator(const Variant& op);
 
   template <typename A>
   bool Pre(const A&) {
@@ -164,6 +167,7 @@ class ParseTreeVisitor {
   bool Pre(const Expr& e);
   void Post(const Expr& e);
 
+  // extract additional information from use statements
   void Post(const UseStmt& u);
 
  private:
@@ -180,13 +184,14 @@ class ParseTreeVisitor {
 
   std::vector<Symbol*> functionSymbols;  // intended as a stack. It holds the current procedure symbol when the AST
                                          // walker is in the respective procedure.
-  std::vector<std::vector<const Name*>> functionDummyArgs;  // some idea, but for dummy args
+  std::vector<std::vector<const Name*>> functionDummyArgs;  // same idea, but for dummy args
 
   std::vector<type> types;  // all types
 
-  std::vector<std::pair<const std::variant<DefinedOpName, DefinedOperator::IntrinsicOperator>*,
+  std::vector<std::pair<std::variant<Symbol*, DefinedOperator::IntrinsicOperator>,
                         std::vector<Symbol*>>>
-      interfaceOperators;  // all interface operators. operator name (symbol) => [procedure names (symbols)]
+      interfaceOperators;  // all interface operators. First is either a symbol of a DefinedOpName or
+                           // IntrinsicOperator. Second is a vector procedure symbols, bound to that operator.
 
   std::vector<const Expr*> exprStmtWithOps;
 
