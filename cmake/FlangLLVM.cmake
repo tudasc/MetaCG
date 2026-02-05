@@ -26,5 +26,5 @@ function(add_flang target)
     NO_DEFAULT_PATH
   )
 
-  target_link_libraries(${target} PUBLIC flangFrontendTool)
+  # target_link_libraries(${target} PUBLIC flangFrontendTool)
 endfunction()
