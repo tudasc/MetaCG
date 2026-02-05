@@ -22,11 +22,21 @@ if [[ "$flang_bin" == *mpif90 ]]; then
 fi
 
 # Extract all flags that are compatible with `-fc1`.
+option_o=false
 for arg in "${all_args[@]}"; do
+    if [ "$option_o" = true ]; then
+        options+=("$arg")
+        option_o=false
+        continue
+    fi
+
     case "$arg" in
     -I* | -J* | -std=* | -O* | -D* | -f* | -cpp)
         options+=("$arg")
-        continue
+        ;;
+    -o)
+        options+=("$arg")
+        option_o=true
         ;;
     *.f90 | *.F90)
         source_files+=("$arg")
