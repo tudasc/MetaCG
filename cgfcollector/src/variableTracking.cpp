@@ -25,8 +25,7 @@ void variableTracking::handleTrackedVarAssignment(Symbol* currentFunctionSymbol,
   MCGLogger::logDebug("Tracked var assigned: {} ({})", trackedVar->var->name(), fmt::ptr(trackedVar->var));
 }
 
-void variableTracking::handleTrackedVars(std::unique_ptr<edgeManager>& edgeM, std::vector<type>& types,
-                                         std::vector<function>& functions, Symbol* currentFunctionSymbol) {
+void variableTracking::handleTrackedVars(Symbol* currentFunctionSymbol, std::unique_ptr<edgeManager>& edgeM) {
   if (mangleSymbol(currentFunctionSymbol) != "_QQmain") {
     if (!trackedVars.empty())
       MCGLogger::logDebug("Handle tracked vars for function");

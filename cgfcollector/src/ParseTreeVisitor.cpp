@@ -15,7 +15,7 @@ void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
 }
 
 void ParseTreeVisitor::handleEndFuncSubStmt() {
-  varTracking->handleTrackedVars(edgeM, types, functions, currentFunctions.back().symbol);
+  varTracking->handleTrackedVars(currentFunctions.back().symbol, edgeM);
 
   if (!currentFunctions.empty()) {
     currentFunctions.pop_back();
@@ -93,7 +93,7 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
 }
 
 void ParseTreeVisitor::Post(const MainProgram&) {
-  varTracking->handleTrackedVars(edgeM, types, functions, currentFunctions.back().symbol);
+  varTracking->handleTrackedVars(currentFunctions.back().symbol, edgeM);
 
   auto* currentFunctionSymbol = currentFunctions.back().symbol;
 

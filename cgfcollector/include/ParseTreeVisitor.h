@@ -43,7 +43,7 @@ class ParseTreeVisitor {
       : cg(cg),
         currentFileName(currentFileName),
         edgeM(std::make_unique<edgeManager>(edges)),
-        varTracking(std::make_unique<variableTracking>(trackedVars)) {};
+        varTracking(std::make_unique<variableTracking>(trackedVars, types, functions)) {};
 
   /**
    * @brief Collects function/subroutine statements (begin) and their dummy args.
