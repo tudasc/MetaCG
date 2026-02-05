@@ -82,6 +82,8 @@ while read -r dir; do
         ) || {
             echo "Error: could not generate CG"
             rm -rf "$tmp_dir"
+            ((failed_test_case_count++))
+            continue
         }
 
         rm -rf "$tmp_dir"
@@ -102,6 +104,8 @@ while read -r dir; do
         ) || {
             echo "Error: could not generate CG"
             rm -rf "$tmp_dir"
+            ((failed_test_case_count++))
+            continue
         }
 
         rm -rf "$tmp_dir"
@@ -112,6 +116,8 @@ while read -r dir; do
 
             if ! @FCOLLECTOR_WRAPPER@ -dot -o "$out_dir/$test_case_name.json" "${input_files[@]}"; then
                 echo "Error: failed to generate callgraph"
+                ((failed_test_case_count++))
+                continue
             fi
         fi
     fi
