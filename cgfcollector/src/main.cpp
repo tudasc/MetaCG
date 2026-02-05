@@ -39,12 +39,8 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
 
     // add edges
     for (auto edge : visitor.getEdges()) {
-      auto* callerNode = cg->getOrInsertNode(edge.first);
-      auto* calleeNode = cg->getOrInsertNode(edge.second);
-      if (!calleeNode || !callerNode) {
-        llvm::outs() << "No nodes found for edge: " << edge.first << " -> " << edge.second << "\n";
-        continue;
-      }
+      const auto& callerNode = cg->getOrInsertNode(edge.first);
+      const auto& calleeNode = cg->getOrInsertNode(edge.second);
 
       cg->addEdge(callerNode, calleeNode);
     }
@@ -53,9 +49,9 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
 
     mcgManager.resetManager();
     mcgManager.addToManagedGraphs("test", std::move(cg), true);
-    mcgManager.mergeIntoActiveGraph();
+    mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
 
-    auto mcgWriter = metacg::io::createWriter(3);
+    auto mcgWriter = metacg::io::createWriter(4);
     if (!mcgWriter) {
       llvm::errs() << "Unable to create a writer\n";
       return;

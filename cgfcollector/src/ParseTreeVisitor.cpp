@@ -7,7 +7,7 @@ void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
   if (auto* sym = std::get<Name>(stmt.t).symbol) {
     functionSymbols.emplace_back(sym);
     functionDummyArgs.emplace_back(std::vector<const Name*>());
-    cg->insert(std::make_unique<metacg::CgNode>(mangleName(*sym), currentFileName, false, false));
+    cg->insert(mangleName(*sym), currentFileName, false, false);
     functions.push_back({sym, std::vector<function::dummyArg>()});
 
     al->debug("Add node: {} ({})", mangleName(*sym), fmt::ptr(sym));
@@ -304,7 +304,7 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
       return true;
 
     functionSymbols.emplace_back(maybeStmt->statement.v.symbol);
-    cg->insert(std::make_unique<metacg::CgNode>(mangleName(*functionSymbols.back()), currentFileName, false, false));
+    cg->insert(mangleName(*functionSymbols.back()), currentFileName, false, false);
 
     al->debug("\nIn main program: {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()));
   }
@@ -341,7 +341,7 @@ void ParseTreeVisitor::Post(const ExecutionPart& e) {
   if (!inFunctionOrSubroutineSubProgram && !inMainProgram)
     return;
 
-  auto* node = cg->getNode(mangleName(*functionSymbols.back()));
+  auto* node = cg->getFirstNode(mangleName(*functionSymbols.back()));
   if (!node) {
     return;
   }
@@ -356,7 +356,7 @@ void ParseTreeVisitor::Post(const EntryStmt& e) {
 
   al->debug("Add Entry point: {} ({})", mangleName(*name->symbol), fmt::ptr(name->symbol));
 
-  cg->insert(std::make_unique<metacg::CgNode>(mangleName(*name->symbol), currentFileName, false, true));
+  cg->insert(mangleName(*name->symbol), currentFileName, false, true);
 }
 
 void ParseTreeVisitor::Post(const FunctionStmt& f) {

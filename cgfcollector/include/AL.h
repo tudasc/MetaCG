@@ -9,7 +9,7 @@ struct fmt::formatter<Fortran::parser::CharBlock> {
   constexpr auto parse(fmt::format_parse_context& ctx) { return ctx.begin(); }
 
   template <typename FormatContext>
-  auto format(const Fortran::parser::CharBlock& cb, FormatContext& ctx) {
+  auto format(const Fortran::parser::CharBlock& cb, FormatContext& ctx) const {
     return fmt::format_to(ctx.out(), "{}", std::string_view(cb.begin(), cb.size()));
   }
 };

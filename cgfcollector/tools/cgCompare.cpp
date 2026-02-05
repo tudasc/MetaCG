@@ -16,23 +16,23 @@ bool endsMatch(const std::string& a, const std::string& b) {
 static bool compareNodesAndEdges(const metacg::Callgraph* cg1, const metacg::Callgraph* cg2) {
   bool equal = true;
 
-  for (const auto& [id, node] : cg1->getNodes()) {
+  for (const auto& node : cg1->getNodes()) {
     if (!cg2->hasNode(node->getFunctionName())) {
       errConsole->error("Node {} is missing in the other call graph.", node->getFunctionName());
       equal = false;
       continue;
     }
 
-    const auto& node2 = cg2->getNode(node->getFunctionName());
+    const auto& node2 = cg2->getFirstNode(node->getFunctionName());
     if (node2->getHasBody() != node->getHasBody()) {
       errConsole->error("Node {} has different hasBody flags: expected {} got {}", node->getFunctionName(),
                         node2->getHasBody(), node->getHasBody());
       equal = false;
     }
 
-    if (!endsMatch(node->getOrigin(), node2->getOrigin())) {
+    if (!endsMatch(node->getOrigin().value_or(""), node2->getOrigin().value_or(""))) {
       errConsole->error("Node {} has different origins: expected '{}' got '{}'", node->getFunctionName(),
-                        node2->getOrigin(), node->getOrigin());
+                        node2->getOrigin().value_or(""), node->getOrigin().value_or(""));
       equal = false;
     }
   }
@@ -41,7 +41,7 @@ static bool compareNodesAndEdges(const metacg::Callgraph* cg1, const metacg::Cal
     auto name1 = cg1->getNode(id.first)->getFunctionName();
     auto name2 = cg1->getNode(id.second)->getFunctionName();
 
-    if (!cg2->existEdgeFromTo(name1, name2)) {
+    if (!cg2->existsAnyEdge(name1, name2)) {
       errConsole->error("Edge from {} to {} is missing in the other call graph.", name1, name2);
       equal = false;
     }
