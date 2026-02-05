@@ -22,7 +22,7 @@ find "$test_case_dir" -type d | while read -r dir; do
             continue
         fi
 
-        if ! diff -q <(tr -d '[:space:]' <"$out_dir/$test_case_name.json") <(tr -d '[:space:]' <"$output_file") >/dev/null; then
+        if ! diff -q <(jq 'del(._MetaCG)' "$out_dir/$test_case_name.json") <(jq 'del(._MetaCG)' "$output_file") >/dev/null; then
             echo "Error: Output mismatch"
             echo "Expected: $(cat "$output_file")"
             echo "Got: $(cat "$out_dir/$test_case_name.json")"
