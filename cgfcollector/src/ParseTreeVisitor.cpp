@@ -33,17 +33,20 @@ void ParseTreeVisitor::handleTrackedVars() {
       al->debug("Handle tracked vars for function");
 
     for (auto& trackedVar : trackedVars) {
-      if (!trackedVar.hasBeenInitialized)
-        continue;
-      if (trackedVar.procedure != functionSymbols.back())
-        continue;
+      if (trackedVar.addFinalizers) {
+        if (!trackedVar.hasBeenInitialized)
+          continue;
+        if (trackedVar.procedure != functionSymbols.back())
+          continue;
 
-      // add edge for deconstruction (finalizer)
-      auto* typeSymbol = getTypeSymbolFromSymbol(trackedVar.var);
-      if (!typeSymbol)
-        continue;
+        // add edge for deconstruction (finalizer)
+        auto* typeSymbol = getTypeSymbolFromSymbol(trackedVar.var);
+        if (!typeSymbol)
+          continue;
 
-      add_edges_for_finalizers(typeSymbol);
+        add_edges_for_finalizers(typeSymbol);
+      } else {
+      }
     }
   }
 
@@ -430,31 +433,57 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
       continue;
 
     // skip if name is an argument to a function or subroutine
+    bool isFunctionArg = false;
     if (!functionDummyArgs.empty()) {
       auto it = std::find_if(functionDummyArgs.back().begin(), functionDummyArgs.back().end(),
                              [&name](const Name* dummyArg) { return dummyArg->symbol == name.symbol; });
 
       if (it != functionDummyArgs.back().end())
-        continue;
+        isFunctionArg = true;
     }
 
     auto* typeSymbol = getTypeSymbolFromSymbol(name.symbol);
     if (!typeSymbol)
       continue;
 
-    const auto& attrSpec = std::get<std::list<AttrSpec>>(t.t);
-    auto it = std::find_if(attrSpec.begin(), attrSpec.end(),
-                           [](const AttrSpec& a) { return std::holds_alternative<Allocatable>(a.u); });
-    if (it != attrSpec.end()) {
-      trackedVars.push_back({name.symbol, functionSymbols.back(), false});
-      al->debug("Add tracking for allocatable variable: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
-
-      continue;
-      // skip var with allocatable attr.
-      // Add to trackedVars because it needs to be assigned at least once before calling a finalizers make sense.
+    bool holds_allocatable = false;
+    const IntentSpec* holds_intent = nullptr;
+    for (const auto& attr : std::get<std::list<AttrSpec>>(t.t)) {
+      if (std::holds_alternative<Allocatable>(attr.u))
+        holds_allocatable = true;
+      else if (std::holds_alternative<IntentSpec>(attr.u))
+        holds_intent = &std::get<IntentSpec>(attr.u);
     }
 
-    add_edges_for_finalizers(typeSymbol);
+    if (isFunctionArg) {
+      if (!holds_allocatable) {
+        if (!holds_intent) {
+          // no intent attr, if not set does not call finalizer. Why? idk.
+          trackedVars.push_back({name.symbol, functionSymbols.back(), false, true});
+          al->debug("Add tracking for function argument: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
+        } else {
+          if (holds_intent->v == IntentSpec::Intent::Out) {
+            // intent out, calls finalizer because (7.5.6.3 line 21 and onwards)
+            add_edges_for_finalizers(typeSymbol);
+          } else if (holds_intent->v == IntentSpec::Intent::InOut) {
+            // intent inout, calls finalizer when set.
+            trackedVars.push_back({name.symbol, functionSymbols.back(), false, true});
+            al->debug("Add tracking for inout argument: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
+          }
+        }
+      } else {
+        // needs to be check at the end of prog TODO: allocatable attr as function argument
+      }
+    } else {
+      if (holds_allocatable) {
+        trackedVars.push_back({name.symbol, functionSymbols.back(), false, true});
+        al->debug("Add tracking for allocatable variable: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
+        // skip var with allocatable attr.
+        // Add to trackedVars because it needs to be assigned at least once before calling a finalizers make sense.
+      } else {
+        add_edges_for_finalizers(typeSymbol);
+      }
+    }
   }
 }
 

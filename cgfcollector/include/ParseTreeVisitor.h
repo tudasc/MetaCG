@@ -20,7 +20,14 @@ typedef struct trackedVar {
   Symbol* var;
   Symbol* procedure;  // procedure in which var was defined
   bool hasBeenInitialized = false;
+  bool addFinalizers = false;
 } trackedVar_t;
+
+typedef struct function {
+  Symbol* symbol;
+  std::vector<Symbol*> dummyArgs;
+  std::vector<bool> dummyArgsHasBeenInitialized;
+} function_t;
 
 class ParseTreeVisitor {
  public:
