@@ -123,6 +123,22 @@ void ParseTreeVisitor::addEdgesForProducesAndDerivedTypes(std::vector<type_t> ty
 }
 
 void ParseTreeVisitor::addEdgesForFinalizers(const Symbol* typeSymbol) {
+  for (const auto& edge : getEdgesForFinalizers(typeSymbol)) {
+    edges.emplace_back(mangleName(*edge.first), mangleName(*edge.second));
+
+    al->debug("Add edge for finalizer: {} ({}) -> {} ({})", mangleName(*edge.first), fmt::ptr(edge.first),
+              mangleName(*edge.second), fmt::ptr(edge.second));
+  }
+}
+
+void ParseTreeVisitor::addEdgesForFinalizers(std::vector<edge>* edges, const Symbol* typeSymbol) {
+  for (const auto& edge : getEdgesForFinalizers(typeSymbol)) {
+    edges->emplace_back(mangleName(*edge.first), mangleName(*edge.second));
+  }
+}
+
+std::vector<std::pair<Symbol*, const Symbol*>> ParseTreeVisitor::getEdgesForFinalizers(const Symbol* typeSymbol) {
+  std::vector<std::pair<Symbol*, const Symbol*>> edges;
   std::vector<type_t> typeSymbols = findTypeWithDerivedTypes(typeSymbol);
 
   for (const auto& type : typeSymbols) {
@@ -130,16 +146,15 @@ void ParseTreeVisitor::addEdgesForFinalizers(const Symbol* typeSymbol) {
 
     const auto* details = std::get_if<DerivedTypeDetails>(&typeSymbol->details());
     if (!details)
-      return;
+      continue;
 
     // add edges for finalizers
     for (const auto& final : details->finals()) {
-      edges.emplace_back(mangleName(*functionSymbols.back()), mangleName(*final.second));
-
-      al->debug("Add edge: {} ({}) -> {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()),
-                mangleName(*final.second), fmt::ptr(&final.second.get()));
+      edges.emplace_back(functionSymbols.back(), &final.second.get());
     }
   }
+
+  return edges;
 }
 
 bool ParseTreeVisitor::isOperator(const Expr* e) {
@@ -476,28 +491,15 @@ void ParseTreeVisitor::Post(const Call& c) {
     if (procName->symbol->attrs().test(Attr::INTRINSIC) && procName->symbol->name() == "move_alloc") {
       handleTrackedVarAssignment(name->symbol->name());
     } else {
+      // handle finalizers for allocatable vars.
+      // This collects info from variables that are parse as arguments to functions. Function are defined below the
+      // execution part, so this need to be handled at the end of the parse tree traversal.
       auto* trackedVar = getTrackedVarFromSourceName(name->symbol->name());
       if (!trackedVar)
         continue;
 
-      auto* typeSymbol = getTypeSymbolFromSymbol(trackedVar->var);
-      // TODO: rework
-      potentialFinalizer pf = {argPos, mangleName(*procName->symbol)};
-
-      std::vector<type_t> typeSymbols = findTypeWithDerivedTypes(typeSymbol);
-
-      for (const auto& type : typeSymbols) {
-        const Symbol* typeSymbol = type.type;
-
-        const auto* details = std::get_if<DerivedTypeDetails>(&typeSymbol->details());
-        if (!details)
-          return;
-
-        // add edges for finalizers
-        for (const auto& final : details->finals()) {
-          pf.finalizerEdges.emplace_back(mangleName(*functionSymbols.back()), mangleName(*final.second));
-        }
-      }
+      potentialFinalizer pf = {argPos, mangleName(*procName->symbol), std::vector<edge>()};
+      addEdgesForFinalizers(&pf.finalizerEdges, getTypeSymbolFromSymbol(trackedVar->var));
 
       potentialFinalizers.push_back(pf);
       al->debug("Add potential finalizer for var: {} ({})", name->symbol->name(), fmt::ptr(name->symbol));

@@ -9,6 +9,8 @@ using namespace Fortran::semantics;
 using namespace Fortran::common;
 using Fortran::lower::mangle::mangleName;
 
+typedef std::pair<std::string, std::string> edge;  // (caller, callee)
+
 typedef struct type {
   Symbol* type;
   Symbol* extendsFrom;
@@ -36,14 +38,14 @@ typedef struct function {
 typedef struct potentialFinalizer {
   std::size_t argPos;
   std::string procedureCalled;
-  std::vector<std::pair<std::string, std::string>> finalizerEdges;
+  std::vector<edge> finalizerEdges;
 } potentialFinalizer_t;
 
 class ParseTreeVisitor {
  public:
   ParseTreeVisitor(metacg::Callgraph* cg, std::string currentFileName) : cg(cg), currentFileName(currentFileName) {};
 
-  std::vector<std::pair<std::string, std::string>>& getEdges() { return edges; }
+  std::vector<edge>& getEdges() { return edges; }
   std::vector<potentialFinalizer_t>& getPotentialFinalizers() { return potentialFinalizers; }
   std::vector<function_t>& getFunctions() { return functions; }
 
@@ -61,6 +63,8 @@ class ParseTreeVisitor {
   void addEdgesForProducesAndDerivedTypes(std::vector<type_t> typeWithDerived, const Symbol* procedureSymbol);
 
   void addEdgesForFinalizers(const Symbol* typeSymbol);
+  void addEdgesForFinalizers(std::vector<edge>* edges, const Symbol* typeSymbol);
+  std::vector<std::pair<Symbol*, const Symbol*>> getEdgesForFinalizers(const Symbol* typeSymbol);
 
   template <typename Variant, typename... Ts>
   bool holds_any_of(const Variant& v) {
@@ -154,7 +158,7 @@ class ParseTreeVisitor {
 
  private:
   metacg::Callgraph* cg;
-  std::vector<std::pair<std::string, std::string>> edges;  // (caller, callee)
+  std::vector<edge> edges;
   std::string currentFileName;
 
   bool inFunctionOrSubroutineSubProgram = false;
