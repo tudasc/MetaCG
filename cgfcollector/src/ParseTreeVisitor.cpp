@@ -285,6 +285,16 @@ void ParseTreeVisitor::Post(const ExecutionPart& e) {
   node->setHasBody(true);
 }
 
+void ParseTreeVisitor::Post(const EntryStmt& e) {
+  auto* name = &std::get<Name>(e.t);
+  if (!name->symbol)
+    return;
+
+  al->debug("Add Entry point: {} ({})", mangleName(*name->symbol), fmt::ptr(name->symbol));
+
+  cg->insert(std::make_unique<metacg::CgNode>(mangleName(*name->symbol), currentFileName, false, true));
+}
+
 void ParseTreeVisitor::Post(const FunctionStmt& f) {
   al->debug("\nIn function: {} ({})", mangleName(*std::get<Name>(f.t).symbol), fmt::ptr(std::get<Name>(f.t).symbol));
 

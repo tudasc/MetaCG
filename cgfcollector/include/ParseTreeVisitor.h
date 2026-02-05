@@ -92,6 +92,8 @@ class ParseTreeVisitor {
 
   void Post(const ExecutionPart& e);
 
+  void Post(const EntryStmt& e);
+
   void Post(const FunctionStmt& f);
   void Post(const EndFunctionStmt&);
   void Post(const SubroutineStmt& s);

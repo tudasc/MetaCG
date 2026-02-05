@@ -1,0 +1,55 @@
+{
+  "_CG": {
+    "edges": [
+      [[3941336225589151125, 11585286096804977045], null],
+      [[3941336225589151125, 11158142119152065688], null],
+      [[3941336225589151125, 2512112026932646668], null]
+    ],
+    "nodes": [
+      [
+        3941336225589151125,
+        {
+          "functionName": "_QQmain",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        11585286096804977045,
+        {
+          "functionName": "_QMmodPentry2",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        11158142119152065688,
+        {
+          "functionName": "_QMmodPentry1",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        2512112026932646668,
+        {
+          "functionName": "_QMmodPfunc",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ]
+    ]
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "58079ff194dddcb21778f4c423db10fccc27ebae",
+      "version": "0.7"
+    },
+    "version": "3.0"
+  }
+}
