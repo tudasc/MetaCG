@@ -4,23 +4,16 @@
 
 class CollectCG : public Fortran::frontend::PluginParseTreeAction {
  public:
-  metacg::Callgraph* cg = nullptr;
+  std::string generateCG() {
+    auto& mcgManager = metacg::graph::MCGManager::get();
+    metacg::Callgraph* cg = mcgManager.getCallgraph("cg");
 
-  ~CollectCG() override {
-    // if (cg != nullptr) {
-    //   delete cg;
-    //   cg = nullptr;
-    // }
-  }
-
-  void generateCG() {
-    if (cg != nullptr) {
-      return;
+    if (cg == nullptr) {
+      mcgManager.addToManagedGraphs("cg", std::make_unique<metacg::Callgraph>(), true);
+      cg = mcgManager.getCallgraph("cg");
     }
 
     AL* al = AL::getInstance();
-
-    cg = new metacg::Callgraph();
 
     // TODO: remove
     if (std::getenv("CUSTOM_DEBUG")) {
@@ -59,13 +52,7 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
     }
 
     al->flush();
-  }
 
-  std::string cgToString(metacg::Callgraph* cg) {
-    auto& mcgManager = metacg::graph::MCGManager::get();
-
-    mcgManager.resetManager();
-    mcgManager.addToManagedGraphs("test", std::unique_ptr<metacg::Callgraph>(cg), true);
     mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
 
     auto mcgWriter = metacg::io::createWriter(4);
@@ -98,9 +85,7 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
   }
 
   void executeAction() override {
-    generateCG();
-
-    std::string cgString = cgToString(cg);
+    std::string cgString = generateCG();
 
     auto file = createOutputFile("json");
     file->write(cgString.c_str(), cgString.size());
@@ -111,6 +96,12 @@ class CollectCGwithDot : public CollectCG {
  public:
   void executeAction() override {
     CollectCG::executeAction();
+
+    auto& mcgManager = metacg::graph::MCGManager::get();
+    metacg::Callgraph* cg = mcgManager.getCallgraph("cg");
+    if (cg == nullptr) {
+      return;
+    }
 
     metacg::io::dot::DotGenerator dotGen(cg);
     dotGen.generate();
@@ -124,9 +115,7 @@ class CollectCGwithDot : public CollectCG {
 class CollectCGNoRename : public CollectCG {
  public:
   void executeAction() override {
-    generateCG();
-
-    std::string cgString = cgToString(cg);
+    std::string cgString = generateCG();
 
     auto file = createOutputFile("");
     file->write(cgString.c_str(), cgString.size());
