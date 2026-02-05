@@ -1,7 +1,4 @@
-#pragma once
-
 #include <Callgraph.h>
-#include <DotIO.h>
 #include <MCGManager.h>
 #include <flang/Frontend/CompilerInstance.h>
 #include <flang/Frontend/FrontendAction.h>
