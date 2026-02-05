@@ -36,7 +36,7 @@ configure_package_config_file(
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATION lib/cmake)
 
 # cgCompare program
-add_executable(${PROJECT_NAME}-cgCompare test/cgCompare.cpp)
+add_executable(${PROJECT_NAME}-cgCompare ${CMAKE_CURRENT_SOURCE_DIR}/tools/cgCompare.cpp)
 add_metacg(${PROJECT_NAME}-cgCompare)
 add_spdlog_libraries(${PROJECT_NAME}-cgCompare)
 install(
@@ -45,8 +45,18 @@ install(
   ARCHIVE DESTINATION bin
 )
 
+# visuel program to generate dot file from graph
+add_executable(${PROJECT_NAME}-visuel ${CMAKE_CURRENT_SOURCE_DIR}/tools/visuel.cpp)
+add_metacg(${PROJECT_NAME}-visuel)
+add_spdlog_libraries(${PROJECT_NAME}-visuel)
+install(
+  TARGETS ${PROJECT_NAME}-visuel
+  LIBRARY DESTINATION bin
+  ARCHIVE DESTINATION bin
+)
+
 # generate wrapper script with build dir for easy of use during development
-set(FCOLLECTOR_WRAPPER_SCRIPT_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/cgfcollector_wrapper.sh.in")
+set(FCOLLECTOR_WRAPPER_SCRIPT_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/tools/cgfcollector_wrapper.sh.in")
 set(FCOLLECTOR_WRAPPER_SCRIPT_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/cgfcollector_wrapper.sh")
 
 # FCOLLECTOR_WRAPPER_EXPORT_LINE for debuging
@@ -69,7 +79,7 @@ configure_file(
 )
 install(PROGRAMS ${FCOLLECTOR_WRAPPER_SCRIPT_OUTPUT} DESTINATION bin)
 
-set(FCOLLECTOR_TEST_SCRIPT_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/test/test_runner.sh.in")
+set(FCOLLECTOR_TEST_SCRIPT_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_runner.sh.in")
 set(FCOLLECTOR_TEST_SCRIPT_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/test_runner.sh")
 
 set(FCOLLECTOR_TEST_CASES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test")
