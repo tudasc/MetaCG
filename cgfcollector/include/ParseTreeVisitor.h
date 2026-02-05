@@ -47,10 +47,17 @@ struct function {
   struct dummyArg {
     Symbol* symbol;
     bool hasBeenInitialized = false;
+
+    explicit dummyArg(Symbol* sym) : symbol(sym) {}
+    explicit dummyArg(Symbol* sym, bool init) : symbol(sym), hasBeenInitialized(init) {}
   };
 
   Symbol* symbol;  // function symbol
   std::vector<dummyArg> dummyArgs;
+
+  explicit function(Symbol* sym) : symbol(sym) {}
+  explicit function(Symbol* sym, std::vector<dummyArg> args) : symbol(sym), dummyArgs(std::move(args)) {}
+  void addDummyArg(Symbol* sym) { dummyArgs.emplace_back(sym); }
 };
 
 struct potentialFinalizer {
@@ -138,7 +145,7 @@ class ParseTreeVisitor {
   void Post(const Call& c);
 
   /**
-   * @brief Handle finalizers (destructors ). TODO: test i definitely missed some edges cases.
+   * @brief Handle finalizers (destructors ).
    *
    * @param t
    */
@@ -216,7 +223,6 @@ class ParseTreeVisitor {
 
  private:
   Callgraph* cg;
-  std::vector<edge> edges;
   std::string currentFileName;
 
   bool inFunctionOrSubroutineSubProgram = false;
@@ -226,9 +232,11 @@ class ParseTreeVisitor {
   bool inInterfaceStmtDefinedOperator = false;
   bool inInterfaceSpecification = false;
 
-  std::vector<Symbol*> functionSymbols;  // intended as a stack. It holds the current procedure symbol when the AST
-                                         // walker is in the respective procedure.
-  std::vector<std::vector<const Name*>> functionDummyArgs;  // same idea, but for dummy args
+  std::vector<edge> edges;  // added to cg in postProcess step
+
+  std::vector<function> functions;         // all functions
+  std::vector<function> currentFunctions;  // intended as a stack. It holds the current function symbol and its dummy
+                                           // args when the AST walker is in the respective function.
 
   std::vector<type> types;  // all types
 
@@ -241,8 +249,6 @@ class ParseTreeVisitor {
 
   // mainly used for destructor handling
   std::vector<trackedVar> trackedVars;
-
-  std::vector<function> functions;  // all functions
 
   std::vector<potentialFinalizer> potentialFinalizers;
 };

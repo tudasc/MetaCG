@@ -116,8 +116,7 @@ bool isUnaryOperator(const Expr* e);
  * @param op
  * @return
  */
-template <typename Variant>
-DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(const Variant& op);
+DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(const GenericKind& gk);
 
 /**
  * @brief Get type symbol from a given symbol

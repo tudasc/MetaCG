@@ -131,8 +131,7 @@ bool isUnaryOperator(const Expr* e) {
   return holds_any_of<decltype(e->u), Expr::UnaryPlus, Expr::Negate, Expr::NOT, Expr::DefinedUnary>(e->u);
 }
 
-template <typename Variant>
-DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(const Variant& op) {
+DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(const GenericKind& gk) {
   return std::visit(visitors{[](const RelationalOperator& op) {
                                using RO = RelationalOperator;
                                using IO = DefinedOperator::IntrinsicOperator;
@@ -199,7 +198,7 @@ DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(const Variant& op
                                MCGLogger::logDebug("Error: Unknown operator type in mapToIntrinsicOperator");
                                return DefinedOperator::IntrinsicOperator::Add;  // avoid warning
                              }},
-                    op);
+                    gk.u);
 }
 
 const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol) {

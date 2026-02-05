@@ -3,10 +3,9 @@
 template <typename T>
 void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
   if (auto* sym = std::get<Name>(stmt.t).symbol) {
-    functionSymbols.emplace_back(sym);
-    functionDummyArgs.emplace_back(std::vector<const Name*>());
+    currentFunctions.emplace_back(sym, std::vector<function::dummyArg>());
+    functions.emplace_back(sym, std::vector<function::dummyArg>());
     cg->getOrInsertNode(mangleSymbol(sym), currentFileName, false, false);
-    functions.push_back({sym, std::vector<function::dummyArg>()});
 
     MCGLogger::logDebug("Add node: {} ({})", mangleSymbol(sym), fmt::ptr(sym));
   }
@@ -18,23 +17,22 @@ template void ParseTreeVisitor::handleFuncSubStmt<SubroutineStmt>(const Subrouti
 void ParseTreeVisitor::handleEndFuncSubStmt() {
   handleTrackedVars();
 
-  if (!functionSymbols.empty()) {
-    functionSymbols.pop_back();
-  }
-  if (!functionDummyArgs.empty()) {
-    functionDummyArgs.pop_back();
+  if (!currentFunctions.empty()) {
+    currentFunctions.pop_back();
   }
 }
 
 void ParseTreeVisitor::handleTrackedVars() {
-  if (mangleSymbol(functionSymbols.back()) != "_QQmain") {
+  auto* currentFunctionSymbol = currentFunctions.back().symbol;
+
+  if (mangleSymbol(currentFunctionSymbol) != "_QQmain") {
     if (!trackedVars.empty())
       MCGLogger::logDebug("Handle tracked vars for function");
 
     for (auto& trackedVar : trackedVars) {
       if (!trackedVar.hasBeenInitialized)
         continue;
-      if (trackedVar.procedure != functionSymbols.back())
+      if (trackedVar.procedure != currentFunctionSymbol)
         continue;
 
       // add edge for deconstruction (finalizer)
@@ -47,7 +45,7 @@ void ParseTreeVisitor::handleTrackedVars() {
 
       // set init on dummy function args
       auto functionIt = std::find_if(functions.begin(), functions.end(),
-                                     [&](const auto& f) { return f.symbol == functionSymbols.back(); });
+                                     [&](const auto& f) { return f.symbol == currentFunctionSymbol; });
       if (functionIt != functions.end()) {
         auto dummyArgIt = std::find_if(functionIt->dummyArgs.begin(), functionIt->dummyArgs.end(),
                                        [&](const auto& d) { return d.symbol == trackedVar.var; });
@@ -59,7 +57,7 @@ void ParseTreeVisitor::handleTrackedVars() {
   }
 
   // cleanup trackedVars
-  removeTrackedVars(functionSymbols.back());
+  removeTrackedVars(currentFunctionSymbol);
 }
 
 std::vector<const type*> ParseTreeVisitor::findTypeWithDerivedTypes(const Symbol* typeSymbol) {
@@ -123,10 +121,12 @@ void ParseTreeVisitor::addEdgesForProducesAndDerivedTypes(std::vector<const type
     if (procIt == t->procedures.end())
       continue;
 
-    edges.emplace_back(mangleSymbol(functionSymbols.back()), mangleSymbol(procIt->second));
+    auto* currentFunctionSymbol = currentFunctions.back().symbol;
 
-    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()),
-                        fmt::ptr(functionSymbols.back()), mangleSymbol(procIt->second), fmt::ptr(procIt->second));
+    edges.emplace_back(mangleSymbol(currentFunctionSymbol), mangleSymbol(procIt->second));
+
+    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(currentFunctionSymbol),
+                        fmt::ptr(currentFunctionSymbol), mangleSymbol(procIt->second), fmt::ptr(procIt->second));
   }
 }
 
@@ -158,7 +158,7 @@ std::vector<std::pair<Symbol*, const Symbol*>> ParseTreeVisitor::getEdgesForFina
 
     // add edges for finalizers
     for (const auto& final : details->finals()) {
-      edges.emplace_back(functionSymbols.back(), &final.second.get());
+      edges.emplace_back(currentFunctions.back().symbol, &final.second.get());
     }
   }
 
@@ -173,7 +173,7 @@ trackedVar* ParseTreeVisitor::getTrackedVarFromSourceName(SourceName sourceName)
 
   // find local variable with the same name in the current function scope (shadowed)
   auto localVarIt = std::find_if(trackedVars.begin(), trackedVars.end(), [&](const auto& t) {
-    return t.var->name() == sourceName && t.procedure == functionSymbols.back();
+    return t.var->name() == sourceName && t.procedure == currentFunctions.back().symbol;
   });
 
   // prefer local var if found
@@ -252,11 +252,12 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
     if (!maybeStmt->statement.v.symbol)
       return true;
 
-    functionSymbols.emplace_back(maybeStmt->statement.v.symbol);
-    cg->getOrInsertNode(mangleSymbol(functionSymbols.back()), currentFileName, false, false);
+    auto* currentFunctionSymbol =
+        currentFunctions.emplace_back(maybeStmt->statement.v.symbol, std::vector<function::dummyArg>()).symbol;
+    cg->getOrInsertNode(mangleSymbol(currentFunctionSymbol), currentFileName, false, false);
 
-    MCGLogger::logDebug("\nIn main program: {} ({})", mangleSymbol(functionSymbols.back()),
-                        fmt::ptr(functionSymbols.back()));
+    MCGLogger::logDebug("\nIn main program: {} ({})", mangleSymbol(currentFunctionSymbol),
+                        fmt::ptr(currentFunctionSymbol));
   }
   return true;
 }
@@ -264,11 +265,13 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
 void ParseTreeVisitor::Post(const MainProgram&) {
   handleTrackedVars();
 
-  MCGLogger::logDebug("End main program: {} ({})", mangleSymbol(functionSymbols.back()),
-                      fmt::ptr(functionSymbols.back()));
+  auto* currentFunctionSymbol = currentFunctions.back().symbol;
 
-  if (!functionSymbols.empty()) {
-    functionSymbols.pop_back();
+  MCGLogger::logDebug("End main program: {} ({})", mangleSymbol(currentFunctionSymbol),
+                      fmt::ptr(currentFunctionSymbol));
+
+  if (!currentFunctions.empty()) {
+    currentFunctions.pop_back();
   }
 
   inMainProgram = false;
@@ -292,7 +295,7 @@ void ParseTreeVisitor::Post(const ExecutionPart& e) {
   if (!inFunctionOrSubroutineSubProgram && !inMainProgram)
     return;
 
-  auto* node = cg->getFirstNode(mangleSymbol(functionSymbols.back()));
+  auto* node = cg->getFirstNode(mangleSymbol(currentFunctions.back().symbol));
   if (!node) {
     return;
   }
@@ -316,24 +319,27 @@ void ParseTreeVisitor::Post(const FunctionStmt& f) {
 
   handleFuncSubStmt(f);
 
+  auto* currentFunctionSymbol = currentFunctions.back().symbol;
+
   auto functionsIt = std::find_if(functions.begin(), functions.end(),
-                                  [&](const auto& func) { return func.symbol == functionSymbols.back(); });
+                                  [&](const auto& func) { return func.symbol == currentFunctionSymbol; });
 
   // collect function arguments
   const auto& name_list = std::get<std::list<Name>>(f.t);
   for (auto name : name_list) {
-    functionDummyArgs.back().push_back(&name);
+    currentFunctions.back().addDummyArg(name.symbol);
     if (functionsIt != functions.end()) {
-      functionsIt->dummyArgs.push_back({name.symbol, false});
-      addTrackedVar({name.symbol, functionSymbols.back(), false, false});
+      functionsIt->addDummyArg(name.symbol);
+      addTrackedVar({name.symbol, currentFunctionSymbol, false, false});
     }
   }
 }
 
 void ParseTreeVisitor::Post(const EndFunctionStmt&) {
-  if (!functionSymbols.empty()) {
-    MCGLogger::logDebug("End function: {} ({})", mangleSymbol(functionSymbols.back()),
-                        fmt::ptr(functionSymbols.back()));
+  if (!currentFunctions.empty()) {
+    auto* currentFunctionSymbol = currentFunctions.back().symbol;
+
+    MCGLogger::logDebug("End function: {} ({})", mangleSymbol(currentFunctionSymbol), fmt::ptr(currentFunctionSymbol));
   }
 
   handleEndFuncSubStmt();
@@ -345,33 +351,39 @@ void ParseTreeVisitor::Post(const SubroutineStmt& s) {
 
   handleFuncSubStmt(s);
 
+  auto* currentFunctionSymbol = currentFunctions.back().symbol;
+
   auto functionsIt = std::find_if(functions.begin(), functions.end(),
-                                  [&](const auto& func) { return func.symbol == functionSymbols.back(); });
+                                  [&](const auto& func) { return func.symbol == currentFunctionSymbol; });
 
   // collect subroutine arguments (dummy args)
   const auto* dummyArg_list = &std::get<std::list<DummyArg>>(s.t);
   for (const auto& dummyArg : *dummyArg_list) {
     const auto* name = std::get_if<Name>(&dummyArg.u);
-    functionDummyArgs.back().push_back(name);
+    currentFunctions.back().addDummyArg(name->symbol);
     if (functionsIt != functions.end()) {
-      functionsIt->dummyArgs.push_back({name->symbol, false});
-      addTrackedVar({name->symbol, functionSymbols.back(), false, false});
+      functionsIt->addDummyArg(name->symbol);
+      addTrackedVar({name->symbol, currentFunctionSymbol, false, false});
     }
   }
 }
 
 void ParseTreeVisitor::Post(const EndSubroutineStmt&) {
-  if (!functionSymbols.empty()) {
-    MCGLogger::logDebug("End subroutine: {} ({})", mangleSymbol(functionSymbols.back()),
-                        fmt::ptr(functionSymbols.back()));
+  if (!currentFunctions.empty()) {
+    auto* currentFunctionSymbol = currentFunctions.back().symbol;
+
+    MCGLogger::logDebug("End subroutine: {} ({})", mangleSymbol(currentFunctionSymbol),
+                        fmt::ptr(currentFunctionSymbol));
   }
 
   handleEndFuncSubStmt();
 }
 
 void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
-  if (functionSymbols.empty())
+  if (currentFunctions.empty())
     return;
+
+  auto* currentFunctionSymbol = currentFunctions.back().symbol;
 
   // if just the name is called. (as subroutine with call and as function without call)
   if (auto* name = std::get_if<Name>(&p.u)) {
@@ -382,10 +394,10 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
     if (name->symbol->attrs().test(Attr::INTRINSIC))
       return;
 
-    edges.emplace_back(mangleSymbol(functionSymbols.back()), mangleSymbol(name->symbol));
+    edges.emplace_back(mangleSymbol(currentFunctionSymbol), mangleSymbol(name->symbol));
 
-    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()),
-                        fmt::ptr(functionSymbols.back()), mangleSymbol(name->symbol), fmt::ptr(name->symbol));
+    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(currentFunctionSymbol),
+                        fmt::ptr(currentFunctionSymbol), mangleSymbol(name->symbol), fmt::ptr(name->symbol));
 
     // if called from a object with %. (base % component)
   } else if (auto* procCompRef = std::get_if<ProcComponentRef>(&p.u)) {
@@ -393,10 +405,10 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
     if (!symbolComp)
       return;
 
-    edges.emplace_back(mangleSymbol(functionSymbols.back()), mangleSymbol(symbolComp));
+    edges.emplace_back(mangleSymbol(currentFunctionSymbol), mangleSymbol(symbolComp));
 
-    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()),
-                        fmt::ptr(functionSymbols.back()), mangleSymbol(symbolComp), fmt::ptr(symbolComp));
+    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(currentFunctionSymbol),
+                        fmt::ptr(currentFunctionSymbol), mangleSymbol(symbolComp), fmt::ptr(symbolComp));
 
     auto* baseName = std::get_if<Name>(&procCompRef->v.thing.base.u);
     if (!baseName || !baseName->symbol)
@@ -476,7 +488,7 @@ void ParseTreeVisitor::Post(const Call& c) {
 }
 
 void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
-  if (functionSymbols.empty()) {
+  if (currentFunctions.empty()) {
     return;
   }
 
@@ -487,11 +499,12 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
 
     // skip if name is an argument to a function or subroutine
     bool isFunctionArg = false;
-    if (!functionDummyArgs.empty()) {
-      auto it = std::find_if(functionDummyArgs.back().begin(), functionDummyArgs.back().end(),
-                             [&name](const Name* dummyArg) { return dummyArg->symbol == name.symbol; });
+    auto& currentDummyArgs = currentFunctions.back().dummyArgs;
+    if (!currentDummyArgs.empty()) {
+      auto it = std::find_if(currentDummyArgs.begin(), currentDummyArgs.end(),
+                             [&name](const function::dummyArg& dummyArg) { return dummyArg.symbol == name.symbol; });
 
-      if (it != functionDummyArgs.back().end())
+      if (it != currentDummyArgs.end())
         isFunctionArg = true;
     }
 
@@ -514,13 +527,15 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
     if (holds_save)
       continue;  // vars with save attr are not destructed
 
+    auto* currentFunctionSymbol = currentFunctions.back().symbol;
+
     if (isFunctionArg) {
       if (!holds_allocatable) {
         if (!holds_intent) {
           // no intent attr, if not set does not call finalizer. Why? idk.
           MCGLogger::logDebug("Add tracking for function argument: {} ({})", name.symbol->name(),
                               fmt::ptr(name.symbol));
-          addTrackedVar({name.symbol, functionSymbols.back(), false, true});
+          addTrackedVar({name.symbol, currentFunctionSymbol, false, true});
         } else {
           if (holds_intent->v == IntentSpec::Intent::Out) {
             // intent out, calls finalizer because (7.5.6.3 line 21 and onwards)
@@ -528,7 +543,7 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
           } else if (holds_intent->v == IntentSpec::Intent::InOut) {
             // intent inout, calls finalizer when set.
             MCGLogger::logDebug("Add tracking for inout argument: {} ({})", name.symbol->name(), fmt::ptr(name.symbol));
-            addTrackedVar({name.symbol, functionSymbols.back(), false, true});
+            addTrackedVar({name.symbol, currentFunctionSymbol, false, true});
           }
         }
       }
@@ -536,7 +551,7 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
       if (holds_allocatable) {
         MCGLogger::logDebug("Add tracking for allocatable variable: {} ({})", name.symbol->name(),
                             fmt::ptr(name.symbol));
-        addTrackedVar({name.symbol, functionSymbols.back(), false, true});
+        addTrackedVar({name.symbol, currentFunctionSymbol, false, true});
         // skip var with allocatable attr.
         // Add to trackedVars because it needs to be assigned at least once before calling a finalizers make sense.
       } else {
@@ -704,7 +719,7 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
   }
 
   // not in a function. So no overloaded operator is called.
-  if (functionSymbols.empty())
+  if (currentFunctions.empty())
     return true;
 
   for (auto e : exprStmtWithOps) {
@@ -730,8 +745,10 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
       bool isBinaryOp = isBinaryOperator(e);
 
       for (auto* sym : interfaceOp->second) {
+        auto* currentFunctionSymbol = currentFunctions.back().symbol;
+
         // skip self calls
-        if (mangleSymbol(sym) == mangleSymbol(functionSymbols.back()))
+        if (mangleSymbol(sym) == mangleSymbol(currentFunctionSymbol))
           continue;
 
         // if unary, add potential unary operators. Same for binary operators.
@@ -743,10 +760,10 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
           }
         }
 
-        edges.emplace_back(mangleSymbol(functionSymbols.back()), mangleSymbol(sym));
+        edges.emplace_back(mangleSymbol(currentFunctionSymbol), mangleSymbol(sym));
 
-        MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()),
-                            fmt::ptr(functionSymbols.back()), mangleSymbol(sym), fmt::ptr(sym));
+        MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(currentFunctionSymbol),
+                            fmt::ptr(currentFunctionSymbol), mangleSymbol(sym), fmt::ptr(sym));
       }
     }
 
@@ -772,7 +789,7 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
         if (procIt == t->procedures.end())
           continue;
 
-        if (procIt->second->name() == functionSymbols.back()->name()) {
+        if (procIt->second->name() == currentFunctions.back().symbol->name()) {
           skipSelfCall = true;
           break;
         }
@@ -832,7 +849,7 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
             if (!gen->kind().IsIntrinsicOperator())
               continue;
 
-            DefinedOperator::IntrinsicOperator intrinsicOp = variantGetIntrinsicOperator(gen->kind().u);
+            DefinedOperator::IntrinsicOperator intrinsicOp = variantGetIntrinsicOperator(gen->kind());
 
             if (gen->specificProcs().size() != 1)
               MCGLogger::logError("Type-bound generic more than one specific proc not handled. Should not happen.");
@@ -857,7 +874,7 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
         std::vector<Symbol*> procs;
 
         if (gen->kind().IsIntrinsicOperator()) {
-          interfaceOp = variantGetIntrinsicOperator(gen->kind().u);
+          interfaceOp = variantGetIntrinsicOperator(gen->kind());
           MCGLogger::logDebug("Found interface operator in module: {}",
                               DefinedOperator::EnumToString(std::get<DefinedOperator::IntrinsicOperator>(interfaceOp)));
         } else if (gen->kind().IsDefinedOperator()) {
@@ -882,10 +899,10 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
 
         std::vector<function::dummyArg> dummyArgs;
         for (Symbol* arg : details->dummyArgs()) {
-          dummyArgs.push_back({arg, false});
+          dummyArgs.emplace_back(arg, false);
         }
 
-        functions.push_back({&symbol, dummyArgs});
+        functions.emplace_back(&symbol, dummyArgs);
         MCGLogger::logDebug("Found function in module: {} ({})", symbol.name(), fmt::ptr(&symbol));
       }
     }

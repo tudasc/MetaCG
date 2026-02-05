@@ -104,6 +104,11 @@ class CollectCGwithDot : public Fortran::frontend::PluginParseTreeAction {
   void executeAction() override {
     generateCG(getParsing().parseTree(), getCurrentFile());
 
+    std::string cgString = dumpCG();
+    auto file = ::createOutputFile(getInstance(), getCurrentFile(), "json");
+    file->write(cgString.c_str(), cgString.size());
+
+    // dot file
     metacg::Callgraph* cg = mcgManager.getCallgraph("cg");
     if (cg == nullptr) {
       MCGLogger::logError("No callgraph generated");
@@ -113,9 +118,9 @@ class CollectCGwithDot : public Fortran::frontend::PluginParseTreeAction {
     metacg::io::dot::DotGenerator dotGen(cg);
     dotGen.generate();
 
-    auto file = ::createOutputFile(getInstance(), getCurrentFile(), "dot");
+    auto dotfile = ::createOutputFile(getInstance(), getCurrentFile(), "dot");
     std::string dotString = dotGen.getDotString();
-    file->write(dotString.c_str(), dotString.size());
+    dotfile->write(dotString.c_str(), dotString.size());
   }
 };
 
