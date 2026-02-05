@@ -49,7 +49,7 @@ struct function {
     bool hasBeenInitialized = false;
   };
 
-  Symbol* symbol;  // function
+  Symbol* symbol;  // function symbol
   std::vector<dummyArg> dummyArgs;
 };
 
@@ -61,47 +61,51 @@ struct potentialFinalizer {
 
 class ParseTreeVisitor {
  public:
-  ParseTreeVisitor(metacg::Callgraph* cg, std::string currentFileName) : cg(cg), currentFileName(currentFileName) {};
+  ParseTreeVisitor(Callgraph* cg, std::string currentFileName) : cg(cg), currentFileName(currentFileName) {};
 
   template <typename T>
   void handleFuncSubStmt(const T& stmt);
   void handleEndFuncSubStmt();
 
-  void handleTrackedVars();
-
-  // searches the types vector for given typeSymbol and returns pointers to vectors of type with derived types.
+  /**
+   * @brief Searches the types vector for given typeSymbol and returns pointers to vectors of type with derived types.
+   *
+   * @param typeSymbol symbol to search for
+   * @return vector with type and all derived types
+   */
   std::vector<const type*> findTypeWithDerivedTypes(const Symbol* typeSymbol);
 
-  // this function searches with typeSymbol for a type in types vector and adds edges for procedures that matches
-  // procedureSymbol. And also adds edges from types that extends from typeSymbol.
+  /**
+   * @brief Searches with typeSymbol for a type in types vector and adds edges for procedures that matches
+   * procedureSymbol. And also adds edges from types that extends from typeSymbol.
+   *
+   * @param typeWithDerived
+   * @param procedureSymbol
+   */
   void addEdgesForProducesAndDerivedTypes(std::vector<const type*> typeWithDerived, const Symbol* procedureSymbol);
 
   void addEdgesForFinalizers(const Symbol* typeSymbol);
   void addEdgesForFinalizers(std::vector<edge>* edges, const Symbol* typeSymbol);
   std::vector<std::pair<Symbol*, const Symbol*>> getEdgesForFinalizers(const Symbol* typeSymbol);
 
-  template <typename T>
-  const Name* getNameFromClassWithDesignator(const T& t) {
-    if (const auto* designator = std::get_if<Indirection<Designator>>(&t.u)) {
-      if (const auto* dataRef = std::get_if<DataRef>(&designator->value().u)) {
-        if (const auto* name = std::get_if<Name>(&dataRef->u)) {
-          return name;
-        }
-      }
-    }
-    return nullptr;
-  }
-
   trackedVar* getTrackedVarFromSourceName(SourceName sourceName);
 
-  // search trackedVars for a canditate and set it as initialized.
-  // Prefers local variables when (shadowed)
+  /**
+   * @brief Search trackedVars for a canditate and set it as initialized.
+   * Prefers local variables when (shadowed).
+   *
+   * @param sourceName
+   */
   void handleTrackedVarAssignment(SourceName sourceName);
 
   void addTrackedVar(trackedVar var);
   void removeTrackedVars(Symbol* procedureSymbol);
 
+  void handleTrackedVars();
+
   void postProcess();
+
+  // visitor methods
 
   template <typename A>
   bool Pre(const A&) {
@@ -133,42 +137,85 @@ class ParseTreeVisitor {
   void Post(const AllocateStmt& a);
   void Post(const Call& c);
 
-  // handle destructors (finalizers) TODO: test i definitely missed some edges cases
+  /**
+   * @brief Handle finalizers (destructors ). TODO: test i definitely missed some edges cases.
+   *
+   * @param t
+   */
   void Post(const TypeDeclarationStmt& t);
 
-  // following 5 methods are for collecting types and their procedures. see type struct and vector.
+  // The following methods are for collecting types and their procedures. see type struct and vector.
 
-  // type def
+  /**
+   * @brief Type definition start
+   *
+   * @return
+   */
   bool Pre(const DerivedTypeDef&);
+  /**
+   * @brief Type definiiton end
+   */
   void Post(const DerivedTypeDef&);
 
-  // type stmt like type [, extends(...)] :: body (not exhaustive and not extends)
+  /**
+   * @brief Type stmt like type [, extends(...)] :: body (not exhaustive and not extends)
+   *
+   * @param t
+   * @return
+   */
   bool Pre(const DerivedTypeStmt& t);
 
-  // type attrs like extends
+  /**
+   * @brief Type attributes like extends
+   *
+   * @param a
+   */
   void Post(const TypeAttrSpec& a);
 
-  // procedures in type defs
+  /**
+   * @brief Collect type bound procedures in derived type definitions
+   *
+   * @param s
+   */
   void Post(const TypeBoundProcedureStmt& s);
 
-  // collect defined operators in a type def (operator overloading)
+  /**
+   * @brief Collect defined operators in type definition (operator overloading)
+   *
+   * @param s
+   */
   void Post(const TypeBoundGenericStmt& s);
 
-  // the following 4 methods are for collecting defined operators in interface statements
+  // The following methods are for collecting defined operators in interface statements
+
   bool Pre(const InterfaceStmt&);
   bool Pre(const EndInterfaceStmt&);
   void Post(const DefinedOperator& op);
   void Post(const ProcedureStmt& p);
 
-  // parse operators in expressions
+  /**
+   * @brief Parse operators in expressions
+   *
+   * @param e
+   * @return
+   */
   bool Pre(const Expr& e);
+  /**
+   * @brief Post cleanup parse operators in expressions
+   *
+   * @param e
+   */
   void Post(const Expr& e);
 
-  // extract additional information from use statements
+  /**
+   * @brief Extract additional information from use statements
+   *
+   * @param u
+   */
   void Post(const UseStmt& u);
 
  private:
-  metacg::Callgraph* cg;
+  Callgraph* cg;
   std::vector<edge> edges;
   std::string currentFileName;
 

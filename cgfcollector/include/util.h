@@ -39,6 +39,25 @@ bool holds_any_of(const Variant& v) {
 }
 
 /**
+ * @brief Get Name from type that has a designator
+ *
+ * @tparam T
+ * @param t
+ * @return
+ */
+template <typename T>
+const Name* getNameFromClassWithDesignator(const T& t) {
+  if (const auto* designator = std::get_if<Indirection<Designator>>(&t.u)) {
+    if (const auto* dataRef = std::get_if<DataRef>(&designator->value().u)) {
+      if (const auto* name = std::get_if<Name>(&dataRef->u)) {
+        return name;
+      }
+    }
+  }
+  return nullptr;
+}
+
+/**
  * @brief Compares two symbols for equality also resolves the original construct the symbol comes from.
  * This could have been defined in another module/file
  *
