@@ -1,0 +1,33 @@
+#!/bin/bash
+
+test_case_dir="@FCOLLECTOR_TEST_CASES_DIR@"
+out_dir="out"
+
+if [[ ! -d "$out_dir" ]]; then
+    mkdir "$out_dir"
+fi
+
+find "$test_case_dir" -type d | while read -r dir; do
+    mapfile -t input_files < <(find "$dir" -maxdepth 1 -name '*.f90')
+    output_file="$dir/output.json"
+
+    if [[ ${#input_files[@]} -gt 0 && -f "$output_file" ]]; then
+        # generate test case name from dir path. test/simple/01 becomes simple_01
+        test_case_name="$(basename "$(dirname "$dir")")_$(basename "$dir")"
+
+        echo "Test case: $test_case_name"
+
+        if ! @FCOLLECTOR_WRAPPER@ -o "$out_dir/$test_case_name.json" "${input_files[@]}"; then
+            echo "Error: failed to generate callgraph"
+            continue
+        fi
+
+        if ! diff -q <(tr -d '[:space:]' <"$out_dir/$test_case_name.json") <(tr -d '[:space:]' <"$output_file") >/dev/null; then
+            echo "Error: Output mismatch"
+            echo "Expected: $(cat "$output_file")"
+            echo "Got: $(cat "$out_dir/$test_case_name.json")"
+        else
+            echo "Test case passed"
+        fi
+    fi
+done

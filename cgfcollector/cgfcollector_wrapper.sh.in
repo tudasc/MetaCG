@@ -1,0 +1,12 @@
+#!/bin/bash
+
+flang_bin="flang-new"
+
+@FCOLLECTOR_WRAPPER_EXPORT_LINE@
+
+if ! command -v "$flang_bin" &>/dev/null; then
+  echo "Error: $flang_bin not found in PATH."
+  exit 1
+fi
+
+$flang_bin -fc1 -load "@FCOLLECTOR_FILE_NAME@" -plugin "genCG" "$@"
