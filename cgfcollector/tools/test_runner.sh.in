@@ -74,6 +74,23 @@ find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "outpu
         }
 
         rm -rf "$tmp_dir"
+    elif find "$dir" -maxdepth 1 -name 'Makefile' | grep -q .; then
+        # make managed with fortdepend test
+        tmp_dir="$(mktemp -d)"
+
+        {
+            cd "$dir"
+            make BUILD_DIR="$tmp_dir"
+            find . -maxdepth 1 -name '*.json' | while read -r file; do
+                cp "$file" "$out_dir/$test_case_name.json"
+            done
+        } || {
+            echo "Error: could not generate CG"
+            rm -rf "$tmp_dir"
+            continue
+        }
+
+        rm -rf "$tmp_dir"
     else
         # not cmake managed test
         mapfile -t input_files < <(find "$dir" -maxdepth 1 -name '*.f90')
