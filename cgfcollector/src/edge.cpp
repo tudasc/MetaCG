@@ -7,7 +7,7 @@ std::vector<edgeSymbol> edgeManager::getEdgesForFinalizers(std::vector<type>& ty
   std::vector<const type*> typePtrs = findTypeWithDerivedTypes(types, symbol);
 
   for (const type* type : typePtrs) {
-    const Symbol* typeSymbol = type->type;
+    const Symbol* typeSymbol = type->typeSymbol;
 
     const auto* details = std::get_if<DerivedTypeDetails>(&typeSymbol->details());
     if (!details)

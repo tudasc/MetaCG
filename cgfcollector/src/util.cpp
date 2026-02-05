@@ -231,7 +231,7 @@ std::vector<const type*> findTypeWithDerivedTypes(std::vector<type>& types, cons
   }
 
   auto findTypeIt =
-      std::find_if(types.begin(), types.end(), [&typeSymbol](const type& t) { return t.type == typeSymbol; });
+      std::find_if(types.begin(), types.end(), [&typeSymbol](const type& t) { return t.typeSymbol == typeSymbol; });
 
   if (findTypeIt == types.end()) {
     return typesWithDerived;
@@ -243,8 +243,8 @@ std::vector<const type*> findTypeWithDerivedTypes(std::vector<type>& types, cons
   // collect descendants
   std::function<void(const type*)> collectDescendants = [&](const type* parent) {
     for (const auto& t : types) {
-      if (t.extendsFrom == parent->type && !visited.count(t.type)) {
-        visited.insert(t.type);
+      if (t.extendsFrom == parent->typeSymbol && !visited.count(t.typeSymbol)) {
+        visited.insert(t.typeSymbol);
         typesWithDerived.push_back(&t);
         collectDescendants(&t);  // recursive call to find further descendants
       }
@@ -263,7 +263,7 @@ std::vector<const type*> findTypeWithDerivedTypes(std::vector<type>& types, cons
     }
 
     auto currentTypeIt = std::find_if(types.begin(), types.end(),
-                                      [&](const type& t) { return compareSymbols(t.type, currentExtendsFrom); });
+                                      [&](const type& t) { return compareSymbols(t.typeSymbol, currentExtendsFrom); });
 
     if (currentTypeIt == types.end()) {
       MCGLogger::logError("Error: Types array (extendsFrom) field entry for \"" +

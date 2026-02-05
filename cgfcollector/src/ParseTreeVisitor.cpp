@@ -387,7 +387,7 @@ bool ParseTreeVisitor::Pre(const DerivedTypeDef&) {
 
 void ParseTreeVisitor::Post(const DerivedTypeDef&) {
   inDerivedTypeDef = false;
-  MCGLogger::logDebug("End derived type: {} ({})", types.back().type->name(), fmt::ptr(types.back().type));
+  MCGLogger::logDebug("End derived type: {} ({})", types.back().typeSymbol->name(), fmt::ptr(types.back().typeSymbol));
 }
 
 bool ParseTreeVisitor::Pre(const DerivedTypeStmt& t) {
@@ -396,9 +396,9 @@ bool ParseTreeVisitor::Pre(const DerivedTypeStmt& t) {
 
   auto& currentType = types.back();
   const auto& name = std::get<Name>(t.t);
-  currentType.type = name.symbol;
+  currentType.typeSymbol = name.symbol;
 
-  MCGLogger::logDebug("\nIn derived type: {} ({})", currentType.type->name(), fmt::ptr(currentType.type));
+  MCGLogger::logDebug("\nIn derived type: {} ({})", currentType.typeSymbol->name(), fmt::ptr(currentType.typeSymbol));
 
   return true;
 }
