@@ -1,0 +1,66 @@
+{
+  "_CG": {
+    "edges": [
+      [[5017978461990509046, 2963930559116137426], null],
+      [[5017978461990509046, 14284706976400344361], null],
+      [[5017978461990509046, 17311429370828588933], null],
+      [[5017978461990509046, 3724766418702407261], null],
+      [[2963930559116137426, 2963930559116137426], null]
+    ],
+    "nodes": [
+      [
+        5017978461990509046,
+        {
+          "functionName": "_QQmain",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        17311429370828588933,
+        {
+          "functionName": "_QMmath_utilsPnormalize_vector",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        14284706976400344361,
+        {
+          "functionName": "_QMmath_utilsPdot_product_custom",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        3724766418702407261,
+        {
+          "functionName": "_QMmath_utilsParray_stats",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ],
+      [
+        2963930559116137426,
+        {
+          "functionName": "_QMmath_utilsPfactorial",
+          "hasBody": true,
+          "meta": null,
+          "origin": "main.f90"
+        }
+      ]
+    ]
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "e484641c4a9cc749eef4bfa01fca86020321e52d",
+      "version": "0.7"
+    },
+    "version": "3.0"
+  }
+}
