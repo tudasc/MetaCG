@@ -22,20 +22,15 @@ find "$test_case_dir" . -mindepth 1 -type d | while read -r dir; do
             continue
         fi
 
-        if ! @FCOLLECTOR_WRAPPER@ -o "$out_dir/$test_case_name.json" "${input_files[@]}"; then
+        if ! @FCOLLECTOR_WRAPPER@ -dot -o "$out_dir/$test_case_name.json" "${input_files[@]}"; then
             echo "Error: failed to generate callgraph"
             continue
         fi
 
-        # TODO: check origin
-        jq_string='del(._MetaCG) | ._CG.nodes |= map([.[0], (.[1] | del(.origin))])'
-
-        if ! diff -q <(jq "$jq_string" "$out_dir/$test_case_name.json") <(jq "$jq_string" "$output_file") >/dev/null; then
-            echo "Error: Output mismatch"
-            echo "Expected: $(cat "$output_file")"
-            echo "Got: $(cat "$out_dir/$test_case_name.json")"
-        else
+        if @FCOLLECTOR_CG_COMPARE@ "$output_file" "$out_dir/$test_case_name.json"; then
             echo "Test case passed"
+        else
+            echo "Error: Output mismatch"
         fi
     fi
 done
