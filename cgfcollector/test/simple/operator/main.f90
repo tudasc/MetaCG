@@ -26,7 +26,7 @@ module mod
     type, extends(sortable) :: integer_sortable
         integer :: value
     contains
-        procedure :: less_then => less_than_integer
+        procedure :: less_then => less_then_integer
         procedure :: not_impl => not_impl_integer
     end type integer_sortable
 
@@ -44,18 +44,18 @@ module mod
     end interface
 
 contains
-    logical function less_than_integer(this, other)
+    logical function less_then_integer(this, other)
         class(integer_sortable), intent(in) :: this
         class(sortable), intent(in) :: other
 
         select type (other)
         type is (integer_sortable)
-            less_than_integer = this%value < other%value
+            less_then_integer = this%value < other%value
             print *, "Comparing integer_sortable: ", this%value, " < ", other%value
         class default
             error stop "Type mismatch in comparison"
         end select
-    end function less_than_integer
+    end function less_then_integer
 
     logical function not_impl(this)
         class(sortable), intent(in) :: this
@@ -125,9 +125,9 @@ contains
         allocate (b, source=d)
 
         if (a < b) then
-            print *, "a is less than b"
+            print *, "a is less then b"
         else
-            print *, "a is nat less than b"
+            print *, "a is nat less then b"
         end if
     end subroutine test_compare
 
@@ -142,9 +142,9 @@ contains
         allocate (b, source=d)
 
         if (c < d) then
-            print *, "c is less than d"
+            print *, "c is less then d"
         else
-            print *, "c is not less than d"
+            print *, "c is not less then d"
         end if
     end subroutine test_compare2
 

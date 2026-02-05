@@ -3,138 +3,138 @@
         "meta": {},
         "nodes": {
             "0": {
-                "callees": { "8": {}, "9": {} },
-                "functionName": "_QFPtest_add",
-                "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "callees": {},
+                "functionName": "compare",
+                "hasBody": false,
+                "meta": {},
                 "origin": "main.f90"
             },
             "1": {
-                "callees": { "8": {}, "9": {} },
-                "functionName": "_QFPtest_add2",
-                "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "callees": {},
+                "functionName": "not",
+                "hasBody": false,
+                "meta": {},
                 "origin": "main.f90"
             },
             "10": {
-                "callees": {},
-                "functionName": "_QMmodPless_than_integer",
+                "callees": { "0": {}, "2": {} },
+                "functionName": "_QFPtest_compare",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "11": {
-                "callees": {},
-                "functionName": "_QMmodPnegx",
+                "callees": { "0": {}, "2": {} },
+                "functionName": "_QFPtest_compare2",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "12": {
-                "callees": { "10": {}, "15": {} },
-                "functionName": "_QMmodPnot_impl",
+                "callees": { "1": {}, "4": {} },
+                "functionName": "_QFPtest_not",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "13": {
-                "callees": { "10": {}, "15": {} },
-                "functionName": "_QMmodPnot_impl_integer",
+                "callees": { "5": {} },
+                "functionName": "_QFPtest_negx",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "14": {
-                "callees": {},
-                "functionName": "_QMmodPunary_plus",
+                "callees": { "6": {}, "7": {} },
+                "functionName": "_QFPtest_add",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "15": {
-                "callees": {},
-                "functionName": "_QPcompare",
-                "hasBody": false,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "callees": { "6": {}, "7": {} },
+                "functionName": "_QFPtest_add2",
+                "hasBody": true,
+                "meta": {},
                 "origin": "main.f90"
             },
             "16": {
-                "callees": {},
-                "functionName": "_QPnot",
-                "hasBody": false,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "callees": { "8": {} },
+                "functionName": "_QFPtest_unary_plus",
+                "hasBody": true,
+                "meta": {},
                 "origin": "main.f90"
             },
             "17": {
-                "callees": {
-                    "0": {},
-                    "1": {},
-                    "2": {},
-                    "3": {},
-                    "4": {},
-                    "5": {},
-                    "6": {},
-                    "7": {}
-                },
-                "functionName": "_QQmain",
-                "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
-                "origin": "main.f90"
-            },
-            "2": {
-                "callees": { "10": {}, "15": {} },
-                "functionName": "_QFPtest_compare",
-                "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
-                "origin": "main.f90"
-            },
-            "3": {
-                "callees": { "10": {}, "15": {} },
-                "functionName": "_QFPtest_compare2",
-                "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
-                "origin": "main.f90"
-            },
-            "4": {
                 "callees": {},
                 "functionName": "_QFPtest_expr",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "2": {
+                "callees": {},
+                "functionName": "_QMmodPless_then_integer",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "3": {
+                "callees": { "0": {}, "2": {} },
+                "functionName": "_QMmodPnot_impl",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "4": {
+                "callees": { "0": {}, "2": {} },
+                "functionName": "_QMmodPnot_impl_integer",
+                "hasBody": true,
+                "meta": {},
                 "origin": "main.f90"
             },
             "5": {
-                "callees": { "11": {} },
-                "functionName": "_QFPtest_negx",
+                "callees": {},
+                "functionName": "_QMmodPnegx",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "6": {
-                "callees": { "13": {}, "16": {} },
-                "functionName": "_QFPtest_not",
+                "callees": {},
+                "functionName": "_QMmodPadd_stuff",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "7": {
-                "callees": { "14": {} },
-                "functionName": "_QFPtest_unary_plus",
+                "callees": {},
+                "functionName": "_QMmodPadd_stuff2",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "8": {
                 "callees": {},
-                "functionName": "_QMmodPadd_stuff",
+                "functionName": "_QMmodPunary_plus",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "9": {
-                "callees": {},
-                "functionName": "_QMmodPadd_stuff2",
+                "callees": {
+                    "10": {},
+                    "11": {},
+                    "12": {},
+                    "13": {},
+                    "14": {},
+                    "15": {},
+                    "16": {},
+                    "17": {}
+                },
+                "functionName": "_QQmain",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             }
         }
@@ -142,7 +142,7 @@
     "_MetaCG": {
         "generator": {
             "name": "MetaCG",
-            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "sha": "96b749864d4e9ffe279252205b6ef755a6a86056",
             "version": "0.9"
         },
         "version": "4.0"

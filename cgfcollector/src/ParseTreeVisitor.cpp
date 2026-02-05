@@ -2,15 +2,40 @@
 
 // util functions
 
+std::string ParseTreeVisitor::mangleSymbol(const Symbol* sym) {
+  if (!sym) {
+    al->error("Error: mangleSymbol called with nullptr");
+    return "";
+  }
+
+  std::string mangledName = mangleName(*sym);
+
+  // Legacy Fortran - C interoperability before BIND(C) existed.
+  // I have to do this manually because normally it would run as
+  // a pass (ExternalNameConversionPass).
+  //
+  // Disabling underscoring to be compatiable with C.
+  // WARNING: Fortran normally uses a underscore as postfix with external names.
+  // NOTE: underscoring can be disabled with `-fno-underscoring`
+  auto result = fir::NameUniquer::deconstruct(mangledName);
+  if (fir::NameUniquer::isExternalFacingUniquedName(result)) {
+    if (result.first == fir::NameUniquer::NameKind::COMMON && result.second.name.empty())
+      mangledName = Fortran::common::blankCommonObjectName;
+    mangledName = Fortran::common::GetExternalAssemblyName(result.second.name, false);
+  }
+
+  return mangledName;
+}
+
 template <typename T>
 void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
   if (auto* sym = std::get<Name>(stmt.t).symbol) {
     functionSymbols.emplace_back(sym);
     functionDummyArgs.emplace_back(std::vector<const Name*>());
-    cg->getOrInsertNode(mangleName(*sym), currentFileName, false, false);
+    cg->getOrInsertNode(mangleSymbol(sym), currentFileName, false, false);
     functions.push_back({sym, std::vector<function::dummyArg>()});
 
-    al->debug("Add node: {} ({})", mangleName(*sym), fmt::ptr(sym));
+    al->debug("Add node: {} ({})", mangleSymbol(sym), fmt::ptr(sym));
   }
 }
 
@@ -29,7 +54,7 @@ void ParseTreeVisitor::handleEndFuncSubStmt() {
 }
 
 void ParseTreeVisitor::handleTrackedVars() {
-  if (mangleName(*functionSymbols.back()) != "_QQmain") {
+  if (mangleSymbol(functionSymbols.back()) != "_QQmain") {
     if (!trackedVars.empty())
       al->debug("Handle tracked vars for function");
 
@@ -115,25 +140,25 @@ void ParseTreeVisitor::addEdgesForProducesAndDerivedTypes(std::vector<type> type
     if (procIt == t.procedures.end())
       continue;
 
-    edges.emplace_back(mangleName(*functionSymbols.back()), mangleName(*procIt->second));
+    edges.emplace_back(mangleSymbol(functionSymbols.back()), mangleSymbol(procIt->second));
 
-    al->debug("Add edge: {} ({}) -> {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()),
-              mangleName(*procIt->second), fmt::ptr(procIt->second));
+    al->debug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()), fmt::ptr(functionSymbols.back()),
+              mangleSymbol(procIt->second), fmt::ptr(procIt->second));
   }
 }
 
 void ParseTreeVisitor::addEdgesForFinalizers(const Symbol* typeSymbol) {
   for (const auto& edge : getEdgesForFinalizers(typeSymbol)) {
-    edges.emplace_back(mangleName(*edge.first), mangleName(*edge.second));
+    edges.emplace_back(mangleSymbol(edge.first), mangleSymbol(edge.second));
 
-    al->debug("Add edge for finalizer: {} ({}) -> {} ({})", mangleName(*edge.first), fmt::ptr(edge.first),
-              mangleName(*edge.second), fmt::ptr(edge.second));
+    al->debug("Add edge for finalizer: {} ({}) -> {} ({})", mangleSymbol(edge.first), fmt::ptr(edge.first),
+              mangleSymbol(edge.second), fmt::ptr(edge.second));
   }
 }
 
 void ParseTreeVisitor::addEdgesForFinalizers(std::vector<edge>* edges, const Symbol* typeSymbol) {
   for (const auto& edge : getEdgesForFinalizers(typeSymbol)) {
-    edges->emplace_back(mangleName(*edge.first), mangleName(*edge.second));
+    edges->emplace_back(mangleSymbol(edge.first), mangleSymbol(edge.second));
   }
 }
 
@@ -304,9 +329,9 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
       return true;
 
     functionSymbols.emplace_back(maybeStmt->statement.v.symbol);
-    cg->getOrInsertNode(mangleName(*functionSymbols.back()), currentFileName, false, false);
+    cg->getOrInsertNode(mangleSymbol(functionSymbols.back()), currentFileName, false, false);
 
-    al->debug("\nIn main program: {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()));
+    al->debug("\nIn main program: {} ({})", mangleSymbol(functionSymbols.back()), fmt::ptr(functionSymbols.back()));
   }
   return true;
 }
@@ -314,7 +339,7 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
 void ParseTreeVisitor::Post(const MainProgram&) {
   handleTrackedVars();
 
-  al->debug("End main program: {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()));
+  al->debug("End main program: {} ({})", mangleSymbol(functionSymbols.back()), fmt::ptr(functionSymbols.back()));
 
   if (!functionSymbols.empty()) {
     functionSymbols.pop_back();
@@ -341,7 +366,7 @@ void ParseTreeVisitor::Post(const ExecutionPart& e) {
   if (!inFunctionOrSubroutineSubProgram && !inMainProgram)
     return;
 
-  auto* node = cg->getFirstNode(mangleName(*functionSymbols.back()));
+  auto* node = cg->getFirstNode(mangleSymbol(functionSymbols.back()));
   if (!node) {
     return;
   }
@@ -354,13 +379,13 @@ void ParseTreeVisitor::Post(const EntryStmt& e) {
   if (!name->symbol)
     return;
 
-  al->debug("Add Entry point: {} ({})", mangleName(*name->symbol), fmt::ptr(name->symbol));
+  al->debug("Add Entry point: {} ({})", mangleSymbol(name->symbol), fmt::ptr(name->symbol));
 
-  cg->getOrInsertNode(mangleName(*name->symbol), currentFileName, false, true);
+  cg->getOrInsertNode(mangleSymbol(name->symbol), currentFileName, false, true);
 }
 
 void ParseTreeVisitor::Post(const FunctionStmt& f) {
-  al->debug("\nIn function: {} ({})", mangleName(*std::get<Name>(f.t).symbol), fmt::ptr(std::get<Name>(f.t).symbol));
+  al->debug("\nIn function: {} ({})", mangleSymbol(std::get<Name>(f.t).symbol), fmt::ptr(std::get<Name>(f.t).symbol));
 
   handleFuncSubStmt(f);
 
@@ -380,14 +405,14 @@ void ParseTreeVisitor::Post(const FunctionStmt& f) {
 
 void ParseTreeVisitor::Post(const EndFunctionStmt&) {
   if (!functionSymbols.empty()) {
-    al->debug("End function: {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()));
+    al->debug("End function: {} ({})", mangleSymbol(functionSymbols.back()), fmt::ptr(functionSymbols.back()));
   }
 
   handleEndFuncSubStmt();
 }
 
 void ParseTreeVisitor::Post(const SubroutineStmt& s) {
-  al->debug("\nIn subroutine: {} ({})", mangleName(*std::get<Name>(s.t).symbol), fmt::ptr(std::get<Name>(s.t).symbol));
+  al->debug("\nIn subroutine: {} ({})", mangleSymbol(std::get<Name>(s.t).symbol), fmt::ptr(std::get<Name>(s.t).symbol));
 
   handleFuncSubStmt(s);
 
@@ -408,7 +433,7 @@ void ParseTreeVisitor::Post(const SubroutineStmt& s) {
 
 void ParseTreeVisitor::Post(const EndSubroutineStmt&) {
   if (!functionSymbols.empty()) {
-    al->debug("End subroutine: {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()));
+    al->debug("End subroutine: {} ({})", mangleSymbol(functionSymbols.back()), fmt::ptr(functionSymbols.back()));
   }
 
   handleEndFuncSubStmt();
@@ -427,10 +452,10 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
     if (name->symbol->attrs().test(Attr::INTRINSIC))
       return;
 
-    edges.emplace_back(mangleName(*functionSymbols.back()), mangleName(*name->symbol));
+    edges.emplace_back(mangleSymbol(functionSymbols.back()), mangleSymbol(name->symbol));
 
-    al->debug("Add edge: {} ({}) -> {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()),
-              mangleName(*name->symbol), fmt::ptr(name->symbol));
+    al->debug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()), fmt::ptr(functionSymbols.back()),
+              mangleSymbol(name->symbol), fmt::ptr(name->symbol));
 
     // if called from a object with %. (base % component)
   } else if (auto* procCompRef = std::get_if<ProcComponentRef>(&p.u)) {
@@ -438,10 +463,10 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
     if (!symbolComp)
       return;
 
-    edges.emplace_back(mangleName(*functionSymbols.back()), mangleName(*symbolComp));
+    edges.emplace_back(mangleSymbol(functionSymbols.back()), mangleSymbol(symbolComp));
 
-    al->debug("Add edge: {} ({}) -> {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()),
-              mangleName(*symbolComp), fmt::ptr(symbolComp));
+    al->debug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()), fmt::ptr(functionSymbols.back()),
+              mangleSymbol(symbolComp), fmt::ptr(symbolComp));
 
     auto* baseName = std::get_if<Name>(&procCompRef->v.thing.base.u);
     if (!baseName || !baseName->symbol)
@@ -511,7 +536,7 @@ void ParseTreeVisitor::Post(const Call& c) {
       if (!trackedVar)
         continue;
 
-      potentialFinalizer pf = {argPos, mangleName(*procName->symbol), std::vector<edge>()};
+      potentialFinalizer pf = {argPos, mangleSymbol(procName->symbol), std::vector<edge>()};
       addEdgesForFinalizers(&pf.finalizerEdges, getTypeSymbolFromSymbol(trackedVar->var));
 
       potentialFinalizers.push_back(pf);
@@ -763,7 +788,7 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
 
       for (auto* sym : interfaceOp->second) {
         // skip self calls
-        if (mangleName(*sym) == mangleName(*functionSymbols.back()))
+        if (mangleSymbol(sym) == mangleSymbol(functionSymbols.back()))
           continue;
 
         // if unary, add potential unary operators. Same for binary operators.
@@ -775,10 +800,10 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
           }
         }
 
-        edges.emplace_back(mangleName(*functionSymbols.back()), mangleName(*sym));
+        edges.emplace_back(mangleSymbol(functionSymbols.back()), mangleSymbol(sym));
 
-        al->debug("Add edge: {} ({}) -> {} ({})", mangleName(*functionSymbols.back()), fmt::ptr(functionSymbols.back()),
-                  mangleName(*sym), fmt::ptr(sym));
+        al->debug("Add edge: {} ({}) -> {} ({})", mangleSymbol(functionSymbols.back()),
+                  fmt::ptr(functionSymbols.back()), mangleSymbol(sym), fmt::ptr(sym));
       }
     }
 

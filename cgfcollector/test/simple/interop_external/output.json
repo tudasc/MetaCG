@@ -4,7 +4,7 @@
         "nodes": {
             "0": {
                 "callees": {},
-                "functionName": "_QPadd",
+                "functionName": "add",
                 "hasBody": false,
                 "meta": {},
                 "origin": null

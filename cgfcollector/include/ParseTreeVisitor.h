@@ -49,6 +49,8 @@ class ParseTreeVisitor {
   std::vector<potentialFinalizer>& getPotentialFinalizers() { return potentialFinalizers; }
   std::vector<function>& getFunctions() { return functions; }
 
+  std::string mangleSymbol(const Symbol* sym);
+
   template <typename T>
   void handleFuncSubStmt(const T& stmt);
   void handleEndFuncSubStmt();
