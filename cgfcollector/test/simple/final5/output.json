@@ -6,28 +6,28 @@
                 "callees": {},
                 "functionName": "_QFPfunc",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "1": {
                 "callees": {},
                 "functionName": "_QMmodPfinalize_base",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "2": {
                 "callees": {},
                 "functionName": "_QMmodPfinalize_derived",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "3": {
                 "callees": {},
                 "functionName": "_QQmain",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             }
         }

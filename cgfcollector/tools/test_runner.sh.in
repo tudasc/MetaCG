@@ -128,7 +128,7 @@ while read -r dir; do
         fi
     fi
 
-    if @FCOLLECTOR_CG_COMPARE@ "$output_file" "$out_dir/$test_case_name.json"; then
+    if @FCOLLECTOR_CGDIFF@ "$output_file" "$out_dir/$test_case_name.json"; then
         echo "Test case passed"
     else
         ((failed_test_case_count++))

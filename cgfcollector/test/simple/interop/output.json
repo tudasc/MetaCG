@@ -6,14 +6,14 @@
                 "callees": { "1": {} },
                 "functionName": "_QQmain",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "1": {
                 "callees": {},
                 "functionName": "add",
                 "hasBody": false,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             }
         }

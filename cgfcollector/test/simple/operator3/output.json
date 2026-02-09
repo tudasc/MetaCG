@@ -6,42 +6,42 @@
                 "callees": {},
                 "functionName": "_QMmodPadd_base",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "1": {
                 "callees": {},
                 "functionName": "_QMmodPs",
                 "hasBody": false,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "2": {
                 "callees": {},
                 "functionName": "_QMmodPshow_derived1",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "3": {
                 "callees": {},
                 "functionName": "_QMmodPshow_derived2",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "4": {
                 "callees": {},
                 "functionName": "_QMmodPsub_derived1",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "5": {
                 "callees": { "0": {}, "1": {}, "2": {}, "3": {}, "4": {} },
                 "functionName": "_QQmain",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             }
         }

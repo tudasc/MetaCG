@@ -14,63 +14,63 @@
                 },
                 "functionName": "_QFPfunc",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "1": {
                 "callees": {},
                 "functionName": "_QMmodPfinalize_base",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "2": {
                 "callees": {},
                 "functionName": "_QMmodPfinalize_derived",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "3": {
                 "callees": {},
                 "functionName": "_QMmodPfunc_arg",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "4": {
                 "callees": { "1": {}, "2": {} },
                 "functionName": "_QMmodPfunc_arg2",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "5": {
                 "callees": {},
                 "functionName": "_QMmodPfunc_arg_inout",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "6": {
                 "callees": { "1": {}, "2": {} },
                 "functionName": "_QMmodPfunc_arg_inout2",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "7": {
                 "callees": { "1": {}, "2": {} },
                 "functionName": "_QMmodPfunc_arg_out",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "8": {
                 "callees": { "0": {} },
                 "functionName": "_QQmain",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             }
         }

@@ -6,35 +6,35 @@
                 "callees": {},
                 "functionName": "_QMmath_utilsParray_stats",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "1": {
                 "callees": {},
                 "functionName": "_QMmath_utilsPdot_product_custom",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "2": {
                 "callees": { "2": {} },
                 "functionName": "_QMmath_utilsPfactorial",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "3": {
                 "callees": {},
                 "functionName": "_QMmath_utilsPnormalize_vector",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             },
             "4": {
                 "callees": { "0": {}, "1": {}, "2": {}, "3": {} },
                 "functionName": "_QQmain",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             }
         }

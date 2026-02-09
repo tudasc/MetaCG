@@ -14,98 +14,98 @@
                 },
                 "functionName": "_QFPfunc",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "input.f90"
             },
             "1": {
                 "callees": {},
                 "functionName": "_QMmodPcreate_polynomial",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "input.f90"
             },
             "10": {
                 "callees": { "2": {} },
                 "functionName": "_QMmod_usePfunc_calls_final2",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "input.f90"
             },
             "11": {
                 "callees": { "2": {}, "5": {} },
                 "functionName": "_QMmod_usePfunc_calls_final3",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "input.f90"
             },
             "12": {
                 "callees": {},
                 "functionName": "_QMmod_usePfunc_does_not_call_final",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "input.f90"
             },
             "13": {
                 "callees": { "0": {} },
                 "functionName": "_QQmain",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "input.f90"
             },
             "2": {
                 "callees": {},
                 "functionName": "_QMmodPfinalize_polynomial",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "input.f90"
             },
             "3": {
                 "callees": {},
                 "functionName": "_QMmodPprint_polynomial",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "input.f90"
             },
             "4": {
                 "callees": {},
                 "functionName": "_QMmod_useFfunc_calls_final3Pset_nothing",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "input.f90"
             },
             "5": {
                 "callees": { "1": {} },
                 "functionName": "_QMmod_useFfunc_calls_final3Pset_q",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "input.f90"
             },
             "6": {
                 "callees": { "1": {}, "2": {} },
                 "functionName": "_QMmod_useFfunc_calls_final3Pset_q_alloc",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "input.f90"
             },
             "7": {
                 "callees": { "2": {} },
                 "functionName": "_QMmod_useFfunc_calls_final3Pset_q_alloc2",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "input.f90"
             },
             "8": {
                 "callees": { "1": {}, "2": {} },
                 "functionName": "_QMmod_useFfunc_calls_final3Pset_q_move_alloc",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "input.f90"
             },
             "9": {
                 "callees": { "1": {}, "2": {}, "3": {} },
                 "functionName": "_QMmod_usePfunc_calls_final",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "input.f90"
             }
         }

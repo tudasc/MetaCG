@@ -28,16 +28,6 @@ configure_package_config_file(
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATION lib/cmake)
 
-# cgCompare program
-add_executable(${PROJECT_NAME}-cgCompare ${CMAKE_CURRENT_SOURCE_DIR}/tools/cgCompare.cpp)
-add_metacg(${PROJECT_NAME}-cgCompare)
-add_spdlog_libraries(${PROJECT_NAME}-cgCompare)
-install(
-  TARGETS ${PROJECT_NAME}-cgCompare
-  LIBRARY DESTINATION bin
-  ARCHIVE DESTINATION bin
-)
-
 # visuel program to generate dot file from graph
 add_executable(${PROJECT_NAME}-visuel ${CMAKE_CURRENT_SOURCE_DIR}/tools/visuel.cpp)
 add_metacg(${PROJECT_NAME}-visuel)
@@ -61,7 +51,7 @@ function(
 
   # build-time values for development
   set(FCOLLECTOR_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/lib${PROJECT_NAME}.so")
-  set(FCOLLECTOR_CG_COMPARE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-cgCompare")
+  set(FCOLLECTOR_CGDIFF "${CMAKE_BINARY_DIR}/tools/cgdiff/cgdiff")
   set(FCOLLECTOR_WRAPPER "${CMAKE_CURRENT_BINARY_DIR}/cgfcollector_wrapper.sh")
   set(FCOLLECTOR_TEST_CASES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test")
   set(CGMERGE2_EXECUTABLE "${CMAKE_BINARY_DIR}/tools/cgmerge2/cgmerge2")
@@ -81,9 +71,6 @@ function(
 
   # install-time values
   set(FCOLLECTOR_FILE_NAME "${CMAKE_INSTALL_PREFIX}/lib/lib${PROJECT_NAME}.so")
-  set(FCOLLECTOR_CG_COMPARE "${CMAKE_INSTALL_PREFIX}/bin/${PROJECT_NAME}-cgCompare")
-  set(FCOLLECTOR_WRAPPER "${CMAKE_INSTALL_PREFIX}/bin/cgfcollector_wrapper.sh")
-  set(FCOLLECTOR_TEST_CASES_DIR "")
 
   configure_file(
     "${TEMPLATE}"

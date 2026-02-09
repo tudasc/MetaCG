@@ -6,7 +6,7 @@
                 "callees": { "1": {} },
                 "functionName": "_QMmodule0_5Pfunc",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "module0_5.f90"
             },
             "1": {
@@ -20,7 +20,7 @@
                 "callees": { "1": {} },
                 "functionName": "_QMmodule3Pfunc",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "module3.f90"
             },
             "3": {
@@ -34,14 +34,14 @@
                 "callees": {},
                 "functionName": "_QMmy_modulePsubsub",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "module.f90"
             },
             "5": {
                 "callees": { "3": {} },
                 "functionName": "_QQmain",
                 "hasBody": true,
-                "meta": { "fileProperties": { "systemInclude": false } },
+                "meta": {},
                 "origin": "main.f90"
             }
         }
