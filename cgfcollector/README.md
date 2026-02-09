@@ -1,11 +1,26 @@
 # CG Fortran collector
 
+Fortran call graph generation tool for MetaCG. This tool is implemented as a
+Flang plugin and generates a call graph from source-level.
+
 ## Usage
 
-The plugin is compiled into a dynamic library and can be run with the
-Flang compiler like so:
+For single file projects or projects not using modules use:
+```sh
+cgfcollector_wrapper.sh <source file/s>
+```
 
-`flang -fc1 -load "build/cgfcollector/libfcollector.so" -plugin "genCG"`
+For any other projects you need a build system. For this we provide another
+script that acts as the normal Flang compiler but also produces a call graph.
+[More info below](#generate-a-call-graph).
+```sh
+cgfcollector_comp_wrapper.sh <source file/s>
+```
+
+You can also run the plugin directly with Flang:
+```sh
+flang -fc1 -load "libfcollector.so" -plugin "genCG"
+```
 
 There are three kinds of plugins:
 
@@ -39,7 +54,7 @@ set(CMAKE_Fortran_LINK_EXECUTABLE "<path to cgmerge2> <TARGET> <OBJECTS>")
 set(CMAKE_EXECUTABLE_SUFFIX .json)
 ```
 
-This will hook into the cmake build process and generate a callgraph instead of
+This will hook into the CMake build process and generate a call graph instead of
 an executable.
 
 An example can be found in `test/multi/deps`.
