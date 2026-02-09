@@ -124,3 +124,6 @@ file(
   "${CMAKE_CURRENT_BINARY_DIR}/make_base"
   "${CMAKE_CURRENT_SOURCE_DIR}/test/multi/make_base"
 )
+
+# tests
+add_test(NAME fcollector_tests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_runner.sh)

@@ -4,140 +4,144 @@
 #
 # Usage:
 #     test_runner.sh                      # run all tests
-#     test_runner.sh [test_case_name]     # run specific test cases
+#     test_runner.sh [test_name]          # run specific test cases
 
 test_case_dir="@FCOLLECTOR_TEST_CASES_DIR@"
+scriptdir="$(cd "$(dirname "$0")" && pwd -P)"
+out_dir="$scriptdir/out"
+
+mkdir -p "$out_dir"
 
 if ! [ -d "$test_case_dir" ]; then
     echo "Error: Test case directory '$test_case_dir' does not exist."
     exit 1
 fi
 
-scriptdir="$(cd "$(dirname "$0")" && pwd -P)"
-out_dir="$scriptdir/out"
-
-if [[ ! -d "$out_dir" ]]; then
-    mkdir "$out_dir"
-fi
-
-run_tests_with_name=()
-while [[ $# -gt 0 ]]; do
-    run_tests_with_name+=("$1")
-    shift
-done
-
-function should_be_run()
+function find_test_dir()
 {
-    local test_case_name="$1"
+    local test_name="${1#*_}"
+    local test_category="${1%%_*}"
+    local test_dir="$test_case_dir/$test_category/$test_name"
 
-    if [[ ${#run_tests_with_name[@]} -eq 0 ]]; then
+    if [ -d "$test_dir" ] && [ -f "$test_dir/output.json" ]; then
+        echo "$test_dir"
         return 0
     fi
-
-    for name in "${run_tests_with_name[@]}"; do
-        if [[ "$test_case_name" == "$name" ]]; then
-            return 0
-        fi
-    done
-
     return 1
 }
 
-test_case_count=0
-skipped_test_case_count=0
-failed_test_case_count=0
+function run_single_test()
+{
+    local test_dir="$1"
+    local test_name="$2"
+    local expected_output="$test_dir/output.json"
+    local actual_output="$out_dir/$test_name.json"
 
-while read -r dir; do
-    dir="$(dirname "$dir")"
-    output_file="$dir/output.json"
-
-    # generate test case name from dir path. test/simple/01 becomes simple_01
-    test_case_name="$(basename "$(dirname "$dir")")_$(basename "$dir")"
-
-    if ! should_be_run "$test_case_name"; then
-        continue
-    fi
-
-    echo "Test case: $test_case_name"
-    ((test_case_count++))
-
-    if [ ! -f "$output_file" ]; then
-        echo "Skipping. Because missing output file: $output_file"
-        ((skipped_test_case_count++))
-        continue
-    fi
-
-    if find "$dir" -maxdepth 1 -name 'CMakeLists.txt' | grep -q .; then
+    if [ -f "$test_dir/CMakeLists.txt" ]; then
         # cmake managed test
-        tmp_dir="$(mktemp -d)"
+        local tmp_dir="$(mktemp -d)"
+        trap 'rm -rf '"$tmp_dir"'' RETURN
 
-        (
-            cd "$dir"
-            cmake -S . -B "$tmp_dir" || {
-                echo "Error: cmake config failed"
-                exit 1
-            }
-            cd "$tmp_dir"
-            make || {
-                echo "Error: cmake build failed"
-                exit 1
-            }
-            find . -maxdepth 1 -name '*.json' | while read -r file; do
-                cp "$file" "$out_dir/$test_case_name.json"
-            done
-        ) || {
-            echo "Error: could not generate CG"
-            rm -rf "$tmp_dir"
-            ((failed_test_case_count++))
-            continue
+        cmake -S "$test_dir" -B "$tmp_dir" || {
+            echo "Failed: cmake config failed"
+            return 1
         }
-
-        rm -rf "$tmp_dir"
-    elif find "$dir" -maxdepth 1 -name 'Makefile' | grep -q .; then
+        cmake --build "$tmp_dir" || {
+            echo "Failed: cmake build failed"
+            return 1
+        }
+        find "$tmp_dir" -maxdepth 1 -name '*.json' -exec cp {} "$actual_output" \; || {
+            echo "Failed: could not generate CG"
+            return 1
+        }
+    elif [ -f "$test_dir/Makefile" ]; then
         # make managed with fortdepend test
-        tmp_dir="$(mktemp -d)"
+        local tmp_dir="$(mktemp -d)"
+        trap 'rm -rf '"$tmp_dir"'' RETURN
 
-        (
-            cd "$dir"
-            make BUILD_DIR="$tmp_dir" || {
-                echo "Error: make build failed"
-                exit 1
-            }
-            cd "$tmp_dir"
-            find . -maxdepth 1 -name '*output.json' | while read -r file; do
-                cp "$file" "$out_dir/$test_case_name.json"
-            done
-        ) || {
-            echo "Error: could not generate CG"
-            rm -rf "$tmp_dir"
-            ((failed_test_case_count++))
-            continue
+        make -C "$test_dir" BUILD_DIR="$tmp_dir" || {
+            echo "Failed: make build failed"
+            return 1
         }
-
-        rm -rf "$tmp_dir"
+        find "$tmp_dir" -maxdepth 1 -name 'output.json' -exec cp {} "$actual_output" \; || {
+            echo "Failed: could not generate CG"
+            return 1
+        }
     else
-        # not cmake managed test
-        mapfile -t input_files < <(find "$dir" -maxdepth 1 -name '*.f90')
-        if [[ ${#input_files[@]} -gt 0 ]]; then
-
-            if ! @FCOLLECTOR_WRAPPER@ -dot -o "$out_dir/$test_case_name.json" "${input_files[@]}"; then
-                echo "Error: failed to generate callgraph"
-                ((failed_test_case_count++))
-                continue
-            fi
+        # not make/cmake managed test
+        local input_files=("$test_dir"/*.f90)
+        if ! [ -f "${input_files[0]}" ]; then
+            echo "Failed: no .f90 files found"
+            return 1
         fi
+
+        @FCOLLECTOR_WRAPPER@ -dot -o "$actual_output" "${input_files[@]}" || {
+            echo "Failed: could not generate CG"
+            return 1
+        }
     fi
 
-    if @FCOLLECTOR_CGDIFF@ "$output_file" "$out_dir/$test_case_name.json"; then
-        echo "Test case passed"
+    if @FCOLLECTOR_CGDIFF@ "$expected_output" "$actual_output"; then
+        echo "Passed"
+        return 0
     else
-        ((failed_test_case_count++))
-        echo "Error: Output mismatch"
+        echo "Failed: Output mismatch"
+        return 1
     fi
+}
 
-done < <(find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "output.json" \;)
+if [ $# -gt 0 ]; then
+    # specific test cases
+    test_cases=()
+    for test_name in "$@"; do
+        test_dir=$(find_test_dir "$test_name")
+        if [ -n "$test_dir" ]; then
+            test_cases+=("$test_dir:$test_name")
+        else
+            echo "Warning: Test '$test_name' not found"
+        fi
+    done
+else
+    # all test cases
+    test_cases=()
+    while read -r output_file; do
+        test_dir="$(dirname "$output_file")"
+        test_name="$(basename "$(dirname "$test_dir")")_$(basename "$test_dir")"
+        test_cases+=("$test_dir:$test_name")
+    done < <(find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "output.json" \;)
+fi
 
-echo ""
-echo "Test cases run: $test_case_count"
-echo "Skipped test cases: $skipped_test_case_count"
-echo "Failed test cases: $failed_test_case_count"
+total_tests=${#test_cases[@]}
+passed=0
+failed=0
+failed_tests=()
+
+# run tests
+for i in "${!test_cases[@]}"; do
+    IFS=':' read -r test_dir test_name <<<"${test_cases[i]}"
+
+    printf "Test %d/%d %s\n" "$((i + 1))" "$total_tests" "$test_name"
+
+    if run_single_test "$test_dir" "$test_name"; then
+        ((passed++))
+    else
+        ((failed++))
+        failed_tests+=("$test_name")
+    fi
+done
+
+# summary
+if [ "$total_tests" -gt 0 ]; then
+    printf "%d%% tests passed, %d tests failed out of %d\n" \
+        "$((passed * 100 / total_tests))" "$failed" "$total_tests"
+else
+    echo "No tests found"
+fi
+
+if [ ${#failed_tests[@]} -gt 0 ]; then
+    echo "Failed tests:"
+    for test in "${failed_tests[@]}"; do
+        echo "  $test"
+    done
+    exit 1
+fi
