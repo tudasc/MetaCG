@@ -11,7 +11,6 @@ add_library(${PROJECT_NAME} SHARED ${FCOLLECTOR_SOURCES})
 add_flang(${PROJECT_NAME})
 add_metacg(${PROJECT_NAME})
 add_spdlog_libraries(${PROJECT_NAME})
-# add_json(${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
