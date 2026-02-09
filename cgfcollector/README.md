@@ -32,7 +32,6 @@ Additionally these other tools are included:
 
 - `cgfcollector_wrapper.sh`: convenience wrapper to run parse plugin.
 - `cgfcollector_comp_wrapper.sh`: acts like a normal Flang compiler but also generates a call graph.
-- `cgCompare.cpp`: compares two given call graphs.
 - `test_runner.sh`: run tests.
 
 ## How to build
