@@ -27,10 +27,9 @@ function(add_flang target)
   target_include_directories(${target} SYSTEM PUBLIC ${FLANG_INCLUDE_DIRS})
 
   find_library(
-    FLANG_LIB flang
+    FLANG_FRONTEND_TOOL flangFrontendTool
     PATHS ${LLVM_LIBRARY_DIR}
     NO_DEFAULT_PATH
   )
-
-  target_link_libraries(${target} PUBLIC flangFrontendTool)
+  target_link_libraries(${target} PUBLIC ${FLANG_FRONTEND_TOOL})
 endfunction()
