@@ -91,6 +91,29 @@ option(
 if(METACG_BUILD_GRAPH_TOOLS)
   # New MetaCG tools based on the graphlib
   include(ClangLLVM)
+
+  # Determine if we can build CaGe
+  if(${LLVM_PACKAGE_VERSION}
+     GREATER
+     15
+  )
+    set(BUILD_CAGE ON)
+
+    option(
+      CAGE_USE_METAVIRT
+      ON
+      "Rely on metavirt for virtual call handling"
+    )
+
+    if(${CAGE_USE_METAVIRT})
+      include(metavirt)
+    endif()
+
+  else()
+    set(BUILD_CAGE OFF)
+    message(STATUS "Skipping CaGe: requires LLVM version 16 or higher")
+  endif()
+
   add_subdirectory(tools)
 endif()
 
@@ -125,6 +148,7 @@ if(METACG_BUILD_CGPATCH)
     message(STATUS "Skipping CGPatch: requires LLVM version 15 or higher")
   endif()
 endif()
+
 # PIRA analyzer Should PGIS be built
 option(
   METACG_BUILD_PGIS

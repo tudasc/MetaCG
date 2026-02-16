@@ -24,6 +24,7 @@
 
 #include "metadata/BuiltinMD.h"
 
+#include <filesystem>
 #include "spdlog/spdlog.h"
 
 using namespace llvm::cl;
@@ -52,6 +53,8 @@ static opt<bool> inferCtorsDtors("infer-ctors-dtors",
                                  desc("Infer calls to constructors and destructurs through inheritance chains and  "
                                       "infer calls to destructors based on scopes / lifetimes <default=false>"),
                                  init(false), cat(cgc));
+
+static opt<std::string> cgout("cg-file", desc("Output file for the generated call graph"), cat(cgc)); 
 
 enum class Collectors {
   None,
@@ -211,10 +214,17 @@ int main(int argc, const char** argv) {
       mcs.push_back(p);
     }
   }
+  std::filesystem::path cgoutPath;
+
+  if (cgout.getNumOccurrences() > 0) {
+    cgoutPath = std::filesystem::absolute(
+        std::filesystem::path(cgout.getValue())
+    );
+  }
 
   std::unique_ptr<CallGraphCollectorAction> const cgca2 =
       std::make_unique<CallGraphCollectorAction>(mcs, metacgFormatVersion, captureCtorsDtors, captureNewDeleteCalls,
-                                                 captureImplicits, inferCtorsDtors, prune, standalone, aliasAssumption);
+                                                 captureImplicits, inferCtorsDtors, prune, standalone, aliasAssumption, cgoutPath);
 
   CT.run(clang::tooling::newFrontendActionFactory<CallGraphCollectorAction>(cgca2.get()).get());
 

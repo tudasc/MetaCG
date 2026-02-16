@@ -145,6 +145,7 @@ build-mcg:
       -DMETACG_BUILD_CGCOLLECTOR=ON
       -DMETACG_BUILD_GRAPH_TOOLS=ON
       -DMETACG_BUILD_CGPATCH=ON
+      -DCAGE_USE_METAVIRT=ON
       -DCGPATCH_USE_MPI=OFF
       -DMETACG_BUILD_PYMETACG=ON
       -DMETACG_BUILD_PYMETACG_TESTS=ON
@@ -268,6 +269,19 @@ test-cgcollector2:
     - module load clang/$LLVM
     - cd tools/cgcollector2/test/
     - ./testBase.sh -b $MCG_BUILD
+
+test-cage:
+  <<: *job-setup
+  parallel:
+    matrix:
+      - GCC: 11
+        LLVM: [16.0.6, 17.0.6, 18.1.8]
+  stage: integration-test
+  needs: ["build-mcg"]
+  script:
+    - module load clang/$LLVM
+    - cd $MCG_BUILD/tools/cage/test
+    - ./runCaGeTests.sh
 
 test-basic-pgis:
   <<: *job-setup

@@ -124,6 +124,13 @@ jobs:
           run: |
             cd /opt/metacg/tools/cgcollector2/test
             bash testBase.sh
+      - name: Run CaGe tests
+        uses: addnab/docker-run-action@v3
+        with:
+          image: metacg-devel:latest
+          run: |
+            cd /opt/metacg/build/tools/cage/test
+            ./runCaGeTests.sh
       - name: Run cgvalidate tests
         uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
         with: 

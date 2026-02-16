@@ -20,7 +20,7 @@ class CallGraphCollectorConsumer : public clang::ASTConsumer {
  public:
   CallGraphCollectorConsumer(MetaCollectorVector& mcs, int mcgVersion, bool captureCtorsDtors,
                              bool captureNewDeleteCalls, bool captureImplicits, bool inferCtorsDtors, bool prune, bool standalone,
-                             AliasAnalysisLevel level)
+                             AliasAnalysisLevel level, std::filesystem::path cgout)
       : mcs(mcs),
         mcgVersion(mcgVersion),
         captureCtorsDtors(captureCtorsDtors),
@@ -29,7 +29,8 @@ class CallGraphCollectorConsumer : public clang::ASTConsumer {
         inferCtorsDtors(inferCtorsDtors),
         prune(prune),
         standalone(standalone),
-        level(level) {};
+        level(level),
+        cgout(cgout) {};
 
   virtual void HandleTranslationUnit(clang::ASTContext& Context);
 
@@ -45,12 +46,13 @@ class CallGraphCollectorConsumer : public clang::ASTConsumer {
   bool prune;
   bool standalone;
   AliasAnalysisLevel level;
+  std::filesystem::path cgout;
 };
 
 class CallGraphCollectorAction : clang::ASTFrontendAction {
  public:
   CallGraphCollectorAction(MetaCollectorVector& mcs, int mcgVersion, bool captureCtorsDtors, bool captureNewDeleteCalls,
-                           bool captureImplicits, bool infereCtorsDtors, bool prune, bool standalone, AliasAnalysisLevel level)
+                           bool captureImplicits, bool infereCtorsDtors, bool prune, bool standalone, AliasAnalysisLevel level, std::filesystem::path cgout)
       : mcs(mcs),
         mcgVersion(mcgVersion),
         captureCtorsDtors(captureCtorsDtors),
@@ -59,17 +61,18 @@ class CallGraphCollectorAction : clang::ASTFrontendAction {
         inferCtorsDtors(infereCtorsDtors),
         prune(prune),
         standalone(standalone),
-        level(level) {}
+        level(level),
+        cgout(cgout) {}
 
   std::unique_ptr<clang::ASTConsumer> newASTConsumer() {
     return std::unique_ptr<clang::ASTConsumer>(new CallGraphCollectorConsumer(
-        mcs, mcgVersion, captureCtorsDtors, captureNewDeleteCalls, captureImplicits, inferCtorsDtors, prune, standalone, level));
+        mcs, mcgVersion, captureCtorsDtors, captureNewDeleteCalls, captureImplicits, inferCtorsDtors, prune, standalone, level, cgout));
   }
 
   std::unique_ptr<clang::ASTConsumer> CreateASTConsumer([[maybe_unused]] clang::CompilerInstance& compiler,
                                                         [[maybe_unused]] llvm::StringRef sr) {
     return std::unique_ptr<clang::ASTConsumer>(new CallGraphCollectorConsumer(
-        mcs, mcgVersion, captureCtorsDtors, captureNewDeleteCalls, captureImplicits, inferCtorsDtors, prune, standalone, level));
+        mcs, mcgVersion, captureCtorsDtors, captureNewDeleteCalls, captureImplicits, inferCtorsDtors, prune, standalone, level, cgout));
   }
 
  private:
@@ -82,6 +85,7 @@ class CallGraphCollectorAction : clang::ASTFrontendAction {
   bool prune;
   bool standalone;
   AliasAnalysisLevel level;
+  std::filesystem::path cgout;
 };
 
 #endif  // CGCOLLECTOR2_CALLGRAPHCOLLECTIONACTION_H

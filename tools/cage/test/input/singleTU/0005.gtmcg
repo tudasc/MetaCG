@@ -1,0 +1,39 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "_Z8childOnev": {
+                "callees": {},
+                "functionName": "_Z8childOnev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0005.cpp"
+            },
+            "_Z8childTwov": {
+                "callees": {},
+                "functionName": "_Z8childTwov",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0005.cpp"
+            },
+            "main": {
+                "callees": {
+                    "_Z8childOnev": {},
+                    "_Z8childTwov": {}
+                },
+                "functionName": "main",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0005.cpp"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CaGe",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
+            "version": "0.1"
+        },
+        "version": "4.0"
+    }
+}

@@ -1,0 +1,62 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "_Z3boov": {
+                "callees": {},
+                "functionName": "_Z3boov",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0237.cpp"
+            },
+            "_Z3foov": {
+                "callees": {},
+                "functionName": "_Z3foov",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0237.cpp"
+            },
+            "_ZN1BC2EPFivE": {
+                "callees": {},
+                "functionName": "_ZN1BC2EPFivE",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0237.cpp"
+            },
+            "_ZN1C4workEv": {
+                "callees": {},
+                "functionName": "_ZN1C4workEv",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0237.cpp"
+            },
+            "_ZN1CC2EPFivES1_": {
+                "callees": {
+                    "_ZN1BC2EPFivE": {}
+                },
+                "functionName": "_ZN1CC2EPFivES1_",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0237.cpp"
+            },
+            "main": {
+                "callees": {
+                    "_ZN1C4workEv": {},
+                    "_ZN1CC2EPFivES1_": {}
+                },
+                "functionName": "main",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0237.cpp"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CaGe",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
+            "version": "0.1"
+        },
+        "version": "4.0"
+    }
+}

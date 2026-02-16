@@ -1,0 +1,22 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "main": {
+                "callees": {},
+                "functionName": "main",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0001.cpp"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CaGe",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
+            "version": "0.1"
+        },
+        "version": "4.0"
+    }
+}
