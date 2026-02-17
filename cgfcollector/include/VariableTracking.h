@@ -6,24 +6,22 @@
 
 #pragma once
 
-#include <flang/Semantics/symbol.h>
-
 #include "Edge.h"
 #include "Function.h"
 #include "Type.h"
-#include "Util.h"
 
-using namespace Fortran::semantics;
+#include <flang/Semantics/symbol.h>
 
 struct trackedVar {
-  const Symbol* var;
-  const Symbol* procedure;  // procedure in which var was defined
+  const Fortran::semantics::Symbol* var;
+  const Fortran::semantics::Symbol* procedure;  // procedure in which var was defined
   bool hasBeenInitialized = false;
   bool addFinalizers = false;
 
-  trackedVar(const Symbol* var, const Symbol* procedure)
+  trackedVar(const Fortran::semantics::Symbol* var, const Fortran::semantics::Symbol* procedure)
       : var(var), procedure(procedure), hasBeenInitialized(false), addFinalizers(false) {}
-  trackedVar(const Symbol* var, const Symbol* procedure, bool initialized, bool addFinalizers)
+  trackedVar(const Fortran::semantics::Symbol* var, const Fortran::semantics::Symbol* procedure, bool initialized,
+             bool addFinalizers)
       : var(var), procedure(procedure), hasBeenInitialized(initialized), addFinalizers(addFinalizers) {}
 };
 
@@ -39,7 +37,8 @@ struct variableTracking {
    * @param sourceName
    * @return trackedVar* or nullptr if not found
    */
-  trackedVar* getTrackedVarFromSourceName(const Symbol* currentFunctionSymbol, SourceName sourceName);
+  trackedVar* getTrackedVarFromSourceName(const Fortran::semantics::Symbol* currentFunctionSymbol,
+                                          Fortran::semantics::SourceName sourceName);
 
   /**
    * @brief Search trackedVars for a canditate and set it as initialized.
@@ -47,7 +46,8 @@ struct variableTracking {
    * @param currentFunctionSymbol
    * @param sourceName
    */
-  void handleTrackedVarAssignment(const Symbol* currentFunctionSymbol, SourceName sourceName);
+  void handleTrackedVarAssignment(const Fortran::semantics::Symbol* currentFunctionSymbol,
+                                  Fortran::semantics::SourceName sourceName);
 
   /**
    * @brief Is called at the end of a function/subroutine end statement. It checks trackedVars for any initialized
@@ -56,7 +56,7 @@ struct variableTracking {
    * @param currentFunctionSymbol
    * @param edgeM TODO: remove dep
    */
-  void handleTrackedVars(const Symbol* currentFunctionSymbol, std::unique_ptr<edgeManager>& edgeM);
+  void handleTrackedVars(const Fortran::semantics::Symbol* currentFunctionSymbol, std::unique_ptr<edgeManager>& edgeM);
 
   /**
    * @brief Register a variable for tracking.
@@ -71,7 +71,7 @@ struct variableTracking {
    *
    * @param procedureSymbol
    */
-  void removeTrackedVars(const Symbol* procedureSymbol);
+  void removeTrackedVars(const Fortran::semantics::Symbol* procedureSymbol);
 
  private:
   std::vector<trackedVar>& trackedVars;

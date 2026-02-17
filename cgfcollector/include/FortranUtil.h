@@ -1,24 +1,19 @@
 /**
- * File: Util.h
+ * File: FortranUtil.h
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #pragma once
 
-#include "LoggerUtil.h"
+#include "Type.h"
+
+#include <LoggerUtil.h>
 #include <cassert>
 #include <flang/Lower/Mangler.h>
 #include <flang/Optimizer/Support/InternalNames.h>
 #include <flang/Parser/parse-tree.h>
 #include <flang/Semantics/symbol.h>
-
-#include "Type.h"
-
-using namespace Fortran::parser;
-using namespace Fortran::semantics;
-using namespace Fortran::common;
-using namespace metacg;
 
 /**
  * @brief Formatter for CharBlock
@@ -54,10 +49,11 @@ bool holds_any_of(const Variant& v) {
  * @return
  */
 template <typename T>
-const Name* getNameFromClassWithDesignator(const T& t) {
-  if (const Indirection<Designator>* designator = std::get_if<Indirection<Designator>>(&t.u)) {
-    if (const DataRef* dataRef = std::get_if<DataRef>(&designator->value().u)) {
-      if (const Name* name = std::get_if<Name>(&dataRef->u)) {
+const Fortran::parser::Name* getNameFromClassWithDesignator(const T& t) {
+  if (const Fortran::common::Indirection<Fortran::parser::Designator>* designator =
+          std::get_if<Fortran::common::Indirection<Fortran::parser::Designator>>(&t.u)) {
+    if (const Fortran::parser::DataRef* dataRef = std::get_if<Fortran::parser::DataRef>(&designator->value().u)) {
+      if (const Fortran::parser::Name* name = std::get_if<Fortran::parser::Name>(&dataRef->u)) {
         return name;
       }
     }
@@ -73,7 +69,7 @@ const Name* getNameFromClassWithDesignator(const T& t) {
  * @param b
  * @return true if both symbols are equal
  */
-bool compareSymbols(const Symbol* a, const Symbol* b);
+bool compareSymbols(const Fortran::semantics::Symbol* a, const Fortran::semantics::Symbol* b);
 
 /**
  * @brief Generate mangled name from symbol
@@ -81,7 +77,7 @@ bool compareSymbols(const Symbol* a, const Symbol* b);
  * @param sym
  * @return
  */
-std::string mangleSymbol(const Symbol* sym);
+std::string mangleSymbol(const Fortran::semantics::Symbol* sym);
 
 /**
  * @brief Check if expression is an operator expression
@@ -89,7 +85,7 @@ std::string mangleSymbol(const Symbol* sym);
  * @param e
  * @return
  */
-bool isOperator(const Expr* e);
+bool isOperator(const Fortran::parser::Expr* e);
 
 /**
  * @brief Compare if expression match given intrinsic operator
@@ -98,7 +94,8 @@ bool isOperator(const Expr* e);
  * @param op
  * @return
  */
-bool compareExprIntrinsicOperator(const Expr* expr, DefinedOperator::IntrinsicOperator op);
+bool compareExprIntrinsicOperator(const Fortran::parser::Expr* expr,
+                                  Fortran::parser::DefinedOperator::IntrinsicOperator op);
 
 /**
  * @brief Check if binary operator expression
@@ -106,7 +103,7 @@ bool compareExprIntrinsicOperator(const Expr* expr, DefinedOperator::IntrinsicOp
  * @param e
  * @return
  */
-bool isBinaryOperator(const Expr* e);
+bool isBinaryOperator(const Fortran::parser::Expr* e);
 
 /**
  * @brief Check if unary operator expression
@@ -114,7 +111,7 @@ bool isBinaryOperator(const Expr* e);
  * @param e
  * @return
  */
-bool isUnaryOperator(const Expr* e);
+bool isUnaryOperator(const Fortran::parser::Expr* e);
 
 /**
  * @brief Get intrinsic operator from a variant of several operator types (RelationalOperator, LogicalOperator,
@@ -124,7 +121,8 @@ bool isUnaryOperator(const Expr* e);
  * @param op
  * @return
  */
-DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(const GenericKind& gk);
+Fortran::parser::DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(
+    const Fortran::semantics::GenericKind& gk);
 
 /**
  * @brief Get type symbol from a given symbol
@@ -132,7 +130,7 @@ DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(const GenericKind
  * @param symbol
  * @return
  */
-const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol);
+const Fortran::semantics::Symbol* getTypeSymbolFromSymbol(const Fortran::semantics::Symbol* symbol);
 
 /**
  * @brief Searches the types vector for given symbol and returns pointers to vectors of type with derived types. The
@@ -141,4 +139,5 @@ const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol);
  * @param typeSymbol symbol to search for
  * @return vector with type and all derived types
  */
-std::vector<const type*> findTypeWithDerivedTypes(const std::vector<type>& types, const Symbol* symbol);
+std::vector<const type*> findTypeWithDerivedTypes(const std::vector<type>& types,
+                                                  const Fortran::semantics::Symbol* symbol);

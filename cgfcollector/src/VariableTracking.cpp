@@ -6,6 +6,11 @@
 
 #include "VariableTracking.h"
 
+#include "FortranUtil.h"
+
+using namespace Fortran::semantics;
+using namespace metacg;
+
 trackedVar* variableTracking::getTrackedVarFromSourceName(const Symbol* currentFunctionSymbol, SourceName sourceName) {
   auto anyTrackedVarIt = std::find_if(trackedVars.begin(), trackedVars.end(),
                                       [&](const trackedVar& t) { return t.var->name() == sourceName; });

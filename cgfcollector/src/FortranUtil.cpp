@@ -1,10 +1,15 @@
 /**
- * File: Util.cpp
+ * File: FortranUtil.cpp
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "Util.h"
+#include "FortranUtil.h"
+
+using namespace Fortran::semantics;
+using namespace Fortran::parser;
+using namespace Fortran::common;
+using namespace metacg;
 
 bool compareSymbols(const Symbol* a, const Symbol* b) {
   if (a == b)

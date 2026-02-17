@@ -6,10 +6,10 @@
 
 #pragma once
 
+#include "Edge.h"
+
 #include <string>
 #include <vector>
-
-#include "Edge.h"
 
 struct potentialFinalizer {
   std::size_t argPos;

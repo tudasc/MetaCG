@@ -6,6 +6,13 @@
 
 #pragma once
 
+#include "Edge.h"
+#include "FortranUtil.h"
+#include "Function.h"
+#include "PotentialFinalizer.h"
+#include "Type.h"
+#include "VariableTracking.h"
+
 #include <Callgraph.h>
 #include <MCGManager.h>
 #include <flang/Frontend/CompilerInstance.h>
@@ -21,22 +28,8 @@
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/raw_ostream.h>
-#include <type_traits>
-#include <typeindex>
 #include <variant>
 #include <vector>
-
-#include "Edge.h"
-#include "Function.h"
-#include "PotentialFinalizer.h"
-#include "Type.h"
-#include "Util.h"
-#include "VariableTracking.h"
-
-using namespace Fortran::parser;
-using namespace Fortran::semantics;
-using namespace Fortran::common;
-using namespace metacg;
 
 /**
  * @class ParseTreeVisitor
@@ -45,7 +38,7 @@ using namespace metacg;
  */
 class ParseTreeVisitor {
  public:
-  ParseTreeVisitor(Callgraph* cg, std::string currentFileName)
+  ParseTreeVisitor(metacg::Callgraph* cg, std::string currentFileName)
       : cg(cg),
         currentFileName(currentFileName),
         edgeM(std::make_unique<edgeManager>(edges)),
@@ -72,7 +65,8 @@ class ParseTreeVisitor {
    * @param typeWithDerived
    * @param procedureSymbol
    */
-  void addEdgesForProducesAndDerivedTypes(std::vector<const type*> typeWithDerived, const Symbol* procedureSymbol);
+  void addEdgesForProducesAndDerivedTypes(std::vector<const type*> typeWithDerived,
+                                          const Fortran::semantics::Symbol* procedureSymbol);
 
   /**
    * @brief Adds edges and potential finalizers edges to cg.
@@ -88,55 +82,55 @@ class ParseTreeVisitor {
   template <typename A>
   void Post(const A&) {}
 
-  bool Pre(const MainProgram& p);
-  void Post(const MainProgram&);
+  bool Pre(const Fortran::parser::MainProgram& p);
+  void Post(const Fortran::parser::MainProgram&);
 
-  bool Pre(const FunctionSubprogram&);
-  void Post(const FunctionSubprogram&);
-  bool Pre(const SubroutineSubprogram&);
-  void Post(const SubroutineSubprogram&);
+  bool Pre(const Fortran::parser::FunctionSubprogram&);
+  void Post(const Fortran::parser::FunctionSubprogram&);
+  bool Pre(const Fortran::parser::SubroutineSubprogram&);
+  void Post(const Fortran::parser::SubroutineSubprogram&);
 
   /**
    * @brief Set hasBody field.
    *
    * @param e
    */
-  void Post(const ExecutionPart& e);
+  void Post(const Fortran::parser::ExecutionPart& e);
 
-  void Post(const EntryStmt& e);
+  void Post(const Fortran::parser::EntryStmt& e);
 
-  void Post(const FunctionStmt& f);
-  void Post(const EndFunctionStmt&);
-  void Post(const SubroutineStmt& s);
-  void Post(const EndSubroutineStmt&);
+  void Post(const Fortran::parser::FunctionStmt& f);
+  void Post(const Fortran::parser::EndFunctionStmt&);
+  void Post(const Fortran::parser::SubroutineStmt& s);
+  void Post(const Fortran::parser::EndSubroutineStmt&);
 
   /**
    * @brief ProcedureDesignator: A procedure being called. Handles both cases a call with call statement and without.
    *
    * @param p
    */
-  void Post(const ProcedureDesignator& p);
+  void Post(const Fortran::parser::ProcedureDesignator& p);
 
   /**
    * @brief Handle trackedVar assignment
    *
    * @param a
    */
-  void Post(const AssignmentStmt& a);
+  void Post(const Fortran::parser::AssignmentStmt& a);
 
   /**
    * @brief Handle trackedVar assignment through allocate statement.
    *
    * @param a
    */
-  void Post(const AllocateStmt& a);
+  void Post(const Fortran::parser::AllocateStmt& a);
 
   /**
    * @brief Mostly add potential finalizers for variables that get initialized through procedure arguments.
    *
    * @param c
    */
-  void Post(const Call& c);
+  void Post(const Fortran::parser::Call& c);
 
   /**
    * @brief Mostly handles finalizers. Handles the different ways a variable can be parsed to a procedure and gets
@@ -144,7 +138,7 @@ class ParseTreeVisitor {
    *
    * @param t
    */
-  void Post(const TypeDeclarationStmt& t);
+  void Post(const Fortran::parser::TypeDeclarationStmt& t);
 
   // The following methods are for collecting types and their procedures. See type struct and vector.
 
@@ -153,11 +147,11 @@ class ParseTreeVisitor {
    *
    * @return
    */
-  bool Pre(const DerivedTypeDef&);
+  bool Pre(const Fortran::parser::DerivedTypeDef&);
   /**
    * @brief Type definiiton end
    */
-  void Post(const DerivedTypeDef&);
+  void Post(const Fortran::parser::DerivedTypeDef&);
 
   /**
    * @brief Type stmt like type [, extends(...)] :: body (not exhaustive and not extends)
@@ -165,35 +159,35 @@ class ParseTreeVisitor {
    * @param t
    * @return
    */
-  bool Pre(const DerivedTypeStmt& t);
+  bool Pre(const Fortran::parser::DerivedTypeStmt& t);
 
   /**
    * @brief Type attributes like extends
    *
    * @param a
    */
-  void Post(const TypeAttrSpec& a);
+  void Post(const Fortran::parser::TypeAttrSpec& a);
 
   /**
    * @brief Collect type bound procedures in derived type definitions
    *
    * @param s
    */
-  void Post(const TypeBoundProcedureStmt& s);
+  void Post(const Fortran::parser::TypeBoundProcedureStmt& s);
 
   /**
    * @brief Collect defined operators in type definition (operator overloading)
    *
    * @param s
    */
-  void Post(const TypeBoundGenericStmt& s);
+  void Post(const Fortran::parser::TypeBoundGenericStmt& s);
 
   // The following methods are for collecting defined operators in interface statements
 
-  bool Pre(const InterfaceStmt&);
-  bool Pre(const EndInterfaceStmt&);
-  void Post(const DefinedOperator& op);
-  void Post(const ProcedureStmt& p);
+  bool Pre(const Fortran::parser::InterfaceStmt&);
+  bool Pre(const Fortran::parser::EndInterfaceStmt&);
+  void Post(const Fortran::parser::DefinedOperator& op);
+  void Post(const Fortran::parser::ProcedureStmt& p);
 
   /**
    * @brief Parse operators in expressions
@@ -201,23 +195,23 @@ class ParseTreeVisitor {
    * @param e
    * @return
    */
-  bool Pre(const Expr& e);
+  bool Pre(const Fortran::parser::Expr& e);
   /**
    * @brief Post cleanup parse operators in expressions
    *
    * @param e
    */
-  void Post(const Expr& e);
+  void Post(const Fortran::parser::Expr& e);
 
   /**
    * @brief Extract additional information from use statements
    *
    * @param u
    */
-  void Post(const UseStmt& u);
+  void Post(const Fortran::parser::UseStmt& u);
 
  private:
-  Callgraph* cg;
+  metacg::Callgraph* cg;
   std::string currentFileName;
   std::unique_ptr<edgeManager> edgeM;
   std::unique_ptr<variableTracking> varTracking;
@@ -237,12 +231,13 @@ class ParseTreeVisitor {
 
   std::vector<type> types;  // all types
 
-  std::vector<std::pair<std::variant<const Symbol*, DefinedOperator::IntrinsicOperator>,
-                        std::vector<const Symbol*>>>
+  std::vector<
+      std::pair<std::variant<const Fortran::semantics::Symbol*, Fortran::parser::DefinedOperator::IntrinsicOperator>,
+                std::vector<const Fortran::semantics::Symbol*>>>
       interfaceOperators;  // all interface operators. First is either a symbol of a DefinedOpName or
                            // IntrinsicOperator. Second is a vector procedure symbols, bound to that operator.
 
-  std::vector<const Expr*> exprStmtWithOps;
+  std::vector<const Fortran::parser::Expr*> exprStmtWithOps;
 
   std::vector<trackedVar> trackedVars;  // mainly used for destructor handling
 

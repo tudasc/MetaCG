@@ -6,6 +6,11 @@
 
 #include "ParseTreeVisitor.h"
 
+using namespace Fortran::parser;
+using namespace Fortran::semantics;
+using namespace Fortran::common;
+using namespace metacg;
+
 template void ParseTreeVisitor::handleFuncSubStmt<FunctionStmt>(const FunctionStmt&);
 template void ParseTreeVisitor::handleFuncSubStmt<SubroutineStmt>(const SubroutineStmt&);
 

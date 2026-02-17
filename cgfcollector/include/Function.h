@@ -9,22 +9,21 @@
 #include <flang/Semantics/symbol.h>
 #include <vector>
 
-using namespace Fortran::semantics;
-
 struct function {
   struct dummyArg {
-    const Symbol* symbol;
+    const Fortran::semantics::Symbol* symbol;
     bool hasBeenInitialized = false;
 
-    explicit dummyArg(const Symbol* sym) : symbol(sym) {}
-    explicit dummyArg(const Symbol* sym, bool init) : symbol(sym), hasBeenInitialized(init) {}
+    explicit dummyArg(const Fortran::semantics::Symbol* sym) : symbol(sym) {}
+    explicit dummyArg(const Fortran::semantics::Symbol* sym, bool init) : symbol(sym), hasBeenInitialized(init) {}
   };
 
-  const Symbol* symbol;  // function symbol
+  const Fortran::semantics::Symbol* symbol;  // function symbol
   std::vector<dummyArg> dummyArgs;
 
-  explicit function(const Symbol* sym) : symbol(sym) {}
-  explicit function(const Symbol* sym, std::vector<dummyArg> args) : symbol(sym), dummyArgs(std::move(args)) {}
+  explicit function(const Fortran::semantics::Symbol* sym) : symbol(sym) {}
+  explicit function(const Fortran::semantics::Symbol* sym, std::vector<dummyArg> args)
+      : symbol(sym), dummyArgs(std::move(args)) {}
 
-  void addDummyArg(const Symbol* sym) { dummyArgs.emplace_back(sym); }
+  void addDummyArg(const Fortran::semantics::Symbol* sym) { dummyArgs.emplace_back(sym); }
 };

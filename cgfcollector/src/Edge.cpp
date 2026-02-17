@@ -6,6 +6,10 @@
 
 #include "Edge.h"
 
+using namespace Fortran::semantics;
+using namespace Fortran::parser;
+using namespace metacg;
+
 std::vector<edgeSymbol> edgeManager::getEdgesForFinalizers(const std::vector<type>& types,
                                                            const Symbol* currentFunctionSymbol, const Symbol* symbol) {
   std::vector<edgeSymbol> edges;

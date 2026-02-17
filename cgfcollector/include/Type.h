@@ -9,16 +9,13 @@
 #include <LoggerUtil.h>
 #include <flang/Parser/parse-tree.h>
 #include <flang/Semantics/symbol.h>
-#include <unordered_set>
 #include <vector>
 
-using namespace Fortran::semantics;
-using namespace Fortran::parser;
-using namespace metacg;
-
 struct type {
-  const Symbol* typeSymbol;
-  const Symbol* extendsFrom;
-  std::vector<std::pair<const Symbol*, const Symbol*>> procedures;  // name(symbol) => optname(symbol)
-  std::vector<std::pair<DefinedOperator::IntrinsicOperator, const Symbol*>> operators;  // operator => name(symbol)
+  const Fortran::semantics::Symbol* typeSymbol;
+  const Fortran::semantics::Symbol* extendsFrom;
+  std::vector<std::pair<const Fortran::semantics::Symbol*, const Fortran::semantics::Symbol*>>
+      procedures;  // name(symbol) => optname(symbol)
+  std::vector<std::pair<Fortran::parser::DefinedOperator::IntrinsicOperator, const Fortran::semantics::Symbol*>>
+      operators;  // operator => name(symbol)
 };
