@@ -14,8 +14,11 @@
 struct Type {
   const Fortran::semantics::Symbol* typeSymbol;
   const Fortran::semantics::Symbol* extendsFrom;
-  std::vector<std::pair<const Fortran::semantics::Symbol*, const Fortran::semantics::Symbol*>>
-      procedures;  // name(symbol) => optname(symbol)
+
+  // name(symbol) => optname(symbol)
+  std::vector<std::pair<const Fortran::semantics::Symbol*, const Fortran::semantics::Symbol*>> procedures;
+
+  // operator => name(symbol)
   std::vector<std::pair<Fortran::parser::DefinedOperator::IntrinsicOperator, const Fortran::semantics::Symbol*>>
-      operators;  // operator => name(symbol)
+      operators;
 };

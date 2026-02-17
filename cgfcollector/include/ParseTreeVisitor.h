@@ -223,23 +223,30 @@ class ParseTreeVisitor {
   bool inInterfaceStmtDefinedOperator = false;
   bool inInterfaceSpecification = false;
 
-  std::vector<Edge> edges;  // added to cg in postProcess step
+  // added to cg in postProcess step
+  std::vector<Edge> edges;
 
-  std::vector<Function> functions;         // all functions
-  std::vector<Function> currentFunctions;  // intended as a stack. It holds the current function symbol and its dummy
-                                           // args when the AST walker is in the respective function.
+  // all functions
+  std::vector<Function> functions;
 
-  std::vector<Type> types;  // all types
+  // intended as a stack. It holds the current function symbol and its dummy
+  // args when the AST walker is in the respective function.
+  std::vector<Function> currentFunctions;
 
+  // all types
+  std::vector<Type> types;
+
+  // all interface operators. First is either a symbol of a DefinedOpName or
+  // IntrinsicOperator. Second is a vector procedure symbols, bound to that operator.
   std::vector<
       std::pair<std::variant<const Fortran::semantics::Symbol*, Fortran::parser::DefinedOperator::IntrinsicOperator>,
                 std::vector<const Fortran::semantics::Symbol*>>>
-      interfaceOperators;  // all interface operators. First is either a symbol of a DefinedOpName or
-                           // IntrinsicOperator. Second is a vector procedure symbols, bound to that operator.
+      interfaceOperators;
 
   std::vector<const Fortran::parser::Expr*> exprStmtWithOps;
 
-  std::vector<TrackedVar> trackedVars;  // mainly used for destructor handling
+  // mainly used for destructor handling
+  std::vector<TrackedVar> trackedVars;
 
   std::vector<PotentialFinalizer> potentialFinalizers;
 };

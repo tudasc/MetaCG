@@ -14,7 +14,10 @@
 
 struct TrackedVar {
   const Fortran::semantics::Symbol* var;
-  const Fortran::semantics::Symbol* procedure;  // procedure in which var was defined
+
+  // procedure in which var was defined
+  const Fortran::semantics::Symbol* procedure;
+
   bool hasBeenInitialized = false;
   bool addFinalizers = false;
 

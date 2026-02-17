@@ -241,7 +241,9 @@ std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types
     return typesWithDerived;
   }
 
-  typesWithDerived.push_back(&(*findTypeIt));  // Add the initial type
+  // Add the initial type
+  typesWithDerived.push_back(&(*findTypeIt));
+
   visited.insert(typeSymbol);
 
   // collect descendants
@@ -250,7 +252,9 @@ std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types
       if (t.extendsFrom == parent->typeSymbol && !visited.count(t.typeSymbol)) {
         visited.insert(t.typeSymbol);
         typesWithDerived.push_back(&t);
-        collectDescendants(&t);  // recursive call to find further descendants
+
+        // recursive call to find further descendants
+        collectDescendants(&t);
       }
     }
   };
