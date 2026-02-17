@@ -1,4 +1,10 @@
-#include "edge.h"
+/**
+ * File: Edge.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
+#include "Edge.h"
 
 std::vector<edgeSymbol> edgeManager::getEdgesForFinalizers(const std::vector<type>& types,
                                                            const Symbol* currentFunctionSymbol, const Symbol* symbol) {

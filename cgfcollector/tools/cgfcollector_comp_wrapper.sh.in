@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Wrapper script for running cgfcollector plugin with flang.
 # This script acts as a drop-in replacement for the flang compiler

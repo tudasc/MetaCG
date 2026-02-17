@@ -1,3 +1,9 @@
+/**
+ * File: ParseTreeVisitor.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #include "ParseTreeVisitor.h"
 
 template void ParseTreeVisitor::handleFuncSubStmt<FunctionStmt>(const FunctionStmt&);

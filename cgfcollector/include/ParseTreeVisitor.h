@@ -1,3 +1,9 @@
+/**
+ * File: ParseTreeVisitor.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #pragma once
 
 #include <Callgraph.h>
@@ -20,12 +26,12 @@
 #include <variant>
 #include <vector>
 
-#include "edge.h"
-#include "function.h"
-#include "potentialFinalizer.h"
-#include "type.h"
-#include "util.h"
-#include "variableTracking.h"
+#include "Edge.h"
+#include "Function.h"
+#include "PotentialFinalizer.h"
+#include "Type.h"
+#include "Util.h"
+#include "VariableTracking.h"
 
 using namespace Fortran::parser;
 using namespace Fortran::semantics;

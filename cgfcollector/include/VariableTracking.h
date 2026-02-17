@@ -1,11 +1,17 @@
+/**
+ * File: VariableTracking.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #pragma once
 
 #include <flang/Semantics/symbol.h>
 
-#include "edge.h"
-#include "function.h"
-#include "type.h"
-#include "util.h"
+#include "Edge.h"
+#include "Function.h"
+#include "Type.h"
+#include "Util.h"
 
 using namespace Fortran::semantics;
 

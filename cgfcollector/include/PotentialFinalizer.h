@@ -1,9 +1,15 @@
+/**
+ * File: PotentialFinalizer.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
 #pragma once
 
 #include <string>
 #include <vector>
 
-#include "edge.h"
+#include "Edge.h"
 
 struct potentialFinalizer {
   std::size_t argPos;
