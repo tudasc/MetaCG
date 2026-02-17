@@ -1,13 +1,13 @@
-set(PROJECT_NAME fcollector)
+set(PROJECT_NAME cgfcollector)
 set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 
 file(
   GLOB
-  FCOLLECTOR_SOURCES
+  CGFCOLLECTOR_SOURCES
   src/*.cpp
 )
 
-add_library(${PROJECT_NAME} SHARED ${FCOLLECTOR_SOURCES})
+add_library(${PROJECT_NAME} SHARED ${CGFCOLLECTOR_SOURCES})
 add_flang(${PROJECT_NAME})
 add_metacg(${PROJECT_NAME})
 add_spdlog_libraries(${PROJECT_NAME})
@@ -50,10 +50,10 @@ function(
   set(INSTALL_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT_BASENAME}.install")
 
   # build-time values for development
-  set(FCOLLECTOR_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/lib${PROJECT_NAME}.so")
-  set(FCOLLECTOR_CGDIFF "${CMAKE_BINARY_DIR}/tools/cgdiff/cgdiff")
-  set(FCOLLECTOR_WRAPPER "${CMAKE_CURRENT_BINARY_DIR}/cgfcollector_wrapper.sh")
-  set(FCOLLECTOR_TEST_CASES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test")
+  set(CGFCOLLECTOR_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/lib${PROJECT_NAME}.so")
+  set(CGFCOLLECTOR_CGDIFF "${CMAKE_BINARY_DIR}/tools/cgdiff/cgdiff")
+  set(CGFCOLLECTOR_WRAPPER "${CMAKE_CURRENT_BINARY_DIR}/cgfcollector_wrapper.sh")
+  set(CGFCOLLECTOR_TEST_CASES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test")
   set(CGMERGE2_EXECUTABLE "${CMAKE_BINARY_DIR}/tools/cgmerge2/cgmerge2")
 
   configure_file(
@@ -70,7 +70,7 @@ function(
   endif()
 
   # install-time values
-  set(FCOLLECTOR_FILE_NAME "${CMAKE_INSTALL_PREFIX}/lib/lib${PROJECT_NAME}.so")
+  set(CGFCOLLECTOR_FILE_NAME "${CMAKE_INSTALL_PREFIX}/lib/lib${PROJECT_NAME}.so")
 
   configure_file(
     "${TEMPLATE}"
@@ -126,4 +126,4 @@ file(
 )
 
 # tests
-add_test(NAME fcollector_tests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_runner.sh)
+add_test(NAME cgfcollector_tests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_runner.sh)

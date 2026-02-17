@@ -6,6 +6,7 @@ Flang plugin and generates a call graph from source-level.
 ## Usage
 
 For single file projects or projects not using modules use:
+
 ```sh
 cgfcollector_wrapper.sh <source file/s>
 ```
@@ -13,13 +14,15 @@ cgfcollector_wrapper.sh <source file/s>
 For any other projects you need a build system. For this we provide another
 script that acts as the normal Flang compiler but also produces a call graph.
 [More info below](#generate-a-call-graph).
+
 ```sh
 cgfcollector_comp_wrapper.sh <source file/s>
 ```
 
 You can also run the plugin directly with Flang:
+
 ```sh
-flang -fc1 -load "libfcollector.so" -plugin "genCG"
+flang -fc1 -load "libcgfcollector.so" -plugin "genCG"
 ```
 
 There are three kinds of plugins:

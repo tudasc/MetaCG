@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-# Test runner for fcollector
+# Test runner for cgfcollector
 #
 # Usage:
 #     test_runner.sh                      # run all tests
 #     test_runner.sh [test_name]          # run specific test cases
 
-test_case_dir="@FCOLLECTOR_TEST_CASES_DIR@"
+test_case_dir="@CGFCOLLECTOR_TEST_CASES_DIR@"
 scriptdir="$(cd "$(dirname "$0")" && pwd -P)"
 out_dir="$scriptdir/out"
 
@@ -75,13 +75,13 @@ function run_single_test()
             return 1
         fi
 
-        @FCOLLECTOR_WRAPPER@ -dot -o "$actual_output" "${input_files[@]}" || {
+        @CGFCOLLECTOR_WRAPPER@ -dot -o "$actual_output" "${input_files[@]}" || {
             echo "Failed: could not generate CG"
             return 1
         }
     fi
 
-    if @FCOLLECTOR_CGDIFF@ "$expected_output" "$actual_output"; then
+    if @CGFCOLLECTOR_CGDIFF@ "$expected_output" "$actual_output"; then
         echo "Passed"
         return 0
     else
