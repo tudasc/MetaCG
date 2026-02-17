@@ -41,8 +41,8 @@ class ParseTreeVisitor {
   ParseTreeVisitor(metacg::Callgraph* cg, std::string currentFileName)
       : cg(cg),
         currentFileName(currentFileName),
-        edgeM(std::make_unique<edgeManager>(edges)),
-        varTracking(std::make_unique<variableTracking>(trackedVars, types, functions)) {};
+        edgeM(std::make_unique<EdgeManager>(edges)),
+        varTracking(std::make_unique<VariableTracking>(trackedVars, types, functions)) {};
 
   /**
    * @brief Collects function/subroutine statements (begin) and their dummy args.
@@ -65,7 +65,7 @@ class ParseTreeVisitor {
    * @param typeWithDerived
    * @param procedureSymbol
    */
-  void addEdgesForProducesAndDerivedTypes(std::vector<const type*> typeWithDerived,
+  void addEdgesForProducesAndDerivedTypes(std::vector<const Type*> typeWithDerived,
                                           const Fortran::semantics::Symbol* procedureSymbol);
 
   /**
@@ -213,8 +213,8 @@ class ParseTreeVisitor {
  private:
   metacg::Callgraph* cg;
   std::string currentFileName;
-  std::unique_ptr<edgeManager> edgeM;
-  std::unique_ptr<variableTracking> varTracking;
+  std::unique_ptr<EdgeManager> edgeM;
+  std::unique_ptr<VariableTracking> varTracking;
 
   bool inFunctionOrSubroutineSubProgram = false;
   bool inMainProgram = false;
@@ -223,13 +223,13 @@ class ParseTreeVisitor {
   bool inInterfaceStmtDefinedOperator = false;
   bool inInterfaceSpecification = false;
 
-  std::vector<edge> edges;  // added to cg in postProcess step
+  std::vector<Edge> edges;  // added to cg in postProcess step
 
-  std::vector<function> functions;         // all functions
-  std::vector<function> currentFunctions;  // intended as a stack. It holds the current function symbol and its dummy
+  std::vector<Function> functions;         // all functions
+  std::vector<Function> currentFunctions;  // intended as a stack. It holds the current function symbol and its dummy
                                            // args when the AST walker is in the respective function.
 
-  std::vector<type> types;  // all types
+  std::vector<Type> types;  // all types
 
   std::vector<
       std::pair<std::variant<const Fortran::semantics::Symbol*, Fortran::parser::DefinedOperator::IntrinsicOperator>,
@@ -239,7 +239,7 @@ class ParseTreeVisitor {
 
   std::vector<const Fortran::parser::Expr*> exprStmtWithOps;
 
-  std::vector<trackedVar> trackedVars;  // mainly used for destructor handling
+  std::vector<TrackedVar> trackedVars;  // mainly used for destructor handling
 
-  std::vector<potentialFinalizer> potentialFinalizers;
+  std::vector<PotentialFinalizer> potentialFinalizers;
 };

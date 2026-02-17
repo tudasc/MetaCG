@@ -12,22 +12,22 @@
 
 #include <flang/Semantics/symbol.h>
 
-struct trackedVar {
+struct TrackedVar {
   const Fortran::semantics::Symbol* var;
   const Fortran::semantics::Symbol* procedure;  // procedure in which var was defined
   bool hasBeenInitialized = false;
   bool addFinalizers = false;
 
-  trackedVar(const Fortran::semantics::Symbol* var, const Fortran::semantics::Symbol* procedure)
+  TrackedVar(const Fortran::semantics::Symbol* var, const Fortran::semantics::Symbol* procedure)
       : var(var), procedure(procedure), hasBeenInitialized(false), addFinalizers(false) {}
-  trackedVar(const Fortran::semantics::Symbol* var, const Fortran::semantics::Symbol* procedure, bool initialized,
+  TrackedVar(const Fortran::semantics::Symbol* var, const Fortran::semantics::Symbol* procedure, bool initialized,
              bool addFinalizers)
       : var(var), procedure(procedure), hasBeenInitialized(initialized), addFinalizers(addFinalizers) {}
 };
 
-struct variableTracking {
+struct VariableTracking {
  public:
-  variableTracking(std::vector<trackedVar>& trackedVars, std::vector<type>& types, std::vector<function>& functions)
+  VariableTracking(std::vector<TrackedVar>& trackedVars, std::vector<Type>& types, std::vector<Function>& functions)
       : trackedVars(trackedVars), types(types), functions(functions) {}
 
   /**
@@ -37,7 +37,7 @@ struct variableTracking {
    * @param sourceName
    * @return trackedVar* or nullptr if not found
    */
-  trackedVar* getTrackedVarFromSourceName(const Fortran::semantics::Symbol* currentFunctionSymbol,
+  TrackedVar* getTrackedVarFromSourceName(const Fortran::semantics::Symbol* currentFunctionSymbol,
                                           Fortran::semantics::SourceName sourceName);
 
   /**
@@ -56,14 +56,14 @@ struct variableTracking {
    * @param currentFunctionSymbol
    * @param edgeM TODO: remove dep
    */
-  void handleTrackedVars(const Fortran::semantics::Symbol* currentFunctionSymbol, std::unique_ptr<edgeManager>& edgeM);
+  void handleTrackedVars(const Fortran::semantics::Symbol* currentFunctionSymbol, std::unique_ptr<EdgeManager>& edgeM);
 
   /**
    * @brief Register a variable for tracking.
    *
    * @param var
    */
-  void addTrackedVar(trackedVar var);
+  void addTrackedVar(TrackedVar var);
 
   /**
    * @brief Remove all tracked variables that are not needed anymore after the function/subroutine end statement. Should
@@ -74,7 +74,7 @@ struct variableTracking {
   void removeTrackedVars(const Fortran::semantics::Symbol* procedureSymbol);
 
  private:
-  std::vector<trackedVar>& trackedVars;
-  std::vector<type>& types;
-  std::vector<function>& functions;
+  std::vector<TrackedVar>& trackedVars;
+  std::vector<Type>& types;
+  std::vector<Function>& functions;
 };

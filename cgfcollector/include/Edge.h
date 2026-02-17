@@ -15,42 +15,42 @@
 #include <string>
 #include <vector>
 
-struct edge {
+struct Edge {
   std::string caller;
   std::string callee;
 
-  edge(std::string caller, std::string callee) : caller(std::move(caller)), callee(std::move(callee)) {}
+  Edge(std::string caller, std::string callee) : caller(std::move(caller)), callee(std::move(callee)) {}
 
-  bool operator==(const edge& other) const { return caller == other.caller && callee == other.callee; }
-  bool operator<(const edge& other) const {
+  bool operator==(const Edge& other) const { return caller == other.caller && callee == other.callee; }
+  bool operator<(const Edge& other) const {
     return caller < other.caller || (caller == other.caller && callee < other.callee);
   }
 };
 
-struct edgeSymbol {
+struct EdgeSymbol {
   const Fortran::semantics::Symbol* caller;
   const Fortran::semantics::Symbol* callee;
 
-  edgeSymbol(const Fortran::semantics::Symbol* caller, const Fortran::semantics::Symbol* callee)
+  EdgeSymbol(const Fortran::semantics::Symbol* caller, const Fortran::semantics::Symbol* callee)
       : caller(caller), callee(callee) {}
 
-  bool operator==(const edgeSymbol& other) const { return caller == other.caller && callee == other.callee; }
-  bool operator<(const edgeSymbol& other) const {
+  bool operator==(const EdgeSymbol& other) const { return caller == other.caller && callee == other.callee; }
+  bool operator<(const EdgeSymbol& other) const {
     return caller < other.caller || (caller == other.caller && callee < other.callee);
   }
 };
 
-struct edgeManager {
-  std::vector<edge>& edges;
+struct EdgeManager {
+  std::vector<Edge>& edges;
 
-  edgeManager(std::vector<edge>& edges) : edges(edges) {}
+  EdgeManager(std::vector<Edge>& edges) : edges(edges) {}
 
-  void addEdge(const edgeSymbol& e, bool debug = true);
+  void addEdge(const EdgeSymbol& e, bool debug = true);
   void addEdge(const Fortran::semantics::Symbol* caller, const Fortran::semantics::Symbol* callee, bool debug = true);
-  void addEdge(const edge& e, bool debug = true);
+  void addEdge(const Edge& e, bool debug = true);
   void addEdge(const std::string& caller, const std::string& callee, bool debug = true);
-  void addEdges(const std::vector<edge>& newEdges, bool debug = true);
-  void addEdges(const std::vector<edgeSymbol>& newEdges, bool debug = true);
+  void addEdges(const std::vector<Edge>& newEdges, bool debug = true);
+  void addEdges(const std::vector<EdgeSymbol>& newEdges, bool debug = true);
 
   /**
    * @brief For a given symbol, returns a list of edges from the current function to all finalizers of that type.
@@ -59,7 +59,7 @@ struct edgeManager {
    * @param currentFunctionSymbol
    * @param symbol
    */
-  std::vector<edgeSymbol> getEdgesForFinalizers(const std::vector<type>& types,
+  std::vector<EdgeSymbol> getEdgesForFinalizers(const std::vector<Type>& types,
                                                 const Fortran::semantics::Symbol* currentFunctionSymbol,
                                                 const Fortran::semantics::Symbol* symbol);
   /**
@@ -69,6 +69,6 @@ struct edgeManager {
    * @param currentFunctionSymbol
    * @param symbol
    */
-  void addEdgesForFinalizers(const std::vector<type>& types, const Fortran::semantics::Symbol* currentFunctionSymbol,
+  void addEdgesForFinalizers(const std::vector<Type>& types, const Fortran::semantics::Symbol* currentFunctionSymbol,
                              const Fortran::semantics::Symbol* symbol);
 };

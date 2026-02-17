@@ -139,5 +139,5 @@ const Fortran::semantics::Symbol* getTypeSymbolFromSymbol(const Fortran::semanti
  * @param typeSymbol symbol to search for
  * @return vector with type and all derived types
  */
-std::vector<const type*> findTypeWithDerivedTypes(const std::vector<type>& types,
+std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types,
                                                   const Fortran::semantics::Symbol* symbol);

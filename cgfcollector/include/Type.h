@@ -11,7 +11,7 @@
 #include <flang/Semantics/symbol.h>
 #include <vector>
 
-struct type {
+struct Type {
   const Fortran::semantics::Symbol* typeSymbol;
   const Fortran::semantics::Symbol* extendsFrom;
   std::vector<std::pair<const Fortran::semantics::Symbol*, const Fortran::semantics::Symbol*>>

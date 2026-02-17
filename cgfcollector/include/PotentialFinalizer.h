@@ -11,13 +11,13 @@
 #include <string>
 #include <vector>
 
-struct potentialFinalizer {
+struct PotentialFinalizer {
   std::size_t argPos;
   std::string procedureCalled;
-  std::vector<edge> finalizerEdges;
+  std::vector<Edge> finalizerEdges;
 
-  explicit potentialFinalizer(std::size_t pos, std::string procCalled)
+  explicit PotentialFinalizer(std::size_t pos, std::string procCalled)
       : argPos(pos), procedureCalled(std::move(procCalled)) {}
 
-  void addFinalizerEdge(const edge& e) { finalizerEdges.emplace_back(e); }
+  void addFinalizerEdge(const Edge& e) { finalizerEdges.emplace_back(e); }
 };

@@ -225,8 +225,8 @@ const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol) {
   return typeSymbol;
 }
 
-std::vector<const type*> findTypeWithDerivedTypes(const std::vector<type>& types, const Symbol* symbol) {
-  std::vector<const type*> typesWithDerived;
+std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types, const Symbol* symbol) {
+  std::vector<const Type*> typesWithDerived;
   std::unordered_set<const Symbol*> visited;
 
   const Symbol* typeSymbol = getTypeSymbolFromSymbol(symbol);
@@ -235,7 +235,7 @@ std::vector<const type*> findTypeWithDerivedTypes(const std::vector<type>& types
   }
 
   auto findTypeIt =
-      std::find_if(types.begin(), types.end(), [&typeSymbol](const type& t) { return t.typeSymbol == typeSymbol; });
+      std::find_if(types.begin(), types.end(), [&typeSymbol](const Type& t) { return t.typeSymbol == typeSymbol; });
 
   if (findTypeIt == types.end()) {
     return typesWithDerived;
@@ -245,8 +245,8 @@ std::vector<const type*> findTypeWithDerivedTypes(const std::vector<type>& types
   visited.insert(typeSymbol);
 
   // collect descendants
-  std::function<void(const type*)> collectDescendants = [&](const type* parent) {
-    for (const type& t : types) {
+  std::function<void(const Type*)> collectDescendants = [&](const Type* parent) {
+    for (const Type& t : types) {
       if (t.extendsFrom == parent->typeSymbol && !visited.count(t.typeSymbol)) {
         visited.insert(t.typeSymbol);
         typesWithDerived.push_back(&t);
@@ -267,7 +267,7 @@ std::vector<const type*> findTypeWithDerivedTypes(const std::vector<type>& types
     }
 
     auto currentTypeIt = std::find_if(types.begin(), types.end(),
-                                      [&](const type& t) { return compareSymbols(t.typeSymbol, currentExtendsFrom); });
+                                      [&](const Type& t) { return compareSymbols(t.typeSymbol, currentExtendsFrom); });
 
     if (currentTypeIt == types.end()) {
       MCGLogger::logError("Error: Types array (extendsFrom) field entry for \"" +
