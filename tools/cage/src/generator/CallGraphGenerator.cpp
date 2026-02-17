@@ -58,7 +58,8 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
   ~CallBaseVisitor() = default;
 
   void visitCallBase(llvm::CallBase& I) {
-    if (I.getCalledFunction() != nullptr && I.getCalledFunction()->isIntrinsic())
+    // only pass non-resolved calls to metavirt
+    if (I.getCalledFunction() != nullptr)
       return;
     auto* currentFunction = I.getParent()->getParent();
     auto& currentNode = mcg->getSingleNode(currentFunction->getName().str());
@@ -69,15 +70,14 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
         return;
     }
 
-    if (I.getCalledFunction() == nullptr) {
-      // Was function pointer, where we can not get the called function
-      if (pta == PTAType::BySignature) {
-        const auto& possibleFuncs = signatureFunctionMap[I.getFunctionType()];
-        for (const auto& func : possibleFuncs) {
-          assert(func);
-          auto& childNode = getOrInsertNode(func);
-          insertEdge(currentNode, childNode);
-        }
+    // metavirt turned up with nothing
+    // --> was function pointer, where we can not get the called function
+    if (pta == PTAType::BySignature) {
+      const auto& possibleFuncs = signatureFunctionMap[I.getFunctionType()];
+      for (const auto& func : possibleFuncs) {
+        assert(func);
+        auto& childNode = getOrInsertNode(func);
+        insertEdge(currentNode, childNode);
       }
     }
   }
