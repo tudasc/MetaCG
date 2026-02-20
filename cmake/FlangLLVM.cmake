@@ -22,8 +22,6 @@ message(STATUS "Found MLIRConfig.cmake in: ${MLIR_DIR}")
 message(STATUS "Using MLIR version: ${MLIR_VERSION}")
 
 function(add_flang target)
-  target_compile_definitions(${target} PRIVATE FLANG_LITTLE_ENDIAN)
-
   target_include_directories(${target} SYSTEM PUBLIC ${FLANG_INCLUDE_DIRS})
 
   find_library(
