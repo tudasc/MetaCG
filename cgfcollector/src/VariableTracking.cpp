@@ -11,6 +11,8 @@
 using namespace Fortran::semantics;
 using namespace metacg;
 
+namespace metacg::cgfcollector {
+
 TrackedVar* VariableTracking::getTrackedVarFromSourceName(const Symbol* currentFunctionSymbol, SourceName sourceName) {
   auto anyTrackedVarIt = std::find_if(trackedVars.begin(), trackedVars.end(),
                                       [&](const TrackedVar& t) { return t.var->name() == sourceName; });
@@ -88,3 +90,5 @@ void VariableTracking::removeTrackedVars(const Symbol* procedureSymbol) {
                                    [&](const TrackedVar& t) { return t.procedure == procedureSymbol; }),
                     trackedVars.end());
 }
+
+}  // namespace metacg::cgfcollector

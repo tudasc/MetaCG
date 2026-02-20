@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 
+namespace metacg::cgfcollector {
+
 struct Edge {
   std::string caller;
   std::string callee;
@@ -25,7 +27,7 @@ struct Edge {
   bool operator<(const Edge& other) const {
     return caller < other.caller || (caller == other.caller && callee < other.callee);
   }
-};
+};  // namespace metacg::cgfcollector
 
 struct EdgeSymbol {
   const Fortran::semantics::Symbol* caller;
@@ -59,9 +61,9 @@ struct EdgeManager {
    * @param currentFunctionSymbol
    * @param symbol
    */
-  std::vector<EdgeSymbol> getEdgesForFinalizers(const std::vector<Type>& types,
-                                                const Fortran::semantics::Symbol* currentFunctionSymbol,
-                                                const Fortran::semantics::Symbol* symbol);
+  [[nodiscard]] std::vector<EdgeSymbol> getEdgesForFinalizers(const std::vector<Type>& types,
+                                                              const Fortran::semantics::Symbol* currentFunctionSymbol,
+                                                              const Fortran::semantics::Symbol* symbol);
   /**
    * @brief Calls getEdgesForFinalizers and adds them to the edges vector.
    *
@@ -72,3 +74,5 @@ struct EdgeManager {
   void addEdgesForFinalizers(const std::vector<Type>& types, const Fortran::semantics::Symbol* currentFunctionSymbol,
                              const Fortran::semantics::Symbol* symbol);
 };
+
+}  // namespace metacg::cgfcollector

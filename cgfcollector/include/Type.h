@@ -11,6 +11,8 @@
 #include <flang/Semantics/symbol.h>
 #include <vector>
 
+namespace metacg::cgfcollector {
+
 struct Type {
   const Fortran::semantics::Symbol* typeSymbol;
   const Fortran::semantics::Symbol* extendsFrom;
@@ -22,3 +24,5 @@ struct Type {
   std::vector<std::pair<Fortran::parser::DefinedOperator::IntrinsicOperator, const Fortran::semantics::Symbol*>>
       operators;
 };
+
+}  // namespace metacg::cgfcollector

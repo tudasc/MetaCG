@@ -12,6 +12,8 @@
 
 #include <flang/Semantics/symbol.h>
 
+namespace metacg::cgfcollector {
+
 struct TrackedVar {
   const Fortran::semantics::Symbol* var;
 
@@ -40,8 +42,8 @@ struct VariableTracking {
    * @param sourceName
    * @return trackedVar* or nullptr if not found
    */
-  TrackedVar* getTrackedVarFromSourceName(const Fortran::semantics::Symbol* currentFunctionSymbol,
-                                          Fortran::semantics::SourceName sourceName);
+  [[nodiscard]] TrackedVar* getTrackedVarFromSourceName(const Fortran::semantics::Symbol* currentFunctionSymbol,
+                                                        Fortran::semantics::SourceName sourceName);
 
   /**
    * @brief Search trackedVars for a canditate and set it as initialized.
@@ -81,3 +83,5 @@ struct VariableTracking {
   std::vector<Type>& types;
   std::vector<Function>& functions;
 };
+
+}  // namespace metacg::cgfcollector

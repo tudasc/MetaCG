@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+namespace metacg::cgfcollector {
+
 struct PotentialFinalizer {
   std::size_t argPos;
   std::string procedureCalled;
@@ -21,3 +23,5 @@ struct PotentialFinalizer {
 
   void addFinalizerEdge(const Edge& e) { finalizerEdges.emplace_back(e); }
 };
+
+}  // namespace metacg::cgfcollector

@@ -11,6 +11,7 @@
 using namespace metacg;
 using namespace metacg::graph;
 using namespace metacg::io;
+using namespace metacg::cgfcollector;
 using namespace Fortran::parser;
 
 static MCGManager& mcgManager = MCGManager::get();

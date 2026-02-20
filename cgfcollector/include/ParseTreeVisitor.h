@@ -31,6 +31,8 @@
 #include <variant>
 #include <vector>
 
+namespace metacg::cgfcollector {
+
 /**
  * @class ParseTreeVisitor
  * @brief Implements visitor methods to traverse parse tree and generate callgraph
@@ -250,3 +252,5 @@ class ParseTreeVisitor {
 
   std::vector<PotentialFinalizer> potentialFinalizers;
 };
+
+}  // namespace metacg::cgfcollector

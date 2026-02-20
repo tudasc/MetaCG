@@ -11,6 +11,8 @@ using namespace Fortran::semantics;
 using namespace Fortran::common;
 using namespace metacg;
 
+namespace metacg::cgfcollector {
+
 template void ParseTreeVisitor::handleFuncSubStmt<FunctionStmt>(const FunctionStmt&);
 template void ParseTreeVisitor::handleFuncSubStmt<SubroutineStmt>(const SubroutineStmt&);
 
@@ -735,3 +737,5 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
 
   MCGLogger::logDebug("Finished Use module: {} ({})", useSymbol->name(), fmt::ptr(useSymbol));
 }
+
+}  // namespace metacg::cgfcollector

@@ -10,6 +10,8 @@ using namespace Fortran::semantics;
 using namespace Fortran::parser;
 using namespace metacg;
 
+namespace metacg::cgfcollector {
+
 std::vector<EdgeSymbol> EdgeManager::getEdgesForFinalizers(const std::vector<Type>& types,
                                                            const Symbol* currentFunctionSymbol, const Symbol* symbol) {
   std::vector<EdgeSymbol> edges;
@@ -82,3 +84,5 @@ void EdgeManager::addEdges(const std::vector<EdgeSymbol>& newEdges, bool debug) 
     addEdge(e, debug);
   }
 }
+
+}  // namespace metacg::cgfcollector

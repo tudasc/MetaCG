@@ -28,6 +28,8 @@ struct fmt::formatter<Fortran::parser::CharBlock> {
   }
 };
 
+namespace metacg::cgfcollector {
+
 /**
  * @brief Variant check if it holds any of the given types
  *
@@ -141,3 +143,5 @@ const Fortran::semantics::Symbol* getTypeSymbolFromSymbol(const Fortran::semanti
  */
 std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types,
                                                   const Fortran::semantics::Symbol* symbol);
+
+}  // namespace metacg::cgfcollector

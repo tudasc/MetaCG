@@ -9,6 +9,8 @@
 #include <flang/Semantics/symbol.h>
 #include <vector>
 
+namespace metacg::cgfcollector {
+
 struct Function {
   struct DummyArg {
     const Fortran::semantics::Symbol* symbol;
@@ -27,3 +29,5 @@ struct Function {
 
   void addDummyArg(const Fortran::semantics::Symbol* sym) { dummyArgs.emplace_back(sym); }
 };
+
+}  // namespace metacg::cgfcollector

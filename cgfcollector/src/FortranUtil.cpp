@@ -11,6 +11,8 @@ using namespace Fortran::parser;
 using namespace Fortran::common;
 using namespace metacg;
 
+namespace metacg::cgfcollector {
+
 bool compareSymbols(const Symbol* a, const Symbol* b) {
   if (a == b)
     return true;
@@ -285,3 +287,5 @@ std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types
 
   return typesWithDerived;
 }
+
+}  // namespace metacg::cgfcollector
