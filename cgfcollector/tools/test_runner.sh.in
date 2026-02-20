@@ -17,6 +17,19 @@ if ! [ -d "$test_case_dir" ]; then
     exit 1
 fi
 
+cgfcollector_options=()
+test_cases_to_run=()
+
+while [[ $# -gt 0 ]]; do
+    arg="$1"
+    if [[ "$arg" =~ ^-+ ]]; then
+        cgfcollector_options+=("$arg")
+    else
+        test_cases_to_run+=("$arg")
+    fi
+    shift
+done
+
 function find_test_dir()
 {
     local test_name="${1#*_}"
@@ -75,7 +88,7 @@ function run_single_test()
             return 1
         fi
 
-        @CGFCOLLECTOR_WRAPPER@ -dot -o "$actual_output" "${input_files[@]}" || {
+        @CGFCOLLECTOR_WRAPPER@ "${cgfcollector_options[@]}" -o "$actual_output" "${input_files[@]}" || {
             echo "Failed: could not generate CG"
             return 1
         }
@@ -90,10 +103,10 @@ function run_single_test()
     fi
 }
 
-if [ $# -gt 0 ]; then
+if [ ${#test_cases_to_run[@]} -gt 0 ]; then
     # specific test cases
     test_cases=()
-    for test_name in "$@"; do
+    for test_name in "${test_cases_to_run[@]}"; do
         test_dir=$(find_test_dir "$test_name")
         if [ -n "$test_dir" ]; then
             test_cases+=("$test_dir:$test_name")

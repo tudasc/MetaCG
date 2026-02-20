@@ -11,24 +11,28 @@
 
 flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang-new"}
 
-flang_args=("$@")
-plugin_name="genCG"
+flang_args=()
 
-if [[ "$1" == "-dot" ]]; then
-  plugin_name="genCGwithDot"
-  shift
-  flang_args=("$@")
-fi
+declare -A OPTION_MAP=(
+  ["-dot"]="-dot"
+  ["-no-rename"]="-no-rename"
+  ["-v"]="--verbose"
+  ["--verbose"]="--verbose"
+)
 
-if [[ "$1" == "-norename" ]]; then
-  plugin_name="genCGNoRename"
+while [[ $# -gt 0 ]]; do
+  arg="$1"
+  if [[ -n "${OPTION_MAP[$arg]}" ]]; then
+    flang_args+=("-mllvm" "${OPTION_MAP[$arg]}")
+  else
+    flang_args+=("$arg")
+  fi
   shift
-  flang_args=("$@")
-fi
+done
 
 if ! command -v "$flang_bin" &>/dev/null; then
   echo "Error: $flang_bin not found in PATH."
   exit 1
 fi
 
-$flang_bin -fc1 -load "@CGFCOLLECTOR_FILE_NAME_LIB@" -plugin "$plugin_name" "${flang_args[@]}"
+$flang_bin -fc1 -load "@CGFCOLLECTOR_FILE_NAME_LIB@" -plugin "genCG" "${flang_args[@]}"

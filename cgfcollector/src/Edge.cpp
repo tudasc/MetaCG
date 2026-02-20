@@ -6,6 +6,8 @@
 
 #include "Edge.h"
 
+#include "PotentialFinalizer.h"
+
 using namespace Fortran::semantics;
 using namespace Fortran::parser;
 using namespace metacg;
@@ -37,51 +39,50 @@ std::vector<EdgeSymbol> EdgeManager::getEdgesForFinalizers(const std::vector<Typ
 void EdgeManager::addEdgesForFinalizers(const std::vector<Type>& types, const Symbol* currentFunctionSymbol,
                                         const Symbol* symbol) {
   for (const EdgeSymbol& edge : getEdgesForFinalizers(types, currentFunctionSymbol, symbol)) {
-    addEdge(edge, false);
+    addEdge(edge);
     MCGLogger::logDebug("Add edge for finalizer: {} ({}) -> {} ({})", mangleSymbol(edge.caller), fmt::ptr(edge.caller),
                         mangleSymbol(edge.callee), fmt::ptr(edge.callee));
   }
 }
 
-void EdgeManager::addEdge(const EdgeSymbol& e, bool debug) {
+void EdgeManager::addEdgesForFinalizers(const PotentialFinalizer& e) {
+  for (const Edge& edge : e.finalizerEdges) {
+    addEdge(edge);
+    MCGLogger::logDebug("Add edge for finalizer: {} -> {}", edge.caller, edge.callee);
+  }
+}
+
+void EdgeManager::addEdge(const EdgeSymbol& e) {
   edges.emplace_back(mangleSymbol(e.caller), mangleSymbol(e.callee));
-  if (debug) {
-    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(e.caller), fmt::ptr(e.caller),
-                        mangleSymbol(e.callee), fmt::ptr(e.callee));
-  }
+  MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(e.caller), fmt::ptr(e.caller),
+                      mangleSymbol(e.callee), fmt::ptr(e.callee));
 }
 
-void EdgeManager::addEdge(const Symbol* caller, const Symbol* callee, bool debug) {
+void EdgeManager::addEdge(const Symbol* caller, const Symbol* callee) {
   edges.emplace_back(mangleSymbol(caller), mangleSymbol(callee));
-  if (debug) {
-    MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(caller), fmt::ptr(caller), mangleSymbol(callee),
-                        fmt::ptr(callee));
-  }
+  MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(caller), fmt::ptr(caller), mangleSymbol(callee),
+                      fmt::ptr(callee));
 }
 
-void EdgeManager::addEdge(const Edge& e, bool debug) {
+void EdgeManager::addEdge(const Edge& e) {
   edges.emplace_back(e.caller, e.callee);
-  if (debug) {
-    MCGLogger::logDebug("Add edge: {} -> {}", e.caller, e.callee);
-  }
+  MCGLogger::logDebug("Add edge: {} -> {}", e.caller, e.callee);
 }
 
-void EdgeManager::addEdge(const std::string& caller, const std::string& callee, bool debug) {
+void EdgeManager::addEdge(const std::string& caller, const std::string& callee) {
   edges.emplace_back(caller, callee);
-  if (debug) {
-    MCGLogger::logDebug("Add edge: {} -> {}", caller, callee);
-  }
+  MCGLogger::logDebug("Add edge: {} -> {}", caller, callee);
 }
 
-void EdgeManager::addEdges(const std::vector<Edge>& newEdges, bool debug) {
+void EdgeManager::addEdges(const std::vector<Edge>& newEdges) {
   for (const Edge& e : newEdges) {
-    addEdge(e, debug);
+    addEdge(e);
   }
 }
 
-void EdgeManager::addEdges(const std::vector<EdgeSymbol>& newEdges, bool debug) {
+void EdgeManager::addEdges(const std::vector<EdgeSymbol>& newEdges) {
   for (const EdgeSymbol& e : newEdges) {
-    addEdge(e, debug);
+    addEdge(e);
   }
 }
 

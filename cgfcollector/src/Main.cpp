@@ -7,6 +7,7 @@
 #include "ParseTreeVisitor.h"
 
 #include <DotIO.h>
+#include <llvm/Support/CommandLine.h>
 
 using namespace metacg;
 using namespace metacg::graph;
@@ -15,6 +16,15 @@ using namespace metacg::cgfcollector;
 using namespace Fortran::parser;
 
 static MCGManager& mcgManager = MCGManager::get();
+
+static llvm::cl::OptionCategory CGCategory("Callgraph Plugin Options");
+
+static llvm::cl::opt<bool> Dot("dot", llvm::cl::desc("Generate DOT output"), llvm::cl::cat(CGCategory),
+                               llvm::cl::init(false));
+static llvm::cl::opt<bool> NoRename("no-rename", llvm::cl::desc("Do not rename output file"), llvm::cl::cat(CGCategory),
+                                    llvm::cl::init(false));
+static llvm::cl::opt<bool> Verbose("verbose", llvm::cl::desc("Enable verbose logging"), llvm::cl::cat(CGCategory),
+                                   llvm::cl::init(false));
 
 /**
  * @brief Create output file with given extension
@@ -51,11 +61,6 @@ std::unique_ptr<llvm::raw_pwrite_stream> createOutputFile(Fortran::frontend::Com
 void generateCG(std::optional<Program>& parseTree, llvm::StringRef currentFile) {
   mcgManager.addToManagedGraphs("cg", std::make_unique<metacg::Callgraph>(), true);
   Callgraph* cg = mcgManager.getCallgraph("cg");
-
-#ifndef NDEBUG
-  metacg::MCGLogger::instance().getConsole()->set_level(spdlog::level::debug);
-  metacg::MCGLogger::instance().getConsole()->set_pattern("%v");
-#endif
 
   ParseTreeVisitor visitor(cg, currentFile.str());
   Fortran::parser::Walk(parseTree, visitor);
@@ -96,62 +101,37 @@ std::string dumpCG() {
 class CollectCG : public Fortran::frontend::PluginParseTreeAction {
  public:
   void executeAction() override {
-    generateCG(getParsing().parseTree(), getCurrentFile());
-
-    std::string cgString = dumpCG();
-    std::unique_ptr<llvm::raw_pwrite_stream> file = ::createOutputFile(getInstance(), getCurrentFile(), "json");
-    file->write(cgString.c_str(), cgString.size());
-  }
-};
-
-/**
- * @class CollectCGwithDot
- * @brief Like CollectCG but also generates a DOT file of callgraph
- *
- */
-class CollectCGwithDot : public Fortran::frontend::PluginParseTreeAction {
- public:
-  void executeAction() override {
-    generateCG(getParsing().parseTree(), getCurrentFile());
-
-    std::string cgString = dumpCG();
-    std::unique_ptr<llvm::raw_pwrite_stream> file = ::createOutputFile(getInstance(), getCurrentFile(), "json");
-    file->write(cgString.c_str(), cgString.size());
-
-    // dot file
-    Callgraph* cg = mcgManager.getCallgraph("cg");
-    if (cg == nullptr) {
-      MCGLogger::logError("No callgraph generated");
-      return;
+    if (Verbose) {
+      metacg::MCGLogger::instance().getConsole()->set_level(spdlog::level::debug);
+      metacg::MCGLogger::instance().getConsole()->set_pattern("%v");
     }
 
-    dot::DotGenerator dotGen(cg);
-    dotGen.generate();
-
-    std::unique_ptr<llvm::raw_pwrite_stream> dotfile = ::createOutputFile(getInstance(), getCurrentFile(), "dot");
-    std::string dotString = dotGen.getDotString();
-    dotfile->write(dotString.c_str(), dotString.size());
-  }
-};
-
-/**
- * @class CollectCGNoRename
- * @brief Like CollectCG but does not rename output file
- *
- */
-class CollectCGNoRename : public Fortran::frontend::PluginParseTreeAction {
- public:
-  void executeAction() override {
     generateCG(getParsing().parseTree(), getCurrentFile());
 
     std::string cgString = dumpCG();
-
-    std::unique_ptr<llvm::raw_pwrite_stream> file = ::createOutputFile(getInstance(), getCurrentFile(), "");
+    std::unique_ptr<llvm::raw_pwrite_stream> file;
+    if (!NoRename) {
+      file = ::createOutputFile(getInstance(), getCurrentFile(), "json");
+    } else {
+      file = ::createOutputFile(getInstance(), getCurrentFile(), "");
+    }
     file->write(cgString.c_str(), cgString.size());
+
+    if (Dot) {
+      Callgraph* cg = mcgManager.getCallgraph("cg");
+      if (cg == nullptr) {
+        MCGLogger::logError("No callgraph generated");
+        return;
+      }
+
+      dot::DotGenerator dotGen(cg);
+      dotGen.generate();
+
+      std::unique_ptr<llvm::raw_pwrite_stream> dotfile = ::createOutputFile(getInstance(), getCurrentFile(), "dot");
+      std::string dotString = dotGen.getDotString();
+      dotfile->write(dotString.c_str(), dotString.size());
+    }
   }
 };
 
 static Fortran::frontend::FrontendPluginRegistry::Add<CollectCG> X("genCG", "Generate Callgraph");
-static Fortran::frontend::FrontendPluginRegistry::Add<CollectCGwithDot> Y("genCGwithDot", "Generate Callgraph");
-static Fortran::frontend::FrontendPluginRegistry::Add<CollectCGNoRename> Z(
-    "genCGNoRename", "Generate Callgraph without renaming output file");

@@ -17,6 +17,8 @@
 
 namespace metacg::cgfcollector {
 
+struct PotentialFinalizer;
+
 struct Edge {
   std::string caller;
   std::string callee;
@@ -47,12 +49,12 @@ struct EdgeManager {
 
   EdgeManager(std::vector<Edge>& edges) : edges(edges) {}
 
-  void addEdge(const EdgeSymbol& e, bool debug = true);
-  void addEdge(const Fortran::semantics::Symbol* caller, const Fortran::semantics::Symbol* callee, bool debug = true);
-  void addEdge(const Edge& e, bool debug = true);
-  void addEdge(const std::string& caller, const std::string& callee, bool debug = true);
-  void addEdges(const std::vector<Edge>& newEdges, bool debug = true);
-  void addEdges(const std::vector<EdgeSymbol>& newEdges, bool debug = true);
+  void addEdge(const EdgeSymbol& e);
+  void addEdge(const Fortran::semantics::Symbol* caller, const Fortran::semantics::Symbol* callee);
+  void addEdge(const Edge& e);
+  void addEdge(const std::string& caller, const std::string& callee);
+  void addEdges(const std::vector<Edge>& newEdges);
+  void addEdges(const std::vector<EdgeSymbol>& newEdges);
 
   /**
    * @brief For a given symbol, returns a list of edges from the current function to all finalizers of that type.
@@ -73,6 +75,8 @@ struct EdgeManager {
    */
   void addEdgesForFinalizers(const std::vector<Type>& types, const Fortran::semantics::Symbol* currentFunctionSymbol,
                              const Fortran::semantics::Symbol* symbol);
+
+  void addEdgesForFinalizers(const PotentialFinalizer& e);
 };
 
 }  // namespace metacg::cgfcollector

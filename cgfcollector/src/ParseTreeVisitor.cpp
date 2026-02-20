@@ -63,10 +63,7 @@ void ParseTreeVisitor::postProcess() {
     if (!arg->hasBeenInitialized)
       continue;
 
-    for (const Edge& edge : pf.finalizerEdges) {
-      edgeM->addEdge(edge, false);
-      MCGLogger::logDebug("Add edge for potential finalizer: {} -> {}", edge.caller, edge.callee);
-    }
+    edgeM->addEdgesForFinalizers(pf);
   }
 
   // sort unique edges
