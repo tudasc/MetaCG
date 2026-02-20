@@ -81,7 +81,7 @@ function run_single_test()
         }
     fi
 
-    if @CGFCOLLECTOR_CGDIFF@ "$expected_output" "$actual_output"; then
+    if @CGFCOLLECTOR_CGDIFF_BIN@ "$expected_output" "$actual_output"; then
         echo "Passed"
         return 0
     else

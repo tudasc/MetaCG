@@ -62,6 +62,6 @@ for arg in "${all_args[@]}"; do
 done
 
 if [ ${#source_files[@]} -gt 0 ]; then
-    $flang_fc1_bin -fc1 -load "@CGFCOLLECTOR_FILE_NAME@" -plugin "genCG" "${options[@]}" "${source_files[@]}"
+    $flang_fc1_bin -fc1 -load "@CGFCOLLECTOR_FILE_NAME_LIB@" -plugin "genCG" "${options[@]}" "${source_files[@]}"
 fi
 $flang_bin "$@"

@@ -50,11 +50,11 @@ function(
   set(INSTALL_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT_BASENAME}.install")
 
   # build-time values for development
-  set(CGFCOLLECTOR_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/lib${PROJECT_NAME}.so")
-  set(CGFCOLLECTOR_CGDIFF "${CMAKE_BINARY_DIR}/tools/cgdiff/cgdiff")
+  set(CGFCOLLECTOR_FILE_NAME_LIB "${CMAKE_CURRENT_BINARY_DIR}/lib${PROJECT_NAME}.so")
+  set(CGFCOLLECTOR_CGDIFF_BIN "${CMAKE_BINARY_DIR}/tools/cgdiff/cgdiff")
   set(CGFCOLLECTOR_WRAPPER "${CMAKE_CURRENT_BINARY_DIR}/cgfcollector_wrapper.sh")
   set(CGFCOLLECTOR_TEST_CASES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test")
-  set(CGMERGE2_EXECUTABLE "${CMAKE_BINARY_DIR}/tools/cgmerge2/cgmerge2")
+  set(CGMERGE2_BIN "${CMAKE_BINARY_DIR}/tools/cgmerge2/cgmerge2")
 
   configure_file(
     "${TEMPLATE}"
@@ -70,7 +70,7 @@ function(
   endif()
 
   # install-time values
-  set(CGFCOLLECTOR_FILE_NAME "${CMAKE_INSTALL_PREFIX}/lib/lib${PROJECT_NAME}.so")
+  set(CGFCOLLECTOR_FILE_NAME_LIB "${CMAKE_INSTALL_PREFIX}/lib/lib${PROJECT_NAME}.so")
 
   configure_file(
     "${TEMPLATE}"

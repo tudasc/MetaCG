@@ -31,4 +31,4 @@ if ! command -v "$flang_bin" &>/dev/null; then
   exit 1
 fi
 
-$flang_bin -fc1 -load "@CGFCOLLECTOR_FILE_NAME@" -plugin "$plugin_name" "${flang_args[@]}"
+$flang_bin -fc1 -load "@CGFCOLLECTOR_FILE_NAME_LIB@" -plugin "$plugin_name" "${flang_args[@]}"
