@@ -85,11 +85,15 @@ class ParseTreeVisitor {
   void Post(const A&) {}
 
   bool Pre(const Fortran::parser::MainProgram& p);
+
   void Post(const Fortran::parser::MainProgram&);
 
   bool Pre(const Fortran::parser::FunctionSubprogram&);
+
   void Post(const Fortran::parser::FunctionSubprogram&);
+
   bool Pre(const Fortran::parser::SubroutineSubprogram&);
+
   void Post(const Fortran::parser::SubroutineSubprogram&);
 
   /**
@@ -102,8 +106,11 @@ class ParseTreeVisitor {
   void Post(const Fortran::parser::EntryStmt& e);
 
   void Post(const Fortran::parser::FunctionStmt& f);
+
   void Post(const Fortran::parser::EndFunctionStmt&);
+
   void Post(const Fortran::parser::SubroutineStmt& s);
+
   void Post(const Fortran::parser::EndSubroutineStmt&);
 
   /**
@@ -187,8 +194,11 @@ class ParseTreeVisitor {
   // The following methods are for collecting defined operators in interface statements
 
   bool Pre(const Fortran::parser::InterfaceStmt&);
+
   bool Pre(const Fortran::parser::EndInterfaceStmt&);
+
   void Post(const Fortran::parser::DefinedOperator& op);
+
   void Post(const Fortran::parser::ProcedureStmt& p);
 
   /**
