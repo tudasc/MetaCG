@@ -201,6 +201,7 @@ test-cgformat:
   stage: test
   script:
     - cd $BUILD/tools/cgformat/test
+    - ./run_cgformat_tests.sh
 
 
 # Stage: integration-test
@@ -256,6 +257,12 @@ install:
     - cmake --install $BUILD
     - stat $INSTALL/lib64/libmetacg.so
     - stat $INSTALL/bin/cgcollector
+    - stat $INSTALL/include/metadata/CustomMD.h
+    - stat $INSTALL/lib/cmake/metacg/metacgConfig.cmake
+    - stat $INSTALL/bin/cgdiff
+    - stat $INSTALL/bin/cgquery
+    - stat $INSTALL/bin/cgformat
+    - stat $INSTALL/bin/cgconvert
     - export LD_LIBRARY_PATH=$INSTALL/lib64:$INSTALL/lib:$LD_LIBRARY_PATH
     - $INSTALL/bin/metacg-config --help
     - $INSTALL/bin/cgcollector --help
