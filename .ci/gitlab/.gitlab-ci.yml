@@ -258,7 +258,7 @@ install:
     - stat $INSTALL/lib64/libmetacg.so
     - stat $INSTALL/bin/cgcollector
     - stat $INSTALL/include/metadata/CustomMD.h
-    - stat $INSTALL/lib/cmake/metacg/metacgConfig.cmake
+    - stat $INSTALL/lib64/cmake/metacg/metacgConfig.cmake
     - stat $INSTALL/bin/cgdiff
     - stat $INSTALL/bin/cgquery
     - stat $INSTALL/bin/cgformat
