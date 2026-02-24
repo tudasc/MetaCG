@@ -50,7 +50,7 @@ PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
   }
 
   Generator gen(pta);
-  gen.addConsumer(std::make_unique<FileExporter>(cgout));
+  gen.addConsumer(std::make_unique<FileExporter>(outfile));
 
   if (!gen.run(M, &MA))
     return PreservedAnalyses::all();
