@@ -23,7 +23,8 @@ RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.
     apt-get update && \
     apt-get install -y libllvm18 llvm-18 llvm-18-dev llvm-18-runtime \
         clang-18 clang-tools-18 libclang-common-18-dev libclang-18-dev libclang1-18 \
-    lld-18
+        lld-18 \
+        libmlir-18-dev mlir-18-tools flang-18
 RUN bash -c "ln -s $(which clang-18) /usr/bin/clang" && \
     bash -c "ln -s $(which clang++-18) /usr/bin/clang++" && \
     bash -c "ln -s $(which opt-18) /usr/bin/opt" && \
@@ -56,7 +57,9 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_MODULE_PATH=/opt/metacg/.venv/share/Pytest/cmake \
       -DMETACG_BUILD_PYMETACG_TESTS=ON \
       -DCMAKE_VERBOSE_MAKEFILE=ON \
-      -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-18/build/utils/lit/lit.py 
+      -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-18/build/utils/lit/lit.py \
+      -DMLIR_DIR=/usr/lib/llvm-18/lib/cmake/mlir \
+      -DFlang_DIR=/usr/lib/llvm-18/lib/cmake/flang
 
 RUN cmake --build build --parallel
 
