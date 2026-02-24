@@ -240,7 +240,9 @@ test-cage:
   parallel:
     matrix:
       - GCC: 11
-        LLVM: [16.0.6, 17.0.6, 18.1.8]
+        LLVM: [16.0.6, 17.0.6, 18.1.8, 19.1.7, 20.1.8, 21.1.4]
+      - GCC: 15
+        LLVM: 21.1.4
   stage: integration-test
   script:
     - cd $BUILD/tools/cage/test
