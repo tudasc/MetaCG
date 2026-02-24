@@ -4,12 +4,13 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include <Callgraph.h>
-#include <DotIO.h>
-#include <LoggerUtil.h>
+#include "Callgraph.h"
+#include "DotIO.h"
+#include "LoggerUtil.h"
+#include "io/MCGReader.h"
+
 #include <cxxopts.hpp>
 #include <fstream>
-#include <io/MCGReader.h>
 
 static auto console = metacg::MCGLogger::instance().getConsole();
 static auto errConsole = metacg::MCGLogger::instance().getErrConsole();
