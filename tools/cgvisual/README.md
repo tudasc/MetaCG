@@ -1,7 +1,7 @@
 # CGVisual
 
 CGVisual is a simple tool to generate a DOT file representation of a given call
-graph. It uses the existing DOT infrastructure already present in MetaCG.
+graph.
 
 ## Usage
 

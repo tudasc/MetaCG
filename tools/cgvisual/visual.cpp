@@ -7,61 +7,52 @@
 #include <Callgraph.h>
 #include <DotIO.h>
 #include <LoggerUtil.h>
+#include <cxxopts.hpp>
 #include <fstream>
 #include <io/MCGReader.h>
 
 static auto console = metacg::MCGLogger::instance().getConsole();
 static auto errConsole = metacg::MCGLogger::instance().getErrConsole();
 
-void printUsage() {
-  std::cout << "Usage: visuel <cg>\n\n";
-  std::cout << "Reads a call graph from the specified file and generates a DOT file for visualization.\n\n";
-  std::cout << "Options:\n";
-  std::cout << "  -h, --help      Show this help message\n";
-  std::cout << "  -o, --output    Specify output DOT file name (default: callgraph.dot)\n";
-}
-
 int main(int argc, char* argv[]) {
-  if (argc < 2) {
-    printUsage();
-    return EXIT_FAILURE;
+  cxxopts::Options options("visual",
+                           "Reads a call graph from the specified file and generates a DOT file for visualization.");
+
+  // clang-format off
+  options.add_options()
+    ("h,help", "Show this help message")
+    ("o,output", "Specify output DOT file name", cxxopts::value<std::string>()->default_value("callgraph.dot"))
+    ("input", "Input call graph file", cxxopts::value<std::string>())
+  ;
+  // clang-format on
+
+  options.parse_positional({"input"});
+
+  auto result = options.parse(argc, argv);
+
+  if (result.count("help")) {
+    std::cout << options.help() << std::endl;
+    return EXIT_SUCCESS;
   }
 
-  std::string inputFile;
-  std::string outputFile = "callgraph.dot";
-
-  for (int i = 1; i < argc; i++) {
-    std::string arg = argv[i];
-
-    if (arg == "-h" || arg == "--help") {
-      printUsage();
-      return EXIT_SUCCESS;
-    } else if (arg == "-o" || arg == "--output") {
-      if (i + 1 >= argc) {
-        errConsole->error("Output file name not specified after {}", arg);
-        return EXIT_FAILURE;
-      }
-      outputFile = argv[++i];
-    } else {
-      inputFile = arg;
-    }
-  }
-
-  if (inputFile.empty()) {
+  if (!result.count("input")) {
     errConsole->error("No input call graph file specified.");
-    printUsage();
+    std::cout << options.help() << std::endl;
     return EXIT_FAILURE;
   }
 
-  metacg::io::FileSource fs1(inputFile);
+  std::string inputFile = result["input"].as<std::string>();
+  std::string outputFile = result["output"].as<std::string>();
 
-  auto mcgReader1 = metacg::io::createReader(fs1);
-  if (!mcgReader1) {
+  metacg::io::FileSource fs(inputFile);
+
+  auto mcgReader = metacg::io::createReader(fs);
+  if (!mcgReader) {
     errConsole->error("Failed to create MCG reader for file: {}", inputFile);
     return EXIT_FAILURE;
   }
 
-  auto cg = mcgReader1->read();
+  auto cg = mcgReader->read();
   if (!cg) {
     errConsole->error("Failed to read call graph from file.");
     return EXIT_FAILURE;
@@ -75,11 +66,10 @@ int main(int argc, char* argv[]) {
     errConsole->error("Could not open output file for writing: {}", outputFile);
     return EXIT_FAILURE;
   }
-  outFile << dotGen.getDotString();
 
+  outFile << dotGen.getDotString();
   outFile.close();
 
   console->info("DOT file generated successfully: {}", outputFile);
-
   return EXIT_SUCCESS;
 }

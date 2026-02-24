@@ -5,6 +5,7 @@ set(PROJECT_BINARY_NAME cgvisual)
 add_executable(${PROJECT_BINARY_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/visual.cpp)
 
 add_metacg(${PROJECT_BINARY_NAME})
+add_cxxopts(${PROJECT_BINARY_NAME})
 add_spdlog_libraries(${PROJECT_BINARY_NAME})
 
 install(
