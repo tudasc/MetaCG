@@ -28,16 +28,6 @@ configure_package_config_file(
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATION lib/cmake)
 
-# visual program to generate dot file from graph
-add_executable(${PROJECT_NAME}-visual ${CMAKE_CURRENT_SOURCE_DIR}/tools/visual.cpp)
-add_metacg(${PROJECT_NAME}-visual)
-add_spdlog_libraries(${PROJECT_NAME}-visual)
-install(
-  TARGETS ${PROJECT_NAME}-visual
-  LIBRARY DESTINATION bin
-  ARCHIVE DESTINATION bin
-)
-
 # generate wrapper scripts
 
 function(
