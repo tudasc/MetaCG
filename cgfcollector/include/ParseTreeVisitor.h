@@ -238,14 +238,15 @@ class ParseTreeVisitor {
   // added to cg in postProcess step
   std::vector<Edge> edges;
 
-  // all functions
+  // all functions. This vector collects all functions (+ dummy args) that were discovered during traversal of the parse
+  // tree.
   std::vector<Function> functions;
 
   // intended as a stack. It holds the current function symbol and its dummy
   // args when the AST walker is in the respective function.
   std::vector<Function> currentFunctions;
 
-  // all types
+  // all types. This vector collects all types that were discovered during traversal of the parse tree.
   std::vector<Type> types;
 
   // all interface operators. First is either a symbol of a DefinedOpName or
