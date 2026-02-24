@@ -26,6 +26,13 @@ static llvm::cl::opt<bool> NoRename("no-rename", llvm::cl::desc("Do not rename o
 static llvm::cl::opt<bool> Verbose("verbose", llvm::cl::desc("Enable verbose logging"), llvm::cl::cat(CGCategory),
                                    llvm::cl::init(false));
 
+/**
+ * @brief Replace the file extension of filePath with newExtension. If filePath does not have an extension, append
+ * newExtension.
+ *
+ * @param filePath
+ * @param newExtension
+ */
 void replaceExtension(std::string& filePath, const std::string& newExtension) {
   size_t lastDotPos = filePath.find_last_of('.');
   if (lastDotPos != std::string::npos) {
