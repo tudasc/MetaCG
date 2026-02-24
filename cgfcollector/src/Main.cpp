@@ -26,71 +26,13 @@ static llvm::cl::opt<bool> NoRename("no-rename", llvm::cl::desc("Do not rename o
 static llvm::cl::opt<bool> Verbose("verbose", llvm::cl::desc("Enable verbose logging"), llvm::cl::cat(CGCategory),
                                    llvm::cl::init(false));
 
-/**
- * @brief Create output file with given extension
- *
- * @param compInst
- * @param currentFile
- * @param extension
- * @return
- */
-std::unique_ptr<llvm::raw_pwrite_stream> createOutputFile(Fortran::frontend::CompilerInstance& compInst,
-                                                          llvm::StringRef currentFile, llvm::StringRef extension) {
-  llvm::SmallString<128> outputPath(compInst.getFrontendOpts().outputFile);
-  if (outputPath.empty()) {
-    outputPath = currentFile;
+void replaceExtension(std::string& filePath, const std::string& newExtension) {
+  size_t lastDotPos = filePath.find_last_of('.');
+  if (lastDotPos != std::string::npos) {
+    filePath = filePath.substr(0, lastDotPos) + newExtension;
+  } else {
+    filePath += newExtension;
   }
-  if (extension != "")
-    llvm::sys::path::replace_extension(outputPath, extension);
-  std::unique_ptr<llvm::raw_fd_ostream> os;
-  std::error_code ec;
-  os.reset(new llvm::raw_fd_ostream(outputPath.str(), ec, llvm::sys::fs::OF_TextWithCRLF));
-  if (ec) {
-    MCGLogger::logError("Error opening output file: {}", ec.message());
-    return nullptr;
-  }
-  return os;
-}
-
-/**
- * @brief Create callgraph in mcgManager and populate it by traversing the parse tree
- *
- * @param parseTree
- * @param currentFile
- */
-void generateCG(std::optional<Program>& parseTree, llvm::StringRef currentFile) {
-  mcgManager.addToManagedGraphs("cg", std::make_unique<metacg::Callgraph>(), true);
-  Callgraph* cg = mcgManager.getCallgraph("cg");
-
-  ParseTreeVisitor visitor(cg, currentFile.str());
-  Fortran::parser::Walk(parseTree, visitor);
-  visitor.postProcess();
-
-  mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
-}
-
-/**
- * @brief Dump callgraph as JSON string
- *
- * @return
- */
-std::string dumpCG() {
-  Callgraph* cg = mcgManager.getCallgraph("cg");
-  if (cg == nullptr) {
-    MCGLogger::logError("No callgraph generated");
-    return "";
-  }
-
-  std::unique_ptr<MCGWriter> mcgWriter = createWriter(4);
-  if (!mcgWriter) {
-    MCGLogger::logError("Unable to create a writer");
-    return "";
-  };
-
-  JsonSink jsonSink;
-  mcgWriter->writeActiveGraph(jsonSink);
-
-  return jsonSink.getJson().dump();
 }
 
 /**
@@ -106,30 +48,58 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
       metacg::MCGLogger::instance().getConsole()->set_pattern("%v");
     }
 
-    generateCG(getParsing().parseTree(), getCurrentFile());
+    // create and register callgraph
+    mcgManager.addToManagedGraphs("cg", std::make_unique<metacg::Callgraph>(), true);
 
-    std::string cgString = dumpCG();
-    std::unique_ptr<llvm::raw_pwrite_stream> file;
-    if (!NoRename) {
-      file = ::createOutputFile(getInstance(), getCurrentFile(), "json");
-    } else {
-      file = ::createOutputFile(getInstance(), getCurrentFile(), "");
+    Callgraph* cg = mcgManager.getCallgraph("cg");
+    if (!cg) {
+      MCGLogger::logError("Failed to create callgraph");
+      return;
     }
-    file->write(cgString.c_str(), cgString.size());
 
+    // traverse parse tree and generate callgraph
+    std::string currentFile = getCurrentFile().str();
+
+    ParseTreeVisitor visitor(cg, currentFile);
+    Fortran::parser::Walk(getParsing().parseTree(), visitor);
+    visitor.postProcess();
+
+    mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
+
+    // create writer
+    auto mcgWriter = io::createWriter(4);
+    if (!mcgWriter) {
+      MCGLogger::logError("Unable to create a writer for format version {}", 4);
+      return;
+    }
+
+    io::JsonSink jsonSink;
+    mcgWriter->write(cg, jsonSink);
+
+    // determine output file name. Honors `-o` option.
+    std::string outputFile = getInstance().getFrontendOpts().outputFile;
+
+    if (outputFile.empty()) {
+      outputFile = getCurrentFile().str();
+    }
+
+    if (!NoRename) {
+      replaceExtension(outputFile, ".json");
+    }
+
+    std::ofstream os(outputFile);
+    os << jsonSink.getJson() << std::endl;
+
+    // optionally generate dot output
     if (Dot) {
-      Callgraph* cg = mcgManager.getCallgraph("cg");
-      if (cg == nullptr) {
-        MCGLogger::logError("No callgraph generated");
-        return;
-      }
-
       dot::DotGenerator dotGen(cg);
       dotGen.generate();
 
-      std::unique_ptr<llvm::raw_pwrite_stream> dotfile = ::createOutputFile(getInstance(), getCurrentFile(), "dot");
-      std::string dotString = dotGen.getDotString();
-      dotfile->write(dotString.c_str(), dotString.size());
+      auto dotOutputFile = outputFile;
+      replaceExtension(dotOutputFile, ".dot");
+
+      std::ofstream dotOs(dotOutputFile);
+      dotOs << dotGen.getDotString() << std::endl;
     }
   }
 };
