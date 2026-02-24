@@ -8,7 +8,7 @@ Flang plugin and generates a call graph from source-level.
 For single file projects or projects not using modules use:
 
 ```sh
-cgfcollector_wrapper.sh <source file/s>
+cgfcollector_wrapper.sh [options] <source file/s>
 ```
 
 For any other projects you need a build system. For this we provide another
@@ -22,20 +22,20 @@ cgfcollector_comp_wrapper.sh <source file/s>
 You can also run the plugin directly with Flang:
 
 ```sh
-flang -fc1 -load "libcgfcollector.so" -plugin "genCG"
+flang -fc1 -load "libcgfcollector.so" -plugin "genCG" [options]
 ```
 
-There are three kinds of plugins:
+Available options:
 
-- `genCG`: generates a call graph in the MetaCG json format.
-- `genCGwithDot`: like `genCG` but also generate a `.dot` file. Mostly used for debugging.
-- `genCGNoRename`: like `genCG` but does not rename the output file.
+- `--dot`: Additionally generate a DOT file. This is mostly used for debugging.
+- `--no-rename`: Do not rename the output file to `.json`.
+- `--verbose`: Print additional information during the generation process.
 
 Additionally these other tools are included:
 
-- `cgfcollector_wrapper.sh`: convenience wrapper to run parse plugin.
-- `cgfcollector_comp_wrapper.sh`: acts like a normal Flang compiler but also generates a call graph.
-- `test_runner.sh`: run tests.
+- `cgfcollector_wrapper.sh`: Convenience wrapper to run parse plugin.
+- `cgfcollector_comp_wrapper.sh`: Acts like a normal Flang compiler but also generates a call graph.
+- `test_runner.sh`: Run tests.
 
 ## How to build
 
@@ -51,7 +51,7 @@ Paste this into your CMakeLists.txt.
 ```
 set(CMAKE_Fortran_COMPILER <path to cgfcollector_wrapper.sh>)
 set(CMAKE_Fortran_FLAGS "")
-set(CMAKE_Fortran_COMPILE_OBJECT "<CMAKE_Fortran_COMPILER> -dot <DEFINES> <INCLUDES> <FLAGS> <SOURCE> -o <OBJECT>")
+set(CMAKE_Fortran_COMPILE_OBJECT "<CMAKE_Fortran_COMPILER> --dot <DEFINES> <INCLUDES> <FLAGS> <SOURCE> -o <OBJECT>")
 set(CMAKE_Fortran_LINK_EXECUTABLE "<path to cgmerge2> <TARGET> <OBJECTS>")
 set(CMAKE_EXECUTABLE_SUFFIX .json)
 ```
@@ -74,7 +74,7 @@ you probably don't need this.
 
 ## Running test
 
-run `test_runner.sh`
+Run `test_runner.sh`
 
 NOTE: The test `test/multi/fortdepend_deps` has a dependency on [fortdepend](https://fortdepend.readthedocs.io/en/latest/)
 
