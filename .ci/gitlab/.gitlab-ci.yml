@@ -7,6 +7,7 @@ variables:
   GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PIPELINE_ID
 
   CMAKE_GENERATOR: Ninja
+  CMAKE_BUILD_PARALLEL_LEVEL: 8
 
   CMAKE_C_COMPILER_LAUNCHER: ccache
   CMAKE_CXX_COMPILER_LAUNCHER: ccache
@@ -17,18 +18,23 @@ variables:
   parallel:
     matrix:
       - GCC: 11
-        LLVM: [15.0.7, 16.0.6, 17.0.6, 18.1.8, 19.1.7, 20.1.8, 21.1.4] 
+        LLVM: [15.0.7, 16.0.6, 17.0.6, 18.1.8, 19.1.7, 20.1.8, 21.1.4]
+        _CC: clang
+        _CXX: clang++
       - GCC: 15
         LLVM: [21.1.4]
+        _CC: clang
+        _CXX: clang++
+      - GCC: 15
+        LLVM: [21.1.4]
+        _CC: gcc
+        _CXX: g++
 
   variables:
-    VARIANT: "GCC-$GCC-LLVM-$LLVM"
+    VARIANT: "$_CC-GCC-$GCC-LLVM-$LLVM"
     SPENV: "spenv-$VARIANT"
     BUILD: "build-$VARIANT"
     INSTALL: "install-$VARIANT"
-
-    CC: clang
-    CXX: clang++
 
 # Setup for all jobs (except those preparing the environment)
 .job-setup: &job-setup
@@ -101,8 +107,14 @@ build:
   script:
     - echo $SPENV
     - echo $BUILD
+    - export CC=$(which ${_CC})
+    - export CXX=$(which ${_CXX})
+    - echo $CC
+    - echo $CXX
     - cmake -S . -B $BUILD 
       -DCMAKE_INSTALL_PREFIX=$INSTALL
+      -DCMAKE_C_COMPILER=$_CC
+      -DCMAKE_CXX_COMPILER=$_CXX
       -DMETACG_BUILD_CGCOLLECTOR=ON
       -DMETACG_BUILD_GRAPH_TOOLS=ON
       -DMETACG_BUILD_CGPATCH=ON
@@ -112,6 +124,7 @@ build:
       -DMETACG_BUILD_PYMETACG_TESTS=ON
       -DMETACG_USE_EXTERNAL_JSON=ON
       -DMETACG_USE_EXTERNAL_CXXOPTS=ON
+      -DMETACG_USE_EXTERNAL_NANOBIND=ON
       -DLLVM_EXTERNAL_LIT=$(which lit)
       -DCUBE_DIR=$(spack location -i cubelib)
     - cmake --build $BUILD --parallel
@@ -239,10 +252,18 @@ test-cage:
   <<: *job-setup
   parallel:
     matrix:
-      - GCC: 11
-        LLVM: [16.0.6, 17.0.6, 18.1.8, 19.1.7, 20.1.8, 21.1.4]
-      - GCC: 15
-        LLVM: 21.1.4
+    - GCC: 11
+      LLVM: [16.0.6, 17.0.6, 18.1.8, 19.1.7, 20.1.8, 21.1.4]
+      _CC: clang
+      _CXX: clang++
+    - GCC: 15
+      LLVM: [21.1.4]
+      _CC: clang
+      _CXX: clang++
+    - GCC: 15
+      LLVM: [21.1.4]
+      _CC: gcc
+      _CXX: g++
   stage: integration-test
   script:
     - cd $BUILD/tools/cage/test
