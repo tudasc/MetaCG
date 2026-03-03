@@ -20,3 +20,12 @@ configure_package_config_file(
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATION lib/cmake)
+
+# tests
+
+set(CGTODOT_BIN ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_BINARY_NAME})
+set(CGTODOT_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test/data)
+
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/test/test_runner.sh.in" "test_runner.sh")
+
+add_test(NAME cgtodot_tests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_runner.sh)

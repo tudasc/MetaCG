@@ -1,0 +1,6 @@
+digraph callgraph {
+  "_QFPprint_stars"
+  "_QQmain"
+
+  _QQmain -> _QFPprint_stars
+}
