@@ -1,8 +1,8 @@
-set(PROJECT_NAME CGVisual)
+set(PROJECT_NAME CGToDot)
 set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
-set(PROJECT_BINARY_NAME cgvisual)
+set(PROJECT_BINARY_NAME cgtodot)
 
-add_executable(${PROJECT_BINARY_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/visual.cpp)
+add_executable(${PROJECT_BINARY_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/CGToDot.cpp)
 
 add_metacg(${PROJECT_BINARY_NAME})
 add_cxxopts(${PROJECT_BINARY_NAME})
