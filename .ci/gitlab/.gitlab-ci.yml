@@ -216,6 +216,13 @@ test-cgformat:
     - cd $BUILD/tools/cgformat/test
     - ./run_cgformat_tests.sh
 
+test-cgtodot:
+  <<: *job-setup
+  stage: test
+  script:
+    - cd $BUILD/tools/cgtodot
+    - ctest . --verbose
+
 
 # Stage: integration-test
 # =======================
@@ -286,6 +293,7 @@ install:
     - stat $INSTALL/bin/cgquery
     - stat $INSTALL/bin/cgformat
     - stat $INSTALL/bin/cgconvert
+    - stat $INSTALL/bin/cgtodot
     - export LD_LIBRARY_PATH=$INSTALL/lib64:$INSTALL/lib:$LD_LIBRARY_PATH
     - $INSTALL/bin/metacg-config --help
     - $INSTALL/bin/cgcollector --help
