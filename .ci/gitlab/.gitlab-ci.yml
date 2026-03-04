@@ -195,20 +195,6 @@ check-test-format:
   script:
     - ./checkTests.sh $BUILD/tools/cgformat/cgformat
 
-test-graphlib-merge:
-  <<: *job-setup
-  stage: integration-test
-  script:
-    - cd graph/test/integration/CallgraphMerge
-    - ./MergeTestRunner.sh -b $BUILD
-
-test-cgvalidate:
-  <<: *job-setup
-  stage: integration-test
-  script:
-    - cd cgcollector/test/integration
-    - ./runner.sh $BUILD
-
 test-cgformat:
   <<: *job-setup
   stage: test
@@ -232,6 +218,20 @@ test-cgcollector2:
   script:
     - cd tools/cgcollector2/test/
     - ./testBase.sh -b $BUILD
+
+test-cgvalidate:
+  <<: *job-setup
+  stage: integration-test
+  script:
+    - cd cgcollector/test/integration
+    - ./runner.sh $BUILD
+
+test-graphlib-merge:
+  <<: *job-setup
+  stage: integration-test
+  script:
+    - cd graph/test/integration/CallgraphMerge
+    - ./MergeTestRunner.sh -b $BUILD
 
 test-target-collector:
   <<: *job-setup
