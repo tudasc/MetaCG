@@ -1,0 +1,311 @@
+# File: .gitlab-ci.yml
+# License: Part of the MetaCG proect. Licensed under BSD 3 clause license. See LICENSE.txt file at https://github.com/tudasc/metacg/LICENSE.txt
+# Description: File to configure our Gitlab CI
+
+variables:
+  GIT_STRATEGY: none
+  GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PIPELINE_ID
+
+  CMAKE_GENERATOR: Ninja
+  CMAKE_BUILD_PARALLEL_LEVEL: 8
+
+  CMAKE_C_COMPILER_LAUNCHER: ccache
+  CMAKE_CXX_COMPILER_LAUNCHER: ccache
+
+
+# Setup for job matrix, covering different versions of GCC and LLVM
+.parallel-setup: &parallel-setup
+  parallel:
+    matrix:
+      - GCC: 11
+        LLVM: [15.0.7, 16.0.6, 17.0.6, 18.1.8, 19.1.7, 20.1.8, 21.1.4]
+        _CC: clang
+        _CXX: clang++
+      - GCC: 15
+        LLVM: [21.1.4]
+        _CC: clang
+        _CXX: clang++
+      - GCC: 15
+        LLVM: [21.1.4]
+        _CC: gcc
+        _CXX: g++
+
+  variables:
+    VARIANT: "$_CC-GCC-$GCC-LLVM-$LLVM"
+    SPENV: "spenv-$VARIANT"
+    BUILD: "build-$VARIANT"
+    INSTALL: "install-$VARIANT"
+
+# Setup for all jobs (except those preparing the environment)
+.job-setup: &job-setup
+  <<: *parallel-setup
+  
+  before_script:
+    - spack env activate $SPENV
+
+
+# Stages
+stages:
+  - prepare
+  - configure-build-lint
+  - test
+  - integration-test
+  - install
+
+# Stage: Prepare
+# ==============
+mcg-download:
+  stage: prepare
+  variables:
+    GIT_STRATEGY: fetch
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_PIPELINE_ID
+  script:
+    - echo 'Done.'
+
+prepare-environment:
+  stage: prepare
+  needs: ["mcg-download"]
+  <<: *parallel-setup
+  script: 
+    - which spack
+    - spack --version
+    - mkdir -p $SPENV
+    - |
+      ./.ci/gitlab/spack/replace.sh \
+      < ./.ci/gitlab/spack/spack_env_template.yaml \
+      > $SPENV/spack.yaml \
+      "<GCCVERSION>" $GCC \
+      "<LLVMVERSION>" $LLVM
+    - spack env activate $SPENV
+    - ./.ci/gitlab/spack/prepare.sh
+
+  cache:
+    key:
+      files:
+        - ".ci/gitlab/spack/spack_env_template.yaml"
+        - ".ci/gitlab/.gitlab-ci.yaml"
+      prefix: "$VARIANT"
+    paths:
+      - $SPENV/spack.yaml
+      - $SPENV/spack.lock
+    policy: pull-push
+
+  
+# Stage: configure-build-lint
+# ===========================
+mcg-cmake-lint:
+  stage: configure-build-lint
+  script:
+    - spack load --first py-cmake-format
+    - for f in $(find {cgcollector,graph,pgis} -name "CMakeLists.txt"); do cmake-format --check $f || exit 1; done ; cmake-format --check CMakeLists.txt
+    - for f in $(find ./cmake -type f); do cmake-format --check $f || exit 1; done
+
+build:
+  stage: configure-build-lint
+  <<: *job-setup
+
+  script:
+    - echo $SPENV
+    - echo $BUILD
+    - export CC=$(which ${_CC})
+    - export CXX=$(which ${_CXX})
+    - echo $CC
+    - echo $CXX
+    - cmake -S . -B $BUILD 
+      -DCMAKE_INSTALL_PREFIX=$INSTALL
+      -DCMAKE_C_COMPILER=$_CC
+      -DCMAKE_CXX_COMPILER=$_CXX
+      -DMETACG_BUILD_CGCOLLECTOR=ON
+      -DMETACG_BUILD_GRAPH_TOOLS=ON
+      -DMETACG_BUILD_CGPATCH=ON
+      -DCAGE_USE_METAVIRT=ON
+      -DCGPATCH_USE_MPI=OFF
+      -DMETACG_BUILD_PYMETACG=ON
+      -DMETACG_BUILD_PYMETACG_TESTS=ON
+      -DMETACG_USE_EXTERNAL_JSON=ON
+      -DMETACG_USE_EXTERNAL_CXXOPTS=ON
+      -DMETACG_USE_EXTERNAL_NANOBIND=ON
+      -DLLVM_EXTERNAL_LIT=$(which lit)
+      -DCUBE_DIR=$(spack location -i cubelib)
+    - cmake --build $BUILD --parallel
+
+# test whether a custom in-tree metadata type gets included in the build
+configure-custom-md:
+  stage: configure-build-lint
+  needs: ["build"] # to prevent this job from interfering with the different builds
+  script:
+    - spack load --first cmake
+    - test -d graph/include/metadata/custom || exit 1
+    - echo "// Empty test header" > graph/include/metadata/custom/TestHeader.h
+    - cmake -S . -B build-configure-md -DCMAKE_BUILD_TYPE=Debug -DMETACG_BUILD_UNIT_TESTS=OFF
+    - grep "TestHeader.h" "build-configure-md/graph/include/metadata/CustomMD.h" || exit 1
+    - rm -f graph/include/metadata/custom/TestHeader.h
+
+
+# Stage: test
+# ===========
+test-graphlib:
+  <<: *job-setup
+  stage: test
+  script:
+    - cd $BUILD/graph/test/unit && ./libtests --gtest_output=xml:${VARIANT}.xml
+    - sed -i -e "s/Test\"/Test-${VARIANT}\"/g" ${VARIANT}.xml
+  artifacts:
+    when: always
+    paths:
+      - $BUILD/graph/test/unit/${VARIANT}.xml
+    reports:
+      junit: $BUILD/graph/test/unit/${VARIANT}.xml
+
+test-pymetacg:
+  <<: *job-setup
+  stage: test
+  script:
+    - cd $BUILD/pymetacg/tests
+    - ctest . --verbose
+
+test-cgc:
+  <<: *job-setup
+  stage: test
+  script:
+    - cd cgcollector/test
+    - mkdir -p log
+    - bash run_format_two_test.sh -b $BUILD
+
+test-cgpatch-lit:
+  <<: *job-setup
+  stage: test
+  script:
+    - cmake --install $BUILD
+    - cmake --build $BUILD --target pass-tests
+    - cmake --build $BUILD --target pass-tests-lto
+    - cmake --build $BUILD --target pass-tests-optimized
+    - cmake --build $BUILD --target pass-tests-optimized-lto
+
+test-cgdiff:
+  <<: *job-setup
+  stage: test
+  script:
+    - cd $BUILD/tools/cgdiff/test/unit/
+    - ./cgdifftests
+
+check-test-format:
+  <<: *job-setup
+  stage: test
+  script:
+    - ./checkTests.sh $BUILD/tools/cgformat/cgformat
+
+test-cgformat:
+  <<: *job-setup
+  stage: test
+  script:
+    - cd $BUILD/tools/cgformat/test
+    - ./run_cgformat_tests.sh
+
+test-cgtodot:
+  <<: *job-setup
+  stage: test
+  script:
+    - cd $BUILD/tools/cgtodot
+    - ctest . --verbose
+
+
+# Stage: integration-test
+# =======================
+test-cgcollector2:
+  <<: *job-setup
+  stage: integration-test
+  script:
+    - cd tools/cgcollector2/test/
+    - ./testBase.sh -b $BUILD
+
+test-cgvalidate:
+  <<: *job-setup
+  stage: integration-test
+  script:
+    - cd cgcollector/test/integration
+    - ./runner.sh $BUILD
+
+test-graphlib-merge:
+  <<: *job-setup
+  stage: integration-test
+  script:
+    - cd graph/test/integration/CallgraphMerge
+    - ./MergeTestRunner.sh -b $BUILD
+
+test-target-collector:
+  <<: *job-setup
+  stage: integration-test
+  script:
+    - cmake --install $BUILD
+    - cd graph/test/integration/TargetCollector
+    - ./TestRunner.sh -b $BUILD
+
+test-cgpatch-integration:
+  <<: *job-setup
+  script:
+    - cd $BUILD/tools/cgpatch/test/integration/
+    - ./CGPIntegrationRunner.sh -b $BUILD
+
+test-cgdiff-integration:
+  <<: *job-setup
+  stage: integration-test
+  script:
+    - cmake --install $BUILD
+    - cd tools/cgdiff/test/integration/
+    - ./run_tests.sh -b $BUILD
+
+test-cage:
+  <<: *job-setup
+  parallel:
+    matrix:
+    - GCC: 11
+      LLVM: [16.0.6, 17.0.6, 18.1.8, 19.1.7, 20.1.8, 21.1.4]
+      _CC: clang
+      _CXX: clang++
+    - GCC: 15
+      LLVM: [21.1.4]
+      _CC: clang
+      _CXX: clang++
+    - GCC: 15
+      LLVM: [21.1.4]
+      _CC: gcc
+      _CXX: g++
+  stage: integration-test
+  script:
+    - cd $BUILD/tools/cage/test
+    - ./runCaGeTests.sh
+
+
+# Stage: install
+# ==============
+install:
+  stage: install
+  <<: *job-setup
+
+  script:
+    - cmake --install $BUILD
+    - stat $INSTALL/lib64/libmetacg.so
+    - stat $INSTALL/bin/cgcollector
+    - stat $INSTALL/include/metadata/CustomMD.h
+    - stat $INSTALL/lib64/cmake/metacg/metacgConfig.cmake
+    - stat $INSTALL/bin/cgdiff
+    - stat $INSTALL/bin/cgquery
+    - stat $INSTALL/bin/cgformat
+    - stat $INSTALL/bin/cgconvert
+    - stat $INSTALL/bin/cgtodot
+    - export LD_LIBRARY_PATH=$INSTALL/lib64:$INSTALL/lib:$LD_LIBRARY_PATH
+    - $INSTALL/bin/metacg-config --help
+    - $INSTALL/bin/cgcollector --help
+
+# test whether we can build project that uses MetaCG
+install-test:
+  <<: *job-setup
+  stage: install
+  needs: ["install"]
+  script:
+    - export BUILD=$(realpath $BUILD)
+    - export INSTALL=$(realpath $INSTALL)
+    - cd graph/test/install
+    - CMAKE_PREFIX_PATH=$INSTALL/lib64/cmake/metacg cmake -S . -B $BUILD-install-test
+    - cmake --build $BUILD-install-test --parallel

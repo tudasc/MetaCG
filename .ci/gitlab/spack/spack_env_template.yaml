@@ -1,0 +1,35 @@
+# This is a Spack Environment file.
+#
+# It describes a set of packages to be installed, along with
+# configuration settings.
+spack:
+  specs:
+    # Compilers
+    - 'gcc@<GCCVERSION>'
+    - 'llvm@<LLVMVERSION> +clang +flang +utils %gcc@<GCCVERSION>'
+
+    # Build tools
+    - cmake
+    - ninja
+
+    # Basic dependencies
+    - 'nlohmann-json@3.12:'
+    - cxxopts
+
+    # For cgvalidate
+    - cubelib
+
+    # For pymetacg
+    - 'python@3.13:'
+    - py-nanobind
+    - py-pytest-cmake
+
+  view: true
+  concretizer:
+    unify: true
+
+  # Make sure LD_LIBRARY_PATH is set when activating the environment
+  modules:
+    prefix_inspections:
+      lib: [LD_LIBRARY_PATH]
+      lib64: [LD_LIBRARY_PATH]
