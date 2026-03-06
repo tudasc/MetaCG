@@ -52,7 +52,7 @@ int DomCommand::run(const std::vector<char*>& args) {
     }
 
     std::unordered_map<const metacg::CgNode*, metacg::analysis::DomData<metacg::CgNode>> dom =
-        metacg::analysis::computeDoms<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Forward>(
+        metacg::analysis::computeDominators<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Forward>(
             *cg, *refNodePtr);
 
     const auto& data = dom[targetNodePtr];

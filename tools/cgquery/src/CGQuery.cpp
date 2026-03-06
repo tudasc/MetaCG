@@ -8,10 +8,8 @@
 #include "commands/ReachesCommand.h"
 #include "utils.h"
 
-#include <cxxopts.hpp>
 #include <iostream>
 #include <memory>
-#include <ostream>
 
 int main(int argc, char** argv) {
   if (argc < 2) {

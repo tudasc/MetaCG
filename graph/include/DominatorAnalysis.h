@@ -31,13 +31,8 @@ template <typename NodeT, typename GraphT>
 DomAnalysisResult<NodeT> computeDoms(const GraphT& graph, const NodeT& exitNode);
 
 template <typename Container>
-Container unordered_intersection(const Container& a, const Container& b) {
-  //  std::set<typename Container::value_type> orderedA(a.begin(), a.end());
-  //  std::set<typename Container::value_type> orderedB(b.begin(), b.end());
+Container unorderedIntersection(const Container& a, const Container& b) {
   Container result;
-  //  std::set_intersection(orderedA.begin(), orderedA.end(),
-  //                        orderedB.begin(), orderedB.end(),
-  //                        std::inserter(result, result.begin()));
   for (auto& item : a) {
     if (std::find(b.begin(), b.end(), item) != b.end()) {
       result.insert(item);
@@ -59,15 +54,9 @@ typename DomData<NodeT>::NodeSet intersection(const std::vector<const NodeT*>& n
 
   for (std::size_t i = 1; i < nodes.size(); ++i) {
     auto& currSet = DomMap.at(nodes[i]).Doms;
-    // LOG_STATUS("Intersecting " << dumpNodeSet("a", last_intersection) << " and " << dumpNodeSet("b", currSet) <<
-    // "\n");
 
     // Note: std::set_intersection does not work with unordered_set.
-    curr_intersection = unordered_intersection(last_intersection, currSet);
-    //    std::set_intersection(last_intersection.begin(), last_intersection.end(),
-    //                          currSet.begin(), currSet.end(),
-    //                          std::inserter(curr_intersection, curr_intersection.begin()));
-    // LOG_STATUS("Result of intersection" << dumpNodeSet("", curr_intersection) << "\n");
+    curr_intersection = unorderedIntersection(last_intersection, currSet);
     std::swap(last_intersection, curr_intersection);
     curr_intersection.clear();
   }
@@ -75,7 +64,9 @@ typename DomData<NodeT>::NodeSet intersection(const std::vector<const NodeT*>& n
 }
 
 template <typename NodeT, typename GraphT, TraverseDir dir>
-DomAnalysisResult<NodeT> computeDoms(const GraphT& graph, const NodeT& exitNode) {
+DomAnalysisResult<NodeT> computeDominators(const GraphT& graph, const NodeT& exitNode) {
+  using DomDataT = DomData<NodeT>;
+
   auto incoming = [&](const NodeT* n) {
     if constexpr (dir == TraverseDir::Forward)
       return graph.getCallers(*n);
@@ -90,7 +81,6 @@ DomAnalysisResult<NodeT> computeDoms(const GraphT& graph, const NodeT& exitNode)
       return graph.getCallees(*n);
   };
 
-  using DomDataT = DomData<NodeT>;
 
   DomAnalysisResult<NodeT> DomMap{{&exitNode, {&exitNode, {}, false}}};
 

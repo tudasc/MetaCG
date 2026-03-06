@@ -53,11 +53,11 @@ TEST_F(DominatorAnalysisTest, Dom_SingleNode) {
 
   auto main = cg->getFirstNode(mainS);
 
-  auto doms = computeDoms<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Forward>(*cg, *main);
+  auto doms = computeDominators<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Forward>(*cg, *main);
 
   auto& doms_main = doms[main].Doms;
   ASSERT_TRUE(doms_main.size() == 1);
-  ASSERT_TRUE(doms_main.count(main));
+  ASSERT_TRUE(doms_main.count(main) == 1);
 }
 TEST_F(DominatorAnalysisTest, Dom_LinearCallChain) {
   auto cg = getGraph();
@@ -67,7 +67,7 @@ TEST_F(DominatorAnalysisTest, Dom_LinearCallChain) {
   ASSERT_TRUE(cg->addEdge(C1, C2));
   ASSERT_TRUE(cg->addEdge(C2, EXIT));
 
-  auto doms = computeDoms<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Forward>(
+  auto doms = computeDominators<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Forward>(
       *cg, *cg->getFirstNode(mainS));
 
   auto main = cg->getFirstNode(mainS);
@@ -77,25 +77,25 @@ TEST_F(DominatorAnalysisTest, Dom_LinearCallChain) {
 
   auto& doms_main = doms[main].Doms;
   ASSERT_TRUE(doms_main.size() == 1);
-  ASSERT_TRUE(doms_main.count(main));
+  ASSERT_TRUE(doms_main.count(main) == 1);
 
   auto& doms_node1 = doms[node1].Doms;
   ASSERT_TRUE(doms_node1.size() == 2);
-  ASSERT_TRUE(doms_node1.count(main));
-  ASSERT_TRUE(doms_node1.count(node1));
+  ASSERT_TRUE(doms_node1.count(main) == 1);
+  ASSERT_TRUE(doms_node1.count(node1) == 1);
 
   auto& doms_node2 = doms[node2].Doms;
   ASSERT_TRUE(doms_node2.size() == 3);
-  ASSERT_TRUE(doms_node2.count(main));
-  ASSERT_TRUE(doms_node2.count(node1));
-  ASSERT_TRUE(doms_node2.count(node2));
+  ASSERT_TRUE(doms_node2.count(main) == 1);
+  ASSERT_TRUE(doms_node2.count(node1) == 1);
+  ASSERT_TRUE(doms_node2.count(node2) == 1);
 
   auto& doms_exit = doms[exit].Doms;
   ASSERT_TRUE(doms_exit.size() == 4);
-  ASSERT_TRUE(doms_exit.count(main));
-  ASSERT_TRUE(doms_exit.count(node1));
-  ASSERT_TRUE(doms_exit.count(node2));
-  ASSERT_TRUE(doms_exit.count(exit));
+  ASSERT_TRUE(doms_exit.count(main) == 1);
+  ASSERT_TRUE(doms_exit.count(node1) == 1);
+  ASSERT_TRUE(doms_exit.count(node2) == 1);
+  ASSERT_TRUE(doms_exit.count(exit) == 1);
 }
 
 TEST_F(DominatorAnalysisTest, Dom_BranchAndJoin) {
@@ -108,7 +108,7 @@ TEST_F(DominatorAnalysisTest, Dom_BranchAndJoin) {
   ASSERT_TRUE(cg->addEdge(C2, EXIT));
   ASSERT_TRUE(cg->addEdge(C3, C2));
 
-  auto doms = computeDoms<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Forward>(
+  auto doms = computeDominators<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Forward>(
       *cg, *cg->getFirstNode(mainS));
 
   auto main = cg->getFirstNode(mainS);
@@ -119,32 +119,32 @@ TEST_F(DominatorAnalysisTest, Dom_BranchAndJoin) {
 
   auto& doms_main = doms[main].Doms;
   ASSERT_TRUE(doms_main.size() == 1);
-  ASSERT_TRUE(doms_main.count(main));
+  ASSERT_TRUE(doms_main.count(main) == 1);
 
   auto& doms_node1 = doms[node1].Doms;
   ASSERT_TRUE(doms_node1.size() == 2);
-  ASSERT_TRUE(doms_node1.count(main));
-  ASSERT_TRUE(doms_node1.count(node1));
+  ASSERT_TRUE(doms_node1.count(main) == 1);
+  ASSERT_TRUE(doms_node1.count(node1) == 1);
 
   auto& doms_node2 = doms[node2].Doms;
   ASSERT_TRUE(doms_node2.size() == 2);
-  ASSERT_TRUE(doms_node2.count(main));
-  ASSERT_FALSE(doms_node2.count(node1));
-  ASSERT_FALSE(doms_node2.count(node3));
-  ASSERT_TRUE(doms_node2.count(node2));
+  ASSERT_TRUE(doms_node2.count(main) == 1);
+  ASSERT_FALSE(doms_node2.count(node1) == 1);
+  ASSERT_FALSE(doms_node2.count(node3) == 1);
+  ASSERT_TRUE(doms_node2.count(node2) == 1);
 
   auto& doms_node3 = doms[node3].Doms;
   ASSERT_TRUE(doms_node3.size() == 2);
-  ASSERT_TRUE(doms_node3.count(main));
-  ASSERT_TRUE(doms_node3.count(node3));
+  ASSERT_TRUE(doms_node3.count(main) == 1);
+  ASSERT_TRUE(doms_node3.count(node3) == 1);
 
   auto& doms_exit = doms[exit].Doms;
   ASSERT_TRUE(doms_exit.size() == 3);
-  ASSERT_TRUE(doms_exit.count(main));
-  ASSERT_FALSE(doms_exit.count(node1));
-  ASSERT_TRUE(doms_exit.count(node2));
-  ASSERT_FALSE(doms_exit.count(node3));
-  ASSERT_TRUE(doms_exit.count(exit));
+  ASSERT_TRUE(doms_exit.count(main) == 1);
+  ASSERT_FALSE(doms_exit.count(node1) == 1);
+  ASSERT_TRUE(doms_exit.count(node2) == 1);
+  ASSERT_FALSE(doms_exit.count(node3) == 1);
+  ASSERT_TRUE(doms_exit.count(exit) == 1);
 }
 
 TEST_F(DominatorAnalysisTest, Dom_UnreachableNodes) {
@@ -154,7 +154,7 @@ TEST_F(DominatorAnalysisTest, Dom_UnreachableNodes) {
   ASSERT_TRUE(cg->addEdge(mainS, C1));
   ASSERT_TRUE(cg->addEdge(C2, C3));
 
-  auto doms = computeDoms<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Forward>(
+  auto doms = computeDominators<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Forward>(
       *cg, *cg->getFirstNode(mainS));
 
   ASSERT_TRUE(doms.find(cg->getFirstNode(C2)) == doms.end());
@@ -169,7 +169,7 @@ TEST_F(DominatorAnalysisTest, Dom_Recursion) {
   ASSERT_TRUE(cg->addEdge(C2, C1));
   ASSERT_TRUE(cg->addEdge(C2, EXIT));
 
-  auto doms = computeDoms<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Forward>(
+  auto doms = computeDominators<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Forward>(
       *cg, *cg->getFirstNode(mainS));
 
   auto main = cg->getFirstNode(mainS);
@@ -179,25 +179,25 @@ TEST_F(DominatorAnalysisTest, Dom_Recursion) {
 
   auto& doms_main = doms[main].Doms;
   ASSERT_TRUE(doms_main.size() == 1);
-  ASSERT_TRUE(doms_main.count(main));
+  ASSERT_TRUE(doms_main.count(main) == 1);
 
   auto& doms_node1 = doms[node1].Doms;
   ASSERT_TRUE(doms_node1.size() == 2);
-  ASSERT_TRUE(doms_node1.count(main));
-  ASSERT_TRUE(doms_node1.count(node1));
+  ASSERT_TRUE(doms_node1.count(main) == 1);
+  ASSERT_TRUE(doms_node1.count(node1) == 1);
 
   auto& doms_node2 = doms[node2].Doms;
   ASSERT_TRUE(doms_node2.size() == 3);
-  ASSERT_TRUE(doms_node2.count(main));
-  ASSERT_TRUE(doms_node2.count(node1));
-  ASSERT_TRUE(doms_node2.count(node2));
+  ASSERT_TRUE(doms_node2.count(main) == 1);
+  ASSERT_TRUE(doms_node2.count(node1) == 1);
+  ASSERT_TRUE(doms_node2.count(node2) == 1);
 
   auto& doms_exit = doms[exit].Doms;
   ASSERT_TRUE(doms_exit.size() == 4);
-  ASSERT_TRUE(doms_exit.count(main));
-  ASSERT_TRUE(doms_exit.count(node1));
-  ASSERT_TRUE(doms_exit.count(node2));
-  ASSERT_TRUE(doms_exit.count(exit));
+  ASSERT_TRUE(doms_exit.count(main) == 1);
+  ASSERT_TRUE(doms_exit.count(node1) == 1);
+  ASSERT_TRUE(doms_exit.count(node2) == 1);
+  ASSERT_TRUE(doms_exit.count(exit) == 1);
 }
 
 TEST_F(DominatorAnalysisTest, Dom_MultiNodeCycle) {
@@ -211,7 +211,7 @@ TEST_F(DominatorAnalysisTest, Dom_MultiNodeCycle) {
   ASSERT_TRUE(cg->addEdge(C3, C1));
   ASSERT_TRUE(cg->addEdge(C3, EXIT));
 
-  auto doms = computeDoms<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Forward>(
+  auto doms = computeDominators<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Forward>(
       *cg, *cg->getFirstNode(mainS));
 
   auto main = cg->getFirstNode(mainS);
@@ -220,25 +220,25 @@ TEST_F(DominatorAnalysisTest, Dom_MultiNodeCycle) {
   auto node3 = cg->getFirstNode(C3);
   auto exit = cg->getFirstNode(EXIT);
 
-  ASSERT_TRUE(doms[main].Doms.count(main));
+  ASSERT_TRUE(doms[main].Doms.count(main) == 1);
 
-  ASSERT_TRUE(doms[node1].Doms.count(main));
-  ASSERT_TRUE(doms[node1].Doms.count(node1));
+  ASSERT_TRUE(doms[node1].Doms.count(main) == 1);
+  ASSERT_TRUE(doms[node1].Doms.count(node1) == 1);
 
-  ASSERT_TRUE(doms[node2].Doms.count(main));
-  ASSERT_TRUE(doms[node2].Doms.count(node1));
-  ASSERT_TRUE(doms[node2].Doms.count(node2));
+  ASSERT_TRUE(doms[node2].Doms.count(main) == 1);
+  ASSERT_TRUE(doms[node2].Doms.count(node1) == 1);
+  ASSERT_TRUE(doms[node2].Doms.count(node2) == 1);
 
-  ASSERT_TRUE(doms[node3].Doms.count(main));
-  ASSERT_TRUE(doms[node3].Doms.count(node1));
-  ASSERT_TRUE(doms[node3].Doms.count(node2));
-  ASSERT_TRUE(doms[node3].Doms.count(node3));
+  ASSERT_TRUE(doms[node3].Doms.count(main) == 1);
+  ASSERT_TRUE(doms[node3].Doms.count(node1) == 1);
+  ASSERT_TRUE(doms[node3].Doms.count(node2) == 1);
+  ASSERT_TRUE(doms[node3].Doms.count(node3) == 1);
 
-  ASSERT_TRUE(doms[exit].Doms.count(main));
-  ASSERT_TRUE(doms[exit].Doms.count(node1));
-  ASSERT_TRUE(doms[exit].Doms.count(node2));
-  ASSERT_TRUE(doms[exit].Doms.count(node3));
-  ASSERT_TRUE(doms[exit].Doms.count(exit));
+  ASSERT_TRUE(doms[exit].Doms.count(main) == 1);
+  ASSERT_TRUE(doms[exit].Doms.count(node1) == 1);
+  ASSERT_TRUE(doms[exit].Doms.count(node2) == 1);
+  ASSERT_TRUE(doms[exit].Doms.count(node3) == 1);
+  ASSERT_TRUE(doms[exit].Doms.count(exit) == 1);
 }
 
 TEST_F(DominatorAnalysisTest, PostDom_SingleNode) {
@@ -248,7 +248,7 @@ TEST_F(DominatorAnalysisTest, PostDom_SingleNode) {
 
   auto exitNode = cg->getFirstNode(EXIT);
 
-  auto pdoms = computeDoms<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Backward>(*cg, *exitNode);
+  auto pdoms = computeDominators<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Backward>(*cg, *exitNode);
 
   auto& pdoms_exit = pdoms[exitNode].Doms;
   ASSERT_TRUE(pdoms_exit.size() == 1);
@@ -263,7 +263,7 @@ TEST_F(DominatorAnalysisTest, PostDom_LinearCallChain) {
   ASSERT_TRUE(cg->addEdge(C1, C2));
   ASSERT_TRUE(cg->addEdge(C2, EXIT));
 
-  auto pdoms = computeDoms<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Backward>(
+  auto pdoms = computeDominators<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Backward>(
       *cg, *cg->getFirstNode(EXIT));
 
   auto main = cg->getFirstNode(mainS);
@@ -271,19 +271,19 @@ TEST_F(DominatorAnalysisTest, PostDom_LinearCallChain) {
   auto node2 = cg->getFirstNode(C2);
   auto exit = cg->getFirstNode(EXIT);
 
-  ASSERT_TRUE(pdoms[exit].Doms.count(exit));
+  ASSERT_TRUE(pdoms[exit].Doms.count(exit) == 1);
 
-  ASSERT_TRUE(pdoms[node2].Doms.count(node2));
-  ASSERT_TRUE(pdoms[node2].Doms.count(exit));
+  ASSERT_TRUE(pdoms[node2].Doms.count(node2) == 1);
+  ASSERT_TRUE(pdoms[node2].Doms.count(exit) == 1);
 
-  ASSERT_TRUE(pdoms[node1].Doms.count(node1));
-  ASSERT_TRUE(pdoms[node1].Doms.count(node2));
-  ASSERT_TRUE(pdoms[node1].Doms.count(exit));
+  ASSERT_TRUE(pdoms[node1].Doms.count(node1) == 1);
+  ASSERT_TRUE(pdoms[node1].Doms.count(node2) == 1);
+  ASSERT_TRUE(pdoms[node1].Doms.count(exit) == 1);
 
-  ASSERT_TRUE(pdoms[main].Doms.count(main));
-  ASSERT_TRUE(pdoms[main].Doms.count(node1));
-  ASSERT_TRUE(pdoms[main].Doms.count(node2));
-  ASSERT_TRUE(pdoms[main].Doms.count(exit));
+  ASSERT_TRUE(pdoms[main].Doms.count(main) == 1);
+  ASSERT_TRUE(pdoms[main].Doms.count(node1) == 1);
+  ASSERT_TRUE(pdoms[main].Doms.count(node2) == 1);
+  ASSERT_TRUE(pdoms[main].Doms.count(exit) == 1);
 }
 
 TEST_F(DominatorAnalysisTest, PostDom_BranchAndJoin) {
@@ -296,7 +296,7 @@ TEST_F(DominatorAnalysisTest, PostDom_BranchAndJoin) {
   ASSERT_TRUE(cg->addEdge(C2, EXIT));
   ASSERT_TRUE(cg->addEdge(C3, C2));
 
-  auto pdoms = computeDoms<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Backward>(
+  auto pdoms = computeDominators<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Backward>(
       *cg, *cg->getFirstNode(EXIT));
 
   auto main = cg->getFirstNode(mainS);
@@ -305,24 +305,24 @@ TEST_F(DominatorAnalysisTest, PostDom_BranchAndJoin) {
   auto node3 = cg->getFirstNode(C3);
   auto exit = cg->getFirstNode(EXIT);
 
-  ASSERT_TRUE(pdoms[exit].Doms.count(exit));
+  ASSERT_TRUE(pdoms[exit].Doms.count(exit) == 1);
 
-  ASSERT_TRUE(pdoms[node2].Doms.count(node2));
-  ASSERT_TRUE(pdoms[node2].Doms.count(exit));
+  ASSERT_TRUE(pdoms[node2].Doms.count(node2) == 1);
+  ASSERT_TRUE(pdoms[node2].Doms.count(exit) == 1);
 
-  ASSERT_TRUE(pdoms[node1].Doms.count(node1));
-  ASSERT_TRUE(pdoms[node1].Doms.count(node2));
-  ASSERT_TRUE(pdoms[node1].Doms.count(exit));
+  ASSERT_TRUE(pdoms[node1].Doms.count(node1) == 1);
+  ASSERT_TRUE(pdoms[node1].Doms.count(node2) == 1);
+  ASSERT_TRUE(pdoms[node1].Doms.count(exit) == 1);
 
-  ASSERT_TRUE(pdoms[node3].Doms.count(node3));
-  ASSERT_TRUE(pdoms[node3].Doms.count(node2));
-  ASSERT_TRUE(pdoms[node3].Doms.count(exit));
+  ASSERT_TRUE(pdoms[node3].Doms.count(node3) == 1);
+  ASSERT_TRUE(pdoms[node3].Doms.count(node2) == 1);
+  ASSERT_TRUE(pdoms[node3].Doms.count(exit) == 1);
 
-  ASSERT_TRUE(pdoms[main].Doms.count(main));
-  ASSERT_FALSE(pdoms[main].Doms.count(node1));
-  ASSERT_TRUE(pdoms[main].Doms.count(node2));
-  ASSERT_FALSE(pdoms[main].Doms.count(node3));
-  ASSERT_TRUE(pdoms[main].Doms.count(exit));
+  ASSERT_TRUE(pdoms[main].Doms.count(main) == 1);
+  ASSERT_FALSE(pdoms[main].Doms.count(node1) == 1);
+  ASSERT_TRUE(pdoms[main].Doms.count(node2) == 1);
+  ASSERT_FALSE(pdoms[main].Doms.count(node3) == 1);
+  ASSERT_TRUE(pdoms[main].Doms.count(exit) == 1);
 }
 
 TEST_F(DominatorAnalysisTest, PostDom_UnreachableNodes) {
@@ -332,7 +332,7 @@ TEST_F(DominatorAnalysisTest, PostDom_UnreachableNodes) {
   ASSERT_TRUE(cg->addEdge(mainS, C1));
   ASSERT_TRUE(cg->addEdge(C2, C3));
 
-  auto pdoms = computeDoms<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Backward>(
+  auto pdoms = computeDominators<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Backward>(
       *cg, *cg->getFirstNode(EXIT));
 
   ASSERT_TRUE(pdoms.find(cg->getFirstNode(C2)) == pdoms.end());
@@ -347,7 +347,7 @@ TEST_F(DominatorAnalysisTest, PostDom_Recursion) {
   ASSERT_TRUE(cg->addEdge(C2, C1));
   ASSERT_TRUE(cg->addEdge(C2, EXIT));
 
-  auto pdoms = computeDoms<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Backward>(
+  auto pdoms = computeDominators<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Backward>(
       *cg, *cg->getFirstNode(EXIT));
 
   auto main = cg->getFirstNode(mainS);
@@ -355,17 +355,17 @@ TEST_F(DominatorAnalysisTest, PostDom_Recursion) {
   auto node2 = cg->getFirstNode(C2);
   auto exit = cg->getFirstNode(EXIT);
 
-  ASSERT_TRUE(pdoms[node2].Doms.count(node2));
-  ASSERT_TRUE(pdoms[node2].Doms.count(exit));
+  ASSERT_TRUE(pdoms[node2].Doms.count(node2) == 1);
+  ASSERT_TRUE(pdoms[node2].Doms.count(exit) == 1);
 
-  ASSERT_TRUE(pdoms[node1].Doms.count(node1));
-  ASSERT_TRUE(pdoms[node1].Doms.count(node2));
-  ASSERT_TRUE(pdoms[node1].Doms.count(exit));
+  ASSERT_TRUE(pdoms[node1].Doms.count(node1) == 1);
+  ASSERT_TRUE(pdoms[node1].Doms.count(node2) == 1);
+  ASSERT_TRUE(pdoms[node1].Doms.count(exit) == 1);
 
-  ASSERT_TRUE(pdoms[main].Doms.count(main));
-  ASSERT_TRUE(pdoms[main].Doms.count(node1));
-  ASSERT_TRUE(pdoms[main].Doms.count(node2));
-  ASSERT_TRUE(pdoms[main].Doms.count(exit));
+  ASSERT_TRUE(pdoms[main].Doms.count(main) == 1);
+  ASSERT_TRUE(pdoms[main].Doms.count(node1) == 1);
+  ASSERT_TRUE(pdoms[main].Doms.count(node2) == 1);
+  ASSERT_TRUE(pdoms[main].Doms.count(exit) == 1);
 
   ASSERT_TRUE(pdoms[exit].Doms.count(exit));
 }
@@ -381,7 +381,7 @@ TEST_F(DominatorAnalysisTest, PostDom_MultiNodeCycle) {
   ASSERT_TRUE(cg->addEdge(C3, C1));
   ASSERT_TRUE(cg->addEdge(C3, EXIT));
 
-  auto pdoms = computeDoms<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Backward>(
+  auto pdoms = computeDominators<metacg::CgNode, metacg::Callgraph, metacg::analysis::TraverseDir::Backward>(
       *cg, *cg->getFirstNode(EXIT));
 
   auto main = cg->getFirstNode(mainS);
@@ -390,25 +390,25 @@ TEST_F(DominatorAnalysisTest, PostDom_MultiNodeCycle) {
   auto node3 = cg->getFirstNode(C3);
   auto exit = cg->getFirstNode(EXIT);
 
-  ASSERT_TRUE(pdoms[exit].Doms.count(exit));
+  ASSERT_TRUE(pdoms[exit].Doms.count(exit) == 1);
 
-  ASSERT_TRUE(pdoms[node3].Doms.count(node3));
-  ASSERT_TRUE(pdoms[node3].Doms.count(exit));
+  ASSERT_TRUE(pdoms[node3].Doms.count(node3) == 1);
+  ASSERT_TRUE(pdoms[node3].Doms.count(exit) == 1);
 
-  ASSERT_TRUE(pdoms[node2].Doms.count(node2));
-  ASSERT_TRUE(pdoms[node2].Doms.count(node3));
-  ASSERT_TRUE(pdoms[node2].Doms.count(exit));
+  ASSERT_TRUE(pdoms[node2].Doms.count(node2) == 1);
+  ASSERT_TRUE(pdoms[node2].Doms.count(node3) == 1);
+  ASSERT_TRUE(pdoms[node2].Doms.count(exit) == 1);
 
-  ASSERT_TRUE(pdoms[node1].Doms.count(node1));
-  ASSERT_TRUE(pdoms[node1].Doms.count(node2));
-  ASSERT_TRUE(pdoms[node1].Doms.count(node3));
-  ASSERT_TRUE(pdoms[node1].Doms.count(exit));
+  ASSERT_TRUE(pdoms[node1].Doms.count(node1) == 1);
+  ASSERT_TRUE(pdoms[node1].Doms.count(node2) == 1);
+  ASSERT_TRUE(pdoms[node1].Doms.count(node3) == 1);
+  ASSERT_TRUE(pdoms[node1].Doms.count(exit) == 1);
 
-  ASSERT_TRUE(pdoms[main].Doms.count(main));
-  ASSERT_TRUE(pdoms[main].Doms.count(node1));
-  ASSERT_TRUE(pdoms[main].Doms.count(node2));
-  ASSERT_TRUE(pdoms[main].Doms.count(node3));
-  ASSERT_TRUE(pdoms[main].Doms.count(exit));
+  ASSERT_TRUE(pdoms[main].Doms.count(main) == 1);
+  ASSERT_TRUE(pdoms[main].Doms.count(node1) == 1);
+  ASSERT_TRUE(pdoms[main].Doms.count(node2) == 1);
+  ASSERT_TRUE(pdoms[main].Doms.count(node3) == 1);
+  ASSERT_TRUE(pdoms[main].Doms.count(exit) == 1);
 }
 
 }  // namespace
