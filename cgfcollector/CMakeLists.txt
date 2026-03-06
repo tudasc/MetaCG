@@ -116,4 +116,12 @@ file(
 )
 
 # tests
+
+# dependency for tests
+find_program(FORTDEPEND_BIN fortdepend HINTS ${Python_ROOT_DIR}/bin)
+if(NOT FORTDEPEND_BIN)
+  message(FATAL_ERROR "fortdepend not found.")
+endif()
+
 add_test(NAME cgfcollector_tests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_runner.sh)
+set_tests_properties(cgfcollector_tests PROPERTIES ENVIRONMENT "FORTDEPEND_BIN=${FORTDEPEND_BIN}")

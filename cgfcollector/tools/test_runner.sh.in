@@ -6,9 +6,11 @@
 #     test_runner.sh                      # run all tests
 #     test_runner.sh [test_name]          # run specific test cases
 
+: "${CI_CONCURRENT_ID:=$(date +%s)}"
+
 test_case_dir="@CGFCOLLECTOR_TEST_CASES_DIR@"
 scriptdir="$(cd "$(dirname "$0")" && pwd -P)"
-out_dir="$scriptdir/out"
+out_dir="$scriptdir/out-$CI_CONCURRENT_ID"
 
 mkdir -p "$out_dir"
 

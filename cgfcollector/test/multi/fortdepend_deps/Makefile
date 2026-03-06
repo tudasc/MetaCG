@@ -26,7 +26,7 @@ depend: $(DEP_FILE)
 
 $(DEP_FILE): $(SRCS) | $(BUILD_DIR)
 	@echo "Making dependencies!"
-	$(MAKEDEPEND) --build $(BUILD_DIR) -w -o $(DEP_FILE) -f $(SRCS)
+	$(FORTDEPEND_BIN) --build $(BUILD_DIR) -w -o $(DEP_FILE) -f $(SRCS)
 
 .PHONY: clean
 clean:

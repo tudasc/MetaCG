@@ -28,7 +28,8 @@ RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.
 RUN bash -c "ln -s $(which clang-18) /usr/bin/clang" && \
     bash -c "ln -s $(which clang++-18) /usr/bin/clang++" && \
     bash -c "ln -s $(which opt-18) /usr/bin/opt" && \
-    bash -c "ln -s $(which llvm-config-18) /usr/bin/llvm-config"
+    bash -c "ln -s $(which llvm-config-18) /usr/bin/llvm-config" && \
+    bash -c "ln -s $(which flang-new-18) /usr/bin/flang-new"
 
 ARG extinstalldir=/opt/metacg/extern/install
 ENV EXTINSTALLDIR=$extinstalldir
@@ -36,6 +37,9 @@ ENV EXTINSTALLDIR=$extinstalldir
 COPY ./build_submodules.sh /opt/metacg
 
 RUN ./build_submodules.sh $(nproc)
+
+RUN python3 -m venv .venv && \
+     .venv/bin/pip install fortdepend
 
 COPY . /opt/metacg
 
@@ -57,9 +61,7 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_MODULE_PATH=/opt/metacg/.venv/share/Pytest/cmake \
       -DMETACG_BUILD_PYMETACG_TESTS=ON \
       -DCMAKE_VERBOSE_MAKEFILE=ON \
-      -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-18/build/utils/lit/lit.py \
-      -DMLIR_DIR=/usr/lib/llvm-18/lib/cmake/mlir \
-      -DFlang_DIR=/usr/lib/llvm-18/lib/cmake/flang
+      -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-18/build/utils/lit/lit.py
 
 RUN cmake --build build --parallel
 
