@@ -63,8 +63,9 @@ message(STATUS "Using MLIR version: ${MLIR_VERSION}")
 test_llvm_major_version(${LLVM_VERSION_MAJOR})
 
 function(add_flang target)
-  # Before LLVM 21, this is set through CMake's TestBigEndian (deperated in CMake (3.20)). We now set it manually the
-  # new way. This must to be set or the compilation will fail. Note: This check is not required with LLVM 21.
+  # Before LLVM 21, this is set through CMake's TestBigEndian (deperated in CMake 3.20). As a result this doesn't seem
+  # to work anymore. We now set it manually the new way. This must to be set or the compilation will fail. Note: This
+  # check is not required with LLVM 21.
   if(CMAKE_CXX_BYTE_ORDER
      STREQUAL
      "BIG_ENDIAN"
