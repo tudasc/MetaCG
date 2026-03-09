@@ -64,6 +64,42 @@ jobs:
         stat $MCG_CFG
         [[ "$($MCG_CFG --prefix)" == "$(cd install; pwd)" ]] || exit 1
         [[ "$($MCG_CFG --revision)" == "$(git rev-parse HEAD)" ]] || exit 1
+
+  # TODO: Complete the llvm-20 based CI definition
+  build-container-llvm-20:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: "container/full-build-llvm-20"
+          tags: metacg-llvm-20-devel:latest
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: false
+      - name: Install tests
+        uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
+        with:
+          image: metacg-llvm-20-devel:latest
+          run: |
+            stat /tmp/metacg/lib/libmetacg.so
+            stat /tmp/metacg/include/metadata/CustomMD.h
+            stat /tmp/metacg/lib/cmake/metacg/metacgConfig.cmake
+            stat /tmp/metacg/bin/metacg-config
+            stat /tmp/metacg/bin/cgdiff
+            stat /tmp/metacg/bin/cgquery
+            stat /tmp/metacg/bin/cgformat
+            stat /tmp/metacg/bin/cgconvert
+            stat /tmp/metacg/bin/cgtodot
+      - name: Check for canonical test graph format
+        uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
+        with:
+          image: metacg-llvm-20-devel:latest
+          run: /opt/metacg/checkTests.sh  /opt/metacg/build/tools/cgformat/cgformat
   
   build-container:
     runs-on: ubuntu-latest
