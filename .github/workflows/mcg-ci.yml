@@ -64,7 +64,18 @@ jobs:
         stat $MCG_CFG
         [[ "$($MCG_CFG --prefix)" == "$(cd install; pwd)" ]] || exit 1
         [[ "$($MCG_CFG --revision)" == "$(git rev-parse HEAD)" ]] || exit 1
-  
+
+  # Make sure the cache file builds
+  graph-tools-cache-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: cmake
+        run: cmake -B build -S . -C cmake/caches/GraphTools.cmake
+      - name: build
+        run: cmake --build build --parallel
+
   build-container:
     runs-on: ubuntu-latest
     steps:
