@@ -18,23 +18,14 @@ Refer to the [pymetacg README](pymetacg/README.md) for more information how to b
 
 ## Requirements and Building
 
-MetaCG consists of the graph library, a CG construction tool, and an example analysis tool.
-The graph library is always built, while the CGCollector and the PGIS tool can be disabled at configure time.
-
-We test MetaCG internally using GCC 11 for Clang/LLVM 13, 14, 15, 16, 17 and 18.
+MetaCG consists of the graph library, CG construction tools, Python bindings, and an example analysis tool.
+The graph library is always built, while the other components can be selectively built.
+In the GitHub testing, MetaCG is built using GCC 12 and tests against LLVM versions 18 and 20.
 Other version combinations *may* work.
 
 **Build Requirements (for graph lib)**
 - nlohmann/json library [github](https://github.com/nlohmann/json)
 - spdlog [github](https://github.com/gabime/spdlog)
-
-**Additional Build Requirements (for full build)**
-- Clang/LLVM version 10 (and above)
-- Cube 4.5 [scalasca.org](https://www.scalasca.org/software/cube-4.x/download.html)
-- Extra-P 3.0 [.tar.gz](http://apps.fz-juelich.de/scalasca/releases/extra-p/extrap-3.0.tar.gz)
-- cxxopts [github](https://github.com/jarro2783/cxxopts)
-- PyQt5
-- matplotlib
 
 ### Building
 
@@ -57,8 +48,19 @@ $> cmake --install build
 
 You can configure MetaCG to also build CGCollector, PGIS and other tools based on the graphlib (cgconvert, cgformat, cgmerge2).
 This requires additional dependencies.
-Clang/LLVM (in a supported version) are assumed to be available on the system.
-Extra-P and Cube library can be built using the `build_submodules.sh` script provided in the repository, though the script is not tested outside of our CI system.
+
+**Additional Build Requirements (for full build)**
+- Clang/LLVM version 13 (and above)
+- Cube 4.5 [scalasca.org](https://www.scalasca.org/software/cube-4.x/download.html)
+- Extra-P 3.0 [.tar.gz](http://apps.fz-juelich.de/scalasca/releases/extra-p/extrap-3.0.tar.gz)
+- cxxopts [github](https://github.com/jarro2783/cxxopts)
+- PyQt5
+- matplotlib
+
+
+Clang/LLVM (in a supported version) are assumed to be available on the system and is required for the CG construction tools.
+
+For the PGIS tool, Extra-P and the Cube library can be built using the `build_submodules.sh` script provided in the repository, though the script is not tested outside of our CI system.
 It builds and installs the dependencies into `./extern`.
 
 ```{.sh}
