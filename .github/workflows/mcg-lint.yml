@@ -40,7 +40,7 @@ jobs:
           for f in ${CHANGED_FILES}; do 
             if [[ $f == *.cmake ]]; then 
               cmake-format --check $f 
-            elif [[ $f == "CMakeLists.txt" ]]; then 
+            elif [[ $f == "*CMakeLists.txt" ]]; then 
               cmake-format --check $f 
             fi
           done
