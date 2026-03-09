@@ -65,7 +65,7 @@ jobs:
         [[ "$($MCG_CFG --prefix)" == "$(cd install; pwd)" ]] || exit 1
         [[ "$($MCG_CFG --revision)" == "$(git rev-parse HEAD)" ]] || exit 1
   
-  build-container:
+  build-container-llvm-18:
     runs-on: ubuntu-latest
     steps:
       - name: checkout code
@@ -74,7 +74,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          file: "container/full-build"
+          file: "container/full-build-llvm-18"
           tags: metacg-devel:latest 
           load: true
           cache-from: type=gha
