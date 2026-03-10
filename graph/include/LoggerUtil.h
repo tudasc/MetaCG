@@ -151,7 +151,7 @@ class MCGLogger {
     } else if constexpr (outPutType == Output::ErrConsole) {
       getErrConsole()->critical(formattedMessage);
     }
-  };
+  }
 
   /**
    * Formats and prints the message as log-level trace
