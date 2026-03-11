@@ -6,14 +6,12 @@
 #include "cage/CaGe.h"
 #include "cage/CaGePlugin.h"
 
-#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
+#include "llvm/Support/DynamicLibrary.h"
 
 #include "cage/generator/CallgraphGenerator.h"
 #include "cage/generator/FileExporter.h"
-
-#include <dlfcn.h>
 
 using namespace llvm;
 
@@ -35,26 +33,25 @@ static opt<std::string> cgout("cg-file", desc("Output file for the generated cal
 
 static list<std::string> pluginPaths("plugin-paths", desc("option list"), cat(cageOpts), CommaSeparated);
 
-
-
-
 namespace cage {
 
 Plugin* loadPlugin(const std::string& pluginPath) {
   metacg::MCGLogger::instance().getConsole()->debug("Loading plugin");
-  void* handle = dlopen(pluginPath.c_str(), 1);
-  if (!handle) {
+  std::string err;
+  auto lib = sys::DynamicLibrary::getPermanentLibrary(pluginPath.c_str(), &err);
+  if (!lib.isValid()) {
     metacg::MCGLogger::instance().getErrConsole()->error("cannot locate the library at {}!", pluginPath);
+    metacg::MCGLogger::instance().getErrConsole()->error("Reason: {}", err);
     return nullptr;
   }
   metacg::MCGLogger::instance().getConsole()->trace("Getting collection object from plugin {}", pluginPath);
-  auto (*getPlugin)() = (Plugin * (*)()) dlsym(handle, "getPlugin");
-  if (!getPlugin) {
+  void* sym = lib.getAddressOfSymbol("getPlugin");
+  if (!sym) {
     metacg::MCGLogger::instance().getErrConsole()->error(
         "Could not load collectors from plugin, no Function \"getPlugin()\"!");
     return nullptr;
   }
-
+  auto getPlugin = reinterpret_cast<Plugin* (*)()>(sym);
   Plugin* loadedPlugin=getPlugin();
   metacg::MCGLogger::logInfo("Successfully loaded Plugin: {}", loadedPlugin->getPluginName());
   return loadedPlugin;
@@ -69,8 +66,7 @@ PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
   std::string outfile = cgout.getValue();
   if (outfile.empty()) {
     // If empty, check environment variable
-    const auto* cgNameEnv = std::getenv("CAGE_CG");
-    if (cgNameEnv) {
+    if (const auto* cgNameEnv = std::getenv("CAGE_CG")) {
       outfile = cgNameEnv;
     } else {
       // Default output file
@@ -122,6 +118,7 @@ llvm::PassPluginLibraryInfo getPluginInfo() {
             if (Name == "CaGe") {
               outs() << "Registering CaGe to run as pipeline described\n";
               MPM.addPass(cage::CaGe());
+
               return true;
             } else {
               outs() << "Did not register CaGe\n";

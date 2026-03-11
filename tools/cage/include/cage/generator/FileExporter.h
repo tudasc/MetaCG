@@ -8,12 +8,14 @@
 
 #include "cage/CaGePlugin.h"
 
+#include <string>
+
 namespace cage {
 
 class FileExporter : public Plugin {
  public:
   FileExporter(const std::string& outfile) : outfile(outfile) {}
-  void consumeCallGraph(metacg::Callgraph&) override;
+  void consumeCallGraph(const metacg::Callgraph&) override;
 
  private:
   std::string outfile;
