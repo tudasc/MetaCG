@@ -7,11 +7,11 @@
 #include "DotIO.h"
 #include "LoggerUtil.h"
 #include "MCGManager.h"
-#include "Util.h"
 
 #include <cctype>  // for std:isspace
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <sstream>
 
 namespace metacg::io::dot {

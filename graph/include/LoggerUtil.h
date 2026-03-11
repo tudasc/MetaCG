@@ -10,7 +10,6 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
 #include <unordered_set>
-#include <iostream>
 
 namespace metacg {
 /**

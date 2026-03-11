@@ -7,7 +7,6 @@
 
 #include "LoggerUtil.h"
 #include "metadata/EntryFunctionMD.h"
-#include "metadata/OverrideMD.h"
 
 #include <algorithm>
 #include <string>

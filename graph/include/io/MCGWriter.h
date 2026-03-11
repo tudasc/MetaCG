@@ -8,12 +8,9 @@
 #define METACG_MCGWRITER_H
 
 #include "Callgraph.h"
-#include "IdMapping.h"
 #include "MCGBaseInfo.h"
 
 #include "nlohmann/json.hpp"
-
-#include <fstream>
 
 namespace metacg::io {
 

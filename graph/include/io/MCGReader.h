@@ -6,17 +6,14 @@
 #ifndef METACG_GRAPH_MCGREADER_H
 #define METACG_GRAPH_MCGREADER_H
 
-#include "IdMapping.h"
+#include "Callgraph.h"
 #include "LoggerUtil.h"
-#include "MCGManager.h"
 
 #include "nlohmann/json.hpp"
 
 #include <filesystem>
 #include <fstream>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 
 namespace metacg::io {
 
