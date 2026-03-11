@@ -3,7 +3,7 @@
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
-#include "cage/generator/CallGraphConsumer.h"
+#include "cage/CaGePlugin.h"
 
 #include "io/MCGWriter.h"
 
@@ -18,13 +18,13 @@ class Generator {
  public:
   explicit Generator(PTAType ptaType) : ptaType(ptaType) {};
 
-  void addConsumer(std::unique_ptr<CallGraphConsumer> consumer) { consumers.push_back(std::move(consumer)); }
+  void addPlugin(std::unique_ptr<Plugin> consumer) { plugins.push_back(std::move(consumer)); }
 
   bool run(llvm::Module& M, llvm::ModuleAnalysisManager* MA);
 
  private:
   PTAType ptaType;
-  std::vector<std::unique_ptr<CallGraphConsumer>> consumers;
+  std::vector<std::unique_ptr<Plugin>> plugins;
 };
 
 }  // namespace cage

@@ -6,15 +6,13 @@
 #ifndef METACG_FILEEXPORTER_H
 #define METACG_FILEEXPORTER_H
 
-#include "cage/generator/CallGraphConsumer.h"
-
-#include <string>
+#include "cage/CaGePlugin.h"
 
 namespace cage {
 
-class FileExporter : public CallGraphConsumer {
+class FileExporter : public Plugin {
  public:
-  FileExporter(std::string outfile) : outfile(outfile) {}
+  FileExporter(const std::string& outfile) : outfile(outfile) {}
   void consumeCallGraph(metacg::Callgraph&) override;
 
  private:

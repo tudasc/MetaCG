@@ -3,7 +3,8 @@
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
-#include "cage/Plugin.h"
+#include "cage/CaGe.h"
+#include "cage/CaGePlugin.h"
 
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Passes/PassBuilder.h"
@@ -11,6 +12,8 @@
 
 #include "cage/generator/CallgraphGenerator.h"
 #include "cage/generator/FileExporter.h"
+
+#include <dlfcn.h>
 
 using namespace llvm;
 
@@ -30,7 +33,33 @@ static opt<cage::PTAType> pta(
 
 static opt<std::string> cgout("cg-file", desc("Output file for the generated call graph"), cat(cageOpts), init(""));
 
+static list<std::string> pluginPaths("plugin-paths", desc("option list"), cat(cageOpts), CommaSeparated);
+
+
+
+
 namespace cage {
+
+Plugin* loadPlugin(const std::string& pluginPath) {
+  metacg::MCGLogger::instance().getConsole()->debug("Loading plugin");
+  void* handle = dlopen(pluginPath.c_str(), 1);
+  if (!handle) {
+    metacg::MCGLogger::instance().getErrConsole()->error("cannot locate the library at {}!", pluginPath);
+    return nullptr;
+  }
+  metacg::MCGLogger::instance().getConsole()->trace("Getting collection object from plugin {}", pluginPath);
+  auto (*getPlugin)() = (Plugin * (*)()) dlsym(handle, "getPlugin");
+  if (!getPlugin) {
+    metacg::MCGLogger::instance().getErrConsole()->error(
+        "Could not load collectors from plugin, no Function \"getPlugin()\"!");
+    return nullptr;
+  }
+
+  Plugin* loadedPlugin=getPlugin();
+  metacg::MCGLogger::logInfo("Successfully loaded Plugin: {}", loadedPlugin->getPluginName());
+  return loadedPlugin;
+}
+
 PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
   if (cageVerbose) {
     outs() << "Running CaGe in verbose mode\n";
@@ -50,7 +79,16 @@ PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
   }
 
   Generator gen(pta);
-  gen.addConsumer(std::make_unique<FileExporter>(outfile));
+  gen.addPlugin(std::make_unique<FileExporter>(outfile));
+
+  // Load external plugins
+  for (const auto& pluginPath : pluginPaths) {
+    SPDLOG_INFO("Loading external plugin from: {}", pluginPath);
+    if (auto p = std::make_unique<Plugin>(*loadPlugin(pluginPath))) {
+      gen.addPlugin(std::move(p));
+    }
+  }
+
 
   if (!gen.run(M, &MA))
     return PreservedAnalyses::all();
