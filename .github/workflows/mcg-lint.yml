@@ -29,8 +29,6 @@ jobs:
       - name: List changed files 
         env: 
           CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
-      - uses: actions/checkout@v6
-      - name: CMake Lint
         run: |
           echo "Changed files:"
           echo "${CHANGED_FILES}"
