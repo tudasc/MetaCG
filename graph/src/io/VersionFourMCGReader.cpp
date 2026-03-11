@@ -9,7 +9,6 @@
 #include "metacg/Timing.h"
 #include "metacg/Util.h"
 #include "metacg/metadata/BuiltinMD.h"
-#include <iostream>
 
 using namespace metacg;
 
