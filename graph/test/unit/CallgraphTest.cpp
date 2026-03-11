@@ -69,7 +69,7 @@ TEST(Callgraph, getOrInsertMultiIdentDiffOrigin) {
 
   auto n1Node = cg.getFirstNode(n1Name);
   EXPECT_EQ(n1Node->has<metacg::OverrideMD>(), false);
-
+  EXPECT_EQ(cg.getMain(), nullptr);
 }
 
 TEST(Callgraph, insertGetOrInsertMultiIdentNoOrigin) {
@@ -84,7 +84,7 @@ TEST(Callgraph, insertGetOrInsertMultiIdentNoOrigin) {
 
   auto n1Node = cg.getFirstNode(n1Name);
   EXPECT_EQ(n1Node->has<metacg::OverrideMD>(), false);
-
+  EXPECT_EQ(cg.getMain(), nullptr);
 }
 
 TEST(Callgraph, insertGetOrInsertMultiIdentDiffOrigin) {
@@ -102,5 +102,22 @@ TEST(Callgraph, insertGetOrInsertMultiIdentDiffOrigin) {
 
   auto n1Node = cg.getFirstNode(n1Name);
   EXPECT_EQ(n1Node->has<metacg::OverrideMD>(), false);
+  EXPECT_EQ(cg.getMain(), nullptr);
+}
+
+TEST(Callgraph, insertMultiIdentDiffOrigin) {
+  metacg::Callgraph cg;
+
+  std::string n1Name("foo");
+  std::string n1OrigA("Orig::A");
+  std::string n1OrigB("Orig::B");
+  // insert always inserts a new node
+  cg.insert(n1Name, n1OrigA);
+  cg.insert(n1Name, n1OrigB);
+  EXPECT_EQ(cg.getNodeCount(), 2);
+  EXPECT_EQ(cg.countNodes(n1Name), 2);
+
+  auto n1Node = cg.getFirstNode(n1Name);
+  EXPECT_EQ(n1Node->getOrigin(), n1OrigA);
 }
 } // anonymous
