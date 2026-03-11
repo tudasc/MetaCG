@@ -10,6 +10,8 @@
 #include "Plugin.h"
 #include "metadata/UniqueTypeMD.h"
 
+#include <set>
+
 struct UniqueTypeCollector : public Plugin {
  public:
   std::string getPluginName() const final { return key; }
