@@ -211,7 +211,7 @@ unsigned Callgraph::countNodes(const std::string& name) const {
   if (it == nameIdMap.end()) {
     return 0;
   }
-  
+
   return it->second.size();
 }
 

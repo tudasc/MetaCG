@@ -23,13 +23,13 @@ TEST(Callgraph, EmpytCG) {
 
 TEST(Callgraph, getOrInsertOneNodeNotMain) {
   metacg::Callgraph cg;
- 
+
   EXPECT_EQ(cg.size(), 0);
   EXPECT_EQ(cg.getNodeCount(), 0);
-  
+
   std::string n1Name("n1");
   cg.getOrInsertNode(n1Name);
-  
+
   EXPECT_EQ(cg.size(), 1);
   EXPECT_EQ(cg.getNodeCount(), 1);
 
@@ -52,7 +52,6 @@ TEST(Callgraph, getOrInsertMultiIdentNoOrigin) {
 
   auto n1Node = cg.getFirstNode(n1Name);
   EXPECT_EQ(n1Node->has<metacg::OverrideMD>(), false);
-
 }
 
 TEST(Callgraph, getOrInsertMultiIdentDiffOrigin) {
@@ -120,4 +119,4 @@ TEST(Callgraph, insertMultiIdentDiffOrigin) {
   auto n1Node = cg.getFirstNode(n1Name);
   EXPECT_EQ(n1Node->getOrigin(), n1OrigA);
 }
-} // anonymous
+}  // namespace
