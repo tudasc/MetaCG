@@ -52,7 +52,7 @@ Plugin* loadPlugin(const std::string& pluginPath) {
     return nullptr;
   }
   auto getPlugin = reinterpret_cast<Plugin* (*)()>(sym);
-  Plugin* loadedPlugin=getPlugin();
+  Plugin* loadedPlugin = getPlugin();
   metacg::MCGLogger::logInfo("Successfully loaded Plugin: {}", loadedPlugin->getPluginName());
   return loadedPlugin;
 }
@@ -84,7 +84,6 @@ PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
       gen.addPlugin(std::move(p));
     }
   }
-
 
   if (!gen.run(M, &MA))
     return PreservedAnalyses::all();
