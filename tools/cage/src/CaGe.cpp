@@ -4,7 +4,7 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #include "cage/CaGe.h"
-#include "cage/CaGePlugin.h"
+#include "cage/interface/CaGePlugin.h"
 
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"

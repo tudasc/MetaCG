@@ -6,7 +6,7 @@
 #ifndef METACG_FILEEXPORTER_H
 #define METACG_FILEEXPORTER_H
 
-#include "cage/CaGePlugin.h"
+#include "cage/interface/CaGePlugin.h"
 
 #include <string>
 

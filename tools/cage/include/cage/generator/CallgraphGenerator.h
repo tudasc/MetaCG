@@ -3,7 +3,7 @@
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
-#include "cage/CaGePlugin.h"
+#include "../interface/CaGePlugin.h"
 
 #include "io/MCGWriter.h"
 
