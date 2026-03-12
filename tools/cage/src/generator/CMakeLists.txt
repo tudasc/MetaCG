@@ -1,4 +1,3 @@
-
 add_library(cage STATIC CallGraphGenerator.cpp FileExporter.cpp)
 set_target_properties(cage PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(cage PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/tools/cage/include>)
