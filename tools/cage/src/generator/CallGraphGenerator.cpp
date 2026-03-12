@@ -169,11 +169,13 @@ bool Generator::run(Module& M, ModuleAnalysisManager* MA) {
 
     // Run registered plugin's augmentation
     for (auto& plugin : plugins) {
+      metacg::MCGLogger::instance().debug("Running {} augment",plugin->getPluginName());
       plugin->augmentCallGraph(M,*mcg);
     }
 
     // Run registered plugins consumption
     for (auto& plugin : plugins) {
+      metacg::MCGLogger::instance().debug("Running {} consume", plugin->getPluginName());
       plugin->consumeCallGraph(*mcg);
     }
   }
