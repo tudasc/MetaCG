@@ -102,7 +102,6 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
   const MCGFileFormatInfo ffInfo{4, 0};
   auto console = metacg::MCGLogger::instance().getConsole();
   auto errConsole = metacg::MCGLogger::instance().getErrConsole();
-
   auto j = source.get();
   auto mcgInfo = j[ffInfo.metaInfoFieldName];
   if (mcgInfo.is_null()) {
@@ -179,9 +178,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
           if (auto md = metacg::MetaData::create<>(mdKey, mdValJ, strToNode); md) {
             cg->addEdgeMetaData({nodeData.nodeId, calleeNode->getId()}, std::move(md));
           } else {
-            if (spdlog::get_level() <= spdlog::level::debug) {
-              errConsole->warn("Could not create edge metadata of type {} for edge {} to {}", mdKey, nodeData.nodeId, calleeNode->getId());
-            }
+              errConsole->debug("Could not create edge metadata of type {} for edge {} to {}", mdKey, nodeData.nodeId, calleeNode->getId());
             if (failedMetadataCb) {
               (*failedMetadataCb)(nodeData.nodeId, mdKey, mdValJ);
             }
@@ -196,9 +193,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
       if (auto md = metacg::MetaData::create<>(mdKey, mdVal, strToNode); md) {
         node->addMetaData(std::move(md));
       } else {
-        if (spdlog::get_level() <= spdlog::level::debug) {
-          errConsole->warn("Could not create metadata of type {} for node {}", mdKey, node->getFunctionName());
-        }
+          errConsole->debug("Could not create metadata of type {} for node {}", mdKey, node->getFunctionName());
         if (failedMetadataCb) {
           (*failedMetadataCb)(node->getId(), mdKey, mdVal);
         }
@@ -214,9 +209,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
     if (auto md = metacg::MetaData::create<>(mdKey, mdValJ, strToNode); md) {
       cg->addMetaData(std::move(md));
     } else {
-      if (spdlog::get_level() <= spdlog::level::debug) {
-        errConsole->warn("Could not create global metadata of type {}", mdKey);
-      }
+        errConsole->debug("Could not create global metadata of type {}", mdKey);
       if (failedMetadataCb) {
         (*failedMetadataCb)(std::nullopt, mdKey, mdValJ);
       }
