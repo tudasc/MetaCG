@@ -206,7 +206,14 @@ bool Callgraph::hasNode(const CgNode& node) const {
   return nodeAtId && nodeAtId.get() == &node;
 }
 
-unsigned Callgraph::countNodes(const std::string& name) const { return nameIdMap.count(name); }
+unsigned Callgraph::countNodes(const std::string& name) const {
+  auto it = nameIdMap.find(name);
+  if (it == nameIdMap.end()) {
+    return 0;
+  }
+
+  return it->second.size();
+}
 
 CgNode* Callgraph::getFirstNode(const std::string& name) const {
   if (auto it = nameIdMap.find(name); it != nameIdMap.end()) {
