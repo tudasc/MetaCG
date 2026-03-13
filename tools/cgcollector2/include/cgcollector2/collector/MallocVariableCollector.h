@@ -7,8 +7,8 @@
 #ifndef CGCOLLECTOR2_MALLOCVARIABLECOLLECTOR_H
 #define CGCOLLECTOR2_MALLOCVARIABLECOLLECTOR_H
 
-#include "Plugin.h"
 #include "metacg/metadata/MallocVariableMD.h"
+#include "cgcollector2/Plugin.h"
 #include <clang/AST/StmtVisitor.h>
 
 

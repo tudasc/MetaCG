@@ -7,11 +7,11 @@
 #ifndef CGCOLLECTOR2_OVERRIDECOLLECTOR_H
 #define CGCOLLECTOR2_OVERRIDECOLLECTOR_H
 
-#include "MetaDataFunctions.h"
-#include "Plugin.h"
-#include "helper/Common.h"
 #include "metacg/metadata/OverrideMD.h"
-#include "metadata/Internal/ASTNodeMetadata.h"
+#include "cgcollector2/helper/Common.h"
+#include "cgcollector2/MetaDataFunctions.h"
+#include "cgcollector2/Plugin.h"
+#include "cgcollector2/metadata/Internal/ASTNodeMetadata.h"
 
 struct OverrideCollector : public Plugin {
   virtual void computeForGraph(const metacg::Callgraph* const cg) {

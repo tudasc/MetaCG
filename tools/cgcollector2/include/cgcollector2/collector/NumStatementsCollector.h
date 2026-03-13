@@ -6,10 +6,10 @@
 #ifndef CGCOLLECTOR2_NUMSTATEMENTSCOLLECTOR_H
 #define CGCOLLECTOR2_NUMSTATEMENTSCOLLECTOR_H
 
-#include "MetaDataFunctions.h"
-#include "Plugin.h"
 #include "metacg/Callgraph.h"
 #include "metacg/metadata/NumStatementsMD.h"
+#include "cgcollector2/Plugin.h"
+#include "cgcollector2/MetaDataFunctions.h"
 
 #include <clang/AST/Decl.h>
 

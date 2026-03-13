@@ -4,7 +4,7 @@
 * https://github.com/tudasc/metacg/LICENSE.txt
 */
 
-#include "SharedDefs.h"
+#include "cgcollector2/SharedDefs.h"
 #include <nlohmann/json.hpp>
 
 void to_json(nlohmann::json& j, const FunctionSignature& fs) {

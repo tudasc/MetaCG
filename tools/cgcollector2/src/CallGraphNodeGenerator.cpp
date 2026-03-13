@@ -4,12 +4,12 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "CallGraphNodeGenerator.h"
 #include "metacg/LoggerUtil.h"
 #include "metacg/metadata/OverrideMD.h"
-#include "metadata/Internal/ASTNodeMetadata.h"
-#include "metadata/Internal/AllAliasMetadata.h"
-#include "metadata/Internal/FunctionSignatureMetadata.h"
+#include "cgcollector2/CallGraphNodeGenerator.h"
+#include "cgcollector2/metadata/Internal/ASTNodeMetadata.h"
+#include "cgcollector2/metadata/Internal/AllAliasMetadata.h"
+#include "cgcollector2/metadata/Internal/FunctionSignatureMetadata.h"
 
 #include <clang/AST/Decl.h>
 #include <clang/AST/DeclBase.h>

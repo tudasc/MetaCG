@@ -7,9 +7,9 @@
 #ifndef CGCOLLECTOR2_LOOPDEPTHCOLLECTOR_H
 #define CGCOLLECTOR2_LOOPDEPTHCOLLECTOR_H
 
-#include "MetaDataFunctions.h"
-#include "Plugin.h"
 #include "metacg/metadata/LoopMD.h"
+#include "cgcollector2/MetaDataFunctions.h"
+#include "cgcollector2/Plugin.h"
 
 struct LoopDepthCollector : public Plugin {
   virtual  std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {

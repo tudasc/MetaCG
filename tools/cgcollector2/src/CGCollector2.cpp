@@ -4,24 +4,24 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "collector/CodeStatisticsCollector.h"
-#include "collector/FileInfoCollector.h"
-#include "collector/GlobalLoopDepthCollector.h"
-#include "collector/LoopDepthCollector.h"
-#include "collector/MallocVariableCollector.h"
-#include "collector/NumConditionalBranchCollector.h"
-#include "collector/NumOperationsCollector.h"
-#include "collector/NumStatementsCollector.h"
-#include "collector/OverrideCollector.h"
-#include "collector/UniqueTypeCollector.h"
+#include "cgcollector2/collector/CodeStatisticsCollector.h"
+#include "cgcollector2/collector/FileInfoCollector.h"
+#include "cgcollector2/collector/GlobalLoopDepthCollector.h"
+#include "cgcollector2/collector/LoopDepthCollector.h"
+#include "cgcollector2/collector/MallocVariableCollector.h"
+#include "cgcollector2/collector/NumConditionalBranchCollector.h"
+#include "cgcollector2/collector/NumOperationsCollector.h"
+#include "cgcollector2/collector/NumStatementsCollector.h"
+#include "cgcollector2/collector/OverrideCollector.h"
+#include "cgcollector2/collector/UniqueTypeCollector.h"
 
 #include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/Tooling.h>
 
-#include "CallGraphCollectionAction.h"
+#include "../include/cgcollector2/CallGraphCollectionAction.h"
 
-#include "Plugin.h"
-#include "SharedDefs.h"
+#include "../include/cgcollector2/Plugin.h"
+#include "cgcollector2/SharedDefs.h"
 
 #include "metacg/metadata/BuiltinMD.h"
 

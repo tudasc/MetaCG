@@ -7,8 +7,8 @@
 #ifndef CGCOLLECTOR2_NUMOPERATIONSCOLLECTOR_H
 #define CGCOLLECTOR2_NUMOPERATIONSCOLLECTOR_H
 
-#include "Plugin.h"
 #include "metacg/metadata/NumOperationsMD.h"
+#include "cgcollector2/Plugin.h"
 
 struct NumOperationsCollector : public Plugin {
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) override {

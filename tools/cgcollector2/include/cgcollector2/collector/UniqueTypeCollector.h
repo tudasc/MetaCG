@@ -7,8 +7,8 @@
 #ifndef CGCOLLECTOR2_UNIQUETYPECOLLECTOR_H
 #define CGCOLLECTOR2_UNIQUETYPECOLLECTOR_H
 
-#include "Plugin.h"
 #include "metacg/metadata/UniqueTypeMD.h"
+#include "cgcollector2/Plugin.h"
 
 #include <set>
 

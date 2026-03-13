@@ -7,8 +7,8 @@
 #ifndef CGCOLLECTOR2_NUMCONDITIONALBRANCHCOLLECTOR_H
 #define CGCOLLECTOR2_NUMCONDITIONALBRANCHCOLLECTOR_H
 
-#include "Plugin.h"
 #include "metacg/metadata/NumConditionalBranchMD.h"
+#include "cgcollector2/Plugin.h"
 
 struct NumConditionalBranchCollector : public Plugin {
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {

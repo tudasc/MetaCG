@@ -4,8 +4,8 @@
 * https://github.com/tudasc/metacg/LICENSE.txt
 */
 
-#include "Plugin.h"
 #include "metacg/LoggerUtil.h"
+#include "cgcollector2/Plugin.h"
 
 #include "llvm/Support/DynamicLibrary.h"
 

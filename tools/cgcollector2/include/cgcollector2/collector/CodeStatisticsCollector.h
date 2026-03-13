@@ -6,8 +6,8 @@
 #ifndef CGCOLLECTOR2_CODESTATISTICSCOLLECTOR_H
 #define CGCOLLECTOR2_CODESTATISTICSCOLLECTOR_H
 
-#include "Plugin.h"
 #include "metacg/metadata/CodeStatisticsMD.h"
+#include "cgcollector2/Plugin.h"
 
 #include <clang/AST/Decl.h>
 
