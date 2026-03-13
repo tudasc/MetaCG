@@ -8,12 +8,12 @@
 
 #include "metacg/Callgraph.h"
 #include "metacg/metadata/NumStatementsMD.h"
-#include "cgcollector2/Plugin.h"
+#include "cgcollector2/interface/Plugin.h"
 #include "cgcollector2/MetaDataFunctions.h"
 
 #include <clang/AST/Decl.h>
 
-struct NumberOfStatementsCollector : public Plugin {
+struct NumberOfStatementsCollector : public cgcollector2::Plugin {
   std::unique_ptr<metacg::MetaData> computeForDecl(const clang::FunctionDecl* const functionDecl) override {
     std::unique_ptr<metacg::NumStatementsMD> result = std::make_unique<metacg::NumStatementsMD>();
     result->setNumberOfStatements(getNumStmtsInStmt(functionDecl->getBody()));

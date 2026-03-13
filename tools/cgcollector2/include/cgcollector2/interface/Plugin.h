@@ -28,6 +28,8 @@ namespace clang {
 class FunctionDecl;
 } // namespace clang
 
+namespace cgcollector2 {
+
 struct Plugin {
   explicit Plugin() {}
 
@@ -56,8 +58,9 @@ struct Plugin {
   virtual std::string getPluginName() const{ return "unnamed Plugin"; }
   virtual ~Plugin() = default;
 };
-
+}
 // Todo: This currently only loads one plugin per *.so
-Plugin* loadPlugin(const std::string& pluginPath);
+cgcollector2::Plugin* loadPlugin(const std::string& pluginPath);
+
 
 #endif  // CGCOLLECTOR2_PLUGIN_H

@@ -18,9 +18,9 @@
 #include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/Tooling.h>
 
-#include "../include/cgcollector2/CallGraphCollectionAction.h"
+#include "cgcollector2/CallGraphCollectionAction.h"
 
-#include "../include/cgcollector2/Plugin.h"
+#include "cgcollector2/interface/Plugin.h"
 #include "cgcollector2/SharedDefs.h"
 
 #include "metacg/metadata/BuiltinMD.h"
@@ -163,7 +163,7 @@ int main(int argc, const char** argv) {
 
   clang::tooling::ClangTool CT(OP.getCompilations(), OP.getSourcePathList());
 
-  std::vector<Plugin*> mcs = {};
+  std::vector<cgcollector2::Plugin*> mcs = {};
   constexpr int numberOfBuiltinCollectors= static_cast<std::underlying_type_t<Collectors>>(Collectors::All);
   mcs.reserve( numberOfBuiltinCollectors + pluginPaths.size());
 
@@ -218,7 +218,7 @@ int main(int argc, const char** argv) {
   // Plugin Metadata Collection
   for (const auto& pluginPath : pluginPaths) {
     SPDLOG_INFO("Loading external collector from: {}", pluginPath);
-    if (Plugin* p = loadPlugin(pluginPath); p) {
+    if (cgcollector2::Plugin* p = loadPlugin(pluginPath); p) {
       mcs.push_back(p);
     }
   }

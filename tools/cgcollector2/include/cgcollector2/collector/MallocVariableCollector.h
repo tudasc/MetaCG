@@ -8,11 +8,11 @@
 #define CGCOLLECTOR2_MALLOCVARIABLECOLLECTOR_H
 
 #include "metacg/metadata/MallocVariableMD.h"
-#include "cgcollector2/Plugin.h"
+#include "cgcollector2/interface/Plugin.h"
 #include <clang/AST/StmtVisitor.h>
 
 
-struct MallocVariableCollector : public Plugin {
+struct MallocVariableCollector : public cgcollector2::Plugin {
   std::string getPluginName() const final{ return "MallocVariableCollector"; }
 
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {

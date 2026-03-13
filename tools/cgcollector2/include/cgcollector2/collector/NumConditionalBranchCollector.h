@@ -8,9 +8,9 @@
 #define CGCOLLECTOR2_NUMCONDITIONALBRANCHCOLLECTOR_H
 
 #include "metacg/metadata/NumConditionalBranchMD.h"
-#include "cgcollector2/Plugin.h"
+#include "cgcollector2/interface/Plugin.h"
 
-struct NumConditionalBranchCollector : public Plugin {
+struct NumConditionalBranchCollector : public cgcollector2::Plugin {
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
     std::unique_ptr<metacg::NumConditionalBranchMD> result = std::make_unique<metacg::NumConditionalBranchMD>();
     result->numConditionalBranches = getNumConditionalBranchesInStmt(decl->getBody());

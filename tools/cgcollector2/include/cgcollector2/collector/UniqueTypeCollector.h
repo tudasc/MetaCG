@@ -8,12 +8,9 @@
 #define CGCOLLECTOR2_UNIQUETYPECOLLECTOR_H
 
 #include "metacg/metadata/UniqueTypeMD.h"
-#include "cgcollector2/Plugin.h"
-
+#include "cgcollector2/interface/Plugin.h"
 #include <set>
-
-struct UniqueTypeCollector : public Plugin {
- public:
+struct UniqueTypeCollector : public cgcollector2::Plugin {
   std::string getPluginName() const final { return key; }
 
   static constexpr const char* key = "UniqueTypeCollector";

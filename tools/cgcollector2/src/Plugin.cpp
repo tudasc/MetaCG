@@ -5,11 +5,11 @@
 */
 
 #include "metacg/LoggerUtil.h"
-#include "cgcollector2/Plugin.h"
+#include "cgcollector2/interface/Plugin.h"
 
 #include "llvm/Support/DynamicLibrary.h"
 
-Plugin* loadPlugin(const std::string& pluginPath) {
+cgcollector2::Plugin* loadPlugin(const std::string& pluginPath) {
   metacg::MCGLogger::instance().getConsole()->debug("Loading plugin");
   std::string err;
   auto lib = llvm::sys::DynamicLibrary::getPermanentLibrary(pluginPath.c_str(), &err);
@@ -25,8 +25,8 @@ Plugin* loadPlugin(const std::string& pluginPath) {
         "Could not load collectors from plugin, no Function \"getPlugin()\"!");
     return nullptr;
   }
-  auto getPlugin = reinterpret_cast<Plugin* (*)()>(sym);
-  Plugin* loadedPlugin=getPlugin();
+  auto getPlugin = reinterpret_cast<cgcollector2::Plugin* (*)()>(sym);
+  cgcollector2::Plugin* loadedPlugin=getPlugin();
   metacg::MCGLogger::logInfo("Successfully loaded Plugin: {}", loadedPlugin->getPluginName());
   return loadedPlugin;
 }

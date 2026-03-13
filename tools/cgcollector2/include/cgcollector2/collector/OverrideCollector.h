@@ -9,11 +9,10 @@
 
 #include "metacg/metadata/OverrideMD.h"
 #include "cgcollector2/helper/Common.h"
-#include "cgcollector2/MetaDataFunctions.h"
-#include "cgcollector2/Plugin.h"
+#include "cgcollector2/interface/Plugin.h"
 #include "cgcollector2/metadata/Internal/ASTNodeMetadata.h"
 
-struct OverrideCollector : public Plugin {
+struct OverrideCollector : public cgcollector2::Plugin {
   virtual void computeForGraph(const metacg::Callgraph* const cg) {
     for (auto& node : cg->getNodes()) {
       auto decl = node->get<ASTNodeMetadata>()->getFunctionDecl();

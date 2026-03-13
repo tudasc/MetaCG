@@ -7,11 +7,11 @@
 #define CGCOLLECTOR2_CODESTATISTICSCOLLECTOR_H
 
 #include "metacg/metadata/CodeStatisticsMD.h"
-#include "cgcollector2/Plugin.h"
+#include "cgcollector2/interface/Plugin.h"
 
 #include <clang/AST/Decl.h>
 
-struct CodeStatisticsCollector : public Plugin {
+struct CodeStatisticsCollector : public cgcollector2::Plugin {
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
     std::unique_ptr<metacg::CodeStatisticsMD> result = std::make_unique<metacg::CodeStatisticsMD>();
     for (auto declIter = decl->decls_begin(); declIter != decl->decls_end(); ++declIter) {

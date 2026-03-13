@@ -8,9 +8,9 @@
 #define CGCOLLECTOR2_NUMOPERATIONSCOLLECTOR_H
 
 #include "metacg/metadata/NumOperationsMD.h"
-#include "cgcollector2/Plugin.h"
+#include "cgcollector2/interface/Plugin.h"
 
-struct NumOperationsCollector : public Plugin {
+struct NumOperationsCollector : public cgcollector2::Plugin {
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) override {
     std::unique_ptr<metacg::NumOperationsMD> result = std::make_unique<metacg::NumOperationsMD>();
     const auto counts = getNumOperationsInStmt(decl->getBody());

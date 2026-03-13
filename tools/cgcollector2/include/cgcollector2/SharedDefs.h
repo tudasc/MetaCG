@@ -1,8 +1,8 @@
 /**
-* File: SharedDefs.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: SharedDefs.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 #ifndef CGCOLLECTOR2_SHAREDDEFS_H
 #define CGCOLLECTOR2_SHAREDDEFS_H
 
@@ -17,15 +17,15 @@ struct FunctionSignature {
   std::string retType;
   std::vector<std::string> possibleFuncNames;
   std::vector<std::string> paramTypes;
-  bool operator==(const FunctionSignature& other) const{
-    return retType==other.retType &&possibleFuncNames==other.possibleFuncNames && paramTypes==paramTypes;
+  bool operator==(const FunctionSignature& other) const {
+    return retType == other.retType && possibleFuncNames == other.possibleFuncNames && paramTypes == paramTypes;
   }
-
 };
+namespace cgcollector2 {
+  struct Plugin;
+}
 
-struct Plugin;
-
-typedef std::vector<Plugin*> MetaCollectorVector;
+typedef std::vector<cgcollector2::Plugin*> MetaCollectorVector;
 
 std::ostream& operator<<(std::ostream& os, const FunctionSignature& fs);
 
