@@ -13,7 +13,7 @@
 
 namespace cage {
 
-void FileExporter::consumeCallGraph(metacg::Callgraph& graph) {
+void FileExporter::consumeCallGraph(const metacg::Callgraph& graph) {
   metacg::io::JsonSink jsSink;
   metacg::io::VersionFourMCGWriter mcgw({{4, 0}, {"CaGe", 0, 1, MetaCG_GIT_SHA}}, true, true);
   mcgw.write(&graph, jsSink);

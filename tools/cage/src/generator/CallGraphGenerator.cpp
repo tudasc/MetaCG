@@ -138,6 +138,7 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
       }
       origin = functionInfoMap[F]->getFilename().str();
     }
+
     return mcg->getOrInsertNode(nameToUse.str(), std::move(origin), false, hasBody);
   }
 
@@ -166,9 +167,16 @@ bool Generator::run(Module& M, ModuleAnalysisManager* MA) {
     // Take resulting metacg call graph
     auto mcg = cbv.takeResult();
 
-    // Run registered consumers
-    for (auto& consumer : consumers) {
-      consumer->consumeCallGraph(*mcg);
+    // Run registered plugin's augmentation
+    for (auto& plugin : plugins) {
+      metacg::MCGLogger::instance().debug("Running {} augment",plugin->getPluginName());
+      plugin->augmentCallGraph(M,*mcg);
+    }
+
+    // Run registered plugins consumption
+    for (auto& plugin : plugins) {
+      metacg::MCGLogger::instance().debug("Running {} consume", plugin->getPluginName());
+      plugin->consumeCallGraph(*mcg);
     }
   }
   return false;

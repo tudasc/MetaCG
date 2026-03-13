@@ -3,11 +3,12 @@
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
-#include "cage/Plugin.h"
+#include "cage/CaGe.h"
+#include "cage/interface/CaGePlugin.h"
 
-#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
+#include "llvm/Support/DynamicLibrary.h"
 
 #include "cage/generator/CallgraphGenerator.h"
 #include "cage/generator/FileExporter.h"
@@ -30,7 +31,32 @@ static opt<cage::PTAType> pta(
 
 static opt<std::string> cgout("cg-file", desc("Output file for the generated call graph"), cat(cageOpts), init(""));
 
+static list<std::string> pluginPaths("plugin-paths", desc("option list"), cat(cageOpts), CommaSeparated);
+
 namespace cage {
+
+Plugin* loadPlugin(const std::string& pluginPath) {
+  metacg::MCGLogger::instance().getConsole()->debug("Loading plugin");
+  std::string err;
+  auto lib = sys::DynamicLibrary::getPermanentLibrary(pluginPath.c_str(), &err);
+  if (!lib.isValid()) {
+    metacg::MCGLogger::instance().getErrConsole()->error("cannot locate the library at {}!", pluginPath);
+    metacg::MCGLogger::instance().getErrConsole()->error("Reason: {}", err);
+    return nullptr;
+  }
+  metacg::MCGLogger::instance().getConsole()->trace("Getting collection object from plugin {}", pluginPath);
+  void* sym = lib.getAddressOfSymbol("getPlugin");
+  if (!sym) {
+    metacg::MCGLogger::instance().getErrConsole()->error(
+        "Could not load collectors from plugin, no Function \"getPlugin()\"!");
+    return nullptr;
+  }
+  auto getPlugin = reinterpret_cast<Plugin* (*)()>(sym);
+  Plugin* loadedPlugin = getPlugin();
+  metacg::MCGLogger::logInfo("Successfully loaded Plugin: {}", loadedPlugin->getPluginName());
+  return loadedPlugin;
+}
+
 PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
   if (cageVerbose) {
     outs() << "Running CaGe in verbose mode\n";
@@ -40,8 +66,7 @@ PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
   std::string outfile = cgout.getValue();
   if (outfile.empty()) {
     // If empty, check environment variable
-    const auto* cgNameEnv = std::getenv("CAGE_CG");
-    if (cgNameEnv) {
+    if (const auto* cgNameEnv = std::getenv("CAGE_CG")) {
       outfile = cgNameEnv;
     } else {
       // Default output file
@@ -50,7 +75,15 @@ PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
   }
 
   Generator gen(pta);
-  gen.addConsumer(std::make_unique<FileExporter>(outfile));
+  gen.addPlugin(std::make_unique<FileExporter>(outfile));
+
+  // Load external plugins
+  for (const auto& pluginPath : pluginPaths) {
+    SPDLOG_INFO("Loading external plugin from: {}", pluginPath);
+    if (auto p = std::unique_ptr<Plugin>(loadPlugin(pluginPath))) {
+      gen.addPlugin(std::move(p));
+    }
+  }
 
   if (!gen.run(M, &MA))
     return PreservedAnalyses::all();
@@ -84,6 +117,7 @@ llvm::PassPluginLibraryInfo getPluginInfo() {
             if (Name == "CaGe") {
               outs() << "Registering CaGe to run as pipeline described\n";
               MPM.addPass(cage::CaGe());
+
               return true;
             } else {
               outs() << "Did not register CaGe\n";
