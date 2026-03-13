@@ -5,6 +5,7 @@
  */
 
 #include "collector/CodeStatisticsCollector.h"
+#include "collector/FileInfoCollector.h"
 #include "collector/GlobalLoopDepthCollector.h"
 #include "collector/LoopDepthCollector.h"
 #include "collector/MallocVariableCollector.h"
@@ -24,8 +25,8 @@
 
 #include "metacg/metadata/BuiltinMD.h"
 
-#include <filesystem>
 #include "spdlog/spdlog.h"
+#include <filesystem>
 
 using namespace llvm::cl;
 
@@ -54,34 +55,35 @@ static opt<bool> inferCtorsDtors("infer-ctors-dtors",
                                       "infer calls to destructors based on scopes / lifetimes <default=false>"),
                                  init(false), cat(cgc));
 
-static opt<std::string> cgout("cg-file", desc("Output file for the generated call graph"), cat(cgc)); 
+static opt<std::string> cgout("cg-file", desc("Output file for the generated call graph"), cat(cgc));
 
 enum class Collectors {
-  None,
-  NumStatements,
   CodeStatistics,
-  LoopDepth,
+  FileInfo,
   GlobalLoopDepth,
+  LoopDepth,
   MallocVariable,
   NumConditionalBranches,
+  NumStatements,
   NumOperations,
-  UniqueTypes,
   OverrideMD,
-  All
+  UniqueTypes,
+  All,
+  None
 };
-
 static bits<Collectors> collectorBits(
     desc("Builtin collections:"),
     values(clEnumValN(Collectors::None, "None", "don't use collectors"),
-           clEnumValN(Collectors::NumStatements, "NumStatements", "number of statements"),
            clEnumValN(Collectors::CodeStatistics, "CodeStatistics", "number of declared variables"),
-           clEnumValN(Collectors::LoopDepth, "LoopDepth", "nesting level of loops"),
+           clEnumValN(Collectors::FileInfo, "CodeStatistics", "number of declared variables"),
            clEnumValN(Collectors::GlobalLoopDepth, "GlobalLoopDepth", "global nesting level of loops "),
+           clEnumValN(Collectors::LoopDepth, "LoopDepth", "nesting level of loops"),
            clEnumValN(Collectors::MallocVariable, "MallocVariable", "number of mallocs"),
            clEnumValN(Collectors::NumConditionalBranches, "NumConditionalBranches", "number of branches"),
            clEnumValN(Collectors::NumOperations, "NumOperations", "number of operations"),
-           clEnumValN(Collectors::UniqueTypes, "UniqueTypes", "number of unique types"),
+           clEnumValN(Collectors::NumStatements, "NumStatements", "number of statements"),
            clEnumValN(Collectors::OverrideMD, "OverrideMD", "overriding and overridden functions"),
+           clEnumValN(Collectors::UniqueTypes, "UniqueTypes", "number of unique types"),
            clEnumValN(Collectors::All, "All", "use all collectors")),
     cat(cgc));
 
@@ -155,13 +157,15 @@ int main(int argc, const char** argv) {
     case LogLevel::Off:
       spdlog::set_level(spdlog::level::off);
       break;
+    default:__builtin_unreachable();
   }
   spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [errconsole] [%l] %v");
 
   clang::tooling::ClangTool CT(OP.getCompilations(), OP.getSourcePathList());
 
   std::vector<Plugin*> mcs = {};
-  mcs.reserve(9 /*number of builtin collectors*/ + pluginPaths.size());
+  constexpr int numberOfBuiltinCollectors= static_cast<std::underlying_type_t<Collectors>>(Collectors::All);
+  mcs.reserve( numberOfBuiltinCollectors + pluginPaths.size());
 
   if (collectorBits.getBits() == 0 || collectorBits.isSet(Collectors::None)) {
     SPDLOG_INFO("No collector-suite specified, disabling all collectors");
@@ -170,20 +174,24 @@ int main(int argc, const char** argv) {
       SPDLOG_INFO("Enabling all built in collectors");
     }
     // Builtin Metadata Collection
-    if (collectorBits.isSet(Collectors::NumStatements) || collectorBits.isSet(Collectors::All)) {
-      mcs.push_back(new NumberOfStatementsCollector());
-    }
-
     if (collectorBits.isSet(Collectors::CodeStatistics) || collectorBits.isSet(Collectors::All)) {
       mcs.push_back(new CodeStatisticsCollector());
     }
 
-    if (collectorBits.isSet(Collectors::MallocVariable) || collectorBits.isSet(Collectors::All)) {
-      mcs.push_back(new MallocVariableCollector());
+    if (collectorBits.isSet(Collectors::FileInfo) || collectorBits.isSet(Collectors::All)) {
+      mcs.push_back(new FileInfoCollector());
     }
 
-    if (collectorBits.isSet(Collectors::UniqueTypes) || collectorBits.isSet(Collectors::All)) {
-      mcs.push_back(new UniqueTypeCollector());
+    if (collectorBits.isSet(Collectors::GlobalLoopDepth) || collectorBits.isSet(Collectors::All)) {
+      mcs.push_back(new GlobalLoopDepthCollector());
+    }
+
+    if (collectorBits.isSet(Collectors::LoopDepth) || collectorBits.isSet(Collectors::All)) {
+      mcs.push_back(new LoopDepthCollector());
+    }
+
+    if (collectorBits.isSet(Collectors::MallocVariable) || collectorBits.isSet(Collectors::All)) {
+      mcs.push_back(new MallocVariableCollector());
     }
 
     if (collectorBits.isSet(Collectors::NumConditionalBranches) || collectorBits.isSet(Collectors::All)) {
@@ -194,16 +202,16 @@ int main(int argc, const char** argv) {
       mcs.push_back(new NumOperationsCollector());
     }
 
-    if (collectorBits.isSet(Collectors::LoopDepth) || collectorBits.isSet(Collectors::All)) {
-      mcs.push_back(new LoopDepthCollector());
-    }
-
-    if (collectorBits.isSet(Collectors::GlobalLoopDepth) || collectorBits.isSet(Collectors::All)) {
-      mcs.push_back(new GlobalLoopDepthCollector());
+    if (collectorBits.isSet(Collectors::NumStatements) || collectorBits.isSet(Collectors::All)) {
+      mcs.push_back(new NumberOfStatementsCollector());
     }
 
     if (collectorBits.isSet(Collectors::OverrideMD) || collectorBits.isSet(Collectors::All)) {
       mcs.push_back(new OverrideCollector());
+    }
+
+    if (collectorBits.isSet(Collectors::UniqueTypes) || collectorBits.isSet(Collectors::All)) {
+      mcs.push_back(new UniqueTypeCollector());
     }
   }
 
@@ -217,14 +225,12 @@ int main(int argc, const char** argv) {
   std::filesystem::path cgoutPath;
 
   if (cgout.getNumOccurrences() > 0) {
-    cgoutPath = std::filesystem::absolute(
-        std::filesystem::path(cgout.getValue())
-    );
+    cgoutPath = std::filesystem::absolute(std::filesystem::path(cgout.getValue()));
   }
 
-  std::unique_ptr<CallGraphCollectorAction> const cgca2 =
-      std::make_unique<CallGraphCollectorAction>(mcs, metacgFormatVersion, captureCtorsDtors, captureNewDeleteCalls,
-                                                 captureImplicits, inferCtorsDtors, prune, standalone, aliasAssumption, cgoutPath);
+  std::unique_ptr<CallGraphCollectorAction> const cgca2 = std::make_unique<CallGraphCollectorAction>(
+      mcs, metacgFormatVersion, captureCtorsDtors, captureNewDeleteCalls, captureImplicits, inferCtorsDtors, prune,
+      standalone, aliasAssumption, cgoutPath);
 
   CT.run(clang::tooling::newFrontendActionFactory<CallGraphCollectorAction>(cgca2.get()).get());
 

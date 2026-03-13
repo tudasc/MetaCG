@@ -64,9 +64,6 @@ add_metacg(cgcollector2)
 add_spdlog_libraries(cgcollector2)
 add_json(cgcollector2)
 
-# Plugin demo
-add_subdirectory(fileInfoDemoPlugin)
-
 install(
   TARGETS cgcollector2
   EXPORT ${TARGETS_EXPORT_NAME}
