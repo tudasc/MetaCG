@@ -61,4 +61,8 @@ struct Plugin {
   virtual ~Plugin() = default;
 };
 }
+
+//Needs to be implemented so the plugin can be loaded
+cgcollector2::Plugin* getPlugin();
+
 #endif  // CGCOLLECTOR2_PLUGIN_H

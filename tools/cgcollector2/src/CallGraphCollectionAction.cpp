@@ -6,7 +6,7 @@
 
 #include "metacg/MCGBaseInfo.h"
 #include "cgcollector2/CallGraphCollectionAction.h"
-#include "cgcollector2/interface/Plugin.h"
+#include "cgcollector2/interface/CGC2Plugin.h"
 #include "cgcollector2/CallGraphNodeGenerator.h"
 #include "cgcollector2/SharedDefs.h"
 #include "cgcollector2/metadata/Internal/ASTNodeMetadata.h"

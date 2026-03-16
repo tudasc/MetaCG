@@ -20,7 +20,7 @@
 
 #include "cgcollector2/CallGraphCollectionAction.h"
 
-#include "cgcollector2/interface/Plugin.h"
+#include "cgcollector2/interface/CGC2Plugin.h"
 #include "cgcollector2/SharedDefs.h"
 
 #include "metacg/metadata/BuiltinMD.h"

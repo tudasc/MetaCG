@@ -74,7 +74,7 @@ add_library(cgcollector2-plugin-interface INTERFACE)
 target_sources(cgcollector2-plugin-interface PUBLIC
         FILE_SET HEADERS
         BASE_DIRS include
-        FILES include/cgcollector2/interface/Plugin.h
+        FILES include/cgcollector2/interface/CGC2Plugin.h
 )
 
 target_link_libraries(cgcollector2-plugin-interface INTERFACE metacg::metacg)

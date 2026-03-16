@@ -8,7 +8,7 @@
 
 #include "metacg/Callgraph.h"
 #include "metacg/metadata/NumStatementsMD.h"
-#include "cgcollector2/interface/Plugin.h"
+#include "cgcollector2/interface/CGC2Plugin.h"
 #include "cgcollector2/MetaDataFunctions.h"
 
 #include <clang/AST/Decl.h>

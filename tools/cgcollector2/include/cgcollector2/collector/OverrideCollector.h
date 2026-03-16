@@ -8,7 +8,7 @@
 #define CGCOLLECTOR2_OVERRIDECOLLECTOR_H
 
 #include "metacg/metadata/OverrideMD.h"
-#include "cgcollector2/interface/Plugin.h"
+#include "cgcollector2/interface/CGC2Plugin.h"
 #include "cgcollector2/metadata/Internal/ASTNodeMetadata.h"
 
 #include <clang/AST/Mangle.h>
