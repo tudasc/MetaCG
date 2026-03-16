@@ -24,6 +24,8 @@ namespace metacg {
 class Callgraph;
 }  // namespace metacg
 
+//Predeclare clang::FunctionDecl to allow client tools to not link against clang
+//if they only operate on the graph
 namespace clang {
 class FunctionDecl;
 } // namespace clang
@@ -59,8 +61,4 @@ struct Plugin {
   virtual ~Plugin() = default;
 };
 }
-// Todo: This currently only loads one plugin per *.so
-cgcollector2::Plugin* loadPlugin(const std::string& pluginPath);
-
-
 #endif  // CGCOLLECTOR2_PLUGIN_H
