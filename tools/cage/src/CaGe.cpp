@@ -8,7 +8,6 @@
 
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
-#include "llvm/Support/DynamicLibrary.h"
 
 #include "cage/generator/CallgraphGenerator.h"
 #include "cage/generator/FileExporter.h"
@@ -38,7 +37,7 @@ namespace cage {
 Plugin* loadPlugin(const std::string& pluginPath) {
   metacg::MCGLogger::instance().getConsole()->debug("Loading plugin");
   std::string err;
-  auto lib = sys::DynamicLibrary::getPermanentLibrary(pluginPath.c_str(), &err);
+  auto lib = llvm::sys::DynamicLibrary::getPermanentLibrary(pluginPath.c_str(), &err);
   if (!lib.isValid()) {
     metacg::MCGLogger::instance().getErrConsole()->error("cannot locate the library at {}!", pluginPath);
     metacg::MCGLogger::instance().getErrConsole()->error("Reason: {}", err);

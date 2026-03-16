@@ -126,6 +126,29 @@ static opt<LogLevel> LoggingLevel("log-level", desc("Select log level"),
                                          clEnumValN(LogLevel::Off, "off", "Disable all logging")),
                                   init(LogLevel::Info), cat(cgc));
 
+cgcollector2::Plugin* loadPlugin(const std::string& pluginPath) {
+  metacg::MCGLogger::instance().getConsole()->debug("Loading plugin");
+  std::string err;
+  auto lib = llvm::sys::DynamicLibrary::getPermanentLibrary(pluginPath.c_str(), &err);
+  if (!lib.isValid()) {
+    metacg::MCGLogger::instance().getErrConsole()->error("cannot locate the library at {}!", pluginPath);
+    metacg::MCGLogger::instance().getErrConsole()->error("Reason: {}", err);
+    return nullptr;
+  }
+  metacg::MCGLogger::instance().getConsole()->trace("Getting collection object from plugin {}", pluginPath);
+  void* sym = lib.getAddressOfSymbol("getPlugin");
+  if (!sym) {
+    metacg::MCGLogger::instance().getErrConsole()->error(
+        "Could not load collectors from plugin, no Function \"getPlugin()\"!");
+    return nullptr;
+  }
+  auto getPlugin = reinterpret_cast<cgcollector2::Plugin* (*)()>(sym);
+  cgcollector2::Plugin* loadedPlugin=getPlugin();
+  metacg::MCGLogger::logInfo("Successfully loaded Plugin: {}", loadedPlugin->getPluginName());
+  return loadedPlugin;
+}
+
+
 int main(int argc, const char** argv) {
 #if (LLVM_VERSION_MAJOR >= 10) && (LLVM_VERSION_MAJOR <= 12)
   clang::tooling::CommonOptionsParser OP(argc, argv, cgc);
