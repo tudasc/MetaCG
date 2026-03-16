@@ -8,11 +8,30 @@
 #define CGCOLLECTOR2_OVERRIDECOLLECTOR_H
 
 #include "metacg/metadata/OverrideMD.h"
-#include "cgcollector2/helper/Common.h"
 #include "cgcollector2/interface/Plugin.h"
 #include "cgcollector2/metadata/Internal/ASTNodeMetadata.h"
 
+#include <clang/AST/Mangle.h>
+
 struct OverrideCollector : public cgcollector2::Plugin {
+  /**
+ * Returns mangled names for all named decls, including Ctor/Dtor.
+ */
+  static std::vector<std::string> getMangledName(clang::NamedDecl const* const nd) {
+    if (!nd) {
+      llvm::errs() << "NamedDecl was nullptr\n";
+      assert(nd && "NamedDecl and MangleContext must not be nullptr");
+      return {"__NO_NAME__"};
+    }
+    clang::ASTNameGenerator NG(nd->getASTContext());
+
+    if (llvm::isa<clang::CXXRecordDecl>(nd) || llvm::isa<clang::CXXMethodDecl>(nd) ||
+        llvm::isa<clang::ObjCInterfaceDecl>(nd) || llvm::isa<clang::ObjCImplementationDecl>(nd)) {
+      return NG.getAllManglings(nd);
+        }
+    return {NG.getName(nd)};
+  }
+
   virtual void computeForGraph(const metacg::Callgraph* const cg) {
     for (auto& node : cg->getNodes()) {
       auto decl = node->get<ASTNodeMetadata>()->getFunctionDecl();
