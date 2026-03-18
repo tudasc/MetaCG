@@ -20,7 +20,7 @@ struct NumberOfStatementsCollector : public cgcollector2::Plugin {
     return result;
   }
 
-  void computeForGraph(const metacg::Callgraph* const) override {}
+  void computeForGraph(metacg::Callgraph* const) override {}
 
   std::string getPluginName() const final { return "NumberOfStatementsCollector"; }
 };

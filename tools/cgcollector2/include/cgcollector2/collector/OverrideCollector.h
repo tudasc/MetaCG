@@ -32,7 +32,7 @@ struct OverrideCollector : public cgcollector2::Plugin {
     return {NG.getName(nd)};
   }
 
-  virtual void computeForGraph(const metacg::Callgraph* const cg) {
+  virtual void computeForGraph(metacg::Callgraph* const cg) {
     for (auto& node : cg->getNodes()) {
       auto decl = node->get<ASTNodeMetadata>()->getFunctionDecl();
 

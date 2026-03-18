@@ -51,7 +51,7 @@ struct Plugin {
    * @param cg
    * @return void
    */
-  virtual void computeForGraph([[maybe_unused]] const metacg::Callgraph* const) {};
+  virtual void computeForGraph([[maybe_unused]] metacg::Callgraph* const) {};
 
   /**
    * Overwrite this if you want your Plugin to be listed with a name in the debug logs
