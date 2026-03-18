@@ -75,7 +75,7 @@ static bits<Collectors> collectorBits(
     desc("Builtin collections:"),
     values(clEnumValN(Collectors::None, "None", "don't use collectors"),
            clEnumValN(Collectors::CodeStatistics, "CodeStatistics", "number of declared variables"),
-           clEnumValN(Collectors::FileInfo, "CodeStatistics", "number of declared variables"),
+           clEnumValN(Collectors::FileInfo, "FileInfo", "number of declared variables"),
            clEnumValN(Collectors::GlobalLoopDepth, "GlobalLoopDepth", "global nesting level of loops "),
            clEnumValN(Collectors::LoopDepth, "LoopDepth", "nesting level of loops"),
            clEnumValN(Collectors::MallocVariable, "MallocVariable", "number of mallocs"),
