@@ -154,8 +154,7 @@ bool Callgraph::addEdge(const std::string& callerName, const std::string& callee
   if (callerMatches.size() != 1 || calleeMatches.size() != 1) {
     return false;
   }
-  addEdge(callerMatches.front(), calleeMatches.front());
-  return true;
+  return addEdge(callerMatches.front(), calleeMatches.front());
 }
 
 bool Callgraph::removeEdge(NodeId parentID, NodeId childID) {
