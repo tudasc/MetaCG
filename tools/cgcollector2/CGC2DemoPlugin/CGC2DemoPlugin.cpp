@@ -57,3 +57,7 @@ struct CGC2DemoPlugin final : cgcollector2::Plugin {
     std::string getPluginName() const final { return "Demo Plugin"; }
     ~CGC2DemoPlugin() final = default;
 };
+
+extern "C" {
+  cgcollector2::Plugin* getPlugin(){return new CGC2DemoPlugin();}
+}
