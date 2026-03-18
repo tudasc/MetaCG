@@ -6,6 +6,7 @@
 
 #include "LegacyMCGReader.h"
 #include "Callgraph.h"
+#include "MCGManager.h"
 #include "CgNode.h"
 #include "Timing.h"
 #include "Util.h"

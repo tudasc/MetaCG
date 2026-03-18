@@ -5,6 +5,7 @@
  */
 
 #include "Callgraph.h"
+#include "MCGManager.h"
 #include "MergePolicy.h"
 #include "SymbolRetriever.h"
 #include "io/VersionTwoMCGReader.h"

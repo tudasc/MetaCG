@@ -14,6 +14,8 @@
 #include "io/NameMapping.h"
 #include <cxxopts.hpp>
 
+#include <iostream>
+
 std::vector<std::unique_ptr<metacg::Diff>> compare(const metacg::Callgraph& mcgA, const metacg::Callgraph& mcgB,
                                                    ComparisonMode mode,
                                                    const std::unordered_set<std::string>& ignoredMdKeys = {}) {

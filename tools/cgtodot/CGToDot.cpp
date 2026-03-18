@@ -11,6 +11,7 @@
 
 #include <cxxopts.hpp>
 #include <fstream>
+#include <iostream>
 
 static auto console = metacg::MCGLogger::instance().getConsole();
 static auto errConsole = metacg::MCGLogger::instance().getErrConsole();
