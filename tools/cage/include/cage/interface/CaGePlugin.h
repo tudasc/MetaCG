@@ -9,7 +9,6 @@
 #include <string> //can not predeclare std::string
 
 #include "LoggerUtil.h"
-#include "llvm/Support/DynamicLibrary.h"
 
 namespace metacg {
 class Callgraph;
