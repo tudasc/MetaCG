@@ -37,6 +37,9 @@ COPY ./build_submodules.sh /opt/metacg
 
 RUN ./build_submodules.sh $(nproc)
 
+RUN python3 -m venv .venv && \
+     .venv/bin/pip install fortdepend
+
 COPY . /opt/metacg
 
 RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
@@ -48,7 +51,7 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DMETACG_BUILD_CGCOLLECTOR=ON \
       -DMETACG_BUILD_GRAPH_TOOLS=ON \
       -DMETACG_BUILD_CGPATCH=ON \
-      -DMETACG_BUILD_GRAPH_TOOLS=ON \
+      -DMETACG_BUILD_CGFCOLLECTOR=ON \
       -DCAGE_USE_METAVIRT=ON \
       -DMETACG_BUILD_PYMETACG=ON \
       -DPython_ROOT_DIR=/opt/metacg/.venv \
@@ -56,7 +59,7 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_MODULE_PATH=/opt/metacg/.venv/share/Pytest/cmake \
       -DMETACG_BUILD_PYMETACG_TESTS=ON \
       -DCMAKE_VERBOSE_MAKEFILE=ON \
-      -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-20/build/utils/lit/lit.py 
+      -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-20/build/utils/lit/lit.py
 
 RUN cmake --build build --parallel
 
