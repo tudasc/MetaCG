@@ -7,7 +7,6 @@
 #ifndef METACG_SYMBOLRETRIEVER_H
 #define METACG_SYMBOLRETRIEVER_H
 
-#include "LoggerUtil.h"
 #include <cstdint>
 #include <map>
 #include <memory>
