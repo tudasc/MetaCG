@@ -5,7 +5,7 @@
  */
 
 #include <memory>
-#include <metadata/MetaData.h>
+#include <metacg/metadata/MetaData.h>
 
 class DummyMD : public metacg::MetaData::Registrar<DummyMD> {
  public:
