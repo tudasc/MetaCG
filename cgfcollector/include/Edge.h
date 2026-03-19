@@ -78,6 +78,12 @@ struct EdgeManager {
 
   void addEdgesForFinalizers(const PotentialFinalizer& e);
 
+  /**
+   * @brief Remove duplicate edges from the edges vector. This prevents massive amounts of duplication warnings from the
+   * graph lib.
+   */
+  void uniquifyEdges();
+
  private:
   bool underscoring;
 };

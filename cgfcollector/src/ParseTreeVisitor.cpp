@@ -67,11 +67,7 @@ void ParseTreeVisitor::postProcess() {
     edgeM->addEdgesForFinalizers(pf);
   }
 
-  // sort unique edges
-  // TODO: in EdgeManager
-  std::sort(edges.begin(), edges.end());
-  auto it = std::unique(edges.begin(), edges.end());
-  edges.erase(it, edges.end());
+  edgeM->uniquifyEdges();
 
   // add edges
   for (const Edge& edge : edges) {

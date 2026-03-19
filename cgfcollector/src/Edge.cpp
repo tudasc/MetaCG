@@ -89,4 +89,10 @@ void EdgeManager::addEdges(const std::vector<EdgeSymbol>& newEdges) {
   }
 }
 
+void EdgeManager::uniquifyEdges() {
+  std::sort(edges.begin(), edges.end());
+  auto it = std::unique(edges.begin(), edges.end());
+  edges.erase(it, edges.end());
+}
+
 }  // namespace metacg::cgfcollector
