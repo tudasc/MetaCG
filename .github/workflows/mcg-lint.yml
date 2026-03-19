@@ -38,11 +38,12 @@ jobs:
           CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
           for f in ${CHANGED_FILES}; do 
-            echo "Running on $f"
             filename=$(basename $f)
             if [[ $filename == *.cmake ]]; then 
+              echo "Running on $f"
               cmake-format --check $f 
             elif [[ $filename == "CMakeLists.txt" ]]; then 
+              echo "Running on $f"
               cmake-format --check $f 
             fi
           done
