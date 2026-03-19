@@ -30,7 +30,7 @@
 
 #include "util.h"
 
-#include <config.h>
+#include <metacg/config.h>
 
 namespace nb = nanobind;
 using namespace metacg::pymetacg;
