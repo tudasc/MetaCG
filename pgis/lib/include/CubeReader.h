@@ -10,11 +10,11 @@
 #include "MetaData/CgNodeMetaData.h"
 #include "PiraMCGProcessor.h"
 #include "metacg/LoggerUtil.h"
+#include "metacg/MCGManager.h"
 
 #include <Cube.h>
 #include <CubeMetric.h>
 
-#include <MCGManager.h>
 #include <filesystem>
 #include <string>
 
