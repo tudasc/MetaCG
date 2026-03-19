@@ -659,7 +659,9 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
 
           // extends
           if (component->test(Symbol::Flag::ParentComp)) {
-            extendsFrom = getTypeSymbolFromSymbol(component);
+            MCGLogger::logDebug("Found extends in module derived type: {} ({}) -> {} ({})", symbol->name(),
+                                fmt::ptr(symbol), component->name(), fmt::ptr(component));
+            extendsFrom = component;
           }
 
           // type bound procedures

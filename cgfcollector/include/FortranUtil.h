@@ -63,6 +63,11 @@ const Fortran::parser::Name* getNameFromClassWithDesignator(const T& t) {
   return nullptr;
 }
 
+enum class CanonicalMode {
+  Identity,  // preserve variables/procedures by symbol
+  ByType,    // normalize variables/functions by derived type
+};
+
 /**
  * @class CanonicalSymbol
  * @brief Struct to hold symbol and its canonical kind. Mainly used for comparing symbols.
@@ -84,9 +89,11 @@ struct CanonicalSymbol {
  * Note: Mainly used for comparing symbols.
  *
  * @param input
+ * @param mode (see CanonicalMode definition)
  * @return
  */
-CanonicalSymbol canonicalizeSymbol(const Fortran::semantics::Symbol* input);
+CanonicalSymbol canonicalizeSymbol(const Fortran::semantics::Symbol* input,
+                                   CanonicalMode mode = CanonicalMode::Identity);
 
 /**
  * @brief Compares two symbols for equality also resolves the original construct the symbol comes from.
@@ -94,9 +101,11 @@ CanonicalSymbol canonicalizeSymbol(const Fortran::semantics::Symbol* input);
  *
  * @param a
  * @param b
+ * @param mode (see CanonicalMode definition)
  * @return true if both symbols are equal
  */
-bool compareSymbols(const Fortran::semantics::Symbol* a, const Fortran::semantics::Symbol* b);
+bool compareSymbols(const Fortran::semantics::Symbol* a, const Fortran::semantics::Symbol* b,
+                    CanonicalMode mode = CanonicalMode::Identity);
 
 /**
  * @brief Generate mangled name from symbol
@@ -150,14 +159,6 @@ bool isUnaryOperator(const Fortran::parser::Expr* e);
  */
 Fortran::parser::DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(
     const Fortran::semantics::GenericKind& gk);
-
-/**
- * @brief Get type symbol from a given symbol
- *
- * @param symbol
- * @return
- */
-const Fortran::semantics::Symbol* getTypeSymbolFromSymbol(const Fortran::semantics::Symbol* symbol);
 
 /**
  * @brief Searches the types vector for given symbol and returns pointers to vectors of type with derived types. The

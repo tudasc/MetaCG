@@ -35,7 +35,7 @@ static const Symbol* resolveUseHostSymbol(const Symbol* sym) {
   return sym;
 }
 
-CanonicalSymbol canonicalizeSymbol(const Symbol* input) {
+CanonicalSymbol canonicalizeSymbol(const Symbol* input, CanonicalMode mode) {
   std::unordered_set<const Symbol*> visited;
   const Symbol* sym = input;
 
@@ -78,12 +78,14 @@ CanonicalSymbol canonicalizeSymbol(const Symbol* input) {
       return {sym, CanonicalSymbol::Kind::Procedure};
     }
 
-    // if (const DeclTypeSpec* type = sym->GetType()) {
-    //   if (const auto* derived = type->AsDerived()) {
-    //     sym = &derived->typeSymbol();
-    //     continue;
-    //   }
-    // }
+    if (mode == CanonicalMode::ByType) {
+      if (const DeclTypeSpec* type = sym->GetType()) {
+        if (const auto* derived = type->AsDerived()) {
+          sym = &derived->typeSymbol();
+          continue;
+        }
+      }
+    }
 
     return {sym, CanonicalSymbol::Kind::Other};
   }
@@ -91,9 +93,9 @@ CanonicalSymbol canonicalizeSymbol(const Symbol* input) {
   return {sym, CanonicalSymbol::Kind::Other};
 }
 
-bool compareSymbols(const Symbol* a, const Symbol* b) {
-  auto ca = canonicalizeSymbol(a);
-  auto cb = canonicalizeSymbol(b);
+bool compareSymbols(const Symbol* a, const Symbol* b, CanonicalMode mode) {
+  auto ca = canonicalizeSymbol(a, mode);
+  auto cb = canonicalizeSymbol(b, mode);
 
   MCGLogger::logDebug("Comparing symbols: {} ({}) and {} ({}), canon: {} ({}) {} ({})", a ? a->name() : "nullptr",
                       fmt::ptr(a), b ? b->name() : "nullptr", fmt::ptr(b), ca.symbol ? ca.symbol->name() : "nullptr",
@@ -277,30 +279,13 @@ DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(const GenericKind
                     gk.u);
 }
 
-const Symbol* getTypeSymbolFromSymbol(const Symbol* symbol) {
-  const DeclTypeSpec* type = symbol->GetType();
-  if (!type)
-    return nullptr;
-  const Fortran::semantics::DerivedTypeSpec* derived = type->AsDerived();
-  if (!derived)
-    return nullptr;
-  const Symbol* typeSymbol = &derived->typeSymbol();
-  if (!typeSymbol)
-    return nullptr;
-  return typeSymbol;
-}
-
-std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types, const Symbol* symbol) {
+std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types, const Symbol* typeSymbol) {
   std::vector<const Type*> typesWithDerived;
   std::unordered_set<const Symbol*> visited;
 
-  const Symbol* typeSymbol = getTypeSymbolFromSymbol(symbol);
-  if (!typeSymbol) {
-    return typesWithDerived;
-  }
-
-  auto findTypeIt = std::find_if(types.begin(), types.end(),
-                                 [&typeSymbol](const Type& t) { return compareSymbols(t.typeSymbol, typeSymbol); });
+  auto findTypeIt = std::find_if(types.begin(), types.end(), [&typeSymbol](const Type& t) {
+    return compareSymbols(t.typeSymbol, typeSymbol, CanonicalMode::ByType);
+  });
 
   if (findTypeIt == types.end()) {
     return typesWithDerived;
@@ -314,7 +299,7 @@ std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types
   // collect descendants
   std::function<void(const Type*)> collectDescendants = [&](const Type* parent) {
     for (const Type& t : types) {
-      if (compareSymbols(t.extendsFrom, parent->typeSymbol) && !visited.count(t.typeSymbol)) {
+      if (compareSymbols(t.extendsFrom, parent->typeSymbol, CanonicalMode::ByType) && !visited.count(t.typeSymbol)) {
         visited.insert(t.typeSymbol);
         typesWithDerived.push_back(&t);
 
@@ -335,8 +320,9 @@ std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types
       break;
     }
 
-    auto currentTypeIt = std::find_if(types.begin(), types.end(),
-                                      [&](const Type& t) { return compareSymbols(t.typeSymbol, currentExtendsFrom); });
+    auto currentTypeIt = std::find_if(types.begin(), types.end(), [&](const Type& t) {
+      return compareSymbols(t.typeSymbol, currentExtendsFrom, CanonicalMode::ByType);
+    });
 
     if (currentTypeIt == types.end()) {
       MCGLogger::logError("Error: Types array (extendsFrom) field entry for \"" +
