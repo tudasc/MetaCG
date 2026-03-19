@@ -14,7 +14,7 @@
 #include "metacg/io/VersionTwoMCGWriter.h"
 
 // This may appear to be unused, but the variables declared here have side effects on the graph lib
-#include "metadata/BuiltinMD.h"
+#include "metacg/metadata/BuiltinMD.h"
 
 using namespace metacg;
 
