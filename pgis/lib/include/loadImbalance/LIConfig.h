@@ -7,7 +7,7 @@
 #ifndef LI_CONFIG_H
 #define LI_CONFIG_H
 
-#include "CgNode.h"
+#include "metacg/CgNode.h"
 #include "MetaData/CgNodeMetaData.h"
 #include "nlohmann/json.hpp"
 

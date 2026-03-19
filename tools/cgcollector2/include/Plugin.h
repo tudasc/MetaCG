@@ -15,7 +15,7 @@
  * There are *no ordering guarantees given* for samely typed computations
  */
 
-#include <metadata/MetaData.h>
+#include <metacg/metadata/MetaData.h>
 
 #include <memory>
 #include <string>

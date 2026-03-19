@@ -1,4 +1,4 @@
-#include "config.h"
+#include "metacg/config.h"
 
 #include "AliasAnalysis.h"
 #include "GlobalCallDepth.h"

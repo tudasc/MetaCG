@@ -8,17 +8,17 @@
 #include "config/ParameterConfig.h"
 
 #include "CubeReader.h"
-#include "DotIO.h"
+#include "metacg/DotIO.h"
 #include "ErrorCodes.h"
 #include "ExtrapEstimatorPhase.h"
 #include "IPCGEstimatorPhase.h"
 #include "LegacyMCGReader.h"
-#include "LoggerUtil.h"
+#include "metacg/LoggerUtil.h"
 #include "MetaData/PGISMetaData.h"
 #include "PiraMCGProcessor.h"
 #include "Utility.h"
-#include "io/VersionTwoMCGReader.h"
-#include "io/VersionTwoMCGWriter.h"
+#include "metacg/io/VersionTwoMCGReader.h"
+#include "metacg/io/VersionTwoMCGWriter.h"
 #include <loadImbalance/LIEstimatorPhase.h>
 #include <loadImbalance/LIMetaData.h>
 #include <loadImbalance/OnlyMainEstimatorPhase.h>

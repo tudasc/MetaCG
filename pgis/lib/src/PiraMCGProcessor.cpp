@@ -5,10 +5,10 @@
  */
 
 #include "PiraMCGProcessor.h"
-#include "DotIO.h"
+#include "metacg/DotIO.h"
 #include "ErrorCodes.h"
 #include "ExtrapConnection.h"
-#include "Timing.h"
+#include "metacg/Timing.h"
 #include "config/GlobalConfig.h"
 #include "config/ParameterConfig.h"
 

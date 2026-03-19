@@ -4,11 +4,11 @@
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
-#include "io/VersionTwoMCGReader.h"
-#include "MCGBaseInfo.h"
-#include "Timing.h"
-#include "Util.h"
-#include "io/VersionFourMCGReader.h"
+#include "metacg/io/VersionTwoMCGReader.h"
+#include "metacg/MCGBaseInfo.h"
+#include "metacg/Timing.h"
+#include "metacg/Util.h"
+#include "metacg/io/VersionFourMCGReader.h"
 
 std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMCGReader::read() {
   const metacg::RuntimeTimer rtt("VersionTwoMCGReader::read");

@@ -4,14 +4,14 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "LoggerUtil.h"
+#include "metacg/LoggerUtil.h"
 #include "gtest/gtest.h"
 
-#include "MCGBaseInfo.h"
-#include "MCGManager.h"
+#include "metacg/MCGBaseInfo.h"
+#include "metacg/MCGManager.h"
 #include "TestMD.h"
-#include "io/VersionFourMCGWriter.h"
-#include "metadata/EntryFunctionMD.h"
+#include "metacg/io/VersionFourMCGWriter.h"
+#include "metacg/metadata/EntryFunctionMD.h"
 
 class V4MCGWriterTest : public ::testing::Test {
  protected:

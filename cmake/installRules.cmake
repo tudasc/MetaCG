@@ -72,8 +72,8 @@ install(
 
 # Install config.h
 install(
-  FILES "${PROJECT_BINARY_DIR}/config.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+  FILES "${PROJECT_BINARY_DIR}/include/metacg/config.h"
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/metacg/"
   COMPONENT metacg_Development
 )
 

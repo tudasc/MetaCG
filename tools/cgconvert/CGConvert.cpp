@@ -4,14 +4,14 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "config.h"
+#include "metacg/config.h"
 
 #include <iostream>
 #include <fstream>
 
-#include "LoggerUtil.h"
-#include "io/MCGReader.h"
-#include "io/VersionTwoMCGWriter.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/io/MCGReader.h"
+#include "metacg/io/VersionTwoMCGWriter.h"
 
 // This may appear to be unused, but the variables declared here have side effects on the graph lib
 #include "metadata/BuiltinMD.h"

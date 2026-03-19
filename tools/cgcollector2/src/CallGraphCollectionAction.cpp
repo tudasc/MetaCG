@@ -6,16 +6,16 @@
 
 #include "CallGraphCollectionAction.h"
 #include "CallGraphNodeGenerator.h"
-#include "MCGBaseInfo.h"
+#include "metacg/MCGBaseInfo.h"
 #include "Plugin.h"
 #include "SharedDefs.h"
 #include "metadata/Internal/ASTNodeMetadata.h"
 #include "metadata/Internal/AllAliasMetadata.h"
 #include "metadata/Internal/FunctionSignatureMetadata.h"
 
-#include "MCGManager.h"
-#include "io/VersionFourMCGWriter.h"
-#include "io/VersionTwoMCGWriter.h"
+#include "metacg/MCGManager.h"
+#include "metacg/io/VersionFourMCGWriter.h"
+#include "metacg/io/VersionTwoMCGWriter.h"
 
 #include "clang/AST/ASTDumper.h"
 

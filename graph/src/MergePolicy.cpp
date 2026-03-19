@@ -3,10 +3,10 @@
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
-#include "MergePolicy.h"
+#include "metacg/MergePolicy.h"
 
-#include "Callgraph.h"
-#include "LoggerUtil.h"
+#include "metacg/Callgraph.h"
+#include "metacg/LoggerUtil.h"
 
 namespace metacg {
 

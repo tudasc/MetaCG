@@ -11,7 +11,7 @@
 #include "MetaDataFunctions.h"
 #include "Plugin.h"
 #include "metadata/Internal/ASTNodeMetadata.h"
-#include "metadata/OverrideMD.h"
+#include "metacg/metadata/OverrideMD.h"
 
 struct OverrideCollector : public Plugin {
   virtual void computeForGraph(const metacg::Callgraph* const cg) {

@@ -5,7 +5,7 @@
  */
 #include "cage/generator/CallgraphGenerator.h"
 
-#include "Callgraph.h"
+#include "metacg/Callgraph.h"
 
 #ifdef HAVE_METAVIRT
 #include "metavirt/VirtCall.h"

@@ -4,8 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "CgNode.h"
-#include "metadata/OverrideMD.h"
+#include "metacg/CgNode.h"
+#include "metacg/metadata/OverrideMD.h"
 
 #include <iostream>
 using namespace metacg;

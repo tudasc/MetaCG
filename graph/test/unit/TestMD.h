@@ -6,8 +6,8 @@
 #ifndef METACG_TESTMD_H
 #define METACG_TESTMD_H
 
-#include "io/VersionFourMCGReader.h"
-#include "metadata/MetaData.h"
+#include "metacg/io/VersionFourMCGReader.h"
+#include "metacg/metadata/MetaData.h"
 
 struct SimpleTestMD final : metacg::MetaData::Registrar<SimpleTestMD> {
   static constexpr const char* key = "SimpleTestMD";

@@ -4,9 +4,9 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "Callgraph.h"
-#include "io/MCGReader.h"
-#include "io/MCGWriter.h"
+#include "metacg/Callgraph.h"
+#include "metacg/io/MCGReader.h"
+#include "metacg/io/MCGWriter.h"
 
 #include <chrono>
 #include <functional>

@@ -7,7 +7,7 @@
 #ifndef CGCOLLECTOR2_ALLALIASMETADATA_H
 #define CGCOLLECTOR2_ALLALIASMETADATA_H
 
-#include "metadata/MetaData.h"
+#include "metacg/metadata/MetaData.h"
 #include <SharedDefs.h>
 #include <clang/AST/Type.h>
 

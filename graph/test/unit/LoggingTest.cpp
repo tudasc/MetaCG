@@ -5,7 +5,7 @@
  */
 
 #include "gtest/gtest.h"
-#include "LoggerUtil.h"
+#include "metacg/LoggerUtil.h"
 
 class LoggingTest : public ::testing::Test {
  protected:

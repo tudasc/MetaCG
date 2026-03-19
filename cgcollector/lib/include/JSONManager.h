@@ -2,7 +2,7 @@
 #define CGCOLLECTOR_JSONMANAGER_H
 
 #include "MetaInformation.h"
-#include "config.h"
+#include "metacg/config.h"
 
 #include "AliasAnalysis.h"
 #include "nlohmann/json.hpp"

@@ -4,9 +4,9 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "Callgraph.h"
-#include "CgNode.h"
-#include "metadata/OverrideMD.h"
+#include "metacg/Callgraph.h"
+#include "metacg/CgNode.h"
+#include "metacg/metadata/OverrideMD.h"
 #include "gtest/gtest.h"
 
 namespace {

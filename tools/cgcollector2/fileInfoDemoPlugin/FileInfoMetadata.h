@@ -7,7 +7,7 @@
 #ifndef CGCOLLECTOR2_FILEINFOMETADATA_H
 #define CGCOLLECTOR2_FILEINFOMETADATA_H
 
-#include "metadata/MetaData.h"
+#include "metacg/metadata/MetaData.h"
 
 /**
  * This is the same metadata that is used inside the MetaCG library

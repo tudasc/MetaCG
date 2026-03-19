@@ -6,8 +6,8 @@
 
 #include "IPCGEstimatorPhase.h"
 #include "CgHelper.h"
-#include "LoggerUtil.h"
-#include "MCGManager.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/MCGManager.h"
 #include "PiraMCGProcessor.h"
 
 #include "gtest/gtest.h"

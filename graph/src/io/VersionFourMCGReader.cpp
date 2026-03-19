@@ -4,11 +4,11 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "io/VersionFourMCGReader.h"
-#include "MCGBaseInfo.h"
-#include "Timing.h"
-#include "Util.h"
-#include "metadata/BuiltinMD.h"
+#include "metacg/io/VersionFourMCGReader.h"
+#include "metacg/MCGBaseInfo.h"
+#include "metacg/Timing.h"
+#include "metacg/Util.h"
+#include "metacg/metadata/BuiltinMD.h"
 #include <iostream>
 
 using namespace metacg;

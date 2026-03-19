@@ -9,14 +9,14 @@
 
 // clang-format off
 // Graph library
-#include "CgNode.h"
-#include "Utility.h"
-#include "metadata/MetaData.h"
-#include "metadata/CodeStatisticsMD.h"
-#include "metadata/NumOperationsMD.h"
-#include "metadata/NumConditionalBranchMD.h"
-#include "metadata/LoopMD.h"
-#include "LoggerUtil.h"
+#include "metacg/CgNode.h"
+#include "metacg/Utility.h"
+#include "metacg/metadata/MetaData.h"
+#include "metacg/metadata/CodeStatisticsMD.h"
+#include "metacg/metadata/NumOperationsMD.h"
+#include "metacg/metadata/NumConditionalBranchMD.h"
+#include "metacg/metadata/LoopMD.h"
+#include "metacg/LoggerUtil.h"
 
 // PGIS library
 #include "ExtrapConnection.h"

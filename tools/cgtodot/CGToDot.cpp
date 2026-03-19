@@ -4,10 +4,10 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "Callgraph.h"
-#include "DotIO.h"
-#include "LoggerUtil.h"
-#include "io/MCGReader.h"
+#include "metacg/Callgraph.h"
+#include "metacg/DotIO.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/io/MCGReader.h"
 
 #include <cxxopts.hpp>
 #include <fstream>

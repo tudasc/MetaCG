@@ -8,8 +8,8 @@
 
 // #include "LoggerUtil.h"
 
-#include "../../../graph/include/Callgraph.h"
-#include "../../../graph/include/LoggerUtil.h"
+#include "../../../graph/include/metacg/Callgraph.h"
+#include "../../../graph/include/metacg/LoggerUtil.h"
 
 using namespace metacg;
 

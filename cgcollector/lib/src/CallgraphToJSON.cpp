@@ -1,4 +1,4 @@
-#include "config.h"
+#include "metacg/config.h"
 
 #include "CallgraphToJSON.h"
 #include "helper/common.h"

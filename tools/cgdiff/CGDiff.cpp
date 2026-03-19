@@ -4,14 +4,14 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "CgNode.h"
+#include "metacg/CgNode.h"
 #include "DiffFormatter.h"
 #include "GlobalMDDiff.h"
 #include "NodeSummary.h"
 #include "NodeSummaryComparator.h"
 #include "NodeSummaryHasher.h"
-#include "io/MCGReader.h"
-#include "io/NameMapping.h"
+#include "metacg/io/MCGReader.h"
+#include "metacg/io/NameMapping.h"
 #include <cxxopts.hpp>
 
 #include <iostream>

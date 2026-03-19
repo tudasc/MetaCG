@@ -4,20 +4,20 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "config.h"
+#include "metacg/config.h"
 
 #include <iostream>
 
-#include "LoggerUtil.h"
-#include "MCGManager.h"
-#include "io/MCGReader.h"
-#include "io/VersionFourMCGReader.h"
-#include "io/VersionFourMCGWriter.h"
-#include "io/VersionTwoMCGReader.h"
-#include "io/VersionTwoMCGWriter.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/MCGManager.h"
+#include "metacg/io/MCGReader.h"
+#include "metacg/io/VersionFourMCGReader.h"
+#include "metacg/io/VersionFourMCGWriter.h"
+#include "metacg/io/VersionTwoMCGReader.h"
+#include "metacg/io/VersionTwoMCGWriter.h"
 
 // This may appear to be unused, but the variables declared here have side effects on the graph lib
-#include "metadata/BuiltinMD.h"
+#include "metacg/metadata/BuiltinMD.h"
 
 using namespace metacg;
 

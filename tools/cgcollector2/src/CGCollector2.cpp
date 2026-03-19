@@ -22,7 +22,7 @@
 #include "Plugin.h"
 #include "SharedDefs.h"
 
-#include "metadata/BuiltinMD.h"
+#include "metacg/metadata/BuiltinMD.h"
 
 #include <filesystem>
 #include "spdlog/spdlog.h"

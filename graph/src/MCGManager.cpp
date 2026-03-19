@@ -4,7 +4,7 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "MCGManager.h"
+#include "metacg/MCGManager.h"
 
 using namespace metacg::graph;
 

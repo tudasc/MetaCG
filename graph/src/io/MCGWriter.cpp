@@ -4,11 +4,11 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "io/MCGWriter.h"
-#include "LoggerUtil.h"
-#include "MCGManager.h"
-#include "io/VersionFourMCGWriter.h"
-#include "io/VersionTwoMCGWriter.h"
+#include "metacg/io/MCGWriter.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/MCGManager.h"
+#include "metacg/io/VersionFourMCGWriter.h"
+#include "metacg/io/VersionTwoMCGWriter.h"
 
 std::string metacg::NodeToStrMapping::getStrFromNode(const CgNode& node) { return getStrFromNode(node.getId()); }
 

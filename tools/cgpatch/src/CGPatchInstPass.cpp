@@ -21,7 +21,7 @@
 #include <string>
 
 #include "CallAnalysis.h"
-#include "io/VersionTwoMCGWriter.h"
+#include "metacg/io/VersionTwoMCGWriter.h"
 
 using namespace llvm;
 using namespace cgpatch;

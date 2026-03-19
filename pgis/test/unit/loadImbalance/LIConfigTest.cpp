@@ -4,7 +4,7 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "LoggerUtil.h"
+#include "metacg/LoggerUtil.h"
 #include "nlohmann/json.hpp"
 #include <loadImbalance/LIConfig.h>
 

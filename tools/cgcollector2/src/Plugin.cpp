@@ -5,7 +5,7 @@
 */
 
 #include "Plugin.h"
-#include "LoggerUtil.h"
+#include "metacg/LoggerUtil.h"
 
 #include "llvm/Support/DynamicLibrary.h"
 

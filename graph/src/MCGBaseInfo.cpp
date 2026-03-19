@@ -4,8 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "MCGBaseInfo.h"
-#include "config.h"
+#include "metacg/MCGBaseInfo.h"
+#include "metacg/config.h"
 namespace metacg {
 
 // This must be in its own file as to not expose config.h header to linking programs

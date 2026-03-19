@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include "io/NameMapping.h"
-#include <Callgraph.h>
-#include <CgNode.h>
-#include <MCGManager.h>
-#include <metadata/MetaData.h>
+#include "metacg/io/NameMapping.h"
+#include <metacg/Callgraph.h>
+#include <metacg/CgNode.h>
+#include <metacg/MCGManager.h>
+#include <metacg/metadata/MetaData.h>
 
 #include <memory>
 #include <string>

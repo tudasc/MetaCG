@@ -6,8 +6,8 @@
 
 #include "gtest/gtest.h"
 
-#include "LoggerUtil.h"
-#include "MCGManager.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/MCGManager.h"
 #include "MetaData/PGISMetaData.h"
 #include "PiraMCGProcessor.h"
 #include "loadImbalance/LIEstimatorPhase.h"

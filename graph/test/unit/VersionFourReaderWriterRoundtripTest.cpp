@@ -4,12 +4,12 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "LoggerUtil.h"
-#include "MCGManager.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/MCGManager.h"
 #include "TestMD.h"
-#include "io/MCGWriter.h"
-#include "io/VersionFourMCGReader.h"
-#include "io/VersionFourMCGWriter.h"
+#include "metacg/io/MCGWriter.h"
+#include "metacg/io/VersionFourMCGReader.h"
+#include "metacg/io/VersionFourMCGWriter.h"
 #include "gtest/gtest.h"
 
 class V4ReaderWriterRoundtripTest : public ::testing::Test {

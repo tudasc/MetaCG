@@ -3,10 +3,10 @@
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
-#include "Callgraph.h"
+#include "metacg/Callgraph.h"
 
-#include "LoggerUtil.h"
-#include "metadata/EntryFunctionMD.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/metadata/EntryFunctionMD.h"
 
 #include <algorithm>
 #include <string>
@@ -153,7 +153,8 @@ bool Callgraph::addEdge(const std::string& callerName, const std::string& callee
   if (callerMatches.size() != 1 || calleeMatches.size() != 1) {
     return false;
   }
-  return addEdge(callerMatches.front(), calleeMatches.front());
+  addEdge(callerMatches.front(), calleeMatches.front());
+  return true;
 }
 
 bool Callgraph::removeEdge(NodeId parentID, NodeId childID) {
