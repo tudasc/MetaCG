@@ -10,7 +10,6 @@
 // clang-format off
 // Graph library
 #include "metacg/CgNode.h"
-#include "metacg/Utility.h"
 #include "metacg/metadata/MetaData.h"
 #include "metacg/metadata/CodeStatisticsMD.h"
 #include "metacg/metadata/NumOperationsMD.h"
@@ -23,6 +22,7 @@
 #include "config/GlobalConfig.h"
 
 #include "CgLocation.h"
+#include "Utility.h"
 
 #include <string>
 #include <map>

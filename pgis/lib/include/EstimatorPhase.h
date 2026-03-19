@@ -7,8 +7,8 @@
 #ifndef ESTIMATORPHASE_H_
 #define ESTIMATORPHASE_H_
 
+#include "CgHelper.h"
 #include "metacg/Callgraph.h"
-#include "metacg/CgHelper.h"
 #include "metacg/CgNode.h"
 
 #include <filesystem>

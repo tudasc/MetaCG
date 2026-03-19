@@ -7,7 +7,7 @@
 #ifndef LI_ABSTRACT_METRIC_H
 #define LI_ABSTRACT_METRIC_H
 
-#include "../../../../../graph/include/metacg/CgNode.h"
+#include "metacg/CgNode.h"
 #include <sstream>
 
 namespace LoadImbalance {

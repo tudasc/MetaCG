@@ -4,8 +4,9 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
+#include "metacg/CgNode.h"
+
 #include "CubeReader.h"
-#include "../../../graph/include/CgNode.h"
 #include "MetaData/CgNodeMetaData.h"
 
 #include "PiraMCGProcessor.h"
