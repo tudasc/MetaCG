@@ -112,7 +112,7 @@ bool compareSymbols(const Symbol* a, const Symbol* b, CanonicalMode mode) {
   return false;
 }
 
-std::string mangleSymbol(const Symbol* sym) {
+std::string mangleSymbol(const Symbol* sym, bool underscoring) {
   assert(sym && "mangleSymbol called with nullptr");
 
   std::string mangledName = Fortran::lower::mangle::mangleName(*sym);
@@ -126,7 +126,7 @@ std::string mangleSymbol(const Symbol* sym) {
   if (fir::NameUniquer::isExternalFacingUniquedName(result)) {
     if (result.first == fir::NameUniquer::NameKind::COMMON && result.second.name.empty())
       mangledName = blankCommonObjectName;
-    mangledName = GetExternalAssemblyName(result.second.name, true);
+    mangledName = GetExternalAssemblyName(result.second.name, underscoring);
   }
 
   return mangledName;

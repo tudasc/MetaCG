@@ -21,9 +21,9 @@ void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
   if (const Symbol* sym = std::get<Name>(stmt.t).symbol) {
     currentFunctions.emplace_back(sym, std::vector<Function::DummyArg>());
     functions.emplace_back(sym, std::vector<Function::DummyArg>());
-    cg->getOrInsertNode(mangleSymbol(sym), currentFileName, false, false);
+    cg->getOrInsertNode(mangleSymbol(sym, underscoring), currentFileName, false, false);
 
-    MCGLogger::logDebug("Add node: {} ({})", mangleSymbol(sym), fmt::ptr(sym));
+    MCGLogger::logDebug("Add node: {} ({})", mangleSymbol(sym, underscoring), fmt::ptr(sym));
   }
 }
 
@@ -53,8 +53,9 @@ void ParseTreeVisitor::addEdgesForProducesAndDerivedTypes(std::vector<const Type
 void ParseTreeVisitor::postProcess() {
   // handle potential finalizers from function calls
   for (PotentialFinalizer pf : potentialFinalizers) {
-    auto calledIt = std::find_if(functions.begin(), functions.end(),
-                                 [&](const Function& f) { return mangleSymbol(f.symbol) == pf.procedureCalled; });
+    auto calledIt = std::find_if(functions.begin(), functions.end(), [&](const Function& f) {
+      return mangleSymbol(f.symbol, underscoring) == pf.procedureCalled;
+    });
     if (calledIt == functions.end())
       continue;
 
@@ -92,9 +93,9 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
 
     const Symbol* currentFunctionSymbol =
         currentFunctions.emplace_back(maybeStmt->statement.v.symbol, std::vector<Function::DummyArg>()).symbol;
-    cg->getOrInsertNode(mangleSymbol(currentFunctionSymbol), currentFileName, false, false);
+    cg->getOrInsertNode(mangleSymbol(currentFunctionSymbol, underscoring), currentFileName, false, false);
 
-    MCGLogger::logDebug("\nIn main program: {} ({})", mangleSymbol(currentFunctionSymbol),
+    MCGLogger::logDebug("\nIn main program: {} ({})", mangleSymbol(currentFunctionSymbol, underscoring),
                         fmt::ptr(currentFunctionSymbol));
   }
   return true;
@@ -105,7 +106,7 @@ void ParseTreeVisitor::Post(const MainProgram&) {
 
   const Symbol* currentFunctionSymbol = currentFunctions.back().symbol;
 
-  MCGLogger::logDebug("End main program: {} ({})", mangleSymbol(currentFunctionSymbol),
+  MCGLogger::logDebug("End main program: {} ({})", mangleSymbol(currentFunctionSymbol, underscoring),
                       fmt::ptr(currentFunctionSymbol));
 
   if (!currentFunctions.empty()) {
@@ -133,7 +134,7 @@ void ParseTreeVisitor::Post(const ExecutionPart& e) {
   if (!inFunctionOrSubroutineSubProgram && !inMainProgram)
     return;
 
-  CgNode* node = cg->getFirstNode(mangleSymbol(currentFunctions.back().symbol));
+  CgNode* node = cg->getFirstNode(mangleSymbol(currentFunctions.back().symbol, underscoring));
   if (!node) {
     return;
   }
@@ -146,14 +147,14 @@ void ParseTreeVisitor::Post(const EntryStmt& e) {
   if (!name->symbol)
     return;
 
-  MCGLogger::logDebug("Add Entry point: {} ({})", mangleSymbol(name->symbol), fmt::ptr(name->symbol));
+  MCGLogger::logDebug("Add Entry point: {} ({})", mangleSymbol(name->symbol, underscoring), fmt::ptr(name->symbol));
 
   // handle entry statement as normal function.
-  cg->getOrInsertNode(mangleSymbol(name->symbol), currentFileName, false, true);
+  cg->getOrInsertNode(mangleSymbol(name->symbol, underscoring), currentFileName, false, true);
 }
 
 void ParseTreeVisitor::Post(const FunctionStmt& f) {
-  MCGLogger::logDebug("\nIn function: {} ({})", mangleSymbol(std::get<Name>(f.t).symbol),
+  MCGLogger::logDebug("\nIn function: {} ({})", mangleSymbol(std::get<Name>(f.t).symbol, underscoring),
                       fmt::ptr(std::get<Name>(f.t).symbol));
 
   handleFuncSubStmt(f);
@@ -178,14 +179,15 @@ void ParseTreeVisitor::Post(const EndFunctionStmt&) {
   if (!currentFunctions.empty()) {
     const Symbol* currentFunctionSymbol = currentFunctions.back().symbol;
 
-    MCGLogger::logDebug("End function: {} ({})", mangleSymbol(currentFunctionSymbol), fmt::ptr(currentFunctionSymbol));
+    MCGLogger::logDebug("End function: {} ({})", mangleSymbol(currentFunctionSymbol, underscoring),
+                        fmt::ptr(currentFunctionSymbol));
   }
 
   handleEndFuncSubStmt();
 }
 
 void ParseTreeVisitor::Post(const SubroutineStmt& s) {
-  MCGLogger::logDebug("\nIn subroutine: {} ({})", mangleSymbol(std::get<Name>(s.t).symbol),
+  MCGLogger::logDebug("\nIn subroutine: {} ({})", mangleSymbol(std::get<Name>(s.t).symbol, underscoring),
                       fmt::ptr(std::get<Name>(s.t).symbol));
 
   handleFuncSubStmt(s);
@@ -211,7 +213,7 @@ void ParseTreeVisitor::Post(const EndSubroutineStmt&) {
   if (!currentFunctions.empty()) {
     const Symbol* currentFunctionSymbol = currentFunctions.back().symbol;
 
-    MCGLogger::logDebug("End subroutine: {} ({})", mangleSymbol(currentFunctionSymbol),
+    MCGLogger::logDebug("End subroutine: {} ({})", mangleSymbol(currentFunctionSymbol, underscoring),
                         fmt::ptr(currentFunctionSymbol));
   }
 
@@ -309,11 +311,11 @@ void ParseTreeVisitor::Post(const Call& c) {
         continue;
 
       MCGLogger::logDebug("Add potential finalizers for var: {} ({})", name->symbol->name(), fmt::ptr(name->symbol));
-      PotentialFinalizer& pf = potentialFinalizers.emplace_back(argPos, mangleSymbol(procName->symbol));
+      PotentialFinalizer& pf = potentialFinalizers.emplace_back(argPos, mangleSymbol(procName->symbol, underscoring));
       for (const EdgeSymbol& edge : edgeM->getEdgesForFinalizers(types, currentFunctionSymbol, trackedVar->var)) {
-        pf.addFinalizerEdge({mangleSymbol(edge.caller), mangleSymbol(edge.callee)});
-        MCGLogger::logDebug("  Potential finalizer edge: {} -> {}", mangleSymbol(edge.caller),
-                            mangleSymbol(edge.callee));
+        pf.addFinalizerEdge({mangleSymbol(edge.caller, underscoring), mangleSymbol(edge.callee, underscoring)});
+        MCGLogger::logDebug("  Potential finalizer edge: {} -> {}", mangleSymbol(edge.caller, underscoring),
+                            mangleSymbol(edge.callee, underscoring));
       }
     }
   }
@@ -580,7 +582,7 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
         const Symbol* currentFunctionSymbol = currentFunctions.back().symbol;
 
         // skip self calls
-        if (mangleSymbol(sym) == mangleSymbol(currentFunctionSymbol))
+        if (mangleSymbol(sym, underscoring) == mangleSymbol(currentFunctionSymbol, underscoring))
           continue;
 
         // if unary, add potential unary operators. Same for binary operators.

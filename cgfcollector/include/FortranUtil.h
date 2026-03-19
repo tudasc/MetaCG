@@ -113,7 +113,7 @@ bool compareSymbols(const Fortran::semantics::Symbol* a, const Fortran::semantic
  * @param sym
  * @return
  */
-std::string mangleSymbol(const Fortran::semantics::Symbol* sym);
+std::string mangleSymbol(const Fortran::semantics::Symbol* sym, bool underscoring);
 
 /**
  * @brief Check if expression is an operator expression

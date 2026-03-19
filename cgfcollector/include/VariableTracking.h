@@ -32,8 +32,9 @@ struct TrackedVar {
 
 struct VariableTracking {
  public:
-  VariableTracking(std::vector<TrackedVar>& trackedVars, std::vector<Type>& types, std::vector<Function>& functions)
-      : trackedVars(trackedVars), types(types), functions(functions) {}
+  VariableTracking(std::vector<TrackedVar>& trackedVars, std::vector<Type>& types, std::vector<Function>& functions,
+                   bool underscoring)
+      : trackedVars(trackedVars), types(types), functions(functions), underscoring(underscoring) {}
 
   /**
    * @brief Search trackedVars for a canditate by sourceName. Also taking the current function scope into account.
@@ -82,6 +83,7 @@ struct VariableTracking {
   std::vector<TrackedVar>& trackedVars;
   std::vector<Type>& types;
   std::vector<Function>& functions;
+  bool underscoring;
 };
 
 }  // namespace metacg::cgfcollector

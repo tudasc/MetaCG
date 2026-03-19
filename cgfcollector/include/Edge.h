@@ -47,7 +47,7 @@ struct EdgeSymbol {
 struct EdgeManager {
   std::vector<Edge>& edges;
 
-  EdgeManager(std::vector<Edge>& edges) : edges(edges) {}
+  EdgeManager(std::vector<Edge>& edges, bool underscoring) : edges(edges), underscoring(underscoring) {}
 
   void addEdge(const EdgeSymbol& e);
   void addEdge(const Fortran::semantics::Symbol* caller, const Fortran::semantics::Symbol* callee);
@@ -77,6 +77,9 @@ struct EdgeManager {
                              const Fortran::semantics::Symbol* symbol);
 
   void addEdgesForFinalizers(const PotentialFinalizer& e);
+
+ private:
+  bool underscoring;
 };
 
 }  // namespace metacg::cgfcollector

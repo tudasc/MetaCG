@@ -40,11 +40,12 @@ namespace metacg::cgfcollector {
  */
 class ParseTreeVisitor {
  public:
-  ParseTreeVisitor(metacg::Callgraph* cg, std::string currentFileName)
+  ParseTreeVisitor(metacg::Callgraph* cg, std::string currentFileName, bool underscoring)
       : cg(cg),
         currentFileName(currentFileName),
-        edgeM(std::make_unique<EdgeManager>(edges)),
-        varTracking(std::make_unique<VariableTracking>(trackedVars, types, functions)) {};
+        edgeM(std::make_unique<EdgeManager>(edges, underscoring)),
+        varTracking(std::make_unique<VariableTracking>(trackedVars, types, functions, underscoring)),
+        underscoring(underscoring) {};
 
   /**
    * @brief Collects function/subroutine statements (begin) and their dummy args.
@@ -227,6 +228,7 @@ class ParseTreeVisitor {
   std::string currentFileName;
   std::unique_ptr<EdgeManager> edgeM;
   std::unique_ptr<VariableTracking> varTracking;
+  bool underscoring;
 
   bool inFunctionOrSubroutineSubProgram = false;
   bool inMainProgram = false;

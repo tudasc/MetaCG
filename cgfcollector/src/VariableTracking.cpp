@@ -41,12 +41,12 @@ void VariableTracking::handleTrackedVarAssignment(const Symbol* currentFunctionS
 void VariableTracking::handleTrackedVars(const Symbol* currentFunctionSymbol, std::unique_ptr<EdgeManager>& edgeM) {
   // the fortran standard does not require finalizers for variables in the main program. So we skip it.
   // NOTE: Flang does call them.
-  if (mangleSymbol(currentFunctionSymbol) == "_QQmain") {
+  if (mangleSymbol(currentFunctionSymbol, underscoring) == "_QQmain") {
     return;
   }
 
   if (!trackedVars.empty()) {
-    MCGLogger::logDebug("Handle tracked vars for function {} ({})", mangleSymbol(currentFunctionSymbol),
+    MCGLogger::logDebug("Handle tracked vars for function {} ({})", mangleSymbol(currentFunctionSymbol, underscoring),
                         fmt::ptr(currentFunctionSymbol));
   }
 
@@ -100,7 +100,7 @@ void VariableTracking::removeTrackedVars(const Symbol* procedureSymbol) {
   auto newEnd = std::remove_if(trackedVars.begin(), trackedVars.end(), [&](const TrackedVar& t) {
     if (compareSymbols(t.procedure, procedureSymbol)) {
       MCGLogger::logDebug("Removing tracked variable: {} ({}) for procedure: {} ({})", t.var->name(), fmt::ptr(t.var),
-                          mangleSymbol(procedureSymbol), fmt::ptr(procedureSymbol));
+                          mangleSymbol(procedureSymbol, underscoring), fmt::ptr(procedureSymbol));
       return true;
     }
     return false;

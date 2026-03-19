@@ -69,8 +69,9 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
 
     // traverse parse tree and generate callgraph
     std::string currentFile = getCurrentFile().str();
+    bool underscoring = getInstance().getInvocation().getLoweringOpts().getUnderscoring();
 
-    ParseTreeVisitor visitor(cg, currentFile);
+    ParseTreeVisitor visitor(cg, currentFile, underscoring);
     Fortran::parser::Walk(getParsing().parseTree(), visitor);
     visitor.postProcess();
 
