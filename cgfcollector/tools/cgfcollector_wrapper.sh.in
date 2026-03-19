@@ -20,6 +20,7 @@ declare -A OPTION_MAP=(
   ["--no-rename"]="--no-rename"
   ["-v"]="--verbose"
   ["--verbose"]="--verbose"
+  ["--graph-name"]="--graph-name"
 )
 
 while [[ $# -gt 0 ]]; do

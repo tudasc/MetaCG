@@ -25,6 +25,9 @@ static llvm::cl::opt<bool> NoRename("no-rename", llvm::cl::desc("Do not rename o
                                     llvm::cl::init(false));
 static llvm::cl::opt<bool> Verbose("verbose", llvm::cl::desc("Enable verbose logging"), llvm::cl::cat(CGCategory),
                                    llvm::cl::init(false));
+static llvm::cl::opt<std::string> graphName("graph-name",
+                                            llvm::cl::desc("Name of the generated graph (default: \"cg\")"),
+                                            llvm::cl::cat(CGCategory), llvm::cl::init("cg"));
 
 /**
  * @brief Replace the file extension of filePath with newExtension. If filePath does not have an extension, append
@@ -56,9 +59,9 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
     }
 
     // create and register callgraph
-    mcgManager.addToManagedGraphs("cg", std::make_unique<metacg::Callgraph>(), true);
+    mcgManager.addToManagedGraphs(graphName, std::make_unique<metacg::Callgraph>(), true);
 
-    Callgraph* cg = mcgManager.getCallgraph("cg");
+    Callgraph* cg = mcgManager.getCallgraph(graphName);
     if (!cg) {
       MCGLogger::logError("Failed to create callgraph");
       return;
