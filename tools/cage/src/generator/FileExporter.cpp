@@ -11,6 +11,8 @@
 #include "io/MCGWriter.h"
 #include "io/VersionFourMCGWriter.h"
 
+#include <fstream>
+
 namespace cage {
 
 void FileExporter::consumeCallGraph(const metacg::Callgraph& graph) {

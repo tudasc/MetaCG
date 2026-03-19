@@ -5,7 +5,6 @@
  */
 
 #include "MCGManager.h"
-#include "LoggerUtil.h"
 
 using namespace metacg::graph;
 

@@ -10,15 +10,12 @@
 
 // Graph library
 #include "CgTypes.h"
-#include "metadata/MetaData.h"
 #include "metadata/MetadataMixin.h"
 
 // System library
-#include <map>
+#include <optional>
 #include <string>
 #include <utility>
-#include <memory>
-#include <optional>
 // clang-format on
 
 namespace metacg {

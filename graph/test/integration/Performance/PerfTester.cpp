@@ -10,6 +10,7 @@
 
 #include <chrono>
 #include <functional>
+#include <iostream>
 #include <random>
 
 using namespace metacg;

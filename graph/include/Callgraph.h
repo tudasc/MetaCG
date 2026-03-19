@@ -8,7 +8,6 @@
 
 #include "CgNode.h"
 #include "MergePolicy.h"
-#include "Util.h"
 #include "metadata/MetadataMixin.h"
 
 template <>
@@ -422,7 +421,6 @@ class Callgraph : public MetadataMixin {
  private:
   bool addEdgeInternal(NodeId caller, NodeId callee);
 
- private:
   // this set represents the call graph during the actual computation
   NodeContainer nodes;
   NameIdMap nameIdMap;
