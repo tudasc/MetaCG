@@ -21,7 +21,7 @@ TrackedVar* VariableTracking::getTrackedVarFromSourceName(const Symbol* currentF
 
   // find local variable with the same name in the current function scope (shadowed)
   auto localVarIt = std::find_if(trackedVars.begin(), trackedVars.end(), [&](const TrackedVar& t) {
-    return t.var->name() == sourceName && t.procedure == currentFunctionSymbol;
+    return t.var->name() == sourceName && compareSymbols(t.procedure, currentFunctionSymbol);
   });
 
   // prefer local var if found
@@ -66,10 +66,11 @@ void VariableTracking::handleTrackedVars(const Symbol* currentFunctionSymbol, st
 
     // set init on dummy function args
     auto functionIt = std::find_if(functions.begin(), functions.end(),
-                                   [&](const Function& f) { return f.symbol == currentFunctionSymbol; });
+                                   [&](const Function& f) { return compareSymbols(f.symbol, currentFunctionSymbol); });
     if (functionIt != functions.end()) {
-      auto dummyArgIt = std::find_if(functionIt->dummyArgs.begin(), functionIt->dummyArgs.end(),
-                                     [&](const Function::DummyArg& d) { return d.symbol == trackedVar.var; });
+      auto dummyArgIt =
+          std::find_if(functionIt->dummyArgs.begin(), functionIt->dummyArgs.end(),
+                       [&](const Function::DummyArg& d) { return compareSymbols(d.symbol, trackedVar.var); });
       if (dummyArgIt != functionIt->dummyArgs.end()) {
         dummyArgIt->hasBeenInitialized = true;
       }
@@ -81,7 +82,8 @@ void VariableTracking::handleTrackedVars(const Symbol* currentFunctionSymbol, st
 }
 
 void VariableTracking::addTrackedVar(TrackedVar var) {
-  auto it = std::find_if(trackedVars.begin(), trackedVars.end(), [&](const TrackedVar& t) { return t.var == var.var; });
+  auto it = std::find_if(trackedVars.begin(), trackedVars.end(),
+                         [&](const TrackedVar& t) { return compareSymbols(t.var, var.var); });
   if (it != trackedVars.end()) {
     // update info
     it->addFinalizers = var.addFinalizers;
@@ -95,9 +97,16 @@ void VariableTracking::addTrackedVar(TrackedVar var) {
 }
 
 void VariableTracking::removeTrackedVars(const Symbol* procedureSymbol) {
-  trackedVars.erase(std::remove_if(trackedVars.begin(), trackedVars.end(),
-                                   [&](const TrackedVar& t) { return t.procedure == procedureSymbol; }),
-                    trackedVars.end());
+  auto newEnd = std::remove_if(trackedVars.begin(), trackedVars.end(), [&](const TrackedVar& t) {
+    if (compareSymbols(t.procedure, procedureSymbol)) {
+      MCGLogger::logDebug("Removing tracked variable: {} ({}) for procedure: {} ({})", t.var->name(), fmt::ptr(t.var),
+                          mangleSymbol(procedureSymbol), fmt::ptr(procedureSymbol));
+      return true;
+    }
+    return false;
+  });
+
+  trackedVars.erase(newEnd, trackedVars.end());
 }
 
 }  // namespace metacg::cgfcollector

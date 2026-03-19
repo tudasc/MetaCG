@@ -78,6 +78,13 @@ CanonicalSymbol canonicalizeSymbol(const Symbol* input) {
       return {sym, CanonicalSymbol::Kind::Procedure};
     }
 
+    // if (const DeclTypeSpec* type = sym->GetType()) {
+    //   if (const auto* derived = type->AsDerived()) {
+    //     sym = &derived->typeSymbol();
+    //     continue;
+    //   }
+    // }
+
     return {sym, CanonicalSymbol::Kind::Other};
   }
 
@@ -97,9 +104,9 @@ bool compareSymbols(const Symbol* a, const Symbol* b) {
   if (ca.symbol == cb.symbol)
     return true;
 
-  if (ca.symbol && cb.symbol) {
-    return ca.symbol->name() == cb.symbol->name();
-  }
+  // if (ca.symbol && cb.symbol) {
+  //   return ca.symbol->name() == cb.symbol->name();
+  // }
   return false;
 }
 
@@ -307,7 +314,7 @@ std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types
   // collect descendants
   std::function<void(const Type*)> collectDescendants = [&](const Type* parent) {
     for (const Type& t : types) {
-      if (t.extendsFrom == parent->typeSymbol && !visited.count(t.typeSymbol)) {
+      if (compareSymbols(t.extendsFrom, parent->typeSymbol) && !visited.count(t.typeSymbol)) {
         visited.insert(t.typeSymbol);
         typesWithDerived.push_back(&t);
 

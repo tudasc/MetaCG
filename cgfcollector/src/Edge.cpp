@@ -23,8 +23,7 @@ std::vector<EdgeSymbol> EdgeManager::getEdgesForFinalizers(const std::vector<Typ
 
   for (const Type* type : typePtrs) {
     const Symbol* typeSymbol = metacg::cgfcollector::canonicalizeSymbol(type->typeSymbol).symbol;
-
-    const DerivedTypeDetails* details = std::get_if<DerivedTypeDetails>(&typeSymbol->details());
+    const DerivedTypeDetails* details = typeSymbol->detailsIf<DerivedTypeDetails>();
     if (!details) {
       MCGLogger::logDebug("getEdgesForFinalizers: No DerivedTypeDetails for type: {} ({})", typeSymbol->name(),
                           fmt::ptr(typeSymbol));
