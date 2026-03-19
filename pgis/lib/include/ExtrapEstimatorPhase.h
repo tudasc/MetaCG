@@ -12,8 +12,8 @@
 #define PGOE_EXTRAPESTIMATORPHASE_H
 
 #include "EstimatorPhase.h"
-#include "metacg/LoggerUtil.h"
 #include "MetaData/CgNodeMetaData.h"
+#include "metacg/LoggerUtil.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wextra"

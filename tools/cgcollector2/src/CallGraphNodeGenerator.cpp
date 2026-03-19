@@ -6,10 +6,10 @@
 
 #include "CallGraphNodeGenerator.h"
 #include "metacg/LoggerUtil.h"
+#include "metacg/metadata/OverrideMD.h"
 #include "metadata/Internal/ASTNodeMetadata.h"
 #include "metadata/Internal/AllAliasMetadata.h"
 #include "metadata/Internal/FunctionSignatureMetadata.h"
-#include "metacg/metadata/OverrideMD.h"
 
 #include <clang/AST/Decl.h>
 #include <clang/AST/DeclBase.h>

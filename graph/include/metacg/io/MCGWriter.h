@@ -9,6 +9,7 @@
 
 #include "metacg/Callgraph.h"
 #include "metacg/MCGBaseInfo.h"
+#include "metacg/io/IdMapping.h"
 
 #include "nlohmann/json.hpp"
 

@@ -7,8 +7,8 @@
 #ifndef METACG_VERSIONTWOMCGWRITER_H
 #define METACG_VERSIONTWOMCGWRITER_H
 
-#include "metacg/io/MCGWriter.h"
 #include "metacg/config.h"
+#include "metacg/io/MCGWriter.h"
 
 namespace metacg::io {
 

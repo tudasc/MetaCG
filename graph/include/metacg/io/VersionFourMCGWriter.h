@@ -7,8 +7,8 @@
 #ifndef METACG_VERSIONFOURMCGWRITER_H
 #define METACG_VERSIONFOURMCGWRITER_H
 
-#include "metacg/io/MCGWriter.h"
 #include "metacg/config.h"
+#include "metacg/io/MCGWriter.h"
 namespace metacg::io {
 
 class VersionFourMCGWriter : public MCGWriter {

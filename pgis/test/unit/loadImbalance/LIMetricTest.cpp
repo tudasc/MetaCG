@@ -4,8 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "metacg/Callgraph.h"
 #include "MetaData/CgNodeMetaData.h"
+#include "metacg/Callgraph.h"
 #include "gtest/gtest.h"
 #include <loadImbalance/metric/EfficiencyMetric.h>
 #include <loadImbalance/metric/ImbalancePercentageMetric.h>

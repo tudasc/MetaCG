@@ -6,9 +6,9 @@
  */
 
 #include "metacg/io/VersionFourMCGReader.h"
+#include "TestMD.h"
 #include "metacg/LoggerUtil.h"
 #include "metacg/MCGManager.h"
-#include "TestMD.h"
 #include "metacg/metadata/EntryFunctionMD.h"
 
 #include "nlohmann/json.hpp"

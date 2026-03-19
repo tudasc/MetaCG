@@ -1,7 +1,7 @@
 /**
-* File: LoopMD.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: LoopMD.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #ifndef LOOPMD_H
@@ -140,4 +140,4 @@ class LoopCallDepthMD : public metacg::MetaData::Registrar<LoopCallDepthMD> {
 
 }  // namespace metacg
 
-#endif //LOOPMD_H
+#endif  // LOOPMD_H

@@ -6,9 +6,9 @@
 
 #include "CallGraphCollectionAction.h"
 #include "CallGraphNodeGenerator.h"
-#include "metacg/MCGBaseInfo.h"
 #include "Plugin.h"
 #include "SharedDefs.h"
+#include "metacg/MCGBaseInfo.h"
 #include "metadata/Internal/ASTNodeMetadata.h"
 #include "metadata/Internal/AllAliasMetadata.h"
 #include "metadata/Internal/FunctionSignatureMetadata.h"

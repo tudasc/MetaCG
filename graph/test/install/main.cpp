@@ -4,10 +4,10 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
+#include "metacg/LoggerUtil.h"
 #include "metacg/MCGManager.h"
 #include "metacg/io/VersionTwoMCGReader.h"
 #include "metacg/io/VersionTwoMCGWriter.h"
-#include "metacg/LoggerUtil.h"
 
 #include <fstream>
 #include <string>

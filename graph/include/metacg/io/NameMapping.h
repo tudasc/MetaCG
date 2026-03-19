@@ -6,19 +6,19 @@
 #ifndef METACG_GRAPH_NAMEMAPPING_H
 #define METACG_GRAPH_NAMEMAPPING_H
 
-#include "metacg/io/IdMapping.h"
 #include "metacg/Callgraph.h"
+#include "metacg/io/IdMapping.h"
 
 namespace metacg {
-    struct NameMapping : metacg::NodeToStrMapping {
-        public:
-            explicit NameMapping(const metacg::Callgraph& graph) : graph(graph) {}
+struct NameMapping : metacg::NodeToStrMapping {
+ public:
+  explicit NameMapping(const metacg::Callgraph& graph) : graph(graph) {}
 
-            virtual std::string getStrFromNode(metacg::NodeId id) override { return graph.getNode(id)->getFunctionName(); }
+  virtual std::string getStrFromNode(metacg::NodeId id) override { return graph.getNode(id)->getFunctionName(); }
 
-        private:
-            const metacg::Callgraph& graph;
-    };
-}
+ private:
+  const metacg::Callgraph& graph;
+};
+}  // namespace metacg
 
 #endif

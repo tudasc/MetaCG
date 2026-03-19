@@ -1,8 +1,8 @@
 /**
-* File: CodeStatisticsMD.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: CodeStatisticsMD.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 #ifndef CGCOLLECTOR2_CODESTATISTICSMD_H
 #define CGCOLLECTOR2_CODESTATISTICSMD_H
 

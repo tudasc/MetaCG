@@ -7,9 +7,9 @@
 #include "metacg/LoggerUtil.h"
 #include "gtest/gtest.h"
 
+#include "TestMD.h"
 #include "metacg/MCGBaseInfo.h"
 #include "metacg/MCGManager.h"
-#include "TestMD.h"
 #include "metacg/io/VersionFourMCGWriter.h"
 #include "metacg/metadata/EntryFunctionMD.h"
 
