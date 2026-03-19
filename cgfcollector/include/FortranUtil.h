@@ -64,8 +64,33 @@ const Fortran::parser::Name* getNameFromClassWithDesignator(const T& t) {
 }
 
 /**
+ * @class CanonicalSymbol
+ * @brief Struct to hold symbol and its canonical kind. Mainly used for comparing symbols.
+ *
+ */
+struct CanonicalSymbol {
+  enum class Kind { DerivedType, Procedure, Other };
+
+  const Fortran::semantics::Symbol* symbol;
+  Kind kind;
+};
+
+/**
+ * @brief Canonicalizes a given symbol. This tries to resolve a symbol to its original construct, e.g. if it's defined
+ * in a modules and therefore is a Use/Host associated symbol, it will be resolved to the original symbol in the module.
+ * This function also handles generic symbols, and an short coming of older LLVM versions (18 and before). See function
+ * body for details.
+ *
+ * Note: Mainly used for comparing symbols.
+ *
+ * @param input
+ * @return
+ */
+CanonicalSymbol canonicalizeSymbol(const Fortran::semantics::Symbol* input);
+
+/**
  * @brief Compares two symbols for equality also resolves the original construct the symbol comes from.
- * This could have been defined in another module/file
+ * This could have been defined in another module/file.
  *
  * @param a
  * @param b

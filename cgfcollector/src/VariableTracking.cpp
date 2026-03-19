@@ -39,30 +39,39 @@ void VariableTracking::handleTrackedVarAssignment(const Symbol* currentFunctionS
 }
 
 void VariableTracking::handleTrackedVars(const Symbol* currentFunctionSymbol, std::unique_ptr<EdgeManager>& edgeM) {
-  if (mangleSymbol(currentFunctionSymbol) != "_QQmain") {
-    if (!trackedVars.empty())
-      MCGLogger::logDebug("Handle tracked vars for function");
+  // the fortran standard does not require finalizers for variables in the main program. So we skip it.
+  // NOTE: Flang does call them.
+  if (mangleSymbol(currentFunctionSymbol) == "_QQmain") {
+    return;
+  }
 
-    for (TrackedVar& trackedVar : trackedVars) {
-      if (!trackedVar.hasBeenInitialized)
-        continue;
-      if (trackedVar.procedure != currentFunctionSymbol)
-        continue;
+  if (!trackedVars.empty()) {
+    MCGLogger::logDebug("Handle tracked vars for function {} ({})", mangleSymbol(currentFunctionSymbol),
+                        fmt::ptr(currentFunctionSymbol));
+  }
 
-      // add edge for deconstruction (finalizer)
-      if (trackedVar.addFinalizers) {
-        edgeM->addEdgesForFinalizers(types, currentFunctionSymbol, trackedVar.var);
-      }
+  for (TrackedVar& trackedVar : trackedVars) {
+    MCGLogger::logDebug("  Tracked var: {} ({}) - initialized: {}, addFinalizers: {}", trackedVar.var->name(),
+                        fmt::ptr(trackedVar.var), trackedVar.hasBeenInitialized, trackedVar.addFinalizers);
 
-      // set init on dummy function args
-      auto functionIt = std::find_if(functions.begin(), functions.end(),
-                                     [&](const Function& f) { return f.symbol == currentFunctionSymbol; });
-      if (functionIt != functions.end()) {
-        auto dummyArgIt = std::find_if(functionIt->dummyArgs.begin(), functionIt->dummyArgs.end(),
-                                       [&](const Function::DummyArg& d) { return d.symbol == trackedVar.var; });
-        if (dummyArgIt != functionIt->dummyArgs.end()) {
-          dummyArgIt->hasBeenInitialized = true;
-        }
+    if (!trackedVar.hasBeenInitialized)
+      continue;
+    if (trackedVar.procedure != currentFunctionSymbol)
+      continue;
+
+    // add edge for deconstruction (finalizer)
+    if (trackedVar.addFinalizers) {
+      edgeM->addEdgesForFinalizers(types, currentFunctionSymbol, trackedVar.var);
+    }
+
+    // set init on dummy function args
+    auto functionIt = std::find_if(functions.begin(), functions.end(),
+                                   [&](const Function& f) { return f.symbol == currentFunctionSymbol; });
+    if (functionIt != functions.end()) {
+      auto dummyArgIt = std::find_if(functionIt->dummyArgs.begin(), functionIt->dummyArgs.end(),
+                                     [&](const Function::DummyArg& d) { return d.symbol == trackedVar.var; });
+      if (dummyArgIt != functionIt->dummyArgs.end()) {
+        dummyArgIt->hasBeenInitialized = true;
       }
     }
   }

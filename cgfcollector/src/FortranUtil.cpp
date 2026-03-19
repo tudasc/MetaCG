@@ -13,38 +13,94 @@ using namespace metacg;
 
 namespace metacg::cgfcollector {
 
-bool compareSymbols(const Symbol* a, const Symbol* b) {
-  if (a == b)
-    return true;
-  if (!a || !b)
-    return false;
-  if (a->name() != b->name())
-    return false;
+/**
+ * @brief Resolve a symbol by following UseDetails and HostAssocDetails until we reach a symbol that has neither. This
+ * is used to canonicalize symbols.
+ *
+ * @param sym
+ * @return
+ */
+static const Symbol* resolveUseHostSymbol(const Symbol* sym) {
+  while (true) {
+    if (auto* host = sym->detailsIf<HostAssocDetails>()) {
+      sym = &host->symbol();
+      continue;
+    }
+    if (auto* use = sym->detailsIf<UseDetails>()) {
+      sym = &use->symbol();
+      continue;
+    }
+    break;
+  }
+  return sym;
+}
 
-  auto resolveHostAssoc = [](const Symbol* sym) -> const Symbol* {
-    while (sym) {
-      if (sym->has<HostAssocDetails>()) {
-        sym = &sym->get<HostAssocDetails>().symbol();
-      } else if (sym->has<UseDetails>()) {
-        sym = &sym->get<UseDetails>().symbol();
-      } else {
-        break;
+CanonicalSymbol canonicalizeSymbol(const Symbol* input) {
+  std::unordered_set<const Symbol*> visited;
+  const Symbol* sym = input;
+
+  while (sym && !visited.count(sym)) {
+    visited.insert(sym);
+    sym = resolveUseHostSymbol(sym);
+
+    // DerivedTypeDetails, is already canonicalized.
+    if (sym->detailsIf<DerivedTypeDetails>()) {
+      return {sym, CanonicalSymbol::Kind::DerivedType};
+    }
+
+    // GenericDetails, unpack to specific procedure if it has one. This is forwarded to the next check for
+    // SubprogramDetails.
+    if (auto* gen = sym->detailsIf<GenericDetails>()) {
+      if (!gen->specificProcs().empty()) {
+        const Symbol* proc = &gen->specificProcs().front().get();
+        sym = proc;
+        continue;
       }
     }
-    return sym;
-  };
-  if (resolveHostAssoc(a) != resolveHostAssoc(b))
-    return false;
 
-  if (a->attrs() != b->attrs())
-    return false;
+    // SubprogramDetails, is already canonicalized.
+    if (auto* sub = sym->detailsIf<SubprogramDetails>()) {
+      // If it's a function, it was likely unpacked from the GenericDetails. We then extract the derived type symbol
+      // from the result type of the function, if it exists. This is mainly to handle cases where the definition of a
+      // constructor (defined through an interface block) with the same name as the derived type is defined. In LLVM
+      // versions 18 and before, the constructor would shadow the derived type symbol, leading that type beging lost in
+      // the process. In LLVM 19, this limitation is fixed, meaning constructors and derived types can better
+      // differentiated. We keep this for backwards compatibility.
+      if (sub->isFunction()) {
+        const Symbol& resultSym = sub->result();
+        if (auto* typeSpec = resultSym.GetType()) {
+          if (auto* derived = typeSpec->AsDerived()) {
+            sym = &derived->typeSymbol();
+            continue;
+          }
+        }
+      }
+      return {sym, CanonicalSymbol::Kind::Procedure};
+    }
 
-  // this only compares only the type and not all details like variables, procedures, generics, etc. But should be
-  // enough for now.
-  if (a->GetType() != b->GetType())
-    return false;
+    return {sym, CanonicalSymbol::Kind::Other};
+  }
 
-  return true;
+  return {sym, CanonicalSymbol::Kind::Other};
+}
+
+bool compareSymbols(const Symbol* a, const Symbol* b) {
+  auto ca = canonicalizeSymbol(a);
+  auto cb = canonicalizeSymbol(b);
+
+  MCGLogger::logDebug("Comparing symbols: {} ({}) and {} ({}), canon: {} ({}) {} ({})", a ? a->name() : "nullptr",
+                      fmt::ptr(a), b ? b->name() : "nullptr", fmt::ptr(b), ca.symbol ? ca.symbol->name() : "nullptr",
+                      fmt::ptr(ca.symbol), cb.symbol ? cb.symbol->name() : "nullptr", fmt::ptr(cb.symbol));
+
+  if (ca.kind != cb.kind)
+    return false;
+  if (ca.symbol == cb.symbol)
+    return true;
+
+  if (ca.symbol && cb.symbol) {
+    return ca.symbol->name() == cb.symbol->name();
+  }
+  return false;
 }
 
 std::string mangleSymbol(const Symbol* sym) {
@@ -236,8 +292,8 @@ std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types
     return typesWithDerived;
   }
 
-  auto findTypeIt =
-      std::find_if(types.begin(), types.end(), [&typeSymbol](const Type& t) { return t.typeSymbol == typeSymbol; });
+  auto findTypeIt = std::find_if(types.begin(), types.end(),
+                                 [&typeSymbol](const Type& t) { return compareSymbols(t.typeSymbol, typeSymbol); });
 
   if (findTypeIt == types.end()) {
     return typesWithDerived;

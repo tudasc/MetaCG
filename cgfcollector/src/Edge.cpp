@@ -6,6 +6,7 @@
 
 #include "Edge.h"
 
+#include "FortranUtil.h"
 #include "PotentialFinalizer.h"
 
 using namespace Fortran::semantics;
@@ -21,11 +22,14 @@ std::vector<EdgeSymbol> EdgeManager::getEdgesForFinalizers(const std::vector<Typ
   std::vector<const Type*> typePtrs = findTypeWithDerivedTypes(types, symbol);
 
   for (const Type* type : typePtrs) {
-    const Symbol* typeSymbol = type->typeSymbol;
+    const Symbol* typeSymbol = metacg::cgfcollector::canonicalizeSymbol(type->typeSymbol).symbol;
 
     const DerivedTypeDetails* details = std::get_if<DerivedTypeDetails>(&typeSymbol->details());
-    if (!details)
+    if (!details) {
+      MCGLogger::logDebug("getEdgesForFinalizers: No DerivedTypeDetails for type: {} ({})", typeSymbol->name(),
+                          fmt::ptr(typeSymbol));
       continue;
+    }
 
     // add edges for finalizers
     for (const auto& final : details->finals()) {

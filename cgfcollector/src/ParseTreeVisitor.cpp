@@ -67,6 +67,7 @@ void ParseTreeVisitor::postProcess() {
   }
 
   // sort unique edges
+  // TODO: in EdgeManager
   std::sort(edges.begin(), edges.end());
   auto it = std::unique(edges.begin(), edges.end());
   edges.erase(it, edges.end());
@@ -430,6 +431,7 @@ void ParseTreeVisitor::Post(const TypeBoundProcedureStmt& s) {
   if (!inDerivedTypeDef)
     return;
 
+  // TODO: abstract types comment
   if (const TypeBoundProcedureStmt::WithoutInterface* withoutInterface =
           std::get_if<TypeBoundProcedureStmt::WithoutInterface>(&s.u)) {
     for (const TypeBoundProcDecl& d : withoutInterface->declarations) {
@@ -640,7 +642,7 @@ void ParseTreeVisitor::Post(const Expr& e) {
 void ParseTreeVisitor::Post(const UseStmt& u) {
   const Symbol* useSymbol = u.moduleName.symbol;
 
-  MCGLogger::logDebug("Use module: {} ({})", useSymbol->name(), fmt::ptr(useSymbol));
+  MCGLogger::logDebug("\nUse module: {} ({})", useSymbol->name(), fmt::ptr(useSymbol));
 
   if (const Scope* modScope = useSymbol->scope()) {
     for (const auto& pair : *modScope) {
