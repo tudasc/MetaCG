@@ -94,8 +94,8 @@ endif()
 
 # Install the generated CustomMD.h header
 install(
-  FILES ${PROJECT_BINARY_DIR}/graph/include/metadata/CustomMD.h
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/metadata
+  FILES ${PROJECT_BINARY_DIR}/graph/include/metacg/metadata/CustomMD.h
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/metacg/metadata
   COMPONENT metacg_Development
 )
 
