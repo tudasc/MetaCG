@@ -6,7 +6,7 @@
 #include "commands/PostDomCommand.h"
 #include "DominatorAnalysis.h"
 #include "cxxopts.hpp"
-#include "utils.h"
+#include "Utils.h"
 
 int PostDomCommand::run(const std::vector<char*>& args) {
   cxxopts::Options options("cgquery dom", "Postdominator analysis");

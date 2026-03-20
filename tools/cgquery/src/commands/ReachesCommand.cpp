@@ -8,7 +8,7 @@
 #include "ReachabilityAnalysis.h"
 #include "cxxopts.hpp"
 #include "io/MCGReader.h"
-#include "utils.h"
+#include "Utils.h"
 
 int ReachesCommand::run(const std::vector<char*>& args) {
   cxxopts::Options options("cgquery reaches",

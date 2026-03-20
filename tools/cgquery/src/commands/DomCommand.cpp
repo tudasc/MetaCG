@@ -6,7 +6,7 @@
 #include "commands/DomCommand.h"
 #include "DominatorAnalysis.h"
 #include "cxxopts.hpp"
-#include "utils.h"
+#include "Utils.h"
 
 int DomCommand::run(const std::vector<char*>& args) {
   cxxopts::Options options("cgquery dom", "Dominator analysis");

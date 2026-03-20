@@ -6,7 +6,7 @@
 #include "commands/DomCommand.h"
 #include "commands/PostDomCommand.h"
 #include "commands/ReachesCommand.h"
-#include "utils.h"
+#include "Utils.h"
 
 #include <iostream>
 #include <memory>

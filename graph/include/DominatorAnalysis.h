@@ -106,8 +106,6 @@ DomAnalysisResult<NodeT> computeDominators(const GraphT& graph, const NodeT& exi
     typename DomDataT::NodeSet DomNew = intersection(initializedCallees, DomMap);
     DomNew.insert(nodeData.node);
 
-    // LOG_STATUS("New Doms " << dumpNodeSet(nodeData.node->getName(), DomNew) << "\n");
-
     if (!nodeData.initialized || nodeData.Doms != DomNew) {
       nodeData.Doms = std::move(DomNew);
       nodeData.initialized = true;
