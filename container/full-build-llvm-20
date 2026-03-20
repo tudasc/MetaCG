@@ -26,6 +26,7 @@ RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.
     lld-20 libmlir-20-dev mlir-20-tools flang-20
 RUN bash -c "ln -s $(which clang-20) /usr/bin/clang" && \
     bash -c "ln -s $(which clang++-20) /usr/bin/clang++" && \
+    bash -c "ln -s $(which opt-20) /usr/bin/opt" && \
     bash -c "ln -s $(which llvm-config-20) /usr/bin/llvm-config" && \
     bash -c "ln -s $(flang-new-20) /usr/bin/flang-new"
 
@@ -61,8 +62,11 @@ RUN cmake --build build --parallel
 
 RUN cmake --install build
 
-RUN cmake -Dmetacg_ROOT=/tmp/metacg -S graph/test/install -B build
+RUN cmake -Dmetacg_ROOT=/tmp/metacg -S graph/test/install -B graph/test/build
+RUN cmake --build graph/test/build --parallel
 
-RUN cmake -Dmetacg_ROOT=/tmp/metacg -S tools/cgcollector2/CGC2DemoPlugin -B build
+RUN cmake -Dmetacg_ROOT=/tmp/metacg -S tools/cgcollector2/CGC2DemoPlugin -B tools/cgcollector2/CGC2DemoPlugin/build
+RUN cmake --build tools/cgcollector2/CGC2DemoPlugin/build --parallel
 
-RUN cmake -Dmetacg_ROOT=/tmp/metacg -S graph/cage/CaGeDemoPlugin -B build
+RUN cmake -Dmetacg_ROOT=/tmp/metacg -S tools/cage/CaGeDemoPlugin -B tools/cage/CaGeDemoPlugin/build
+RUN cmake --build tools/cage/CaGeDemoPlugin/build --parallel
