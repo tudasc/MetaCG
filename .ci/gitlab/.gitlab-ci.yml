@@ -309,3 +309,25 @@ install-test:
     - cd graph/test/install
     - CMAKE_PREFIX_PATH=$INSTALL/lib64/cmake/metacg cmake -S . -B $BUILD-install-test
     - cmake --build $BUILD-install-test --parallel
+
+CGC2Plugin-test:
+  <<: *job-setup
+  stage: install
+  needs: ["install"]
+  script:
+    - export BUILD=$(realpath $BUILD)
+    - export INSTALL=$(realpath $INSTALL)
+    - cd tools/cgcollector2/CGC2DemoPlugin
+    - CMAKE_PREFIX_PATH=$INSTALL/lib64/cmake/metacg cmake -S . -B $BUILD-install-test
+    - cmake --build $BUILD-install-test --parallel
+
+CaGePlugin-test:
+  <<: *job-setup
+  stage: install
+  needs: ["install"]
+  script:
+    - export BUILD=$(realpath $BUILD)
+    - export INSTALL=$(realpath $INSTALL)
+    - cd tools/cage/CaGeDemoPlugin
+    - CMAKE_PREFIX_PATH=$INSTALL/lib64/cmake/metacg cmake -S . -B $BUILD-install-test
+    - cmake --build $BUILD-install-test --parallel

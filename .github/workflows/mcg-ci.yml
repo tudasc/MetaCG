@@ -45,7 +45,7 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - name: cmake
-      run: cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_INSTALL_PREFIX="$(pwd)/install" -DMETACG_BUILD_GRAPH_TOOLS=ON -B build -S .
+      run: cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_INSTALL_PREFIX="$(pwd)/install" -B build -S .
     - name: build
       run: cmake --build build --parallel
     - name: install
@@ -58,14 +58,6 @@ jobs:
       run: |
         CMAKE_PREFIX_PATH=install/lib/cmake/metacg cmake -S graph/test/install -B build-install-test
         cmake --build build-install-test
-    - name: cage-plugin-test
-      run: |
-        CMAKE_PREFIX_PATH=install/lib/cmake/metacg cmake -S tools/cage/CaGeDemoPlugin -B build-cage-install-test
-        cmake --build build-cage-install-test
-    - name: cgc2-plugin-test
-      run: |
-        CMAKE_PREFIX_PATH=install/lib/cmake/metacg cmake -S tools/cgcollector2/CGC2DemoPlugin -B build-cgc2-install-test
-        cmake --build build-cgc2-install-test
     - name: metacg-config-test
       run: |
         MCG_CFG=install/bin/metacg-config

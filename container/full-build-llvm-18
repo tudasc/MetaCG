@@ -59,3 +59,9 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
 RUN cmake --build build --parallel
 
 RUN cmake --install build
+
+RUN cmake -Dmetacg_ROOT=/tmp/metacg -S graph/test/install -B build
+
+RUN cmake -Dmetacg_ROOT=/tmp/metacg -S tools/cgcollector2/CGC2DemoPlugin -B build
+
+RUN cmake -Dmetacg_ROOT=/tmp/metacg -S graph/cage/CaGeDemoPlugin -B build
