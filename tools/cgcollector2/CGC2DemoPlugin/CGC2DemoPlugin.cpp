@@ -54,7 +54,7 @@ struct CGC2DemoPlugin final : cgcollector2::Plugin {
      * Overwrite this if you want your Plugin to be listed with a name in the debug logs
      * @return the logging name of your plugin
      */
-    std::string getPluginName() const final { return "Demo Plugin"; }
+    std::string getPluginName() const final { return "CGC2 Demo Plugin"; }
     ~CGC2DemoPlugin() final = default;
 };
 

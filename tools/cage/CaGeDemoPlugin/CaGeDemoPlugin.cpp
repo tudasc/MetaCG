@@ -41,7 +41,7 @@ struct CaGeDemoPlugin final : cage::Plugin {
      * Overwrite this if you want your Plugin to be listed with a name in the debug logs
      * @return the logging name of your plugin
      */
-    [[nodiscard]] virtual std::string getPluginName() const { return "unnamed Plugin"; }
+    [[nodiscard]] virtual std::string getPluginName() const { return "Cage Demo Plugin"; }
 };
 
 extern "C" {
