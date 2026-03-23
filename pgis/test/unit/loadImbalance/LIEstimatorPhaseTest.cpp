@@ -6,12 +6,12 @@
 
 #include "gtest/gtest.h"
 
-#include "LoggerUtil.h"
-#include "MCGManager.h"
 #include "MetaData/PGISMetaData.h"
 #include "PiraMCGProcessor.h"
 #include "loadImbalance/LIEstimatorPhase.h"
 #include "loadImbalance/LIMetaData.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/MCGManager.h"
 #include <memory>
 
 class LIEstimatorPhaseTest : public ::testing::Test {

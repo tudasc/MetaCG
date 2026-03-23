@@ -12,25 +12,25 @@
 #include <nanobind/stl/unordered_map.h>
 #include <nanobind/stl/unordered_set.h>
 
-#include <Callgraph.h>
-#include <CgNode.h>
-#include <MCGManager.h>
+#include <metacg/Callgraph.h>
+#include <metacg/CgNode.h>
+#include <metacg/MCGManager.h>
 
-#include <io/MCGReader.h>
-#include <io/MCGWriter.h>
-#include <io/VersionFourMCGReader.h>
-#include <metadata/MetaData.h>
+#include <metacg/io/MCGReader.h>
+#include <metacg/io/MCGWriter.h>
+#include <metacg/io/VersionFourMCGReader.h>
+#include <metacg/metadata/MetaData.h>
 
 // BuiltinMD.h is not used directly here, but including this header
 // ensures that MetaCG's built-in metadata types become part of this
 // translation unit and are hence included in the pymetacg dynamic library.
-#include <metadata/BuiltinMD.h>  // IWYU pragma: keep
+#include <metacg/metadata/BuiltinMD.h>  // IWYU pragma: keep
 
 #include <string>
 
 #include "util.h"
 
-#include <config.h>
+#include <metacg/config.h>
 
 namespace nb = nanobind;
 using namespace metacg::pymetacg;

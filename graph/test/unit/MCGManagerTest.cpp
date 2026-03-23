@@ -6,10 +6,10 @@
 
 #include "gtest/gtest.h"
 
-#include "MCGManager.h"
-#include "metadata/EntryFunctionMD.h"
-#include "metadata/MetaData.h"
-#include "metadata/OverrideMD.h"
+#include "metacg/MCGManager.h"
+#include "metacg/metadata/EntryFunctionMD.h"
+#include "metacg/metadata/MetaData.h"
+#include "metacg/metadata/OverrideMD.h"
 
 using json = nlohmann::json;
 

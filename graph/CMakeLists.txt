@@ -16,27 +16,27 @@ set(MetacgGraphLibSources
     src/MCGBaseInfo.cpp
     src/ReachabilityAnalysis.cpp
     src/MergePolicy.cpp
-    include/io/MCGReader.h
-    include/CgNode.h
-    include/Callgraph.h
-    include/metadata/MetaData.h
-    include/metadata/MetadataMixin.h
-    include/MCGManager.h
-    include/io/MCGWriter.h
-    include/Util.h
-    include/MCGBaseInfo.h
-    include/LoggerUtil.h
-    include/DotIO.h
-    include/Timing.h
-    include/ReachabilityAnalysis.h
-    include/MergePolicy.h
+    include/metacg/io/MCGReader.h
+    include/metacg/CgNode.h
+    include/metacg/Callgraph.h
+    include/metacg/metadata/MetaData.h
+    include/metacg/metadata/MetadataMixin.h
+    include/metacg/MCGManager.h
+    include/metacg/io/MCGWriter.h
+    include/metacg/Util.h
+    include/metacg/MCGBaseInfo.h
+    include/metacg/LoggerUtil.h
+    include/metacg/DotIO.h
+    include/metacg/Timing.h
+    include/metacg/ReachabilityAnalysis.h
+    include/metacg/MergePolicy.h
 )
 
 # Custom in-tree metadata
 file(
   GLOB
   CUSTOM_METADATA
-  "include/metadata/custom/*.h"
+  "include/metacg/metadata/custom/*.h"
 )
 if(NOT
    CUSTOM_METADATA
@@ -70,8 +70,8 @@ string(
 )
 
 configure_file(
-  include/metadata/CustomMD.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/include/metadata/CustomMD.h
+  include/metacg/metadata/CustomMD.h.in
+  ${CMAKE_CURRENT_BINARY_DIR}/include/metacg/metadata/CustomMD.h
   @ONLY
 )
 

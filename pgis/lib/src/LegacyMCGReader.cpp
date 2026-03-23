@@ -5,11 +5,11 @@
  */
 
 #include "LegacyMCGReader.h"
-#include "Callgraph.h"
-#include "MCGManager.h"
-#include "CgNode.h"
-#include "Timing.h"
-#include "Util.h"
+#include "metacg/Callgraph.h"
+#include "metacg/MCGManager.h"
+#include "metacg/CgNode.h"
+#include "metacg/Timing.h"
+#include "metacg/Util.h"
 
 #include <loadImbalance/LIMetaData.h>
 

@@ -7,7 +7,7 @@
 #ifndef CGCOLLECTOR2_ASTNODEMETADATA_H
 #define CGCOLLECTOR2_ASTNODEMETADATA_H
 
-#include "metadata/MetaData.h"
+#include "metacg/metadata/MetaData.h"
 #include <clang/AST/Type.h>
 
 class ASTNodeMetadata : public metacg::MetaData::Registrar<ASTNodeMetadata> {

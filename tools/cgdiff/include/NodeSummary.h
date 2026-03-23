@@ -4,7 +4,7 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #pragma once
-#include <Callgraph.h>
+#include <metacg/Callgraph.h>
 #include <string>
 
 /**

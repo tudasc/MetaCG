@@ -10,7 +10,7 @@
 #include <optional>
 
 #include "MetaData/CgNodeMetaData.h"
-#include "metadata/MetaData.h"
+#include "metacg/metadata/MetaData.h"
 #include "nlohmann/json.hpp"
 
 namespace LoadImbalance {

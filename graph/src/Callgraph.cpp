@@ -3,10 +3,10 @@
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
-#include "Callgraph.h"
+#include "metacg/Callgraph.h"
 
-#include "LoggerUtil.h"
-#include "metadata/EntryFunctionMD.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/metadata/EntryFunctionMD.h"
 
 #include <algorithm>
 #include <string>

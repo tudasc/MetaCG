@@ -77,7 +77,7 @@ if(NOT
 endif()
 
 # Configure the file that holds version information
-configure_file(Config.h.in config.h)
+configure_file(Config.h.in include/metacg/config.h)
 
 # Component options MetaCG graph library will always be built. The actual graph implementation
 add_subdirectory(graph)

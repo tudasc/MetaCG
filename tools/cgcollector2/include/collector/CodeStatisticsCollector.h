@@ -7,7 +7,7 @@
 #define CGCOLLECTOR2_CODESTATISTICSCOLLECTOR_H
 
 #include "Plugin.h"
-#include "metadata/CodeStatisticsMD.h"
+#include "metacg/metadata/CodeStatisticsMD.h"
 
 #include <clang/AST/Decl.h>
 

@@ -7,14 +7,14 @@
 #ifndef CUBEREADER_H_
 #define CUBEREADER_H_
 
-#include "LoggerUtil.h"
 #include "MetaData/CgNodeMetaData.h"
 #include "PiraMCGProcessor.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/MCGManager.h"
 
 #include <Cube.h>
 #include <CubeMetric.h>
 
-#include <MCGManager.h>
 #include <filesystem>
 #include <string>
 

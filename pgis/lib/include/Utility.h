@@ -7,9 +7,9 @@
 #ifndef PGIS_UTILITY_H
 #define PGIS_UTILITY_H
 
-#include "Callgraph.h"
-#include "CgNode.h"
-#include "LoggerUtil.h"
+#include "metacg/Callgraph.h"
+#include "metacg/CgNode.h"
+#include "metacg/LoggerUtil.h"
 
 #include "MetaData/PGISMetaData.h"
 

@@ -7,7 +7,7 @@
 #ifndef CGCOLLECTOR2_GLOBALLOOPDEPTHCOLLECTOR_H
 #define CGCOLLECTOR2_GLOBALLOOPDEPTHCOLLECTOR_H
 
-#include "metadata/LoopMD.h"
+#include "metacg/metadata/LoopMD.h"
 
 struct GlobalLoopDepthCollector final : public Plugin {
   std::unique_ptr<metacg::MetaData> computeForDecl(const clang::FunctionDecl* const) override { return nullptr; }

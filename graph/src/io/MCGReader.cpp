@@ -5,10 +5,10 @@
  *
  */
 
-#include "io/MCGReader.h"
-#include "LoggerUtil.h"
-#include "io/VersionFourMCGReader.h"
-#include "io/VersionTwoMCGReader.h"
+#include "metacg/io/MCGReader.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/io/VersionFourMCGReader.h"
+#include "metacg/io/VersionTwoMCGReader.h"
 
 namespace metacg::io {
 

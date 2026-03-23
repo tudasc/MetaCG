@@ -4,7 +4,7 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "ReachabilityAnalysis.h"
+#include "metacg/ReachabilityAnalysis.h"
 
 #include "CgHelper.h"
 #include "IPCGEstimatorPhase.h"

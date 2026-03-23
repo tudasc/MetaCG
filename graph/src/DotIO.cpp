@@ -4,9 +4,9 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "DotIO.h"
-#include "LoggerUtil.h"
-#include "MCGManager.h"
+#include "metacg/DotIO.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/MCGManager.h"
 
 #include <cctype>  // for std:isspace
 #include <fstream>

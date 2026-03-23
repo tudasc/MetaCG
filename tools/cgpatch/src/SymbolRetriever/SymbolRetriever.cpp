@@ -6,6 +6,8 @@
 
 #include "SymbolRetriever.h"
 
+#include "metacg/LoggerUtil.h"
+
 #include <cstring>
 #include <elf.h>
 #include <fcntl.h>

@@ -135,11 +135,11 @@ configure-custom-md:
   needs: ["build"] # to prevent this job from interfering with the different builds
   script:
     - spack load --first cmake
-    - test -d graph/include/metadata/custom || exit 1
-    - echo "// Empty test header" > graph/include/metadata/custom/TestHeader.h
+    - test -d graph/include/metacg/metadata/custom || exit 1
+    - echo "// Empty test header" > graph/include/metacg/metadata/custom/TestHeader.h
     - cmake -S . -B build-configure-md -DCMAKE_BUILD_TYPE=Debug -DMETACG_BUILD_UNIT_TESTS=OFF
-    - grep "TestHeader.h" "build-configure-md/graph/include/metadata/CustomMD.h" || exit 1
-    - rm -f graph/include/metadata/custom/TestHeader.h
+    - grep "TestHeader.h" "build-configure-md/graph/include/metacg/metadata/CustomMD.h" || exit 1
+    - rm -f graph/include/metacg/metadata/custom/TestHeader.h
 
 
 # Stage: test
@@ -287,7 +287,7 @@ install:
     - cmake --install $BUILD
     - stat $INSTALL/lib64/libmetacg.so
     - stat $INSTALL/bin/cgcollector
-    - stat $INSTALL/include/metadata/CustomMD.h
+    - stat $INSTALL/include/metacg/metadata/CustomMD.h
     - stat $INSTALL/lib64/cmake/metacg/metacgConfig.cmake
     - stat $INSTALL/bin/cgdiff
     - stat $INSTALL/bin/cgquery

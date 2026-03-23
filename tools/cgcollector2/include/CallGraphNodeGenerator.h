@@ -17,7 +17,7 @@
 #include <llvm/ADT/SmallVector.h>
 
 #include "SharedDefs.h"
-#include <Callgraph.h>
+#include <metacg/Callgraph.h>
 
 #include <memory>
 #include <unordered_map>

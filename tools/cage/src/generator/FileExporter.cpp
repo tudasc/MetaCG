@@ -7,9 +7,9 @@
 
 #include "llvm/Support/raw_ostream.h"
 
-#include "config.h"
-#include "io/MCGWriter.h"
-#include "io/VersionFourMCGWriter.h"
+#include "metacg/config.h"
+#include "metacg/io/MCGWriter.h"
+#include "metacg/io/VersionFourMCGWriter.h"
 
 #include <fstream>
 

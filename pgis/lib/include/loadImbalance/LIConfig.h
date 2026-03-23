@@ -7,8 +7,8 @@
 #ifndef LI_CONFIG_H
 #define LI_CONFIG_H
 
-#include "CgNode.h"
 #include "MetaData/CgNodeMetaData.h"
+#include "metacg/CgNode.h"
 #include "nlohmann/json.hpp"
 
 namespace LoadImbalance {

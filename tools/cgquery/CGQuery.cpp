@@ -1,9 +1,9 @@
-#include "Callgraph.h"
-#include "CgNode.h"
-#include "CgTypes.h"
-#include "LoggerUtil.h"
-#include "ReachabilityAnalysis.h"
-#include "io/MCGReader.h"
+#include "metacg/Callgraph.h"
+#include "metacg/CgNode.h"
+#include "metacg/CgTypes.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/ReachabilityAnalysis.h"
+#include "metacg/io/MCGReader.h"
 #include <cxxopts.hpp>
 #include <iostream>
 

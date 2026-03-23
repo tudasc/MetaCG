@@ -14,7 +14,7 @@ function(add_pgis target)
 endfunction()
 
 function(add_config_include target)
-  target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>)
+  target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
 endfunction()
 
 function(add_pgis_includes target)

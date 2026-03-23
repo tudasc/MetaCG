@@ -5,11 +5,11 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "io/VersionFourMCGReader.h"
-#include "LoggerUtil.h"
-#include "MCGManager.h"
+#include "metacg/io/VersionFourMCGReader.h"
 #include "TestMD.h"
-#include "metadata/EntryFunctionMD.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/MCGManager.h"
+#include "metacg/metadata/EntryFunctionMD.h"
 
 #include "nlohmann/json.hpp"
 #include "gtest/gtest.h"

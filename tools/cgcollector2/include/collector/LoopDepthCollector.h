@@ -9,7 +9,7 @@
 
 #include "MetaDataFunctions.h"
 #include "Plugin.h"
-#include "metadata/LoopMD.h"
+#include "metacg/metadata/LoopMD.h"
 
 struct LoopDepthCollector : public Plugin {
   virtual  std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {

@@ -5,7 +5,7 @@
  */
 #include "../interface/CaGePlugin.h"
 
-#include "io/MCGWriter.h"
+#include "metacg/io/MCGWriter.h"
 
 #include "llvm/IR/Module.h"
 #include "llvm/IR/PassManager.h"

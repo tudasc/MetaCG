@@ -7,9 +7,9 @@
 #ifndef METACG_PGISMETADATA_H
 #define METACG_PGISMETADATA_H
 
-#include "CgNode.h"
-#include "LoggerUtil.h"
-#include "metadata/MetaData.h"
+#include "metacg/CgNode.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/metadata/MetaData.h"
 
 namespace metacg::pgis {
 

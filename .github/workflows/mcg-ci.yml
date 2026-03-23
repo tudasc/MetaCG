@@ -52,7 +52,7 @@ jobs:
       run: |
         cmake --install build --prefix install
         stat install/lib/libmetacg.so
-        stat install/include/metadata/CustomMD.h
+        stat install/include/metacg/metadata/CustomMD.h
         stat install/lib/cmake/metacg/metacgConfig.cmake
     - name: install-test
       run: |
@@ -87,7 +87,7 @@ jobs:
           image: metacg-llvm-20-devel:latest
           run: |
             stat /tmp/metacg/lib/libmetacg.so
-            stat /tmp/metacg/include/metadata/CustomMD.h
+            stat /tmp/metacg/include/metacg/metadata/CustomMD.h
             stat /tmp/metacg/lib/cmake/metacg/metacgConfig.cmake
             stat /tmp/metacg/bin/metacg-config
             stat /tmp/metacg/bin/cgdiff
@@ -122,7 +122,7 @@ jobs:
           image: metacg-llvm-18-devel:latest
           run: |
             stat /tmp/metacg/lib/libmetacg.so
-            stat /tmp/metacg/include/metadata/CustomMD.h
+            stat /tmp/metacg/include/metacg/metadata/CustomMD.h
             stat /tmp/metacg/lib/cmake/metacg/metacgConfig.cmake
             stat /tmp/metacg/bin/metacg-config
             stat /tmp/metacg/bin/cgdiff

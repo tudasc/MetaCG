@@ -6,8 +6,8 @@
 
 #include "gtest/gtest.h"
 
-#include "MCGManager.h"
-#include "ReachabilityAnalysis.h"
+#include "metacg/MCGManager.h"
+#include "metacg/ReachabilityAnalysis.h"
 
 namespace {
 using namespace metacg::analysis;
