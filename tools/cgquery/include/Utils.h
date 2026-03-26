@@ -4,9 +4,9 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #pragma once
-#include "Callgraph.h"
-#include "CgNode.h"
-#include "io/MCGReader.h"
+#include "metacg/Callgraph.h"
+#include "metacg/CgNode.h"
+#include "metacg/io/MCGReader.h"
 #include <algorithm>
 #include <memory>
 #include <string>

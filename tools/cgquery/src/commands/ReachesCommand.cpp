@@ -4,10 +4,10 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #include "commands/ReachesCommand.h"
-#include "CgNode.h"
-#include "ReachabilityAnalysis.h"
+#include "metacg/CgNode.h"
+#include "metacg/ReachabilityAnalysis.h"
 #include "cxxopts.hpp"
-#include "io/MCGReader.h"
+#include "metacg/io/MCGReader.h"
 #include "Utils.h"
 #include <iostream>
 

@@ -7,7 +7,7 @@
 #include "gtest/gtest.h"
 
 #include "DominatorAnalysis.h"
-#include "MCGManager.h"
+#include "metacg/MCGManager.h"
 
 namespace {
 using namespace metacg::analysis;
