@@ -94,6 +94,9 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
       outputFile = getCurrentFile().str();
     }
 
+    // Used for CMake managed tests. We override the Fortran compiler with our wrapper script. This generates call
+    // graphs with the .mcg file extension. But CMake expects files with the .o extension. This option disables this
+    // renaming.
     if (!NoRename) {
       replaceExtension(outputFile, ".json");
     }
@@ -101,7 +104,7 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
     std::ofstream os(outputFile);
     os << jsonSink.getJson() << std::endl;
 
-    // optionally generate dot output
+    // generate dot output
     if (Dot) {
       dot::DotGenerator dotGen(cg);
       dotGen.generate();

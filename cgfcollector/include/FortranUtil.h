@@ -111,6 +111,7 @@ bool compareSymbols(const Fortran::semantics::Symbol* a, const Fortran::semantic
  * @brief Generate mangled name from symbol
  *
  * @param sym
+ * @param underscoring
  * @return
  */
 std::string mangleSymbol(const Fortran::semantics::Symbol* sym, bool underscoring);
@@ -153,19 +154,26 @@ bool isUnaryOperator(const Fortran::parser::Expr* e);
  * @brief Get intrinsic operator from a variant of several operator types (RelationalOperator, LogicalOperator,
  * NumericOperator)
  *
- * @tparam Variant
- * @param op
+ * @param gk
  * @return
  */
 Fortran::parser::DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(
     const Fortran::semantics::GenericKind& gk);
 
 /**
- * @brief Searches the types vector for given symbol and returns pointers to vectors of type with derived types. The
- * type symbol is derived from the given symbol.
+ * @brief First, searches the provided `types` vector for a type that references the given `symbol`. Then, for that
+ * type, searches the `types` vector again to find all types that either extend from it or are derived from it. This
+ * search is done in two parts: First, all descendants of the type are searched, then all ancestors.
  *
- * @param typeSymbol symbol to search for
- * @return vector with type and all derived types
+ * This is used to handle polymorphic calls. If a type is used in a call, it could be any type that extends from it or
+ * is extended from it.
+ *
+ * NOTE: Possible improvement: Use a Map [Procedure -> List of Procedures that are overridden]
+ *
+ * @param types
+ * @param Symbol symbol to search for
+ * @return vector with original type and all types that are derived from it or extend from it. If no type is found with
+ * the given symbol, an empty vector is returned.
  */
 std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types,
                                                   const Fortran::semantics::Symbol* symbol);
