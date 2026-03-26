@@ -9,6 +9,7 @@
 #include "cxxopts.hpp"
 #include "io/MCGReader.h"
 #include "Utils.h"
+#include <iostream>
 
 int ReachesCommand::run(const std::vector<char*>& args) {
   cxxopts::Options options("cgquery reaches",
