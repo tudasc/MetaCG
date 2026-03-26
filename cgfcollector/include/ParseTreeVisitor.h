@@ -253,14 +253,14 @@ class ParseTreeVisitor {
   void Post(const Fortran::parser::TypeAttrSpec& a);
 
   /**
-   * @brief Collect type bound procedures in derived type definitions
+   * @brief Collect type-bound procedures in derived type definitions
    *
    * @param s
    */
   void Post(const Fortran::parser::TypeBoundProcedureStmt& s);
 
   /**
-   * @brief Collect defined operators in type definition (operator overloading)
+   * @brief Collect type-bound operators (operator overloading)
    *
    * @param s
    */
@@ -283,8 +283,9 @@ class ParseTreeVisitor {
   bool Pre(const Fortran::parser::EndInterfaceStmt&);
 
   /**
-   * @brief Collect defined operators and store in `interfaceOperators`. The second element in `interfaceOperators` is a
-   * list of procedure symbols that are specified for the operator. These get collected in the `ProcedureStmt` visitor.
+   * @brief Collect interface operators and store in `interfaceOperators`. The second element in `interfaceOperators` is
+   * a list of procedure symbols that are specified for the operator. These get collected in the `ProcedureStmt`
+   * visitor.
    *
    * @param op
    */
@@ -292,7 +293,7 @@ class ParseTreeVisitor {
 
   /**
    * @brief A `ProcedureStmt` references one or more procedures. We use it to collect procedures specified for an
-   * operator.
+   * interface operator.
    *
    * @param p
    */

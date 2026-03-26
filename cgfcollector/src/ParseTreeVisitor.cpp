@@ -351,15 +351,17 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
         holds_save = true;
     }
 
-    if (holds_save)
-      continue;  // vars with save attr are not destructed
+    // vars with save attr are not destructed
+    if (holds_save) {
+      continue;
+    }
 
     const Symbol* currentFunctionSymbol = currentFunctions.back().symbol;
 
     if (isFunctionArg) {
       if (!holds_allocatable) {
         if (!holds_intent) {
-          // no intent attr, if not set does not call finalizer. Why? idk.
+          // no intent attr, if not set does not call finalizer.
           MCGLogger::logDebug("Add tracking for function argument: {} ({})", name.symbol->name(),
                               fmt::ptr(name.symbol));
           varTracking->addTrackedVar({name.symbol, currentFunctionSymbol, false, true});
@@ -432,7 +434,7 @@ void ParseTreeVisitor::Post(const TypeBoundProcedureStmt& s) {
   if (!inDerivedTypeDef)
     return;
 
-  // TODO: abstract types comment
+  // basicly normal type-bound procedure statement
   if (const TypeBoundProcedureStmt::WithoutInterface* withoutInterface =
           std::get_if<TypeBoundProcedureStmt::WithoutInterface>(&s.u)) {
     for (const TypeBoundProcDecl& d : withoutInterface->declarations) {
@@ -452,7 +454,9 @@ void ParseTreeVisitor::Post(const TypeBoundProcedureStmt& s) {
                           optname->symbol->name(), fmt::ptr(optname->symbol));
     }
 
-    // only for abstract types, with deferred in binding attr list
+    // For abstract types. This is eqivalent to an abstract class in C++. In Fortran, you provide the signature of a
+    // procedure for an abstract type in an extra interface block. And Flang wraps such definitions in a `WithInterface`
+    // struct.
   } else if (const TypeBoundProcedureStmt::WithInterface* withInterface =
                  std::get_if<TypeBoundProcedureStmt::WithInterface>(&s.u)) {
     for (const Name& n : withInterface->bindingNames) {
@@ -472,6 +476,8 @@ void ParseTreeVisitor::Post(const TypeBoundGenericStmt& s) {
   if (!inDerivedTypeDef)
     return;
 
+  // type-bound operators are defined as type-bound generic statements. Here we unpack them and add them
+  // to the current type.
   const Indirection<GenericSpec>& genericSpec = std::get<Indirection<GenericSpec>>(s.t);
   if (const DefinedOperator* definedOperator = std::get_if<DefinedOperator>(&genericSpec.value().u)) {
     if (const DefinedOperator::IntrinsicOperator* intrinsicOp =
@@ -668,7 +674,7 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
             extendsFrom = component;
           }
 
-          // type bound procedures
+          // type-bound procedures
           if (component->has<ProcBindingDetails>()) {
             const ProcBindingDetails& procDetails = component->get<ProcBindingDetails>();
             MCGLogger::logDebug("Found procedure in module derived type: {} ({})", component->name(),
@@ -676,7 +682,7 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
             procedures.emplace_back(component, component);
           }
 
-          // type generic operators
+          // type-bound generic operators
           if (const GenericDetails* gen = component->detailsIf<GenericDetails>()) {
             if (!gen->kind().IsIntrinsicOperator())
               continue;
