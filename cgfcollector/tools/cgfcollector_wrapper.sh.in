@@ -7,7 +7,7 @@
 #
 # Options:
 #     --dot          # Additionally generate a DOT file. This is mostly used for debugging.
-#     --no-rename    # Do not rename the output file to `.json`.
+#     --no-rename    # Do not rename the output file.
 #     --verbose      # Print additional information during the generation process.
 
 flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang-new"}

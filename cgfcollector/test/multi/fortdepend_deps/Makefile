@@ -7,13 +7,13 @@ TARGET = $(BUILD_DIR)/output
 SRCS := $(wildcard *.f90)
 OBJS := $(SRCS:.f90=.o)
 OBJS := $(addprefix $(BUILD_DIR)/, $(OBJS))
-OBJS_JSON := $(SRCS:.f90=.json)
+OBJS_JSON := $(SRCS:.f90=.mcg)
 OBJS_JSON := $(addprefix $(BUILD_DIR)/, $(OBJS_JSON))
 
 all: $(TARGET) $(DEP_FILE)
 
 $(TARGET): $(OBJS)
-	$(LD) $(TARGET).json $(OBJS_JSON)
+	$(LD) $(TARGET).mcg $(OBJS_JSON)
 
 $(BUILD_DIR)/%.o: %.f90 | $(BUILD_DIR)
 	$(FC) -module-dir $(BUILD_DIR) $(FCFLAGS) -o $@ $<

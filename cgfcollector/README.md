@@ -28,7 +28,7 @@ flang -fc1 -load "libcgfcollector.so" -plugin "genCG" [options]
 Available options:
 
 - `--dot`: Additionally generate a DOT file. This is mostly used for debugging.
-- `--no-rename`: Do not rename the output file to `.json`.
+- `--no-rename`: Do not rename the output file.
 - `--verbose`: Print additional information during the generation process.
 
 Additionally these other tools are included:
@@ -53,7 +53,7 @@ set(CMAKE_Fortran_COMPILER <path to cgfcollector_wrapper.sh>)
 set(CMAKE_Fortran_FLAGS "")
 set(CMAKE_Fortran_COMPILE_OBJECT "<CMAKE_Fortran_COMPILER> --dot <DEFINES> <INCLUDES> <FLAGS> <SOURCE> -o <OBJECT>")
 set(CMAKE_Fortran_LINK_EXECUTABLE "<path to cgmerge2> <TARGET> <OBJECTS>")
-set(CMAKE_EXECUTABLE_SUFFIX .json)
+set(CMAKE_EXECUTABLE_SUFFIX .mcg)
 ```
 
 This will hook into the CMake build process and generate a call graph instead of

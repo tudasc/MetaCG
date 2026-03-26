@@ -38,7 +38,7 @@ function find_test_dir()
     local test_category="${1%%_*}"
     local test_dir="$test_case_dir/$test_category/$test_name"
 
-    if [ -d "$test_dir" ] && [ -f "$test_dir/output.json" ]; then
+    if [ -d "$test_dir" ] && [ -f "$test_dir/output.mcg" ]; then
         echo "$test_dir"
         return 0
     fi
@@ -49,8 +49,8 @@ function run_single_test()
 {
     local test_dir="$1"
     local test_name="$2"
-    local expected_output="$test_dir/output.json"
-    local actual_output="$out_dir/$test_name.json"
+    local expected_output="$test_dir/output.mcg"
+    local actual_output="$out_dir/$test_name.mcg"
 
     if [ -f "$test_dir/CMakeLists.txt" ]; then
         # cmake managed test
@@ -65,7 +65,7 @@ function run_single_test()
             echo "Failed: cmake build failed"
             return 1
         }
-        find "$tmp_dir" -maxdepth 1 -name '*.json' -exec cp {} "$actual_output" \; || {
+        find "$tmp_dir" -maxdepth 1 -name '*.mcg' -exec cp {} "$actual_output" \; || {
             echo "Failed: could not generate CG"
             return 1
         }
@@ -78,7 +78,7 @@ function run_single_test()
             echo "Failed: make build failed"
             return 1
         }
-        find "$tmp_dir" -maxdepth 1 -name 'output.json' -exec cp {} "$actual_output" \; || {
+        find "$tmp_dir" -maxdepth 1 -name 'output.mcg' -exec cp {} "$actual_output" \; || {
             echo "Failed: could not generate CG"
             return 1
         }
@@ -123,7 +123,7 @@ else
         test_dir="$(dirname "$output_file")"
         test_name="$(basename "$(dirname "$test_dir")")_$(basename "$test_dir")"
         test_cases+=("$test_dir:$test_name")
-    done < <(find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "output.json" \;)
+    done < <(find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "output.mcg" \;)
 fi
 
 total_tests=${#test_cases[@]}

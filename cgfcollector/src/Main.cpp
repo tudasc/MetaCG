@@ -98,7 +98,7 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
     // graphs with the .mcg file extension. But CMake expects files with the .o extension. This option disables this
     // renaming.
     if (!NoRename) {
-      replaceExtension(outputFile, ".json");
+      replaceExtension(outputFile, ".mcg");
     }
 
     std::ofstream os(outputFile);
