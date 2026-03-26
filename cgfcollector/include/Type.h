@@ -7,9 +7,9 @@
 #ifndef METACG_CGFCOLLECTOR_TYPE_H
 #define METACG_CGFCOLLECTOR_TYPE_H
 
-#include <LoggerUtil.h>
 #include <flang/Parser/parse-tree.h>
 #include <flang/Semantics/symbol.h>
+#include <metacg/LoggerUtil.h>
 #include <vector>
 
 namespace metacg::cgfcollector {

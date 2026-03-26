@@ -10,9 +10,9 @@
 #include "FortranUtil.h"
 #include "Type.h"
 
-#include <LoggerUtil.h>
 #include <flang/Parser/parse-tree.h>
 #include <flang/Semantics/symbol.h>
+#include <metacg/LoggerUtil.h>
 #include <string>
 #include <vector>
 

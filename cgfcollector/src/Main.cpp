@@ -6,8 +6,8 @@
 
 #include "ParseTreeVisitor.h"
 
-#include <DotIO.h>
 #include <llvm/Support/CommandLine.h>
+#include <metacg/DotIO.h>
 
 using namespace metacg;
 using namespace metacg::graph;

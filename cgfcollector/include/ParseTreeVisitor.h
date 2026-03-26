@@ -14,8 +14,6 @@
 #include "Type.h"
 #include "VariableTracking.h"
 
-#include <Callgraph.h>
-#include <MCGManager.h>
 #include <flang/Frontend/CompilerInstance.h>
 #include <flang/Frontend/FrontendAction.h>
 #include <flang/Frontend/FrontendActions.h>
@@ -24,11 +22,13 @@
 #include <flang/Parser/parse-tree.h>
 #include <flang/Parser/parsing.h>
 #include <flang/Semantics/tools.h>
-#include <io/MCGReader.h>
-#include <io/MCGWriter.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/raw_ostream.h>
+#include <metacg/Callgraph.h>
+#include <metacg/MCGManager.h>
+#include <metacg/io/MCGReader.h>
+#include <metacg/io/MCGWriter.h>
 #include <variant>
 #include <vector>
 

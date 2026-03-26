@@ -9,12 +9,12 @@
 
 #include "Type.h"
 
-#include <LoggerUtil.h>
 #include <cassert>
 #include <flang/Lower/Mangler.h>
 #include <flang/Optimizer/Support/InternalNames.h>
 #include <flang/Parser/parse-tree.h>
 #include <flang/Semantics/symbol.h>
+#include <metacg/LoggerUtil.h>
 
 /**
  * @brief Formatter for CharBlock
