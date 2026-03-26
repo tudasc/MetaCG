@@ -4,7 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#pragma once
+#ifndef METACG_CGFCOLLECTOR_TYPE_H
+#define METACG_CGFCOLLECTOR_TYPE_H
 
 #include <LoggerUtil.h>
 #include <flang/Parser/parse-tree.h>
@@ -26,3 +27,5 @@ struct Type {
 };
 
 }  // namespace metacg::cgfcollector
+
+#endif  // METACG_CGFCOLLECTOR_TYPE_H

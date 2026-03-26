@@ -4,7 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#pragma once
+#ifndef METACG_CGFCOLLECTOR_FORTRANUTIL_H
+#define METACG_CGFCOLLECTOR_FORTRANUTIL_H
 
 #include "Type.h"
 
@@ -179,3 +180,5 @@ std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types
                                                   const Fortran::semantics::Symbol* symbol);
 
 }  // namespace metacg::cgfcollector
+
+#endif  // !METACG_CGFCOLLECTOR_FORTRANUTIL_H

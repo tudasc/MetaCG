@@ -4,7 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#pragma once
+#ifndef METACG_CGFCOLLECTOR_FUNCTION_H
+#define METACG_CGFCOLLECTOR_FUNCTION_H
 
 #include <flang/Semantics/symbol.h>
 #include <vector>
@@ -31,3 +32,5 @@ struct Function {
 };
 
 }  // namespace metacg::cgfcollector
+
+#endif  // METACG_CGFCOLLECTOR_FUNCTION_H

@@ -4,7 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#pragma once
+#ifndef METACG_CGFCOLLECTOR_POTENTIALFINALIZER_H
+#define METACG_CGFCOLLECTOR_POTENTIALFINALIZER_H
 
 #include "Edge.h"
 
@@ -25,3 +26,5 @@ struct PotentialFinalizer {
 };
 
 }  // namespace metacg::cgfcollector
+
+#endif  // METACG_CGFCOLLECTOR_POTENTIALFINALIZER_H

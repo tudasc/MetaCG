@@ -4,7 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#pragma once
+#ifndef METACG_CGFCOLLECTOR_EDGE_H
+#define METACG_CGFCOLLECTOR_EDGE_H
 
 #include "FortranUtil.h"
 #include "Type.h"
@@ -89,3 +90,5 @@ struct EdgeManager {
 };
 
 }  // namespace metacg::cgfcollector
+
+#endif  // METACG_CGFCOLLECTOR_EDGE_H

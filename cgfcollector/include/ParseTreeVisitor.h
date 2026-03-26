@@ -4,7 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#pragma once
+#ifndef METACG_CGFCOLLECTOR_PARSETREEVISITOR_H
+#define METACG_CGFCOLLECTOR_PARSETREEVISITOR_H
 
 #include "Edge.h"
 #include "FortranUtil.h"
@@ -374,3 +375,5 @@ class ParseTreeVisitor {
 };
 
 }  // namespace metacg::cgfcollector
+
+#endif  // METACG_CGFCOLLECTOR_PARSETREEVISITOR_H

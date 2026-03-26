@@ -4,7 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#pragma once
+#ifndef METACG_CGFCOLLECTOR_VARIABLETRACKING_H
+#define METACG_CGFCOLLECTOR_VARIABLETRACKING_H
 
 #include "Edge.h"
 #include "Function.h"
@@ -100,3 +101,5 @@ struct VariableTracking {
 };
 
 }  // namespace metacg::cgfcollector
+
+#endif  // METACG_CGFCOLLECTOR_VARIABLETRACKING_H
