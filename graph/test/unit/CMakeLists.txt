@@ -3,6 +3,7 @@ add_executable(
   libtests
   CallgraphTest.cpp
   CGNodeTests.cpp
+  DominatorAnalysisTest.cpp
   DotIOTest.cpp
   GlobalMDTest.cpp
   LoggingTest.cpp
