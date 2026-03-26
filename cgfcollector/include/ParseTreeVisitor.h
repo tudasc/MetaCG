@@ -35,8 +35,13 @@ namespace metacg::cgfcollector {
 
 /**
  * @class ParseTreeVisitor
- * @brief Implements visitor methods to traverse parse tree and generate callgraph
+ * @brief Implements visitor methods to traverse parse tree and generate call graph.
+ * Intended to be used with `Fortran::parser::Walk()`
  *
+ * The parse tree is composed of different node types. Each node type has a corresponding visitor methods in this class.
+ * The visitor methods are called `Pre` and `Post` methods. The `Pre` method is called before visiting the children of
+ * the node, and the Post method is called after visiting the children of the node. All possible node types and there
+ * relations are defined through a grammar. Can be found here: https://flang.llvm.org/docs/f2018-grammar.html
  */
 class ParseTreeVisitor {
  public:
@@ -50,6 +55,10 @@ class ParseTreeVisitor {
   /**
    * @brief Collects function/subroutine statements (begin) and their dummy args.
    *
+   * This method populates `currentFunctions` and `functions` vectors. It also adds a node for the procedure to the call
+   * graph. Also this method should only be called from a `FunctionStmt` and `SubroutineStmt` visitor methods. It is
+   * implemented as a template to avoid code duplication.
+   *
    * @tparam T
    * @param stmt
    */
@@ -58,12 +67,20 @@ class ParseTreeVisitor {
 
   /**
    * @brief Handles function/subroutine end statements.
+   *
+   * At the end of a function, we handle the tracked variables and maintain `currentFunctions`.
    */
   void handleEndFuncSubStmt();
 
   /**
-   * @brief Searches with typeSymbol for a type in types vector and adds edges for procedures that matches
-   * procedureSymbol. And also adds edges from types that extends from typeSymbol.
+   * @brief For a list of `Type` add edges, from the current procedure, to procedures that match the `procedureSymbol`.
+   * The comparison is done by source name. For each `Type` the list contains, is also needs to contain all types that
+   * extend or are extended from.
+   *
+   * This is used for handling polymorphic calls. This adds all possible edges, that could be called at runtime through
+   * polymorphism.
+   *
+   * The `findTypeWithDerivedTypes` function can be used, to get the list of `Type` with the required prerequisites.
    *
    * @param typeWithDerived
    * @param procedureSymbol
@@ -72,7 +89,12 @@ class ParseTreeVisitor {
                                           const Fortran::semantics::Symbol* procedureSymbol);
 
   /**
-   * @brief Adds edges and potential finalizers edges to cg.
+   * @brief Add uniquefied edges and potential finalizers edges to the call graph.
+   *
+   * Needs to be called after the parse tree traversal.
+   *
+   * Edges are uniquefied because the graph lib warns about duplicate edges. This leads to a lot of warns being printed
+   * on screen, as we potentially collect a edge many times.
    */
   void postProcess();
 
@@ -85,51 +107,97 @@ class ParseTreeVisitor {
   template <typename A>
   void Post(const A&) {}
 
+  /**
+   * @brief Pre visitor of the main procedure of the Fortran program.
+   *
+   * @param p
+   * @return
+   */
   bool Pre(const Fortran::parser::MainProgram& p);
 
+  /**
+   * @brief Post visitor of the main procedure.
+   */
   void Post(const Fortran::parser::MainProgram&);
 
+  /**
+   * @brief Bookkeeping that we are in a function.
+   *
+   * @return
+   */
   bool Pre(const Fortran::parser::FunctionSubprogram&);
 
+  /**
+   * @brief Bookkeeping that we are in a function.
+   */
   void Post(const Fortran::parser::FunctionSubprogram&);
 
+  /**
+   * @brief Bookkeeping that we are in a subroutine.
+   *
+   * @return
+   */
   bool Pre(const Fortran::parser::SubroutineSubprogram&);
 
+  /**
+   * @brief Bookkeeping that we are in a subroutine.
+   */
   void Post(const Fortran::parser::SubroutineSubprogram&);
 
   /**
-   * @brief Set hasBody field.
+   * @brief Set `hasBody` field.
    *
    * @param e
    */
   void Post(const Fortran::parser::ExecutionPart& e);
 
+  /**
+   * @brief Handle the entry statement like a normal procedure.
+   *
+   * @param e
+   */
   void Post(const Fortran::parser::EntryStmt& e);
 
+  /**
+   * @brief Function entry: Call `handleFuncSubStmt`, and collect function arguments for `functions` vector.
+   *
+   * @param f
+   */
   void Post(const Fortran::parser::FunctionStmt& f);
 
+  /**
+   * @brief calls `handleEndFuncSubStmt`
+   */
   void Post(const Fortran::parser::EndFunctionStmt&);
 
+  /**
+   * @brief Function entry: Call `handleFuncSubStmt`, and collect subroutine arguments for `functions` vector.
+   *
+   * @param f
+   */
   void Post(const Fortran::parser::SubroutineStmt& s);
 
+  /**
+   * @brief calls `handleEndFuncSubStmt`
+   */
   void Post(const Fortran::parser::EndSubroutineStmt&);
 
   /**
-   * @brief ProcedureDesignator: A procedure being called. Handles both cases a call with call statement and without.
+   * @brief `ProcedureDesignator`: A procedure being called. Handles both cases: function and subroutine calls.
    *
    * @param p
    */
   void Post(const Fortran::parser::ProcedureDesignator& p);
 
   /**
-   * @brief Handle trackedVar assignment
+   * @brief Handle `trackedVar` assignment
    *
    * @param a
    */
   void Post(const Fortran::parser::AssignmentStmt& a);
 
   /**
-   * @brief Handle trackedVar assignment through allocate statement.
+   * @brief Handle `trackedVar` assignment through allocate statement.
    *
    * @param a
    */
@@ -138,13 +206,18 @@ class ParseTreeVisitor {
   /**
    * @brief Mostly add potential finalizers for variables that get initialized through procedure arguments.
    *
+   * It iterations through the arguments of the call statement and adds potential finalizers for all arguments that a
+   * registered as a tracked variable.
+   *
+   * It also handles the case where a variable is initialized through the `move_alloc` intrinsic.
+   *
    * @param c
    */
   void Post(const Fortran::parser::Call& c);
 
   /**
-   * @brief Mostly handles finalizers. Handles the different ways a variable can be parsed to a procedure and gets
-   * initialized.
+   * @brief A `TypeDeclarationStmt` is an argument in the procedure definition. This visitor mostly handles finalizers.
+   * Handles the different ways a variable can be parsed to a procedure and gets initialized.
    *
    * @param t
    */
@@ -158,13 +231,14 @@ class ParseTreeVisitor {
    * @return
    */
   bool Pre(const Fortran::parser::DerivedTypeDef&);
+
   /**
-   * @brief Type definiiton end
+   * @brief Type definition end
    */
   void Post(const Fortran::parser::DerivedTypeDef&);
 
   /**
-   * @brief Type stmt like type [, extends(...)] :: body (not exhaustive and not extends)
+   * @brief Type statement like type [, extends(...)] :: body (not exhaustive and not extends)
    *
    * @param t
    * @return
@@ -194,30 +268,62 @@ class ParseTreeVisitor {
 
   // The following methods are for collecting defined operators in interface statements
 
+  /**
+   * @brief Bookkeeping: In interface statement
+   *
+   * @return
+   */
   bool Pre(const Fortran::parser::InterfaceStmt&);
 
+  /**
+   * @brief Bookkeeping: Leaving interface statement
+   *
+   * @return
+   */
   bool Pre(const Fortran::parser::EndInterfaceStmt&);
 
+  /**
+   * @brief Collect defined operators and store in `interfaceOperators`. The second element in `interfaceOperators` is a
+   * list of procedure symbols that are specified for the operator. These get collected in the `ProcedureStmt` visitor.
+   *
+   * @param op
+   */
   void Post(const Fortran::parser::DefinedOperator& op);
 
+  /**
+   * @brief A `ProcedureStmt` references one or more procedures. We use it to collect procedures specified for an
+   * operator.
+   *
+   * @param p
+   */
   void Post(const Fortran::parser::ProcedureStmt& p);
 
   /**
-   * @brief Parse operators in expressions
+   * @brief Handle operator overloading. Uses `interfaceOperators` and `types` vectors to extract the procedures getting
+   * called when evaluation an expression with operators. For example, `(.NOT. 324 < 2) .EQV. .true.` has the operators
+   * `.NOT.`, `<`, and `.EQV.`. If these operators are overloaded, we need to find the procedures that are called for
+   * this expression. To go this we first go to the lowest operator in the expression (`<` in the example) and then go
+   * up the expression tree. For each operator we check if it is overloaded through an interface operator or a
+   * type-bound operator. If it is, we add edges to the procedures that are specified for the operator. For the
+   * type-bound operators we also need to check for any polymorphic calls.
+   *
+   * There are two ways to define operators in Fortran: through interface statements and through type definitions.
    *
    * @param e
    * @return
    */
   bool Pre(const Fortran::parser::Expr& e);
+
   /**
-   * @brief Post cleanup parse operators in expressions
+   * @brief Maintain `exprStmtWithOps` for `Pre` visitor of `Expr`.
    *
    * @param e
    */
   void Post(const Fortran::parser::Expr& e);
 
   /**
-   * @brief Extract additional information from use statements
+   * @brief Extract additional information from use statements. This includes derived types, interface operators, and
+   * procedures.
    *
    * @param u
    */

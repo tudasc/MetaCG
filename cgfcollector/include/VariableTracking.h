@@ -14,6 +14,11 @@
 
 namespace metacg::cgfcollector {
 
+/**
+ * @class TrackedVar
+ * @brief Stores information about a tracked variable.
+ *
+ */
 struct TrackedVar {
   const Fortran::semantics::Symbol* var;
 
@@ -30,6 +35,14 @@ struct TrackedVar {
       : var(var), procedure(procedure), hasBeenInitialized(initialized), addFinalizers(addFinalizers) {}
 };
 
+/**
+ * @class VariableTracking
+ * @brief Handle tracking of variable initializations and finalizations at the end of the function scope.
+ *
+ * NOTE: Variables cannot be reliably tracked across multiple procedure calls. If a variable is passed into one
+ * procedure and then forwarded to another, it is no longer suffientily tracked and remains uninitialized in
+ * `trackedVars`.
+ */
 struct VariableTracking {
  public:
   VariableTracking(std::vector<TrackedVar>& trackedVars, std::vector<Type>& types, std::vector<Function>& functions,
@@ -37,7 +50,7 @@ struct VariableTracking {
       : trackedVars(trackedVars), types(types), functions(functions), underscoring(underscoring) {}
 
   /**
-   * @brief Search trackedVars for a canditate by sourceName. Also taking the current function scope into account.
+   * @brief Search trackedVars for a canditate by source name. Also taking the current function scope into account.
    *
    * @param currentFunctionSymbol
    * @param sourceName

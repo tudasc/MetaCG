@@ -83,12 +83,13 @@ void ParseTreeVisitor::postProcess() {
 bool ParseTreeVisitor::Pre(const MainProgram& p) {
   inMainProgram = true;
 
-  if (const auto& maybeStmt = std::get<0>(p.t)) {
-    if (!maybeStmt->statement.v.symbol)
+  if (const auto& optionalProgramStmt = std::get<0>(p.t)) {
+    Symbol* mainProgramSymbol = optionalProgramStmt->statement.v.symbol;
+    if (!mainProgramSymbol)
       return true;
 
     const Symbol* currentFunctionSymbol =
-        currentFunctions.emplace_back(maybeStmt->statement.v.symbol, std::vector<Function::DummyArg>()).symbol;
+        currentFunctions.emplace_back(mainProgramSymbol, std::vector<Function::DummyArg>()).symbol;
     cg->getOrInsertNode(mangleSymbol(currentFunctionSymbol, underscoring), currentFileName, false, false);
 
     MCGLogger::logDebug("\nIn main program: {} ({})", mangleSymbol(currentFunctionSymbol, underscoring),
@@ -389,6 +390,8 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
 
 bool ParseTreeVisitor::Pre(const DerivedTypeDef&) {
   inDerivedTypeDef = true;
+
+  // initialize with empty `Type`
   types.emplace_back();
 
   return true;
@@ -507,9 +510,11 @@ void ParseTreeVisitor::Post(const DefinedOperator& op) {
 
   inInterfaceStmtDefinedOperator = true;
 
+  // intrinsic operators with a predefined name, like +, *, etc.
   if (std::holds_alternative<DefinedOperator::IntrinsicOperator>(op.u)) {
     DefinedOperator::IntrinsicOperator intrinsicOp = std::get<DefinedOperator::IntrinsicOperator>(op.u);
     interfaceOperators.emplace_back(intrinsicOp, std::vector<const Symbol*>());
+    // custom operators with a name
   } else if (std::holds_alternative<DefinedOpName>(op.u)) {
     const DefinedOpName& opName = std::get<DefinedOpName>(op.u);
     if (!opName.v.symbol)
@@ -529,7 +534,7 @@ void ParseTreeVisitor::Post(const ProcedureStmt& p) {
       continue;
 
     if (interfaceOperators.empty()) {
-      MCGLogger::logError("This should no happen. Likely there is a bug with parsing DefinedOperator's");
+      MCGLogger::logError("This should not happen. Likely there is a bug with parsing DefinedOperator's");
       continue;
     }
 
@@ -594,7 +599,8 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
       }
     }
 
-    // search in derived types
+    // search in derived types. Handle polymorphic calls by adding edges for all derived types that have a procedure for
+    // the operator.
 
     std::vector<const Type*> typeWithDerived = findTypeWithDerivedTypes(types, name->symbol);
 
@@ -720,7 +726,8 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
 
       // same but with functions
       if (const SubprogramDetails* details = symbol->detailsIf<SubprogramDetails>()) {
-        if (!details->isFunction() && !details->isInterface())  // function and function dummy definition in interface
+        // function and function dummy definition in interface
+        if (!details->isFunction() && !details->isInterface())
           continue;
 
         std::vector<Function::DummyArg> dummyArgs;

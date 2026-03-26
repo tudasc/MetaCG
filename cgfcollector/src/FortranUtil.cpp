@@ -49,7 +49,8 @@ CanonicalSymbol canonicalizeSymbol(const Symbol* input, CanonicalMode mode) {
     }
 
     // GenericDetails, unpack to specific procedure if it has one. This is forwarded to the next check for
-    // SubprogramDetails.
+    // SubprogramDetails. TODO: here we ignore possibly multiple specific procedure definitions. For the comparison step
+    // these need to be also considered. That's why this falls short when using generics.
     if (auto* gen = sym->detailsIf<GenericDetails>()) {
       if (!gen->specificProcs().empty()) {
         const Symbol* proc = &gen->specificProcs().front().get();
@@ -78,6 +79,11 @@ CanonicalSymbol canonicalizeSymbol(const Symbol* input, CanonicalMode mode) {
       return {sym, CanonicalSymbol::Kind::Procedure};
     }
 
+    // If in ByType mode, unpack symbol type to the derived type symbol T, if it exists. This is handled in an extra
+    // mode because if we compare variables with the derived type definition we need to get to the type with GetType, to
+    // compare the actual type. Trying and comparing variables with the derived type definition would not work and makes
+    // no sense. But other times we don't want to unpack to the type but keep the symbol as is, and compare the derived
+    // type symbols directly.
     if (mode == CanonicalMode::ByType) {
       if (const DeclTypeSpec* type = sym->GetType()) {
         if (const auto* derived = type->AsDerived()) {
@@ -106,9 +112,6 @@ bool compareSymbols(const Symbol* a, const Symbol* b, CanonicalMode mode) {
   if (ca.symbol == cb.symbol)
     return true;
 
-  // if (ca.symbol && cb.symbol) {
-  //   return ca.symbol->name() == cb.symbol->name();
-  // }
   return false;
 }
 
