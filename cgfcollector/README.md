@@ -30,6 +30,7 @@ Available options:
 - `--dot`: Additionally generate a DOT file. This is mostly used for debugging.
 - `--no-rename`: Do not rename the output file.
 - `--verbose`: Print additional information during the generation process.
+- `--graph-name`: Set internal graph name
 
 Additionally these other tools are included:
 
