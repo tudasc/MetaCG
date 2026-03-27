@@ -8,7 +8,7 @@
 
 #include <string> //can not predeclare std::string
 
-#include "LoggerUtil.h"
+#include "metacg/LoggerUtil.h"
 
 namespace metacg {
 class Callgraph;

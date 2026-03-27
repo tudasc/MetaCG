@@ -9,7 +9,6 @@
 
 #include "metacg/metadata/NumConditionalBranchMD.h"
 #include "cgcollector2/interface/CGC2Plugin.h"
->>>>>>> 3b0e6b31 (Rename CGC2's Plugin.h to CGC2Plugin.h)
 
 struct NumConditionalBranchCollector : public cgcollector2::Plugin {
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {

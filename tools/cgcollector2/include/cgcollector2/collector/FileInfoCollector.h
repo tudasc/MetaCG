@@ -6,7 +6,7 @@
 #ifndef CGCOLLECTOR2_FILEINFOCOLLECTOR_H
 #define CGCOLLECTOR2_FILEINFOCOLLECTOR_H
 #include "cgcollector2/interface/CGC2Plugin.h"
-#include "metadata/FileInfoMD.h"
+#include "metacg/metadata/FileInfoMD.h"
 
 #include <clang/AST/ASTContext.h>
 #include <clang/Basic/SourceManager.h>
