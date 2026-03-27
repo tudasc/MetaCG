@@ -46,10 +46,9 @@ struct Plugin {
   [[nodiscard]] virtual std::string getPluginName() const { return "unnamed Plugin"; }
 };
 
-//Needs to be implemented so the plugin can be loaded
+// Needs to be implemented so the plugin can be loaded
 cage::Plugin* getPlugin();
 
 }  // namespace cage
-
 
 #endif  // METACG_CAGEPLUGIN_H

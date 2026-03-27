@@ -20,8 +20,8 @@
 
 #include "cgcollector2/CallGraphCollectionAction.h"
 
-#include "cgcollector2/interface/CGC2Plugin.h"
 #include "cgcollector2/SharedDefs.h"
+#include "cgcollector2/interface/CGC2Plugin.h"
 
 #include "metacg/metadata/BuiltinMD.h"
 
@@ -143,11 +143,10 @@ cgcollector2::Plugin* loadPlugin(const std::string& pluginPath) {
     return nullptr;
   }
   auto getPlugin = reinterpret_cast<cgcollector2::Plugin* (*)()>(sym);
-  cgcollector2::Plugin* loadedPlugin=getPlugin();
+  cgcollector2::Plugin* loadedPlugin = getPlugin();
   metacg::MCGLogger::logInfo("Successfully loaded Plugin: {}", loadedPlugin->getPluginName());
   return loadedPlugin;
 }
-
 
 int main(int argc, const char** argv) {
 #if (LLVM_VERSION_MAJOR >= 10) && (LLVM_VERSION_MAJOR <= 12)
@@ -180,15 +179,16 @@ int main(int argc, const char** argv) {
     case LogLevel::Off:
       spdlog::set_level(spdlog::level::off);
       break;
-    default:__builtin_unreachable();
+    default:
+      __builtin_unreachable();
   }
   spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [errconsole] [%l] %v");
 
   clang::tooling::ClangTool CT(OP.getCompilations(), OP.getSourcePathList());
 
   std::vector<cgcollector2::Plugin*> mcs = {};
-  constexpr int numberOfBuiltinCollectors= static_cast<std::underlying_type_t<Collectors>>(Collectors::All);
-  mcs.reserve( numberOfBuiltinCollectors + pluginPaths.size());
+  constexpr int numberOfBuiltinCollectors = static_cast<std::underlying_type_t<Collectors>>(Collectors::All);
+  mcs.reserve(numberOfBuiltinCollectors + pluginPaths.size());
 
   if (collectorBits.getBits() == 0 || collectorBits.isSet(Collectors::None)) {
     SPDLOG_INFO("No collector-suite specified, disabling all collectors");

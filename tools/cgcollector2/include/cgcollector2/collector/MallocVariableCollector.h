@@ -7,13 +7,12 @@
 #ifndef CGCOLLECTOR2_MALLOCVARIABLECOLLECTOR_H
 #define CGCOLLECTOR2_MALLOCVARIABLECOLLECTOR_H
 
-#include "metacg/metadata/MallocVariableMD.h"
 #include "cgcollector2/interface/CGC2Plugin.h"
+#include "metacg/metadata/MallocVariableMD.h"
 #include <clang/AST/StmtVisitor.h>
 
-
 struct MallocVariableCollector : public cgcollector2::Plugin {
-  std::string getPluginName() const final{ return "MallocVariableCollector"; }
+  std::string getPluginName() const final { return "MallocVariableCollector"; }
 
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
     std::unique_ptr<metacg::MallocVariableMD> result = std::make_unique<metacg::MallocVariableMD>();
@@ -38,7 +37,7 @@ struct MallocVariableCollector : public cgcollector2::Plugin {
         if (ce->getCalleeDecl()) {
           if (const auto funSym = llvm::dyn_cast<clang::FunctionDecl>(ce->getCalleeDecl())) {
             if (!vd->isLocalVarDecl()) {
-              SPDLOG_TRACE("Found {} call in assignment to {}", funSym->getNameAsString(),vd->getNameAsString());
+              SPDLOG_TRACE("Found {} call in assignment to {}", funSym->getNameAsString(), vd->getNameAsString());
               return true;
             }
           }
@@ -65,7 +64,7 @@ struct MallocVariableCollector : public cgcollector2::Plugin {
                   const int indent = 0;
                   ds->printPretty(oss, nullptr, pp, indent, "\n", &ctx);
                   oss.flush();
-                  SPDLOG_TRACE("{}",stmtStr);
+                  SPDLOG_TRACE("{}", stmtStr);
                   allocs.insert({d->getNameAsString(), stmtStr});
                 }
               }
@@ -102,7 +101,7 @@ struct MallocVariableCollector : public cgcollector2::Plugin {
               const int indent = 0;
               bo->printPretty(oss, nullptr, pp, indent, "\n", &ctx);
               oss.flush();
-              SPDLOG_TRACE("Found new expression for {}\n{}\n",vRef->getDecl()->getNameAsString(),stmtStr);
+              SPDLOG_TRACE("Found new expression for {}\n{}\n", vRef->getDecl()->getNameAsString(), stmtStr);
               allocs.insert({vRef->getDecl()->getNameAsString(), stmtStr});
             }
           }

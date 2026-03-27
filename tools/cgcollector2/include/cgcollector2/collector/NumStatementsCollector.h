@@ -1,15 +1,15 @@
 /**
-* File: NumStatementsCollector.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: NumStatementsCollector.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #ifndef CGCOLLECTOR2_NUMSTATEMENTSCOLLECTOR_H
 #define CGCOLLECTOR2_NUMSTATEMENTSCOLLECTOR_H
 
+#include "cgcollector2/MetaDataFunctions.h"
+#include "cgcollector2/interface/CGC2Plugin.h"
 #include "metacg/Callgraph.h"
 #include "metacg/metadata/NumStatementsMD.h"
-#include "cgcollector2/interface/CGC2Plugin.h"
-#include "cgcollector2/MetaDataFunctions.h"
 
 #include <clang/AST/Decl.h>
 

@@ -4,14 +4,14 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "metacg/MCGBaseInfo.h"
 #include "cgcollector2/CallGraphCollectionAction.h"
-#include "cgcollector2/interface/CGC2Plugin.h"
 #include "cgcollector2/CallGraphNodeGenerator.h"
 #include "cgcollector2/SharedDefs.h"
+#include "cgcollector2/interface/CGC2Plugin.h"
 #include "cgcollector2/metadata/Internal/ASTNodeMetadata.h"
 #include "cgcollector2/metadata/Internal/AllAliasMetadata.h"
 #include "cgcollector2/metadata/Internal/FunctionSignatureMetadata.h"
+#include "metacg/MCGBaseInfo.h"
 
 #include "metacg/MCGManager.h"
 #include "metacg/io/VersionFourMCGWriter.h"

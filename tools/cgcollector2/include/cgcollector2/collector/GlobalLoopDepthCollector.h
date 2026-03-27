@@ -1,8 +1,8 @@
 /**
-* File: GlobalLoopDepthCollector.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: GlobalLoopDepthCollector.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #ifndef CGCOLLECTOR2_GLOBALLOOPDEPTHCOLLECTOR_H
 #define CGCOLLECTOR2_GLOBALLOOPDEPTHCOLLECTOR_H
@@ -15,7 +15,6 @@ struct GlobalLoopDepthCollector final : public cgcollector2::Plugin {
   void computeForGraph(metacg::Callgraph* const) override {}
 
   std::string getPluginName() const final { return "GlobalLoopDepthCollector"; }
-
 };
 
 #endif  // CGCOLLECTOR2_GLOBALLOOPDEPTHCOLLECTOR_H

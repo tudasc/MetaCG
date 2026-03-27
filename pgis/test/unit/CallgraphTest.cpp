@@ -6,7 +6,6 @@
 
 #include "gtest/gtest.h"
 
-
 #include "metacg/Callgraph.h"
 #include "metacg/LoggerUtil.h"
 

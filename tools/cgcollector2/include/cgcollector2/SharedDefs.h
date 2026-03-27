@@ -22,7 +22,7 @@ struct FunctionSignature {
   }
 };
 namespace cgcollector2 {
-  struct Plugin;
+struct Plugin;
 }
 
 typedef std::vector<cgcollector2::Plugin*> MetaCollectorVector;

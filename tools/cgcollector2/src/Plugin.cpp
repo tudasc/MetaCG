@@ -4,8 +4,8 @@
 * https://github.com/tudasc/metacg/LICENSE.txt
 */
 
-#include "metacg/LoggerUtil.h"
 #include "cgcollector2/interface/Plugin.h"
+#include "metacg/LoggerUtil.h"
 
 #include "llvm/Support/DynamicLibrary.h"
 
@@ -26,7 +26,7 @@ cgcollector2::Plugin* loadPlugin(const std::string& pluginPath) {
     return nullptr;
   }
   auto getPlugin = reinterpret_cast<cgcollector2::Plugin* (*)()>(sym);
-  cgcollector2::Plugin* loadedPlugin=getPlugin();
+  cgcollector2::Plugin* loadedPlugin = getPlugin();
   metacg::MCGLogger::logInfo("Successfully loaded Plugin: {}", loadedPlugin->getPluginName());
   return loadedPlugin;
 }

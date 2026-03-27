@@ -71,8 +71,7 @@ function(add_clang target)
     )
   endif()
 
-  #clang internally relies on llvm to be linked
-  #so we also link some llvm libs when we need clang
+  # clang internally relies on llvm to be linked so we also link some llvm libs when we need clang
   if(LLVM_LINK_LLVM_DYLIB)
     target_link_libraries(${target} PUBLIC LLVM)
   else()
@@ -81,13 +80,30 @@ function(add_clang target)
   endif()
 endfunction()
 
-function(add_llvm target scope)
-  target_include_directories(${target} SYSTEM ${scope} ${LLVM_INCLUDE_DIRS})
+function(
+  add_llvm
+  target
+  scope
+)
+  target_include_directories(
+    ${target}
+    SYSTEM
+    ${scope}
+    ${LLVM_INCLUDE_DIRS}
+  )
 
   if(LLVM_LINK_LLVM_DYLIB)
-    target_link_libraries(${target} ${scope} LLVM)
+    target_link_libraries(
+      ${target}
+      ${scope}
+      LLVM
+    )
   else()
     llvm_map_components_to_libnames(llvm_libs support)
-    target_link_libraries(${target} ${scope} ${llvm_libs})
+    target_link_libraries(
+      ${target}
+      ${scope}
+      ${llvm_libs}
+    )
   endif()
 endfunction()
