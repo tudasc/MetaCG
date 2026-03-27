@@ -6,7 +6,7 @@
 #ifndef METACG_CGCOLLECTOR2_CGC2DEMOMD_h
 #define METACG_CGCOLLECTOR2_CGC2DEMOMD_h
 
-#include "metadata/MetaData.h"
+#include "metacg/metadata/MetaData.h"
 
 namespace clang {
     class FunctionDecl;

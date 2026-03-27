@@ -7,7 +7,7 @@
 #include "CGC2DemoMD.h"
 #include "cgcollector2/interface/CGC2Plugin.h"
 
-#include "Callgraph.h"
+#include "metacg/Callgraph.h"
 
 /**
  * This Plugin showcases how to work with CGC2's Plugin interface and MetaCG's custom Metadata.

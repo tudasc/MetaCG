@@ -7,7 +7,7 @@
 #include "CaGeDemoMD.h"
 #include "cage/interface/CaGePlugin.h"
 
-#include "Callgraph.h"
+#include "metacg/Callgraph.h"
 
 /**
  * This Plugin showcases how to work with CaGe's Plugin interface and MetaCG's custom Metadata.
