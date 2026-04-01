@@ -46,12 +46,13 @@ namespace metacg::cgfcollector {
  */
 class ParseTreeVisitor {
  public:
-  ParseTreeVisitor(metacg::Callgraph* cg, std::string currentFileName, bool underscoring)
+  ParseTreeVisitor(metacg::Callgraph* cg, std::string currentFileName, bool underscoring, bool includeInstrinsics)
       : cg(cg),
         currentFileName(currentFileName),
+        underscoring(underscoring),
+        includeInstrinsics(includeInstrinsics),
         edgeM(std::make_unique<EdgeManager>(edges, underscoring)),
-        varTracking(std::make_unique<VariableTracking>(trackedVars, types, functions, underscoring)),
-        underscoring(underscoring) {};
+        varTracking(std::make_unique<VariableTracking>(trackedVars, types, functions, underscoring)) {};
 
   /**
    * @brief Collects function/subroutine statements (begin) and their dummy args.
@@ -334,9 +335,8 @@ class ParseTreeVisitor {
  private:
   metacg::Callgraph* cg;
   std::string currentFileName;
-  std::unique_ptr<EdgeManager> edgeM;
-  std::unique_ptr<VariableTracking> varTracking;
   bool underscoring;
+  bool includeInstrinsics;
 
   bool inFunctionOrSubroutineSubProgram = false;
   bool inMainProgram = false;
@@ -344,6 +344,10 @@ class ParseTreeVisitor {
   bool inInterfaceStmt = false;
   bool inInterfaceStmtDefinedOperator = false;
   bool inInterfaceSpecification = false;
+
+  std::unique_ptr<EdgeManager> edgeM;
+
+  std::unique_ptr<VariableTracking> varTracking;
 
   // added to cg in postProcess step
   std::vector<Edge> edges;

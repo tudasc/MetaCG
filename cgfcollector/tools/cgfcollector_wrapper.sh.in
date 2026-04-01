@@ -22,6 +22,7 @@ declare -A OPTION_MAP=(
   ["-v"]="--verbose"
   ["--verbose"]="--verbose"
   ["--graph-name"]="--graph-name"
+  ["--include-intrinsics"]="--include-intrinsics"
 )
 
 while [[ $# -gt 0 ]]; do

@@ -25,9 +25,12 @@ static llvm::cl::opt<bool> NoRename("no-rename", llvm::cl::desc("Do not rename o
                                     llvm::cl::init(false));
 static llvm::cl::opt<bool> Verbose("verbose", llvm::cl::desc("Enable verbose logging"), llvm::cl::cat(CGCategory),
                                    llvm::cl::init(false));
-static llvm::cl::opt<std::string> graphName("graph-name",
+static llvm::cl::opt<std::string> GraphName("graph-name",
                                             llvm::cl::desc("Name of the generated graph (default: \"cg\")"),
                                             llvm::cl::cat(CGCategory), llvm::cl::init("cg"));
+static llvm::cl::opt<bool> IncludeIntrinsics("include-intrinsics",
+                                             llvm::cl::desc("Include intrinsic procedures in the callgraph"),
+                                             llvm::cl::cat(CGCategory), llvm::cl::init(false));
 
 /**
  * @brief Replace the file extension of filePath with newExtension. If filePath does not have an extension, append
@@ -59,9 +62,9 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
     }
 
     // create and register callgraph
-    mcgManager.addToManagedGraphs(graphName, std::make_unique<metacg::Callgraph>(), true);
+    mcgManager.addToManagedGraphs(GraphName, std::make_unique<metacg::Callgraph>(), true);
 
-    Callgraph* cg = mcgManager.getCallgraph(graphName);
+    Callgraph* cg = mcgManager.getCallgraph(GraphName);
     if (!cg) {
       MCGLogger::logError("Failed to create callgraph");
       return;
@@ -71,7 +74,7 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
     std::string currentFile = getCurrentFile().str();
     bool underscoring = getInstance().getInvocation().getLoweringOpts().getUnderscoring();
 
-    ParseTreeVisitor visitor(cg, currentFile, underscoring);
+    ParseTreeVisitor visitor(cg, currentFile, underscoring, IncludeIntrinsics);
     Fortran::parser::Walk(getParsing().parseTree(), visitor);
     visitor.postProcess();
 

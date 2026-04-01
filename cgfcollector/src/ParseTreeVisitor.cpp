@@ -223,14 +223,15 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
 
   const Symbol* currentFunctionSymbol = currentFunctions.back().symbol;
 
-  // if just the name is called. (as subroutine with call and as function without call)
+  // if just the name is called. (as subroutine with call or as function without call)
   if (const Name* name = std::get_if<Name>(&p.u)) {
     if (!name->symbol)
       return;
 
     // ignore intrinsic functions
-    if (name->symbol->attrs().test(Attr::INTRINSIC))
+    if (!includeInstrinsics && name->symbol->attrs().test(Attr::INTRINSIC)) {
       return;
+    }
 
     edgeM->addEdge(currentFunctionSymbol, name->symbol);
 
