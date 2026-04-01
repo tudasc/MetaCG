@@ -78,8 +78,6 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
     Fortran::parser::Walk(getParsing().parseTree(), visitor);
     visitor.postProcess();
 
-    mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
-
     // create writer
     auto mcgWriter = io::createWriter(4);
     if (!mcgWriter) {
