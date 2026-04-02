@@ -55,6 +55,17 @@ class ParseTreeVisitor {
         varTracking(std::make_unique<VariableTracking>(trackedVars, types, functions, underscoring)) {};
 
   /**
+   * @brief Add dummy args to current function in `currentFunctions` and `functions`. Also initiates variable tracking.
+   *
+   * @tparam Iterable
+   * @tparam Extractor
+   * @param items List of dummy args
+   * @param extract Function to extract dummy arg to `Symbol`
+   */
+  template <typename Iterable, typename Extractor>
+  void handleDummyArgs(const Iterable& items, Extractor extract);
+
+  /**
    * @brief Collects function/subroutine statements (begin) and their dummy args.
    *
    * This method populates `currentFunctions` and `functions` vectors. It also adds a node for the procedure to the call

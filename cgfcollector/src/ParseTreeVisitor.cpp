@@ -13,8 +13,23 @@ using namespace metacg;
 
 namespace metacg::cgfcollector {
 
-template void ParseTreeVisitor::handleFuncSubStmt<FunctionStmt>(const FunctionStmt&);
-template void ParseTreeVisitor::handleFuncSubStmt<SubroutineStmt>(const SubroutineStmt&);
+template <typename Iterable, typename Extractor>
+void ParseTreeVisitor::handleDummyArgs(const Iterable& items, Extractor extract) {
+  const Symbol* currentFunctionSymbol = currentFunctions.back().symbol;
+
+  auto it = std::find_if(functions.begin(), functions.end(),
+                         [&](const Function& func) { return func.symbol == currentFunctionSymbol; });
+  if (it == functions.end())
+    return;
+
+  for (const auto& item : items) {
+    if (const Symbol* symbol = extract(item)) {
+      currentFunctions.back().addDummyArg(symbol);
+      it->addDummyArg(symbol);
+      varTracking->addTrackedVar({symbol, currentFunctionSymbol});
+    }
+  }
+}
 
 template <typename T>
 void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
@@ -99,16 +114,13 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
 }
 
 void ParseTreeVisitor::Post(const MainProgram&) {
-  varTracking->handleTrackedVars(currentFunctions.back().symbol, edgeM);
-
-  const Symbol* currentFunctionSymbol = currentFunctions.back().symbol;
-
-  MCGLogger::logDebug("End main program: {} ({})", mangleSymbol(currentFunctionSymbol, underscoring),
-                      fmt::ptr(currentFunctionSymbol));
-
   if (!currentFunctions.empty()) {
-    currentFunctions.pop_back();
+    const Symbol* currentFunctionSymbol = currentFunctions.back().symbol;
+    MCGLogger::logDebug("End main program: {} ({})", mangleSymbol(currentFunctionSymbol, underscoring),
+                        fmt::ptr(currentFunctionSymbol));
   }
+
+  handleEndFuncSubStmt();
 
   inMainProgram = false;
 }
@@ -156,26 +168,12 @@ void ParseTreeVisitor::Post(const FunctionStmt& f) {
 
   handleFuncSubStmt(f);
 
-  const Symbol* currentFunctionSymbol = currentFunctions.back().symbol;
-
-  auto functionsIt = std::find_if(functions.begin(), functions.end(),
-                                  [&](const Function& func) { return func.symbol == currentFunctionSymbol; });
-
-  // collect function arguments
-  const std::list<Name>& name_list = std::get<std::list<Name>>(f.t);
-  for (const Name& name : name_list) {
-    currentFunctions.back().addDummyArg(name.symbol);
-    if (functionsIt != functions.end()) {
-      functionsIt->addDummyArg(name.symbol);
-      varTracking->addTrackedVar({name.symbol, currentFunctionSymbol});
-    }
-  }
+  handleDummyArgs(std::get<std::list<Name>>(f.t), [](const Name& name) { return name.symbol; });
 }
 
 void ParseTreeVisitor::Post(const EndFunctionStmt&) {
   if (!currentFunctions.empty()) {
     const Symbol* currentFunctionSymbol = currentFunctions.back().symbol;
-
     MCGLogger::logDebug("End function: {} ({})", mangleSymbol(currentFunctionSymbol, underscoring),
                         fmt::ptr(currentFunctionSymbol));
   }
@@ -189,27 +187,17 @@ void ParseTreeVisitor::Post(const SubroutineStmt& s) {
 
   handleFuncSubStmt(s);
 
-  const Symbol* currentFunctionSymbol = currentFunctions.back().symbol;
-
-  auto functionsIt = std::find_if(functions.begin(), functions.end(),
-                                  [&](const Function& func) { return func.symbol == currentFunctionSymbol; });
-
-  // collect subroutine arguments (dummy args)
-  const std::list<DummyArg>* dummyArg_list = &std::get<std::list<DummyArg>>(s.t);
-  for (const DummyArg& dummyArg : *dummyArg_list) {
-    const Name* name = std::get_if<Name>(&dummyArg.u);
-    currentFunctions.back().addDummyArg(name->symbol);
-    if (functionsIt != functions.end()) {
-      functionsIt->addDummyArg(name->symbol);
-      varTracking->addTrackedVar({name->symbol, currentFunctionSymbol});
+  handleDummyArgs(std::get<std::list<DummyArg>>(s.t), [](const DummyArg& name) {
+    if (const Name* n = std::get_if<Name>(&name.u)) {
+      return n->symbol;
     }
-  }
+    return static_cast<Symbol*>(nullptr);
+  });
 }
 
 void ParseTreeVisitor::Post(const EndSubroutineStmt&) {
   if (!currentFunctions.empty()) {
     const Symbol* currentFunctionSymbol = currentFunctions.back().symbol;
-
     MCGLogger::logDebug("End subroutine: {} ({})", mangleSymbol(currentFunctionSymbol, underscoring),
                         fmt::ptr(currentFunctionSymbol));
   }
