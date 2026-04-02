@@ -332,6 +332,20 @@ class ParseTreeVisitor {
    */
   void Post(const Fortran::parser::UseStmt& u);
 
+  /**
+   * @brief Handle StmtFunctionStmt like normal functions
+   *
+   * @param u
+   */
+  bool Pre(const Fortran::parser::StmtFunctionStmt& s);
+
+  /**
+   * @brief Handle StmtFunctionStmt like normal functions
+   *
+   * @param u
+   */
+  void Post(const Fortran::parser::StmtFunctionStmt& s);
+
  private:
   metacg::Callgraph* cg;
   std::string currentFileName;

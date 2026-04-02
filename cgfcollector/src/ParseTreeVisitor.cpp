@@ -751,4 +751,30 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
   MCGLogger::logDebug("Finished Use module: {} ({})", useSymbol->name(), fmt::ptr(useSymbol));
 }
 
+bool ParseTreeVisitor::Pre(const StmtFunctionStmt& s) {
+  MCGLogger::logDebug("\nIn statement function: {} ({})", mangleSymbol(std::get<Name>(s.t).symbol, underscoring),
+                      fmt::ptr(std::get<Name>(s.t).symbol));
+
+  handleFuncSubStmt(s);
+
+  // hasBody flag
+  CgNode* node = cg->getFirstNode(mangleSymbol(currentFunctions.back().symbol, underscoring));
+  if (!node) {
+    return true;
+  }
+  node->setHasBody(true);
+
+  return true;
+}
+
+void ParseTreeVisitor::Post(const StmtFunctionStmt& s) {
+  if (!currentFunctions.empty()) {
+    const Symbol* currentFunctionSymbol = currentFunctions.back().symbol;
+    MCGLogger::logDebug("End statement function: {} ({})", mangleSymbol(currentFunctionSymbol, underscoring),
+                        fmt::ptr(currentFunctionSymbol));
+  }
+
+  handleEndFuncSubStmt();
+}
+
 }  // namespace metacg::cgfcollector
