@@ -25,8 +25,8 @@ std::vector<EdgeSymbol> EdgeManager::getEdgesForFinalizers(const std::vector<Typ
     const Symbol* typeSymbol = metacg::cgfcollector::canonicalizeSymbol(type->typeSymbol).symbol;
     const DerivedTypeDetails* details = typeSymbol->detailsIf<DerivedTypeDetails>();
     if (!details) {
-      MCGLogger::logDebug("getEdgesForFinalizers: No DerivedTypeDetails for type: {} ({})", typeSymbol->name(),
-                          fmt::ptr(typeSymbol));
+      MCGLogger::logDebug("getEdgesForFinalizers: No DerivedTypeDetails for type: {} ({}) ({})", typeSymbol->name(),
+                          getDetailsName(typeSymbol), fmt::ptr(typeSymbol));
       continue;
     }
 
@@ -43,8 +43,9 @@ void EdgeManager::addEdgesForFinalizers(const std::vector<Type>& types, const Sy
                                         const Symbol* symbol) {
   for (const EdgeSymbol& edge : getEdgesForFinalizers(types, currentFunctionSymbol, symbol)) {
     addEdge(edge);
-    MCGLogger::logDebug("Add edge for finalizer: {} ({}) -> {} ({})", mangleSymbol(edge.caller, underscoring),
-                        fmt::ptr(edge.caller), mangleSymbol(edge.callee, underscoring), fmt::ptr(edge.callee));
+    MCGLogger::logDebug("Add edge for finalizer: {} ({}) ({}) -> {} ({}) ({})", mangleSymbol(edge.caller, underscoring),
+                        getDetailsName(edge.caller), fmt::ptr(edge.caller), mangleSymbol(edge.callee, underscoring),
+                        getDetailsName(edge.callee), fmt::ptr(edge.callee));
   }
 }
 
@@ -57,14 +58,16 @@ void EdgeManager::addEdgesForFinalizers(const PotentialFinalizer& e) {
 
 void EdgeManager::addEdge(const EdgeSymbol& e) {
   edges.emplace_back(mangleSymbol(e.caller, underscoring), mangleSymbol(e.callee, underscoring));
-  MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(e.caller, underscoring), fmt::ptr(e.caller),
-                      mangleSymbol(e.callee, underscoring), fmt::ptr(e.callee));
+  MCGLogger::logDebug("Add edge: {} ({}) ({}) -> {} ({}) ({})", mangleSymbol(e.caller, underscoring),
+                      getDetailsName(e.caller), fmt::ptr(e.caller), mangleSymbol(e.callee, underscoring),
+                      getDetailsName(e.callee), fmt::ptr(e.callee));
 }
 
 void EdgeManager::addEdge(const Symbol* caller, const Symbol* callee) {
   edges.emplace_back(mangleSymbol(caller, underscoring), mangleSymbol(callee, underscoring));
-  MCGLogger::logDebug("Add edge: {} ({}) -> {} ({})", mangleSymbol(caller, underscoring), fmt::ptr(caller),
-                      mangleSymbol(callee, underscoring), fmt::ptr(callee));
+  MCGLogger::logDebug("Add edge: {} ({}) ({}) -> {} ({}) ({})", mangleSymbol(caller, underscoring),
+                      getDetailsName(caller), fmt::ptr(caller), mangleSymbol(callee, underscoring),
+                      getDetailsName(callee), fmt::ptr(callee));
 }
 
 void EdgeManager::addEdge(const Edge& e) {

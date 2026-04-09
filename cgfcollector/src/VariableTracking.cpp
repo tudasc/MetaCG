@@ -35,7 +35,8 @@ void VariableTracking::handleTrackedVarAssignment(const Symbol* currentFunctionS
 
   trackedVar->hasBeenInitialized = true;
 
-  MCGLogger::logDebug("Tracked var assigned: {} ({})", trackedVar->var->name(), fmt::ptr(trackedVar->var));
+  MCGLogger::logDebug("Tracked var assigned: {} ({}) ({})", trackedVar->var->name(), getDetailsName(trackedVar->var),
+                      fmt::ptr(trackedVar->var));
 }
 
 void VariableTracking::handleTrackedVars(const Symbol* currentFunctionSymbol, std::unique_ptr<EdgeManager>& edgeM) {
@@ -46,13 +47,15 @@ void VariableTracking::handleTrackedVars(const Symbol* currentFunctionSymbol, st
   }
 
   if (!trackedVars.empty()) {
-    MCGLogger::logDebug("Handle tracked vars for function {} ({})", mangleSymbol(currentFunctionSymbol, underscoring),
+    MCGLogger::logDebug("Handle tracked vars for function {} ({}) ({})",
+                        mangleSymbol(currentFunctionSymbol, underscoring), getDetailsName(currentFunctionSymbol),
                         fmt::ptr(currentFunctionSymbol));
   }
 
   for (TrackedVar& trackedVar : trackedVars) {
-    MCGLogger::logDebug("  Tracked var: {} ({}) - initialized: {}, addFinalizers: {}", trackedVar.var->name(),
-                        fmt::ptr(trackedVar.var), trackedVar.hasBeenInitialized, trackedVar.addFinalizers);
+    MCGLogger::logDebug("  Tracked var: {} ({}) ({}) - initialized: {}, addFinalizers: {}", trackedVar.var->name(),
+                        getDetailsName(trackedVar.var), fmt::ptr(trackedVar.var), trackedVar.hasBeenInitialized,
+                        trackedVar.addFinalizers);
 
     if (!trackedVar.hasBeenInitialized)
       continue;
@@ -88,19 +91,22 @@ void VariableTracking::addTrackedVar(TrackedVar var) {
     // update info
     it->addFinalizers = var.addFinalizers;
     it->hasBeenInitialized = var.hasBeenInitialized;
-    MCGLogger::logDebug("Update tracked variable: {} ({})", var.var->name(), fmt::ptr(var.var));
+    MCGLogger::logDebug("Update tracked variable: {} ({}) ({})", var.var->name(), getDetailsName(var.var),
+                        fmt::ptr(var.var));
     return;
   }
 
   trackedVars.push_back(var);
-  MCGLogger::logDebug("Add tracking for variable: {} ({})", var.var->name(), fmt::ptr(var.var));
+  MCGLogger::logDebug("Add tracking for variable: {} ({}) ({})", var.var->name(), getDetailsName(var.var),
+                      fmt::ptr(var.var));
 }
 
 void VariableTracking::removeTrackedVars(const Symbol* procedureSymbol) {
   auto newEnd = std::remove_if(trackedVars.begin(), trackedVars.end(), [&](const TrackedVar& t) {
     if (compareSymbols(t.procedure, procedureSymbol)) {
-      MCGLogger::logDebug("Removing tracked variable: {} ({}) for procedure: {} ({})", t.var->name(), fmt::ptr(t.var),
-                          mangleSymbol(procedureSymbol, underscoring), fmt::ptr(procedureSymbol));
+      MCGLogger::logDebug("Removing tracked variable: {} ({}) ({}) for procedure: {} ({}) ({})", t.var->name(),
+                          getDetailsName(t.var), fmt::ptr(t.var), mangleSymbol(procedureSymbol, underscoring),
+                          getDetailsName(procedureSymbol), fmt::ptr(procedureSymbol));
       return true;
     }
     return false;

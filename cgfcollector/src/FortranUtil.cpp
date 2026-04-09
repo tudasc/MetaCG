@@ -103,9 +103,12 @@ bool compareSymbols(const Symbol* a, const Symbol* b, CanonicalMode mode) {
   auto ca = canonicalizeSymbol(a, mode);
   auto cb = canonicalizeSymbol(b, mode);
 
-  MCGLogger::logDebug("Comparing symbols: {} ({}) and {} ({}), canon: {} ({}) {} ({})", a ? a->name() : "nullptr",
-                      fmt::ptr(a), b ? b->name() : "nullptr", fmt::ptr(b), ca.symbol ? ca.symbol->name() : "nullptr",
-                      fmt::ptr(ca.symbol), cb.symbol ? cb.symbol->name() : "nullptr", fmt::ptr(cb.symbol));
+  MCGLogger::logDebug("Comparing symbols: {} ({}) ({}) and {} ({}) ({}), canon: {} ({}) ({}) {} ({}) ({})",
+                      a ? a->name() : "nullptr", a ? getDetailsName(a) : "nullptr", fmt::ptr(a),
+                      b ? b->name() : "nullptr", b ? getDetailsName(b) : "nullptr", fmt::ptr(b),
+                      ca.symbol ? ca.symbol->name() : "nullptr", ca.symbol ? getDetailsName(ca.symbol) : "nullptr",
+                      fmt::ptr(ca.symbol), cb.symbol ? cb.symbol->name() : "nullptr",
+                      cb.symbol ? getDetailsName(cb.symbol) : "nullptr", fmt::ptr(cb.symbol));
 
   if (ca.kind != cb.kind)
     return false;
@@ -338,6 +341,16 @@ std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types
   }
 
   return typesWithDerived;
+}
+
+std::string getDetailsName(const Symbol* symbol) {
+  const char* names[] = {"UnknownDetails",        "MainProgramDetails", "ModuleDetails",       "SubprogramDetails",
+                         "SubprogramNameDetails", "EntityDetails",      "ObjectEntityDetails", "ProcEntityDetails",
+                         "AssocEntityDetails",    "DerivedTypeDetails", "UseDetails",          "UseErrorDetails",
+                         "HostAssocDetails",      "GenericDetails",     "ProcBindingDetails",  "NamelistDetails",
+                         "CommonBlockDetails",    "TypeParamDetails",   "MiscDetails",         "UserReductionDetails",
+                         "MapperDetails"};
+  return names[symbol->details().index()];
 }
 
 }  // namespace metacg::cgfcollector

@@ -179,6 +179,8 @@ Fortran::parser::DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(
 std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types,
                                                   const Fortran::semantics::Symbol* symbol);
 
+std::string getDetailsName(const Fortran::semantics::Symbol* symbol);
+
 }  // namespace metacg::cgfcollector
 
 #endif  // !METACG_CGFCOLLECTOR_FORTRANUTIL_H
