@@ -13,6 +13,28 @@ using namespace metacg;
 
 namespace metacg::cgfcollector {
 
+const Symbol* getTypeAsDerivedTypeSymbol(const Symbol* sym) {
+  if (auto* type = sym->GetType()) {
+    if (auto* derived = type->AsDerived()) {
+      return &derived->typeSymbol();
+    }
+  }
+  return nullptr;
+}
+
+const Symbol* getAbsoluteBaseSymbol(const std::vector<Type>& types, const Type* type) {
+  const Symbol* base = type->typeSymbol;
+  const Symbol* current = type->extendsFrom;
+  while (current) {
+    base = current;
+    auto it = std::find_if(types.begin(), types.end(), [&](const Type& t) { return t.typeSymbol == current; });
+    if (it == types.end())
+      break;
+    current = it->extendsFrom;
+  }
+  return canonicalizeSymbol(base).symbol;
+}
+
 /**
  * @brief Resolve a symbol by following UseDetails and HostAssocDetails until we reach a symbol that has neither. This
  * is used to canonicalize symbols.
@@ -69,11 +91,9 @@ CanonicalSymbol canonicalizeSymbol(const Symbol* input, CanonicalMode mode) {
       // differentiated. We keep this for backwards compatibility.
       if (sub->isFunction()) {
         const Symbol& resultSym = sub->result();
-        if (auto* typeSpec = resultSym.GetType()) {
-          if (auto* derived = typeSpec->AsDerived()) {
-            sym = &derived->typeSymbol();
-            continue;
-          }
+        if (const auto* typeSym = getTypeAsDerivedTypeSymbol(&resultSym)) {
+          sym = typeSym;
+          continue;
         }
       }
       return {sym, CanonicalSymbol::Kind::Procedure};
@@ -85,11 +105,9 @@ CanonicalSymbol canonicalizeSymbol(const Symbol* input, CanonicalMode mode) {
     // no sense. But other times we don't want to unpack to the type but keep the symbol as is, and compare the derived
     // type symbols directly.
     if (mode == CanonicalMode::ByType) {
-      if (const DeclTypeSpec* type = sym->GetType()) {
-        if (const auto* derived = type->AsDerived()) {
-          sym = &derived->typeSymbol();
-          continue;
-        }
+      if (const auto* typeSym = getTypeAsDerivedTypeSymbol(sym)) {
+        sym = typeSym;
+        continue;
       }
     }
 
@@ -110,12 +128,7 @@ bool compareSymbols(const Symbol* a, const Symbol* b, CanonicalMode mode) {
                       fmt::ptr(ca.symbol), cb.symbol ? cb.symbol->name() : "nullptr",
                       cb.symbol ? getDetailsName(cb.symbol) : "nullptr", fmt::ptr(cb.symbol));
 
-  if (ca.kind != cb.kind)
-    return false;
-  if (ca.symbol == cb.symbol)
-    return true;
-
-  return false;
+  return ca.kind == cb.kind && ca.symbol == cb.symbol;
 }
 
 std::string mangleSymbol(const Symbol* sym, bool underscoring) {
@@ -344,6 +357,8 @@ std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types
 }
 
 std::string getDetailsName(const Symbol* symbol) {
+  assert(symbol && "getDetailsName called with nullptr");
+
   const char* names[] = {"UnknownDetails",        "MainProgramDetails", "ModuleDetails",       "SubprogramDetails",
                          "SubprogramNameDetails", "EntityDetails",      "ObjectEntityDetails", "ProcEntityDetails",
                          "AssocEntityDetails",    "DerivedTypeDetails", "UseDetails",          "UseErrorDetails",

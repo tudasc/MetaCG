@@ -64,6 +64,22 @@ const Fortran::parser::Name* getNameFromClassWithDesignator(const T& t) {
   return nullptr;
 }
 
+/**
+ * @brief Get the derived type symbol from a symbol that has a type.
+ *
+ * @param sym
+ */
+const Fortran::semantics::Symbol* getTypeAsDerivedTypeSymbol(const Fortran::semantics::Symbol* sym);
+
+/**
+ * @brief Get the absolute base symbol for a given type. This is done by following the `extendsFrom` field of the type
+ * until the `extendsFrom` field is null. This also canonicalizes the resulting symbol.
+ *
+ * @param types
+ * @param type
+ */
+const Fortran::semantics::Symbol* getAbsoluteBaseSymbol(const std::vector<Type>& types, const Type* type);
+
 enum class CanonicalMode {
   Identity,  // preserve variables/procedures by symbol
   ByType,    // normalize variables/functions by derived type

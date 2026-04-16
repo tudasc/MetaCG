@@ -34,6 +34,15 @@
 
 namespace metacg::cgfcollector {
 
+struct pair_hash {
+  template <typename T1, typename T2>
+  std::size_t operator()(const std::pair<T1, T2>& p) const noexcept {
+    std::size_t h1 = std::hash<T1>{}(p.first);
+    std::size_t h2 = std::hash<T2>{}(p.second);
+    return h1 ^ (h2 << 1);
+  }
+};
+
 /**
  * @class ParseTreeVisitor
  * @brief Implements visitor methods to traverse parse tree and generate call graph.
@@ -52,7 +61,7 @@ class ParseTreeVisitor {
         underscoring(underscoring),
         includeInstrinsics(includeInstrinsics),
         edgeM(std::make_unique<EdgeManager>(edges, underscoring)),
-        varTracking(std::make_unique<VariableTracking>(trackedVars, types, functions, underscoring)) {};
+        varTracking(std::make_unique<VariableTracking>(trackedVars, types, functions, finalizers, underscoring)) {};
 
   /**
    * @brief Add dummy args to current function in `currentFunctions` and `functions`. Also initiates variable tracking.
@@ -98,8 +107,8 @@ class ParseTreeVisitor {
    * @param typeWithDerived
    * @param procedureSymbol
    */
-  void addEdgesForProducesAndDerivedTypes(std::vector<const Type*> typeWithDerived,
-                                          const Fortran::semantics::Symbol* procedureSymbol);
+  void addEdgesForProceduresAndDerivedTypes(std::vector<const Type*> typeWithDerived,
+                                            const Fortran::semantics::Symbol* procedureSymbol);
 
   /**
    * @brief Add uniquefied edges and potential finalizers edges to the call graph.
@@ -401,6 +410,16 @@ class ParseTreeVisitor {
   std::vector<TrackedVar> trackedVars;
 
   std::vector<PotentialFinalizer> potentialFinalizers;
+
+  // Maps each (type, binding name) pair to the set of procedures that override it,
+  // allowing lookup of all overriding implementations via polymorphism.
+  // {type, procBinding name} -> {overriding procedures}
+  std::unordered_map<std::pair<const Fortran::semantics::Symbol*, std::string>,
+                     std::vector<const Fortran::semantics::Symbol*>, pair_hash>
+      procedureOverwrites;
+
+  // type -> finalizer procedures
+  std::unordered_map<const Fortran::semantics::Symbol*, std::vector<const Fortran::semantics::Symbol*>> finalizers;
 };
 
 }  // namespace metacg::cgfcollector

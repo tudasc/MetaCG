@@ -50,8 +50,8 @@ void ParseTreeVisitor::handleEndFuncSubStmt() {
   }
 }
 
-void ParseTreeVisitor::addEdgesForProducesAndDerivedTypes(std::vector<const Type*> typeWithDerived,
-                                                          const Symbol* procedureSymbol) {
+void ParseTreeVisitor::addEdgesForProceduresAndDerivedTypes(std::vector<const Type*> typeWithDerived,
+                                                            const Symbol* procedureSymbol) {
   for (const Type* t : typeWithDerived) {
     auto procIt = std::find_if(t->procedures.begin(), t->procedures.end(), [&procedureSymbol](const auto& p) {
       return p.first->name() == procedureSymbol->name();
@@ -90,6 +90,44 @@ void ParseTreeVisitor::postProcess() {
     const CgNode& calleeNode = cg->getOrInsertNode(edge.callee);
 
     cg->addEdge(callerNode, calleeNode);
+  }
+
+  // debug
+
+  MCGLogger::logDebug("procedureOverwrites Map:");
+  for (const auto& [key, values] : procedureOverwrites) {
+    MCGLogger::logDebug("  Type: {} ({}) ({}), Name: {}", key.first ? key.first->name().ToString() : "nullptr",
+                        getDetailsName(key.first), fmt::ptr(key.first), key.second);
+    for (const auto& value : values) {
+      MCGLogger::logDebug("    Overwrites: {} ({}) ({})", value->name(), getDetailsName(value), fmt::ptr(value));
+    }
+  }
+
+  MCGLogger::logDebug("finalizers Map:");
+  for (const auto& [key, values] : finalizers) {
+    MCGLogger::logDebug("  Type: {} ({}) ({})", key->name(), getDetailsName(key), fmt::ptr(key));
+    for (const auto& value : values) {
+      MCGLogger::logDebug("    Finalizer: {} ({}) ({})", value->name(), getDetailsName(value), fmt::ptr(value));
+    }
+  }
+
+  MCGLogger::logDebug("Type vector:");
+  for (const auto& type : types) {
+    MCGLogger::logDebug("  Type: {} ({}) ({})", type.typeSymbol->name(), getDetailsName(type.typeSymbol),
+                        fmt::ptr(type.typeSymbol));
+    if (type.extendsFrom) {
+      MCGLogger::logDebug("    Extends from: {} ({}) ({})", type.extendsFrom->name(), getDetailsName(type.extendsFrom),
+                          fmt::ptr(type.extendsFrom));
+    }
+    for (const auto& proc : type.procedures) {
+      MCGLogger::logDebug("    Procedure: {} ({}) ({}) -> {} ({}) ({})", proc.first->name(), getDetailsName(proc.first),
+                          fmt::ptr(proc.first), proc.second->name(), getDetailsName(proc.second),
+                          fmt::ptr(proc.second));
+    }
+    for (const auto& ops : type.operators) {
+      MCGLogger::logDebug("    Operator: {} -> {} ({}) ({})", DefinedOperator::EnumToString(ops.first),
+                          ops.second->name(), getDetailsName(ops.second), fmt::ptr(ops.second));
+    }
   }
 }
 
@@ -239,7 +277,20 @@ void ParseTreeVisitor::Post(const ProcedureDesignator& p) {
 
     // handle derived types edges
 
-    addEdgesForProducesAndDerivedTypes(findTypeWithDerivedTypes(types, symbolBase), symbolComp);
+    auto baseTypeIt = std::find_if(types.begin(), types.end(), [&](const Type& t) {
+      return compareSymbols(t.typeSymbol, symbolBase, CanonicalMode::ByType);
+    });
+    if (baseTypeIt == types.end())
+      return;
+
+    try {
+      auto proc = procedureOverwrites.at({getAbsoluteBaseSymbol(types, &(*baseTypeIt)), symbolComp->name().ToString()});
+      for (const Symbol* p : proc) {
+        edgeM->addEdge(currentFunctionSymbol, p);
+      }
+    } catch (const std::out_of_range& e) {
+      // no overwrites for this procedure, do nothing
+    }
   }
 }
 
@@ -300,11 +351,22 @@ void ParseTreeVisitor::Post(const Call& c) {
       MCGLogger::logDebug("Add potential finalizers for var: {} ({}) ({})", name->symbol->name(),
                           getDetailsName(name->symbol), fmt::ptr(name->symbol));
       PotentialFinalizer& pf = potentialFinalizers.emplace_back(argPos, mangleSymbol(procName->symbol, underscoring));
-      for (const EdgeSymbol& edge : edgeM->getEdgesForFinalizers(types, currentFunctionSymbol, trackedVar->var)) {
-        pf.addFinalizerEdge({mangleSymbol(edge.caller, underscoring), mangleSymbol(edge.callee, underscoring)});
-        MCGLogger::logDebug("  Potential finalizer edge: {} ({}) -> {} ({})", mangleSymbol(edge.caller, underscoring),
-                            getDetailsName(edge.caller), mangleSymbol(edge.callee, underscoring),
-                            getDetailsName(edge.callee));
+      auto baseTypeIt = std::find_if(types.begin(), types.end(), [&](const Type& t) {
+        return compareSymbols(t.typeSymbol, name->symbol, CanonicalMode::ByType);
+      });
+      if (baseTypeIt == types.end())
+        continue;
+
+      try {
+        auto final = finalizers.at(getAbsoluteBaseSymbol(types, &(*baseTypeIt)));
+        for (const Symbol* f : final) {
+          pf.addFinalizerEdge({mangleSymbol(currentFunctionSymbol, underscoring), mangleSymbol(f, underscoring)});
+          MCGLogger::logDebug("  Potential finalizer edge: {} ({}) -> {} ({})",
+                              mangleSymbol(currentFunctionSymbol, underscoring), getDetailsName(currentFunctionSymbol),
+                              mangleSymbol(f, underscoring), getDetailsName(f));
+        }
+      } catch (const std::out_of_range& e) {
+        // no finalizer for this type, do nothing
       }
     }
   }
@@ -360,7 +422,7 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
         } else {
           if (holds_intent->v == IntentSpec::Intent::Out) {
             // intent out, calls finalizer because (7.5.6.3 line 21 and onwards)
-            edgeM->addEdgesForFinalizers(types, currentFunctionSymbol, name.symbol);
+            edgeM->addEdgesForFinalizers(types, finalizers, currentFunctionSymbol, name.symbol);
           } else if (holds_intent->v == IntentSpec::Intent::InOut) {
             // intent inout, calls finalizer when set.
             MCGLogger::logDebug("Add tracking for inout argument: {} ({}) ({})", name.symbol->name(),
@@ -377,7 +439,7 @@ void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
         // skip var with allocatable attr.
         // Add to trackedVars because it needs to be assigned at least once before calling a finalizers make sense.
       } else {
-        edgeM->addEdgesForFinalizers(types, currentFunctionSymbol, name.symbol);
+        edgeM->addEdgesForFinalizers(types, finalizers, currentFunctionSymbol, name.symbol);
       }
     }
   }
@@ -394,6 +456,16 @@ bool ParseTreeVisitor::Pre(const DerivedTypeDef&) {
 
 void ParseTreeVisitor::Post(const DerivedTypeDef&) {
   inDerivedTypeDef = false;
+
+  // finalizers (must be after extends discovery)
+  Type& currentType = types.back();
+  auto canon = canonicalizeSymbol(currentType.typeSymbol).symbol;
+  if (auto* details = canon->detailsIf<DerivedTypeDetails>()) {
+    for (const auto& final : details->finals()) {
+      finalizers[getAbsoluteBaseSymbol(types, &currentType)].emplace_back(&final.second.get());
+    }
+  }
+
   MCGLogger::logDebug("End derived type: {} ({}) ({})", types.back().typeSymbol->name(),
                       getDetailsName(types.back().typeSymbol), fmt::ptr(types.back().typeSymbol));
 }
@@ -430,7 +502,7 @@ void ParseTreeVisitor::Post(const TypeBoundProcedureStmt& s) {
   if (!inDerivedTypeDef)
     return;
 
-  // basicly normal type-bound procedure statement
+  // basically normal type-bound procedure statement
   if (const TypeBoundProcedureStmt::WithoutInterface* withoutInterface =
           std::get_if<TypeBoundProcedureStmt::WithoutInterface>(&s.u)) {
     for (const TypeBoundProcDecl& d : withoutInterface->declarations) {
@@ -438,17 +510,19 @@ void ParseTreeVisitor::Post(const TypeBoundProcedureStmt& s) {
       if (!name.symbol)
         return;
 
-      const std::optional<Name>& optname = std::get<std::optional<Name>>(d.t);
-      if (!optname || !optname->symbol) {
-        return;
-      }
-
       Type& currentType = types.back();
-      currentType.procedures.emplace_back(name.symbol, optname->symbol);
+
+      const std::optional<Name>& opt = std::get<std::optional<Name>>(d.t);
+      const Symbol* value = opt ? opt->symbol : name.symbol;
+
+      currentType.procedures.emplace_back(name.symbol, value);
+
+      procedureOverwrites[{getAbsoluteBaseSymbol(types, &currentType), name.symbol->name().ToString()}].emplace_back(
+          value);
 
       MCGLogger::logDebug("Add procedure: {} ({}) ({}) -> {} ({}) ({})", name.symbol->name(),
-                          getDetailsName(name.symbol), fmt::ptr(name.symbol), optname->symbol->name(),
-                          getDetailsName(optname->symbol), fmt::ptr(optname->symbol));
+                          getDetailsName(name.symbol), fmt::ptr(name.symbol), value->name(), getDetailsName(value),
+                          fmt::ptr(value));
     }
 
     // For abstract types. This is eqivalent to an abstract class in C++. In Fortran, you provide the signature of a
@@ -629,7 +703,7 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
       }
 
       if (!skipSelfCall)
-        addEdgesForProducesAndDerivedTypes(typeWithDerived, funcSymbol);
+        addEdgesForProceduresAndDerivedTypes(typeWithDerived, funcSymbol);
     }
   }
 
@@ -657,27 +731,45 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
 
       // extract derived types from module and populate types var
       if (const DerivedTypeDetails* details = symbol->detailsIf<DerivedTypeDetails>()) {
-        const Symbol* extendsFrom = nullptr;
-        std::vector<std::pair<const Symbol*, const Symbol*>> procedures;
-        std::vector<std::pair<DefinedOperator::IntrinsicOperator, const Symbol*>> operators;
+        MCGLogger::logDebug("Found derived type in module: {} ({}) ({})", symbol->name(), getDetailsName(symbol),
+                            fmt::ptr(symbol));
+
+        Type& currentType = types.emplace_back();
+        currentType.typeSymbol = symbol;
+
+        // extends
+        if (const Symbol* extendsSymbol = details->GetParentComponent(*symbol->scope())) {
+          if (const ObjectEntityDetails* objectDetails = extendsSymbol->detailsIf<ObjectEntityDetails>()) {
+            if (const auto* typeSym = getTypeAsDerivedTypeSymbol(extendsSymbol)) {
+              currentType.extendsFrom = typeSym;
+
+              MCGLogger::logDebug("Found extends in module derived type: {} ({}) ({}) -> {} ({}) ({})", symbol->name(),
+                                  getDetailsName(symbol), fmt::ptr(symbol), currentType.extendsFrom->name(),
+                                  getDetailsName(currentType.extendsFrom), fmt::ptr(currentType.extendsFrom));
+            }
+          }
+        }
+
+        // finalizers (must be after extends discovery)
+        auto canon = canonicalizeSymbol(symbol).symbol;
+        if (auto* details = canon->detailsIf<DerivedTypeDetails>()) {
+          for (const auto& final : details->finals()) {
+            finalizers[getAbsoluteBaseSymbol(types, &currentType)].emplace_back(&final.second.get());
+          }
+        }
 
         for (auto pair : *symbol->scope()) {
           const Symbol* component = &*pair.second;
 
-          // extends
-          if (component->test(Symbol::Flag::ParentComp)) {
-            MCGLogger::logDebug("Found extends in module derived type: {} ({}) ({}) -> {} ({}) ({})", symbol->name(),
-                                getDetailsName(symbol), fmt::ptr(symbol), component->name(), getDetailsName(component),
-                                fmt::ptr(component));
-            extendsFrom = component;
-          }
-
           // type-bound procedures
-          if (component->has<ProcBindingDetails>()) {
-            const ProcBindingDetails& procDetails = component->get<ProcBindingDetails>();
+          if (const ProcBindingDetails* procDetails = component->detailsIf<ProcBindingDetails>()) {
+            currentType.procedures.emplace_back(component, component);
+
+            procedureOverwrites[{getAbsoluteBaseSymbol(types, &currentType), component->name().ToString()}]
+                .emplace_back(&procDetails->symbol());
+
             MCGLogger::logDebug("Found procedure in module derived type: {} ({}) ({})", component->name(),
                                 getDetailsName(component), fmt::ptr(&component));
-            procedures.emplace_back(component, component);
           }
 
           // type-bound generic operators
@@ -693,17 +785,13 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
             const Symbol* op_func_sym = nullptr;
             op_func_sym = &gen->specificProcs().front().get();
 
+            currentType.operators.emplace_back(intrinsicOp, op_func_sym);
+
             MCGLogger::logDebug("Found operator in module derived type: {} -> {} ({}) ({})",
                                 DefinedOperator::EnumToString(intrinsicOp), op_func_sym->name(),
                                 getDetailsName(op_func_sym), fmt::ptr(op_func_sym));
-
-            operators.push_back({intrinsicOp, op_func_sym});
           }
         }
-
-        types.push_back({symbol, extendsFrom, procedures, operators});
-        MCGLogger::logDebug("Found derived type in module: {} ({}) ({})", symbol->name(), getDetailsName(symbol),
-                            fmt::ptr(symbol));
       }
 
       // same but with interface operators

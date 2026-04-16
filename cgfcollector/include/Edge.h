@@ -58,23 +58,16 @@ struct EdgeManager {
   void addEdges(const std::vector<EdgeSymbol>& newEdges);
 
   /**
-   * @brief For a given symbol, returns a list of edges from the current function to all finalizers of that type.
-   *
-   * @param types
-   * @param currentFunctionSymbol
-   * @param symbol
-   */
-  [[nodiscard]] std::vector<EdgeSymbol> getEdgesForFinalizers(const std::vector<Type>& types,
-                                                              const Fortran::semantics::Symbol* currentFunctionSymbol,
-                                                              const Fortran::semantics::Symbol* symbol);
-  /**
    * @brief Calls getEdgesForFinalizers and adds them to the edges vector.
    *
    * @param types
    * @param currentFunctionSymbol
    * @param symbol
    */
-  void addEdgesForFinalizers(const std::vector<Type>& types, const Fortran::semantics::Symbol* currentFunctionSymbol,
+  void addEdgesForFinalizers(const std::vector<Type>& types,
+                             const std::unordered_map<const Fortran::semantics::Symbol*,
+                                                      std::vector<const Fortran::semantics::Symbol*>>& finalizers,
+                             const Fortran::semantics::Symbol* currentFunctionSymbol,
                              const Fortran::semantics::Symbol* symbol);
 
   void addEdgesForFinalizers(const PotentialFinalizer& e);

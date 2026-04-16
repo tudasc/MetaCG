@@ -15,37 +15,24 @@ using namespace metacg;
 
 namespace metacg::cgfcollector {
 
-std::vector<EdgeSymbol> EdgeManager::getEdgesForFinalizers(const std::vector<Type>& types,
-                                                           const Symbol* currentFunctionSymbol, const Symbol* symbol) {
-  std::vector<EdgeSymbol> edges;
+void EdgeManager::addEdgesForFinalizers(
+    const std::vector<Type>& types,
+    const std::unordered_map<const Fortran::semantics::Symbol*, std::vector<const Fortran::semantics::Symbol*>>&
+        finalizers,
+    const Symbol* currentFunctionSymbol, const Symbol* symbol) {
+  auto baseTypeIt = std::find_if(types.begin(), types.end(), [&](const Type& t) {
+    return compareSymbols(t.typeSymbol, symbol, CanonicalMode::ByType);
+  });
+  if (baseTypeIt == types.end())
+    return;
 
-  std::vector<const Type*> typePtrs = findTypeWithDerivedTypes(types, symbol);
-
-  for (const Type* type : typePtrs) {
-    const Symbol* typeSymbol = metacg::cgfcollector::canonicalizeSymbol(type->typeSymbol).symbol;
-    const DerivedTypeDetails* details = typeSymbol->detailsIf<DerivedTypeDetails>();
-    if (!details) {
-      MCGLogger::logDebug("getEdgesForFinalizers: No DerivedTypeDetails for type: {} ({}) ({})", typeSymbol->name(),
-                          getDetailsName(typeSymbol), fmt::ptr(typeSymbol));
-      continue;
+  try {
+    auto final = finalizers.at(getAbsoluteBaseSymbol(types, &(*baseTypeIt)));
+    for (const Symbol* f : final) {
+      addEdge(currentFunctionSymbol, f);
     }
-
-    // add edges for finalizers
-    for (const auto& final : details->finals()) {
-      edges.emplace_back(currentFunctionSymbol, &final.second.get());
-    }
-  }
-
-  return edges;
-}
-
-void EdgeManager::addEdgesForFinalizers(const std::vector<Type>& types, const Symbol* currentFunctionSymbol,
-                                        const Symbol* symbol) {
-  for (const EdgeSymbol& edge : getEdgesForFinalizers(types, currentFunctionSymbol, symbol)) {
-    addEdge(edge);
-    MCGLogger::logDebug("Add edge for finalizer: {} ({}) ({}) -> {} ({}) ({})", mangleSymbol(edge.caller, underscoring),
-                        getDetailsName(edge.caller), fmt::ptr(edge.caller), mangleSymbol(edge.callee, underscoring),
-                        getDetailsName(edge.callee), fmt::ptr(edge.callee));
+  } catch (const std::out_of_range& e) {
+    // no finalizer for this type, do nothing
   }
 }
 

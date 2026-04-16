@@ -46,9 +46,15 @@ struct TrackedVar {
  */
 struct VariableTracking {
  public:
-  VariableTracking(std::vector<TrackedVar>& trackedVars, std::vector<Type>& types, std::vector<Function>& functions,
-                   bool underscoring)
-      : trackedVars(trackedVars), types(types), functions(functions), underscoring(underscoring) {}
+  VariableTracking(
+      std::vector<TrackedVar>& trackedVars, std::vector<Type>& types, std::vector<Function>& functions,
+      std::unordered_map<const Fortran::semantics::Symbol*, std::vector<const Fortran::semantics::Symbol*>>& finalizers,
+      bool underscoring)
+      : trackedVars(trackedVars),
+        types(types),
+        functions(functions),
+        finalizers(finalizers),
+        underscoring(underscoring) {}
 
   /**
    * @brief Search trackedVars for a canditate by source name. Also taking the current function scope into account.
@@ -97,6 +103,7 @@ struct VariableTracking {
   std::vector<TrackedVar>& trackedVars;
   std::vector<Type>& types;
   std::vector<Function>& functions;
+  std::unordered_map<const Fortran::semantics::Symbol*, std::vector<const Fortran::semantics::Symbol*>>& finalizers;
   bool underscoring;
 };
 

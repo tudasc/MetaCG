@@ -16,6 +16,12 @@ module mod
         procedure :: set_mass => set_mass_charged_body
     end type charged_body
 
+    type, extends(charged_body) :: very_charged_body
+        real :: charge2
+    contains
+        procedure :: set_mass
+    end type very_charged_body
+
     class(body), allocatable :: polymorphic_body
 
 contains
@@ -36,6 +42,15 @@ contains
 
         this%mass = a
     end subroutine set_mass_charged_body
+
+    subroutine set_mass(this, a)
+        class(very_charged_body), intent(inout) :: this
+        real, intent(in) :: a
+
+        write (*, *) 'Setting mass in very charged body'
+
+        this%mass = a
+    end subroutine set_mass
 
 end module mod
 

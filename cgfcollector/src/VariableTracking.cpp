@@ -64,7 +64,7 @@ void VariableTracking::handleTrackedVars(const Symbol* currentFunctionSymbol, st
 
     // add edge for deconstruction (finalizer)
     if (trackedVar.addFinalizers) {
-      edgeM->addEdgesForFinalizers(types, currentFunctionSymbol, trackedVar.var);
+      edgeM->addEdgesForFinalizers(types, finalizers, currentFunctionSymbol, trackedVar.var);
     }
 
     // set init on dummy function args
