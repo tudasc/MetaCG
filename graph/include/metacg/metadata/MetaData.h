@@ -30,7 +30,7 @@ class MCGManager;
  *  A class *must* implement a  static constexpr const char *key that contains the class
  *  name as a string. This is used for registration in the MetaData field of the CgNode.
  */
-template <class CRTPBase>
+template <class CRTPBase=void>
 class MetaDataFactory {
  public:
   template <class... T>
@@ -63,6 +63,22 @@ class MetaDataFactory {
   };
 
   friend CRTPBase;
+
+  /**
+ * Checks whether a metadatas key is registered
+ *
+ * @param metadataKey the key of the metadat to search for
+ * @return true if the key is known
+ */
+  static bool isRegistered(const std::string& metadataKey) {
+    for (const auto& [registeredMetadataName, _] : data()) {
+      if (registeredMetadataName == metadataKey)
+        return true;
+    }
+    return false;
+  }
+
+
 
  private:
   class Key {
