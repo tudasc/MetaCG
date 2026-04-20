@@ -131,8 +131,7 @@ cgcollector2::Plugin* loadPlugin(const std::string& pluginPath) {
   std::string err;
   auto lib = llvm::sys::DynamicLibrary::getPermanentLibrary(pluginPath.c_str(), &err);
   if (!lib.isValid()) {
-    metacg::MCGLogger::instance().getErrConsole()->error("cannot locate the library at {}!", pluginPath);
-    metacg::MCGLogger::instance().getErrConsole()->error("Reason: {}", err);
+    metacg::MCGLogger::instance().getErrConsole()->error("Cannot locate the library at {}!\n Reason: {}",  pluginPath, err);
     return nullptr;
   }
   metacg::MCGLogger::instance().getConsole()->trace("Getting collection object from plugin {}", pluginPath);

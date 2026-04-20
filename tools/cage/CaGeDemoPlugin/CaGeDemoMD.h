@@ -51,7 +51,7 @@ class CaGeDemoMD : public metacg::MetaData::Registrar<CaGeDemoMD> {
    *
    * @param g A map how to rename the old node-id to a new node-id, which is valid in the merged graph
    */
-  void applyMapping(const metacg::GraphMapping& g) final {}
+  void applyMapping([[maybe_unused]] const metacg::GraphMapping& g) final {}
 
   /**
    * How to merge your metadata with itself
@@ -69,11 +69,10 @@ class CaGeDemoMD : public metacg::MetaData::Registrar<CaGeDemoMD> {
       abort();
     }
     assert(false && "This metadata can not be exported and therefore is not mergeable");
-    // const ASTNodeMetadata* toMergeDerived = static_cast<const ASTNodeMetadata*>(&toMerge);
   }
 
   /**
-   * Specify how to clone your metadat
+   * Specify how to clone your metadata
    * @return a cloned version of your metadata
    */
   [[nodiscard]] std::unique_ptr<MetaData> clone() const final { return std::make_unique<CaGeDemoMD>(); }
