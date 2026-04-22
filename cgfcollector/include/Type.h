@@ -10,20 +10,13 @@
 #include <flang/Parser/parse-tree.h>
 #include <flang/Semantics/symbol.h>
 #include <metacg/LoggerUtil.h>
-#include <vector>
+// #include <vector>
 
 namespace metacg::cgfcollector {
 
 struct Type {
   const Fortran::semantics::Symbol* typeSymbol;
   const Fortran::semantics::Symbol* extendsFrom;
-
-  // name(symbol) => optname(symbol)
-  std::vector<std::pair<const Fortran::semantics::Symbol*, const Fortran::semantics::Symbol*>> procedures;
-
-  // operator => name(symbol)
-  std::vector<std::pair<Fortran::parser::DefinedOperator::IntrinsicOperator, const Fortran::semantics::Symbol*>>
-      operators;
 };
 
 }  // namespace metacg::cgfcollector

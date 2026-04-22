@@ -95,22 +95,6 @@ class ParseTreeVisitor {
   void handleEndFuncSubStmt();
 
   /**
-   * @brief For a list of `Type` add edges, from the current procedure, to procedures that match the `procedureSymbol`.
-   * The comparison is done by source name. For each `Type` the list contains, is also needs to contain all types that
-   * extend or are extended from.
-   *
-   * This is used for handling polymorphic calls. This adds all possible edges, that could be called at runtime through
-   * polymorphism.
-   *
-   * The `findTypeWithDerivedTypes` function can be used, to get the list of `Type` with the required prerequisites.
-   *
-   * @param typeWithDerived
-   * @param procedureSymbol
-   */
-  void addEdgesForProceduresAndDerivedTypes(std::vector<const Type*> typeWithDerived,
-                                            const Fortran::semantics::Symbol* procedureSymbol);
-
-  /**
    * @brief Add uniquefied edges and potential finalizers edges to the call graph.
    *
    * Needs to be called after the parse tree traversal.
