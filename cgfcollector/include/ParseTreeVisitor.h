@@ -420,6 +420,10 @@ class ParseTreeVisitor {
 
   // type -> finalizer procedures
   std::unordered_map<const Fortran::semantics::Symbol*, std::vector<const Fortran::semantics::Symbol*>> finalizers;
+
+  // {type, operator} -> {binding names}
+  std::unordered_map<std::pair<const Fortran::semantics::Symbol*, std::string>, std::vector<std::string>, pair_hash>
+      typeOperators;
 };
 
 }  // namespace metacg::cgfcollector

@@ -15,6 +15,7 @@
 #include <flang/Parser/parse-tree.h>
 #include <flang/Semantics/symbol.h>
 #include <metacg/LoggerUtil.h>
+#include <string>
 
 /**
  * @brief Formatter for CharBlock
@@ -140,6 +141,29 @@ std::string mangleSymbol(const Fortran::semantics::Symbol* sym, bool underscorin
  * @return
  */
 bool isOperator(const Fortran::parser::Expr* e);
+
+/**
+ * @brief If `expr` is an operator return a string representation.
+ *
+ * @param expr
+ */
+std::string getOperatorStringFromExpr(const Fortran::parser::Expr* expr);
+
+/**
+ * @brief String representation for a `DefinedOperator`
+ *
+ * @param op
+ */
+std::string getOperatorStringFromDefinedOperator(const Fortran::parser::DefinedOperator& op);
+
+/**
+ * @brief String representation of `GenericDetails`
+ *
+ * @param symbol
+ * @param gen
+ */
+std::string getOperatorStringFromGenericDetails(const Fortran::semantics::Symbol* symbol,
+                                                const Fortran::semantics::GenericDetails& gen);
 
 /**
  * @brief Compare if expression match given intrinsic operator

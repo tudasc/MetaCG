@@ -111,6 +111,15 @@ void ParseTreeVisitor::postProcess() {
     }
   }
 
+  MCGLogger::logDebug("typeOperators Map:");
+  for (const auto& [key, values] : typeOperators) {
+    MCGLogger::logDebug("  Type: {} ({}) ({}), Operator: {}", key.first ? key.first->name().ToString() : "nullptr",
+                        getDetailsName(key.first), fmt::ptr(key.first), key.second);
+    for (const auto& value : values) {
+      MCGLogger::logDebug("    Binding name: {}", value);
+    }
+  }
+
   MCGLogger::logDebug("Type vector:");
   for (const auto& type : types) {
     MCGLogger::logDebug("  Type: {} ({}) ({})", type.typeSymbol->name(), getDetailsName(type.typeSymbol),
@@ -537,6 +546,11 @@ void ParseTreeVisitor::Post(const TypeBoundProcedureStmt& s) {
       Type& currentType = types.back();
       currentType.procedures.emplace_back(n.symbol, n.symbol);
 
+      if (const ProcBindingDetails* bindingDetails = n.symbol->detailsIf<ProcBindingDetails>()) {
+        procedureOverwrites[{getAbsoluteBaseSymbol(types, &currentType), n.symbol->name().ToString()}].emplace_back(
+            &bindingDetails->symbol());
+      }
+
       MCGLogger::logDebug("Add procedure: {} ({}) ({}) -> {} ({}) ({})", n.symbol->name(), fmt::ptr(n.symbol),
                           getDetailsName(n.symbol), n.symbol->name(), getDetailsName(n.symbol), fmt::ptr(n.symbol));
     }
@@ -547,15 +561,21 @@ void ParseTreeVisitor::Post(const TypeBoundGenericStmt& s) {
   if (!inDerivedTypeDef)
     return;
 
+  Type& currentType = types.back();
+
   // type-bound operators are defined as type-bound generic statements. Here we unpack them and add them
   // to the current type.
   const Indirection<GenericSpec>& genericSpec = std::get<Indirection<GenericSpec>>(s.t);
   if (const DefinedOperator* definedOperator = std::get_if<DefinedOperator>(&genericSpec.value().u)) {
+    for (const auto n : std::get<std::list<Name>>(s.t)) {
+      typeOperators[{getAbsoluteBaseSymbol(types, &currentType),
+                     getOperatorStringFromDefinedOperator(*definedOperator)}]
+          .emplace_back(n.symbol->name().ToString());
+    }
+
     if (const DefinedOperator::IntrinsicOperator* intrinsicOp =
             std::get_if<DefinedOperator::IntrinsicOperator>(&definedOperator->u)) {
       const std::list<Name>& names = std::get<std::list<Name>>(s.t);
-
-      Type& currentType = types.back();
 
       for (const Name& name : names) {
         if (!name.symbol)
@@ -679,31 +699,40 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
     // search in derived types. Handle polymorphic calls by adding edges for all derived types that have a procedure for
     // the operator.
 
-    std::vector<const Type*> typeWithDerived = findTypeWithDerivedTypes(types, name->symbol);
+    auto typeIt = std::find_if(types.begin(), types.end(), [&](const Type& t) {
+      return compareSymbols(t.typeSymbol, name->symbol, CanonicalMode::ByType);
+    });
+    if (typeIt == types.end())
+      continue;
 
-    for (const Type* t : typeWithDerived) {
-      auto opIt = std::find_if(t->operators.begin(), t->operators.end(),
-                               [&](const auto& p) { return compareExprIntrinsicOperator(e, p.first); });
-      if (opIt == t->operators.end())
+    auto op = typeOperators.find({getAbsoluteBaseSymbol(types, &(*typeIt)), getOperatorStringFromExpr(e)});
+    if (op == typeOperators.end())
+      continue;
+
+    for (const std::string& opBindingName : op->second) {
+      // skip self calls
+      if (opBindingName == currentFunctions.back().symbol->name().ToString()) {
+        continue;
+      }
+
+      auto procOverwriteIt = procedureOverwrites.find({getAbsoluteBaseSymbol(types, &(*typeIt)), opBindingName});
+      if (procOverwriteIt == procedureOverwrites.end())
         continue;
 
-      const Symbol* funcSymbol = opIt->second;
-
-      bool skipSelfCall = false;
-      for (const Type* t : typeWithDerived) {
-        auto procIt = std::find_if(t->procedures.begin(), t->procedures.end(),
-                                   [&funcSymbol](const auto& p) { return p.first->name() == funcSymbol->name(); });
-        if (procIt == t->procedures.end())
-          continue;
-
-        if (procIt->second->name() == currentFunctions.back().symbol->name()) {
-          skipSelfCall = true;
+      // skip self call
+      bool isSelfCall = false;
+      for (const Symbol* overwriteSym : procOverwriteIt->second) {
+        if (overwriteSym->name() == currentFunctions.back().symbol->name()) {
+          isSelfCall = true;
           break;
         }
       }
+      if (isSelfCall)
+        continue;
 
-      if (!skipSelfCall)
-        addEdgesForProceduresAndDerivedTypes(typeWithDerived, funcSymbol);
+      for (const Symbol* overwriteSym : procOverwriteIt->second) {
+        edgeM->addEdge(currentFunctions.back().symbol, overwriteSym);
+      }
     }
   }
 
@@ -774,11 +803,18 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
 
           // type-bound generic operators
           if (const GenericDetails* gen = component->detailsIf<GenericDetails>()) {
+            for (const auto& p : gen->specificProcs()) {
+              typeOperators[{getAbsoluteBaseSymbol(types, &currentType),
+                             getOperatorStringFromGenericDetails(component, *gen)}]
+                  .emplace_back(p.get().name().ToString());
+            }
+
             if (!gen->kind().IsIntrinsicOperator())
               continue;
 
             DefinedOperator::IntrinsicOperator intrinsicOp = variantGetIntrinsicOperator(gen->kind());
 
+            // that is not true
             if (gen->specificProcs().size() != 1)
               MCGLogger::logError("Type-bound generic more than one specific proc not handled. Should not happen.");
 

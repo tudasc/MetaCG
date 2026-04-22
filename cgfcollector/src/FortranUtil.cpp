@@ -164,6 +164,65 @@ bool isOperator(const Expr* e) {
                       Expr::DefinedBinary>(e->u);
 }
 
+std::string getOperatorStringFromExpr(const Expr* expr) {
+  if (!isOperator(expr)) {
+    return "";
+  }
+
+  return std::visit(visitors{[](const Expr::UnaryPlus&) { return std::string("ADD"); },
+                             [](const Expr::Negate&) { return std::string("SUBTRACT"); },
+                             [](const Expr::NOT&) { return std::string("NOT"); },
+                             [](const Expr::Power&) { return std::string("POWER"); },
+                             [](const Expr::Multiply&) { return std::string("MULTIPLY"); },
+                             [](const Expr::Divide&) { return std::string("DIVIDE"); },
+                             [](const Expr::Add&) { return std::string("ADD"); },
+                             [](const Expr::Subtract&) { return std::string("SUBTRACT"); },
+                             [](const Expr::Concat&) { return std::string("CONCAT"); },
+                             [](const Expr::LT&) { return std::string("LT"); },
+                             [](const Expr::LE&) { return std::string("LE"); },
+                             [](const Expr::EQ&) { return std::string("EQ"); },
+                             [](const Expr::NE&) { return std::string("NE"); },
+                             [](const Expr::GE&) { return std::string("GE"); },
+                             [](const Expr::GT&) { return std::string("GT"); },
+                             [](const Expr::AND&) { return std::string("AND"); },
+                             [](const Expr::OR&) { return std::string("OR"); },
+                             [](const Expr::EQV&) { return std::string("EQV"); },
+                             [](const Expr::NEQV&) { return std::string("NEQV"); },
+
+                             [](const Expr::DefinedUnary& op) { return std::get<DefinedOpName>(op.t).v.ToString(); },
+                             [](const Expr::DefinedBinary& op) { return std::get<DefinedOpName>(op.t).v.ToString(); },
+
+                             [](const auto&) -> std::string { return std::string("UNKNOWN_OPERATOR"); }},
+                    expr->u);
+}
+
+std::string getOperatorStringFromDefinedOperator(const DefinedOperator& op) {
+  std::string out = std::visit(visitors{[](const DefinedOperator::IntrinsicOperator& v) {
+                                          return std::string(DefinedOperator::EnumToString(v));
+                                        },
+                                        [](const DefinedOpName& v) { return v.v.ToString(); },
+                                        [](const auto&) { return std::string("UNKNOWN_DEFINED_OPERATOR"); }},
+                               op.u);
+
+  std::transform(out.begin(), out.end(), out.begin(), ::toupper);
+  return out;
+}
+
+std::string getOperatorStringFromGenericDetails(const Symbol* symbol, const GenericDetails& gen) {
+  std::string out = "UNKNOWN_GENERIC_KIND";
+
+  if (gen.kind().IsIntrinsicOperator()) {
+    out = DefinedOperator::EnumToString(variantGetIntrinsicOperator(gen.kind()));
+  }
+
+  if (gen.kind().IsDefinedOperator()) {
+    out = symbol->name().ToString();
+  }
+
+  std::transform(out.begin(), out.end(), out.begin(), ::toupper);
+  return out;
+}
+
 bool compareExprIntrinsicOperator(const Expr* expr, DefinedOperator::IntrinsicOperator op) {
   if (!expr)
     return false;
