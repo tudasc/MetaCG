@@ -5,6 +5,7 @@
  */
 
 #include "FortranUtil.h"
+#include <flang/Semantics/symbol.h>
 
 using namespace Fortran::semantics;
 using namespace Fortran::parser;
@@ -196,26 +197,26 @@ std::string getOperatorStringFromExpr(const Expr* expr) {
                     expr->u);
 }
 
-std::string getOperatorStringFromDefinedOperator(const DefinedOperator& op) {
+std::string getOperatorStringFromDefinedOperator(const DefinedOperator* op) {
   std::string out = std::visit(visitors{[](const DefinedOperator::IntrinsicOperator& v) {
                                           return std::string(DefinedOperator::EnumToString(v));
                                         },
                                         [](const DefinedOpName& v) { return v.v.ToString(); },
                                         [](const auto&) { return std::string("UNKNOWN_DEFINED_OPERATOR"); }},
-                               op.u);
+                               op->u);
 
   std::transform(out.begin(), out.end(), out.begin(), ::toupper);
   return out;
 }
 
-std::string getOperatorStringFromGenericDetails(const Symbol* symbol, const GenericDetails& gen) {
+std::string getOperatorStringFromGenericDetails(const Symbol* symbol, const GenericKind& gk) {
   std::string out = "UNKNOWN_GENERIC_KIND";
 
-  if (gen.kind().IsIntrinsicOperator()) {
-    out = DefinedOperator::EnumToString(variantGetIntrinsicOperator(gen.kind()));
+  if (gk.IsIntrinsicOperator()) {
+    out = DefinedOperator::EnumToString(variantGetIntrinsicOperator(gk));
   }
 
-  if (gen.kind().IsDefinedOperator()) {
+  if (gk.IsDefinedOperator()) {
     out = symbol->name().ToString();
   }
 
@@ -227,48 +228,29 @@ bool compareExprIntrinsicOperator(const Expr* expr, DefinedOperator::IntrinsicOp
   if (!expr)
     return false;
 
-  using IO = DefinedOperator::IntrinsicOperator;
+  return std::visit(
+      visitors{[&](const Expr::UnaryPlus& e) { return op == DefinedOperator::IntrinsicOperator::Add; },
+               [&](const Expr::Negate& e) { return op == DefinedOperator::IntrinsicOperator::Subtract; },
+               [&](const Expr::NOT& e) { return op == DefinedOperator::IntrinsicOperator::NOT; },
+               [&](const Expr::Power& e) { return op == DefinedOperator::IntrinsicOperator::Power; },
+               [&](const Expr::Multiply& e) { return op == DefinedOperator::IntrinsicOperator::Multiply; },
+               [&](const Expr::Divide& e) { return op == DefinedOperator::IntrinsicOperator::Divide; },
+               [&](const Expr::Add& e) { return op == DefinedOperator::IntrinsicOperator::Add; },
+               [&](const Expr::Subtract& e) { return op == DefinedOperator::IntrinsicOperator::Subtract; },
+               [&](const Expr::Concat& e) { return op == DefinedOperator::IntrinsicOperator::Concat; },
+               [&](const Expr::LT& e) { return op == DefinedOperator::IntrinsicOperator::LT; },
+               [&](const Expr::LE& e) { return op == DefinedOperator::IntrinsicOperator::LE; },
+               [&](const Expr::EQ& e) { return op == DefinedOperator::IntrinsicOperator::EQ; },
+               [&](const Expr::NE& e) { return op == DefinedOperator::IntrinsicOperator::NE; },
+               [&](const Expr::GE& e) { return op == DefinedOperator::IntrinsicOperator::GE; },
+               [&](const Expr::GT& e) { return op == DefinedOperator::IntrinsicOperator::GT; },
+               [&](const Expr::AND& e) { return op == DefinedOperator::IntrinsicOperator::AND; },
+               [&](const Expr::OR& e) { return op == DefinedOperator::IntrinsicOperator::OR; },
+               [&](const Expr::EQV& e) { return op == DefinedOperator::IntrinsicOperator::EQV; },
+               [&](const Expr::NEQV& e) { return op == DefinedOperator::IntrinsicOperator::NEQV; },
 
-  switch (op) {
-    case IO::NOT:
-      return std::get_if<Expr::NOT>(&expr->u) != nullptr;
-    case IO::Power:
-      return std::get_if<Expr::Power>(&expr->u) != nullptr;
-    case IO::Multiply:
-      return std::get_if<Expr::Multiply>(&expr->u) != nullptr;
-    case IO::Divide:
-      return std::get_if<Expr::Divide>(&expr->u) != nullptr;
-    case IO::Add:
-      return std::get_if<Expr::Add>(&expr->u) != nullptr ||
-             std::get_if<Expr::UnaryPlus>(&expr->u) != nullptr;  // UnaryPlus also uses +
-    case IO::Subtract:
-      return std::get_if<Expr::Subtract>(&expr->u) != nullptr ||
-             std::get_if<Expr::Negate>(&expr->u) != nullptr;  // Negate also uses -
-    case IO::Concat:
-      return std::get_if<Expr::Concat>(&expr->u) != nullptr;
-    case IO::LT:
-      return std::get_if<Expr::LT>(&expr->u) != nullptr;
-    case IO::LE:
-      return std::get_if<Expr::LE>(&expr->u) != nullptr;
-    case IO::EQ:
-      return std::get_if<Expr::EQ>(&expr->u) != nullptr;
-    case IO::NE:
-      return std::get_if<Expr::NE>(&expr->u) != nullptr;
-    case IO::GE:
-      return std::get_if<Expr::GE>(&expr->u) != nullptr;
-    case IO::GT:
-      return std::get_if<Expr::GT>(&expr->u) != nullptr;
-    case IO::AND:
-      return std::get_if<Expr::AND>(&expr->u) != nullptr;
-    case IO::OR:
-      return std::get_if<Expr::OR>(&expr->u) != nullptr;
-    case IO::EQV:
-      return std::get_if<Expr::EQV>(&expr->u) != nullptr;
-    case IO::NEQV:
-      return std::get_if<Expr::NEQV>(&expr->u) != nullptr;
-    default:
-      return false;
-  }
+               [](const auto&) { return false; }},
+      expr->u);
 }
 
 bool isBinaryOperator(const Expr* e) {
@@ -355,64 +337,6 @@ DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(const GenericKind
                                return DefinedOperator::IntrinsicOperator::Add;  // avoid warning
                              }},
                     gk.u);
-}
-
-std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types, const Symbol* typeSymbol) {
-  std::vector<const Type*> typesWithDerived;
-  std::unordered_set<const Symbol*> visited;
-
-  auto findTypeIt = std::find_if(types.begin(), types.end(), [&typeSymbol](const Type& t) {
-    return compareSymbols(t.typeSymbol, typeSymbol, CanonicalMode::ByType);
-  });
-
-  if (findTypeIt == types.end()) {
-    return typesWithDerived;
-  }
-
-  // Add the initial type
-  typesWithDerived.push_back(&(*findTypeIt));
-
-  visited.insert(typeSymbol);
-
-  // collect descendants
-  std::function<void(const Type*)> collectDescendants = [&](const Type* parent) {
-    for (const Type& t : types) {
-      if (compareSymbols(t.extendsFrom, parent->typeSymbol, CanonicalMode::ByType) && !visited.count(t.typeSymbol)) {
-        visited.insert(t.typeSymbol);
-        typesWithDerived.push_back(&t);
-
-        // recursive call to find further descendants
-        collectDescendants(&t);
-      }
-    }
-  };
-  collectDescendants(&(*findTypeIt));
-
-  // collect ancestors
-  const Symbol* currentExtendsFrom = findTypeIt->extendsFrom;
-  while (currentExtendsFrom) {
-    // not sure if Fortran even allows this. But better be safe
-    if (!visited.insert(currentExtendsFrom).second) {
-      MCGLogger::logError("Error: Detected cyclic inheritance involving type \"" +
-                          (currentExtendsFrom ? currentExtendsFrom->name().ToString() : "null") + "\"");
-      break;
-    }
-
-    auto currentTypeIt = std::find_if(types.begin(), types.end(), [&](const Type& t) {
-      return compareSymbols(t.typeSymbol, currentExtendsFrom, CanonicalMode::ByType);
-    });
-
-    if (currentTypeIt == types.end()) {
-      MCGLogger::logError("Error: Types array (extendsFrom) field entry for \"" +
-                          (currentExtendsFrom ? currentExtendsFrom->name().ToString() : "null") + "\" missing");
-      break;
-    }
-
-    typesWithDerived.push_back(&(*currentTypeIt));
-    currentExtendsFrom = currentTypeIt->extendsFrom;
-  }
-
-  return typesWithDerived;
 }
 
 std::string getDetailsName(const Symbol* symbol) {

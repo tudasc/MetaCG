@@ -154,7 +154,7 @@ std::string getOperatorStringFromExpr(const Fortran::parser::Expr* expr);
  *
  * @param op
  */
-std::string getOperatorStringFromDefinedOperator(const Fortran::parser::DefinedOperator& op);
+std::string getOperatorStringFromDefinedOperator(const Fortran::parser::DefinedOperator* op);
 
 /**
  * @brief String representation of `GenericDetails`
@@ -163,7 +163,7 @@ std::string getOperatorStringFromDefinedOperator(const Fortran::parser::DefinedO
  * @param gen
  */
 std::string getOperatorStringFromGenericDetails(const Fortran::semantics::Symbol* symbol,
-                                                const Fortran::semantics::GenericDetails& gen);
+                                                const Fortran::semantics::GenericKind& gen);
 
 /**
  * @brief Compare if expression match given intrinsic operator
@@ -202,23 +202,10 @@ Fortran::parser::DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(
     const Fortran::semantics::GenericKind& gk);
 
 /**
- * @brief First, searches the provided `types` vector for a type that references the given `symbol`. Then, for that
- * type, searches the `types` vector again to find all types that either extend from it or are derived from it. This
- * search is done in two parts: First, all descendants of the type are searched, then all ancestors.
+ * @brief String representation of details of a `Symbol`
  *
- * This is used to handle polymorphic calls. If a type is used in a call, it could be any type that extends from it or
- * is extended from it.
- *
- * NOTE: Possible improvement: Use a Map [Procedure -> List of Procedures that are overridden]
- *
- * @param types
- * @param Symbol symbol to search for
- * @return vector with original type and all types that are derived from it or extend from it. If no type is found with
- * the given symbol, an empty vector is returned.
+ * @param symbol
  */
-std::vector<const Type*> findTypeWithDerivedTypes(const std::vector<Type>& types,
-                                                  const Fortran::semantics::Symbol* symbol);
-
 std::string getDetailsName(const Fortran::semantics::Symbol* symbol);
 
 }  // namespace metacg::cgfcollector

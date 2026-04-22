@@ -5,6 +5,7 @@
  */
 
 #include "ParseTreeVisitor.h"
+#include "FortranUtil.h"
 
 using namespace Fortran::parser;
 using namespace Fortran::semantics;
@@ -568,8 +569,7 @@ void ParseTreeVisitor::Post(const TypeBoundGenericStmt& s) {
   const Indirection<GenericSpec>& genericSpec = std::get<Indirection<GenericSpec>>(s.t);
   if (const DefinedOperator* definedOperator = std::get_if<DefinedOperator>(&genericSpec.value().u)) {
     for (const auto n : std::get<std::list<Name>>(s.t)) {
-      typeOperators[{getAbsoluteBaseSymbol(types, &currentType),
-                     getOperatorStringFromDefinedOperator(*definedOperator)}]
+      typeOperators[{getAbsoluteBaseSymbol(types, &currentType), getOperatorStringFromDefinedOperator(definedOperator)}]
           .emplace_back(n.symbol->name().ToString());
     }
 
@@ -805,7 +805,7 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
           if (const GenericDetails* gen = component->detailsIf<GenericDetails>()) {
             for (const auto& p : gen->specificProcs()) {
               typeOperators[{getAbsoluteBaseSymbol(types, &currentType),
-                             getOperatorStringFromGenericDetails(component, *gen)}]
+                             getOperatorStringFromGenericDetails(component, gen->kind())}]
                   .emplace_back(p.get().name().ToString());
             }
 
