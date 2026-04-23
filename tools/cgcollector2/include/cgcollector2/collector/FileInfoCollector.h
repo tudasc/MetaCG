@@ -1,23 +1,22 @@
 /**
-* File: FileInfoMetadataPlugin.cpp
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
-
-#include "FileInfoMetadata.h"
-#include "Plugin.h"
+ * File: FileInfoCollector.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+#ifndef CGCOLLECTOR2_FILEINFOCOLLECTOR_H
+#define CGCOLLECTOR2_FILEINFOCOLLECTOR_H
+#include "cgcollector2/interface/CGC2Plugin.h"
+#include "metacg/metadata/FileInfoMD.h"
 
 #include <clang/AST/ASTContext.h>
 #include <clang/Basic/SourceManager.h>
-
-
 
 /**
  * Plugin that only generates declaration based metadata
  * The generated metadata is metacg compatible and defined above
  */
 
-struct FileInfoMetadataPlugin : Plugin {
+struct FileInfoCollector : cgcollector2::Plugin {
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(const clang::FunctionDecl* const functionDecl) {
     std::unique_ptr<FileInfoMetadata> result = std::make_unique<FileInfoMetadata>();
     const auto sourceLocation = functionDecl->getLocation();
@@ -29,7 +28,7 @@ struct FileInfoMetadataPlugin : Plugin {
 #else
     const auto fileEntry = fullSrcLoc.getFileEntryRef();
 #endif
-    
+
     if (!fileEntry) {
       return result;
     }
@@ -41,10 +40,7 @@ struct FileInfoMetadataPlugin : Plugin {
     return result;
   };
 
-  FileInfoMetadataPlugin() = default;
+  FileInfoCollector() = default;
 };
 
-// This is the function which is used to get the FileInformationMetadataPlugin struct
-extern "C" {
-FileInfoMetadataPlugin* getPlugin() { return new FileInfoMetadataPlugin(); }
-}
+#endif  // CGCOLLECTOR2_FILEINFOCOLLECTOR_H

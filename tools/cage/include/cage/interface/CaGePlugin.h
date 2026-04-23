@@ -8,6 +8,8 @@
 
 #include <string> //can not predeclare std::string
 
+#include "metacg/LoggerUtil.h"
+
 namespace metacg {
 class Callgraph;
 class Metadata;
@@ -44,8 +46,9 @@ struct Plugin {
   [[nodiscard]] virtual std::string getPluginName() const { return "unnamed Plugin"; }
 };
 
+// Needs to be implemented so the plugin can be loaded
+cage::Plugin* getPlugin();
+
 }  // namespace cage
-
-
 
 #endif  // METACG_CAGEPLUGIN_H

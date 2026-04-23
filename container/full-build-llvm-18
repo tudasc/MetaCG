@@ -26,6 +26,7 @@ RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.
     lld-18
 RUN bash -c "ln -s $(which clang-18) /usr/bin/clang" && \
     bash -c "ln -s $(which clang++-18) /usr/bin/clang++" && \
+    bash -c "ln -s $(which opt-18) /usr/bin/opt" && \
     bash -c "ln -s $(which llvm-config-18) /usr/bin/llvm-config"
 
 ARG extinstalldir=/opt/metacg/extern/install
@@ -59,3 +60,12 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
 RUN cmake --build build --parallel
 
 RUN cmake --install build
+
+RUN cmake -Dmetacg_ROOT=/tmp/metacg -S graph/test/install -B graph/test/build
+RUN cmake --build graph/test/build --parallel
+
+RUN cmake -Dmetacg_ROOT=/tmp/metacg -S tools/cgcollector2/CGC2DemoPlugin -B tools/cgcollector2/CGC2DemoPlugin/build
+RUN cmake --build tools/cgcollector2/CGC2DemoPlugin/build --parallel
+
+RUN cmake -Dmetacg_ROOT=/tmp/metacg -S tools/cage/CaGeDemoPlugin -B tools/cage/CaGeDemoPlugin/build
+RUN cmake --build tools/cage/CaGeDemoPlugin/build --parallel

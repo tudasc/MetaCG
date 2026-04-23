@@ -1,7 +1,7 @@
 /**
-* File: CallGraphNodeGenerator.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: CallGraphNodeGenerator.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
 #ifndef CGCOLLECTOR_CALLGRAPHNODEGENERATOR_H
@@ -108,7 +108,6 @@ class CallGraphNodeGenerator : public clang::RecursiveASTVisitor<CallGraphNodeGe
   clang::NamedDecl* topLevelFD = nullptr;
 
   clang::QualType getFinalPointee(clang::QualType pointerType);
-
 };
 
 #endif  // CGCOLLECTOR_CALLGRAPHNODEGENERATOR_H

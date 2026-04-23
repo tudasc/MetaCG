@@ -1,8 +1,8 @@
 /**
-* File: Plugin.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: Plugin.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #ifndef CGCOLLECTOR2_PLUGIN_H
 #define CGCOLLECTOR2_PLUGIN_H
@@ -24,9 +24,13 @@ namespace metacg {
 class Callgraph;
 }  // namespace metacg
 
+// Predeclare clang::FunctionDecl to allow client tools to not link against clang
+// if they only operate on the graph
 namespace clang {
 class FunctionDecl;
-} // namespace clang
+}  // namespace clang
+
+namespace cgcollector2 {
 
 struct Plugin {
   explicit Plugin() {}
@@ -38,7 +42,9 @@ struct Plugin {
    * @param functionDecl a pointer to a non owned read only clang function declaration
    * @return your custom metadata (needs to inherit from this toplevel class)
    **/
-  virtual std::unique_ptr<metacg::MetaData> computeForDecl([[maybe_unused]] const clang::FunctionDecl* const) { return nullptr; };
+  virtual std::unique_ptr<metacg::MetaData> computeForDecl([[maybe_unused]] const clang::FunctionDecl* const) {
+    return nullptr;
+  };
 
   /**
    * Overwrite if you compute metadata that needs other metadata or has a inter functional computation scope
@@ -47,17 +53,20 @@ struct Plugin {
    * @param cg
    * @return void
    */
-  virtual void computeForGraph([[maybe_unused]] const metacg::Callgraph* const) {};
+  virtual void computeForGraph([[maybe_unused]] metacg::Callgraph* const){};
 
   /**
    * Overwrite this if you want your Plugin to be listed with a name in the debug logs
    * @return the logging name of your plugin
    */
-  virtual std::string getPluginName() const{ return "unnamed Plugin"; }
+  virtual std::string getPluginName() const { return "unnamed Plugin"; }
   virtual ~Plugin() = default;
 };
+}  // namespace cgcollector2
 
-// Todo: This currently only loads one plugin per *.so
-Plugin* loadPlugin(const std::string& pluginPath);
+extern "C" {
+// Needs to be implemented so the plugin can be loaded
+cgcollector2::Plugin* getPlugin();
+}
 
 #endif  // CGCOLLECTOR2_PLUGIN_H

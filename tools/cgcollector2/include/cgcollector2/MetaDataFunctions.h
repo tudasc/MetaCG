@@ -1,7 +1,7 @@
 /**
-* File: MetaDataFunctions.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
+ * File: MetaDataFunctions.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #ifndef CGCOLLECTOR_HELPER_ASTHELPER_H
 #define CGCOLLECTOR_HELPER_ASTHELPER_H

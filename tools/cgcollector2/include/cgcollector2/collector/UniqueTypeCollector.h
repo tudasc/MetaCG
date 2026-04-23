@@ -1,19 +1,16 @@
 /**
-* File: UniqueTypeCollector.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: UniqueTypeCollector.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #ifndef CGCOLLECTOR2_UNIQUETYPECOLLECTOR_H
 #define CGCOLLECTOR2_UNIQUETYPECOLLECTOR_H
 
-#include "Plugin.h"
+#include "cgcollector2/interface/CGC2Plugin.h"
 #include "metacg/metadata/UniqueTypeMD.h"
-
 #include <set>
-
-struct UniqueTypeCollector : public Plugin {
- public:
+struct UniqueTypeCollector : public cgcollector2::Plugin {
   std::string getPluginName() const final { return key; }
 
   static constexpr const char* key = "UniqueTypeCollector";

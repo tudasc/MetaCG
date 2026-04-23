@@ -39,7 +39,6 @@ add_executable(
   src/CallGraphNodeGenerator.cpp
   src/CGCollector2.cpp
   src/MetaDataFunctions.cpp
-  src/Plugin.cpp
   src/SharedDefs.cpp
 )
 default_compile_options(cgcollector2)
@@ -64,11 +63,33 @@ add_metacg(cgcollector2)
 add_spdlog_libraries(cgcollector2)
 add_json(cgcollector2)
 
-# Plugin demo
-add_subdirectory(fileInfoDemoPlugin)
-
 install(
   TARGETS cgcollector2
   EXPORT ${TARGETS_EXPORT_NAME}
   RUNTIME DESTINATION bin
+)
+
+add_library(cgcollector2-plugin-interface INTERFACE)
+
+target_sources(
+  cgcollector2-plugin-interface
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         include
+         FILES
+         include/cgcollector2/interface/CGC2Plugin.h
+         include/cgcollector2/metadata/Internal/ASTNodeMetadata.h
+         include/cgcollector2/metadata/Internal/FunctionSignatureMetadata.h
+         include/cgcollector2/metadata/Internal/AllAliasMetadata.h
+)
+
+target_link_libraries(cgcollector2-plugin-interface INTERFACE metacg::metacg)
+add_llvm(cgcollector2-plugin-interface INTERFACE)
+
+install(
+  TARGETS cgcollector2-plugin-interface
+  EXPORT cgcollector2-plugin-interfaceExport
+  FILE_SET HEADERS
+  DESTINATION include/
 )

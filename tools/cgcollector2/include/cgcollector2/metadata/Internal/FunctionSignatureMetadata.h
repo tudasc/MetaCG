@@ -25,7 +25,7 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
                                                         "FunctionSignatureMetadata");
       return;
     }
-    ownSignature=j;
+    ownSignature = j;
   }
 
   FunctionSignatureMetadata(const FunctionSignatureMetadata& other)
