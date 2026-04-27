@@ -318,8 +318,8 @@ CGC2Plugin-test:
     - export BUILD=$(realpath $BUILD)
     - export INSTALL=$(realpath $INSTALL)
     - cd tools/cgcollector2/CGC2DemoPlugin
-    - CMAKE_PREFIX_PATH=$INSTALL/lib64/cmake/metacg cmake -S . -B $BUILD-install-test
-    - cmake --build $BUILD-install-test --parallel
+    - CMAKE_PREFIX_PATH=$INSTALL/lib64/cmake/metacg cmake -S . -B $BUILD-install-test-cgc2
+    - cmake --build $BUILD-install-test-cgc2 --parallel
 
 CaGePlugin-test:
   <<: *job-setup
@@ -329,5 +329,5 @@ CaGePlugin-test:
     - export BUILD=$(realpath $BUILD)
     - export INSTALL=$(realpath $INSTALL)
     - cd tools/cage/CaGeDemoPlugin
-    - CMAKE_PREFIX_PATH=$INSTALL/lib64/cmake/metacg cmake -S . -B $BUILD-install-test
-    - cmake --build $BUILD-install-test --parallel
+    - CMAKE_PREFIX_PATH=$INSTALL/lib64/cmake/metacg cmake -S . -B $BUILD-install-test-cage
+    - cmake --build $BUILD-install-test-cage --parallel
