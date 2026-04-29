@@ -95,7 +95,7 @@ if(METACG_BUILD_GRAPH_TOOLS)
   # Determine if we can build CaGe
   if(${LLVM_PACKAGE_VERSION}
      GREATER
-     15
+     14
   )
     set(BUILD_CAGE ON)
 
