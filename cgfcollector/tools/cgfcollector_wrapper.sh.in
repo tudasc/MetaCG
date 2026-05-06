@@ -6,10 +6,11 @@
 #     cgfcollector_wrapper.sh [options] [flang options and source files]
 #
 # Options:
-#     -d, --dot       # Additionally generate a DOT file. This is mostly used for debugging.
-#     --no-rename     # Do not rename the output file.
-#     -v, --verbose   # Print additional information during the generation process.
-#     --graph-name    # Set internal graph name
+#     -d, --dot             # Additionally generate a DOT file. This is mostly used for debugging.
+#     --no-rename           # Do not rename the output file.
+#     -v, --verbose         # Print additional information during the generation process.
+#     --graph-name          # Set internal graph name
+#     --include-intrinsics  # Include intrinsic calls in the generated call graph.
 
 flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang-new"}
 
