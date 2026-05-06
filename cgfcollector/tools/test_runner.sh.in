@@ -5,6 +5,9 @@
 # Usage:
 #     test_runner.sh                      # run all tests
 #     test_runner.sh [test_name]          # run specific test cases
+#
+# Note: Options starting with '-' are passed directly to the cgfcollector
+#       plugin. For a list see README.md.
 
 : "${CI_CONCURRENT_ID:=$(date +%s)}"
 
