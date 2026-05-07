@@ -378,10 +378,10 @@ class ParseTreeVisitor {
   // args when the AST walker is in the respective function.
   std::vector<Function> currentFunctions;
 
-  // all types. This vector collects all types that were discovered during traversal of the parse tree.
+  // This vector collects all types that were discovered during traversal of the parse tree.
   std::vector<Type> types;
 
-  // all interface operators. First is either a symbol of a DefinedOpName or
+  // Collects all interface operators discovered during traversal. First is either a symbol of a DefinedOpName or
   // IntrinsicOperator. Second is a vector procedure symbols, bound to that operator.
   std::vector<
       std::pair<std::variant<const Fortran::semantics::Symbol*, Fortran::parser::DefinedOperator::IntrinsicOperator>,
@@ -402,10 +402,11 @@ class ParseTreeVisitor {
                      std::vector<const Fortran::semantics::Symbol*>, pair_hash>
       procedureOverwrites;
 
-  // type -> finalizer procedures
+  // Maps each type to its finalizers
   std::unordered_map<const Fortran::semantics::Symbol*, std::vector<const Fortran::semantics::Symbol*>> finalizers;
 
-  // {type, operator} -> {binding names}
+  // Maps each (type, type-bound operator name) pair to the set of procedures that implement it. The value string can be
+  // used with @ref procedureOverwrites to find all overriding implementations of this operator.
   std::unordered_map<std::pair<const Fortran::semantics::Symbol*, std::string>, std::vector<std::string>, pair_hash>
       typeOperators;
 };

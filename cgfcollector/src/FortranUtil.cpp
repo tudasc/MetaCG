@@ -5,6 +5,7 @@
  */
 
 #include "FortranUtil.h"
+
 #include <flang/Semantics/symbol.h>
 
 using namespace Fortran::semantics;

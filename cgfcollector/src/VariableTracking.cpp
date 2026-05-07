@@ -5,7 +5,6 @@
  */
 
 #include "VariableTracking.h"
-
 #include "FortranUtil.h"
 
 using namespace Fortran::semantics;

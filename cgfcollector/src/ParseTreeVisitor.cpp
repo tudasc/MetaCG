@@ -6,6 +6,8 @@
 
 #include "ParseTreeVisitor.h"
 #include "FortranUtil.h"
+#include <flang/Parser/parse-tree.h>
+#include <flang/Semantics/symbol.h>
 
 using namespace Fortran::parser;
 using namespace Fortran::semantics;
@@ -84,7 +86,7 @@ void ParseTreeVisitor::postProcess() {
   for (const auto& [key, values] : procedureOverwrites) {
     MCGLogger::logDebug("  Type: {} ({}) ({}), Name: {}", key.first ? key.first->name().ToString() : "nullptr",
                         getDetailsName(key.first), fmt::ptr(key.first), key.second);
-    for (const auto& value : values) {
+    for (const Symbol* value : values) {
       MCGLogger::logDebug("    Overwrites: {} ({}) ({})", value->name(), getDetailsName(value), fmt::ptr(value));
     }
   }
@@ -92,7 +94,7 @@ void ParseTreeVisitor::postProcess() {
   MCGLogger::logDebug("finalizers Map:");
   for (const auto& [key, values] : finalizers) {
     MCGLogger::logDebug("  Type: {} ({}) ({})", key->name(), getDetailsName(key), fmt::ptr(key));
-    for (const auto& value : values) {
+    for (const Symbol* value : values) {
       MCGLogger::logDebug("    Finalizer: {} ({}) ({})", value->name(), getDetailsName(value), fmt::ptr(value));
     }
   }
@@ -101,7 +103,7 @@ void ParseTreeVisitor::postProcess() {
   for (const auto& [key, values] : typeOperators) {
     MCGLogger::logDebug("  Type: {} ({}) ({}), Operator: {}", key.first ? key.first->name().ToString() : "nullptr",
                         getDetailsName(key.first), fmt::ptr(key.first), key.second);
-    for (const auto& value : values) {
+    for (const std::string& value : values) {
       MCGLogger::logDebug("    Binding name: {}", value);
     }
   }
@@ -445,8 +447,8 @@ void ParseTreeVisitor::Post(const DerivedTypeDef&) {
 
   // finalizers (must be after extends discovery)
   Type& currentType = types.back();
-  auto canon = canonicalizeSymbol(currentType.typeSymbol).symbol;
-  if (auto* details = canon->detailsIf<DerivedTypeDetails>()) {
+  const Symbol* canon = canonicalizeSymbol(currentType.typeSymbol).symbol;
+  if (const DerivedTypeDetails* details = canon->detailsIf<DerivedTypeDetails>()) {
     for (const auto& final : details->finals()) {
       finalizers[getAbsoluteBaseSymbol(types, &currentType)].emplace_back(&final.second.get());
     }
@@ -541,7 +543,7 @@ void ParseTreeVisitor::Post(const TypeBoundGenericStmt& s) {
   // to the current type.
   const Indirection<GenericSpec>& genericSpec = std::get<Indirection<GenericSpec>>(s.t);
   if (const DefinedOperator* definedOperator = std::get_if<DefinedOperator>(&genericSpec.value().u)) {
-    for (const auto n : std::get<std::list<Name>>(s.t)) {
+    for (const Name n : std::get<std::list<Name>>(s.t)) {
       typeOperators[{getAbsoluteBaseSymbol(types, &currentType), getOperatorStringFromDefinedOperator(definedOperator)}]
           .emplace_back(n.symbol->name().ToString());
     }
@@ -621,10 +623,10 @@ bool ParseTreeVisitor::Pre(const Expr& e) {
       } else if (std::holds_alternative<const Symbol*>(op.first)) {
         const Symbol* definedOpNameSym = std::get<const Symbol*>(op.first);
         if (const Expr::DefinedUnary* definedUnary = std::get_if<Expr::DefinedUnary>(&e->u)) {
-          const auto& exprOpName = std::get<0>(definedUnary->t);
+          const DefinedOpName& exprOpName = std::get<0>(definedUnary->t);
           return definedOpNameSym->name() == exprOpName.v.symbol->name();
         } else if (const Expr::DefinedBinary* definedBinary = std::get_if<Expr::DefinedBinary>(&e->u)) {
-          const auto& exprOpName = std::get<0>(definedBinary->t);
+          const DefinedOpName& exprOpName = std::get<0>(definedBinary->t);
           return definedOpNameSym->name() == exprOpName.v.symbol->name();
         }
       }
@@ -727,7 +729,7 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
         // extends
         if (const Symbol* extendsSymbol = details->GetParentComponent(*symbol->scope())) {
           if (const ObjectEntityDetails* objectDetails = extendsSymbol->detailsIf<ObjectEntityDetails>()) {
-            if (const auto* typeSym = getTypeAsDerivedTypeSymbol(extendsSymbol)) {
+            if (const Symbol* typeSym = getTypeAsDerivedTypeSymbol(extendsSymbol)) {
               currentType.extendsFrom = typeSym;
 
               MCGLogger::logDebug("Found extends in module derived type: {} ({}) ({}) -> {} ({}) ({})", symbol->name(),
@@ -738,8 +740,8 @@ void ParseTreeVisitor::Post(const UseStmt& u) {
         }
 
         // finalizers (must be after extends discovery)
-        auto canon = canonicalizeSymbol(symbol).symbol;
-        if (auto* details = canon->detailsIf<DerivedTypeDetails>()) {
+        const Symbol* canon = canonicalizeSymbol(symbol).symbol;
+        if (const DerivedTypeDetails* details = canon->detailsIf<DerivedTypeDetails>()) {
           for (const auto& final : details->finals()) {
             finalizers[getAbsoluteBaseSymbol(types, &currentType)].emplace_back(&final.second.get());
           }
