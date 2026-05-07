@@ -202,7 +202,7 @@ Fortran::parser::DefinedOperator::IntrinsicOperator variantGetIntrinsicOperator(
     const Fortran::semantics::GenericKind& gk);
 
 /**
- * @brief String representation of details of a `Symbol`
+ * @brief String representation of details of a symbols details.
  *
  * @param symbol
  */

@@ -232,19 +232,21 @@ class ParseTreeVisitor {
   // The following methods are for collecting types and their procedures. See type struct and vector.
 
   /**
-   * @brief Type definition start
+   * @brief Bookkeeping: At the start of a derived type definition. Also start collecting type information and
+   * store in `types` vector.
    *
    * @return
    */
   bool Pre(const Fortran::parser::DerivedTypeDef&);
 
   /**
-   * @brief Type definition end
+   * @brief Bookkeeping: At the end of a derived type definition. Also collect finializers for that derived
+   * type.
    */
   void Post(const Fortran::parser::DerivedTypeDef&);
 
   /**
-   * @brief Type statement like type [, extends(...)] :: body (not exhaustive and not extends)
+   * @brief Collect derived type symbol.
    *
    * @param t
    * @return
