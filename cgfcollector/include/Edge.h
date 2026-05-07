@@ -62,13 +62,13 @@ struct EdgeManager {
    * into account by following the type hierarchy defined in `types`.
    *
    * @param types
-   * @param currentFunctionSymbol From node
+   * @param currentProcedureSymbol From node
    * @param symbol To node
    */
   void addEdgesForFinalizers(const std::vector<Type>& types,
                              const std::unordered_map<const Fortran::semantics::Symbol*,
                                                       std::vector<const Fortran::semantics::Symbol*>>& finalizers,
-                             const Fortran::semantics::Symbol* currentFunctionSymbol,
+                             const Fortran::semantics::Symbol* currentProcedureSymbol,
                              const Fortran::semantics::Symbol* symbol);
 
   /**

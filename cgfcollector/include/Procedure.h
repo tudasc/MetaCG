@@ -1,18 +1,18 @@
 /**
- * File: Function.h
+ * File: Procedure.h
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#ifndef METACG_CGFCOLLECTOR_FUNCTION_H
-#define METACG_CGFCOLLECTOR_FUNCTION_H
+#ifndef METACG_CGFCOLLECTOR_PROCEDURE_H
+#define METACG_CGFCOLLECTOR_PROCEDURE_H
 
 #include <flang/Semantics/symbol.h>
 #include <vector>
 
 namespace metacg::cgfcollector {
 
-struct Function {
+struct Procedure {
   struct DummyArg {
     const Fortran::semantics::Symbol* symbol;
     bool hasBeenInitialized = false;
@@ -21,11 +21,11 @@ struct Function {
     explicit DummyArg(const Fortran::semantics::Symbol* sym, bool init) : symbol(sym), hasBeenInitialized(init) {}
   };
 
-  const Fortran::semantics::Symbol* symbol;  // function symbol
+  const Fortran::semantics::Symbol* symbol;  // procedure symbol
   std::vector<DummyArg> dummyArgs;
 
-  explicit Function(const Fortran::semantics::Symbol* sym) : symbol(sym) {}
-  explicit Function(const Fortran::semantics::Symbol* sym, std::vector<DummyArg> args)
+  explicit Procedure(const Fortran::semantics::Symbol* sym) : symbol(sym) {}
+  explicit Procedure(const Fortran::semantics::Symbol* sym, std::vector<DummyArg> args)
       : symbol(sym), dummyArgs(std::move(args)) {}
 
   void addDummyArg(const Fortran::semantics::Symbol* sym) { dummyArgs.emplace_back(sym); }
@@ -33,4 +33,4 @@ struct Function {
 
 }  // namespace metacg::cgfcollector
 
-#endif  // METACG_CGFCOLLECTOR_FUNCTION_H
+#endif  // METACG_CGFCOLLECTOR_PROCEDURE_H

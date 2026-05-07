@@ -9,8 +9,8 @@
 
 #include "Edge.h"
 #include "FortranUtil.h"
-#include "Function.h"
 #include "PotentialFinalizer.h"
+#include "Procedure.h"
 #include "Type.h"
 #include "VariableTracking.h"
 
@@ -61,15 +61,16 @@ class ParseTreeVisitor {
         underscoring(underscoring),
         includeInstrinsics(includeInstrinsics),
         edgeM(std::make_unique<EdgeManager>(edges, underscoring)),
-        varTracking(std::make_unique<VariableTracking>(trackedVars, types, functions, finalizers, underscoring)) {};
+        varTracking(std::make_unique<VariableTracking>(trackedVars, types, procedures, finalizers, underscoring)) {};
 
   /**
-   * @brief Add dummy args to current function in `currentFunctions` and `functions`. Also initiates variable tracking.
+   * @brief Add dummy args to current procedure in `currentProcedures` and `Procedures`. Also initiates variable
+   * tracking.
    *
    * @tparam Iterable
    * @tparam Extractor
    * @param items List of dummy args
-   * @param extract Function to extract dummy arg to `Symbol`
+   * @param extract Procedure to extract dummy arg to `Symbol`
    */
   template <typename Iterable, typename Extractor>
   void handleDummyArgs(const Iterable& items, Extractor extract);
@@ -77,9 +78,9 @@ class ParseTreeVisitor {
   /**
    * @brief Collects function/subroutine statements (begin) and their dummy args.
    *
-   * This method populates `currentFunctions` and `functions` vectors. It also adds a node for the procedure to the call
-   * graph. Also this method should only be called from a `FunctionStmt` and `SubroutineStmt` visitor methods. It is
-   * implemented as a template to avoid code duplication.
+   * This method populates `currentProcedures` and `Procedures` vectors. It also adds a node for the procedure to the
+   * call graph. Also this method should only be called from a `FunctionStmt` and `SubroutineStmt` visitor methods. It
+   * is implemented as a template to avoid code duplication.
    *
    * @tparam T
    * @param stmt
@@ -90,7 +91,7 @@ class ParseTreeVisitor {
   /**
    * @brief Handles function/subroutine end statements.
    *
-   * At the end of a function, we handle the tracked variables and maintain `currentFunctions`.
+   * At the end of a procedure, we handle the tracked variables and maintain `currentProcedures`.
    */
   void handleEndFuncSubStmt();
 
@@ -165,7 +166,7 @@ class ParseTreeVisitor {
   void Post(const Fortran::parser::EntryStmt& e);
 
   /**
-   * @brief Function entry: Call `handleFuncSubStmt`, and collect function arguments for `functions` vector.
+   * @brief Function entry: Call `handleFuncSubStmt`, and collect procedure arguments for `procedure` vector.
    *
    * @param f
    */
@@ -177,7 +178,7 @@ class ParseTreeVisitor {
   void Post(const Fortran::parser::EndFunctionStmt&);
 
   /**
-   * @brief Function entry: Call `handleFuncSubStmt`, and collect subroutine arguments for `functions` vector.
+   * @brief Function entry: Call `handleFuncSubStmt`, and collect subroutine arguments for `procedures` vector.
    *
    * @param f
    */
@@ -372,13 +373,13 @@ class ParseTreeVisitor {
   // added to cg in postProcess step
   std::vector<Edge> edges;
 
-  // all functions. This vector collects all functions (+ dummy args) that were discovered during traversal of the parse
-  // tree.
-  std::vector<Function> functions;
+  // all procedures. This vector collects all procedures (+ dummy args) that were discovered during traversal of the
+  // parse tree.
+  std::vector<Procedure> procedures;
 
-  // intended as a stack. It holds the current function symbol and its dummy
-  // args when the AST walker is in the respective function.
-  std::vector<Function> currentFunctions;
+  // intended as a stack. It holds the current procedure symbol and its dummy
+  // args when the AST walker is in the respective procedure.
+  std::vector<Procedure> currentProcedures;
 
   // This vector collects all types that were discovered during traversal of the parse tree.
   std::vector<Type> types;

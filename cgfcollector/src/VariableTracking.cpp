@@ -12,23 +12,23 @@ using namespace metacg;
 
 namespace metacg::cgfcollector {
 
-TrackedVar* VariableTracking::getTrackedVarFromSourceName(const Symbol* currentFunctionSymbol, SourceName sourceName) {
+TrackedVar* VariableTracking::getTrackedVarFromSourceName(const Symbol* currentProcedureSymbol, SourceName sourceName) {
   auto anyTrackedVarIt = std::find_if(trackedVars.begin(), trackedVars.end(),
                                       [&](const TrackedVar& t) { return t.var->name() == sourceName; });
   if (anyTrackedVarIt == trackedVars.end())
     return nullptr;
 
-  // find local variable with the same name in the current function scope (shadowed)
+  // find local variable with the same name in the current procedure scope (shadowed)
   auto localVarIt = std::find_if(trackedVars.begin(), trackedVars.end(), [&](const TrackedVar& t) {
-    return t.var->name() == sourceName && compareSymbols(t.procedure, currentFunctionSymbol);
+    return t.var->name() == sourceName && compareSymbols(t.procedure, currentProcedureSymbol);
   });
 
   // prefer local var if found
   return (localVarIt != trackedVars.end()) ? &(*localVarIt) : &(*anyTrackedVarIt);
 }
 
-void VariableTracking::handleTrackedVarAssignment(const Symbol* currentFunctionSymbol, SourceName sourceName) {
-  TrackedVar* trackedVar = getTrackedVarFromSourceName(currentFunctionSymbol, sourceName);
+void VariableTracking::handleTrackedVarAssignment(const Symbol* currentProcedureSymbol, SourceName sourceName) {
+  TrackedVar* trackedVar = getTrackedVarFromSourceName(currentProcedureSymbol, sourceName);
   if (!trackedVar)
     return;
 
@@ -38,17 +38,17 @@ void VariableTracking::handleTrackedVarAssignment(const Symbol* currentFunctionS
                       fmt::ptr(trackedVar->var));
 }
 
-void VariableTracking::handleTrackedVars(const Symbol* currentFunctionSymbol, std::unique_ptr<EdgeManager>& edgeM) {
+void VariableTracking::handleTrackedVars(const Symbol* currentProcedureSymbol, std::unique_ptr<EdgeManager>& edgeM) {
   // the fortran standard does not require finalizers for variables in the main program. So we skip it.
   // NOTE: Flang does call them.
-  if (mangleSymbol(currentFunctionSymbol, underscoring) == "_QQmain") {
+  if (mangleSymbol(currentProcedureSymbol, underscoring) == "_QQmain") {
     return;
   }
 
   if (!trackedVars.empty()) {
-    MCGLogger::logDebug("Handle tracked vars for function {} ({}) ({})",
-                        mangleSymbol(currentFunctionSymbol, underscoring), getDetailsName(currentFunctionSymbol),
-                        fmt::ptr(currentFunctionSymbol));
+    MCGLogger::logDebug("Handle tracked vars for procedure {} ({}) ({})",
+                        mangleSymbol(currentProcedureSymbol, underscoring), getDetailsName(currentProcedureSymbol),
+                        fmt::ptr(currentProcedureSymbol));
   }
 
   for (TrackedVar& trackedVar : trackedVars) {
@@ -58,29 +58,30 @@ void VariableTracking::handleTrackedVars(const Symbol* currentFunctionSymbol, st
 
     if (!trackedVar.hasBeenInitialized)
       continue;
-    if (trackedVar.procedure != currentFunctionSymbol)
+    if (trackedVar.procedure != currentProcedureSymbol)
       continue;
 
     // add edge for deconstruction (finalizer)
     if (trackedVar.addFinalizers) {
-      edgeM->addEdgesForFinalizers(types, finalizers, currentFunctionSymbol, trackedVar.var);
+      edgeM->addEdgesForFinalizers(types, finalizers, currentProcedureSymbol, trackedVar.var);
     }
 
-    // set init on dummy function args
-    auto functionIt = std::find_if(functions.begin(), functions.end(),
-                                   [&](const Function& f) { return compareSymbols(f.symbol, currentFunctionSymbol); });
-    if (functionIt != functions.end()) {
+    // set init on dummy procedure args
+    auto procedureIt = std::find_if(procedures.begin(), procedures.end(), [&](const Procedure& f) {
+      return compareSymbols(f.symbol, currentProcedureSymbol);
+    });
+    if (procedureIt != procedures.end()) {
       auto dummyArgIt =
-          std::find_if(functionIt->dummyArgs.begin(), functionIt->dummyArgs.end(),
-                       [&](const Function::DummyArg& d) { return compareSymbols(d.symbol, trackedVar.var); });
-      if (dummyArgIt != functionIt->dummyArgs.end()) {
+          std::find_if(procedureIt->dummyArgs.begin(), procedureIt->dummyArgs.end(),
+                       [&](const Procedure::DummyArg& d) { return compareSymbols(d.symbol, trackedVar.var); });
+      if (dummyArgIt != procedureIt->dummyArgs.end()) {
         dummyArgIt->hasBeenInitialized = true;
       }
     }
   }
 
   // cleanup trackedVars
-  removeTrackedVars(currentFunctionSymbol);
+  removeTrackedVars(currentProcedureSymbol);
 }
 
 void VariableTracking::addTrackedVar(TrackedVar var) {

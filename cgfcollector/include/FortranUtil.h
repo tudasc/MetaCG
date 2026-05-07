@@ -83,7 +83,7 @@ const Fortran::semantics::Symbol* getAbsoluteBaseSymbol(const std::vector<Type>&
 
 enum class CanonicalMode {
   Identity,  // preserve variables/procedures by symbol
-  ByType,    // normalize variables/functions by derived type
+  ByType,    // normalize variables/procedures by derived type
 };
 
 /**

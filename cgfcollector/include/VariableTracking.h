@@ -8,7 +8,7 @@
 #define METACG_CGFCOLLECTOR_VARIABLETRACKING_H
 
 #include "Edge.h"
-#include "Function.h"
+#include "Procedure.h"
 #include "Type.h"
 
 #include <flang/Semantics/symbol.h>
@@ -38,7 +38,7 @@ struct TrackedVar {
 
 /**
  * @class VariableTracking
- * @brief Handle tracking of variable initializations and finalizations at the end of the function scope.
+ * @brief Handle tracking of variable initializations and finalizations at the end of the procedure scope.
  *
  * NOTE: Variables cannot be reliably tracked across multiple procedure calls. If a variable is passed into one
  * procedure and then forwarded to another, it is no longer suffientily tracked and remains uninitialized in
@@ -47,42 +47,42 @@ struct TrackedVar {
 struct VariableTracking {
  public:
   VariableTracking(
-      std::vector<TrackedVar>& trackedVars, std::vector<Type>& types, std::vector<Function>& functions,
+      std::vector<TrackedVar>& trackedVars, std::vector<Type>& types, std::vector<Procedure>& procedures,
       std::unordered_map<const Fortran::semantics::Symbol*, std::vector<const Fortran::semantics::Symbol*>>& finalizers,
       bool underscoring)
       : trackedVars(trackedVars),
         types(types),
-        functions(functions),
+        procedures(procedures),
         finalizers(finalizers),
         underscoring(underscoring) {}
 
   /**
-   * @brief Search trackedVars for a canditate by source name. Also taking the current function scope into account.
+   * @brief Search trackedVars for a canditate by source name. Also taking the current procedure scope into account.
    *
-   * @param currentFunctionSymbol
+   * @param currentProcedureSymbol
    * @param sourceName
    * @return trackedVar* or nullptr if not found
    */
-  [[nodiscard]] TrackedVar* getTrackedVarFromSourceName(const Fortran::semantics::Symbol* currentFunctionSymbol,
+  [[nodiscard]] TrackedVar* getTrackedVarFromSourceName(const Fortran::semantics::Symbol* currentProcedureSymbol,
                                                         Fortran::semantics::SourceName sourceName);
 
   /**
    * @brief Search trackedVars for a canditate and set it as initialized.
    *
-   * @param currentFunctionSymbol
+   * @param currentProcedureSymbol
    * @param sourceName
    */
-  void handleTrackedVarAssignment(const Fortran::semantics::Symbol* currentFunctionSymbol,
+  void handleTrackedVarAssignment(const Fortran::semantics::Symbol* currentProcedureSymbol,
                                   Fortran::semantics::SourceName sourceName);
 
   /**
    * @brief Is called at the end of a function/subroutine end statement. It checks trackedVars for any initialized
    * variables and adds edges. Currently only adds finalizer edges.
    *
-   * @param currentFunctionSymbol
+   * @param currentProcedureSymbol
    * @param edgeM TODO: remove dep
    */
-  void handleTrackedVars(const Fortran::semantics::Symbol* currentFunctionSymbol, std::unique_ptr<EdgeManager>& edgeM);
+  void handleTrackedVars(const Fortran::semantics::Symbol* currentProcedureSymbol, std::unique_ptr<EdgeManager>& edgeM);
 
   /**
    * @brief Register a variable for tracking.
@@ -102,7 +102,7 @@ struct VariableTracking {
  private:
   std::vector<TrackedVar>& trackedVars;
   std::vector<Type>& types;
-  std::vector<Function>& functions;
+  std::vector<Procedure>& procedures;
   std::unordered_map<const Fortran::semantics::Symbol*, std::vector<const Fortran::semantics::Symbol*>>& finalizers;
   bool underscoring;
 };
