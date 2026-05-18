@@ -24,6 +24,9 @@ spack:
     - py-nanobind
     - py-pytest-cmake
 
+    # For cgfcollector
+    - py-fortdepend
+
   view: true
   concretizer:
     unify: true
