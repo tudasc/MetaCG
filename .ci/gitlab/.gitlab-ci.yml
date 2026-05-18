@@ -111,6 +111,8 @@ build:
     - export CXX=$(which ${_CXX})
     - echo $CC
     - echo $CXX
+    - spack load --first python
+    - pip install fortdepend
     - cmake -S . -B $BUILD 
       -DCMAKE_INSTALL_PREFIX=$INSTALL
       -DCMAKE_C_COMPILER=$_CC
