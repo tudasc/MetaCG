@@ -279,6 +279,20 @@ test-cage:
 
 test-cgfcollector:
   <<: *job-setup
+  parallel:
+    matrix:
+      - GCC: 11
+        LLVM: [18.1.8, 19.1.7, 20.1.8, 21.1.4]
+        _CC: clang
+        _CXX: clang++
+      - GCC: 15
+        LLVM: [21.1.4]
+        _CC: clang
+        _CXX: clang++
+      - GCC: 15
+        LLVM: [21.1.4]
+        _CC: gcc
+        _CXX: g++
   stage: integration-test
   script:
     - cd $BUILD/cgfcollector
