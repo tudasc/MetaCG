@@ -127,6 +127,7 @@ build:
       -DMETACG_USE_EXTERNAL_NANOBIND=ON
       -DLLVM_EXTERNAL_LIT=$(which lit)
       -DCUBE_DIR=$(spack location -i cubelib)
+      -DMETACG_BUILD_CGFCOLLECTOR=ON
     - cmake --build $BUILD --parallel
 
 # test whether a custom in-tree metadata type gets included in the build
@@ -276,6 +277,13 @@ test-cage:
     - cd $BUILD/tools/cage/test
     - ./runCaGeTests.sh
 
+test-cgfcollector:
+  <<: *job-setup
+  stage: integration-test
+  script:
+    - cd $BUILD/cgfcollector
+    - ctest . --verbose
+
 
 # Stage: install
 # ==============
@@ -294,6 +302,7 @@ install:
     - stat $INSTALL/bin/cgformat
     - stat $INSTALL/bin/cgconvert
     - stat $INSTALL/bin/cgtodot
+    - stat $INSTALL/lib64/libcgfcollector.so
     - export LD_LIBRARY_PATH=$INSTALL/lib64:$INSTALL/lib:$LD_LIBRARY_PATH
     - $INSTALL/bin/metacg-config --help
     - $INSTALL/bin/cgcollector --help
