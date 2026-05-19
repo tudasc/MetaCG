@@ -222,7 +222,7 @@ option(
 )
 
 if(METACG_BUILD_CGFCOLLECTOR)
-  if (NOT METACG_BUILD_GRAPH_TOOLS)
+  if(NOT METACG_BUILD_GRAPH_TOOLS)
     message(FATAL_ERROR "CGFCollector requires METACG_BUILD_GRAPH_TOOLS=ON to build")
   endif()
 
