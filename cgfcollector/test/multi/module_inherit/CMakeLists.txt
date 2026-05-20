@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(module_inherit LANGUAGES Fortran)
-
 include(../cmake_base.txt)
+
+project(module_inherit LANGUAGES Fortran)
 
 file(
   GLOB
