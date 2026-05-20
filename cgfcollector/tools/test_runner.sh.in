@@ -93,7 +93,7 @@ function run_single_test()
             return 1
         fi
 
-        @CGFCOLLECTOR_WRAPPER@ "${cgfcollector_options[@]}" -o "$actual_output" "${input_files[@]}" || {
+        @CGFCOLLECTOR_COMP_WRAPPER@ "${cgfcollector_options[@]}" -o "$actual_output" "${input_files[@]}" || {
             echo "Failed: could not generate CG"
             return 1
         }

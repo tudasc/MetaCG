@@ -12,10 +12,34 @@
 # with the original arguments to perform the actual compilation.
 #
 # Usage:
-#     cgfcollector_comp_wrapper.sh [flang options and source files]
+#     cgfcollector_comp_wrapper.sh [flang options, source files, plugin options]
+#
+# Plugin-specific options:
+#     -d, --dot             # Additionally generate a DOT file. This is mostly used for debugging.
+#     --no-rename           # Do not rename the output file.
+#     --skip-gen-bin        # Skip the final compilation step. Only generate the call graph.
+#     -v, --verbose         # Print additional information during the generation process.
+#     --graph-name          # Set internal graph name
+#     --include-intrinsics  # Include intrinsic calls in the generated call graph.
 
 flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang-new"}
-flang_fc1_bin=${CGFCOLLECTOR_FLANG_FC1_BIN:-"flang-new"}
+
+# plugin-specific options wrapped in -mllvm plugin flags
+declare -A OPTION_MAP=(
+    ["-d"]="--dot"
+    ["--dot"]="--dot"
+    ["--no-rename"]="--no-rename"
+    ["--skip-gen-bin"]="--skip-gen-bin"
+    ["-v"]="--verbose"
+    ["--verbose"]="--verbose"
+    ["--graph-name"]="--graph-name"
+    ["--include-intrinsics"]="--include-intrinsics"
+)
+
+if [[ $# -gt 0 && "$1" != -* ]] && command -v "$1" &>/dev/null; then
+    flang_bin="$1"
+    shift
+fi
 
 if ! command -v "$flang_bin" &>/dev/null; then
     echo "Error: $flang_bin not found in PATH."
@@ -25,6 +49,9 @@ fi
 source_files=()
 options=()
 all_args=("$@")
+forward_args=()
+skip_gen_bin=false
+output_file=""
 
 # If you're using the `mpif90` wrapper, we are extracting the underlying compiler arguments using `mpif90 --show`.
 #
@@ -37,12 +64,33 @@ fi
 
 # Extract all flags that are compatible with `-fc1`.
 option_o=false
+option_module_dir=false
 for arg in "${all_args[@]}"; do
-    if [ "$option_o" = true ]; then
+    if $option_o; then
         options+=("$arg")
+        forward_args+=("$arg")
+        output_file="$arg"
         option_o=false
         continue
     fi
+    if $option_module_dir; then
+        options+=("$arg")
+        forward_args+=("$arg")
+        option_module_dir=false
+        continue
+    fi
+
+    # plugin-specific options (mapped to -mllvm flags)
+    if [[ -n "${OPTION_MAP[$arg]}" ]]; then
+        if [[ "$arg" == "--skip-gen-bin" ]]; then
+            skip_gen_bin=true
+            continue
+        fi
+        options+=("-mllvm" "${OPTION_MAP[$arg]}")
+        continue
+    fi
+
+    forward_args+=("$arg")
 
     case "$arg" in
     -fPIC)
@@ -55,13 +103,25 @@ for arg in "${all_args[@]}"; do
         options+=("$arg")
         option_o=true
         ;;
+    -module-dir)
+        options+=("$arg")
+        option_module_dir=true
+        ;;
     *.f90 | *.F90)
         source_files+=("$arg")
         ;;
     esac
 done
 
-if [ ${#source_files[@]} -gt 0 ]; then
-    $flang_fc1_bin -fc1 -load "@CGFCOLLECTOR_FILE_NAME_LIB@" -plugin "genCG" "${options[@]}" "${source_files[@]}"
+# If output ends in `.mcg`, we assume the user only want to generate the call graph.
+if [[ "$output_file" == *.mcg ]]; then
+    skip_gen_bin=true
 fi
-$flang_bin "$@"
+
+if [ ${#source_files[@]} -gt 0 ]; then
+    $flang_bin -fc1 -load "@CGFCOLLECTOR_FILE_NAME_LIB@" -plugin "genCG" "${options[@]}" "${source_files[@]}"
+fi
+
+if ! $skip_gen_bin; then
+    exec "$flang_bin" "${forward_args[@]}"
+fi

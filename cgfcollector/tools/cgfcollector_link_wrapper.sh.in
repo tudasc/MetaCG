@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+# Wrapper script for merging call graphs at link time.
+#
+# Usage:
+#     cgfcollector_link_wrapper.sh [flang options and object files]
+
+flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang-new"}
+cgmerge2_bin=${CGFCOLLECTOR_CGMERGE2_BIN:-"@CGMERGE2_BIN@"}
+
+if [[ $# -gt 0 && "$1" != -* ]] && command -v "$1" &>/dev/null; then
+    flang_bin="$1"
+    shift
+fi
+
+if ! command -v "$flang_bin" &>/dev/null; then
+    echo "Error: $flang_bin not found in PATH."
+    exit 1
+fi
+
+if ! command -v "$cgmerge2_bin" &>/dev/null; then
+    echo "Error: $cgmerge2_bin not found in PATH."
+    exit 1
+fi
+
+object_files=()
+output_file=""
+
+# Extract object files
+option_o=false
+skip_gen_bin=false
+for arg in "$@"; do
+    if [ "$option_o" = true ]; then
+        output_file="$arg"
+        option_o=false
+        continue
+    fi
+
+    case "$arg" in
+    --skip_gen_bin)
+        skip_gen_bin=true
+        ;;
+    -o)
+        option_o=true
+        ;;
+    *.o)
+        object_files+=("$arg")
+        ;;
+    esac
+done
+
+if [ ${#object_files[@]} -gt 0 ] && [ -n "$output_file" ]; then
+    # .o -> .mcg
+    for i in "${!object_files[@]}"; do
+        object_files[i]="${object_files[$i]%.o}.mcg"
+    done
+    "$cgmerge2_bin" "${output_file}.mcg" "${object_files[@]}"
+fi
+
+if ! $skip_gen_bin; then
+    exec "$flang_bin" "$@"
+fi

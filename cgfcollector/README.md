@@ -1,4 +1,4 @@
-# CG Fortran collector
+# CG Fortran Collector
 
 Fortran call graph generation tool for MetaCG. This tool is implemented as a
 Flang plugin and generates a call graph from source-level.
@@ -8,16 +8,11 @@ Flang plugin and generates a call graph from source-level.
 For single file projects or projects not using modules use:
 
 ```sh
-cgfcollector_wrapper.sh [options] <source file/s>
+cgfcollector_comp_wrapper.sh [flang options, source file/s, plugin options]
 ```
 
-For any other projects you need a build system. For this we provide another
-script that acts as the normal Flang compiler but also produces a call graph.
-[More info below](#generate-a-call-graph).
-
-```sh
-cgfcollector_comp_wrapper.sh <source file/s>
-```
+For any other projects you need a build system. That calls `cgfcollector_comp_wrapper.sh`
+and `cgfcollector_link_wrapper.sh` accordingly. For examples [see](#generate-a-call-graph).
 
 You can also run the plugin directly with Flang:
 
@@ -35,8 +30,9 @@ Available options:
 
 Additionally these other tools are included:
 
-- `cgfcollector_wrapper.sh`: Convenience wrapper to run parse plugin.
 - `cgfcollector_comp_wrapper.sh`: Acts like a normal Flang compiler but also generates a call graph.
+- `cgfcollector_link_wrapper`: Acts like a normal Flang linker but also merges
+  the generated call graphs.
 - `test_runner.sh`: Run tests.
 
 ## How to build
@@ -51,22 +47,19 @@ To build the cgfcollector the option `METACG_BUILD_CGFCOLLECTOR` must be set to
 Paste this into your CMakeLists.txt.
 
 ```
-set(CMAKE_Fortran_COMPILER <path to cgfcollector_wrapper.sh>)
-set(CMAKE_Fortran_COMPILER_FORCED TRUE)
-set(CMAKE_Fortran_COMPILE_OBJECT "<CMAKE_Fortran_COMPILER> --dot <DEFINES> <INCLUDES> <FLAGS> <SOURCE> -o <OBJECT>")
-set(CMAKE_Fortran_LINK_EXECUTABLE "<path to cgmerge2> <TARGET>.mcg <OBJECTS>")
+set(CMAKE_Fortran_COMPILER "flang-new")
+set(CMAKE_Fortran_COMPILER_LAUNCHER <path to cgfcollector_comp_wrapper.sh>)
+set(CMAKE_Fortran_LINKER_LAUNCHER "<path to cgfcollector_link_wrapper.sh>")
 ```
 
-This will hook into the CMake build process and generate a call graph instead of
-an executable.
+This will hook into the CMake build process and generate a call graph.
 
 An example can be found in `test/multi/deps`.
 
 ### from other projects
 
-Use `cgfcollector_comp_wrapper.sh` or `cgfcollector_wrapper.sh` to hook into the
-build process of your favorite tool and use the `cgmerge2` utility to merge the
-partial generated call graphs.
+Use `cgfcollector_comp_wrapper.sh` and `cgfcollector_link_wrapper.sh` to hook into the
+build process of your favorite tool.
 
 An example can be found in `test/multi/fortdepend_deps`. This example uses
 fortdepend to generate a module dependency list. If your build system already

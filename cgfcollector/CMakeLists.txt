@@ -42,7 +42,8 @@ function(
   # build-time values for development
   set(CGFCOLLECTOR_FILE_NAME_LIB "${CMAKE_CURRENT_BINARY_DIR}/lib${PROJECT_NAME}.so")
   set(CGFCOLLECTOR_CGDIFF_BIN "${CMAKE_BINARY_DIR}/tools/cgdiff/cgdiff")
-  set(CGFCOLLECTOR_WRAPPER "${CMAKE_CURRENT_BINARY_DIR}/cgfcollector_wrapper.sh")
+  set(CGFCOLLECTOR_COMP_WRAPPER "${CMAKE_CURRENT_BINARY_DIR}/cgfcollector_comp_wrapper.sh")
+  set(CGFCOLLECTOR_LINK_WRAPPER "${CMAKE_CURRENT_BINARY_DIR}/cgfcollector_link_wrapper.sh")
   set(CGFCOLLECTOR_TEST_CASES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test")
   set(CGMERGE2_BIN "${CMAKE_BINARY_DIR}/tools/cgmerge2/cgmerge2")
 
@@ -76,14 +77,14 @@ function(
 endfunction()
 
 configure_file_and_install(
-  "${CMAKE_CURRENT_SOURCE_DIR}/tools/cgfcollector_wrapper.sh.in"
-  "cgfcollector_wrapper.sh"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tools/cgfcollector_comp_wrapper.sh.in"
+  "cgfcollector_comp_wrapper.sh"
   "bin"
 )
 
 configure_file_and_install(
-  "${CMAKE_CURRENT_SOURCE_DIR}/tools/cgfcollector_comp_wrapper.sh.in"
-  "cgfcollector_comp_wrapper.sh"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tools/cgfcollector_link_wrapper.sh.in"
+  "cgfcollector_link_wrapper.sh"
   "bin"
 )
 
