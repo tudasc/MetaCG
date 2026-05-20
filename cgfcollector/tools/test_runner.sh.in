@@ -53,7 +53,8 @@ function run_single_test()
     local test_dir="$1"
     local test_name="$2"
     local expected_output="$test_dir/output.mcg"
-    local actual_output="$out_dir/$test_name.mcg"
+    local bin_output="$out_dir/$test_name"
+    local actual_output="$bin_output.mcg"
 
     if [ -f "$test_dir/CMakeLists.txt" ]; then
         # cmake managed test
@@ -93,7 +94,7 @@ function run_single_test()
             return 1
         fi
 
-        @CGFCOLLECTOR_COMP_WRAPPER@ "${cgfcollector_options[@]}" -o "$actual_output" "${input_files[@]}" || {
+        @CGFCOLLECTOR_COMP_WRAPPER@ "${cgfcollector_options[@]}" -o "$bin_output" --skip-gen-bin "${input_files[@]}" || {
             echo "Failed: could not generate CG"
             return 1
         }

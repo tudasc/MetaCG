@@ -23,7 +23,6 @@ flang -fc1 -load "libcgfcollector.so" -plugin "genCG" [options]
 Available options:
 
 - `--dot`: Additionally generate a DOT file. This is mostly used for debugging.
-- `--no-rename`: Do not rename the output file.
 - `--verbose`: Print additional information during the generation process.
 - `--graph-name`: Set internal graph name.
 - `--include-intrinsics`: Include intrinsic procedures in the call graph.

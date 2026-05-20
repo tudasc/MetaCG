@@ -21,8 +21,6 @@ static llvm::cl::OptionCategory CGCategory("Callgraph Plugin Options");
 
 static llvm::cl::opt<bool> Dot("dot", llvm::cl::desc("Generate DOT output"), llvm::cl::cat(CGCategory),
                                llvm::cl::init(false));
-static llvm::cl::opt<bool> NoRename("no-rename", llvm::cl::desc("Do not rename output file"), llvm::cl::cat(CGCategory),
-                                    llvm::cl::init(false));
 static llvm::cl::opt<bool> Verbose("verbose", llvm::cl::desc("Enable verbose logging"), llvm::cl::cat(CGCategory),
                                    llvm::cl::init(false));
 static llvm::cl::opt<std::string> GraphName("graph-name",
@@ -93,13 +91,9 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
 
     if (outputFile.empty()) {
       outputFile = getCurrentFile().str();
-    }
-
-    // Used for CMake managed tests. We override the Fortran compiler with our wrapper script. This generates call
-    // graphs with the .mcg file extension. But CMake expects files with the .o extension. This option disables this
-    // renaming.
-    if (!NoRename) {
       replaceExtension(outputFile, ".mcg");
+    } else {
+      outputFile.append(".mcg");
     }
 
     std::ofstream os(outputFile);

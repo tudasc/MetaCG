@@ -16,7 +16,6 @@
 #
 # Plugin-specific options:
 #     -d, --dot             # Additionally generate a DOT file. This is mostly used for debugging.
-#     --no-rename           # Do not rename the output file.
 #     --skip-gen-bin        # Skip the final compilation step. Only generate the call graph.
 #     -v, --verbose         # Print additional information during the generation process.
 #     --graph-name          # Set internal graph name
@@ -28,7 +27,6 @@ flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang-new"}
 declare -A OPTION_MAP=(
     ["-d"]="--dot"
     ["--dot"]="--dot"
-    ["--no-rename"]="--no-rename"
     ["--skip-gen-bin"]="--skip-gen-bin"
     ["-v"]="--verbose"
     ["--verbose"]="--verbose"
@@ -51,7 +49,6 @@ options=()
 all_args=("$@")
 forward_args=()
 skip_gen_bin=false
-output_file=""
 
 # If you're using the `mpif90` wrapper, we are extracting the underlying compiler arguments using `mpif90 --show`.
 #
@@ -69,7 +66,6 @@ for arg in "${all_args[@]}"; do
     if $option_o; then
         options+=("$arg")
         forward_args+=("$arg")
-        output_file="$arg"
         option_o=false
         continue
     fi
@@ -112,11 +108,6 @@ for arg in "${all_args[@]}"; do
         ;;
     esac
 done
-
-# If output ends in `.mcg`, we assume the user only want to generate the call graph.
-if [[ "$output_file" == *.mcg ]]; then
-    skip_gen_bin=true
-fi
 
 if [ ${#source_files[@]} -gt 0 ]; then
     $flang_bin -fc1 -load "@CGFCOLLECTOR_FILE_NAME_LIB@" -plugin "genCG" "${options[@]}" "${source_files[@]}"

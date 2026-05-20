@@ -30,7 +30,7 @@ output_file=""
 option_o=false
 skip_gen_bin=false
 for arg in "$@"; do
-    if [ "$option_o" = true ]; then
+    if $option_o; then
         output_file="$arg"
         option_o=false
         continue
@@ -50,9 +50,8 @@ for arg in "$@"; do
 done
 
 if [ ${#object_files[@]} -gt 0 ] && [ -n "$output_file" ]; then
-    # .o -> .mcg
     for i in "${!object_files[@]}"; do
-        object_files[i]="${object_files[$i]%.o}.mcg"
+        object_files[i]="${object_files[$i]}.mcg"
     done
     "$cgmerge2_bin" "${output_file}.mcg" "${object_files[@]}"
 fi
