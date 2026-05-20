@@ -1,4 +1,4 @@
-include ../make_base
+include $(CGFCOLLECTOR_TEST_MAKE_BASE)
 
 BUILD_DIR = build
 DEP_FILE = $(BUILD_DIR)/Makefile.dep

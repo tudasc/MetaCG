@@ -98,21 +98,11 @@ configure_file_and_install(
   "cmake_base.txt"
   ""
 )
-file(
-  RENAME
-  "${CMAKE_CURRENT_BINARY_DIR}/cmake_base.txt"
-  "${CMAKE_CURRENT_SOURCE_DIR}/test/multi/cmake_base.txt"
-)
 
 configure_file_and_install(
   "${CMAKE_CURRENT_SOURCE_DIR}/test/multi/make_base.in"
   "make_base"
   ""
-)
-file(
-  RENAME
-  "${CMAKE_CURRENT_BINARY_DIR}/make_base"
-  "${CMAKE_CURRENT_SOURCE_DIR}/test/multi/make_base"
 )
 
 # tests

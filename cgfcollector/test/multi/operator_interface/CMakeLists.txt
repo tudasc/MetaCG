@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-include(../cmake_base.txt)
+include(${CGFCOLLECTOR_TEST_CMAKE_BASE})
 
 project(operator_interface LANGUAGES Fortran)
 

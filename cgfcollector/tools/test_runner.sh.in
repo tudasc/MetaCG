@@ -60,7 +60,7 @@ function run_single_test()
         local tmp_dir="$(mktemp -d)"
         trap 'rm -rf '"$tmp_dir"'' RETURN
 
-        cmake -S "$test_dir" -B "$tmp_dir" -DCMAKE_Fortran_FLAGS="${cgfcollector_options[*]}" || {
+        cmake -S "$test_dir" -B "$tmp_dir" -DCMAKE_Fortran_FLAGS="${cgfcollector_options[*]}" -DCGFCOLLECTOR_TEST_CMAKE_BASE="$scriptdir/cmake_base.txt" || {
             echo "Failed: cmake config failed"
             return 1
         }
@@ -77,7 +77,7 @@ function run_single_test()
         local tmp_dir="$(mktemp -d)"
         trap 'rm -rf '"$tmp_dir"'' RETURN
 
-        make -C "$test_dir" BUILD_DIR="$tmp_dir" FCFLAGS="${cgfcollector_options[*]}" || {
+        make -C "$test_dir" BUILD_DIR="$tmp_dir" FCFLAGS="${cgfcollector_options[*]}" CGFCOLLECTOR_TEST_MAKE_BASE="$scriptdir/make_base" || {
             echo "Failed: make build failed"
             return 1
         }
