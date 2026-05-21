@@ -48,7 +48,11 @@ Paste this into your CMakeLists.txt.
 ```
 set(CMAKE_Fortran_COMPILER "flang-new")
 set(CMAKE_Fortran_COMPILER_LAUNCHER <path to cgfcollector_comp_wrapper.sh>)
-set(CMAKE_Fortran_LINKER_LAUNCHER "<path to cgfcollector_link_wrapper.sh>")
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.1")
+    set(CMAKE_Fortran_LINKER_LAUNCHER "<path to cgfcollector_link_wrapper.sh>" --skip-gen-bin)
+else()
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK "<path to cgfcollector_link_wrapper.sh> --skip-gen-bin")
+endif()
 ```
 
 This will hook into the CMake build process and generate a call graph.

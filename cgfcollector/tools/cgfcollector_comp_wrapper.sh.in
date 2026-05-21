@@ -113,6 +113,6 @@ if [ ${#source_files[@]} -gt 0 ]; then
     $flang_bin -fc1 -load "@CGFCOLLECTOR_FILE_NAME_LIB@" -plugin "genCG" "${options[@]}" "${source_files[@]}"
 fi
 
-if ! $skip_gen_bin; then
+if [ ! $skip_gen_bin ]; then
     exec "$flang_bin" "${forward_args[@]}"
 fi
