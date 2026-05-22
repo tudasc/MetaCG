@@ -316,7 +316,6 @@ install:
     - stat $INSTALL/bin/cgformat
     - stat $INSTALL/bin/cgconvert
     - stat $INSTALL/bin/cgtodot
-    - stat $INSTALL/lib64/libcgfcollector.so
     - export LD_LIBRARY_PATH=$INSTALL/lib64:$INSTALL/lib:$LD_LIBRARY_PATH
     - $INSTALL/bin/metacg-config --help
     - $INSTALL/bin/cgcollector --help
