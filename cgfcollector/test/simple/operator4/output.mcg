@@ -1,0 +1,29 @@
+{
+  "_CG": {
+    "meta": {},
+    "nodes": {
+      "0": {
+        "callees": {},
+        "functionName": "_QMmodPmultiply_base",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "1": {
+        "callees": {},
+        "functionName": "_QQmain",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      }
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "4cc8210c90cb04678c623259ac8d2665c6474f45",
+      "version": "0.9"
+    },
+    "version": "4.0"
+  }
+}

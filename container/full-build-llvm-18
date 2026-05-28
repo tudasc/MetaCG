@@ -23,11 +23,12 @@ RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.
     apt-get update && \
     apt-get install -y libllvm18 llvm-18 llvm-18-dev llvm-18-runtime \
         clang-18 clang-tools-18 libclang-common-18-dev libclang-18-dev libclang1-18 \
-    lld-18
+    lld-18 libmlir-18-dev mlir-18-tools flang-18
 RUN bash -c "ln -s $(which clang-18) /usr/bin/clang" && \
     bash -c "ln -s $(which clang++-18) /usr/bin/clang++" && \
     bash -c "ln -s $(which opt-18) /usr/bin/opt" && \
-    bash -c "ln -s $(which llvm-config-18) /usr/bin/llvm-config"
+    bash -c "ln -s $(which llvm-config-18) /usr/bin/llvm-config" && \
+    bash -c "ln -s $(which flang-new-18) /usr/bin/flang-new"
 
 ARG extinstalldir=/opt/metacg/extern/install
 ENV EXTINSTALLDIR=$extinstalldir
@@ -35,6 +36,9 @@ ENV EXTINSTALLDIR=$extinstalldir
 COPY ./build_submodules.sh /opt/metacg
 
 RUN ./build_submodules.sh $(nproc)
+
+RUN python3 -m venv .venv && \
+     .venv/bin/pip install fortdepend
 
 COPY . /opt/metacg
 
@@ -47,7 +51,7 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DMETACG_BUILD_CGCOLLECTOR=ON \
       -DMETACG_BUILD_GRAPH_TOOLS=ON \
       -DMETACG_BUILD_CGPATCH=ON \
-      -DMETACG_BUILD_GRAPH_TOOLS=ON \
+      -DMETACG_BUILD_CGFCOLLECTOR=ON \
       -DCAGE_USE_METAVIRT=ON \
       -DMETACG_BUILD_PYMETACG=ON \
       -DPython_ROOT_DIR=/opt/metacg/.venv \
@@ -55,7 +59,7 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_MODULE_PATH=/opt/metacg/.venv/share/Pytest/cmake \
       -DMETACG_BUILD_PYMETACG_TESTS=ON \
       -DCMAKE_VERBOSE_MAKEFILE=ON \
-      -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-18/build/utils/lit/lit.py 
+      -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-18/build/utils/lit/lit.py
 
 RUN cmake --build build --parallel
 

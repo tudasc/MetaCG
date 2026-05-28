@@ -32,7 +32,7 @@ CgNode* Callgraph::getMain(bool forceRecompute) const {
 
   // Otherwise, try to find by name.
   if ((mainNode = getFirstNode("main")) || (mainNode = getFirstNode("_Z4main")) ||
-      (mainNode = getFirstNode("_ZSt4mainiPPc"))) {
+      (mainNode = getFirstNode("_ZSt4mainiPPc")) || (mainNode = getFirstNode("_QQmain"))) {
     return mainNode;
   }
 

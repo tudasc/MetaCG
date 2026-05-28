@@ -1,0 +1,29 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": {},
+                "functionName": "_QFPprint_stars",
+                "hasBody": true,
+                "meta": {},
+                "origin": "input.f90"
+            },
+            "1": {
+                "callees": { "0": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": {},
+                "origin": "input.f90"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "version": "0.9"
+        },
+        "version": "4.0"
+    }
+}

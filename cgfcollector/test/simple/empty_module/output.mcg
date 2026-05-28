@@ -1,0 +1,11 @@
+{
+  "_CG": { "meta": {}, "nodes": {} },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "1cd843384a952a5a8ece2d8f7f3d6726964583f8",
+      "version": "0.9"
+    },
+    "version": "4.0"
+  }
+}

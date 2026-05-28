@@ -1,0 +1,50 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": { "1": {}, "2": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "1": {
+                "callees": {},
+                "functionName": "print_stuff_",
+                "hasBody": false,
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "2": {
+                "callees": { "1": {} },
+                "functionName": "_QFPprint_stars",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "3": {
+                "callees": {},
+                "functionName": "print_stuff2_",
+                "hasBody": false,
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "4": {
+                "callees": {},
+                "functionName": "_QFFprint_starsPsubsub",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "96b749864d4e9ffe279252205b6ef755a6a86056",
+            "version": "0.9"
+        },
+        "version": "4.0"
+    }
+}

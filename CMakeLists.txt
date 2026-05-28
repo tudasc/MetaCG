@@ -213,3 +213,26 @@ if(METACG_BUILD_PYMETACG)
 endif()
 
 add_subdirectory(utils)
+
+# Build fortran collector
+option(
+  METACG_BUILD_CGFCOLLECTOR
+  "On or off"
+  OFF
+)
+
+if(METACG_BUILD_CGFCOLLECTOR)
+  if(NOT METACG_BUILD_GRAPH_TOOLS)
+    message(FATAL_ERROR "CGFCollector requires METACG_BUILD_GRAPH_TOOLS=ON to build")
+  endif()
+
+  if(${LLVM_PACKAGE_VERSION}
+     GREATER_EQUAL
+     18
+  )
+    include(FlangLLVM)
+    add_subdirectory(cgfcollector)
+  else()
+    message(STATUS "Skipping CGFCollector: requires LLVM version 18 or higher")
+  endif()
+endif()

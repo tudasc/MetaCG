@@ -1,0 +1,166 @@
+#!/usr/bin/env bash
+
+# Test runner for cgfcollector
+#
+# Usage:
+#     test_runner.sh                      # run all tests
+#     test_runner.sh [test_name]          # run specific test cases
+#
+# Note: Options starting with '-' are passed directly to the cgfcollector
+#       plugin. For a list see README.md.
+
+: "${CI_CONCURRENT_ID:=$(date +%s)}"
+
+test_case_dir="@CGFCOLLECTOR_TEST_CASES_DIR@"
+scriptdir="$(cd "$(dirname "$0")" && pwd -P)"
+out_dir="$scriptdir/out-$CI_CONCURRENT_ID"
+
+mkdir -p "$out_dir"
+
+if ! [ -d "$test_case_dir" ]; then
+    echo "Error: Test case directory '$test_case_dir' does not exist."
+    exit 1
+fi
+
+cgfcollector_options=()
+test_cases_to_run=()
+
+while [[ $# -gt 0 ]]; do
+    arg="$1"
+    if [[ "$arg" =~ ^-+ ]]; then
+        cgfcollector_options+=("$arg")
+    else
+        test_cases_to_run+=("$arg")
+    fi
+    shift
+done
+
+function find_test_dir()
+{
+    local test_name="${1#*_}"
+    local test_category="${1%%_*}"
+    local test_dir="$test_case_dir/$test_category/$test_name"
+
+    if [ -d "$test_dir" ] && [ -f "$test_dir/output.mcg" ]; then
+        echo "$test_dir"
+        return 0
+    fi
+    return 1
+}
+
+function run_single_test()
+{
+    local test_dir="$1"
+    local test_name="$2"
+    local expected_output="$test_dir/output.mcg"
+    local bin_output="$out_dir/$test_name"
+    local actual_output="$bin_output.mcg"
+
+    if [ -f "$test_dir/CMakeLists.txt" ]; then
+        # cmake managed test
+        local tmp_dir="$(mktemp -d)"
+        trap 'rm -rf '"$tmp_dir"'' RETURN
+
+        cmake -S "$test_dir" -B "$tmp_dir" -DCMAKE_Fortran_FLAGS="${cgfcollector_options[*]}" -DCGFCOLLECTOR_TEST_CMAKE_BASE="$scriptdir/cmake_base.txt" || {
+            echo "Failed: cmake config failed"
+            return 1
+        }
+        cmake --build "$tmp_dir" || {
+            echo "Failed: cmake build failed"
+            return 1
+        }
+        find "$tmp_dir" -maxdepth 1 -name '*.mcg' -exec cp {} "$actual_output" \; || {
+            echo "Failed: could not generate CG"
+            return 1
+        }
+    elif [ -f "$test_dir/Makefile" ]; then
+        # make managed with fortdepend test
+        local tmp_dir="$(mktemp -d)"
+        trap 'rm -rf '"$tmp_dir"'' RETURN
+
+        make -C "$test_dir" BUILD_DIR="$tmp_dir" FCFLAGS="${cgfcollector_options[*]}" CGFCOLLECTOR_TEST_MAKE_BASE="$scriptdir/make_base" || {
+            echo "Failed: make build failed"
+            return 1
+        }
+        find "$tmp_dir" -maxdepth 1 -name 'output.mcg' -exec cp {} "$actual_output" \; || {
+            echo "Failed: could not generate CG"
+            return 1
+        }
+    else
+        # not make/cmake managed test
+        local input_files=("$test_dir"/*.f90)
+        if ! [ -f "${input_files[0]}" ]; then
+            echo "Failed: no .f90 files found"
+            return 1
+        fi
+
+        @CGFCOLLECTOR_COMP_WRAPPER@ "${cgfcollector_options[@]}" -o "$bin_output" --skip-gen-bin "${input_files[@]}" || {
+            echo "Failed: could not generate CG"
+            return 1
+        }
+    fi
+
+    if @CGFCOLLECTOR_CGDIFF_BIN@ "$expected_output" "$actual_output"; then
+        echo "Passed"
+        return 0
+    else
+        echo "Failed: Output mismatch"
+        return 1
+    fi
+}
+
+if [ ${#test_cases_to_run[@]} -gt 0 ]; then
+    # specific test cases
+    test_cases=()
+    for test_name in "${test_cases_to_run[@]}"; do
+        test_dir=$(find_test_dir "$test_name")
+        if [ -n "$test_dir" ]; then
+            test_cases+=("$test_dir:$test_name")
+        else
+            echo "Warning: Test '$test_name' not found"
+        fi
+    done
+else
+    # all test cases
+    test_cases=()
+    while read -r output_file; do
+        test_dir="$(dirname "$output_file")"
+        test_name="$(basename "$(dirname "$test_dir")")_$(basename "$test_dir")"
+        test_cases+=("$test_dir:$test_name")
+    done < <(find "$test_case_dir" -mindepth 1 -type d -exec find {} -maxdepth 1 -name "output.mcg" \;)
+fi
+
+total_tests=${#test_cases[@]}
+passed=0
+failed=0
+failed_tests=()
+
+# run tests
+for i in "${!test_cases[@]}"; do
+    IFS=':' read -r test_dir test_name <<<"${test_cases[i]}"
+
+    printf "Test %d/%d %s\n" "$((i + 1))" "$total_tests" "$test_name"
+
+    if run_single_test "$test_dir" "$test_name"; then
+        ((passed++))
+    else
+        ((failed++))
+        failed_tests+=("$test_name")
+    fi
+done
+
+# summary
+if [ "$total_tests" -gt 0 ]; then
+    printf "%d%% tests passed, %d tests failed out of %d\n" \
+        "$((passed * 100 / total_tests))" "$failed" "$total_tests"
+else
+    echo "No tests found"
+fi
+
+if [ ${#failed_tests[@]} -gt 0 ]; then
+    echo "Failed tests:"
+    for test in "${failed_tests[@]}"; do
+        echo "  $test"
+    done
+    exit 1
+fi

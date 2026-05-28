@@ -1,69 +1,69 @@
 name: MetaCG Builds
 
-on: 
+on:
   push:
     paths-ignore:
-      - 'README.md'
-      - 'LICENSE.txt'
-      - 'CONTRIBUTING.md'
-      - 'CITATION.cff'
-      - 'AUTHORS'
-      - 'formatSrc.sh'
-      - '.gitlab-ci.yml'
-      - '.gitignore'
-      - '.ci-defaults-template.yml'
-      - 'cgcollector/README.md'
-      - 'cgcollector/formatAllSrc.sh'
-      - 'cgcollector/.gitignore'
-      - 'graph/README.md'
-      - 'pgis/README.md'
-      - 'tools/README.md'
-      - 'pymetacg/README.md'
-  pull_request: 
+      - "README.md"
+      - "LICENSE.txt"
+      - "CONTRIBUTING.md"
+      - "CITATION.cff"
+      - "AUTHORS"
+      - "formatSrc.sh"
+      - ".gitlab-ci.yml"
+      - ".gitignore"
+      - ".ci-defaults-template.yml"
+      - "cgcollector/README.md"
+      - "cgcollector/formatAllSrc.sh"
+      - "cgcollector/.gitignore"
+      - "graph/README.md"
+      - "pgis/README.md"
+      - "tools/README.md"
+      - "pymetacg/README.md"
+  pull_request:
     paths-ignore:
-      - 'README.md'
-      - 'LICENSE.txt'
-      - 'CONTRIBUTING.md'
-      - 'CITATION.cff'
-      - 'AUTHORS'
-      - 'formatSrc.sh'
-      - '.gitlab-ci.yml'
-      - '.gitignore'
-      - '.ci-defaults-template.yml'
-      - 'cgcollector/README.md'
-      - 'cgcollector/formatAllSrc.sh'
-      - 'cgcollector/.gitignore'
-      - 'graph/README.md'
-      - 'pgis/README.md'
-      - 'tools/README.md'
-      - 'pymetacg/README.md'
+      - "README.md"
+      - "LICENSE.txt"
+      - "CONTRIBUTING.md"
+      - "CITATION.cff"
+      - "AUTHORS"
+      - "formatSrc.sh"
+      - ".gitlab-ci.yml"
+      - ".gitignore"
+      - ".ci-defaults-template.yml"
+      - "cgcollector/README.md"
+      - "cgcollector/formatAllSrc.sh"
+      - "cgcollector/.gitignore"
+      - "graph/README.md"
+      - "pgis/README.md"
+      - "tools/README.md"
+      - "pymetacg/README.md"
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
-    - name: cmake
-      run: cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_INSTALL_PREFIX="$(pwd)/install" -B build -S .
-    - name: build
-      run: cmake --build build --parallel
-    - name: install
-      run: |
-        cmake --install build --prefix install
-        stat install/lib/libmetacg.so
-        stat install/include/metacg/metadata/CustomMD.h
-        stat install/lib/cmake/metacg/metacgConfig.cmake
-    - name: install-test
-      run: |
-        CMAKE_PREFIX_PATH=install/lib/cmake/metacg cmake -S graph/test/install -B build-install-test
-        cmake --build build-install-test
-    - name: metacg-config-test
-      run: |
-        MCG_CFG=install/bin/metacg-config
-        stat $MCG_CFG
-        [[ "$($MCG_CFG --prefix)" == "$(cd install; pwd)" ]] || exit 1
-        [[ "$($MCG_CFG --revision)" == "$(git rev-parse HEAD)" ]] || exit 1
+      - uses: actions/checkout@v6
+      - name: cmake
+        run: cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_INSTALL_PREFIX="$(pwd)/install" -B build -S .
+      - name: build
+        run: cmake --build build --parallel
+      - name: install
+        run: |
+          cmake --install build --prefix install
+          stat install/lib/libmetacg.so
+          stat install/include/metacg/metadata/CustomMD.h
+          stat install/lib/cmake/metacg/metacgConfig.cmake
+      - name: install-test
+        run: |
+          CMAKE_PREFIX_PATH=install/lib/cmake/metacg cmake -S graph/test/install -B build-install-test
+          cmake --build build-install-test
+      - name: metacg-config-test
+        run: |
+          MCG_CFG=install/bin/metacg-config
+          stat $MCG_CFG
+          [[ "$($MCG_CFG --prefix)" == "$(cd install; pwd)" ]] || exit 1
+          [[ "$($MCG_CFG --revision)" == "$(git rev-parse HEAD)" ]] || exit 1
 
   # TODO: Complete the llvm-20 based CI definition
   build-container-llvm-20:
@@ -95,6 +95,7 @@ jobs:
             stat /tmp/metacg/bin/cgformat
             stat /tmp/metacg/bin/cgconvert
             stat /tmp/metacg/bin/cgtodot
+            stat /tmp/metacg/lib/libcgfcollector.so
       - name: Check for canonical test graph format
         uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
         with:
@@ -129,7 +130,7 @@ jobs:
         with:
           context: .
           file: "container/full-build-llvm-18"
-          tags: metacg-llvm-18-devel:latest 
+          tags: metacg-llvm-18-devel:latest
           load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -148,42 +149,43 @@ jobs:
             stat /tmp/metacg/bin/cgformat
             stat /tmp/metacg/bin/cgconvert
             stat /tmp/metacg/bin/cgtodot
+            stat /tmp/metacg/lib/libcgfcollector.so
       - name: Check for canonical test graph format
         uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
         with:
           image: metacg-llvm-18-devel:latest
           run: /opt/metacg/checkTests.sh  /opt/metacg/build/tools/cgformat/cgformat
-      - name: Run MCG library tests 
+      - name: Run MCG library tests
         uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
-        with: 
+        with:
           image: metacg-llvm-18-devel:latest
           run: /opt/metacg/build/graph/test/unit/libtests
-      - name: Run PGIS library tests 
+      - name: Run PGIS library tests
         uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
-        with: 
+        with:
           image: metacg-llvm-18-devel:latest
           run: /opt/metacg/build/pgis/test/unit/pgistests
-      - name: Run target collector tests 
+      - name: Run target collector tests
         uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
-        with: 
+        with:
           image: metacg-llvm-18-devel:latest
           run: |
             cd /opt/metacg/graph/test/integration/TargetCollector
             ./TestRunner.sh
       - name: Run call graph merge tests
         uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
-        with: 
+        with:
           image: metacg-llvm-18-devel:latest
           run: |
             cd /opt/metacg/graph/test/integration/CallgraphMerge
             ./MergeTestRunner.sh
       - name: Run cgcollector tests
         uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
-        with: 
+        with:
           image: metacg-llvm-18-devel:latest
           run: |
             cd /opt/metacg/cgcollector/test
-            bash run_format_one_test.sh 
+            bash run_format_one_test.sh
             bash run_format_two_test.sh
       - name: Run cgcollector2 tests
         uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
@@ -201,7 +203,7 @@ jobs:
             ./runCaGeTests.sh
       - name: Run cgvalidate tests
         uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
-        with: 
+        with:
           image: metacg-llvm-18-devel:latest
           run: |
             cd /opt/metacg/cgcollector/test/integration
@@ -215,7 +217,7 @@ jobs:
             ./run_cgformat_tests.sh
       - name: Run pymetacg tests
         uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
-        with: 
+        with:
           image: metacg-llvm-18-devel:latest
           run: |
             cd /opt/metacg/build/pymetacg/tests
@@ -276,3 +278,10 @@ jobs:
             export LD_LIBRARY_PATH=/tmp/metacg/lib:$LD_LIBRARY_PATH
             export LD_LIBRARY_PATH=/opt/metacg/tools/cage/CaGeDemoPlugin/build:$LD_LIBRARY_PATH
             opt --load-pass-plugin=cage-plugin.so --plugin-paths=libCaGeDemoPlugin.so -S --cage-verbose --passes="CaGe" /dev/null | grep -q "Successfully loaded Plugin: Cage Demo Plugin"
+      - name: Run cgfcollector tests
+        uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
+        with:
+          image: metacg-llvm-18-devel:latest
+          run: |
+            cd /opt/metacg/build/cgfcollector
+            ctest . --verbose

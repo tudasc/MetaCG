@@ -127,6 +127,7 @@ build:
       -DMETACG_USE_EXTERNAL_NANOBIND=ON
       -DLLVM_EXTERNAL_LIT=$(which lit)
       -DCUBE_DIR=$(spack location -i cubelib)
+      -DMETACG_BUILD_CGFCOLLECTOR=ON
     - cmake --build $BUILD --parallel
 
 # test whether a custom in-tree metadata type gets included in the build
@@ -275,6 +276,27 @@ test-cage:
   script:
     - cd $BUILD/tools/cage/test
     - ./runCaGeTests.sh
+
+test-cgfcollector:
+  <<: *job-setup
+  parallel:
+    matrix:
+      - GCC: 11
+        LLVM: [18.1.8, 19.1.7, 20.1.8, 21.1.4]
+        _CC: clang
+        _CXX: clang++
+      - GCC: 15
+        LLVM: [21.1.4]
+        _CC: clang
+        _CXX: clang++
+      - GCC: 15
+        LLVM: [21.1.4]
+        _CC: gcc
+        _CXX: g++
+  stage: integration-test
+  script:
+    - cd $BUILD/cgfcollector
+    - ctest . --verbose
 
 
 # Stage: install
