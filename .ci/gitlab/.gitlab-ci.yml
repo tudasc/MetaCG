@@ -128,7 +128,7 @@ build:
       -DLLVM_EXTERNAL_LIT=$(which lit)
       -DCUBE_DIR=$(spack location -i cubelib)
       -DMETACG_BUILD_CGFCOLLECTOR=ON
-    - cmake --build $BUILD --parallel
+    - cmake --build $BUILD
 
 # test whether a custom in-tree metadata type gets included in the build
 configure-custom-md:
@@ -330,7 +330,7 @@ install-test:
     - export INSTALL=$(realpath $INSTALL)
     - cd graph/test/install
     - CMAKE_PREFIX_PATH=$INSTALL/lib64/cmake/metacg cmake -S . -B $BUILD-install-test
-    - cmake --build $BUILD-install-test --parallel
+    - cmake --build $BUILD-install-test
 
 CGC2Plugin-test:
   <<: *job-setup
@@ -341,7 +341,7 @@ CGC2Plugin-test:
     - export INSTALL=$(realpath $INSTALL)
     - cd tools/cgcollector2/CGC2DemoPlugin
     - CMAKE_PREFIX_PATH=$INSTALL/lib64/cmake/metacg cmake -S . -B $BUILD-install-test-cgc2
-    - cmake --build $BUILD-install-test-cgc2 --parallel
+    - cmake --build $BUILD-install-test-cgc2
 
 CaGePlugin-test:
   <<: *job-setup
@@ -352,4 +352,4 @@ CaGePlugin-test:
     - export INSTALL=$(realpath $INSTALL)
     - cd tools/cage/CaGeDemoPlugin
     - CMAKE_PREFIX_PATH=$INSTALL/lib64/cmake/metacg cmake -S . -B $BUILD-install-test-cage
-    - cmake --build $BUILD-install-test-cage --parallel
+    - cmake --build $BUILD-install-test-cage
