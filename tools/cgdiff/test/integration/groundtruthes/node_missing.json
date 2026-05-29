@@ -1,0 +1,18 @@
+{
+    "cgA": "/home/silasm/work/github/MetaCG/build2/../tools/cgdiff/test/integration/input/cgA_basic.mcg",
+    "cgB": "/home/silasm/work/github/MetaCG/build2/../tools/cgdiff/test/integration/input/cgB_basic.mcg",
+    "ignoring": [],
+    "diff": {
+        "nodeDiffs": {
+            "bar": {
+                "diffType": [
+                    "missingNode"
+                ],
+                "in": "cgA",
+                "metadataOnlyInA": [],
+                "metadataOnlyInB": []
+            }
+        },
+        "globalMetaDiff": {}
+    }
+}

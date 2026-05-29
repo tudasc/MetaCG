@@ -12,25 +12,25 @@
 #include <nanobind/stl/unordered_map.h>
 #include <nanobind/stl/unordered_set.h>
 
-#include <Callgraph.h>
-#include <CgNode.h>
-#include <MCGManager.h>
+#include <metacg/Callgraph.h>
+#include <metacg/CgNode.h>
+#include <metacg/MCGManager.h>
 
-#include <io/MCGReader.h>
-#include <io/MCGWriter.h>
-#include <io/VersionFourMCGReader.h>
-#include <metadata/MetaData.h>
+#include <metacg/io/MCGReader.h>
+#include <metacg/io/MCGWriter.h>
+#include <metacg/io/VersionFourMCGReader.h>
+#include <metacg/metadata/MetaData.h>
 
 // BuiltinMD.h is not used directly here, but including this header
 // ensures that MetaCG's built-in metadata types become part of this
 // translation unit and are hence included in the pymetacg dynamic library.
-#include <metadata/BuiltinMD.h>  // IWYU pragma: keep
+#include <metacg/metadata/BuiltinMD.h>  // IWYU pragma: keep
 
 #include <string>
 
 #include "util.h"
 
-#include <config.h>
+#include <metacg/config.h>
 
 namespace nb = nanobind;
 using namespace metacg::pymetacg;
@@ -42,7 +42,7 @@ NB_MODULE(pymetacg, m) {
   nb::class_<MetaDataWrapper>(m, "MetaData")
       .def_prop_ro("key", [](const MetaDataWrapper& self) { return self.md->getKey(); })
       .def_prop_ro("data", [](const MetaDataWrapper& self) {
-        NameMapping mapping(self.graph);
+              metacg::NameMapping mapping(self.graph);
         return self.md->toJson(mapping);
       });
 
@@ -139,5 +139,7 @@ NB_MODULE(pymetacg, m) {
                return CgNodeWrapper{self.getNode(nodes[0]), self};
              }
            })
-      .def("__contains__", [](const metacg::Callgraph& self, const std::string& key) { return self.hasNode(key); });
+      .def("__contains__", [](const metacg::Callgraph& self, const std::string& key) { return self.hasNode(key); })
+      .def_prop_ro("meta_data",
+                   [](const metacg::Callgraph& self) { return MetaDataContainer{self.getMetaDataContainer(), self}; });
 }

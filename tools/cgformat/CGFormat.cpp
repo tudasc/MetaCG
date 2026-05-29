@@ -4,16 +4,16 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "config.h"
+#include "metacg/config.h"
 
 #include <iostream>
 #include <fstream>
 #include <string>
 
-#include "LoggerUtil.h"
-#include "io/MCGReader.h"
-#include "io/MCGWriter.h"
-#include "metadata/FilePropertiesMD.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/io/MCGReader.h"
+#include "metacg/io/MCGWriter.h"
+#include "metacg/metadata/FilePropertiesMD.h"
 
 #include "cxxopts.hpp"
 

@@ -9,7 +9,7 @@
 #include "gtest/gtest.h"
 
 #include "MetaData/PGISMetaData.h"
-#include "io/IdMapping.h"
+#include "metacg/io/IdMapping.h"
 #include "nlohmann/json.hpp"
 
 using namespace metacg;

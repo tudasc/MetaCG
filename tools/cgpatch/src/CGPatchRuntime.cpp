@@ -4,11 +4,12 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "Callgraph.h"
-#include "MergePolicy.h"
 #include "SymbolRetriever.h"
-#include "io/VersionTwoMCGReader.h"
-#include "io/VersionTwoMCGWriter.h"
+#include "metacg/Callgraph.h"
+#include "metacg/MCGManager.h"
+#include "metacg/MergePolicy.h"
+#include "metacg/io/VersionTwoMCGReader.h"
+#include "metacg/io/VersionTwoMCGWriter.h"
 #include "nlohmann/json.hpp"
 #include <cstdlib>
 #include <filesystem>

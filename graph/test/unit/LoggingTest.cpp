@@ -4,8 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
+#include "metacg/LoggerUtil.h"
 #include "gtest/gtest.h"
-#include "LoggerUtil.h"
 
 class LoggingTest : public ::testing::Test {
  protected:

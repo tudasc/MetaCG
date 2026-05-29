@@ -1,4 +1,4 @@
-#include "config.h"
+#include "metacg/config.h"
 
 #include "AliasAnalysis.h"
 #include "CallGraph.h"
@@ -42,7 +42,7 @@ static llvm::cl::opt<std::string> outputFilenameOption("output", llvm::cl::desc(
  */
 static llvm::cl::opt<bool> disableClassicCGConstruction(
     "disable-classic-cgc", llvm::cl::desc("Disable the \"classic\" call graph construction"), llvm::cl::cat(cgc));
-static llvm::cl::opt<bool> enableAA("enable-AA", llvm::cl::desc("Enable Alias Analysis (experimental)"),
+static llvm::cl::opt<bool> enableAA("enable-AA", llvm::cl::desc("Enable Alias Analysis (DEPRECATED)"),
                                     llvm::cl::cat(cgc));
 
 // Configuration for the call count estimation

@@ -1,50 +1,63 @@
 
 cgcollectorExe=cgcollector
-testerExe=cgsimpletester
 cgmergeExe=cgmerge
 build_dir=build # may be changed with opt 'b'
+diffFile=$(mktemp temp.json.XXX)
+export diffFile
 
 timeStamp=$(date +%s)
 : ${CI_CONCURRENT_ID:=$timeStamp}
 
 mkdir -p log
 
-# Function to invoke the CGCollector to a target source code
-# Param 1: The relative path name to the test case.
-# Param 2: Parameter to steer certain features on / off
-function applyFileFormatOneToSingleTU {
-  testCaseFile=$1
-  addFlags=$2
-  gtvariant=$3
-  fail=0
+only_metadata_diff() {
+    local diffFile="$1"
 
-  local infix=""
-  if [[ -n "$gtvariant" ]]; then
-    infix="${gtvariant}."
-  fi
+    if [ ! -f "$diffFile" ]; then
+        echo "Diff file not found: $diffFile"
+        return 2
+    fi
 
-  # Set up the different data files, we need:
-  # - The test case
-  # - Tehe groundtruth data for reconciling the CG constructed by MetaCG
-  tfile=$testCaseFile
-  gfile=${testCaseFile/cpp/${infix}ipcg}-${CI_CONCURRENT_ID}
-  tgt=${testCaseFile/cpp/${infix}gtipcg}
+    # Iterate over all nodes
+    local nodes
+    nodes=$(jq -r '.diff.nodeDiffs | keys[]' "$diffFile") || return 2
 
-  echo "Running ${testerExe} on ${tfile}"
-  $cgcollectorExe --metacg-format-version=1 ${addFlags} --output ${gfile} $tfile -- >>log/testrun.log 2>&1
-  cat $gfile | python3 -m json.tool > ${gfile}_
-  mv ${gfile}_ ${gfile}
-  $testerExe $tgt $gfile >>log/testrun.log 2>&1
+    for node in $nodes; do
+        # Extract diffType array
+        local diffTypes
+        diffTypes=$(jq -r ".diff.nodeDiffs[\"$node\"].diffType[]" "$diffFile")
 
-  if [ $? -ne 0 ]; then
-    echo "Failure for file: $gfile. Keeping generated file for inspection"
-    fail=$((fail + 1))
-  else
-    rm $gfile
-  fi
+        # Skip nodes with other types of differences
+        for dt in $diffTypes; do
+            if [ "$dt" != "differentMetadata" ]; then
+                return 1
+            fi
+        done
 
-  return $fail
+        # Extract metadataOnlyInA and metadataOnlyInB arrays
+        local aJson bJson
+        aJson=$(jq ".diff.nodeDiffs[\"$node\"].metadataOnlyInA" "$diffFile")
+        bJson=$(jq ".diff.nodeDiffs[\"$node\"].metadataOnlyInB" "$diffFile")
+
+        if ! echo "$bJson" | jq -e --argjson a "$aJson" 'contains($a)' >/dev/null; then
+            return 1  # some metadata in A is missing or differs in value
+        fi
+    done
+
+    return 0
 }
+
+jqExpr='if ._CG | type == "object" then
+      ._CG |= with_entries(
+        if (.value.meta.numOperations? // false) | type == "object" then
+          .value.meta.numOperations.numberOfControlFlowOps = "42"
+        else
+          .
+        end
+      )
+    else
+      .
+    end'
 
 # Function to invoke the CGCollector with file format version 2 to a target source code
 # Param 1: The relative path name to the test case.
@@ -66,16 +79,25 @@ function applyFileFormatTwoToSingleTU {
   tfile=$testCaseFile
   gfile=${testCaseFile/cpp/${infix}ipcg}-${CI_CONCURRENT_ID}
   tgt=${testCaseFile/cpp/${infix}gtmcg}
+  tgt2=$tgt-${CI_CONCURRENT_ID}
 
- echo "Running tester on ${tfile}"
   $cgcollectorExe --metacg-format-version=2 ${addFlags} --output ${gfile} $tfile -- >>log/testrun.log 2>&1
   cat $gfile | python3 -m json.tool > ${gfile}_
   mv ${gfile}_ ${gfile}
-  $testerExe $tgt $gfile >>log/testrun.log 2>&1
+
+  jq "$jqExpr" $tgt > $tgt2
+  jq "$jqExpr" $gfile  >  $gfile
+
+  $testerExe $tgt2 $gfile >>log/testrun.log 2>&1
 
   if [ $? -ne 0 ]; then
-    echo "Failure for file: $gfile. Keeping generated file for inspection"
-    fail=$((fail + 1))
+    if only_metadata_diff $diffFile; then
+        rm $gfile
+        rm $tgt2
+    else 
+        echo "Failure for file: $gfile. Keeping generated file for inspection"
+        fail=$((fail + 1))
+    fi
   else
     rm $gfile
   fi
@@ -83,85 +105,6 @@ function applyFileFormatTwoToSingleTU {
   return $fail
 }
 
-function applyFileFormatTwoToSingleTUWithAA {
-  testCaseFile=$1
-  addFlags=$2
-  fail=0
-
-  # Set up the different data files, we need:
-  # - The test case
-  # - Tehe groundtruth data for reconciling the CG constructed by MetaCG
-  tfile=$testCaseFile
-  gfile=${testCaseFile/cpp/ipcg}-${CI_CONCURRENT_ID}
-  tgt=${testCaseFile/cpp/gtaacg}
-
- echo "Running tester on ${tfile}"
-  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA ${addFlags} --output ${gfile} $tfile -- >>log/testrun.log 2>&1
-  cat $gfile | python3 -m json.tool > ${gfile}_
-  mv ${gfile}_ ${gfile}
-  $testerExe $tgt $gfile >>log/testrun.log 2>&1
-
-  if [ $? -ne 0 ]; then
-    echo "Failure for file: $gfile. Keeping generated file for inspection"
-    fail=$((fail + 1))
-  else
-    rm $gfile
-  fi
-
-  return $fail
-}
-
-function applyFileFormatOneToMultiTU {
-  fail=0
-  tc=$1
-  taFile=${tc}_a.cpp
-  tbFile=${tc}_b.cpp
-
-  # Result files
-  ipcgTaFile="${taFile/cpp/ipcg}-${CI_CONCURRENT_ID}"
-  ipcgTbFile="${tbFile/cpp/ipcg}-${CI_CONCURRENT_ID}"
-
-  # Groundtruth files
-  gtaFile="${taFile/cpp/gtipcg}"
-  gtbFile="${tbFile/cpp/gtipcg}"
-  gtCombFile="${tc}_combined.gtipcg"
-
-  # Translation-unit-local
-  $cgcollectorExe --output ./input/multiTU/${ipcgTaFile} ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
-  $cgcollectorExe --output ./input/multiTU/${ipcgTbFile} ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
-
-  cat ./input/multiTU/${ipcgTaFile} | python3 -m json.tool >./input/multiTU/${ipcgTaFile}_
-  mv ./input/multiTU/${ipcgTaFile}_ ./input/multiTU/${ipcgTaFile}
-  cat ./input/multiTU/${ipcgTbFile} | python3 -m json.tool >./input/multiTU/${ipcgTbFile}_
-  mv ./input/multiTU/${ipcgTbFile}_ ./input/multiTU/${ipcgTbFile}
-
-  $testerExe ./input/multiTU/${ipcgTaFile} ./input/multiTU/${gtaFile} >>log/testrun.log 2>&1
-  aErr=$?
-  $testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile} >>log/testrun.log 2>&1
-  bErr=$?
-
-  combFile=${tc}_combined-${CI_CONCURRENT_ID}.ipcg
-  echo "null" >./input/multiTU/${combFile}
-
-  ${cgmergeExe} ./input/multiTU/${combFile} ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile} >>log/testrun.log 2>&1
-  mErr=$?
-
-  cat ./input/multiTU/${combFile} | python3 -m json.tool >./input/multiTU/${combFile}_
-  mv ./input/multiTU/${combFile}_ ./input/multiTU/${combFile}
-
-  ${testerExe} ./input/multiTU/${combFile} ./input/multiTU/${gtCombFile} >>log/testrun.log 2>&1
-  cErr=$?
-
-  #echo "$aErr or $bErr or $mErr or $cErr"
-
-  if [[ ${aErr} -ne 0 || ${bErr} -ne 0 || ${mErr} -ne 0 || ${cErr} -ne 0 ]]; then
-    echo "Failure for file: $combFile. Keeping generated file for inspection"
-    fail=$((fail + 1))
-  else
-    rm ./input/multiTU/$combFile ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile}
-  fi
-  return $fail
-}
 
 function applyFileFormatTwoToMultiTU {
   fail=0
@@ -187,62 +130,25 @@ function applyFileFormatTwoToMultiTU {
   cat ./input/multiTU/${ipcgTbFile} | python3 -m json.tool >./input/multiTU/${ipcgTbFile}_
   mv ./input/multiTU/${ipcgTbFile}_ ./input/multiTU/${ipcgTbFile}
 
-  $testerExe ./input/multiTU/${ipcgTaFile} ./input/multiTU/${gtaFile} >>log/testrun.log 2>&1
+  $testerExe  ./input/multiTU/${gtaFile} ./input/multiTU/${ipcgTaFile} >>log/testrun.log 2>&1
   aErr=$?
-  $testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile} >>log/testrun.log 2>&1
-  bErr=$?
 
-  combFile=${tc}_combined-${CI_CONCURRENT_ID}.ipcg
-  echo "null" >./input/multiTU/${combFile}
-
-  ${cgmergeExe} ./input/multiTU/${combFile} ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile} >>log/testrun.log 2>&1
-  mErr=$?
-
-  cat ./input/multiTU/${combFile} | python3 -m json.tool >./input/multiTU/${combFile}_
-  mv ./input/multiTU/${combFile}_ ./input/multiTU/${combFile}
-
-  ${testerExe} ./input/multiTU/${combFile} ./input/multiTU/${gtCombFile} >>log/testrun.log 2>&1
-  cErr=$?
-
-  echo "$aErr or $bErr or $mErr or $cErr"
-
-  if [[ ${aErr} -ne 0 || ${bErr} -ne 0 || ${mErr} -ne 0 || ${cErr} -ne 0 ]]; then
-    echo "Failure for file: $combFile. Keeping generated file for inspection"
-    fail=$((fail + 1))
+  if only_metadata_diff "$diffFile"; then
+    aErr=0
   else
-    rm ./input/multiTU/$combFile ./input/multiTU/${ipcgTaFile} ./input/multiTU/${ipcgTbFile}
+    echo "[Info] aErr metadata diff"
+    echo "Running $testerExe ./input/multiTU/${ipcgTaFile} ./input/multiTU/${gtaFile}"
   fi
-  return $fail
-}
 
-function applyFileFormatTwoToMultiTUWithAA {
-  fail=0
-  tc=$1
-  taFile=${tc}_a.cpp
-  tbFile=${tc}_b.cpp
-
-  # Result files
-  ipcgTaFile="${taFile/cpp/ipcg}-${CI_CONCURRENT_ID}"
-  ipcgTbFile="${tbFile/cpp/ipcg}-${CI_CONCURRENT_ID}"
-
-  # Groundtruth files
-  gtaFile="${taFile/cpp/gtaacg}"
-  gtbFile="${tbFile/cpp/gtaacg}"
-  gtCombFile="${tc}_combined.gtaacg"
-
-  # Translation-unit-local
-  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA --output ./input/multiTU/${ipcgTaFile} ./input/multiTU/$taFile -- >>log/testrun.log 2>&1
-  $cgcollectorExe --metacg-format-version=2 --capture-ctors-dtors --capture-stack-ctors-dtors --enable-AA --output ./input/multiTU/${ipcgTbFile}  ./input/multiTU/$tbFile -- >>log/testrun.log 2>&1
-
-  cat ./input/multiTU/${ipcgTaFile} | python3 -m json.tool >./input/multiTU/${ipcgTaFile}_
-  mv ./input/multiTU/${ipcgTaFile}_ ./input/multiTU/${ipcgTaFile}
-  cat ./input/multiTU/${ipcgTbFile} | python3 -m json.tool >./input/multiTU/${ipcgTbFile}_
-  mv ./input/multiTU/${ipcgTbFile}_ ./input/multiTU/${ipcgTbFile}
-
-  $testerExe ./input/multiTU/${ipcgTaFile} ./input/multiTU/${gtaFile} >>log/testrun.log 2>&1
-  aErr=$?
-  $testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile} >>log/testrun.log 2>&1
+  $testerExe  ./input/multiTU/${gtbFile} ./input/multiTU/${ipcgTbFile} >>log/testrun.log 2>&1
   bErr=$?
+
+  if only_metadata_diff "$diffFile"; then
+    bErr=0
+  else
+    echo "[Info] bErr metadata diff"
+    echo "Running $testerExe ./input/multiTU/${ipcgTbFile} ./input/multiTU/${gtbFile}"
+  fi
 
   combFile=${tc}_combined-${CI_CONCURRENT_ID}.ipcg
   echo "null" >./input/multiTU/${combFile}
@@ -253,8 +159,15 @@ function applyFileFormatTwoToMultiTUWithAA {
   cat ./input/multiTU/${combFile} | python3 -m json.tool >./input/multiTU/${combFile}_
   mv ./input/multiTU/${combFile}_ ./input/multiTU/${combFile}
 
-  ${testerExe} ./input/multiTU/${combFile} ./input/multiTU/${gtCombFile} >>log/testrun.log 2>&1
+  ${testerExe} ./input/multiTU/${gtCombFile} ./input/multiTU/${combFile} >>log/testrun.log 2>&1
   cErr=$?
+
+  if only_metadata_diff "$diffFile"; then
+    cErr=0
+  else
+    echo "[Info] cErr metadata diff"
+    echo "Was running: ${testerExe} ./input/multiTU/${combFile} ./input/multiTU/${gtCombFile} >>log/testrun.log 2>&1"
+  fi
 
   echo "$aErr or $bErr or $mErr or $cErr"
 

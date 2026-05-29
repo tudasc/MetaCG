@@ -1,0 +1,65 @@
+{
+    "_CG": {
+        "_Z15libraryFunctionPFvvEii": {
+            "callees": [
+                "_Z3foov"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "AllAliasMetadata": [
+                    {
+                        "funcName": [
+                            ""
+                        ],
+                        "paramTypes": [],
+                        "retType": "void"
+                    }
+                ],
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z3foov": {
+            "callees": [],
+            "callers": [
+                "_Z15libraryFunctionPFvvEii"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z15libraryFunctionPFvvEii"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 2
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "3b1d4887dc89636023b0efc8327d39162bcc6ee0",
+            "version": "0.9"
+        },
+        "version": "2.0"
+    }
+}

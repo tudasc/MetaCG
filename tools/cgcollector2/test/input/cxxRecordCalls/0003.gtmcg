@@ -1,0 +1,98 @@
+{
+    "_CG": {
+        "_ZN11localStructC1Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "localStruct"
+                    ],
+                    "paramTypes": [],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN11localStructC2Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "localStruct"
+                    ],
+                    "paramTypes": [],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN11localStructclEiii": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "operator()"
+                    ],
+                    "paramTypes": [
+                        "int",
+                        "int",
+                        "int"
+                    ],
+                    "retType": "int"
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_ZN11localStructC1Ev",
+                "_ZN11localStructC2Ev",
+                "_ZN11localStructclEiii"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "main"
+                    ],
+                    "paramTypes": [],
+                    "retType": "int"
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "3b1d4887dc89636023b0efc8327d39162bcc6ee0",
+            "version": "0.9"
+        },
+        "version": "2.0"
+    }
+}

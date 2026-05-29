@@ -1,0 +1,86 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": {
+                    "1": {},
+                    "2": {},
+                    "3": {},
+                    "4": {},
+                    "5": {},
+                    "6": {},
+                    "7": {}
+                },
+                "functionName": "_QFPfunc",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "1": {
+                "callees": {},
+                "functionName": "_QMmodPfinalize_base",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "2": {
+                "callees": {},
+                "functionName": "_QMmodPfinalize_derived",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "3": {
+                "callees": {},
+                "functionName": "_QMmodPfunc_arg",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "4": {
+                "callees": { "1": {}, "2": {} },
+                "functionName": "_QMmodPfunc_arg2",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "5": {
+                "callees": {},
+                "functionName": "_QMmodPfunc_arg_inout",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "6": {
+                "callees": { "1": {}, "2": {} },
+                "functionName": "_QMmodPfunc_arg_inout2",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "7": {
+                "callees": { "1": {}, "2": {} },
+                "functionName": "_QMmodPfunc_arg_out",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            },
+            "8": {
+                "callees": { "0": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "version": "0.9"
+        },
+        "version": "4.0"
+    }
+}

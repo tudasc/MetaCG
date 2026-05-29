@@ -29,7 +29,7 @@ endif()
 # End of require out-of-source builds
 
 # Project information
-set(METACG_VERSION 0.9.0)
+set(METACG_VERSION 1.00.0)
 project(
   MetaCG
   VERSION ${METACG_VERSION}
@@ -55,6 +55,7 @@ option(
 
 if(METACG_BUILD_UNIT_TESTS)
   enable_testing()
+  include(GoogleTest)
 endif()
 
 include(ToolchainOptions)
@@ -76,12 +77,7 @@ if(NOT
 endif()
 
 # Configure the file that holds version information
-configure_file(Config.h.in config.h)
-
-if(METACG_BUILD_UNIT_TESTS)
-  # Provide googletest library
-  include(GoogleTest)
-endif()
+configure_file(Config.h.in include/metacg/config.h)
 
 # Component options MetaCG graph library will always be built. The actual graph implementation
 add_subdirectory(graph)
@@ -95,6 +91,29 @@ option(
 if(METACG_BUILD_GRAPH_TOOLS)
   # New MetaCG tools based on the graphlib
   include(ClangLLVM)
+
+  # Determine if we can build CaGe
+  if(${LLVM_PACKAGE_VERSION}
+     GREATER
+     14
+  )
+    set(BUILD_CAGE ON)
+
+    option(
+      CAGE_USE_METAVIRT
+      ON
+      "Rely on metavirt for virtual call handling"
+    )
+
+    if(${CAGE_USE_METAVIRT})
+      include(metavirt)
+    endif()
+
+  else()
+    set(BUILD_CAGE OFF)
+    message(STATUS "Skipping CaGe: requires LLVM version 16 or higher")
+  endif()
+
   add_subdirectory(tools)
 endif()
 
@@ -129,6 +148,7 @@ if(METACG_BUILD_CGPATCH)
     message(STATUS "Skipping CGPatch: requires LLVM version 15 or higher")
   endif()
 endif()
+
 # PIRA analyzer Should PGIS be built
 option(
   METACG_BUILD_PGIS
@@ -190,4 +210,29 @@ option(
 
 if(METACG_BUILD_PYMETACG)
   add_subdirectory(pymetacg)
+endif()
+
+add_subdirectory(utils)
+
+# Build fortran collector
+option(
+  METACG_BUILD_CGFCOLLECTOR
+  "On or off"
+  OFF
+)
+
+if(METACG_BUILD_CGFCOLLECTOR)
+  if(NOT METACG_BUILD_GRAPH_TOOLS)
+    message(FATAL_ERROR "CGFCollector requires METACG_BUILD_GRAPH_TOOLS=ON to build")
+  endif()
+
+  if(${LLVM_PACKAGE_VERSION}
+     GREATER_EQUAL
+     18
+  )
+    include(FlangLLVM)
+    add_subdirectory(cgfcollector)
+  else()
+    message(STATUS "Skipping CGFCollector: requires LLVM version 18 or higher")
+  endif()
 endif()

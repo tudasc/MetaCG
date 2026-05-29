@@ -1,0 +1,56 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "_ZN8BaseUsedIiE5good1Ev": {
+                "callees": {},
+                "functionName": "_ZN8BaseUsedIiE5good1Ev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/virtualCalls/0022.cpp"
+            },
+            "_ZN8BaseUsedIiEC2Ev": {
+                "callees": {},
+                "functionName": "_ZN8BaseUsedIiEC2Ev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/virtualCalls/0022.cpp"
+            },
+            "_ZN9ChildUsedIiE5good2Ev": {
+                "callees": {},
+                "functionName": "_ZN9ChildUsedIiE5good2Ev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/virtualCalls/0022.cpp"
+            },
+            "_ZN9ChildUsedIiEC2Ev": {
+                "callees": {
+                    "_ZN8BaseUsedIiEC2Ev": {}
+                },
+                "functionName": "_ZN9ChildUsedIiEC2Ev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/virtualCalls/0022.cpp"
+            },
+            "main": {
+                "callees": {
+                    "_ZN8BaseUsedIiE5good1Ev": {},
+                    "_ZN9ChildUsedIiE5good2Ev": {},
+                    "_ZN9ChildUsedIiEC2Ev": {}
+                },
+                "functionName": "main",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/virtualCalls/0022.cpp"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CaGe",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
+            "version": "0.1"
+        },
+        "version": "4.0"
+    }
+}

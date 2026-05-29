@@ -6,8 +6,8 @@
 
 #include "gtest/gtest.h"
 
-#include "DotIO.h"
-#include "MCGManager.h"
+#include "metacg/DotIO.h"
+#include "metacg/MCGManager.h"
 
 class DotIOTest : public ::testing::Test {
  protected:

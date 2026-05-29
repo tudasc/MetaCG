@@ -6,8 +6,8 @@
 
 #include "loadImbalance/LIEstimatorPhase.h"
 #include "CgHelper.h"
-#include "LoggerUtil.h"
 #include "MetaData/PGISMetaData.h"
+#include "metacg/LoggerUtil.h"
 
 #include <loadImbalance/LIMetaData.h>
 #include <loadImbalance/metric/EfficiencyMetric.h>

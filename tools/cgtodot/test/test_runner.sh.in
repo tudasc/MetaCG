@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+# Test runner for CGToDot.
+#
+# Usage:
+#     test_runner.sh
+
+binary="@CGTODOT_BIN@"
+data_dir="@CGTODOT_TEST_DATA_DIR@"
+input_file="$data_dir/input.json"
+expected_output_file="$data_dir/output.dot"
+
+tests_failed=0
+tests_passed=0
+
+fail()
+{
+    echo "Test failed: $1"
+    tests_failed=$((tests_failed + 1))
+}
+
+pass()
+{
+    echo "Test passed: $1"
+    tests_passed=$((tests_passed + 1))
+}
+
+# Test: no input
+if "$binary" >/dev/null 2>&1; then
+    fail "no input"
+else
+    pass "no input"
+fi
+
+# Test: non-existent input file
+if "$binary" "non_existent_file.json" >/dev/null 2>&1; then
+    fail "non-existent input file"
+else
+    pass "non-existent input file"
+fi
+
+# Test: valid input file -> default output
+default_output_file="input.dot"
+if "$binary" "$input_file" >/dev/null 2>&1; then
+    if [ -f "$default_output_file" ] && diff -q "$default_output_file" "$expected_output_file"; then
+        pass "valid input file -> default output"
+    else
+        fail "valid input file -> default output"
+    fi
+else
+    fail "valid input file -> default output"
+fi
+
+rm -f "$default_output_file"
+
+# Test: option -o
+custom_output_file_name="$(mktemp custom_output_file_name_XXXXXX.dot)"
+if "$binary" -o "$custom_output_file_name" "$input_file" >/dev/null 2>&1; then
+    if diff -q "$custom_output_file_name" "$expected_output_file" >/dev/null; then
+        pass "option -o"
+    else
+        fail "option -o"
+    fi
+else
+    fail "option -o"
+fi
+
+rm -f "$custom_output_file_name"
+
+echo ""
+echo "Tests passed: $tests_passed"
+echo "Tests failed: $tests_failed"
+
+if [ $tests_failed -ne 0 ]; then
+    exit 1
+else
+    exit 0
+fi

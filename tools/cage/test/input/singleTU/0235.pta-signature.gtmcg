@@ -1,0 +1,47 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "_Z3barv": {
+                "callees": {},
+                "functionName": "_Z3barv",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0235.cpp"
+            },
+            "_Z3foov": {
+                "callees": {},
+                "functionName": "_Z3foov",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0235.cpp"
+            },
+            "_ZN1CC2EPFvvE": {
+                "callees": {},
+                "functionName": "_ZN1CC2EPFvvE",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0235.cpp"
+            },
+            "main": {
+                "callees": {
+                    "_Z3barv": {},
+                    "_Z3foov": {},
+                    "_ZN1CC2EPFvvE": {}
+                },
+                "functionName": "main",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/singleTU/0235.cpp"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CaGe",
+            "sha": "3d2c51dee0f8d51d50c706b8a724bacd40b71170",
+            "version": "0.1"
+        },
+        "version": "4.0"
+    }
+}

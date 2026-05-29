@@ -1,6 +1,8 @@
 {
     "_CG": {
-        "meta": {},
+        "meta": {
+            "dummy_md": {}
+        },
         "nodes": {
             "0": {
                 "callees": {

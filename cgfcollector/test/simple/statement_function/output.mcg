@@ -1,0 +1,71 @@
+{
+  "_CG": {
+    "meta": {},
+    "nodes": {
+      "0": {
+        "callees": { "1": {}, "2": {}, "3": {}, "4": {} },
+        "functionName": "_QQmain",
+        "hasBody": true,
+        "meta": {},
+        "origin": "input.f90"
+      },
+      "1": {
+        "callees": {},
+        "functionName": "_QFPmul",
+        "hasBody": true,
+        "meta": {},
+        "origin": "input.f90"
+      },
+      "2": {
+        "callees": {},
+        "functionName": "_QFPadd",
+        "hasBody": true,
+        "meta": {},
+        "origin": "input.f90"
+      },
+      "3": {
+        "callees": { "1": {}, "2": {} },
+        "functionName": "_QFPmix",
+        "hasBody": true,
+        "meta": {},
+        "origin": "input.f90"
+      },
+      "4": {
+        "callees": { "5": {}, "6": {} },
+        "functionName": "_QFPinner_scope",
+        "hasBody": true,
+        "meta": {},
+        "origin": "input.f90"
+      },
+      "5": {
+        "callees": {},
+        "functionName": "_QFFinner_scopePmul",
+        "hasBody": true,
+        "meta": {},
+        "origin": "input.f90"
+      },
+      "6": {
+        "callees": { "7": {} },
+        "functionName": "_QFPuse_arg",
+        "hasBody": true,
+        "meta": {},
+        "origin": "input.f90"
+      },
+      "7": {
+        "callees": {},
+        "functionName": "_QFFuse_argPsubaddx",
+        "hasBody": true,
+        "meta": {},
+        "origin": "input.f90"
+      }
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "f3f7dfc1f17f17b5897e815199038017f355f95f",
+      "version": "1.0"
+    },
+    "version": "4.0"
+  }
+}

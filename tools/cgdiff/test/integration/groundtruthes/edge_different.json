@@ -1,0 +1,30 @@
+{
+    "cgA": "/home/silasm/work/github/MetaCG/build2/../tools/cgdiff/test/integration/input/cgA_basic.mcg",
+    "cgB": "/home/silasm/work/github/MetaCG/build2/../tools/cgdiff/test/integration/input/cgE_basic.mcg",
+    "ignoring": [],
+    "diff": {
+        "nodeDiffs": {
+            "main": {
+                "diffType": [
+                    "differentEdges"
+                ],
+                "in": "both",
+                "metadataOnlyInA": [],
+                "metadataOnlyInB": [],
+                "edges": {
+                    "bar": {
+                        "in": "cgB",
+                        "metadataOnlyInA": [],
+                        "metadataOnlyInB": []
+                    },
+                    "foo": {
+                        "in": "cgA",
+                        "metadataOnlyInA": [],
+                        "metadataOnlyInB": []
+                    }
+                }
+            }
+        },
+        "globalMetaDiff": {}
+    }
+}

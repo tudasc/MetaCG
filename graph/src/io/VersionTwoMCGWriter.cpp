@@ -4,10 +4,10 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "io/VersionTwoMCGWriter.h"
-#include "MCGManager.h"
-#include "io/VersionFourMCGWriter.h"
-#include "metadata/OverrideMD.h"
+#include "metacg/io/VersionTwoMCGWriter.h"
+#include "metacg/MCGManager.h"
+#include "metacg/io/VersionFourMCGWriter.h"
+#include "metacg/metadata/OverrideMD.h"
 #include <set>
 
 using namespace metacg;

@@ -3,12 +3,12 @@
  * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
-#include "Callgraph.h"
+#include "metacg/Callgraph.h"
 
-#include "LoggerUtil.h"
-#include "metadata/EntryFunctionMD.h"
-#include "metadata/OverrideMD.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/metadata/EntryFunctionMD.h"
 
+#include <algorithm>
 #include <string>
 
 int metacg_RegistryInstanceCounter{0};
@@ -32,7 +32,7 @@ CgNode* Callgraph::getMain(bool forceRecompute) const {
 
   // Otherwise, try to find by name.
   if ((mainNode = getFirstNode("main")) || (mainNode = getFirstNode("_Z4main")) ||
-      (mainNode = getFirstNode("_ZSt4mainiPPc"))) {
+      (mainNode = getFirstNode("_ZSt4mainiPPc")) || (mainNode = getFirstNode("_QQmain"))) {
     return mainNode;
   }
 
@@ -41,6 +41,7 @@ CgNode* Callgraph::getMain(bool forceRecompute) const {
 
 CgNode& Callgraph::insert(const std::string& function, std::optional<std::string> origin, bool isVirtual,
                           bool hasBody) {
+  assert(!function.empty() && "Function name must not be empty");
   NodeId id = nodes.size();
   // Note: Can't use make_unique here because make_unqiue is not (and should not be) a friend of the CgNode constructor.
   nodes.emplace_back(new CgNode(id, function, std::move(origin), isVirtual, hasBody));
@@ -59,10 +60,14 @@ bool Callgraph::erase(NodeId id) {
   // Remove edges
   for (auto& calleeId : calleeList[id]) {
     edges.erase({id, calleeId});
+    auto& childCallerList = callerList.at(calleeId);
+    childCallerList.erase(std::find(childCallerList.begin(), childCallerList.end(), id));
   }
   calleeList.erase(id);
   for (auto& callerId : callerList[id]) {
     edges.erase({callerId, id});
+    auto& parentCalleeList = calleeList.at(callerId);
+    parentCalleeList.erase(std::find(parentCalleeList.begin(), parentCalleeList.end(), id));
   }
   callerList.erase(id);
   // Destroy the node
@@ -148,8 +153,7 @@ bool Callgraph::addEdge(const std::string& callerName, const std::string& callee
   if (callerMatches.size() != 1 || calleeMatches.size() != 1) {
     return false;
   }
-  addEdge(callerMatches.front(), calleeMatches.front());
-  return true;
+  return addEdge(callerMatches.front(), calleeMatches.front());
 }
 
 bool Callgraph::removeEdge(NodeId parentID, NodeId childID) {
@@ -200,7 +204,14 @@ bool Callgraph::hasNode(const CgNode& node) const {
   return nodeAtId && nodeAtId.get() == &node;
 }
 
-unsigned Callgraph::countNodes(const std::string& name) const { return nameIdMap.count(name); }
+unsigned Callgraph::countNodes(const std::string& name) const {
+  auto it = nameIdMap.find(name);
+  if (it == nameIdMap.end()) {
+    return 0;
+  }
+
+  return it->second.size();
+}
 
 CgNode* Callgraph::getFirstNode(const std::string& name) const {
   if (auto it = nameIdMap.find(name); it != nameIdMap.end()) {

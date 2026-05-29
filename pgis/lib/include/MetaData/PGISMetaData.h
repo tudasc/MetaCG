@@ -7,9 +7,9 @@
 #ifndef METACG_PGISMETADATA_H
 #define METACG_PGISMETADATA_H
 
-#include "CgNode.h"
-#include "LoggerUtil.h"
-#include "metadata/MetaData.h"
+#include "metacg/CgNode.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/metadata/MetaData.h"
 
 namespace metacg::pgis {
 
@@ -29,7 +29,7 @@ class InstrumentationMetaData : public metacg::MetaData::Registrar<Instrumentati
   InstrumentationMetaData(const InstrumentationMetaData& other) : state(other.state) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping& nodeToStr) const final {
+  nlohmann::json toJson(NodeToStrMapping&) const final {
     metacg::MCGLogger::instance().getConsole()->trace("Serializing InstrumentationMetaData to json is not implemented");
     return {};
   };

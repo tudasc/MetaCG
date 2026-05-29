@@ -1,0 +1,112 @@
+{
+    "_CG": {
+        "_ZN7MyClassC1Ei": {
+            "callees": [
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [
+            ],
+            "overrides": [
+            ]
+        },
+        "_ZN7MyClassC2Ei": {
+            "callees": [
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [
+            ],
+            "overrides": [
+            ]
+        },
+        "_ZN7MyClassD0Ev": {
+            "callees": [
+            ],
+            "callers": [
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": true,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [
+            ],
+            "overrides": [
+            ]
+        },
+        "_ZN7MyClassD1Ev": {
+            "callees": [
+            ],
+            "callers": [
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": true,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [
+            ],
+            "overrides": [
+            ]
+        },
+        "_ZN7MyClassD2Ev": {
+            "callees": [
+            ],
+            "callers": [
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": true,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [
+            ],
+            "overrides": [
+            ]
+        },
+        "main": {
+            "callees": [
+                "_ZN7MyClassC1Ei",
+                "_ZN7MyClassC2Ei"
+            ],
+            "callers": [
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 3
+            },
+            "overriddenBy": [
+            ],
+            "overrides": [
+            ]
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "00d2b8453cc08cb1aacd7df9ea1645bd086f80da",
+            "version": "0.4"
+        },
+        "version": "2.0"
+    }
+}

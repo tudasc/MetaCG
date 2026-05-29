@@ -4,7 +4,7 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "Callgraph.h"
+#include "metacg/Callgraph.h"
 
 #include "gtest/gtest.h"
 

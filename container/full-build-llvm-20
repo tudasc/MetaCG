@@ -1,0 +1,75 @@
+FROM debian:bookworm-slim
+
+WORKDIR /opt/metacg
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install -y gcc g++ gdb \
+        cmake python3 apt-utils wget gnupg \
+        qtbase5-dev git autoconf automake \
+        libtool zlib1g-dev zlib1g vim unzip \
+        python3-pip python3-venv \
+        openmpi-bin openmpi-common bison flex bear \
+        lsb-release wget software-properties-common \
+        python3-matplotlib python3-pyqt5 ninja-build \
+    libopenmpi-dev libhwloc-dev libevent-dev \
+    jq
+
+RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc && \
+    add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-20 main' && \
+    add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-20 main' && \
+    apt-get update && \
+    apt-get install -y libllvm20 llvm-20 llvm-20-dev llvm-20-runtime \
+        clang-20 clang-tools-20 libclang-common-20-dev libclang-20-dev libclang1-20 \
+    lld-20 libmlir-20-dev mlir-20-tools flang-20
+RUN bash -c "ln -s $(which clang-20) /usr/bin/clang" && \
+    bash -c "ln -s $(which clang++-20) /usr/bin/clang++" && \
+    bash -c "ln -s $(which opt-20) /usr/bin/opt" && \
+    bash -c "ln -s $(which llvm-config-20) /usr/bin/llvm-config" && \
+    bash -c "ln -s $(which flang-new-20) /usr/bin/flang-new"
+
+ARG extinstalldir=/opt/metacg/extern/install
+ENV EXTINSTALLDIR=$extinstalldir
+
+COPY ./build_submodules.sh /opt/metacg
+
+RUN ./build_submodules.sh $(nproc)
+
+RUN python3 -m venv .venv && \
+     .venv/bin/pip install fortdepend
+
+COPY . /opt/metacg
+
+RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_INSTALL_PREFIX=/tmp/metacg \
+      -DCUBE_DIR=$EXTINSTALLDIR/cubelib \
+      -DEXTRAP_INCLUDE=$EXTINSTALLDIR/extrap/include \
+      -DEXTRAP_LIB=$EXTINSTALLDIR/extrap/lib \
+      -DMETACG_BUILD_PGIS=ON \
+      -DMETACG_BUILD_CGCOLLECTOR=ON \
+      -DMETACG_BUILD_GRAPH_TOOLS=ON \
+      -DMETACG_BUILD_CGPATCH=ON \
+      -DMETACG_BUILD_CGFCOLLECTOR=ON \
+      -DCAGE_USE_METAVIRT=ON \
+      -DMETACG_BUILD_PYMETACG=ON \
+      -DPython_ROOT_DIR=/opt/metacg/.venv \
+      -DPYTEST_EXECUTABLE=/opt/metacg/.venv/bin/pytest \
+      -DCMAKE_MODULE_PATH=/opt/metacg/.venv/share/Pytest/cmake \
+      -DMETACG_BUILD_PYMETACG_TESTS=ON \
+      -DCMAKE_VERBOSE_MAKEFILE=ON \
+      -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-20/build/utils/lit/lit.py
+
+RUN cmake --build build --parallel
+
+RUN cmake --install build
+
+RUN cmake -Dmetacg_ROOT=/tmp/metacg -S graph/test/install -B graph/test/build
+RUN cmake --build graph/test/build --parallel
+
+RUN cmake -Dmetacg_ROOT=/tmp/metacg -S tools/cgcollector2/CGC2DemoPlugin -B tools/cgcollector2/CGC2DemoPlugin/build
+RUN cmake --build tools/cgcollector2/CGC2DemoPlugin/build --parallel
+
+RUN cmake -Dmetacg_ROOT=/tmp/metacg -S tools/cage/CaGeDemoPlugin -B tools/cage/CaGeDemoPlugin/build
+RUN cmake --build tools/cage/CaGeDemoPlugin/build --parallel

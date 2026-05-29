@@ -1,0 +1,34 @@
+/**
+ * File: VersionTwoMCGWriter.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
+#ifndef METACG_VERSIONTWOMCGWRITER_H
+#define METACG_VERSIONTWOMCGWRITER_H
+
+#include "metacg/config.h"
+#include "metacg/io/MCGWriter.h"
+
+namespace metacg::io {
+
+class VersionTwoMCGWriter : public MCGWriter {
+ public:
+  explicit VersionTwoMCGWriter(
+      metacg::MCGFileInfo fileInfo = metacg::getVersionTwoFileInfo({std::string("CGCollector"), MetaCG_VERSION_MAJOR,
+                                                                    MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}),
+      bool exportSorted = false)
+      : MCGWriter(std::move(fileInfo)), exportSorted(exportSorted) {}
+
+  void write(const Callgraph* graph, JsonSink& js) override;
+
+  static void downgradeV4FormatToV2Format(nlohmann::json&, bool sortCallers);
+
+  void setExportSorted(bool sort) { this->exportSorted = sort; }
+
+ private:
+  bool exportSorted;
+};
+}  // namespace metacg::io
+
+#endif  // METACG_VERSIONTWOMCGWRITER_H

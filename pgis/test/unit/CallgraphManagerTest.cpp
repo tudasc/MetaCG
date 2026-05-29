@@ -6,7 +6,7 @@
 
 #include "gtest/gtest.h"
 
-#include "LoggerUtil.h"
+#include "metacg/LoggerUtil.h"
 
 #include "PiraMCGProcessor.h"
 

@@ -6,10 +6,8 @@
 
 #include "gtest/gtest.h"
 
-// #include "LoggerUtil.h"
-
-#include "../../../graph/include/Callgraph.h"
-#include "../../../graph/include/LoggerUtil.h"
+#include "metacg/Callgraph.h"
+#include "metacg/LoggerUtil.h"
 
 using namespace metacg;
 

@@ -1,0 +1,43 @@
+{
+  "_CG": {
+    "meta": {},
+    "nodes": {
+      "0": {
+        "callees": {},
+        "functionName": "_QMmodPadd_stuff",
+        "hasBody": true,
+        "meta": {},
+        "origin": "mod.f90"
+      },
+      "1": {
+        "callees": {},
+        "functionName": "_QMmodPunary_plus",
+        "hasBody": true,
+        "meta": {},
+        "origin": "mod.f90"
+      },
+      "2": {
+        "callees": {},
+        "functionName": "_QMmodPnegx",
+        "hasBody": true,
+        "meta": {},
+        "origin": "mod.f90"
+      },
+      "3": {
+        "callees": { "0": {}, "2": {} },
+        "functionName": "_QQmain",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      }
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "37c33e071f7bc6b1dba2e01ff2e7305aaeb3ccee",
+      "version": "0.9"
+    },
+    "version": "4.0"
+  }
+}

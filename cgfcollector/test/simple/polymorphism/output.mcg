@@ -1,0 +1,43 @@
+{
+  "_CG": {
+    "meta": {},
+    "nodes": {
+      "0": {
+        "callees": {},
+        "functionName": "_QMmodPset_mass_body",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "1": {
+        "callees": {},
+        "functionName": "_QMmodPset_mass_charged_body",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "2": {
+        "callees": {},
+        "functionName": "_QMmodPset_mass",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "3": {
+        "callees": { "0": {}, "1": {}, "2": {} },
+        "functionName": "_QQmain",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      }
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "ee64da05acb38bcac03c622a74e3bac1d7f8da5b",
+      "version": "1.0"
+    },
+    "version": "4.0"
+  }
+}

@@ -4,10 +4,10 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "io/VersionFourMCGWriter.h"
-#include "MCGManager.h"
-#include "config.h"
-#include "metadata/BuiltinMD.h"
+#include "metacg/io/VersionFourMCGWriter.h"
+#include "metacg/MCGManager.h"
+#include "metacg/config.h"
+#include "metacg/metadata/BuiltinMD.h"
 #include <iostream>
 
 using namespace metacg;

@@ -1,0 +1,26 @@
+/**
+ * File: LoopDepthCollector.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
+#ifndef CGCOLLECTOR2_LOOPDEPTHCOLLECTOR_H
+#define CGCOLLECTOR2_LOOPDEPTHCOLLECTOR_H
+
+#include "cgcollector2/MetaDataFunctions.h"
+#include "cgcollector2/interface/CGC2Plugin.h"
+#include "metacg/metadata/LoopMD.h"
+
+struct LoopDepthCollector : public cgcollector2::Plugin {
+  virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
+    std::unique_ptr<metacg::LoopDepthMD> result = std::make_unique<metacg::LoopDepthMD>();
+    result->loopDepth = getLoopDepthInStmt(decl->getBody());
+    return result;
+  }
+
+  std::string getPluginName() const final { return "LoopDepthCollector"; }
+
+  virtual ~LoopDepthCollector() = default;
+};
+
+#endif  // CGCOLLECTOR2_LOOPDEPTHCOLLECTOR_H

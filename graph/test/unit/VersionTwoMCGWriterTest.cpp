@@ -4,12 +4,12 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "LoggerUtil.h"
+#include "metacg/LoggerUtil.h"
 #include "gtest/gtest.h"
 
-#include "MCGBaseInfo.h"
-#include "MCGManager.h"
-#include "io/VersionTwoMCGWriter.h"
+#include "metacg/MCGBaseInfo.h"
+#include "metacg/MCGManager.h"
+#include "metacg/io/VersionTwoMCGWriter.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

@@ -5,11 +5,11 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "io/VersionFourMCGReader.h"
-#include "LoggerUtil.h"
-#include "MCGManager.h"
+#include "metacg/io/VersionFourMCGReader.h"
 #include "TestMD.h"
-#include "metadata/EntryFunctionMD.h"
+#include "metacg/LoggerUtil.h"
+#include "metacg/MCGManager.h"
+#include "metacg/metadata/EntryFunctionMD.h"
 
 #include "nlohmann/json.hpp"
 #include "gtest/gtest.h"
@@ -304,6 +304,6 @@ TEST(V4MCGReaderTest, GlobalMetadata) {
   const Callgraph& graph = *mcgm.getCallgraph();
 
   EXPECT_TRUE(graph.has<metacg::EntryFunctionMD>());
-  EXPECT_EQ(graph.get<metacg::EntryFunctionMD>()->getEntryFunctionId(), graph.getSingleNode("thisIsMain").id);
+  EXPECT_EQ(graph.get<metacg::EntryFunctionMD>()->getEntryFunctionId(), graph.getSingleNode("thisIsMain").getId());
   EXPECT_EQ(graph.getMain(), &graph.getSingleNode("thisIsMain"));
 }

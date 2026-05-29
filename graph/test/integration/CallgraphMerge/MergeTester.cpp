@@ -1,9 +1,9 @@
 
-#include "MCGManager.h"
-#include "io/VersionTwoMCGReader.h"
-#include "io/VersionTwoMCGWriter.h"
+#include "metacg/MCGManager.h"
+#include "metacg/io/VersionTwoMCGReader.h"
+#include "metacg/io/VersionTwoMCGWriter.h"
 
-#include "metadata/BuiltinMD.h"
+#include "metacg/metadata/BuiltinMD.h"
 
 #include <filesystem>
 #include <iostream>

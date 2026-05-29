@@ -1,0 +1,30 @@
+{
+    "_CG": {
+        "nodes": {
+            "0": {
+                "callees": {
+                    "1": null
+                },
+                "functionName": "main",
+                "hasBody": true,
+                "meta": null,
+                "origin": "main.cpp"
+            },
+            "1": {
+                "callees": null,
+                "functionName": "foo",
+                "hasBody": true,
+                "meta": null,
+                "origin": "main.cpp"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "4ad73ebf7a108aa388d232ee4824bada13feaa4c",
+            "version": "0.7"
+        },
+        "version": "4.0"
+    }
+}

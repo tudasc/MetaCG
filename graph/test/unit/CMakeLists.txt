@@ -1,7 +1,9 @@
 # Now simply link against gtest or gtest_main as needed.Eg
 add_executable(
   libtests
+  CallgraphTest.cpp
   CGNodeTests.cpp
+  DominatorAnalysisTest.cpp
   DotIOTest.cpp
   GlobalMDTest.cpp
   LoggingTest.cpp
@@ -23,4 +25,4 @@ add_metacg(libtests)
 
 add_config_include(libtests)
 
-add_test(NAME libtests COMMAND $<TARGET_FILE:libtests>)
+add_test(NAME graphlib_unittests COMMAND $<TARGET_FILE:libtests>)

@@ -6,7 +6,7 @@
 #ifndef METACG_MERGECOUNTMD_H
 #define METACG_MERGECOUNTMD_H
 
-#include "metadata/MetaData.h"
+#include "metacg/metadata/MetaData.h"
 
 class MergeCountMD : public metacg::MetaData::Registrar<MergeCountMD> {
  public:

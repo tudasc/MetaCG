@@ -7,10 +7,10 @@
 #ifndef CGNODEHELPER_H_
 #define CGNODEHELPER_H_
 
-#include "Callgraph.h"
-#include "CgNode.h"
-#include "CgTypes.h"
-#include "ReachabilityAnalysis.h"
+#include "metacg/Callgraph.h"
+#include "metacg/CgNode.h"
+#include "metacg/CgTypes.h"
+#include "metacg/ReachabilityAnalysis.h"
 
 #include <algorithm>  // std::set_intersection
 #include <memory>

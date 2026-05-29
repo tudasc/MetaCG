@@ -9,8 +9,8 @@
 
 // clang-format off
 // From graph library
-#include "Callgraph.h"
-#include "CgNode.h"
+#include "metacg/Callgraph.h"
+#include "metacg/CgNode.h"
 
 // From PGIS library
 #include "EstimatorPhase.h"

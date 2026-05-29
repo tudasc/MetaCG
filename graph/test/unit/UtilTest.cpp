@@ -4,7 +4,7 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#include "Util.h"
+#include "metacg/Util.h"
 #include "gtest/gtest.h"
 
 TEST(UtilTest, string_split) {

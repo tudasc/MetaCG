@@ -7,7 +7,7 @@
 #ifndef METACG_PGIS_INCLUDE_LEGACYMCGREADER_H
 #define METACG_PGIS_INCLUDE_LEGACYMCGREADER_H
 
-#include "io/MCGReader.h"
+#include "metacg/io/MCGReader.h"
 
 namespace metacg::pgis::io {
 

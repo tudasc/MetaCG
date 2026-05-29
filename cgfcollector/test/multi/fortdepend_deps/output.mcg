@@ -1,0 +1,57 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": { "1": {} },
+                "functionName": "_QMmodule0_5Pfunc",
+                "hasBody": true,
+                "meta": {},
+                "origin": "module0_5.f90"
+            },
+            "1": {
+                "callees": {},
+                "functionName": "_QMmodule2Pfunc",
+                "hasBody": true,
+                "meta": {},
+                "origin": null
+            },
+            "2": {
+                "callees": { "1": {} },
+                "functionName": "_QMmodule3Pfunc",
+                "hasBody": true,
+                "meta": {},
+                "origin": "module3.f90"
+            },
+            "3": {
+                "callees": { "0": {} },
+                "functionName": "_QMmy_modulePmy_subroutine",
+                "hasBody": true,
+                "meta": {},
+                "origin": null
+            },
+            "4": {
+                "callees": {},
+                "functionName": "_QMmy_modulePsubsub",
+                "hasBody": true,
+                "meta": {},
+                "origin": "module.f90"
+            },
+            "5": {
+                "callees": { "3": {} },
+                "functionName": "_QQmain",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.f90"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "68fb73aebcc0af419653b36a6b5e3e9668408d10",
+            "version": "0.9"
+        },
+        "version": "4.0"
+    }
+}

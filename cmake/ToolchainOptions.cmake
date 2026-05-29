@@ -1,12 +1,6 @@
 include(json)
 include(spdlog)
-
-if(METACG_BUILD_GRAPH_TOOLS
-   OR METACG_BUILD_CGCOLLECTOR
-   OR METACG_BUILD_PGIS
-)
-  include(cxxopts-lib)
-endif()
+include(cxxopts-lib)
 
 # Internal dependencies
 function(add_metacg target)
@@ -20,7 +14,7 @@ function(add_pgis target)
 endfunction()
 
 function(add_config_include target)
-  target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>)
+  target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
 endfunction()
 
 function(add_pgis_includes target)
