@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+
+LINK_WRAPPER="@CGFCOLLECTOR_LINK_WRAPPER@"
+
+function with_test_setup
+{
+    local temp_dir=$(mktemp -d)
+    cd "$temp_dir" || exit 1
+
+    trap 'rm -rf '"$temp_dir"'' RETURN
+
+    # mock flang and cgmerge2
+    mkdir -p bin
+
+    cat >bin/flang-new <<'EOF'
+#!/usr/bin/env bash
+echo "FLANG: $*" >> wrapper.log
+
+out=""
+prev=""
+for arg in "$@"; do
+    if [[ "$prev" == "-o" ]]; then
+        out="$arg"
+    fi
+    prev="$arg"
+done
+
+touch "$out"
+EOF
+
+    cat >bin/cgmerge2 <<'EOF'
+#!/usr/bin/env bash
+echo "CGMERGE2: $*" >> wrapper.log
+touch "$1"
+EOF
+
+    chmod +x bin/flang-new bin/cgmerge2
+
+    export PATH="$temp_dir/bin:$PATH"
+    export CGFCOLLECTOR_FLANG_BIN=flang-new
+    export CGFCOLLECTOR_CGMERGE2_BIN=cgmerge2
+
+    # mock object files
+    touch a.o b.o
+    touch a.o.mcg b.o.mcg
+
+    "$@"
+}
+
+function test_link_normal()
+{
+    "$LINK_WRAPPER" -o final.out a.o b.o || {
+        echo "Failed: could not run link wrapper"
+        return 1
+    }
+
+    if [ ! -f "final.out" ]; then
+        echo "Failed: expected final.out to be generated"
+        return 1
+    fi
+
+    if [ ! -f "final.out.mcg" ]; then
+        echo "Failed: expected final.out.mcg to be generated"
+        return 1
+    fi
+
+    if ! grep -q "FLANG: -o final.out a.o b.o" wrapper.log; then
+        echo "Failed: expected flang to be called with correct arguments"
+        return 1
+    fi
+
+    if ! grep -q "CGMERGE2: final.out.mcg a.o.mcg b.o.mcg" wrapper.log; then
+        echo "Failed: expected cgmerge2 to be called with correct arguments"
+        return 1
+    fi
+
+    return 0
+}
+
+function test_skip_gen_bin()
+{
+    "$LINK_WRAPPER" -o final.out --skip-gen-bin a.o b.o || {
+        echo "Failed: could not run link wrapper"
+        return 1
+    }
+
+    # expect not be called
+    if [ -f "final.out" ]; then
+        echo "Failed: expected final.out to NOT be generated"
+        return 1
+    fi
+
+    if grep -q "FLANG: -o final.out --skip-gen-bin a.o b.o" wrapper.log; then
+        echo "Failed: expected flang to NOT be called"
+        return 1
+    fi
+
+    #expect to be called
+    if [ ! -f "final.out.mcg" ]; then
+        echo "Failed: expected final.out.mcg to be generated"
+        return 1
+    fi
+
+    if ! grep -q "CGMERGE2: final.out.mcg a.o.mcg b.o.mcg" wrapper.log; then
+        echo "Failed: expected cgmerge2 to be called with correct arguments"
+        return 1
+    fi
+
+    return 0
+}
+
+function test_names()
+{
+    "$LINK_WRAPPER" -o final a.o b.o || {
+        echo "Failed: could not run link wrapper"
+        return 1
+    }
+
+    if [ ! -f "final" ]; then
+        echo "Failed: expected final to be generated"
+        return 1
+    fi
+
+    if [ ! -f "final.mcg" ]; then
+        echo "Failed: expected final.mcg to be generated"
+        return 1
+    fi
+
+    if ! grep -q "FLANG: -o final a.o b.o" wrapper.log; then
+        echo "Failed: expected flang to be called with correct arguments"
+        return 1
+    fi
+
+    if ! grep -q "CGMERGE2: final.mcg a.o.mcg b.o.mcg" wrapper.log; then
+        echo "Failed: expected cgmerge2 to be called with correct arguments"
+        return 1
+    fi
+}
+
+# execute all tests
+test_cases=(
+    "with_test_setup test_link_normal"
+    "with_test_setup test_skip_gen_bin"
+    "with_test_setup test_names"
+)
+test_cases_count=${#test_cases[@]}
+
+for i in "${!test_cases[@]}"; do
+    test_func="${test_cases[i]}"
+    printf "Test %d/%d %s\n" "$((i + 1))" "$test_cases_count" "$test_func"
+    if ! $test_func; then
+        echo "Failed"
+        exit 1
+    else
+        echo "Passed"
+    fi
+done
