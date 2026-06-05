@@ -18,6 +18,9 @@ namespace metacg::cgfcollector {
 
 template <typename Iterable, typename Extractor>
 void ParseTreeVisitor::handleDummyArgs(const Iterable& items, Extractor extract) {
+  if (currentProcedures.empty())
+    return;
+
   const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
 
   auto it = std::find_if(procedures.begin(), procedures.end(),
@@ -46,9 +49,8 @@ void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
 }
 
 void ParseTreeVisitor::handleEndFuncSubStmt() {
-  varTracking->handleTrackedVars(currentProcedures.back().symbol, edgeM);
-
   if (!currentProcedures.empty()) {
+    varTracking->handleTrackedVars(currentProcedures.back().symbol, edgeM);
     currentProcedures.pop_back();
   }
 }
@@ -62,6 +64,9 @@ void ParseTreeVisitor::postProcess() {
     if (calledIt == procedures.end())
       continue;
 
+    if (pf.argPos >= calledIt->dummyArgs.size()) {
+      continue;
+    }
     auto arg = calledIt->dummyArgs.begin() + pf.argPos;
 
     if (!arg->hasBeenInitialized)
@@ -167,6 +172,8 @@ void ParseTreeVisitor::Post(const SubroutineSubprogram&) { inFunctionOrSubroutin
 
 void ParseTreeVisitor::Post(const ExecutionPart& e) {
   if (!inFunctionOrSubroutineSubProgram && !inMainProgram)
+    return;
+  if (currentProcedures.empty())
     return;
 
   CgNode* node = cg->getFirstNode(mangleSymbol(currentProcedures.back().symbol, underscoring));
@@ -289,11 +296,17 @@ void ParseTreeVisitor::Post(const AssignmentStmt& a) {
   if (!name || !name->symbol)
     return;
 
+  if (currentProcedures.empty())
+    return;
+
   varTracking->handleTrackedVarAssignment(currentProcedures.back().symbol, name->symbol->name());
 }
 
 void ParseTreeVisitor::Post(const AllocateStmt& a) {
   const std::list<Allocation>* allocs = &std::get<std::list<Allocation>>(a.t);
+
+  if (currentProcedures.empty())
+    return;
 
   for (const Allocation& alloc : *allocs) {
     const AllocateObject* allocObj = &std::get<AllocateObject>(alloc.t);
@@ -307,6 +320,9 @@ void ParseTreeVisitor::Post(const AllocateStmt& a) {
 }
 
 void ParseTreeVisitor::Post(const Call& c) {
+  if (currentProcedures.empty())
+    return;
+
   const ProcedureDesignator* designator = &std::get<ProcedureDesignator>(c.t);
   const std::list<ActualArgSpec>* args = &std::get<std::list<ActualArgSpec>>(c.t);
   const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
@@ -320,10 +336,10 @@ void ParseTreeVisitor::Post(const Call& c) {
     const ActualArg* actualArg = &std::get<ActualArg>(arg.t);
     const Indirection<Expr>* expr = std::get_if<Indirection<Expr>>(&actualArg->u);
     if (!expr)
-      return;
+      continue;
     const Name* name = getNameFromClassWithDesignator(expr->value());
     if (!name || !name->symbol)
-      return;
+      continue;
 
     // handle move_alloc intrinsic for allocatable vars
     if (procName->symbol->attrs().test(Attr::INTRINSIC) && procName->symbol->name() == "move_alloc") {
@@ -496,7 +512,7 @@ void ParseTreeVisitor::Post(const TypeBoundProcedureStmt& s) {
     for (const TypeBoundProcDecl& d : withoutInterface->declarations) {
       const Name& name = std::get<Name>(d.t);
       if (!name.symbol)
-        return;
+        continue;
 
       Type& currentType = types.back();
 
@@ -518,7 +534,7 @@ void ParseTreeVisitor::Post(const TypeBoundProcedureStmt& s) {
                  std::get_if<TypeBoundProcedureStmt::WithInterface>(&s.u)) {
     for (const Name& n : withInterface->bindingNames) {
       if (!n.symbol)
-        return;
+        continue;
 
       if (const ProcBindingDetails* bindingDetails = n.symbol->detailsIf<ProcBindingDetails>()) {
         Type& currentType = types.back();
@@ -823,6 +839,9 @@ bool ParseTreeVisitor::Pre(const StmtFunctionStmt& s) {
                       getDetailsName(std::get<Name>(s.t).symbol), fmt::ptr(std::get<Name>(s.t).symbol));
 
   handleFuncSubStmt(s);
+
+  if (currentProcedures.empty())
+    return true;
 
   // hasBody flag
   CgNode* node = cg->getFirstNode(mangleSymbol(currentProcedures.back().symbol, underscoring));
