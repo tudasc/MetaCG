@@ -56,6 +56,6 @@ if [ ${#object_files[@]} -gt 0 ] && [ -n "$output_file" ]; then
     "$cgmerge2_bin" "${output_file}.mcg" "${object_files[@]}"
 fi
 
-if [ ! $skip_gen_bin ]; then
+if ! $skip_gen_bin; then
     exec "$flang_bin" "$@"
 fi
