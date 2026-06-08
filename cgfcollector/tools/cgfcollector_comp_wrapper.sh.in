@@ -14,7 +14,7 @@
 # Usage:
 #     cgfcollector_comp_wrapper.sh [flang options, source files, plugin options]
 #
-# Plugin-specific options:
+# Options:
 #     -d, --dot             # Additionally generate a DOT file. This is mostly used for debugging.
 #     --skip-gen-bin        # Skip the final compilation step. Only generate the call graph.
 #     -v, --verbose         # Print additional information during the generation process.
