@@ -30,9 +30,8 @@ Available options:
 Additionally these other tools are included:
 
 - `cgfcollector_comp_wrapper.sh`: Acts like a normal Flang compiler but also generates a call graph.
-- `cgfcollector_link_wrapper`: Acts like a normal Flang linker but also merges
+- `cgfcollector_link_wrapper.sh`: Acts like a normal Flang linker but also merges
   the generated call graphs.
-- `test_runner.sh`: Run tests.
 
 ## How to build
 
@@ -71,7 +70,7 @@ you probably don't need this.
 
 ## Running test
 
-Run `test_runner.sh`
+Run `ctest`
 
 NOTE: The test `test/multi/fortdepend_deps` has a dependency on [fortdepend](https://fortdepend.readthedocs.io/en/latest/)
 
