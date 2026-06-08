@@ -106,6 +106,18 @@ configure_file_and_install(
   ""
 )
 
+configure_file_and_install(
+  "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_comp_wrapper.sh.in"
+  "test_comp_wrapper.sh"
+  ""
+)
+
+configure_file_and_install(
+  "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_link_wrapper.sh.in"
+  "test_link_wrapper.sh"
+  ""
+)
+
 # tests
 
 # dependency for tests
@@ -118,3 +130,6 @@ message(STATUS "Found fortdepend: ${FORTDEPEND_BIN}")
 
 add_test(NAME cgfcollector_tests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_runner.sh)
 set_tests_properties(cgfcollector_tests PROPERTIES ENVIRONMENT "FORTDEPEND_BIN=${FORTDEPEND_BIN}")
+
+add_test(NAME cgfcollector_comp_wrapper_test COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_comp_wrapper.sh)
+add_test(NAME cgfcollector_link_wrapper_test COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_link_wrapper.sh)
