@@ -18,9 +18,6 @@ namespace metacg::cgfcollector {
 
 template <typename Iterable, typename Extractor>
 void ParseTreeVisitor::handleDummyArgs(const Iterable& items, Extractor extract) {
-  if (currentProcedures.empty())
-    return;
-
   const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
 
   auto it = std::find_if(procedures.begin(), procedures.end(),
@@ -49,10 +46,8 @@ void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
 }
 
 void ParseTreeVisitor::handleEndFuncSubStmt() {
-  if (!currentProcedures.empty()) {
-    varTracking->handleTrackedVars(currentProcedures.back().symbol, edgeM);
-    currentProcedures.pop_back();
-  }
+  varTracking->handleTrackedVars(currentProcedures.back().symbol, edgeM);
+  currentProcedures.pop_back();
 }
 
 void ParseTreeVisitor::postProcess() {
@@ -145,11 +140,9 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
 }
 
 void ParseTreeVisitor::Post(const MainProgram&) {
-  if (!currentProcedures.empty()) {
-    const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
-    MCGLogger::logDebug("End main program: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
-                        getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
-  }
+  const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
+  MCGLogger::logDebug("End main program: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
+                      getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
 
   handleEndFuncSubStmt();
 
@@ -172,8 +165,6 @@ void ParseTreeVisitor::Post(const SubroutineSubprogram&) { inFunctionOrSubroutin
 
 void ParseTreeVisitor::Post(const ExecutionPart& e) {
   if (!inFunctionOrSubroutineSubProgram && !inMainProgram)
-    return;
-  if (currentProcedures.empty())
     return;
 
   CgNode* node = cg->getFirstNode(mangleSymbol(currentProcedures.back().symbol, underscoring));
@@ -206,11 +197,9 @@ void ParseTreeVisitor::Post(const FunctionStmt& f) {
 }
 
 void ParseTreeVisitor::Post(const EndFunctionStmt&) {
-  if (!currentProcedures.empty()) {
-    const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
-    MCGLogger::logDebug("End function: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
-                        getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
-  }
+  const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
+  MCGLogger::logDebug("End function: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
+                      getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
 
   handleEndFuncSubStmt();
 }
@@ -230,11 +219,9 @@ void ParseTreeVisitor::Post(const SubroutineStmt& s) {
 }
 
 void ParseTreeVisitor::Post(const EndSubroutineStmt&) {
-  if (!currentProcedures.empty()) {
-    const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
-    MCGLogger::logDebug("End subroutine: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
-                        getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
-  }
+  const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
+  MCGLogger::logDebug("End subroutine: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
+                      getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
 
   handleEndFuncSubStmt();
 }
@@ -320,6 +307,7 @@ void ParseTreeVisitor::Post(const AllocateStmt& a) {
 }
 
 void ParseTreeVisitor::Post(const Call& c) {
+  // not in a function. Necessary for the null() statement.
   if (currentProcedures.empty())
     return;
 
@@ -377,6 +365,7 @@ void ParseTreeVisitor::Post(const Call& c) {
 }
 
 void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
+  // type declaration can be outside of procedures.
   if (currentProcedures.empty()) {
     return;
   }
@@ -840,9 +829,6 @@ bool ParseTreeVisitor::Pre(const StmtFunctionStmt& s) {
 
   handleFuncSubStmt(s);
 
-  if (currentProcedures.empty())
-    return true;
-
   // hasBody flag
   CgNode* node = cg->getFirstNode(mangleSymbol(currentProcedures.back().symbol, underscoring));
   if (!node) {
@@ -854,11 +840,9 @@ bool ParseTreeVisitor::Pre(const StmtFunctionStmt& s) {
 }
 
 void ParseTreeVisitor::Post(const StmtFunctionStmt& s) {
-  if (!currentProcedures.empty()) {
-    const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
-    MCGLogger::logDebug("End statement function: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
-                        getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
-  }
+  const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
+  MCGLogger::logDebug("End statement function: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
+                      getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
 
   handleEndFuncSubStmt();
 }
