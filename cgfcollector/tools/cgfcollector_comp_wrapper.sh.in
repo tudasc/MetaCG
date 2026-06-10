@@ -21,8 +21,8 @@
 #     --graph-name          # Set internal graph name
 #     --include-intrinsics  # Include intrinsic calls in the generated call graph.
 
-flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang-new"}
-flang_fc1_bin=${CGFCOLLECTOR_FLANG_FC1_BIN:-"flang-new"}
+flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang"}
+flang_fc1_bin=${CGFCOLLECTOR_FLANG_FC1_BIN:-"flang"}
 
 # plugin-specific options wrapped in -mllvm plugin flags
 declare -A OPTION_MAP=(
@@ -53,7 +53,7 @@ skip_gen_bin=false
 
 # If you're using the `mpif90` wrapper, we are extracting the underlying compiler arguments using `mpif90 --show`.
 #
-# Important: Ensure that `flang_fc1_bin` is set to the actual Flang binary (e.g. `flang-new`, which it is by default),
+# Important: Ensure that `flang_fc1_bin` is set to the actual Flang binary (e.g. `flang`, which it is by default),
 # not the `mpif90` wrapper itself. The wrapper adds MPI-specific flags that are incompatible with `-fc1`.
 if [[ "$flang_bin" == *mpif90 ]]; then
     read -r -a mpi_show_args <<<"$(mpif90 --show)"

@@ -12,7 +12,7 @@ function with_test_setup
     # mock flang and cgmerge2
     mkdir -p bin
 
-    cat >bin/flang-new <<'EOF'
+    cat >bin/flang <<'EOF'
 #!/usr/bin/env bash
 echo "FLANG: $*" >> wrapper.log
 
@@ -34,10 +34,10 @@ echo "CGMERGE2: $*" >> wrapper.log
 touch "$1"
 EOF
 
-    chmod +x bin/flang-new bin/cgmerge2
+    chmod +x bin/flang bin/cgmerge2
 
     export PATH="$temp_dir/bin:$PATH"
-    export CGFCOLLECTOR_FLANG_BIN=flang-new
+    export CGFCOLLECTOR_FLANG_BIN=flang
     export CGFCOLLECTOR_CGMERGE2_BIN=cgmerge2
 
     # mock object files

@@ -45,7 +45,7 @@ To build the cgfcollector the option `METACG_BUILD_CGFCOLLECTOR` must be set to
 Paste this into your CMakeLists.txt.
 
 ```
-set(CMAKE_Fortran_COMPILER "flang-new")
+set(CMAKE_Fortran_COMPILER "flang")
 set(CMAKE_Fortran_COMPILER_LAUNCHER <path to cgfcollector_comp_wrapper.sh>)
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.1")
     set(CMAKE_Fortran_LINKER_LAUNCHER "<path to cgfcollector_link_wrapper.sh>")
@@ -79,5 +79,5 @@ NOTE: The test `test/multi/fortdepend_deps` has a dependency on [fortdepend](htt
 ### print parse tree
 
 ```sh
-flang-new -fc1 -fdebug-dump-parse-tree file.f90
+flang -fc1 -fdebug-dump-parse-tree file.f90
 ```

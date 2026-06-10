@@ -28,7 +28,7 @@ RUN bash -c "ln -s $(which clang-20) /usr/bin/clang" && \
     bash -c "ln -s $(which clang++-20) /usr/bin/clang++" && \
     bash -c "ln -s $(which opt-20) /usr/bin/opt" && \
     bash -c "ln -s $(which llvm-config-20) /usr/bin/llvm-config" && \
-    bash -c "ln -s $(which flang-new-20) /usr/bin/flang-new"
+    bash -c "ln -s $(which flang-20) /usr/bin/flang"
 
 ARG extinstalldir=/opt/metacg/extern/install
 ENV EXTINSTALLDIR=$extinstalldir

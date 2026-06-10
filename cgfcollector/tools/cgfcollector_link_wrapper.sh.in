@@ -8,7 +8,7 @@
 # Options:
 #     --skip-gen-bin        # Skip the final compilation step. Only generate the call graph.
 
-flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang-new"}
+flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang"}
 cgmerge2_bin=${CGFCOLLECTOR_CGMERGE2_BIN:-"@CGMERGE2_BIN@"}
 
 if [[ $# -gt 0 && "$1" != -* ]] && command -v "$1" &>/dev/null; then

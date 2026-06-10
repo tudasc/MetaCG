@@ -1,4 +1,4 @@
-set(CMAKE_Fortran_COMPILER "flang-new")
+set(CMAKE_Fortran_COMPILER "flang")
 set(CMAKE_Fortran_COMPILER_LAUNCHER "@CGFCOLLECTOR_COMP_WRAPPER@" --skip-gen-bin)
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.1")
     set(CMAKE_Fortran_LINKER_LAUNCHER "@CGFCOLLECTOR_LINK_WRAPPER@" --skip-gen-bin)
