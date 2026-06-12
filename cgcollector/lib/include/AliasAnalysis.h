@@ -474,7 +474,11 @@ class ASTInformationExtractor : public clang::RecursiveASTVisitor<ASTInformation
   bool TraverseCXXNoexceptExpr(clang::CXXNoexceptExpr*, [[maybe_unused]] DataRecursionQueue* Queue = nullptr);
 
   // Extracted from the recursive ast visitor because by default it always visits noexcept specifiers
-  bool TraverseFunctionProtoTypeLoc(clang::FunctionProtoTypeLoc TL);
+#if LLVM_VERSION_MAJOR >= 22
+  bool TraverseFunctionProtoTypeLoc(clang::FunctionProtoTypeLoc TL,  [[maybe_unused]] bool TraverseQualifier=true);
+#else
+  bool TraverseFunctionProtoTypeLoc(clang::FunctionProtoTypeLoc TL)
+#endif
 
   /**
    * We only use this to prevent traversing of types in  a function body
@@ -490,7 +494,12 @@ class ASTInformationExtractor : public clang::RecursiveASTVisitor<ASTInformation
   bool VisitRecordType(clang::RecordType* RT);
 
   // bool TraverseTypeDecl(clang::TypeDecl *TD);
+#if LLVM_VERSION_MAJOR >= 22
+  bool TraverseTypeLoc(clang::TypeLoc TL, [[maybe_unused]] bool TraverseQualifier=true);
+#else
   bool TraverseTypeLoc(clang::TypeLoc TL);
+#endif
+
   bool TraverseRecordDecl(clang::RecordDecl* RD);
   bool TraverseCXXRecordDecl(clang::CXXRecordDecl* RD);
 
