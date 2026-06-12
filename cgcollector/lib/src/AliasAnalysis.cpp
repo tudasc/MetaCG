@@ -657,7 +657,7 @@ bool ASTInformationExtractor::TraverseParmVarDecl(clang::ParmVarDecl* PD) {
   return Ret;
 }
 
-#if LLVM_VERSION_MAJOR>= 22
+#if LLVM_VERSION_MAJOR >= 22
 bool ASTInformationExtractor::TraverseTypeLoc(clang::TypeLoc TL, bool TraverseQualifier ) {
 #else
 bool ASTInformationExtractor::TraverseTypeLoc(clang::TypeLoc TL) {
@@ -665,7 +665,7 @@ bool ASTInformationExtractor::TraverseTypeLoc(clang::TypeLoc TL) {
   if (!TraverseTypeLocs) {
     return true;
   }
-#if LLVM_VERSION_MAJOR>= 22
+#if LLVM_VERSION_MAJOR >= 22
   return RecursiveASTVisitor::TraverseTypeLoc(TL,TraverseQualifier);
 #else
   return RecursiveASTVisitor::TraverseTypeLoc(TL);
