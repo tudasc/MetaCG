@@ -1,0 +1,195 @@
+#!/usr/bin/env bash
+
+COMP_WRAPPER="@CGFCOLLECTOR_COMP_WRAPPER@"
+
+function with_test_setup
+{
+    local temp_dir=$(mktemp -d)
+    cd "$temp_dir" || exit 1
+
+    trap 'rm -rf '"$temp_dir"'' RETURN
+
+    cat >test.f90 <<EOF
+program main
+    call sub1()
+contains
+    subroutine sub1()
+        call sub2()
+    end subroutine sub1
+
+    subroutine sub2()
+        print *, "hello"
+    end subroutine sub2
+end program main
+EOF
+
+    "$@"
+}
+
+function test_normal_compilation()
+{
+    "$COMP_WRAPPER" -o test test.f90 || {
+        echo "Failed: could not compile"
+        return 1
+    }
+
+    if [ ! -x "./test" ]; then
+        echo "Failed: executable not generated"
+        return 1
+    fi
+
+    "./test" || {
+        echo "Failed: executable did not run"
+        return 1
+    }
+
+    return 0
+}
+
+function test_skip_gen_bin()
+{
+    "$COMP_WRAPPER" --skip-gen-bin test.f90 || {
+        echo "Failed: could not generate CG"
+        return 1
+    }
+
+    if [ -x "./test" ]; then
+        echo "Failed: executable should not be generated"
+        return 1
+    fi
+
+    if [ ! -f "test.mcg" ]; then
+        echo "Failed: CG file not generated"
+        return 1
+    fi
+
+    return 0
+}
+
+function test_dot_gen()
+{
+    "$COMP_WRAPPER" --dot --skip-gen-bin test.f90 || {
+        echo "Failed: could not generate CG"
+        return 1
+    }
+
+    if [ ! -f "test.dot" ]; then
+        echo "Failed: DOT file not generated"
+        return 1
+    fi
+
+    return 0
+}
+
+function test_dot_gen_with_name()
+{
+    "$COMP_WRAPPER" -o "test" --dot --skip-gen-bin test.f90 || {
+        echo "Failed: could not generate CG"
+        return 1
+    }
+
+    if [ ! -f "test.dot" ]; then
+        echo "Failed: DOT file not generated"
+        return 1
+    fi
+    if [ ! -f "test.mcg" ]; then
+        echo "Failed: MCG file not generated"
+        return 1
+    fi
+
+    rm -f "test.dot" "test.mcg"
+
+    "$COMP_WRAPPER" -o "test.f90" --dot --skip-gen-bin test.f90 || {
+        echo "Failed: could not generate CG"
+        return 1
+    }
+
+    if [ ! -f "test.f90.dot" ]; then
+        echo "Failed: DOT file not generated"
+        return 1
+    fi
+    if [ ! -f "test.f90.dot" ]; then
+        echo "Failed: MCG file not generated"
+        return 1
+    fi
+
+    rm -f "test.f90.mcg" "test.f90.dot"
+
+    "$COMP_WRAPPER" -o "test.mcg" --dot --skip-gen-bin test.f90 || {
+        echo "Failed: could not generate CG"
+        return 1
+    }
+
+    if [ ! -f "test.mcg.dot" ]; then
+        echo "Failed: DOT file not generated"
+        return 1
+    fi
+    if [ ! -f "test.mcg.mcg" ]; then
+        echo "Failed: MCG file not generated"
+        return 1
+    fi
+
+    rm -f "test.mcg.dot" "test.mcg.mcg"
+
+    return 0
+}
+
+function test_verbose()
+{
+    if ! "$COMP_WRAPPER" --verbose --skip-gen-bin test.f90 &>output.log; then
+        echo "Failed: could not generate CG"
+        return 1
+    fi
+
+    if ! grep -q "In main program: _QQmain" output.log; then
+        echo "Failed: verbose output does not contain expected information"
+        return 1
+    fi
+
+    return 0
+}
+
+function test_include_intrinsics()
+{
+    cat >intrinsic.f90 <<'EOF'
+program intrinsic_test
+    real :: x
+    x = sin(1.0)
+    print *, x
+end program intrinsic_test
+EOF
+
+    if ! "$COMP_WRAPPER" --include-intrinsics --skip-gen-bin intrinsic.f90; then
+        echo "Failed: could not generate CG"
+        return 1
+    fi
+
+    if ! grep -q "sin_" "intrinsic.mcg"; then
+        echo "Failed: intrinsic call not included in CG"
+        return 1
+    fi
+
+    return 0
+}
+
+# execute all tests
+test_cases=(
+    "with_test_setup test_normal_compilation"
+    "with_test_setup test_skip_gen_bin"
+    "with_test_setup test_dot_gen"
+    "with_test_setup test_dot_gen_with_name"
+    "with_test_setup test_verbose"
+    "with_test_setup test_include_intrinsics"
+)
+test_cases_count=${#test_cases[@]}
+
+for i in "${!test_cases[@]}"; do
+    test_func="${test_cases[i]}"
+    printf "Test %d/%d %s\n" "$((i + 1))" "$test_cases_count" "$test_func"
+    if ! $test_func; then
+        echo "Failed"
+        exit 1
+    else
+        echo "Passed"
+    fi
+done

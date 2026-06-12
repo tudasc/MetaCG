@@ -47,10 +47,7 @@ void ParseTreeVisitor::handleFuncSubStmt(const T& stmt) {
 
 void ParseTreeVisitor::handleEndFuncSubStmt() {
   varTracking->handleTrackedVars(currentProcedures.back().symbol, edgeM);
-
-  if (!currentProcedures.empty()) {
-    currentProcedures.pop_back();
-  }
+  currentProcedures.pop_back();
 }
 
 void ParseTreeVisitor::postProcess() {
@@ -62,6 +59,9 @@ void ParseTreeVisitor::postProcess() {
     if (calledIt == procedures.end())
       continue;
 
+    if (pf.argPos >= calledIt->dummyArgs.size()) {
+      continue;
+    }
     auto arg = calledIt->dummyArgs.begin() + pf.argPos;
 
     if (!arg->hasBeenInitialized)
@@ -140,11 +140,9 @@ bool ParseTreeVisitor::Pre(const MainProgram& p) {
 }
 
 void ParseTreeVisitor::Post(const MainProgram&) {
-  if (!currentProcedures.empty()) {
-    const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
-    MCGLogger::logDebug("End main program: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
-                        getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
-  }
+  const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
+  MCGLogger::logDebug("End main program: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
+                      getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
 
   handleEndFuncSubStmt();
 
@@ -199,11 +197,9 @@ void ParseTreeVisitor::Post(const FunctionStmt& f) {
 }
 
 void ParseTreeVisitor::Post(const EndFunctionStmt&) {
-  if (!currentProcedures.empty()) {
-    const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
-    MCGLogger::logDebug("End function: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
-                        getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
-  }
+  const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
+  MCGLogger::logDebug("End function: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
+                      getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
 
   handleEndFuncSubStmt();
 }
@@ -223,11 +219,9 @@ void ParseTreeVisitor::Post(const SubroutineStmt& s) {
 }
 
 void ParseTreeVisitor::Post(const EndSubroutineStmt&) {
-  if (!currentProcedures.empty()) {
-    const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
-    MCGLogger::logDebug("End subroutine: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
-                        getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
-  }
+  const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
+  MCGLogger::logDebug("End subroutine: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
+                      getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
 
   handleEndFuncSubStmt();
 }
@@ -289,11 +283,17 @@ void ParseTreeVisitor::Post(const AssignmentStmt& a) {
   if (!name || !name->symbol)
     return;
 
+  if (currentProcedures.empty())
+    return;
+
   varTracking->handleTrackedVarAssignment(currentProcedures.back().symbol, name->symbol->name());
 }
 
 void ParseTreeVisitor::Post(const AllocateStmt& a) {
   const std::list<Allocation>* allocs = &std::get<std::list<Allocation>>(a.t);
+
+  if (currentProcedures.empty())
+    return;
 
   for (const Allocation& alloc : *allocs) {
     const AllocateObject* allocObj = &std::get<AllocateObject>(alloc.t);
@@ -307,6 +307,10 @@ void ParseTreeVisitor::Post(const AllocateStmt& a) {
 }
 
 void ParseTreeVisitor::Post(const Call& c) {
+  // not in a function. Necessary for the null() statement.
+  if (currentProcedures.empty())
+    return;
+
   const ProcedureDesignator* designator = &std::get<ProcedureDesignator>(c.t);
   const std::list<ActualArgSpec>* args = &std::get<std::list<ActualArgSpec>>(c.t);
   const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
@@ -320,10 +324,10 @@ void ParseTreeVisitor::Post(const Call& c) {
     const ActualArg* actualArg = &std::get<ActualArg>(arg.t);
     const Indirection<Expr>* expr = std::get_if<Indirection<Expr>>(&actualArg->u);
     if (!expr)
-      return;
+      continue;
     const Name* name = getNameFromClassWithDesignator(expr->value());
     if (!name || !name->symbol)
-      return;
+      continue;
 
     // handle move_alloc intrinsic for allocatable vars
     if (procName->symbol->attrs().test(Attr::INTRINSIC) && procName->symbol->name() == "move_alloc") {
@@ -361,6 +365,7 @@ void ParseTreeVisitor::Post(const Call& c) {
 }
 
 void ParseTreeVisitor::Post(const TypeDeclarationStmt& t) {
+  // type declaration can be outside of procedures.
   if (currentProcedures.empty()) {
     return;
   }
@@ -496,7 +501,7 @@ void ParseTreeVisitor::Post(const TypeBoundProcedureStmt& s) {
     for (const TypeBoundProcDecl& d : withoutInterface->declarations) {
       const Name& name = std::get<Name>(d.t);
       if (!name.symbol)
-        return;
+        continue;
 
       Type& currentType = types.back();
 
@@ -518,7 +523,7 @@ void ParseTreeVisitor::Post(const TypeBoundProcedureStmt& s) {
                  std::get_if<TypeBoundProcedureStmt::WithInterface>(&s.u)) {
     for (const Name& n : withInterface->bindingNames) {
       if (!n.symbol)
-        return;
+        continue;
 
       if (const ProcBindingDetails* bindingDetails = n.symbol->detailsIf<ProcBindingDetails>()) {
         Type& currentType = types.back();
@@ -835,11 +840,9 @@ bool ParseTreeVisitor::Pre(const StmtFunctionStmt& s) {
 }
 
 void ParseTreeVisitor::Post(const StmtFunctionStmt& s) {
-  if (!currentProcedures.empty()) {
-    const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
-    MCGLogger::logDebug("End statement function: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
-                        getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
-  }
+  const Symbol* currentProcedureSymbol = currentProcedures.back().symbol;
+  MCGLogger::logDebug("End statement function: {} ({}) ({})", mangleSymbol(currentProcedureSymbol, underscoring),
+                      getDetailsName(currentProcedureSymbol), fmt::ptr(currentProcedureSymbol));
 
   handleEndFuncSubStmt();
 }

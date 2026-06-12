@@ -190,10 +190,16 @@ std::string getOperatorStringFromExpr(const Expr* expr) {
                              [](const Expr::OR&) { return std::string("OR"); },
                              [](const Expr::EQV&) { return std::string("EQV"); },
                              [](const Expr::NEQV&) { return std::string("NEQV"); },
-
-                             [](const Expr::DefinedUnary& op) { return std::get<DefinedOpName>(op.t).v.ToString(); },
-                             [](const Expr::DefinedBinary& op) { return std::get<DefinedOpName>(op.t).v.ToString(); },
-
+                             [](const Expr::DefinedUnary& op) {
+                               auto out = std::get<DefinedOpName>(op.t).v.ToString();
+                               std::transform(out.begin(), out.end(), out.begin(), ::toupper);
+                               return out;
+                             },
+                             [](const Expr::DefinedBinary& op) {
+                               auto out = std::get<DefinedOpName>(op.t).v.ToString();
+                               std::transform(out.begin(), out.end(), out.begin(), ::toupper);
+                               return out;
+                             },
                              [](const auto&) -> std::string { return std::string("UNKNOWN_OPERATOR"); }},
                     expr->u);
 }

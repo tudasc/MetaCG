@@ -1,27 +1,38 @@
 #!/usr/bin/env bash
 
-# Wrapper script for running cgfcollector plugin with flang.
-# This script acts as a drop-in replacement for the flang compiler
-# while addtionally generating call graphs for each source file.
+# Wrapper script for running cgfcollector plugin with Flang.
+# This script acts as a compiler wrapper or a drop-in replacement
+# for the Flang compiler while additionally generating call graphs
+# for each source file.
 #
-# Note: The plugin requires the `-fc1` flag to be passed to flang.
-# However, flang invokations with and without `-fc1` accept different
+# Note: The plugin requires the `-fc1` flag to be passed to Flang.
+# However, Flang invocations with and without `-fc1` accept different
 # sets of options. This script filters the original compiler options,
-# keeping only those compatible with `-fc1`, and invokes flang with
-# the plugin to generate call graphs. Finally, it invokes flang again
+# keeping only those compatible with `-fc1`, and invokes Flang with
+# the plugin to generate call graphs. Finally, it invokes Flang again
 # with the original arguments to perform the actual compilation.
 #
 # Usage:
-#     cgfcollector_comp_wrapper.sh [flang options, source files, plugin options]
+#     1. Compiler wrapper:
+#        Pass the compiler as the first argument. This takes precedence.
+#     2. Compiler drop-in replacement:
+#        Use this script in place of the compiler. The compiler binary
+#        is taken from the `CGFCOLLECTOR_FLANG_BIN` environment variable.
 #
-# Plugin-specific options:
+#        Note: If you are using another compiler wrapper (like `mpif90`)
+#        set `CGFCOLLECTOR_FLANG_BIN` to `"mpif90"`.
+#
+#     cgfcollector_comp_wrapper.sh [Flang options, source files, plugin options]
+#
+# Options:
 #     -d, --dot             # Additionally generate a DOT file. This is mostly used for debugging.
 #     --skip-gen-bin        # Skip the final compilation step. Only generate the call graph.
 #     -v, --verbose         # Print additional information during the generation process.
 #     --graph-name          # Set internal graph name
 #     --include-intrinsics  # Include intrinsic calls in the generated call graph.
 
-flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang-new"}
+flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang"}
+flang_fc1_bin=${CGFCOLLECTOR_FLANG_FC1_BIN:-"flang"}
 
 # plugin-specific options wrapped in -mllvm plugin flags
 declare -A OPTION_MAP=(
@@ -46,17 +57,18 @@ fi
 
 source_files=()
 options=()
+original_args=("$@")
 all_args=("$@")
-forward_args=()
 skip_gen_bin=false
 
 # If you're using the `mpif90` wrapper, we are extracting the underlying compiler arguments using `mpif90 --show`.
 #
-# Important: Ensure that `flang_fc1_bin` is set to the actual Flang binary (e.g. `flang-new`, which it is by default),
+# Important: Ensure that `flang_fc1_bin` is set to the actual Flang binary (e.g. `flang`, which it is by default),
 # not the `mpif90` wrapper itself. The wrapper adds MPI-specific flags that are incompatible with `-fc1`.
 if [[ "$flang_bin" == *mpif90 ]]; then
     read -r -a mpi_show_args <<<"$(mpif90 --show)"
-    all_args=("${mpi_show_args[@]}" "${all_args[@]}")
+    mpi_show_args=("${mpi_show_args[@]:1}")
+    all_args=("${mpi_show_args[@]}" "${original_args[@]}")
 fi
 
 # Extract all flags that are compatible with `-fc1`.
@@ -65,13 +77,11 @@ option_module_dir=false
 for arg in "${all_args[@]}"; do
     if $option_o; then
         options+=("$arg")
-        forward_args+=("$arg")
         option_o=false
         continue
     fi
     if $option_module_dir; then
         options+=("$arg")
-        forward_args+=("$arg")
         option_module_dir=false
         continue
     fi
@@ -85,8 +95,6 @@ for arg in "${all_args[@]}"; do
         options+=("-mllvm" "${OPTION_MAP[$arg]}")
         continue
     fi
-
-    forward_args+=("$arg")
 
     case "$arg" in
     -fPIC)
@@ -110,9 +118,9 @@ for arg in "${all_args[@]}"; do
 done
 
 if [ ${#source_files[@]} -gt 0 ]; then
-    $flang_bin -fc1 -load "@CGFCOLLECTOR_FILE_NAME_LIB@" -plugin "genCG" "${options[@]}" "${source_files[@]}"
+    $flang_fc1_bin -fc1 -load "@CGFCOLLECTOR_FILE_NAME_LIB@" -plugin "genCG" "${options[@]}" "${source_files[@]}"
 fi
 
-if [ ! $skip_gen_bin ]; then
-    exec "$flang_bin" "${forward_args[@]}"
+if ! $skip_gen_bin; then
+    exec "$flang_bin" "${original_args[@]}"
 fi
