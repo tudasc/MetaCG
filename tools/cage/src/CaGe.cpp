@@ -6,9 +6,6 @@
 #include "cage/CaGe.h"
 #include "cage/interface/CaGePlugin.h"
 
-#include "llvm/Passes/PassBuilder.h"
-#include "llvm/Passes/PassPlugin.h"
-
 #include "cage/generator/CallgraphGenerator.h"
 #include "cage/generator/FileExporter.h"
 
