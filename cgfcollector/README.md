@@ -29,8 +29,18 @@ Available options:
 
 Additionally these other tools are included:
 
-- `cgfcollector_comp_wrapper.sh`: Acts like a normal Flang compiler but also generates a call graph.
-- `cgfcollector_link_wrapper.sh`: Acts like a normal Flang linker but also merges
+- `cgfcollector_comp_wrapper.sh`:
+  - This script acts as a normal Flang compiler while also generating a call graph.
+  - It supports two modes:
+    - Compiler wrapper – wraps an existing Flang compiler invocation.
+    - Drop-in replacement – acts as the compiler itself, using `CGFCOLLECTOR_FLANG_BIN` to locate the Flang binary.
+  - Recommended usage:
+    - The first mode is useful for hooking into CMake projects with `CMAKE_Fortran_COMPILER_LAUNCHER` see [here](#from-a-cmake-project).
+    - The second mode is useful for projects where you want to replace the
+      compiler directly, for example for autotools projects. See
+      [here](#from-an-autotools-project).
+- `cgfcollector_link_wrapper.sh`:
+  Acts like a normal Flang linker but also merges
   the generated call graphs.
 
 ## How to build
@@ -57,6 +67,10 @@ endif()
 This will hook into the CMake build process and generate a call graph.
 
 An example can be found in `test/multi/deps`.
+
+### from an autotools project
+
+Set the `FC` environment variable to `cgfcollector_comp_wrapper.sh`.
 
 ### from other projects
 
