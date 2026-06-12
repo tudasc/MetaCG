@@ -14,7 +14,7 @@
 #
 # Usage:
 #     1. Compiler wrapper:
-#        Pas the compiler as the first argument. This takes precedence.
+#        Pass the compiler as the first argument. This takes precedence.
 #     2. Compiler drop-in replacement:
 #        Use this script in place of the compiler. The compiler binary
 #        is taken from the `CGFCOLLECTOR_FLANG_BIN` environment variable.
