@@ -1,18 +1,28 @@
 #!/usr/bin/env bash
 
-# Wrapper script for running cgfcollector plugin with flang.
-# This script acts as a drop-in replacement for the flang compiler
-# while addtionally generating call graphs for each source file.
+# Wrapper script for running cgfcollector plugin with Flang.
+# This script acts as a compiler wrapper or a drop-in replacement
+# for the Flang compiler while additionally generating call graphs
+# for each source file.
 #
-# Note: The plugin requires the `-fc1` flag to be passed to flang.
-# However, flang invokations with and without `-fc1` accept different
+# Note: The plugin requires the `-fc1` flag to be passed to Flang.
+# However, Flang invocations with and without `-fc1` accept different
 # sets of options. This script filters the original compiler options,
-# keeping only those compatible with `-fc1`, and invokes flang with
-# the plugin to generate call graphs. Finally, it invokes flang again
+# keeping only those compatible with `-fc1`, and invokes Flang with
+# the plugin to generate call graphs. Finally, it invokes Flang again
 # with the original arguments to perform the actual compilation.
 #
 # Usage:
-#     cgfcollector_comp_wrapper.sh [flang options, source files, plugin options]
+#     1. Compiler wrapper:
+#        Pas the compiler as the first argument. This takes precedence.
+#     2. Compiler drop-in replacement:
+#        Use this script in place of the compiler. The compiler binary
+#        is taken from the `CGFCOLLECTOR_FLANG_BIN` environment variable.
+#
+#        Note: If you are using another compiler wrapper (like `mpif90`)
+#        set `CGFCOLLECTOR_FLANG_BIN` to `"mpif90"`.
+#
+#     cgfcollector_comp_wrapper.sh [Flang options, source files, plugin options]
 #
 # Options:
 #     -d, --dot             # Additionally generate a DOT file. This is mostly used for debugging.
