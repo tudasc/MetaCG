@@ -3,7 +3,7 @@
 # Wrapper script for merging call graphs at link time.
 #
 # Usage:
-#     cgfcollector_link_wrapper.sh [flang options and object files]
+#     cgfcollector_link_wrapper.sh [Flang options and object files]
 #
 # Options:
 #     --skip-gen-bin        # Skip the final compilation step. Only generate the call graph.
