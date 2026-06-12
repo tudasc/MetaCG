@@ -477,7 +477,7 @@ class ASTInformationExtractor : public clang::RecursiveASTVisitor<ASTInformation
 #if LLVM_VERSION_MAJOR >= 22
   bool TraverseFunctionProtoTypeLoc(clang::FunctionProtoTypeLoc TL,  [[maybe_unused]] bool TraverseQualifier=true);
 #else
-  bool TraverseFunctionProtoTypeLoc(clang::FunctionProtoTypeLoc TL)
+  bool TraverseFunctionProtoTypeLoc(clang::FunctionProtoTypeLoc TL);
 #endif
 
   /**
