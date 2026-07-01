@@ -59,12 +59,12 @@ If you invoke opt directly, you should be able to use the options directly.
 
 
 ### List of options
-| Option | Description                                       | Default              |
-|---|---------------------------------------------------|----------------------|
-| `-cg-file=<path>` | Output file for the generated call graph          | `cage_callgraph.mcg` |
-| `-pta=no/signature` | Indirect-call resolution strategy                 | `no`                 |
-| `-cage-verbose` | Print debug output                                | off                  |
-| `-plugin-paths=<path>` | List of paths to load CaGe plugins from           | empty                |
+| Option                 | Description                                  | Default              |
+|------------------------|----------------------------------------------|----------------------|
+| `-cg-file=<path>`      | Output file for the generated call graph     | `cage_callgraph.mcg` |
+| `-pta=no/signature`    | Indirect-call resolution strategy            | `no`                 |
+| `-cage-verbose`        | Print debug output                           | off                  |
+| `-plugin-paths=<path>` | List of paths to load CaGe plugins from      | empty                |
 
 The `-pta=signature` option approximates indirect calls by adding all functions whose signature matches the call site as potential targets.
 There is an additional metavirt backend implemented for indirect call resolving, for which there currently is no runtime control.
