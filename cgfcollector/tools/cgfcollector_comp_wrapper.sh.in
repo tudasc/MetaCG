@@ -111,7 +111,7 @@ for arg in "${all_args[@]}"; do
         options+=("$arg")
         option_module_dir=true
         ;;
-    *.f90 | *.F90)
+    *.f90 | *.F90 | *.F)
         source_files+=("$arg")
         ;;
     esac
