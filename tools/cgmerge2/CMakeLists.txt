@@ -20,3 +20,27 @@ configure_package_config_file(
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATION lib/cmake)
+
+# linker-launcher wrapper
+
+set(CGMERGE2_BIN "${CMAKE_INSTALL_PREFIX}/bin/cgmerge2")
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cgmerge_linker_wrapper.sh.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/cgmerge_linker_wrapper.sh.install"
+  @ONLY
+)
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cgmerge_shared_libs.sh.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/cgmerge_shared_libs.sh.install"
+  @ONLY
+)
+install(
+  PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/cgmerge_linker_wrapper.sh.install"
+  DESTINATION bin
+  RENAME cgmerge_linker_wrapper.sh
+)
+install(
+  PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/cgmerge_shared_libs.sh.install"
+  DESTINATION bin
+  RENAME cgmerge_shared_libs.sh
+)

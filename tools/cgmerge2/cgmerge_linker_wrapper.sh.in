@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# Link-time launcher that merges per-object call graphs, then runs the real
+# link command unchanged.
+#
+# Intended for CMake's launcher variables, e.g.:
+#     cmake -DCMAKE_Fortran_LINKER_LAUNCHER=/path/to/cgmerge_linker_wrapper.sh ...
+# or in CMake:
+#     set(CMAKE_Fortran_LINKER_LAUNCHER /path/to/cgmerge_linker_wrapper.sh)
+#
+# CMake invokes a launcher as:
+#     <launcher> <compiler> <compiler-args...>
+# so "$@" is the full link command and "$1" is the compiler/driver.
+
+cgmerge2_bin=${CGMERGE2_BIN:-"@CGMERGE2_BIN@"}
+
+if [ $# -eq 0 ]; then
+  echo "Error: no command supplied to launcher." >&2
+  exit 1
+fi
+
+# Extract object files and the output name from the link command.
+object_files=()
+output_file=""
+option_o=false
+for arg in "$@"; do
+  if $option_o; then
+    output_file="$arg"
+    option_o=false
+    continue
+  fi
+  case "$arg" in
+  -o)
+    option_o=true
+    ;;
+  *.o)
+    object_files+=("$arg")
+    ;;
+  esac
+done
+
+# Collect only the call-graph files that were actually produced. Objects
+# without a .mcg sibling are simply skipped rather than treated as an error.
+mcg_files=()
+missing=0
+if [ ${#object_files[@]} -gt 0 ] && [ -n "$output_file" ]; then
+  for obj in "${object_files[@]}"; do
+    if [ -f "${obj}.mcg" ]; then
+      mcg_files+=("${obj}.mcg")
+    else
+      missing=$((missing + 1))
+    fi
+  done
+fi
+
+# Merge whatever graphs we found. Only require cgmerge2 to exist if there is
+# actually something to merge.
+if [ ${#mcg_files[@]} -gt 0 ]; then
+  if [ "$missing" -gt 0 ]; then
+    echo "Note: $missing of ${#object_files[@]} objects had no .mcg; merging the remaining ${#mcg_files[@]}." >&2
+  fi
+  if ! command -v "$cgmerge2_bin" &>/dev/null; then
+    echo "Error: $cgmerge2_bin not found in PATH." >&2
+    exit 1
+  fi
+  if ! "$cgmerge2_bin" "${output_file}.mcg" "${mcg_files[@]}"; then
+    status=$?
+    echo "Error: $cgmerge2_bin failed (exit $status) merging call graphs for ${output_file}.mcg." >&2
+    exit $status
+  fi
+fi
+
+# Run the actual link command, compiler and all, unchanged.
+exec "$@"
