@@ -6,6 +6,7 @@
 #include "cage/CaGe.h"
 #include "cage/interface/CaGePlugin.h"
 
+#include "cage/generator/CallGraphEmbedder.h"
 #include "cage/generator/CallgraphGenerator.h"
 #include "cage/generator/FileExporter.h"
 
@@ -26,6 +27,8 @@ static opt<cage::PTAType> pta(
     cat(cageOpts), init(cage::PTAType::No));
 
 static opt<std::string> cgout("cg-file", desc("Output file for the generated call graph"), cat(cageOpts), init(""));
+
+static opt<bool> embed("embed", desc("Embed output graph into binary"), cat(cageOpts), init(true));
 
 static list<std::string> pluginPaths("plugin-paths", desc("option list"), cat(cageOpts), CommaSeparated);
 
@@ -72,6 +75,9 @@ PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
 
   Generator gen(pta);
   gen.addPlugin(std::make_unique<FileExporter>(outfile));
+  if (embed) {
+    gen.addPlugin(std::make_unique<GraphEmbedder>(M));
+  }
 
   // Load external plugins
   for (const auto& pluginPath : pluginPaths) {

@@ -5,11 +5,23 @@ mcgconfig="@METACG_CONFIG@"
 build_dir="@CMAKE_BINARY_DIR@"
 cgdiff="$build_dir/tools/cgdiff/cgdiff"
 cgmerge="$build_dir/tools/cgmerge2/cgmerge2"
+extract_mcg="@CMAKE_SOURCE_DIR@/utils/extract_metacg"
 
 suite_pattern=".*"
 verbose=0
 
 mkdir -p log
+
+
+# Check whether embedded CG matches the exported file.
+# Param 1: Binary with embedded CG
+# Param 2: GT file
+function checkEmbedded {
+  if [[ $verbose -eq 1 ]]; then
+    echo "Checking embedded graph using $extract_mcg"
+  fi
+  "$extract_mcg" "$1" | cmp -s <(jq -S . /dev/stdin) <(jq -S . "$2")
+}
 
 # Run single source test case.
 # Param 1: Name of the test case.
@@ -73,6 +85,11 @@ function runTestCase {
       return 1
     fi
     echo "Linking failed but call graph was generated."
+  fi
+
+  if ! checkEmbedded "$tfile_out" "$cg_outfile"; then
+      echo "Embedded call graph does not match the exported version!"
+      return 1
   fi
 
   if [[ $regenerate_gt -eq 1 ]]; then
