@@ -75,9 +75,9 @@ function runTestCase {
   failed=0
   tfile_out="$run_dir/$testCaseName.exe"
   rm -f "$tfile_out"
-  clang++ -g `$mcgconfig --cage-ldflags --cage-pass-option "-cg-file=${cg_outfile}" ${addOptions}` ${addFlags} -fno-exceptions ${o_files[@]} -o  "$tfile_out" >> log/testrun.log 2>&1 || failed=1
+  clang++ -g `$mcgconfig --cage-ldflags --cage-pass-option -embed --cage-pass-option "-cg-file=${cg_outfile}" ${addOptions}` ${addFlags} -fno-exceptions ${o_files[@]} -o  "$tfile_out" >> log/testrun.log 2>&1 || failed=1
   if [[ $failed -ne 0 ]] || [[ $verbose -eq 1 ]]; then
-    echo "Link command: clang++ -g `$mcgconfig --cage-ldflags --cage-pass-option "-cg-file=${cg_outfile}" ${addOptions}` ${addFlags} -fno-exceptions ${o_files[@]} -o  $tfile_out"
+    echo "Link command: clang++ -g `$mcgconfig --cage-ldflags --cage-pass-option -embed --cage-pass-option "-cg-file=${cg_outfile}" ${addOptions}` ${addFlags} -fno-exceptions ${o_files[@]} -o  $tfile_out"
   fi
   if [[ $failed -ne 0 ]]; then
     if [[ ! -f "$cg_outfile" ]]; then

@@ -26,9 +26,14 @@ static opt<cage::PTAType> pta(
                "Treat all available valid function signatures for a given function pointer as potential call target ")),
     cat(cageOpts), init(cage::PTAType::No));
 
-static opt<std::string> cgout("cg-file", desc("Output file for the generated call graph"), cat(cageOpts), init(""));
+enum class OutputTypes { File, Embed };
+static bits<OutputTypes> outputTypeBits(desc("Where to output the graph"),
+                                        values(clEnumValN(OutputTypes::File, "file", " Output into separate file"),
+                                               clEnumValN(OutputTypes::Embed, "embed",
+                                                          "Embed the graph into the metacg section of the binary")),
+                                        cat(cageOpts));
 
-static opt<bool> embed("embed", desc("Embed output graph into binary"), cat(cageOpts), init(true));
+static opt<std::string> cgout("cg-file", desc("Output file for the generated call graph"), cat(cageOpts), init(""));
 
 static list<std::string> pluginPaths("plugin-paths", desc("option list"), cat(cageOpts), CommaSeparated);
 
@@ -61,9 +66,15 @@ PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
     outs() << "Running CaGe in verbose mode\n";
   }
 
-  // First check explicit option
+  // Write to file if:
+  // (1) Output file name is explicitly given
+  // (2) Option for file output is set, or
+  // (3) No alternative output option is specified.
+  bool writeToFile = !cgout.empty() || outputTypeBits.isSet(OutputTypes::File) || outputTypeBits.getBits() == 0;
+
+  // To determine output file, first check explicit option
   std::string outfile = cgout.getValue();
-  if (outfile.empty()) {
+  if (writeToFile && outfile.empty()) {
     // If empty, check environment variable
     if (const auto* cgNameEnv = std::getenv("CAGE_CG")) {
       outfile = cgNameEnv;
@@ -74,8 +85,10 @@ PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
   }
 
   Generator gen(pta);
-  gen.addPlugin(std::make_unique<FileExporter>(outfile));
-  if (embed) {
+  if (writeToFile) {
+    gen.addPlugin(std::make_unique<FileExporter>(outfile));
+  }
+  if (outputTypeBits.isSet(OutputTypes::Embed)) {
     gen.addPlugin(std::make_unique<GraphEmbedder>(M));
   }
 
