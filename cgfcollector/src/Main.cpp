@@ -5,6 +5,7 @@
  */
 
 #include "ParseTreeVisitor.h"
+#include "StatementCountCollector.h"
 
 #include <llvm/Support/CommandLine.h>
 #include <metacg/DotIO.h>
@@ -29,6 +30,9 @@ static llvm::cl::opt<std::string> GraphName("graph-name",
 static llvm::cl::opt<bool> IncludeIntrinsics("include-intrinsics",
                                              llvm::cl::desc("Include intrinsic procedures in the callgraph"),
                                              llvm::cl::cat(CGCategory), llvm::cl::init(false));
+static llvm::cl::opt<bool> collectStatementCounts("collect-statement-counts",
+                                                  llvm::cl::desc("Collect statement counts for each procedure"),
+                                                  llvm::cl::cat(CGCategory), llvm::cl::init(false));
 
 /**
  * @brief Replace the file extension of filePath with newExtension. If filePath does not have an extension, append
@@ -75,6 +79,11 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
     ParseTreeVisitor visitor(cg, currentFile, underscoring, IncludeIntrinsics);
     Fortran::parser::Walk(getParsing().parseTree(), visitor);
     visitor.postProcess();
+
+    if (collectStatementCounts) {
+      StatementCountVisitor scVisitor(cg, underscoring);
+      Fortran::parser::Walk(getParsing().parseTree(), scVisitor);
+    }
 
     // create writer
     auto mcgWriter = io::createWriter(4);
