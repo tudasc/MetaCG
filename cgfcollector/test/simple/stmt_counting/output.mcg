@@ -1,0 +1,50 @@
+{
+  "_CG": {
+    "meta": {},
+    "nodes": {
+      "0": {
+        "callees": { "0": {} },
+        "functionName": "_QMmath_utilsPfactorial",
+        "hasBody": true,
+        "meta": { "statement_count": 5 },
+        "origin": "input.f90"
+      },
+      "1": {
+        "callees": {},
+        "functionName": "_QMmath_utilsPprint_array",
+        "hasBody": true,
+        "meta": { "statement_count": 5 },
+        "origin": "input.f90"
+      },
+      "2": {
+        "callees": { "0": {}, "1": {}, "3": {} },
+        "functionName": "_QQmain",
+        "hasBody": true,
+        "meta": { "statement_count": 52 },
+        "origin": "input.f90"
+      },
+      "3": {
+        "callees": { "4": {} },
+        "functionName": "_QFPdemo_subroutine",
+        "hasBody": true,
+        "meta": { "statement_count": 5 },
+        "origin": "input.f90"
+      },
+      "4": {
+        "callees": {},
+        "functionName": "_QFPinternal_helper",
+        "hasBody": true,
+        "meta": { "statement_count": 5 },
+        "origin": "input.f90"
+      }
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "3b2eceabf8a74ea484db49b73293329e5ea4690c",
+      "version": "1.0"
+    },
+    "version": "4.0"
+  }
+}
