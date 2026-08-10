@@ -21,11 +21,11 @@ variables:
         LLVM: [15.0.7, 16.0.6, 17.0.6, 18.1.8, 19.1.7, 20.1.8, 21.1.4]
         _CC: clang
         _CXX: clang++
-      - GCC: 15
+      - GCC: "15.2"
         LLVM: [21.1.4]
         _CC: clang
         _CXX: clang++
-      - GCC: 15
+      - GCC: "15.2"
         LLVM: [21.1.4]
         _CC: gcc
         _CXX: g++
@@ -264,11 +264,11 @@ test-cage:
       LLVM: [16.0.6, 17.0.6, 18.1.8, 19.1.7, 20.1.8, 21.1.4]
       _CC: clang
       _CXX: clang++
-    - GCC: 15
+    - GCC: "15.2"
       LLVM: [21.1.4]
       _CC: clang
       _CXX: clang++
-    - GCC: 15
+    - GCC: "15.2"
       LLVM: [21.1.4]
       _CC: gcc
       _CXX: g++
@@ -285,11 +285,11 @@ test-cgfcollector:
         LLVM: [18.1.8, 19.1.7, 20.1.8, 21.1.4]
         _CC: clang
         _CXX: clang++
-      - GCC: 15
+      - GCC: "15.2"
         LLVM: [21.1.4]
         _CC: clang
         _CXX: clang++
-      - GCC: 15
+      - GCC: "15.2"
         LLVM: [21.1.4]
         _CC: gcc
         _CXX: g++
