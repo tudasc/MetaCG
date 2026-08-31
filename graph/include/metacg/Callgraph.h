@@ -318,7 +318,7 @@ class Callgraph : public MetadataMixin {
   template <class T>
   bool addEdgeMetaData(const std::pair<NodeId, NodeId> id, std::unique_ptr<T>&& md) {
     if (auto it = edges.find(id); it != edges.end()) {
-      it->second[T::key] = std::move(md);
+      it->second[md->getKey()] = std::move(md);
       return true;
     }
     return false;
