@@ -6,6 +6,7 @@
 
 #include "metacg/Callgraph.h"
 #include "metacg/CgNode.h"
+#include "metacg/metadata/MetaData.h"
 #include "metacg/metadata/OverrideMD.h"
 #include "gtest/gtest.h"
 
@@ -212,5 +213,28 @@ TEST(Callgraph, singleEdgeMultiNode) {
   EXPECT_FALSE(cg.removeEdge(n1Name, n1Name));
   EXPECT_TRUE(cg.removeEdge(n1a, n1a));
   EXPECT_FALSE(cg.removeEdge(n1a, n1a));
+}
+
+
+TEST(Callgraph, edgeMetaData) {
+  metacg::Callgraph cg;
+
+  std::string caller("caller");
+  std::string callee("callee");
+  // insert always inserts a new node
+  auto& callerNode = cg.insert(caller);
+  auto& calleeNode = cg.insert(callee);
+
+  cg.addEdge(callerNode, calleeNode);
+
+  auto md = std::make_unique<metacg::OverrideMD>();
+  auto clonedMD = md->clone();
+  cg.addEdgeMetaData(callerNode, calleeNode, std::move(clonedMD));
+
+
+  auto& edgeMDContainer = cg.getAllEdgeMetaData(callerNode, calleeNode);
+
+  EXPECT_TRUE(edgeMDContainer.count(metacg::OverrideMD::key) == 1);
+  EXPECT_TRUE(edgeMDContainer.count(metacg::MetaData::key) == 0);
 }
 }  // namespace
