@@ -23,6 +23,8 @@ class Generator {
   bool run(llvm::Module& M, llvm::ModuleAnalysisManager* MA);
 
  private:
+  void applyOverrideMetadata(std::unordered_map<std::string, std::vector<std::string>> overrides, std::unordered_map<std::string, std::vector<std::string>> overridenBy, metacg::Callgraph* mcg);
+
   PTAType ptaType;
   std::vector<std::unique_ptr<Plugin>> plugins;
 };
