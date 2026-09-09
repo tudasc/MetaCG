@@ -149,11 +149,13 @@ class Callgraph : public MetadataMixin {
    *    After this step, node references in the edges and metadata are invalid and need to be updated.
    * 3. New edges from the source graph are inserted, using the updated node IDs.
    * 4. Metadata is merged, taking into account the change of node IDs and the performed merge actions.
+   * 5. TODO
    *
    * @param other The call graph to merge.
    * @param policy The merge policy.
    */
-  MergeRecorder merge(const Callgraph& other, const MergePolicy& policy);
+  template<typename... PostProcessingTasks>
+  MergeRecorder merge(const metacg::Callgraph& other, const metacg::MergePolicy& policy, PostProcessingTasks... tasks);
 
   /**
    * Clears the graph to an empty graph with no main node.

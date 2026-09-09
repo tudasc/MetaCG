@@ -6,7 +6,11 @@
 #include "metacg/Callgraph.h"
 
 #include "metacg/LoggerUtil.h"
+#include "metacg/io/IdMapping.h"
+#include "metacg/io/NameMapping.h"
+#include "metacg/metadata/BuiltinMD.h"
 #include "metacg/metadata/EntryFunctionMD.h"
+#include "metacg/metadata/OverrideMD.h"
 
 #include <algorithm>
 #include <string>
@@ -251,8 +255,13 @@ size_t Callgraph::size() const { return nodes.size(); }
 size_t Callgraph::getNodeCount() const { return nodes.size() - numErased; }
 
 bool Callgraph::isEmpty() const { return getNodeCount() == 0; }
+template MergeRecorder Callgraph::merge<>(const Callgraph&, const MergePolicy&);
 
-MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::MergePolicy& policy) {
+void task(metacg::Callgraph* cg);
+
+template <typename... PostProcessingTasks>
+MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::MergePolicy& policy,
+                               PostProcessingTasks... tasks) {
   // Records performed merge actions to enable properly updating node references (in edges and metadata).
   MergeRecorder recorder;
 
@@ -347,7 +356,41 @@ MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::Mer
   // Reset cached main function because this may have changed.
   mainNode = nullptr;
 
+  // Step 6: Call post processing tasks
+  // TODO: finish implementation when sure what signature is
+  (tasks(this), ...);
+  task(this); // TODO: Use this as input for tasks
   return recorder;
+}
+void task(metacg::Callgraph* cg) {
+  for (const auto& [nodePair, namedMD] : cg->getEdges()) {
+    if (auto it = namedMD.find(metacg::CallTypeMD::key); it != namedMD.end()) {
+      if (auto* callTypeMD = dynamic_cast<metacg::CallTypeMD*>(it->second.get())) {
+        if (callTypeMD->callType == metacg::CallType::VIRTUAL) {
+          const NodeId& calleeId = nodePair.second;
+          const NodeId& callerId = nodePair.first;
+          const auto callee = cg->getNode(calleeId);
+          const auto caller = cg->getNode(callerId);
+
+          const auto& calleeMD = callee->getMetaDataContainer();
+          if (auto it2 = calleeMD.find(metacg::OverrideMD::key); it2 != calleeMD.end()) {
+            if (auto* overrideMD = dynamic_cast<metacg::OverrideMD*>(it2->second.get())) {
+              metacg::NameMapping m(*cg);
+              std::cout << overrideMD->toJson(m).dump();
+              for (const auto& override : overrideMD->overriddenBy) {
+                const auto& node = cg->getNode(override);
+                if (!cg->existsEdge(*caller, *node)) cg->addEdge(*caller, *node);
+
+                // TODO: What edge metadata do we need to add callType?
+              }
+
+            }
+
+          }
+        }
+      }
+    }
+  }
 }
 
 const metacg::Callgraph::NodeContainer& Callgraph::getNodes() const { return nodes; }
