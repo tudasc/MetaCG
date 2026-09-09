@@ -19,5 +19,6 @@
 #include "metacg/metadata/NumStatementsMD.h"
 #include "metacg/metadata/OverrideMD.h"
 #include "metacg/metadata/UniqueTypeMD.h"
+#include "metacg/metadata/CallTypeMD.h"
 
 #endif  // METACG_BUILTINMD_H
