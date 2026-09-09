@@ -10,6 +10,7 @@
 #include "clang/AST/ASTConsumer.h"
 #include "clang/Frontend/FrontendAction.h"
 
+#include <clang/AST/DeclGroup.h>
 #include <clang/Frontend/CompilerInstance.h>
 #include <llvm/Support/raw_ostream.h>
 
@@ -18,7 +19,8 @@ namespace cage::overrides {
 class OverridesPluginConsumer final : public clang::ASTConsumer {
  public:
   explicit OverridesPluginConsumer() {}
-  void HandleTranslationUnit(clang::ASTContext& context) override;
+  //void HandleTranslationUnit(clang::ASTContext& context) override;
+  bool HandleTopLevelDecl(clang::DeclGroupRef declGroup);
 };
 
 class OverridesPluginAction final : public clang::PluginASTAction {
@@ -29,7 +31,7 @@ class OverridesPluginAction final : public clang::PluginASTAction {
   bool ParseArgs(const clang::CompilerInstance& compiler, const std::vector<std::string>& args) override;
 
   ActionType getActionType() override {
-    return AddAfterMainAction;
+    return AddBeforeMainAction;
   }
 };
 
