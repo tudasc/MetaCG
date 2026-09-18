@@ -1,0 +1,207 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "0": {
+                "callees": {
+                    "15": {},
+                    "7": {}
+                },
+                "functionName": "_Z3getv",
+                "hasBody": true,
+                "meta": {},
+                "origin": "lib.cpp"
+            },
+            "1": {
+                "callees": {
+                    "4": {}
+                },
+                "functionName": "_ZN1A3fooEv",
+                "hasBody": true,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [],
+                        "overrides": [
+                            "2"
+                        ]
+                    }
+                },
+                "origin": "./A.h"
+            },
+            "10": {
+                "callees": {},
+                "functionName": "_ZN4Base4testEv",
+                "hasBody": true,
+                "meta": {},
+                "origin": "./A.h"
+            },
+            "11": {
+                "callees": {},
+                "functionName": "_ZN4BaseC2Ev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "./A.h"
+            },
+            "12": {
+                "callees": {},
+                "functionName": "_ZN4BaseD0Ev",
+                "hasBody": false,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [
+                            "8",
+                            "9"
+                        ],
+                        "overrides": []
+                    }
+                },
+                "origin": "placeholder"
+            },
+            "13": {
+                "callees": {},
+                "functionName": "_ZN4BaseD2Ev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "./A.h"
+            },
+            "14": {
+                "callees": {},
+                "functionName": "_ZdlPvm",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "15": {
+                "callees": {},
+                "functionName": "_Znwm",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "16": {
+                "callees": {},
+                "functionName": "__gxx_personality_v0",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "2": {
+                "callees": {},
+                "functionName": "_ZN4Base3fooEv",
+                "hasBody": false,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [
+                            "1",
+                            "6"
+                        ],
+                        "overrides": []
+                    }
+                },
+                "origin": "./A.h"
+            },
+            "3": {
+                "callees": {
+                    "0": {},
+                    "1": {
+                        "callType": "VIRTUAL"
+                    },
+                    "2": {
+                        "callType": "VIRTUAL"
+                    },
+                    "6": {}
+                },
+                "functionName": "main",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.cpp"
+            },
+            "4": {
+                "callees": {},
+                "functionName": "puts",
+                "hasBody": false,
+                "meta": {},
+                "origin": "/usr/include/stdio.h"
+            },
+            "5": {
+                "callees": {
+                    "10": {},
+                    "11": {},
+                    "13": {},
+                    "15": {},
+                    "7": {}
+                },
+                "functionName": "_Z4todov",
+                "hasBody": true,
+                "meta": {},
+                "origin": "lib.cpp"
+            },
+            "6": {
+                "callees": {
+                    "4": {}
+                },
+                "functionName": "_ZN1B3fooEv",
+                "hasBody": true,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [],
+                        "overrides": [
+                            "2"
+                        ]
+                    }
+                },
+                "origin": "lib.cpp"
+            },
+            "7": {
+                "callees": {
+                    "11": {}
+                },
+                "functionName": "_ZN1BC2Ev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "lib.cpp"
+            },
+            "8": {
+                "callees": {
+                    "14": {},
+                    "9": {}
+                },
+                "functionName": "_ZN1BD0Ev",
+                "hasBody": true,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [],
+                        "overrides": [
+                            "12"
+                        ]
+                    }
+                },
+                "origin": "lib.cpp"
+            },
+            "9": {
+                "callees": {
+                    "13": {}
+                },
+                "functionName": "_ZN1BD2Ev",
+                "hasBody": true,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [],
+                        "overrides": [
+                            "12"
+                        ]
+                    }
+                },
+                "origin": "lib.cpp"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "MetaCG",
+            "sha": "a49fce066b250ba643d848d4f08ef86acc277979",
+            "version": "1.0"
+        },
+        "version": "4.0"
+    }
+}
