@@ -6,6 +6,7 @@ build_dir="@CMAKE_BINARY_DIR@"
 cgdiff="$build_dir/tools/cgdiff/cgdiff"
 cgmerge="$build_dir/tools/cgmerge2/cgmerge2"
 extract_mcg="@CMAKE_SOURCE_DIR@/utils/extract_metacg"
+overrides_plugin="$build_dir/tools/cage/src/overridesPlugin/libcage-overrides-plugin.so"
 
 suite_pattern=".*"
 verbose=0
@@ -39,6 +40,17 @@ function runTestCase {
   regenerate_gt=$6
   fail=0
 
+  plugin_flags=()
+
+  if [[ "$(basename "$testCasePath")" == "overrides" ]]; then
+    plugin_flags=(
+      -Xclang -load
+      -Xclang "$overrides_plugin"
+      -Xclang -add-plugin
+      -Xclang cage-overrides-plugin
+    )
+  fi
+
   run_dir=$(realpath --relative-to="$test_src_dir" "$testCasePath")
   mkdir -p $run_dir
 
@@ -61,9 +73,9 @@ function runTestCase {
     failed=0
     tfile_out="$run_dir/$testTU.o"
     rm -f "$tfile_out"
-    clang++ -c -g `$mcgconfig --cage-cxxflags` ${addFlags} -fno-exceptions "$testCasePath/$testTU" -o  "$tfile_out" >> log/testrun.log 2>&1 || failed=1
+    clang++ -c -g `$mcgconfig --cage-cxxflags` "${plugin_flags[@]}" ${addFlags} -fno-exceptions "$testCasePath/$testTU" -o  "$tfile_out" >> log/testrun.log 2>&1 || failed=1
     if [[ $failed -ne 0 ]] || [[ $verbose -eq 1 ]]; then
-      echo "Compile command: clang++ -c -g `$mcgconfig --cage-cxxflags` ${addFlags} -fno-exceptions $testCasePath/$testTU -o $tfile_out"
+      echo "Compile command: clang++ -c -g `$mcgconfig --cage-cxxflags` "${plugin_flags[@]}" ${addFlags} -fno-exceptions $testCasePath/$testTU -o $tfile_out"
     fi
     if [[ $failed -ne 0 ]]; then
       echo "Compilation failed!"
@@ -102,7 +114,11 @@ function runTestCase {
   # For consistency, we change all instances to _ZdlPvm.
   sed -i 's/_ZdlPv\"/_ZdlPvm\"/g' "$cg_outfile"
 
-  "$cgdiff" --ignore-md --ignore-edge-md "$cg_outfile" "$cg_gtfile" -o "$diff_file" -- >>log/testrun.log 2>&1
+  if [[ "$(basename "$testCasePath")" == "override" ]]; then
+    "$cgdiff" --ignore-md --ignore-edge-md "$cg_outfile" "$cg_gtfile" -o "$diff_file" -- >>log/testrun.log 2>&1
+  else 
+    "$cgdiff" "$cg_outfile" "$cg_gtfile" -o "$diff_file" -- >>log/testrun.log 2>&1
+  fi
   fail=$?
 
   if [[ $fail -ne 0 ]]; then
@@ -221,6 +237,11 @@ total_fails=$((total_fails + fails))
 
 # PTA set to 'signature'
 runSingleFileTests "basic-pta-by-signature" "$test_src_dir/input/singleTU" "pta-signature" "--cage-pass-option -pta=signature" "" $regenerate_gt
+fails=$?
+total_fails=$((total_fails + fails))
+
+# Override annotations
+runSingleFileTests "overrides" "$test_src_dir/input/overrides" "" "" "" $regenerate_gt
 fails=$?
 total_fails=$((total_fails + fails))
 
