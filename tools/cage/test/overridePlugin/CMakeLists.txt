@@ -12,15 +12,16 @@ find_llvm_progs(
   /opt/local/bin
   ABORT_IF_MISSING
 )
-find_program(FILECHECK_EXE NAMES
-    FileCheck-${LLVM_MAJOR_VERSION}
-    FileCheck
-    REQUIRED
+find_program(
+  FILECHECK_EXE
+  NAMES FileCheck-${LLVM_MAJOR_VERSION}
+        FileCheck
+        REQUIRED
 )
-find_program(CLANG_COMPILER 
+find_program(
+  CLANG_COMPILER
   NAMES clang++-${LLVM_VERSION_MAJOR} clang++
-  HINTS "${LLVM_TOOLS_BINARY_DIR}"
-  REQUIRED
+  HINTS "${LLVM_TOOLS_BINARY_DIR}" REQUIRED
 )
 
 set(CAGE_OVERRIDES_PLUGIN "${CMAKE_BINARY_DIR}/tools/cage/src/overridesPlugin/libcage-overrides-plugin.so")
@@ -37,7 +38,7 @@ add_lit_testsuite(
   "Running my-tool tests"
   ${CMAKE_CURRENT_BINARY_DIR}
   PARAMS
-    site_config=${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg
+  site_config=${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg
   DEPENDS
-    cage-overrides-plugin
+  cage-overrides-plugin
 )

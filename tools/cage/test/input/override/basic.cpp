@@ -1,16 +1,16 @@
 struct Base {
-    virtual void foo();
+  virtual void foo();
 };
 
 struct Derived : Base {
-    void foo() override;
+  void foo() override;
 };
 
 void Base::foo() {}
 void Derived::foo() {}
 
 int main() {
-    Base* b = new Derived();
-    b->foo();
-    return 1;
+  Base* b = new Derived();
+  b->foo();
+  return 1;
 }

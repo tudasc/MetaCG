@@ -256,7 +256,9 @@ size_t Callgraph::getNodeCount() const { return nodes.size() - numErased; }
 
 bool Callgraph::isEmpty() const { return getNodeCount() == 0; }
 template MergeRecorder Callgraph::merge<>(const Callgraph&, const MergePolicy&);
-template MergeRecorder Callgraph::merge<void (*)(metacg::Callgraph*)>(const metacg::Callgraph&, const metacg::MergePolicy&, void (*)(metacg::Callgraph*));
+template MergeRecorder Callgraph::merge<void (*)(metacg::Callgraph*)>(const metacg::Callgraph&,
+                                                                      const metacg::MergePolicy&,
+                                                                      void (*)(metacg::Callgraph*));
 
 template <typename... PostProcessingTasks>
 MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::MergePolicy& policy,

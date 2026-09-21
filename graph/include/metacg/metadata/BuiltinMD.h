@@ -8,6 +8,7 @@
 
 #include "metacg/metadata/CustomMD.h"
 
+#include "metacg/metadata/CallTypeMD.h"
 #include "metacg/metadata/CodeStatisticsMD.h"
 #include "metacg/metadata/EntryFunctionMD.h"
 #include "metacg/metadata/FilePropertiesMD.h"
@@ -19,6 +20,5 @@
 #include "metacg/metadata/NumStatementsMD.h"
 #include "metacg/metadata/OverrideMD.h"
 #include "metacg/metadata/UniqueTypeMD.h"
-#include "metacg/metadata/CallTypeMD.h"
 
 #endif  // METACG_BUILTINMD_H

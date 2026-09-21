@@ -98,8 +98,8 @@ class OverridesVisitor final : public clang::RecursiveASTVisitor<OverridesVisito
 namespace cage::overrides {
 
 /*
- * HandleTranslationUnit does eagerly emit global function defintions. E.g. inline definition A::foo override {} is eagerly 
- * emitted before HandleTranslationUnit runs and therefore cannot be annotated.
+ * HandleTranslationUnit does eagerly emit global function defintions. E.g. inline definition A::foo override {} is
+ * eagerly emitted before HandleTranslationUnit runs and therefore cannot be annotated.
  */
 bool OverridesPluginConsumer::HandleTopLevelDecl(clang::DeclGroupRef declGroup) {
   OverridesVisitor visitor;

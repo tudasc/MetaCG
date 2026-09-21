@@ -154,7 +154,7 @@ class Callgraph : public MetadataMixin {
    * @param other The call graph to merge.
    * @param policy The merge policy.
    */
-  template<typename... PostProcessingTasks>
+  template <typename... PostProcessingTasks>
   MergeRecorder merge(const metacg::Callgraph& other, const metacg::MergePolicy& policy, PostProcessingTasks... tasks);
 
   /**

@@ -1,8 +1,8 @@
 /**
-* File: OverridesPlugin.h
-* License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
-* https://github.com/tudasc/metacg/LICENSE.txt
-*/
+ * File: OverridesPlugin.h
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #ifndef METACG_CAGE_OVERRIDES_PLUGIN_H
 #define METACG_CAGE_OVERRIDES_PLUGIN_H
@@ -19,7 +19,7 @@ namespace cage::overrides {
 class OverridesPluginConsumer final : public clang::ASTConsumer {
  public:
   explicit OverridesPluginConsumer() {}
-  //void HandleTranslationUnit(clang::ASTContext& context) override;
+  // void HandleTranslationUnit(clang::ASTContext& context) override;
   bool HandleTopLevelDecl(clang::DeclGroupRef declGroup);
 };
 
@@ -30,9 +30,7 @@ class OverridesPluginAction final : public clang::PluginASTAction {
 
   bool ParseArgs(const clang::CompilerInstance& compiler, const std::vector<std::string>& args) override;
 
-  ActionType getActionType() override {
-    return AddBeforeMainAction;
-  }
+  ActionType getActionType() override { return AddBeforeMainAction; }
 };
 
 }  // namespace cage::overrides
