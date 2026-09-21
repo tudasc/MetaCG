@@ -1,6 +1,17 @@
 include(AddLLVM)
 
-find_program(LIT_EXE lit REQUIRED)
+find_llvm_progs(
+  LIT_EXE
+  "llvm-lit;lit;llvm-lit.py;lit.py"
+  HINTS
+  ${LLVM_EXTERNAL_LIT_DIR}
+  /usr/lib/llvm-${LLVM_VERSION_MAJOR}
+  /usr/lib/llvm
+  /usr/bin
+  /usr/local/bin
+  /opt/local/bin
+  ABORT_IF_MISSING
+)
 find_program(FILECHECK_EXE NAMES
     FileCheck-${LLVM_MAJOR_VERSION}
     FileCheck
