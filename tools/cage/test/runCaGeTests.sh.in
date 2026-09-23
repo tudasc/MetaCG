@@ -42,7 +42,7 @@ function runTestCase {
 
   plugin_flags=()
 
-  if [[ "$(basename "$testCasePath")" == "overrides" ]]; then
+  if [[ "$(basename "$testCasePath")" == "override" ]]; then
     plugin_flags=(
       -Xclang -load
       -Xclang "$overrides_plugin"
@@ -115,9 +115,9 @@ function runTestCase {
   sed -i 's/_ZdlPv\"/_ZdlPvm\"/g' "$cg_outfile"
 
   if [[ "$(basename "$testCasePath")" == "override" ]]; then
-    "$cgdiff" --ignore-md --ignore-edge-md "$cg_outfile" "$cg_gtfile" -o "$diff_file" -- >>log/testrun.log 2>&1
-  else 
     "$cgdiff" "$cg_outfile" "$cg_gtfile" -o "$diff_file" -- >>log/testrun.log 2>&1
+  else 
+    "$cgdiff" --ignore-md --ignore-edge-md "$cg_outfile" "$cg_gtfile" -o "$diff_file" -- >>log/testrun.log 2>&1
   fi
   fail=$?
 
