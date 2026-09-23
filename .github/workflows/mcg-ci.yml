@@ -144,6 +144,13 @@ jobs:
           run: |
             cd /opt/metacg/tools/cgcollector2/test
             bash testBase.sh
+      - name: Run cage override plugin tests
+        uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
+        with:
+          image: metacg-llvm-20-devel:latest
+          run: |
+            cd /opt/metacg/build
+            cmake --build . --target cage-overridePlugin-tests
       - name: Run CaGe tests
         uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
         with:
@@ -182,13 +189,7 @@ jobs:
             cmake --build build --target pass-tests-lto
             cmake --build build --target pass-tests-optimized
             cmake --build build --target pass-tests-optimized-lto
-      - name: Run overridePlugin tests (lit)
-        uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
-        with:
-          image: metacg-llvm-18-devel:latest
-          run: |
-            cd /opt/metacg/
-            cmake --build build --target cage-overridePlugin-tests
+      - name: Run cgpatch integration tests
         uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
         with:
           image: metacg-llvm-${{ matrix.llvm }}-devel:latest
