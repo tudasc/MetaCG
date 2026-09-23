@@ -22,6 +22,7 @@ RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.
     add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-18 main' && \
     apt-get update && \
     apt-get install -y libllvm18 llvm-18 llvm-18-dev llvm-18-runtime \
+        llvm-18-tools \
         clang-18 clang-tools-18 libclang-common-18-dev libclang-18-dev libclang1-18 \
     lld-18 libmlir-18-dev mlir-18-tools flang-18
 RUN bash -c "ln -s $(which clang-18) /usr/bin/clang" && \
@@ -29,6 +30,7 @@ RUN bash -c "ln -s $(which clang-18) /usr/bin/clang" && \
     bash -c "ln -s $(which opt-18) /usr/bin/opt" && \
     bash -c "ln -s $(which llvm-config-18) /usr/bin/llvm-config" && \
     bash -c "ln -s $(which flang-new-18) /usr/bin/flang"
+    bash -c "ln -s $(which FileCheck-18) /usr/bin/FileCheck"
 
 ARG extinstalldir=/opt/metacg/extern/install
 ENV EXTINSTALLDIR=$extinstalldir

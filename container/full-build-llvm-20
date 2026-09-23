@@ -21,14 +21,16 @@ RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.
     add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-20 main' && \
     add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-20 main' && \
     apt-get update && \
-    apt-get install -y libllvm20 llvm-20 llvm-20-dev llvm-20-runtime \
-        clang-20 clang-tools-20 libclang-common-20-dev libclang-20-dev libclang1-20 \
+apt-get install -y libllvm20 llvm-20 llvm-20-dev llvm-20-runtime \
+    llvm-20-tools \
+    clang-20 clang-tools-20 libclang-common-20-dev libclang-20-dev libclang1-20 \
     lld-20 libmlir-20-dev mlir-20-tools flang-20
-RUN bash -c "ln -s $(which clang-20) /usr/bin/clang" && \
-    bash -c "ln -s $(which clang++-20) /usr/bin/clang++" && \
-    bash -c "ln -s $(which opt-20) /usr/bin/opt" && \
-    bash -c "ln -s $(which llvm-config-20) /usr/bin/llvm-config" && \
-    bash -c "ln -s $(which flang-20) /usr/bin/flang"
+RUN ln -s "$(which clang-20)" /usr/bin/clang && \
+    ln -s "$(which clang++-20)" /usr/bin/clang++ && \
+    ln -s "$(which opt-20)" /usr/bin/opt && \
+    ln -s "$(which llvm-config-20)" /usr/bin/llvm-config && \
+    ln -s "$(which flang-20)" /usr/bin/flang && \
+    ln -s "$(which FileCheck-20)" /usr/bin/FileCheck
 
 ARG extinstalldir=/opt/metacg/extern/install
 ENV EXTINSTALLDIR=$extinstalldir
