@@ -14,7 +14,7 @@ int main() {
     return 0;
 }
 
-// CHECK-DAG: @[[A_DTOR_ANNOT:[^ ]+]] = private unnamed_addr constant [10 x i8] c"_ZN1AD0Ev\00"
+// CHECK-DAG: @[[A_DTOR_ANNOT:[^ ]+]] = private unnamed_addr constant [10 x i8] c"_ZN1AD2Ev\00"
 // CHECK-DAG: @[[PAYLOAD:[^ ]+]] = private unnamed_addr constant [15 x i8] c"overridePlugin\00"
 // CHECK-DAG: @[[ARGS:[^ ]+]] = private unnamed_addr constant { [15 x i8] } { [15 x i8] ptrtoint (ptr @[[PAYLOAD]] to [15 x i8]) }, section "llvm.metadata"
 // CHECK: @llvm.global.annotations = appending global
