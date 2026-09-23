@@ -80,15 +80,22 @@ class OverridesVisitor final : public clang::RecursiveASTVisitor<OverridesVisito
 
     return CE;
   }
+
   std::string getMangledName(const clang::NamedDecl* name) {
     std::unique_ptr<clang::MangleContext> MC(name->getASTContext().createMangleContext());
 
     std::string mangledName;
     llvm::raw_string_ostream os(mangledName);
 
-    MC->mangleName(name, os);
-    os.flush();
+    if (const auto* DD = llvm::dyn_cast<clang::CXXDestructorDecl>(name)) {
+      MC->mangleName(clang::GlobalDecl(DD, clang::Dtor_Base), os);
+    } else if (const auto* CD = llvm::dyn_cast<clang::CXXConstructorDecl>(name)) {
+      MC->mangleName(clang::GlobalDecl(CD, clang::Ctor_Base), os);
+    } else {
+      MC->mangleName(clang::GlobalDecl(name), os);
+    }
 
+    os.flush();
     return mangledName;
   }
 };
