@@ -241,7 +241,7 @@ fails=$?
 total_fails=$((total_fails + fails))
 
 # Override annotations
-runSingleFileTests "overrides" "$test_src_dir/input/overrides" "" "" "" $regenerate_gt
+runSingleFileTests "override" "$test_src_dir/input/override" "" "" "" $regenerate_gt
 fails=$?
 total_fails=$((total_fails + fails))
 
