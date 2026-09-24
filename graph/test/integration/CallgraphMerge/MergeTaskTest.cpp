@@ -42,9 +42,6 @@ void task(metacg::Callgraph* cg) {
                   auto md = std::make_unique<metacg::CallTypeMD>(metacg::CallType::VIRTUAL);
                   cg->addEdgeMetaData(*caller, *node, std::move(md));
                 }
-
-                // TODO: Add the appropriate CallTypeMD
-                // metadata to the newly created edge.
               }
             }
           }
