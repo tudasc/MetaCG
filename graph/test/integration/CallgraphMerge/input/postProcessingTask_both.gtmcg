@@ -109,7 +109,9 @@
                     "2": {
                         "callType": "VIRTUAL"
                     },
-                    "6": {}
+                    "6": {
+                        "callType": "VIRTUAL"
+                    }
                 },
                 "functionName": "main",
                 "hasBody": true,
@@ -199,7 +201,7 @@
     "_MetaCG": {
         "generator": {
             "name": "MetaCG",
-            "sha": "9878eebe8d6764f167188f146f1ea642332bcc4a",
+            "sha": "c7183f979f5b8cf1117d45a64b80eb94a0d374a0",
             "version": "1.0"
         },
         "version": "4.0"

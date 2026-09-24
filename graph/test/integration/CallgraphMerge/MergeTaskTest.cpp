@@ -25,6 +25,9 @@ void task(metacg::Callgraph* cg) {
           const auto callee = cg->getNode(calleeId);
           const auto caller = cg->getNode(callerId);
 
+          if (!callee || !caller) {
+            continue;
+          }
           const auto& calleeMD = callee->getMetaDataContainer();
 
           if (auto it2 = calleeMD.find(metacg::OverrideMD::key); it2 != calleeMD.end()) {
@@ -36,6 +39,8 @@ void task(metacg::Callgraph* cg) {
 
                 if (!cg->existsEdge(*caller, *node)) {
                   cg->addEdge(*caller, *node);
+                  auto md = std::make_unique<metacg::CallTypeMD>(metacg::CallType::VIRTUAL);
+                  cg->addEdgeMetaData(*caller, *node, std::move(md));
                 }
 
                 // TODO: Add the appropriate CallTypeMD
