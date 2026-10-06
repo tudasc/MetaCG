@@ -62,6 +62,7 @@ function(
 
   # install-time values
   set(CGFCOLLECTOR_FILE_NAME_LIB "${CMAKE_INSTALL_PREFIX}/lib/lib${PROJECT_NAME}.so")
+  set(CGMERGE2_BIN "`${CMAKE_INSTALL_PREFIX}/bin/cgmerge2")
 
   configure_file(
     "${TEMPLATE}"
