@@ -98,9 +98,10 @@ static opt<bool> unused1("disable-classic-cgc", cat(cgc),
                          desc("This is only here to allow for direct substitution of the old cgcollector in scripts"),
                          Hidden);
 
-static opt<bool> unused2("output", cat(cgc),
-                         desc("This is only here to allow for direct substitution of the old cgcollector in scripts"),
-                         Hidden);
+static opt<std::string> outputAlias(
+    "output", cat(cgc),
+    desc("Alias for --cg-file, only here to allow for direct substitution of the old cgcollector in scripts"),
+    callback([](const std::string& value) { cgout = value; }), Hidden);
 
 static opt<AliasAnalysisLevel> aliasAssumption(
     "alias-model", desc("How to handle function pointers:"),
@@ -246,7 +247,7 @@ int main(int argc, const char** argv) {
   }
   std::filesystem::path cgoutPath;
 
-  if (cgout.getNumOccurrences() > 0) {
+  if (!cgout.getValue().empty()) {
     cgoutPath = std::filesystem::absolute(std::filesystem::path(cgout.getValue()));
   }
 
