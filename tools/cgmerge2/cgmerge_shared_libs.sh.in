@@ -41,7 +41,6 @@ inputs=()
 [ -f "${binary}.mcg" ] && inputs+=("${binary}.mcg")
 
 total_libs=0
-missing_libs=0
 # ldd emits the full transitive closure; lines look like:
 #   libfoo.so.1 => /path/libfoo.so.1 (0x...)
 # keep only entries that resolved to an absolute path.
@@ -60,7 +59,7 @@ while IFS= read -r lib; do
   if [ -n "$mcg" ]; then
     inputs+=("$mcg")
   else
-    missing_libs=$((missing_libs + 1))
+    echo "Note: No .mcg file for for ${lib}, thus skipping it."
   fi
 done < <(ldd "$binary" 2>/dev/null | awk '/=>/ && $3 ~ /^\// { print $3 }' | sort -u)
 
@@ -74,11 +73,6 @@ fi
 if [ ${#inputs[@]} -eq 0 ]; then
   echo "Note: no call-graph inputs found for $binary; nothing to merge." >&2
   exit 0
-fi
-
-if [ "$missing_libs" -gt 0 ]; then
-  echo "Note: $missing_libs of $total_libs shared libraries had no .mcg;" \
-       "merging ${#inputs[@]} graph(s)." >&2
 fi
 
 if ! command -v "$cgmerge2_bin" &>/dev/null; then
@@ -95,8 +89,11 @@ tmp_output=$(mktemp "${output}.XXXXXX") || {
 }
 trap 'rm -f "$tmp_output"' EXIT
 
-if ! "$cgmerge2_bin" "$tmp_output" "${inputs[@]}"; then
-  status=$?
+cmd=("$cgmerge2_bin" "$tmp_output" "${inputs[@]}")
+echo "Running: ${cmd[*]}"
+"${cmd[@]}"
+status=$?
+if [ $status -ne 0 ]; then
   echo "Error: $cgmerge2_bin failed (exit $status) merging graphs for $binary." >&2
   exit $status
 fi

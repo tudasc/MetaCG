@@ -44,3 +44,16 @@ install(
   DESTINATION bin
   RENAME cgmerge_shared_libs.sh
 )
+
+# tests
+
+set(CGMERGE2_TEST_BIN ${CMAKE_CURRENT_BINARY_DIR}/cgmerge2)
+set(CGMERGE2_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test/data)
+
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/test/test_runner.sh.in"
+  "test_runner.sh"
+  @ONLY
+)
+
+add_test(NAME cgmerge2_script_tests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_runner.sh)

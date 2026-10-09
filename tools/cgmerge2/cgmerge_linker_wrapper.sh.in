@@ -41,13 +41,12 @@ done
 # Collect only the call-graph files that were actually produced. Objects
 # without a .mcg sibling are simply skipped rather than treated as an error.
 mcg_files=()
-missing=0
 if [ ${#object_files[@]} -gt 0 ] && [ -n "$output_file" ]; then
   for obj in "${object_files[@]}"; do
     if [ -f "${obj}.mcg" ]; then
       mcg_files+=("${obj}.mcg")
     else
-      missing=$((missing + 1))
+      echo "Note: Did not find a .mcg file for ${obj}, thus skipping it."
     fi
   done
 fi
@@ -55,18 +54,21 @@ fi
 # Merge whatever graphs we found. Only require cgmerge2 to exist if there is
 # actually something to merge.
 if [ ${#mcg_files[@]} -gt 0 ]; then
-  if [ "$missing" -gt 0 ]; then
-    echo "Note: $missing of ${#object_files[@]} objects had no .mcg; merging the remaining ${#mcg_files[@]}." >&2
-  fi
   if ! command -v "$cgmerge2_bin" &>/dev/null; then
     echo "Error: $cgmerge2_bin not found in PATH." >&2
     exit 1
   fi
-  if ! "$cgmerge2_bin" "${output_file}.mcg" "${mcg_files[@]}"; then
-    status=$?
+  cmd=("$cgmerge2_bin" "${output_file}.mcg" "${mcg_files[@]}")
+  echo "Running ${cmd[*]}"
+  "${cmd[@]}"
+  status=$?
+  if [ $status -ne 0 ]; then
     echo "Error: $cgmerge2_bin failed (exit $status) merging call graphs for ${output_file}.mcg." >&2
     exit $status
   fi
+else
+  echo "Error: No .mcg files were found and nothing was merged." >&2
+  exit 1
 fi
 
 # Run the actual link command, compiler and all, unchanged.
