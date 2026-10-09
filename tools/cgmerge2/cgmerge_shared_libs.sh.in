@@ -38,7 +38,9 @@ fi
 
 inputs=()
 # the binary's own (per-target) graph, if it was instrumented at link time.
-[ -f "${binary}.mcg" ] && inputs+=("${binary}.mcg")
+if [ -f "${binary}.mcg" ]; then
+  inputs+=("${binary}.mcg")
+fi
 
 total_libs=0
 # ldd emits the full transitive closure; lines look like:
