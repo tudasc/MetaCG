@@ -181,7 +181,7 @@ if __name__ == '__main__':
                     continue
                 tempIPCGs.append(ipcg)
                 commands.append((parserObject.wallclock_timeout,
-                                 [parserObject.cgcollector] + toolArguments + userArguments + ["--cg-file", ipcg, sourceFile]))
+                                 [parserObject.cgcollector] + toolArguments + userArguments + ["--output", ipcg, sourceFile]))
 
         # use a thread pool to run all commands in parallel (w.r.t pool-size)
         with Pool(parserObject.jobs) as p:
