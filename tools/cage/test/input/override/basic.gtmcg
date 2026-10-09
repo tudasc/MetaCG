@@ -1,0 +1,82 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "_ZN4Base3fooEv": {
+                "callees": {},
+                "functionName": "_ZN4Base3fooEv",
+                "hasBody": true,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [
+                            "_ZN7Derived3fooEv"
+                        ],
+                        "overrides": []
+                    }
+                },
+                "origin": "tools/cage/test/input/override/basic.cpp"
+            },
+            "_ZN4BaseC2Ev": {
+                "callees": {},
+                "functionName": "_ZN4BaseC2Ev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/override/basic.cpp"
+            },
+            "_ZN7Derived3fooEv": {
+                "callees": {},
+                "functionName": "_ZN7Derived3fooEv",
+                "hasBody": true,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [],
+                        "overrides": [
+                            "_ZN4Base3fooEv"
+                        ]
+                    }
+                },
+                "origin": "tools/cage/test/input/override/basic.cpp"
+            },
+            "_ZN7DerivedC2Ev": {
+                "callees": {
+                    "_ZN4BaseC2Ev": {}
+                },
+                "functionName": "_ZN7DerivedC2Ev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/override/basic.cpp"
+            },
+            "_Znwm": {
+                "callees": {},
+                "functionName": "_Znwm",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "main": {
+                "callees": {
+                    "_ZN4Base3fooEv": {
+                        "callType": "VIRTUAL"
+                    },
+                    "_ZN7Derived3fooEv": {
+                        "callType": "VIRTUAL"
+                    },
+                    "_ZN7DerivedC2Ev": {},
+                    "_Znwm": {}
+                },
+                "functionName": "main",
+                "hasBody": true,
+                "meta": {},
+                "origin": "tools/cage/test/input/override/basic.cpp"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CaGe",
+            "sha": "a49fce066b250ba643d848d4f08ef86acc277979",
+            "version": "0.1"
+        },
+        "version": "4.0"
+    }
+}

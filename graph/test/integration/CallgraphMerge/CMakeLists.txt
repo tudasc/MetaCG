@@ -8,6 +8,9 @@ add_executable(mergetester MergeTester.cpp)
 target_include_directories(mergetester PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_link_libraries(mergetester PUBLIC metacg::metacg)
 
+add_executable(MergeTaskTest MergeTaskTest.cpp)
+target_link_libraries(MergeTaskTest PUBLIC metacg::metacg)
+
 add_config_include(mergetester)
 
 add_test(

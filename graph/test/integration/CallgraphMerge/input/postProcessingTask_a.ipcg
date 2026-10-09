@@ -1,0 +1,74 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "_Z3getv": {
+                "callees": {},
+                "functionName": "_Z3getv",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "_ZN1A3fooEv": {
+                "callees": {
+                    "puts": {}
+                },
+                "functionName": "_ZN1A3fooEv",
+                "hasBody": true,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [],
+                        "overrides": [
+                            "_ZN4Base3fooEv"
+                        ]
+                    }
+                },
+                "origin": "./A.h"
+            },
+            "_ZN4Base3fooEv": {
+                "callees": {},
+                "functionName": "_ZN4Base3fooEv",
+                "hasBody": false,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [
+                            "_ZN1A3fooEv"
+                        ],
+                        "overrides": []
+                    }
+                },
+                "origin": "./A.h"
+            },
+            "main": {
+                "callees": {
+                    "_Z3getv": {},
+                    "_ZN1A3fooEv": {
+                        "callType": "VIRTUAL"
+                    },
+                    "_ZN4Base3fooEv": {
+                        "callType": "VIRTUAL"
+                    }
+                },
+                "functionName": "main",
+                "hasBody": true,
+                "meta": {},
+                "origin": "main.cpp"
+            },
+            "puts": {
+                "callees": {},
+                "functionName": "puts",
+                "hasBody": false,
+                "meta": {},
+                "origin": "/usr/include/stdio.h"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CaGe",
+            "sha": "b3a68ccd48f798630bfe3a10aaec85779d4b1250",
+            "version": "0.1"
+        },
+        "version": "4.0"
+    }
+}
