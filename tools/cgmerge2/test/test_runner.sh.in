@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+# Integration tests for cgmerge_linker_wrapper.sh and cgmerge_shared_libs.sh.
+#
+# Usage:
+#     test_runner.sh
+
+export CGMERGE2_BIN="@CGMERGE2_TEST_BIN@"
+linker_wrapper=(bash "@CMAKE_CURRENT_BINARY_DIR@/cgmerge_linker_wrapper.sh.install")
+shared_libs=(bash "@CMAKE_CURRENT_BINARY_DIR@/cgmerge_shared_libs.sh.install")
+cc="@CMAKE_C_COMPILER@"
+data_dir="@CGMERGE2_TEST_DATA_DIR@"
+
+tests_failed=0
+tests_passed=0
+
+fail()
+{
+    echo "Test failed: $1"
+    tests_failed=$((tests_failed + 1))
+}
+
+pass()
+{
+    echo "Test passed: $1"
+    tests_passed=$((tests_passed + 1))
+}
+
+work_dir=$(mktemp -d)
+trap 'rm -rf "$work_dir"' EXIT
+cd "$work_dir" || exit 1
+
+echo 'int foo(void) { return 0; }' >foo.c
+echo 'int foo(void); int main(void) { return foo(); }' >main.c
+
+# Test: linker wrapper merges the objects' graphs and runs the link command
+cp "$data_dir/main.mcg" main.o.mcg
+cp "$data_dir/foo.mcg" foo.o.mcg
+if "$cc" -c main.c foo.c \
+    && "${linker_wrapper[@]}" "$cc" main.o foo.o -o app \
+    && [ -x app ] \
+    && grep -q '"main"' app.mcg \
+    && grep -q '"foo.c"' app.mcg; then
+    pass "linker wrapper"
+else
+    fail "linker wrapper"
+fi
+
+rm -f app app.mcg
+
+# Test: shared-libs script merges the binary's graph with its libraries' graphs
+cp "$data_dir/main.mcg" app.mcg
+cp "$data_dir/foo.mcg" libfoo.so.mcg
+if "$cc" -shared -fPIC -o libfoo.so foo.c \
+    && "$cc" -o app main.c -L. -lfoo -Wl,-rpath,"$work_dir" \
+    && "${shared_libs[@]}" app \
+    && grep -q '"main"' app.whole.mcg \
+    && grep -q '"foo.c"' app.whole.mcg; then
+    pass "shared libs"
+else
+    fail "shared libs"
+fi
+
+echo ""
+echo "Tests passed: $tests_passed"
+echo "Tests failed: $tests_failed"
+
+[ $tests_failed -eq 0 ]
