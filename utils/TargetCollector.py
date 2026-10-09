@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #
 # File: TargetCollector.py
 # This utility script allows to generate the whole-program call-graph for a given cmake target
@@ -7,10 +8,14 @@
 #
 
 import argparse
+import pathlib
+import shlex
 import sys
 import subprocess
 import os
 import json
+from typing import Any, TypeAlias
+Json: TypeAlias = dict[str, Any]
 from multiprocessing import Pool
 
 
@@ -18,8 +23,52 @@ from multiprocessing import Pool
 # as cgcollector does not terminate on every input file,
 # we allow for timeouts to happen, and inform the user,
 # which cgcollector invocation timed out after how many seconds
-def collector(command):
-    subprocess.run(command[1].split(" "), timeout=command[0])
+def collector(command: tuple[int, list[str]]) -> None:
+    timeout, arguments = command
+    try:
+        subprocess.run(arguments, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        print(f"cgcollector timed out after {timeout} seconds: {shlex.join(arguments)}")
+
+def generateAPI() -> None:
+    # create the directories
+    os.makedirs(parserObject.build_directory + "/.cmake/api/v1/query/", exist_ok=True)
+    # create the file
+    open(parserObject.build_directory + "/.cmake/api/v1/query/codemodel-v2", "a").close()
+    # run cmake to generate the answers
+    # we might need to pass additional parameters to cmake to match the original compile
+    cmake_command: list[str] = ["cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"] + shlex.split(parserObject.cmake_args)
+    print("cd " + parserObject.build_directory + " && " + shlex.join(cmake_command))
+    subprocess.run(cmake_command, cwd=parserObject.build_directory)
+
+def loadTargetDescription(cmakeJsonTarget: Json) -> Json:
+    with open(parserObject.build_directory + "/.cmake/api/v1/reply/" + cmakeJsonTarget["jsonFile"], 'r') as targetDescription:
+        return json.load(targetDescription)
+
+def getSources(cmakeJsonTarget: Json) -> tuple[list[str], list[str]]:
+    jsonTargetDescription: Json = loadTargetDescription(cmakeJsonTarget)
+
+    # get the include flags of all compile groups, keeping their order and whether they are system includes,
+    # so that warnings from e.g. LLVM headers stay suppressed (interface libraries have no compile groups)
+    includeFlags: list[str] = list(dict.fromkeys(
+        ("-isystem" if include.get("isSystem", False) else "-I") + include["path"]
+        for compileGroup in jsonTargetDescription.get("compileGroups", [])
+        for include in compileGroup.get("includes", [])))
+
+    # only sources that are actually compiled are of interest, headers are included anyway
+    # source paths are relative to the top level source directory, unless they lie outside of it
+    sourcePaths: list[str] = [str(pathlib.Path(sourceRoot) / source["path"])
+                              for source in jsonTargetDescription["sources"] if "compileGroupIndex" in source]
+    print(includeFlags)
+    print(sourcePaths)
+    return includeFlags, sourcePaths
+
+def getDependencyTargets(cmakeJsonTarget: Json) -> list[Json]:
+    jsonTargetDescription: Json = loadTargetDescription(cmakeJsonTarget)
+    if "dependencies" not in jsonTargetDescription:
+        return []
+    dependencyIds = [dependency["id"] for dependency in jsonTargetDescription["dependencies"]]
+    return [target for target in allCmakeTargets if target["id"] in dependencyIds]
 
 
 if __name__ == '__main__':
@@ -54,63 +103,91 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--target', metavar="<str>", type=str,
                         help='The target name for which to generate the callgraph',
                         required=True)
-    parser.add_argument('--ci-concurrent-suffix', metavar="<str>", type=str, help='Suffix appended to output filename in concurrent CI runs', required=False, default="")
+    parser.add_argument('-r', '--recursive', metavar="<bool>", default=False, type=lambda v: v.lower() in ('true', '1', 'yes', 'on'),
+                        help='Also collect dependency targets')
+    parser.add_argument('--ci-concurrent-suffix', metavar="<str>", type=str,
+                        help='Suffix appended to output filename in concurrent CI runs', required=False, default="")
 
     # parse all arguments after the first one, as this is the name we got called by
     parserObject: argparse.Namespace = parser.parse_args(sys.argv[1:])
 
     # if we want to generate a new api query file (or do both)
     if parserObject.generate in ['api', 'both']:
-        # create the directories
-        os.makedirs(parserObject.build_directory + "/.cmake/api/v1/query/", exist_ok=True)
-        # create the file
-        open(parserObject.build_directory + "/.cmake/api/v1/query/codemodel-v2", "a").close()
-        # run cmake to generate the answers
-        # we might need to pass additional parameters to cmake to match the original compile
-        cmake_command: str = "cmake " + parserObject.cmake_args
-        print("cd " + parserObject.build_directory + " && " + cmake_command)
-        subprocess.run(cmake_command.split(" "), cwd=parserObject.build_directory)
+        generateAPI()
     # if we want to generate a graph for the target
     if parserObject.generate in ['graph', 'both']:
+
+        # Find the most up-to-date reply
+        reply_dir : pathlib.Path = pathlib.Path(parserObject.build_directory + "/.cmake/api/v1/reply")
+        index_path: pathlib.Path = max(reply_dir.glob("index-*.json"))
+
+        with index_path.open() as f:
+            index = json.load(f)
+
+        # Find the codemodel-v2 file
+        codemodel_ref = index["reply"]["codemodel-v2"]
+        codemodel_path = index_path.parent / codemodel_ref["jsonFile"]
+
+        with codemodel_path.open() as f:
+            codemodel = json.load(f)
+
+        allCmakeTargets: list[Json] = codemodel["configurations"][0]["targets"]
+        sourceRoot: str = codemodel["paths"]["source"]
+
         # we need to find the answer file for our target
-        # for this, we list all targets, and find ours, via its prefix
-        # target names are unique, meaning we get THE target with [0]
-        targetFile: str = [f for f in os.listdir(parserObject.build_directory + "/.cmake/api/v1/reply") if
-                           f.startswith("target-" + parserObject.target + "-")][0]
+        # for this, we list all targets, and find ours, via its name
+        targetFileList: list[Json] = [t for t in allCmakeTargets if t["name"] == parserObject.target]
+        if len(targetFileList) == 0:
+            print("Could not find target in cmake targets list")
+            exit(1)
 
-        # get the json from the file and extract the information we need
-        # file is closed after json load finishes
-        with open(parserObject.build_directory + "/.cmake/api/v1/reply/" + targetFile, 'r') as targetDescription:
-            jsonFile: json = json.load(targetDescription)
+        target: Json = targetFileList[0]
+        collectedTargets: list[Json] = [target]
 
-        # get all include statements dictionaries from the compile group key
-        includeInformation: dict = {}
-        listOfDicts = [includeInformation.update(dict(elem)) for elem in jsonFile["compileGroups"]]
-        # get the files from the include dictionary
-        includeDirectories = [dict(elem)["path"] for elem in includeInformation["includes"]]
+        if parserObject.recursive:
+            # every target is only collected once, even if multiple targets depend on it
+            visitedIds: set[str] = {target["id"]}
+            worklist: list[Json] = getDependencyTargets(target)
+            while worklist:
+                dependency: Json = worklist.pop(0)
+                if dependency["id"] in visitedIds:
+                    continue
+                visitedIds.add(dependency["id"])
+                collectedTargets.append(dependency)
+                worklist += getDependencyTargets(dependency)
 
-        # get all source files from the compile-sources
-        # we are not interested in generating a callgraph for *.h files,
-        # as they are included anyway
-        sources = [dict(elem)["path"] for elem in jsonFile["sources"] if not dict(elem)["path"].endswith("h")]
+        # if a compile commands database exists, it provides the exact flags of the original compile
+        # otherwise, we need to pass the include-directories to our tools
+        useCompileDatabase: bool = os.path.isfile(os.path.join(parserObject.build_directory, "compile_commands.json"))
+        if not useCompileDatabase:
+            print("No compile_commands.json found in build directory, passing include directories instead")
 
-        # if we are not using a compile statements database, we need to pass the include-directories to out tools
         # if the user wants to pass any other arguments, we pipe them along
-        extraArguments = [f'--extra-arg=-I{i}' for i in includeDirectories] + \
-                         [f'--extra-arg=-I{i}' for i in parserObject.extra_args.split(" ") if i != ""]
+        userArguments: list[str] = [f'--extra-arg={i}' for i in shlex.split(parserObject.extra_args)]
 
-        tempIPCGs = [(source, source + parserObject.ci_concurrent_suffix + '.ipcg') for source in sources]
+        commands: list[tuple[int, list[str]]] = []
+        tempIPCGs: list[str] = []
+        for collectedTarget in collectedTargets:
+            includeFlags, sourceFiles = getSources(collectedTarget)
+            if useCompileDatabase:
+                toolArguments = ["-p", parserObject.build_directory]
+            else:
+                toolArguments = [f'--extra-arg={flag}' for flag in includeFlags]
 
-        # generate a separate cgcollector command for each source
-        commands = [ parserObject.cgcollector + " " + " ".join(extraArguments) + " --output " + io[1] + " " + io[0] for io in tempIPCGs]
+            # generate a separate cgcollector command for each source
+            for sourceFile in sourceFiles:
+                ipcg: str = sourceFile + parserObject.ci_concurrent_suffix + '.ipcg'
+                if ipcg in tempIPCGs:
+                    continue
+                tempIPCGs.append(ipcg)
+                commands.append((parserObject.wallclock_timeout,
+                                 [parserObject.cgcollector] + toolArguments + userArguments + ["--cg-file", ipcg, sourceFile]))
 
         # use a thread pool to run all commands in parallel (w.r.t pool-size)
         with Pool(parserObject.jobs) as p:
-            p.map(collector, [[parserObject.wallclock_timeout, elem] for elem in commands])
+            p.map(collector, commands)
 
-        # generate the command to merge all ipcg graphs
-        command = parserObject.cgmerge + " " + parserObject.output + " " + " ".join(
-            [io[1] for io in tempIPCGs])
-
-        # run the command
-        subprocess.run(command.split(" "))
+        # merge all ipcg graphs of all targets into one whole-program graph,
+        # skipping graphs that were not created, e.g. due to a timeout
+        createdIPCGs: list[str] = [ipcg for ipcg in tempIPCGs if os.path.isfile(ipcg)]
+        subprocess.run([parserObject.cgmerge, parserObject.output] + createdIPCGs)
