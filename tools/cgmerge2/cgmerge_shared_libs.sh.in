@@ -25,7 +25,7 @@ binary="$1"
 output="${2:-${binary}.whole.mcg}"
 
 if [ ! -e "$binary" ]; then
-  echo "Error: $binary does not exist." >&2
+  echo "Error: The targeted binary does not exist. (${binary})" >&2
   exit 1
 fi
 
