@@ -96,11 +96,11 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
   } else {
     filename = cgout;
   }
-  SPDLOG_INFO("Writing to file: {}", filename);
   std::ofstream file(filename);
-  // Fixme: may be a very expensive copy;
-  nlohmann::json newJ = js.getJson();
   if (prune) {
+    SPDLOG_INFO("Pruning callgraph");
+    // Fixme: may be a very expensive copy;
+    nlohmann::json newJ = js.getJson();
     // Fixme: implement deletion of nodes in metacg, it is ridiculous to do this on strings
     for (auto iter = newJ.at("_CG").begin(); iter != newJ.at("_CG").end();) {
       if (iter.value().at("hasBody") == false && iter.value().at("callers").empty()) {
@@ -110,9 +110,11 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
         ++iter;
       }
     }
+    js.setJson(newJ);
   }
 
-  file << newJ << std::endl;
+  SPDLOG_INFO("Writing to file: {}", filename);
+  file << js.getJson() << std::endl;
 }
 
 void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callgraph) {
