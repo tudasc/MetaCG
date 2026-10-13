@@ -256,6 +256,13 @@ test-cgdiff-integration:
     - cd tools/cgdiff/test/integration/
     - ./run_tests.sh -b $BUILD
 
+test-cgmerge2-scripts:
+  <<: *job-setup
+  stage: integration-test
+  script:
+    - cd $BUILD/tools/cgmerge2
+    - ctest . --verbose
+
 test-cage:
   <<: *job-setup
   parallel:
