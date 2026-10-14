@@ -48,9 +48,9 @@ def specifiesSourceDirectory(cmakeArguments: list[str]) -> bool:
     return False
 
 def generateAPI(buildDirectory: str, cmakeArgs:str, outStream: int | None, errStream: int | None) -> None:
-    # create the directories
+    # cmake's API communicates over files and directories,
+    # create the request
     os.makedirs(buildDirectory + "/.cmake/api/v1/query/", exist_ok=True)
-    # create the file
     open(buildDirectory + "/.cmake/api/v1/query/codemodel-v2", "a").close()
     # run cmake to generate the answers
     # we might need to pass additional parameters to cmake to match the original compile
@@ -224,8 +224,11 @@ def main():
                                  [parserObject.cgcollector] + toolArguments + userArguments + ["--cg-file", ipcg, sourceFile]))
 
         # use a thread pool to run all commands in parallel (w.r.t pool-size)
+        print(f"Now collecting cg from {len(commands)} files")
         with Pool(parserObject.jobs) as p:
-            p.map(partial(collector, outStream=outStream, errStream=errStream), commands)
+            for finished, _ in enumerate(p.imap_unordered(partial(collector, outStream=outStream, errStream=errStream), commands), start=1):
+                print(f"\r{finished}/{len(commands)}", end="", flush=True)
+        print()
 
         # merge all ipcg graphs of all targets into one whole-program graph,
         # skipping graphs that were not created, e.g. due to a timeout
