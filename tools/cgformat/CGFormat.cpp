@@ -13,7 +13,7 @@
 #include "metacg/LoggerUtil.h"
 #include "metacg/io/MCGReader.h"
 #include "metacg/io/MCGWriter.h"
-#include "metacg/metadata/FilePropertiesMD.h"
+#include "metacg/metadata/FileInfoMD.h"
 
 #include "cxxopts.hpp"
 
@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
 
           bool isSysInclude = false;
           if (ignoreSysInclues) {
-            auto md = node->get<metacg::FilePropertiesMD>();
+            auto md = node->get<metacg::FileInfoMetadata>();
             isSysInclude = md && md->fromSystemInclude;
           }
           // This can be done with "starts_with" in C++20

@@ -18,7 +18,7 @@
 
 struct FileInfoCollector : cgcollector2::Plugin {
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(const clang::FunctionDecl* const functionDecl) {
-    std::unique_ptr<FileInfoMetadata> result = std::make_unique<FileInfoMetadata>();
+    std::unique_ptr<metacg::FileInfoMetadata> result = std::make_unique<metacg::FileInfoMetadata>();
     const auto sourceLocation = functionDecl->getLocation();
     auto& astCtx = functionDecl->getASTContext();
     const auto fullSrcLoc = astCtx.getFullLoc(sourceLocation);

@@ -4,8 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#ifndef CGCOLLECTOR2_FILEINFOMETADATA_H
-#define CGCOLLECTOR2_FILEINFOMETADATA_H
+#ifndef METACG_FILEINFOMD_H
+#define METACG_FILEINFOMD_H
 
 #include "metacg/metadata/MetaData.h"
 
@@ -14,12 +14,12 @@
  * The same restrictions apply:
  * Implement a static key, and the three virtual functions, and register your metadata via the Registrar
  */
-
+namespace metacg {
 class FileInfoMetadata : public metacg::MetaData::Registrar<FileInfoMetadata> {
  public:
-  static constexpr const char* key = "FilePropertiesMetaData";
+  static constexpr const char* key = "fileInfo";
   FileInfoMetadata() : origin("INVALID"), fromSystemInclude(false), lineNumber(0) {}
-  explicit FileInfoMetadata(const nlohmann::json& j, metacg::StrToNodeMapping& strToNode) {
+  explicit FileInfoMetadata(const nlohmann::json& j, metacg::StrToNodeMapping&) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for fileProperties");
       return;
@@ -49,4 +49,5 @@ class FileInfoMetadata : public metacg::MetaData::Registrar<FileInfoMetadata> {
   bool fromSystemInclude;
   int lineNumber;
 };
-#endif  // CGCOLLECTOR2_FILEINFOMETADATA_H
+}
+#endif  // METACG_FILEINFOMD_H

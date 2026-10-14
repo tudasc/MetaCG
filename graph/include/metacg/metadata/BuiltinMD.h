@@ -10,7 +10,7 @@
 
 #include "metacg/metadata/CodeStatisticsMD.h"
 #include "metacg/metadata/EntryFunctionMD.h"
-#include "metacg/metadata/FilePropertiesMD.h"
+#include "metacg/metadata/FileInfoMD.h"
 #include "metacg/metadata/InlineMD.h"
 #include "metacg/metadata/LoopMD.h"
 #include "metacg/metadata/MallocVariableMD.h"
