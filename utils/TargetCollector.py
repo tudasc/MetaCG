@@ -173,7 +173,8 @@ def main():
     errStream: int | None = None if parserObject.verbose or parserObject.very_verbose else subprocess.DEVNULL
 
     if parserObject.list_targets:
-        generateAPI(parserObject.build_directory,parserObject.cmake_args,outStream,errStream)
+        if parserObject.generate in ['api', 'both']:
+            generateAPI(parserObject.build_directory,parserObject.cmake_args,outStream,errStream)
         print([t["name"] for t in getAllTargets(parserObject.build_directory)[0]])
         exit()
 
