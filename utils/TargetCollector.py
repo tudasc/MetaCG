@@ -231,7 +231,7 @@ def main():
                     continue
                 tempIPCGs.append(ipcg)
                 commands.append((parserObject.wallclock_timeout,
-                                 [parserObject.cgcollector] + toolArguments + userArguments +["--FileInfo"] + ["--output", ipcg, sourceFile]))
+                                 [parserObject.cgcollector] + toolArguments + userArguments + ["--output", ipcg, sourceFile]))
 
         # use a thread pool to run all commands in parallel (w.r.t pool-size)
         print(f"Now collecting cg from {len(commands)} files")
