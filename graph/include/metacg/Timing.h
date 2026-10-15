@@ -23,18 +23,18 @@ class RuntimeTimer {
   ~RuntimeTimer() {
     if (printOnDestruct) {
       stop();
-      auto durInSeconds = getTimePassed();
-      MCGLogger::instance().getConsole()->info("The region \"{}\" required {} seconds to finish.", region,
-                                               durInSeconds.count());
+      auto durInMilliseconds = getTimePassed();
+      MCGLogger::instance().getConsole()->info("The region \"{}\" required {} milliseconds to finish.", region,
+                                               durInMilliseconds.count()/1000.0f);
     }
   }
 
   void stop() { end = clock::now(); }
 
-  std::chrono::seconds getTimePassed() {
+  std::chrono::milliseconds getTimePassed() {
     auto dur = end - start;
-    auto durInSeconds = std::chrono::duration_cast<std::chrono::seconds>(dur);
-    return durInSeconds;
+    auto durInMilliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(dur);
+    return durInMilliseconds;
   }
 
  private:
