@@ -233,16 +233,20 @@ def main():
                 commands.append((parserObject.wallclock_timeout,
                                  [parserObject.cgcollector] + toolArguments + userArguments + ["--output", ipcg, sourceFile]))
 
+        if(len(commands)==0):
+            print(f"No cgs to collect for target: {parserObject.target}")
+            exit()
+
         # use a thread pool to run all commands in parallel (w.r.t pool-size)
         print(f"Now collecting cg from {len(commands)} files")
-        returns = list(tuple[str, str])
+        returns: list[tuple[str, str]] = []
         with Pool(parserObject.jobs) as p:
             for finished, (ipcg, status) in enumerate(p.imap_unordered(partial(collector, outStream=outStream, errStream=errStream), commands), start=1):
-                returns +=(ipcg,status)
+                returns.append((ipcg,status))
                 print(f"\r{finished}/{len(commands)}", end="", flush=True)
         print()
 
-        for ipcg , status in returns :
+        for (ipcg , status) in returns :
             if status != "ok" :
                 print(f"Failed to produce CG for {ipcg}: {status}")
 
