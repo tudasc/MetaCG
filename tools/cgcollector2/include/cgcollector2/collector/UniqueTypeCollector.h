@@ -8,6 +8,7 @@
 #define CGCOLLECTOR2_UNIQUETYPECOLLECTOR_H
 
 #include "cgcollector2/interface/CGC2Plugin.h"
+#include "metacg/LoggerUtil.h"
 #include "metacg/metadata/UniqueTypeMD.h"
 #include <set>
 struct UniqueTypeCollector : public cgcollector2::Plugin {
@@ -18,7 +19,7 @@ struct UniqueTypeCollector : public cgcollector2::Plugin {
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
     std::set<const clang::Type*> uniqueTypes;
 
-    SPDLOG_DEBUG("Processing function {}", decl->getNameAsString());
+    metacg::MCGLogger::instance().getConsole()->debug("Processing function {}", decl->getNameAsString());
 
     class DeclRefExprVisitor : public clang::StmtVisitor<DeclRefExprVisitor> {
       std::set<const clang::Type*>& fTypes;
@@ -47,7 +48,7 @@ struct UniqueTypeCollector : public cgcollector2::Plugin {
             fTypes.insert(ty);
           }
         } else {
-          SPDLOG_DEBUG("Found DeclGroup: Not Collecting Types.");
+          metacg::MCGLogger::instance().getConsole()->debug("Found DeclGroup: Not Collecting Types.");
         }
       }
 

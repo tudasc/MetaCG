@@ -25,7 +25,7 @@
 
 #include "metacg/metadata/BuiltinMD.h"
 
-#include "spdlog/spdlog.h"
+#include "metacg/LoggerUtil.h"
 #include <filesystem>
 
 using namespace llvm::cl;
@@ -160,29 +160,31 @@ int main(int argc, const char** argv) {
   clang::tooling::CommonOptionsParser& OP = ParseResult.get();
 #endif
 
+  spdlog::level::level_enum logLevel;
   switch (LoggingLevel) {
     case LogLevel::Trace:
-      spdlog::set_level(spdlog::level::trace);
+      logLevel = spdlog::level::trace;
       break;
     case LogLevel::Debug:
-      spdlog::set_level(spdlog::level::debug);
+      logLevel = spdlog::level::debug;
       break;
     case LogLevel::Info:
-      spdlog::set_level(spdlog::level::info);
+      logLevel = spdlog::level::info;
       break;
     case LogLevel::Warning:
-      spdlog::set_level(spdlog::level::warn);
+      logLevel = spdlog::level::warn;
       break;
     case LogLevel::Error:
-      spdlog::set_level(spdlog::level::err);
+      logLevel = spdlog::level::err;
       break;
     case LogLevel::Off:
-      spdlog::set_level(spdlog::level::off);
+      logLevel = spdlog::level::off;
       break;
     default:
       __builtin_unreachable();
   }
-  spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [errconsole] [%l] %v");
+  metacg::MCGLogger::instance().getConsole()->set_level(logLevel);
+  metacg::MCGLogger::instance().getErrConsole()->set_level(logLevel);
 
   clang::tooling::ClangTool CT(OP.getCompilations(), OP.getSourcePathList());
 
@@ -191,10 +193,10 @@ int main(int argc, const char** argv) {
   mcs.reserve(numberOfBuiltinCollectors + pluginPaths.size());
 
   if (collectorBits.getBits() == 0 || collectorBits.isSet(Collectors::None)) {
-    SPDLOG_INFO("No collector-suite specified, disabling all collectors");
+    metacg::MCGLogger::logInfo("No collector-suite specified, disabling all collectors");
   } else {
     if (collectorBits.isSet(Collectors::All)) {
-      SPDLOG_INFO("Enabling all built in collectors");
+      metacg::MCGLogger::logInfo("Enabling all built in collectors");
     }
     // Builtin Metadata Collection
     if (collectorBits.isSet(Collectors::CodeStatistics) || collectorBits.isSet(Collectors::All)) {
@@ -240,7 +242,7 @@ int main(int argc, const char** argv) {
 
   // Plugin Metadata Collection
   for (const auto& pluginPath : pluginPaths) {
-    SPDLOG_INFO("Loading external collector from: {}", pluginPath);
+    metacg::MCGLogger::logInfo("Loading external collector from: {}", pluginPath);
     if (cgcollector2::Plugin* p = loadPlugin(pluginPath); p) {
       mcs.push_back(p);
     }
