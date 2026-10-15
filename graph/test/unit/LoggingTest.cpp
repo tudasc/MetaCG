@@ -14,15 +14,7 @@ class LoggingTest : public ::testing::Test {
     // Default log level does not include trace and debug outputs
     spdlog::set_level(spdlog::level::trace);
     metacg::MCGLogger::instance().resetUniqueCache();
-
-    //If lib tests are executed in a terminal, the exact string comparison will fail,
-    //due to color code differences, disable coloring for this test
-    for (auto& sink : metacg::MCGLogger::instance().getConsole()->sinks() ) {
-      static_cast<spdlog::sinks::stdout_color_sink_mt*>(sink.get())->set_color_mode(spdlog::color_mode::never);
-    }
-    for (auto& sink : metacg::MCGLogger::instance().getErrConsole()->sinks() ) {
-      static_cast<spdlog::sinks::stderr_color_sink_mt*>(sink.get())->set_color_mode(spdlog::color_mode::never);
-    }
+    metacg::loggerutil::disableColor();
 
   }
 };
