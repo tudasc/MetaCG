@@ -59,6 +59,7 @@ int main(int argc, char** argv) {
   auto& mcgManager = graph::MCGManager::get();
   mcgManager.resetManager();
 
+  #pragma omp parallel for schedule(dynamic)
   for (auto& inFile : inputFiles) {
     io::FileSource fs(inFile);
     if (fs.get().is_null()) {
@@ -73,9 +74,11 @@ int main(int argc, char** argv) {
     auto mcgReader = io::createReader(fs);
     if (!mcgReader) {
       errConsole->error("Unsupported MetaCG format version: {}", versionStr);
-      return EXIT_FAILURE;
+      exit(EXIT_FAILURE);
     }
-    mcgManager.addToManagedGraphs(inFile, mcgReader->read());
+    auto cg = mcgReader->read();
+    #pragma omp critical
+    mcgManager.addToManagedGraphs(inFile,std::move(cg));
   }
 
   if (mcgManager.graphs_size() == 0) {
