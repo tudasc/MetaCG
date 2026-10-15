@@ -26,12 +26,22 @@ from multiprocessing import Pool
 # as cgcollector does not terminate on every input file,
 # we allow for timeouts to happen, and inform the user,
 # which cgcollector invocation timed out after how many seconds
-def collector(command: tuple[int, list[str]], outStream: int | None, errStream: int | None) -> None:
+def collector(command: tuple[int, list[str]], outStream: int | None, errStream: int | None) -> tuple[str, str]:
     timeout, arguments = command
+    ipcg: str = arguments[arguments.index("--output") + 1]
     try:
-        subprocess.run(arguments, timeout=timeout, stdout=outStream, stderr=errStream)
+        result = subprocess.run(arguments, timeout=timeout, stdout=outStream, stderr=errStream)
     except subprocess.TimeoutExpired:
-        print(f"cgcollector timed out after {timeout} seconds: {shlex.join(arguments)}")
+        status = "timeout"
+    else:
+        if result.returncode == 0:
+            status = "ok"
+        elif result.returncode == -137: #137 is sigkill exit code
+            status = f"killed with {result.returncode} (likely OOM)"
+        else :
+            status = f"failed with {result.returncode}"
+    return ipcg, status
+
 
 # checks whether the user-given cmake arguments already name a source directory,
 # either via -S or as a positional path, skipping the values of options that take a separate argument
@@ -132,7 +142,7 @@ def parseArgs():
                         help="The time in seconds cg collector is allowed to run before being terminated", default=120)
     parser.add_argument('-m', '--cgmerge', metavar='<path/bin>', type=str, default="cgmerge",
                         help='the path to the cgmerge tool', required=False)
-    parser.add_argument('-e', '--extra-args', metavar="<list>", default="", help='pipe args to clang extra-arg',
+    parser.add_argument('-e', '--collector-args', metavar="<list>", default="", help='pipe args to clang extra-arg',
                         type=str,
                         required=False)
     parser.add_argument('-a', '--cmake-args', metavar="<list>", help='pipe args to cmake', default="", type=str,
@@ -178,7 +188,7 @@ def main():
         # for this, we list all targets, and find ours, via its name
         targetFileList: list[Json] = [t for t in allCmakeTargets if t["name"] == parserObject.target]
         if len(targetFileList) == 0:
-            print("Could not find target in cmake targets list")
+            print("Could not find target: \""+ parserObject.target+"\" in cmake targets list")
             exit(1)
 
         target: Json = targetFileList[0]
@@ -203,7 +213,7 @@ def main():
             print("No compile_commands.json found in build directory, passing include directories instead")
 
         # if the user wants to pass any other arguments, we pipe them along
-        userArguments: list[str] = [f'--extra-arg={i}' for i in shlex.split(parserObject.extra_args)]
+        userArguments: list[str] = [f'{i}' for i in shlex.split(parserObject.collector_args)]
 
         commands: list[tuple[int, list[str]]] = []
         tempIPCGs: list[str] = []
@@ -221,19 +231,29 @@ def main():
                     continue
                 tempIPCGs.append(ipcg)
                 commands.append((parserObject.wallclock_timeout,
-                                 [parserObject.cgcollector] + toolArguments + userArguments + ["--cg-file", ipcg, sourceFile]))
+                                 [parserObject.cgcollector] + toolArguments + userArguments +["--FileInfo"] + ["--output", ipcg, sourceFile]))
 
         # use a thread pool to run all commands in parallel (w.r.t pool-size)
         print(f"Now collecting cg from {len(commands)} files")
+        returns = list(tuple[str, str])
         with Pool(parserObject.jobs) as p:
-            for finished, _ in enumerate(p.imap_unordered(partial(collector, outStream=outStream, errStream=errStream), commands), start=1):
+            for finished, (ipcg, status) in enumerate(p.imap_unordered(partial(collector, outStream=outStream, errStream=errStream), commands), start=1):
+                returns +=(ipcg,status)
                 print(f"\r{finished}/{len(commands)}", end="", flush=True)
         print()
+
+        for ipcg , status in returns :
+            if status != "ok" :
+                print(f"Failed to produce CG for {ipcg}: {status}")
 
         # merge all ipcg graphs of all targets into one whole-program graph,
         # skipping graphs that were not created, e.g. due to a timeout
         createdIPCGs: list[str] = [ipcg for ipcg in tempIPCGs if os.path.isfile(ipcg)]
-        subprocess.run([parserObject.cgmerge, parserObject.output] + createdIPCGs,stdout=outStream,stderr=errStream)
+        print(f"Merging collected cgs into {parserObject.output}")
+        environment=os.environ.copy()
+        environment["OMP_NUM_THREADS"]=str(parserObject.jobs)
+        print([parserObject.cgmerge, parserObject.output] + createdIPCGs)
+        subprocess.run([parserObject.cgmerge, parserObject.output] + createdIPCGs,stdout=outStream,stderr=errStream, env=environment)
 
 
 if __name__ == '__main__':
