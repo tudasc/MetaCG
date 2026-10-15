@@ -257,7 +257,6 @@ def main():
         print(f"Merging collected cgs into {parserObject.output}")
         environment=os.environ.copy()
         environment["OMP_NUM_THREADS"]=str(parserObject.jobs)
-        print([parserObject.cgmerge, parserObject.output] + createdMGCs)
         subprocess.run([parserObject.cgmerge, parserObject.output] + createdMGCs,stdout=outStream,stderr=errStream, env=environment)
 
 
