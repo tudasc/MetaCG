@@ -327,6 +327,17 @@ inline void getLogger() {
   disableErrors();
 }
 
+inline void disableColor() {
+  //Do not use color in output, helpful for unit-tests
+  //Even though we only have one sink per console, we iterate to catch future changes
+  for (auto& sink : metacg::MCGLogger::instance().getConsole()->sinks() ) {
+    static_cast<spdlog::sinks::stdout_color_sink_mt*>(sink.get())->set_color_mode(spdlog::color_mode::never);
+  }
+  for (auto& sink : metacg::MCGLogger::instance().getErrConsole()->sinks() ) {
+    static_cast<spdlog::sinks::stderr_color_sink_mt*>(sink.get())->set_color_mode(spdlog::color_mode::never);
+  }
+}
+
 /**
  * Enables error outputs in logger.
  *
