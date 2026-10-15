@@ -147,7 +147,7 @@ def parseArgs():
                         required=False)
     parser.add_argument('-a', '--cmake-args', metavar="<list>", help='pipe args to cmake', default="", type=str,
                         required=False)
-    parser.add_argument('-o', '--output', metavar="<str>", default="wholeProgramCG.ipcg", type=str,
+    parser.add_argument('-o', '--output', metavar="<str>", default="wholeProgramCG.mcg", type=str,
                         help='The name of the output file',
                         required=False)
     parser.add_argument('-t', '--target', metavar="<str>", type=str,
@@ -217,7 +217,7 @@ def main():
         userArguments: list[str] = [f'{i}' for i in shlex.split(parserObject.collector_args)]
 
         commands: list[tuple[int, list[str]]] = []
-        tempIPCGs: list[str] = []
+        tempMCGs: list[str] = []
         for collectedTarget in collectedTargets:
             includeFlags, sourceFiles = getSources(collectedTarget,sourceRoot,parserObject.build_directory)
             if useCompileDatabase:
@@ -227,12 +227,12 @@ def main():
 
             # generate a separate cgcollector command for each source
             for sourceFile in sourceFiles:
-                ipcg: str = sourceFile + parserObject.ci_concurrent_suffix + '.ipcg'
-                if ipcg in tempIPCGs:
+                mcg: str = sourceFile + parserObject.ci_concurrent_suffix + '.mcg'
+                if mcg in tempMCGs:
                     continue
-                tempIPCGs.append(ipcg)
+                tempMCGs.append(mcg)
                 commands.append((parserObject.wallclock_timeout,
-                                 [parserObject.cgcollector] + toolArguments + userArguments + ["--output", ipcg, sourceFile]))
+                                 [parserObject.cgcollector] + toolArguments + userArguments + ["--output", mcg, sourceFile]))
 
         if(len(commands)==0):
             print(f"No cgs to collect for target: {parserObject.target}")
@@ -242,23 +242,23 @@ def main():
         print(f"Now collecting cg from {len(commands)} files")
         returns: list[tuple[str, str]] = []
         with Pool(parserObject.jobs) as p:
-            for finished, (ipcg, status) in enumerate(p.imap_unordered(partial(collector, outStream=outStream, errStream=errStream), commands), start=1):
-                returns.append((ipcg,status))
+            for finished, (mcg, status) in enumerate(p.imap_unordered(partial(collector, outStream=outStream, errStream=errStream), commands), start=1):
+                returns.append((mcg,status))
                 print(f"\r{finished}/{len(commands)}", end="", flush=True)
         print()
 
-        for (ipcg , status) in returns :
+        for (mcg , status) in returns :
             if status != "ok" :
-                print(f"Failed to produce CG for {ipcg}: {status}")
+                print(f"Failed to produce CG for {mcg}: {status}")
 
-        # merge all ipcg graphs of all targets into one whole-program graph,
+        # merge all mcg graphs of all targets into one whole-program graph,
         # skipping graphs that were not created, e.g. due to a timeout
-        createdIPCGs: list[str] = [ipcg for ipcg in tempIPCGs if os.path.isfile(ipcg)]
+        createdMGCs: list[str] = [mcg for mcg in tempMCGs if os.path.isfile(mcg)]
         print(f"Merging collected cgs into {parserObject.output}")
         environment=os.environ.copy()
         environment["OMP_NUM_THREADS"]=str(parserObject.jobs)
-        print([parserObject.cgmerge, parserObject.output] + createdIPCGs)
-        subprocess.run([parserObject.cgmerge, parserObject.output] + createdIPCGs,stdout=outStream,stderr=errStream, env=environment)
+        print([parserObject.cgmerge, parserObject.output] + createdMGCs)
+        subprocess.run([parserObject.cgmerge, parserObject.output] + createdMGCs,stdout=outStream,stderr=errStream, env=environment)
 
 
 if __name__ == '__main__':
