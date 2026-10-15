@@ -178,7 +178,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
           if (auto md = metacg::MetaData::create<>(mdKey, mdValJ, strToNode); md) {
             cg->addEdgeMetaData({nodeData.nodeId, calleeNode->getId()}, std::move(md));
           } else {
-            if (MetaDataFactory<>::isRegistered(mdKey)) {
+            if (MetaData::isRegistered(mdKey)) {
               errConsole->warn("Could not create edge metadata of type {} for edge {} to {}", mdKey, nodeData.nodeId,
                                 calleeNode->getId());
             }
@@ -196,7 +196,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
       if (auto md = metacg::MetaData::create<>(mdKey, mdVal, strToNode); md) {
         node->addMetaData(std::move(md));
       } else {
-        if (MetaDataFactory<>::isRegistered(mdKey)) {
+        if (MetaData::isRegistered(mdKey)) {
           errConsole->warn("Could not create metadata of type {} for node {}", mdKey, node->getFunctionName());
         }
         if (failedMetadataCb) {
@@ -214,7 +214,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
     if (auto md = metacg::MetaData::create<>(mdKey, mdValJ, strToNode); md) {
       cg->addMetaData(std::move(md));
     } else {
-      if (MetaDataFactory<>::isRegistered(mdKey)) {
+      if (MetaData::isRegistered(mdKey)) {
         errConsole->warn("Could not create global metadata of type {}", mdKey);
       }
       if (failedMetadataCb) {
