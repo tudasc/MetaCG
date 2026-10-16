@@ -148,11 +148,115 @@ class Callgraph : public MetadataMixin {
    *    After this step, node references in the edges and metadata are invalid and need to be updated.
    * 3. New edges from the source graph are inserted, using the updated node IDs.
    * 4. Metadata is merged, taking into account the change of node IDs and the performed merge actions.
+   * 5. Post Processing Task is run on merged call graph
    *
    * @param other The call graph to merge.
    * @param policy The merge policy.
    */
-  MergeRecorder merge(const Callgraph& other, const MergePolicy& policy);
+  template <typename... PostProcessingTasks>
+  MergeRecorder merge(const metacg::Callgraph& other, const metacg::MergePolicy& policy,
+                                 PostProcessingTasks... tasks) {
+    // Records performed merge actions to enable properly updating node references (in edges and metadata).
+    MergeRecorder recorder;
+
+    // Step 1 & 2: iterate over all nodes, determine actions according to the policy, and merge the nodes into this
+    // graph.
+    for (auto& node : other.nodes) {
+      auto match = policy.findMatchingNode(*this, *node);
+      if (match) {
+        auto& action = match.value();
+        auto targetNode = this->getNode(action.targetNode);
+        assert(targetNode && "Target node must not be null");
+        // Perform the merge
+        if (action.replace) {
+          // Replace the core attributes with those from the source node.
+          targetNode->setFunctionName(node->getFunctionName());
+          targetNode->setHasBody(node->getHasBody());
+          targetNode->setOrigin(node->getOrigin());
+        } else {
+          // Nothing to be done - we keep the target node.
+        }
+        // Record the action
+        recorder.recordMerge(node->getId(), action);
+      } else {
+        // Creating a new node (ignoring edges and metadata for now).
+        // Setting isVirtual to false initially, as metadata is copied over later anyway.
+        auto& targetNode = this->insert(node->getFunctionName(), node->getOrigin(), false, node->hasBody);
+        recorder.recordCopy(node->getId(), targetNode.getId());
+      }
+    }
+
+    // IDs are finalized at this point, retrieve the mapping.
+    auto& mapping = recorder.getMapping();
+
+    // Step 3: Update edges. This involves inserting edges from the source graph and mapping them to the correct node
+    // IDs.
+    //         Note that there is no need to update existing nodes in the destination graph, as the IDs remain
+    //         unchanged.
+    for (auto& edge : other.getEdges()) {
+      auto& sourceIds = edge.first;
+      assert(mapping.count(sourceIds.first) == 1 && mapping.count(sourceIds.second) == 1 &&
+             "All nodes have to be recorded at this point");
+      auto mappedCallerId = mapping.at(sourceIds.first);
+      auto mappedCalleeId = mapping.at(sourceIds.second);
+      if (!this->existsEdge(mappedCallerId, mappedCalleeId)) {
+        // Edge does not yet exist -> insert
+        this->addEdge(mappedCallerId, mappedCalleeId);
+      }
+      // Merge edge metadata
+      for (auto& edgeMd : other.getAllEdgeMetaData(edge.first)) {
+        // Check if this metadata already exists
+        if (auto* md = this->getEdgeMetaData({mappedCallerId, mappedCalleeId}, edgeMd.first); md) {
+          auto action = recorder.getAction(sourceIds.first);
+          assert(action && "Metadata should not exists without a merge action");
+          md->merge(*edgeMd.second, *action, mapping);
+        } else {
+          auto clonedMd = edgeMd.second->clone();
+          clonedMd->applyMapping(mapping);
+          this->addEdgeMetaData({mappedCallerId, mappedCalleeId}, std::move(clonedMd));
+        }
+      }
+    }
+
+    // Step 4: Copy or merge node metadata as needed.
+    for (auto& node : other.nodes) {
+      assert(mapping.count(node->getId()) == 1 && "All nodes have to be recorded at this point");
+      auto mappedNodeId = mapping.at(node->getId());
+      auto targetNode = this->getNode(mappedNodeId);
+      assert(targetNode && "Mapped node ID must be valid");
+
+      for (auto& md : node->getMetaDataContainer()) {
+        if (targetNode->has(md.first)) {
+          auto action = recorder.getAction(node->getId());
+          assert(action && "Metadata must not exist without previous merge action");
+          targetNode->get(md.first)->merge(*(md.second), *action, mapping);
+        } else {
+          auto clonedMd = md.second->clone();
+          clonedMd->applyMapping(mapping);
+          targetNode->addMetaData(std::move(clonedMd));
+        }
+      }
+    }
+
+    // Step 5: merge global metadata
+    for (auto& md : other.getMetaDataContainer()) {
+      auto* existingMd = this->get(md.first);
+      if (existingMd) {
+        existingMd->merge(*(md.second), std::nullopt, mapping);
+      } else {
+        auto clonedMd = md.second->clone();
+        clonedMd->applyMapping(mapping);
+        this->addMetaData(std::move(clonedMd));
+      }
+    }
+
+    // Reset cached main function because this may have changed.
+    mainNode = nullptr;
+
+    // Step 6: Call post processing tasks
+    (tasks(this), ...);
+    return recorder;
+  }
 
   /**
    * Clears the graph to an empty graph with no main node.
