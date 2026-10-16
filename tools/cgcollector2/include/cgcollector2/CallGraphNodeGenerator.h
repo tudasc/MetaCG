@@ -10,6 +10,7 @@
 #include <clang/AST/Decl.h>
 #include <clang/AST/Expr.h>
 #include <clang/AST/RecursiveASTVisitor.h>
+#include <clang/Sema/Sema.h>
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/GraphTraits.h>
 #include <llvm/ADT/STLExtras.h>
@@ -32,21 +33,22 @@
 class CallGraphNodeGenerator : public clang::RecursiveASTVisitor<CallGraphNodeGenerator> {
  public:
   CallGraphNodeGenerator(metacg::Callgraph* cg, bool captureCtorDtor, bool captureNewDelete, bool captureImplicits,
-                         bool inferCtorsDtors, bool standalone, AliasAnalysisLevel level)
+                         bool inferCtorsDtors, bool standalone, AliasAnalysisLevel level, clang::Sema* sema = nullptr)
       : callgraph(cg),
         captureCtorsDtors(captureCtorDtor),
         captureNewDelete(captureNewDelete),
         captureImplicits(captureImplicits),
         inferCtorsDtors(inferCtorsDtors),
         standalone(standalone),
-        level(level){};
+        level(level),
+        sema(sema){};
 
   CallGraphNodeGenerator() = delete;
 
   ~CallGraphNodeGenerator() = default;
 
   /// As we can not get the parent function from a call expr (and we need it, because parent calls child)
-  /// we use this to remember the parent function while we traverse the its body
+  /// we use this to remember the parent function while we traverse its body
   bool TraverseFunctionDecl(clang::FunctionDecl* D);
 
   bool TraverseCXXMethodDecl(clang::CXXMethodDecl* MD);
@@ -58,6 +60,10 @@ class CallGraphNodeGenerator : public clang::RecursiveASTVisitor<CallGraphNodeGe
   bool TraverseCXXConstructorDecl(clang::CXXConstructorDecl* D);
 
   bool TraverseCXXDestructorDecl(clang::CXXDestructorDecl* D);
+
+  /// We need to overwrite TraverseStmt in case we find a CallExpr to a left over uninstantiated template part
+  /// As there is no TraverseExpr this is the cleanest way
+  bool TraverseStmt(clang::Stmt* S, DataRecursionQueue* Queue = nullptr);
 
   bool VisitFunctionDecl(clang::FunctionDecl* FD);
 
@@ -92,8 +98,12 @@ class CallGraphNodeGenerator : public clang::RecursiveASTVisitor<CallGraphNodeGe
 
   void addPointerMetadataFromPrototype(const clang::FunctionProtoType* protoType);
 
+  /// Substitutes the template arguments of topLevelFD into an expression clang left uninstantiated and traverses the
+  /// result, so calls inside it point to the instantiated callees.
+  bool traverseUninstantiatedExpr(clang::Expr* E);
+
   /// Determine if a declaration should be included in the graph.
-  bool shouldIncludeFunction(const clang::Decl* D);
+  bool shouldIncludeFunction(const clang::Decl* D) const;
 
   metacg::Callgraph* callgraph;
   bool captureCtorsDtors{false};
@@ -103,9 +113,10 @@ class CallGraphNodeGenerator : public clang::RecursiveASTVisitor<CallGraphNodeGe
   bool standalone{false};
   AliasAnalysisLevel level = No;
   std::unordered_set<void*> traversedTemplates{};
+  clang::Sema* sema = nullptr;
 
   /// The Edge Gen Variables
-  clang::NamedDecl* topLevelFD = nullptr;
+  clang::FunctionDecl* topLevelFD = nullptr;
 
   clang::QualType getFinalPointee(clang::QualType pointerType);
 };
