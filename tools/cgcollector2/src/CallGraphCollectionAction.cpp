@@ -34,7 +34,7 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
   mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
   auto callgraph = mcgm.getCallgraph();
   CallGraphNodeGenerator graphGenerator(callgraph, captureCtorsDtors, captureNewDeleteCalls, captureImplicits,
-                                        inferCtorsDtors, standalone, level);
+                                        inferCtorsDtors, standalone, level, sema);
 
   graphGenerator.TraverseDecl(Context.getTranslationUnitDecl());
 
@@ -91,6 +91,7 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
   metacg::io::JsonSink js;
   mcgWriter->write(callgraph, js);
   std::string filename;
+
   if (cgout.empty()) {
     auto& sm = Context.getSourceManager();
     filename = sm.getFileEntryRefForID(sm.getMainFileID())->getName().str();
@@ -105,7 +106,8 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
     nlohmann::json newJ = js.getJson();
     // Fixme: implement deletion of nodes in metacg, it is ridiculous to do this on strings
     for (auto iter = newJ.at("_CG").begin(); iter != newJ.at("_CG").end();) {
-      if (iter.value().at("hasBody") == false && iter.value().at("callers").empty()) {
+      //We need to check for callees as well, as bodiless functions can still have calls
+      if (iter.value().at("hasBody") == false && iter.value().at("callers").empty() && iter.value().at("callees").empty()) {
         metacg::MCGLogger::instance().getConsole()->trace("Pruning: {}", iter.key());
         newJ.at("_CG").erase(iter++);
       } else {

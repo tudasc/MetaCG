@@ -17,11 +17,15 @@
 #include <clang/AST/Mangle.h>
 #include <clang/Basic/IdentifierTable.h>
 #include <clang/Basic/LLVM.h>
+#include <clang/Sema/Template.h>
 #include <llvm/Support/Casting.h>
 #include <llvm/Support/Compiler.h>
 #include <llvm/Support/GraphWriter.h>
 #if LLVM_VERSION_MAJOR > 10
 #include <clang/AST/ParentMapContext.h>
+#endif
+#if LLVM_VERSION_MAJOR >= 18
+#include <clang/Sema/EnterExpressionEvaluationContext.h>
 #endif
 
 #include <cassert>
@@ -110,25 +114,34 @@ bool CallGraphNodeGenerator::TraverseCXXDestructorDecl(clang::CXXDestructorDecl*
 }
 
 bool CallGraphNodeGenerator::TraverseFunctionTemplateDecl(clang::FunctionTemplateDecl* D) {
-  metacg::MCGLogger::instance().getConsole()->trace("{} {}", __FUNCTION__, (void*)D);
-  // In case the FunctionTemplateDecl is a CXXMemberFunctionTemplateDecl we expect them to be available
 
-  for (const clang::FunctionDecl* const f : D->specializations()) {
+  metacg::MCGLogger::instance().getConsole()->trace("{} {}", __FUNCTION__, (void*)D);
+  // We do not traverse the uninstantiated function template description, but only their specializations, so calls
+  // inside them get attributed to the instantiated function. Uninstantiated templates therefore do not show up at all
+  for (clang::FunctionDecl* const f : D->specializations()) {
+    if (f->getTemplateSpecializationKind() == clang::TSK_ExplicitSpecialization) {
+      continue;  // Explicit specializations are regular decls in their decl context and are traversed from there
+    }
     if (!shouldIncludeFunction(f)) {
-      // ignoring
       continue;
     }
-    addNode(f);
+    if (traversedTemplates.find(f) == traversedTemplates.end()) {
+      traversedTemplates.insert(f);  // Stop infinite recursion
+      // Dispatches to TraverseFunctionDecl / TraverseCXXMethodDecl / ..., which add the node and set topLevelFD
+      if (!TraverseDecl(f)) {
+        return false;
+      }
+    }
   }
 
-  // We abort traversal of the template-class after traversing all specialisations
-  // I don't think an uninstantiated template-class has any information left after this
+  // We abort traversal of the template-function after traversing all specializations
+  // I don't think an uninstantiated template-function has any information left after this
   return true;  // high cuts: RecursiveASTVisitor::TraverseFunctionTemplateDecl(D);
 }
 
 bool CallGraphNodeGenerator::TraverseClassTemplateDecl(clang::ClassTemplateDecl* D) {
   metacg::MCGLogger::instance().getConsole()->trace("{} {}", __FUNCTION__, (void*)D);
-  // We do not traverse the uninstantiated class template description, but only their specialisations
+  // We do not traverse the uninstantiated class template description, but only their specializations
   for (clang::ClassTemplateSpecializationDecl* const c : D->specializations()) {
     if (isa<clang::ClassTemplatePartialSpecializationDecl>(c)) {
       continue;  // Don't traverse partially specialized templates ?
@@ -138,12 +151,120 @@ bool CallGraphNodeGenerator::TraverseClassTemplateDecl(clang::ClassTemplateDecl*
       RecursiveASTVisitor::TraverseCXXRecordDecl(c);
     }
   }
-  // We abort traversal of the template-class after traversing all specialisations
+  // We abort traversal of the template-class after traversing all specializations
   // I don't think an uninstantiated template-class has any information left after this
   return true;  // high cuts: RecursiveASTVisitor::TraverseClassTemplateDecl(D);
 }
 
-bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) {
+bool CallGraphNodeGenerator::TraverseStmt(clang::Stmt* S, DataRecursionQueue* Queue) {
+  // If we find any expression, that is inside a function but not fully instantiated, we need to resolve it with Sema
+  if (auto* E = dyn_cast_or_null<Expr>(S); E && topLevelFD && E->isInstantiationDependent()) {
+    // As we traverse top-down, E is the root of this uninstantiated part.
+    // Resolve it against the template arguments of topLevelFD.
+    return traverseUninstantiatedExpr(E);
+  }
+  return RecursiveASTVisitor::TraverseStmt(S, Queue);
+}
+
+#if LLVM_VERSION_MAJOR >= 18
+// Simplified version of the private Sema::addInstantiatedParametersToScope: Maps the parameters of the pattern to the
+// ones of the instantiation, so references to them can be substituted.
+// Returns false if the parameters of the instantiation do not line up with the ones of the pattern.
+static bool addInstantiatedParametersToScope(Sema& sema, FunctionDecl* function, const FunctionDecl* pattern,
+                                             const MultiLevelTemplateArgumentList& templateArgs,
+                                             LocalInstantiationScope& scope) {
+  const unsigned numPatternParams = pattern->getNumParams();
+  const unsigned numParams = function->getNumParams();
+  unsigned paramIdx = 0;
+
+  for (unsigned patternParamIdx = 0; patternParamIdx < numPatternParams; ++patternParamIdx) {
+    const ParmVarDecl* patternParam = pattern->getParamDecl(patternParamIdx);
+    if (!patternParam->isParameterPack()) {
+      if (paramIdx >= numParams) {
+        return false;
+      }
+      scope.InstantiatedLocal(patternParam, function->getParamDecl(paramIdx++));
+      continue;
+    }
+
+    // Ask Sema how many arguments the pack expands to for these template arguments, so multiple packs work as well
+    const auto packSize = sema.getNumArgumentsInExpansion(patternParam->getType(), templateArgs);
+    if (!packSize || numParams - paramIdx < *packSize) {
+      return false;
+    }
+    scope.MakeInstantiatedLocalArgPack(patternParam);
+    for (const unsigned packEnd = paramIdx + *packSize; paramIdx < packEnd; ++paramIdx) {
+      scope.InstantiatedLocalPackArg(patternParam, function->getParamDecl(paramIdx));
+    }
+  }
+  return paramIdx == numParams;
+}
+#endif
+
+bool CallGraphNodeGenerator::traverseUninstantiatedExpr(clang::Expr* E) {
+#if LLVM_VERSION_MAJOR >= 18
+
+  const FunctionDecl* pattern = topLevelFD->getTemplateInstantiationPattern(false);
+  if (!sema) {
+    SPDLOG_DEBUG("Sema is unavailable for this run");
+    return true;
+  }
+
+  if (!pattern) {
+    SPDLOG_DEBUG("Can not find original template description for {}. Left uninstantiated in expression {}, skipping it",
+                 topLevelFD->getNameAsString(), (void*)E);
+    return true;
+  }
+
+  // Collect the template initialization args
+  const MultiLevelTemplateArgumentList templateArgs = sema->getTemplateInstantiationArgs(
+      topLevelFD,  // D: decl we compute template args for
+      nullptr,     // DC: use topLevelFD's own decl context
+      false,       // Final: keep the type sugar of the substituted arguments
+      {},       // Innermost: no explicit innermost args, take them from topLevelFD's specialization info
+      true,        // RelativeToPrimary: compute the arguments relative to the primary template
+      nullptr,     // Pattern: let clang look up the template pattern of topLevelFD itself
+      true);       // ForConstraintInstantiation: also walk through generic lambdas and enclosing class templates
+
+  ExprResult substituted = ExprError();
+  // AFAICT one communicates with SEMA via RAII constructor-destructor states
+  {
+    //Save the old Sema context from the current topLevel FD
+    //This will be restored to the whatever scope we need once the stack object is destroyed
+    Sema::ContextRAII savedContext(*sema, topLevelFD);
+
+    //Set up the SEMA RAII constructs for the substituion
+    LocalInstantiationScope scope(*sema);
+    EnterExpressionEvaluationContext unevaluated(*sema, Sema::ExpressionEvaluationContext::Unevaluated);
+    Sema::InstantiatingTemplate inst(*sema, E->getBeginLoc(), topLevelFD);
+    Sema::SFINAETrap trap(*sema);
+
+    if (!inst.isInvalid() && addInstantiatedParametersToScope(*sema, topLevelFD, pattern, templateArgs, scope)) {
+      substituted = sema->SubstExpr(E, templateArgs);
+    }
+
+    if (substituted.isInvalid() || trap.hasErrorOccurred() || !substituted.get() ||
+        substituted.get()->isInstantiationDependent()) {
+      // The expression is ill-formed for these template arguments (e.g. an unsatisfied requirement), so it can not call
+      // anything
+      SPDLOG_DEBUG("Uninstantiated expression {} inside {} ({}) is not resolvable for its template arguments", (void*)E,
+                   topLevelFD->getNameAsString(), (void*)topLevelFD);
+      return true;
+    }
+  }
+
+  SPDLOG_DEBUG("Resolved uninstantiated expression {} inside {} ({}) to {}", (void*)E, topLevelFD->getNameAsString(),
+               (void*)topLevelFD, (void*)substituted.get());
+  //Continue traversing the fully substituted statement as normal
+  return RecursiveASTVisitor::TraverseStmt(substituted.get());
+#else
+  SPDLOG_DEBUG("Can not resolve uninstantiated expression {} inside {} ({}) with this LLVM version, skipping it",
+               (void*)E, topLevelFD->getNameAsString(), (void*)topLevelFD);
+  return true;
+#endif
+}
+
+bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) const {
   assert(D);
   // NOTE: It could make sense to check here that only FunctionDecls are included. Right now this function also returns
   // true for VarDecls/ParmVarDecls that are called because they contain a function pointer
@@ -212,6 +333,13 @@ bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
     return true;
   }
 
+  if (E->isInstantiationDependent()) {
+    // Usually resolved in TraverseStmt; if a substituted expression is still partly dependent
+    SPDLOG_DEBUG("Skipping uninstantiated call {} inside {} ({})", (void*)E, topLevelFD->getNameAsString(),
+                 (void*)topLevelFD);
+    return true;
+  }
+
   if (E->getDirectCallee() != nullptr) {
     metacg::MCGLogger::instance().getConsole()->debug("Handling direct call");
     const auto& directCallee = E->getDirectCallee();
@@ -256,16 +384,15 @@ bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
     // As primitives don't have a destructor this only looks like a call but is none
     return true;
   } else {
-    metacg::MCGLogger::logWarn("Wierd cases encountered!");
+    metacg::MCGLogger::logWarn("Found unsupported call expression construct");
     if (E->getCallee()->getType()->isDependentType()) {
       assert(E->getCallee()->getType()->isDependentType() == E->getCallee()->isTypeDependent());
       metacg::MCGLogger::logWarn(
           "When calling from {} ({}) to {}, the callee type is uninstantiated and is supposed to be resolved later."
-          "We do not handle this.",
+          "We should have handled this and this should not happen anymore.",
           topLevelFD->getNameAsString(), (void*)topLevelFD, (void*)E->getCallee());
       return true;
     }
-
     if (topLevelFD != nullptr) {
       metacg::MCGLogger::logWarn(
           "Totally unknown case for {} -> {}",
@@ -392,6 +519,15 @@ bool CallGraphNodeGenerator::VisitVarDecl(clang::VarDecl* VD) {
   }
 
   if (const clang::CXXRecordDecl* RD = VD->getType()->getAsCXXRecordDecl()) {
+    // TODO: Edges to trivial destructors are order dependent.
+    //  Sema declares an implicit destructor lazily, so getDestructor() only returns it
+    //  if something else in the TU needed it (e.g. a temporary of the same type).
+    //  `C c;` alone yields no destructor edge, `C c; C{}.f();` does.
+    //  Either skip trivial destructors RD->hasNonTrivialDestructor()
+    //  or force the declaration (Sema::LookupDestructor) to make this consistent.
+    //  The ground truth of the cxxRecordCalls tests :
+    //  0006, 0008, 0014, 0016, 0018 and allCtorDtor 0010
+    //  rely on the current wrong behavior.
     if (RD->hasDefinition()) {
       if (auto Dtor = RD->getDestructor()) {
         addEdge(Dtor);
