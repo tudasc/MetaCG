@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <vector>
 
 #include "metacg/LoggerUtil.h"
@@ -22,6 +23,10 @@
 #include "metacg/metadata/BuiltinMD.h"
 
 using namespace metacg;
+
+// TODO: Let user set merge policy
+#pragma omp declare reduction(cgmerge : std::unique_ptr<Callgraph> : omp_out->merge(*omp_in, MergeByName())) \
+    initializer(omp_priv = std::make_unique<Callgraph>())
 
 int main(int argc, char** argv) {
   auto console = MCGLogger::instance().getConsole();
@@ -59,7 +64,10 @@ int main(int argc, char** argv) {
   auto& mcgManager = graph::MCGManager::get();
   mcgManager.resetManager();
 
-  #pragma omp parallel for schedule(dynamic)
+  // Every thread merges its input graphs into a private, initially empty graph; OpenMP then combines the private graphs.
+  auto mergedCg = std::make_unique<Callgraph>();
+
+  #pragma omp parallel for schedule(dynamic) reduction(cgmerge : mergedCg)
   for (auto& inFile : inputFiles) {
     io::FileSource fs(inFile);
     if (fs.get().is_null()) {
@@ -77,44 +85,10 @@ int main(int argc, char** argv) {
       exit(EXIT_FAILURE);
     }
     auto cg = mcgReader->read();
-    #pragma omp critical
-    mcgManager.addToManagedGraphs(inFile,std::move(cg));
+    mergedCg->merge(*cg, MergeByName());
   }
 
-  if (mcgManager.graphs_size() == 0) {
-    errConsole->error("No valid input graphs to merge");
-    return EXIT_FAILURE;
-  }
-
-  // TODO: Let user set merge policy
-#ifdef _OPENMP
-  // Get all graph pointers via all graph names
-  auto nameSet = mcgManager.getAllManagedGraphNames();
-  std::vector<std::string> graphNames(nameSet.begin(), nameSet.end());
-  std::vector<Callgraph*> graphs;
-  graphs.reserve(graphNames.size());
-  for (const auto& name : graphNames) {
-    graphs.push_back(mcgManager.getCallgraph(name));
-  }
-
-  // Binary-tree merge: at each level, graph i+stride is merged into i.
-  const MergeByName policy;
-  const long numGraphs = static_cast<long>(graphs.size());
-  for (long stride = 1; stride < numGraphs; stride *= 2) {
-    #pragma omp parallel for schedule(dynamic)
-    for (long i = 0; i < numGraphs - stride; i += 2 * stride) {
-      graphs[i]->merge(*graphs[i + stride], policy);
-      graphs[i + stride]->clear();  // release memory of the absorbed graph early
-    }
-  }
-
-  // The tree root holds the fully merged graph
-  mcgManager.setActive(graphNames.front());
-#else
-  // Without OpenMP, sequentially merge all graphs into the active graph
-  mcgManager.mergeAllIntoActiveGraph(MergeByName());
-#endif
-
+  mcgManager.addToManagedGraphs("merged", std::move(mergedCg), true);
 
   auto mcgWriter = io::createWriter(mcgVersion);
   if (!mcgWriter) {
