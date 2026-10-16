@@ -12,11 +12,9 @@
 #include "cgcollector2/metadata/Internal/AllAliasMetadata.h"
 #include "cgcollector2/metadata/Internal/FunctionSignatureMetadata.h"
 #include "metacg/LoggerUtil.h"
-#include "metacg/MCGBaseInfo.h"
 
 #include "metacg/MCGManager.h"
-#include "metacg/io/VersionFourMCGWriter.h"
-#include "metacg/io/VersionTwoMCGWriter.h"
+#include "metacg/io/MCGWriter.h"
 
 #include "clang/AST/ASTDumper.h"
 
@@ -28,7 +26,6 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
   Context.getTranslationUnitDecl()->dump(llvmStringOstream);
   metacg::MCGLogger::instance().getConsole()->trace("\n{}\n", dumpString);
 
-  // Todo: maybe use multigraph managing and write only after all files have been processed
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
@@ -44,7 +41,7 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
     addOverestimationEdges(callgraph);
   }
 
-  metacg::MCGLogger::logInfo("Sucessfully Created Callgraph");
+  metacg::MCGLogger::logInfo("Successfully Created Callgraph");
   metacg::MCGLogger::logInfo("Running Metadata Collectors");
   for (auto& c : mcs) {
     metacg::MCGLogger::instance().getConsole()->debug("Running: {}", c->getPluginName());
@@ -62,59 +59,28 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
     c->computeForGraph(callgraph);
   }
 
-  std::unique_ptr<metacg::io::MCGWriter> mcgWriter;
-
-  switch (mcgVersion) {
-    case 1:
-      metacg::MCGLogger::logWarn("This tool can not generate output files in the V1 format, using V2 instead");
-      __attribute__((fallthrough));
-    case 2:
-      mcgWriter = std::make_unique<metacg::io::VersionTwoMCGWriter>(metacg::MCGFileInfo(
-          {2, 0},
-          {std::string("CGCollector2"), MetaCG_VERSION_MAJOR, MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}));
-      break;
-    case 3:
-      metacg::MCGLogger::logWarn("V3 format was removed and is currently not supported, using V4 instead");
-      __attribute__((fallthrough));
-    case 4:
-      mcgWriter = std::make_unique<metacg::io::VersionFourMCGWriter>(metacg::MCGFileInfo(
-          {4, 0},
-          {std::string("CGCollector2"), MetaCG_VERSION_MAJOR, MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}));
-      break;
-    default:
-      assert(false && "The selected output format is not recognized");
-      metacg::MCGLogger::logWarn("The selected output format {} is not recognized. Using default format (V2) instead",
-                                 mcgVersion);
-      mcgWriter = std::make_unique<metacg::io::VersionTwoMCGWriter>();
+  if (prune) {
+    metacg::MCGLogger::logInfo("Pruning callgraph");
+    for (const auto& node : callgraph->getNodes()) {
+      //Nodes without a body can have callers, so check for all three
+      if (!node->getHasBody() && callgraph->getCallees(node->getId()).empty() && callgraph->getCallers(node->getId()).empty()) {
+        callgraph->erase(node->getId());
+      }
+    }
   }
 
+  std::unique_ptr<metacg::io::MCGWriter> mcgWriter = metacg::io::createWriter(mcgVersion);
   metacg::io::JsonSink js;
   mcgWriter->write(callgraph, js);
   std::string filename;
   if (cgout.empty()) {
     auto& sm = Context.getSourceManager();
     filename = sm.getFileEntryRefForID(sm.getMainFileID())->getName().str();
-    filename = filename.substr(0, filename.find_last_of('.')) + ".ipcg";
+    filename = filename.substr(0, filename.find_last_of('.')) + ".mcg";
   } else {
     filename = cgout;
   }
   std::ofstream file(filename);
-  if (prune) {
-    metacg::MCGLogger::logInfo("Pruning callgraph");
-    // Fixme: may be a very expensive copy;
-    nlohmann::json newJ = js.getJson();
-    // Fixme: implement deletion of nodes in metacg, it is ridiculous to do this on strings
-    for (auto iter = newJ.at("_CG").begin(); iter != newJ.at("_CG").end();) {
-      if (iter.value().at("hasBody") == false && iter.value().at("callers").empty()) {
-        metacg::MCGLogger::instance().getConsole()->trace("Pruning: {}", iter.key());
-        newJ.at("_CG").erase(iter++);
-      } else {
-        ++iter;
-      }
-    }
-    js.setJson(newJ);
-  }
-
   metacg::MCGLogger::logInfo("Writing to file: {}", filename);
   file << js.getJson() << std::endl;
 }
@@ -138,7 +104,7 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
 
   // This makes it so a potential function: foo(int (*funcptr)());
   // will potentially call all functions with the signature int (void)
-  // This is behaviour that was implemented in the classic cgcollector
+  // This is behavior that was implemented in the classic cgcollector
   metacg::MCGLogger::logInfo("Overestimate parameter function pointers from body-less functions");
   for (auto& node : callgraph->getNodes()) {
     // if the node has no body, we need to estimate potential callers via its parameters
