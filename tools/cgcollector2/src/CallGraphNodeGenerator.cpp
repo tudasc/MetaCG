@@ -502,8 +502,8 @@ void CallGraphNodeGenerator::addOverestimationData(clang::Decl* nonDirectCallee)
 
 void CallGraphNodeGenerator::addPointerMetadataFromPrototype(const clang::FunctionProtoType* protoType) {
   for (const auto& possibleName : getMangledNames(topLevelFD)) {
-    assert(callgraph->getNodes(possibleName).size() == 1 && "We currently only handle name-unique nodes");
-    auto anyNodeID = callgraph->getNodes(possibleName)[0];
+    assert(callgraph->getAllNodesWithName(possibleName).size() == 1 && "We currently only handle name-unique nodes");
+    auto anyNodeID = callgraph->getAllNodesWithName(possibleName)[0];
     auto& md = callgraph->getNode(anyNodeID)->getOrCreate<AllAliasMetadata>(!standalone);
     FunctionSignature functionSignature;
     functionSignature.retType = protoType->getReturnType().getAsString();

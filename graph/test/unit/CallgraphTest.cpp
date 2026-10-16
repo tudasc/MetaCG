@@ -187,7 +187,7 @@ TEST(Callgraph, singleEdgeMultiNode) {
   // Graph holds two nodes with the same name, no insertion
   EXPECT_FALSE(cg.addEdge(n1Name, n1Name));
 
-  auto nodes = cg.getNodes(n1Name);
+  auto nodes = cg.getAllNodesWithName(n1Name);
   // For individual nodes with name n1Name, add an edge, and remove it again
   // to see if the behavior matches
   for (const auto n : nodes) {
