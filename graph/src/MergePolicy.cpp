@@ -11,7 +11,7 @@
 namespace metacg {
 
 std::optional<MergeAction> MergeByName::findMatchingNode(const Callgraph& targetCG, const CgNode& sourceNode) const {
-  auto& nameMatches = targetCG.getNodes(sourceNode.getFunctionName());
+  auto& nameMatches = targetCG.getAllNodesWithName(sourceNode.getFunctionName());
   if (nameMatches.empty()) {
     // There is no matching node: simply copy the source node into the target graph
     return {};
