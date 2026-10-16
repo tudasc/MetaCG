@@ -43,24 +43,9 @@ add_executable(
 )
 default_compile_options(cgcollector2)
 
-# set log level using -DLOG_LEVEL="INFO"|"DEBUG", defaults to "INFO"
-set(LOG_LEVEL
-    "INFO"
-    CACHE STRING ""
-)
-message(STATUS LOG_LEVEL=${LOG_LEVEL})
-string(TOUPPER ${LOG_LEVEL} LOG_LEVEL_LOWER)
-target_compile_definitions(
-  cgcollector2
-  PRIVATE COMPILETIME_LOG_LEVEL=SPDLOG_LEVEL_${LOG_LEVEL}
-          SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_${LOG_LEVEL}
-          RUNTIME_LOG_LEVEL=spdlog::level::${LOG_LEVEL_LOWER}
-)
-
 add_clang(cgcollector2)
 target_include_directories(cgcollector2 PUBLIC include)
 add_metacg(cgcollector2)
-add_spdlog_libraries(cgcollector2)
 add_json(cgcollector2)
 
 install(

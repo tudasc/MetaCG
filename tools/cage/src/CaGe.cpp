@@ -94,7 +94,7 @@ PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
 
   // Load external plugins
   for (const auto& pluginPath : pluginPaths) {
-    SPDLOG_INFO("Loading external plugin from: {}", pluginPath);
+    metacg::MCGLogger::logInfo("Loading external plugin from: {}", pluginPath);
     if (auto p = std::unique_ptr<Plugin>(loadPlugin(pluginPath))) {
       gen.addPlugin(std::move(p));
     }
