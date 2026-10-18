@@ -5,7 +5,9 @@
  */
 
 #include "ParseTreeVisitor.h"
+#include "Edge.h"
 #include "FortranUtil.h"
+#include "metacg/LoggerUtil.h"
 #include <flang/Parser/parse-tree.h>
 #include <flang/Semantics/symbol.h>
 
@@ -53,9 +55,8 @@ void ParseTreeVisitor::handleEndFuncSubStmt() {
 void ParseTreeVisitor::postProcess() {
   // handle potential finalizers from procedure calls
   for (PotentialFinalizer pf : potentialFinalizers) {
-    auto calledIt = std::find_if(procedures.begin(), procedures.end(), [&](const Procedure& f) {
-      return mangleSymbol(f.symbol, underscoring) == pf.procedureCalled;
-    });
+    auto calledIt = std::find_if(procedures.begin(), procedures.end(),
+                                 [&](const Procedure& p) { return pf.isInProceduresCalled(p.symbol); });
     if (calledIt == procedures.end())
       continue;
 
@@ -342,7 +343,15 @@ void ParseTreeVisitor::Post(const Call& c) {
 
       MCGLogger::logDebug("Add potential finalizers for var: {} ({}) ({})", name->symbol->name(),
                           getDetailsName(name->symbol), fmt::ptr(name->symbol));
-      PotentialFinalizer& pf = potentialFinalizers.emplace_back(argPos, mangleSymbol(procName->symbol, underscoring));
+      std::vector<const Symbol*> calledProcedures;
+      if (const auto* gen = procName->symbol->detailsIf<Fortran::semantics::GenericDetails>()) {
+        for (const auto& specificProc : gen->specificProcs()) {
+          calledProcedures.emplace_back(&specificProc.get());
+        }
+      } else {
+        calledProcedures.emplace_back(procName->symbol);
+      }
+      PotentialFinalizer& pf = potentialFinalizers.emplace_back(argPos, calledProcedures);
       auto baseTypeIt = std::find_if(types.begin(), types.end(), [&](const Type& t) {
         return compareSymbols(t.typeSymbol, name->symbol, CanonicalMode::ByType);
       });
@@ -352,10 +361,11 @@ void ParseTreeVisitor::Post(const Call& c) {
       try {
         auto final = finalizers.at(getAbsoluteBaseSymbol(types, &(*baseTypeIt)));
         for (const Symbol* f : final) {
-          pf.addFinalizerEdge({mangleSymbol(currentProcedureSymbol, underscoring), mangleSymbol(f, underscoring)});
+          pf.addFinalizerEdge({currentProcedureSymbol, f});
           MCGLogger::logDebug("  Potential finalizer edge: {} ({}) -> {} ({})",
                               mangleSymbol(currentProcedureSymbol, underscoring),
-                              getDetailsName(currentProcedureSymbol), mangleSymbol(f, underscoring), getDetailsName(f));
+                              getDetailsName(currentProcedureSymbol),
+                              mangleSymbol(canonicalizeSymbol(f).symbol, underscoring), getDetailsName(f));
         }
       } catch (const std::out_of_range& e) {
         // no finalizer for this type, do nothing

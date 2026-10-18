@@ -5,6 +5,7 @@
  */
 
 #include "FortranUtil.h"
+#include "metacg/LoggerUtil.h"
 
 #include <flang/Semantics/symbol.h>
 
@@ -91,7 +92,7 @@ CanonicalSymbol canonicalizeSymbol(const Symbol* input, CanonicalMode mode) {
       // versions 18 and before, the constructor would shadow the derived type symbol, leading that type beging lost in
       // the process. In LLVM 19, this limitation is fixed, meaning constructors and derived types can better
       // differentiated. We keep this for backwards compatibility.
-      if (sub->isFunction()) {
+      if (mode == CanonicalMode::ByType && sub->isFunction()) {
         const Symbol& resultSym = sub->result();
         if (const auto* typeSym = getTypeAsDerivedTypeSymbol(&resultSym)) {
           sym = typeSym;
@@ -135,6 +136,19 @@ bool compareSymbols(const Symbol* a, const Symbol* b, CanonicalMode mode) {
 
 std::string mangleSymbol(const Symbol* sym, bool underscoring) {
   assert(sym && "mangleSymbol called with nullptr");
+
+  if (const auto* gen = sym->detailsIf<Fortran::semantics::GenericDetails>()) {
+    MCGLogger::logWarn("mangleSymbol called with GenericDetails symbol: {} ({}) ({})", sym->name(), getDetailsName(sym),
+                       fmt::ptr(sym));
+
+    // using the first specific procedure for mangling.
+    if (!gen->specificProcs().empty()) {
+      const Symbol* specificProc = &gen->specificProcs().front().get();
+      MCGLogger::logWarn("Using first specific procedure for mangling: {} ({}) ({})", specificProc->name(),
+                         getDetailsName(specificProc), fmt::ptr(specificProc));
+      sym = specificProc;
+    }
+  }
 
   std::string mangledName = Fortran::lower::mangle::mangleName(*sym);
 
