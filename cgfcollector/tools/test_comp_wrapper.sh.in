@@ -172,6 +172,32 @@ EOF
     return 0
 }
 
+function test_plugin_flags_not_forwarded()
+{
+    cat >fake_flang.sh <<'EOF'
+#!/usr/bin/env bash
+printf '%s\n' "$@" >"$PWD/forwarded_args.txt"
+EOF
+    chmod +x fake_flang.sh
+
+    "$COMP_WRAPPER" "$PWD/fake_flang.sh" --dot --verbose --include-intrinsics -o test test.f90 || {
+        echo "Failed: wrapper returned an error"
+        return 1
+    }
+
+    if grep -qE '^(--dot|--verbose|--include-intrinsics)$' forwarded_args.txt; then
+        echo "Failed: plugin-only flags were forwarded to the compiler"
+        cat forwarded_args.txt
+        return 1
+    fi
+
+    grep -qx -- '-o' forwarded_args.txt && grep -qx 'test.f90' forwarded_args.txt || {
+        echo "Failed: regular compile args were dropped"
+        return 1
+    }
+    return 0
+}
+
 # execute all tests
 test_cases=(
     "with_test_setup test_normal_compilation"
@@ -180,6 +206,7 @@ test_cases=(
     "with_test_setup test_dot_gen_with_name"
     "with_test_setup test_verbose"
     "with_test_setup test_include_intrinsics"
+    "with_test_setup test_plugin_flags_not_forwarded"
 )
 test_cases_count=${#test_cases[@]}
 
