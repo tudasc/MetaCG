@@ -8,6 +8,7 @@
 
 #include "FortranUtil.h"
 #include "PotentialFinalizer.h"
+#include "metacg/LoggerUtil.h"
 
 using namespace Fortran::semantics;
 using namespace Fortran::parser;
@@ -37,24 +38,34 @@ void EdgeManager::addEdgesForFinalizers(
 }
 
 void EdgeManager::addEdgesForFinalizers(const PotentialFinalizer& e) {
-  for (const Edge& edge : e.finalizerEdges) {
-    addEdge(edge);
-    MCGLogger::logDebug("Add edge for finalizer: {} -> {}", edge.caller, edge.callee);
+  for (const EdgeSymbol& edgeSym : e.finalizerEdges) {
+    auto callee = canonicalizeSymbol(edgeSym.callee).symbol;
+    addEdge(edgeSym.caller, callee);
+    MCGLogger::logDebug("Add edge for finalizer: {} -> {}", mangleSymbol(edgeSym.caller, underscoring),
+                        mangleSymbol(callee, underscoring));
   }
 }
 
-void EdgeManager::addEdge(const EdgeSymbol& e) {
-  edges.emplace_back(mangleSymbol(e.caller, underscoring), mangleSymbol(e.callee, underscoring));
-  MCGLogger::logDebug("Add edge: {} ({}) ({}) -> {} ({}) ({})", mangleSymbol(e.caller, underscoring),
-                      getDetailsName(e.caller), fmt::ptr(e.caller), mangleSymbol(e.callee, underscoring),
-                      getDetailsName(e.callee), fmt::ptr(e.callee));
-}
+void EdgeManager::addEdge(const EdgeSymbol& e) { addEdge(e.caller, e.callee); }
 
 void EdgeManager::addEdge(const Symbol* caller, const Symbol* callee) {
-  edges.emplace_back(mangleSymbol(caller, underscoring), mangleSymbol(callee, underscoring));
-  MCGLogger::logDebug("Add edge: {} ({}) ({}) -> {} ({}) ({})", mangleSymbol(caller, underscoring),
-                      getDetailsName(caller), fmt::ptr(caller), mangleSymbol(callee, underscoring),
-                      getDetailsName(callee), fmt::ptr(callee));
+  if (const auto* gen = callee->detailsIf<Fortran::semantics::GenericDetails>()) {
+    for (const auto& specificProc : gen->specificProcs()) {
+      const Symbol* specificSymbol = &specificProc.get();
+      edges.emplace_back(mangleSymbol(caller, underscoring), mangleSymbol(specificSymbol, underscoring));
+      MCGLogger::logDebug("Add edge: {} ({}) ({}) -> {} ({}) ({})", mangleSymbol(caller, underscoring),
+                          getDetailsName(caller), fmt::ptr(caller), mangleSymbol(specificSymbol, underscoring),
+                          getDetailsName(specificSymbol), fmt::ptr(specificSymbol));
+    }
+  } else {
+    callee = canonicalizeSymbol(callee).symbol;
+    MCGLogger::logDebug("Add edge canonicalized: {} ({}) -> {} ({})", getDetailsName(caller), fmt::ptr(caller),
+                        getDetailsName(callee), fmt::ptr(callee));
+    edges.emplace_back(mangleSymbol(caller, underscoring), mangleSymbol(callee, underscoring));
+    MCGLogger::logDebug("Add edge: {} ({}) ({}) -> {} ({}) ({})", mangleSymbol(caller, underscoring),
+                        getDetailsName(caller), fmt::ptr(caller), mangleSymbol(callee, underscoring),
+                        getDetailsName(callee), fmt::ptr(callee));
+  }
 }
 
 void EdgeManager::addEdge(const Edge& e) {

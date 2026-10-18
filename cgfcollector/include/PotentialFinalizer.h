@@ -9,6 +9,7 @@
 
 #include "Edge.h"
 
+#include <flang/Semantics/symbol.h>
 #include <string>
 #include <vector>
 
@@ -16,13 +17,19 @@ namespace metacg::cgfcollector {
 
 struct PotentialFinalizer {
   std::size_t argPos;
-  std::string procedureCalled;
-  std::vector<Edge> finalizerEdges;
+  std::vector<const Fortran::semantics::Symbol*> proceduresCalled;
+  std::vector<EdgeSymbol> finalizerEdges;
 
-  explicit PotentialFinalizer(std::size_t pos, std::string procCalled)
-      : argPos(pos), procedureCalled(std::move(procCalled)) {}
+  explicit PotentialFinalizer(std::size_t pos, std::vector<const Fortran::semantics::Symbol*> procsCalled)
+      : argPos(pos), proceduresCalled(std::move(procsCalled)) {}
 
-  void addFinalizerEdge(const Edge& e) { finalizerEdges.emplace_back(e); }
+  void addFinalizerEdge(const EdgeSymbol& e) { finalizerEdges.emplace_back(e); }
+
+  bool isInProceduresCalled(const Fortran::semantics::Symbol* procedure) const {
+    return std::find_if(proceduresCalled.begin(), proceduresCalled.end(), [&](const Fortran::semantics::Symbol* p) {
+             return compareSymbols(p, procedure);
+           }) != proceduresCalled.end();
+  }
 };
 
 }  // namespace metacg::cgfcollector
