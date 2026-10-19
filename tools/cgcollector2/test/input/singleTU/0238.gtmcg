@@ -1,0 +1,108 @@
+{
+    "_CG": {
+        "_ZN1WI1NE5probeEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1WI1SE5probeEv": {
+            "callees": [
+                "_ZNK1S3barEv"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNK1S3barEv": {
+            "callees": [],
+            "callers": [
+                "_ZN1WI1SE5probeEv"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNK1S3fooEv": {
+            "callees": [],
+            "callers": [
+                "_ZNK1WI1SE3getEv"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNK1WI1NE3getEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNK1WI1SE3getEv": {
+            "callees": [
+                "_ZNK1S3fooEv"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_ZNK1WI1SE3getEv"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector2",
+            "sha": "5d7783dbde8f08e43b52dbc2640be7d614c8b75d",
+            "version": "1.0"
+        },
+        "version": "2.0"
+    }
+}

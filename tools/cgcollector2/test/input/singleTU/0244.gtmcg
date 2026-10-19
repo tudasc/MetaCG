@@ -1,0 +1,86 @@
+{
+    "_CG": {
+        "_Z4sinki": {
+            "callees": [],
+            "callers": [
+                "_Z5multiIJidEJEEvDpT_DpT0_i"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z5multiIJidEJEEvDpT_DpT0_i": {
+            "callees": [
+                "_Z4sinki",
+                "_Z5probed",
+                "_Z5probei"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z5probed": {
+            "callees": [],
+            "callers": [
+                "_Z5multiIJidEJEEvDpT_DpT0_i"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z5probei": {
+            "callees": [],
+            "callers": [
+                "_Z5multiIJidEJEEvDpT_DpT0_i"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z5multiIJidEJEEvDpT_DpT0_i"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector2",
+            "sha": "c1812a501ff986a6e6a03f206955f2d880cf153d",
+            "version": "1.0"
+        },
+        "version": "2.0"
+    }
+}
