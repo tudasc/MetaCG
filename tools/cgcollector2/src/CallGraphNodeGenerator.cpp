@@ -24,7 +24,7 @@
 #if LLVM_VERSION_MAJOR > 10
 #include <clang/AST/ParentMapContext.h>
 #endif
-#if LLVM_VERSION_MAJOR >= 18
+#if LLVM_VERSION_MAJOR >= 17
 #include <clang/Sema/EnterExpressionEvaluationContext.h>
 #endif
 
@@ -166,7 +166,7 @@ bool CallGraphNodeGenerator::TraverseStmt(clang::Stmt* S, DataRecursionQueue* Qu
   return RecursiveASTVisitor::TraverseStmt(S, Queue);
 }
 
-#if LLVM_VERSION_MAJOR >= 18
+#if LLVM_VERSION_MAJOR >= 15
 // Simplified version of the private Sema::addInstantiatedParametersToScope: Maps the parameters of the pattern to the
 // ones of the instantiation, so references to them can be substituted.
 // Returns false if the parameters of the instantiation do not line up with the ones of the pattern.
@@ -202,7 +202,7 @@ static bool addInstantiatedParametersToScope(Sema& sema, FunctionDecl* function,
 #endif
 
 bool CallGraphNodeGenerator::traverseUninstantiatedExpr(clang::Expr* E) {
-#if LLVM_VERSION_MAJOR >= 18
+#if LLVM_VERSION_MAJOR >= 15
 
   const FunctionDecl* pattern = topLevelFD->getTemplateInstantiationPattern(false);
   if (!sema) {
@@ -217,14 +217,30 @@ bool CallGraphNodeGenerator::traverseUninstantiatedExpr(clang::Expr* E) {
   }
 
   // Collect the template initialization args
+#if LLVM_VERSION_MAJOR >= 18
   const MultiLevelTemplateArgumentList templateArgs = sema->getTemplateInstantiationArgs(
       topLevelFD,  // D: decl we compute template args for
       nullptr,     // DC: use topLevelFD's own decl context
       false,       // Final: keep the type sugar of the substituted arguments
-      {},       // Innermost: no explicit innermost args, take them from topLevelFD's specialization info
+      {},          // Innermost: no explicit innermost args, take them from topLevelFD's specialization info
       true,        // RelativeToPrimary: compute the arguments relative to the primary template
       nullptr,     // Pattern: let clang look up the template pattern of topLevelFD itself
       true);       // ForConstraintInstantiation: also walk through generic lambdas and enclosing class templates
+#elif LLVM_VERSION_MAJOR >= 16
+  const MultiLevelTemplateArgumentList templateArgs = sema->getTemplateInstantiationArgs(
+      topLevelFD,  // D: decl we compute template args for
+      false,       // Final: keep the type sugar of the substituted arguments
+      nullptr,     // Innermost: no explicit innermost args, take them from topLevelFD's specialization info
+      true,        // RelativeToPrimary: compute the arguments relative to the primary template
+      nullptr,     // Pattern: let clang look up the template pattern of topLevelFD itself
+      true);       // ForConstraintInstantiation: also walk through generic lambdas and enclosing class templates
+#else
+  const MultiLevelTemplateArgumentList templateArgs = sema->getTemplateInstantiationArgs(
+      topLevelFD,  // D: decl we compute template args for
+      nullptr,     // Innermost: no explicit innermost args, take them from topLevelFD's specialization info
+      true,        // RelativeToPrimary: compute the arguments relative to the primary template
+      nullptr);    // Pattern: let clang look up the template pattern of topLevelFD itself
+#endif
 
   ExprResult substituted = ExprError();
   // AFAICT one communicates with SEMA via RAII constructor-destructor states
