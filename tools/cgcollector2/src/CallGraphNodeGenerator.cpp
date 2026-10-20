@@ -24,7 +24,7 @@
 #if LLVM_VERSION_MAJOR > 10
 #include <clang/AST/ParentMapContext.h>
 #endif
-#if LLVM_VERSION_MAJOR >= 18
+#if LLVM_VERSION_MAJOR >= 17
 #include <clang/Sema/EnterExpressionEvaluationContext.h>
 #endif
 
