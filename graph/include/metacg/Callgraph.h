@@ -25,6 +25,7 @@ using CgNodeRawPtrUSet = std::unordered_set<metacg::CgNode*>;
 
 class Callgraph : public MetadataMixin {
  public:
+  /// contained CgNodePtrs can be nullptr
   using NodeContainer = std::vector<CgNodePtr>;
   using NodeList = std::vector<NodeId>;
 
@@ -212,7 +213,7 @@ class Callgraph : public MetadataMixin {
    * @param name Name of the function.
    * @return A vector of matching node IDs.
    */
-  const NodeList& getNodes(const std::string& name) const;
+  const NodeList& getAllNodesWithName(const std::string& name) const;
 
   /**
    * Looks up the node matching the given ID.
@@ -280,7 +281,8 @@ class Callgraph : public MetadataMixin {
 
   /**
    * Provides access to the raw list of nodes.
-   * @return A vector containing all node pointers.
+   * This list can contain nullptr
+   * @return A vector containing nullptrs and all node pointers.
    */
   const NodeContainer& getNodes() const;
 
