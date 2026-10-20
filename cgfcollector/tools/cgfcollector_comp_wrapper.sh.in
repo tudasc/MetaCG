@@ -57,6 +57,7 @@ fi
 
 source_files=()
 options=()
+compile_options=()
 original_args=("$@")
 all_args=("$@")
 skip_gen_bin=false
@@ -75,6 +76,18 @@ fi
 option_o=false
 option_module_dir=false
 for arg in "${all_args[@]}"; do
+    # plugin-specific options (mapped to -mllvm flags)
+    if [[ -n "${OPTION_MAP[$arg]}" ]]; then
+        if [[ "$arg" == "--skip-gen-bin" ]]; then
+            skip_gen_bin=true
+            continue
+        fi
+        options+=("-mllvm" "${OPTION_MAP[$arg]}")
+        continue
+    fi
+
+    compile_options+=("$arg")
+
     if $option_o; then
         options+=("$arg")
         option_o=false
@@ -83,16 +96,6 @@ for arg in "${all_args[@]}"; do
     if $option_module_dir; then
         options+=("$arg")
         option_module_dir=false
-        continue
-    fi
-
-    # plugin-specific options (mapped to -mllvm flags)
-    if [[ -n "${OPTION_MAP[$arg]}" ]]; then
-        if [[ "$arg" == "--skip-gen-bin" ]]; then
-            skip_gen_bin=true
-            continue
-        fi
-        options+=("-mllvm" "${OPTION_MAP[$arg]}")
         continue
     fi
 
@@ -122,5 +125,5 @@ if [ ${#source_files[@]} -gt 0 ]; then
 fi
 
 if ! $skip_gen_bin; then
-    exec "$flang_bin" "${original_args[@]}"
+    exec "$flang_bin" "${compile_options[@]}"
 fi
