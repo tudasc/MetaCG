@@ -10,12 +10,12 @@
 #include "cgcollector2/interface/CGC2Plugin.h"
 #include "metacg/metadata/NumConditionalBranchMD.h"
 
+namespace clang {
+class Stmt;
+}
+
 struct NumConditionalBranchCollector : public cgcollector2::Plugin {
-  virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
-    std::unique_ptr<metacg::NumConditionalBranchMD> result = std::make_unique<metacg::NumConditionalBranchMD>();
-    result->numConditionalBranches = getNumConditionalBranchesInStmt(decl->getBody());
-    return result;
-  }
+  virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl);
 
   std::string getPluginName() const final { return "NumConditionalBranchCollector"; }
 

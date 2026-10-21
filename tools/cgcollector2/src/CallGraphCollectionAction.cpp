@@ -6,11 +6,10 @@
 
 #include "cgcollector2/CallGraphCollectionAction.h"
 #include "cgcollector2/CallGraphNodeGenerator.h"
-#include "cgcollector2/SharedDefs.h"
 #include "cgcollector2/interface/CGC2Plugin.h"
-#include "cgcollector2/metadata/Internal/ASTNodeMetadata.h"
-#include "cgcollector2/metadata/Internal/AllAliasMetadata.h"
-#include "cgcollector2/metadata/Internal/FunctionSignatureMetadata.h"
+#include "cgcollector2/metadata/internal/ASTNodeMetadata.h"
+#include "cgcollector2/metadata/external/AllAliasMetadata.h"
+#include "cgcollector2/metadata/external/FunctionSignatureMetadata.h"
 #include "metacg/LoggerUtil.h"
 
 #include "metacg/MCGManager.h"
