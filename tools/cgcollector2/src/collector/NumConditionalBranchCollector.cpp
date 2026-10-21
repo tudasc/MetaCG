@@ -1,6 +1,8 @@
-//
-// Created by tim on 21.10.26.
-//
+/**
+ * File: NumConditionalBranchCollector.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
 
 #include "cgcollector2/collector/NumConditionalBranchCollector.h"
 #include <clang/AST/RecursiveASTVisitor.h>
