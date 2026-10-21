@@ -58,7 +58,7 @@ install(
 )
 
 # Internal metadata as separate shared object. This allows us to load cgc2's metadata into other tools
-add_library(cgcollector2-metadata SHARED)
+add_library(cgcollector2-metadata SHARED src/metadata/InternalMetadata.cpp)
 
 target_sources(
   cgcollector2-metadata
