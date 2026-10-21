@@ -34,26 +34,61 @@ function(default_compile_options target)
 endfunction()
 
 add_executable(
-  cgcollector2
-  src/CallGraphCollectionAction.cpp
-  src/CallGraphNodeGenerator.cpp
-  src/CGCollector2.cpp
-  src/MetaDataFunctions.cpp
-  src/SharedDefs.cpp
+        cgcollector2
+        src/CGCollector2.cpp
+        src/CallGraphCollectionAction.cpp
+        src/CallGraphNodeGenerator.cpp
+        src/collector/LoopDepthCollector.cpp
+        src/collector/NumConditionalBranchCollector.cpp
+        src/collector/NumOperationsCollector.cpp
+        src/collector/NumStatementsCollector.cpp
 )
 default_compile_options(cgcollector2)
 
 add_clang(cgcollector2)
 target_include_directories(cgcollector2 PUBLIC include)
+target_link_libraries(cgcollector2 PUBLIC cgcollector2-metadata)
 add_metacg(cgcollector2)
 add_json(cgcollector2)
 
 install(
-  TARGETS cgcollector2
-  EXPORT ${TARGETS_EXPORT_NAME}
-  RUNTIME DESTINATION bin
+        TARGETS cgcollector2
+        EXPORT ${TARGETS_EXPORT_NAME}
+        RUNTIME DESTINATION bin
 )
 
+
+
+# Internal metadata as separate shared object.
+# This allows us to load cgc2's metadata into other tools
+add_library(cgcollector2-metadata SHARED)
+
+target_sources(
+  cgcollector2-metadata
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         include
+         FILES
+         include/cgcollector2/metadata/Internal/ASTNodeMetadata.h
+         include/cgcollector2/metadata/Internal/FunctionSignatureMetadata.h
+         include/cgcollector2/metadata/Internal/AllAliasMetadata.h
+)
+default_compile_options(cgcollector2-metadata)
+
+add_clang(cgcollector2-metadata PUBLIC)
+add_llvm(cgcollector2-metadata PUBLIC)
+add_metacg(cgcollector2-metadata)
+add_json(cgcollector2-metadata)
+install(
+        TARGETS cgcollector2-metadata
+        EXPORT ${TARGETS_EXPORT_NAME}
+        LIBRARY DESTINATION lib
+        FILE_SET HEADERS
+        DESTINATION include/
+)
+
+#Expose cgc2's plugin interface
 add_library(cgcollector2-plugin-interface INTERFACE)
 
 target_sources(
@@ -64,12 +99,9 @@ target_sources(
          include
          FILES
          include/cgcollector2/interface/CGC2Plugin.h
-         include/cgcollector2/metadata/Internal/ASTNodeMetadata.h
-         include/cgcollector2/metadata/Internal/FunctionSignatureMetadata.h
-         include/cgcollector2/metadata/Internal/AllAliasMetadata.h
 )
 
-target_link_libraries(cgcollector2-plugin-interface INTERFACE metacg::metacg)
+target_link_libraries(cgcollector2-plugin-interface INTERFACE metacg::metacg cgcollector2-metadata)
 add_llvm(cgcollector2-plugin-interface INTERFACE)
 
 install(
