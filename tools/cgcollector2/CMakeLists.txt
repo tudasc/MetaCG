@@ -67,8 +67,8 @@ target_sources(
          BASE_DIRS
          include
          FILES
-         include/cgcollector2/metadata/Internal/FunctionSignatureMetadata.h
-         include/cgcollector2/metadata/Internal/AllAliasMetadata.h
+         include/cgcollector2/metadata/external/FunctionSignatureMetadata.h
+         include/cgcollector2/metadata/external/AllAliasMetadata.h
 )
 default_compile_options(cgcollector2-metadata)
 
