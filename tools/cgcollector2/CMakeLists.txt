@@ -34,14 +34,14 @@ function(default_compile_options target)
 endfunction()
 
 add_executable(
-        cgcollector2
-        src/CGCollector2.cpp
-        src/CallGraphCollectionAction.cpp
-        src/CallGraphNodeGenerator.cpp
-        src/collector/LoopDepthCollector.cpp
-        src/collector/NumConditionalBranchCollector.cpp
-        src/collector/NumOperationsCollector.cpp
-        src/collector/NumStatementsCollector.cpp
+  cgcollector2
+  src/CallGraphCollectionAction.cpp
+  src/CallGraphNodeGenerator.cpp
+  src/CGCollector2.cpp
+  src/collector/LoopDepthCollector.cpp
+  src/collector/NumConditionalBranchCollector.cpp
+  src/collector/NumOperationsCollector.cpp
+  src/collector/NumStatementsCollector.cpp
 )
 default_compile_options(cgcollector2)
 
@@ -52,15 +52,12 @@ add_metacg(cgcollector2)
 add_json(cgcollector2)
 
 install(
-        TARGETS cgcollector2
-        EXPORT ${TARGETS_EXPORT_NAME}
-        RUNTIME DESTINATION bin
+  TARGETS cgcollector2
+  EXPORT ${TARGETS_EXPORT_NAME}
+  RUNTIME DESTINATION bin
 )
 
-
-
-# Internal metadata as separate shared object.
-# This allows us to load cgc2's metadata into other tools
+# Internal metadata as separate shared object. This allows us to load cgc2's metadata into other tools
 add_library(cgcollector2-metadata SHARED)
 
 target_sources(
@@ -81,14 +78,14 @@ add_llvm(cgcollector2-metadata PUBLIC)
 add_metacg(cgcollector2-metadata)
 add_json(cgcollector2-metadata)
 install(
-        TARGETS cgcollector2-metadata
-        EXPORT ${TARGETS_EXPORT_NAME}
-        LIBRARY DESTINATION lib
-        FILE_SET HEADERS
-        DESTINATION include/
+  TARGETS cgcollector2-metadata
+  EXPORT ${TARGETS_EXPORT_NAME}
+  LIBRARY DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include/
 )
 
-#Expose cgc2's plugin interface
+# Expose cgc2's plugin interface
 add_library(cgcollector2-plugin-interface INTERFACE)
 
 target_sources(
