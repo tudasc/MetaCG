@@ -60,6 +60,21 @@ static const Symbol* resolveUseHostSymbol(const Symbol* sym) {
   return sym;
 }
 
+static std::vector<const Symbol*> canonicalSet(const Symbol* s, CanonicalMode mode) {
+  std::vector<const Symbol*> out;
+  if (!s) return out;
+  const Symbol* r = resolveUseHostSymbol(s);
+  if (const auto* gen = r->detailsIf<GenericDetails>()) {
+    if (!(mode == CanonicalMode::ByType && gen->derivedType())) {
+      for (const auto& sp : gen->specificProcs())
+        out.push_back(canonicalizeSymbol(&sp.get(), mode).symbol);
+      if (!out.empty()) return out;
+    }
+  }
+  out.push_back(canonicalizeSymbol(s, mode).symbol);
+  return out;
+}
+
 CanonicalSymbol canonicalizeSymbol(const Symbol* input, CanonicalMode mode) {
   std::unordered_set<const Symbol*> visited;
   const Symbol* sym = input;
@@ -74,8 +89,7 @@ CanonicalSymbol canonicalizeSymbol(const Symbol* input, CanonicalMode mode) {
     }
 
     // GenericDetails, unpack to specific procedure if it has one. This is forwarded to the next check for
-    // SubprogramDetails. TODO: here we ignore possibly multiple specific procedure definitions. For the comparison step
-    // these need to be also considered. That's why this falls short when using generics.
+    // SubprogramDetails. This deliberatly picks the first specific as a representative, and the remaining cases are handled by `compareSymbols`
     if (auto* gen = sym->detailsIf<GenericDetails>()) {
       if (mode == CanonicalMode::ByType && gen->derivedType())
       {
@@ -136,7 +150,15 @@ bool compareSymbols(const Symbol* a, const Symbol* b, CanonicalMode mode) {
                       fmt::ptr(ca.symbol), cb.symbol ? cb.symbol->name() : "nullptr",
                       cb.symbol ? getDetailsName(cb.symbol) : "nullptr", fmt::ptr(cb.symbol));
 
-  return ca.kind == cb.kind && ca.symbol == cb.symbol;
+  if (ca.kind == cb.kind && ca.symbol == cb.symbol)
+    return true;
+
+  // generic-aware: any overlap counts
+  for (const Symbol* x : canonicalSet(a, mode))
+    for (const Symbol* y : canonicalSet(b, mode))
+      if (x == y) return true;
+
+  return false;
 }
 
 std::string mangleSymbol(const Symbol* sym, bool underscoring) {
