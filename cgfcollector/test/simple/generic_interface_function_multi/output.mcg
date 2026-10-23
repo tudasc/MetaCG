@@ -1,0 +1,50 @@
+{
+  "_CG": {
+    "meta": {},
+    "nodes": {
+      "0": {
+        "callees": {},
+        "functionName": "_QMmPlen_s",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "1": {
+        "callees": {},
+        "functionName": "_QMmPlen_c",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "2": {
+        "callees": { "1": {} },
+        "functionName": "_QMmPassign_s_to_c",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "3": {
+        "callees": { "0": {} },
+        "functionName": "_QMmPassign_c_to_s",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "4": {
+        "callees": {},
+        "functionName": "_QQmain",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      }
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "8391b174609cdb65a9bc2845dbd11ab3c7e236d6",
+      "version": "1.0"
+    },
+    "version": "4.0"
+  }
+}

@@ -5,6 +5,7 @@
  */
 
 #include "FortranUtil.h"
+#include "metacg/LoggerUtil.h"
 
 #include <flang/Semantics/symbol.h>
 
@@ -24,17 +25,28 @@ const Symbol* getTypeAsDerivedTypeSymbol(const Symbol* sym) {
   return nullptr;
 }
 
-const Symbol* getAbsoluteBaseSymbol(const std::vector<Type>& types, const Type* type) {
-  const Symbol* base = type->typeSymbol;
-  const Symbol* current = type->extendsFrom;
-  while (current) {
-    base = current;
-    auto it = std::find_if(types.begin(), types.end(), [&](const Type& t) { return t.typeSymbol == current; });
-    if (it == types.end())
+const Symbol* getRootTypeOfSymbol(const Symbol* sym) {
+  if (!sym)
+    return nullptr;
+
+  const Symbol* current = canonicalizeSymbol(sym, CanonicalMode::ByType).symbol;
+  if (!current || !current->detailsIf<DerivedTypeDetails>())
+    return nullptr;
+
+  std::unordered_set<const Symbol*> visited;
+  while (visited.insert(current).second) {
+    const auto* details = current->detailsIf<DerivedTypeDetails>();
+    if (!details || !current->scope())
       break;
-    current = it->extendsFrom;
+
+    const Symbol* parentComp = details->GetParentComponent(*current->scope());
+    const Symbol* parent = parentComp ? getTypeAsDerivedTypeSymbol(parentComp) : nullptr;
+    if (!parent)
+      break;
+
+    current = canonicalizeSymbol(parent).symbol;
   }
-  return canonicalizeSymbol(base).symbol;
+  return current;
 }
 
 /**
@@ -59,6 +71,21 @@ static const Symbol* resolveUseHostSymbol(const Symbol* sym) {
   return sym;
 }
 
+static std::vector<const Symbol*> canonicalSet(const Symbol* s, CanonicalMode mode) {
+  std::vector<const Symbol*> out;
+  if (!s) return out;
+  const Symbol* r = resolveUseHostSymbol(s);
+  if (const auto* gen = r->detailsIf<GenericDetails>()) {
+    if (!(mode == CanonicalMode::ByType && gen->derivedType())) {
+      for (const auto& sp : gen->specificProcs())
+        out.push_back(canonicalizeSymbol(&sp.get(), mode).symbol);
+      if (!out.empty()) return out;
+    }
+  }
+  out.push_back(canonicalizeSymbol(s, mode).symbol);
+  return out;
+}
+
 CanonicalSymbol canonicalizeSymbol(const Symbol* input, CanonicalMode mode) {
   std::unordered_set<const Symbol*> visited;
   const Symbol* sym = input;
@@ -73,9 +100,13 @@ CanonicalSymbol canonicalizeSymbol(const Symbol* input, CanonicalMode mode) {
     }
 
     // GenericDetails, unpack to specific procedure if it has one. This is forwarded to the next check for
-    // SubprogramDetails. TODO: here we ignore possibly multiple specific procedure definitions. For the comparison step
-    // these need to be also considered. That's why this falls short when using generics.
+    // SubprogramDetails. This deliberatly picks the first specific as a representative, and the remaining cases are handled by `compareSymbols`
     if (auto* gen = sym->detailsIf<GenericDetails>()) {
+      if (mode == CanonicalMode::ByType && gen->derivedType())
+      {
+        sym = gen->derivedType();
+        continue;
+      }
       if (!gen->specificProcs().empty()) {
         const Symbol* proc = &gen->specificProcs().front().get();
         sym = proc;
@@ -91,7 +122,7 @@ CanonicalSymbol canonicalizeSymbol(const Symbol* input, CanonicalMode mode) {
       // versions 18 and before, the constructor would shadow the derived type symbol, leading that type beging lost in
       // the process. In LLVM 19, this limitation is fixed, meaning constructors and derived types can better
       // differentiated. We keep this for backwards compatibility.
-      if (sub->isFunction()) {
+      if (mode == CanonicalMode::ByType && sub->isFunction()) {
         const Symbol& resultSym = sub->result();
         if (const auto* typeSym = getTypeAsDerivedTypeSymbol(&resultSym)) {
           sym = typeSym;
@@ -130,11 +161,32 @@ bool compareSymbols(const Symbol* a, const Symbol* b, CanonicalMode mode) {
                       fmt::ptr(ca.symbol), cb.symbol ? cb.symbol->name() : "nullptr",
                       cb.symbol ? getDetailsName(cb.symbol) : "nullptr", fmt::ptr(cb.symbol));
 
-  return ca.kind == cb.kind && ca.symbol == cb.symbol;
+  if (ca.kind == cb.kind && ca.symbol == cb.symbol)
+    return true;
+
+  // generic-aware: any overlap counts
+  for (const Symbol* x : canonicalSet(a, mode))
+    for (const Symbol* y : canonicalSet(b, mode))
+      if (x == y) return true;
+
+  return false;
 }
 
 std::string mangleSymbol(const Symbol* sym, bool underscoring) {
   assert(sym && "mangleSymbol called with nullptr");
+
+  if (const auto* gen = sym->detailsIf<Fortran::semantics::GenericDetails>()) {
+    MCGLogger::logWarn("mangleSymbol called with GenericDetails symbol: {} ({}) ({})", sym->name(), getDetailsName(sym),
+                       fmt::ptr(sym));
+
+    // using the first specific procedure for mangling.
+    if (!gen->specificProcs().empty()) {
+      const Symbol* specificProc = &gen->specificProcs().front().get();
+      MCGLogger::logWarn("Using first specific procedure for mangling: {} ({}) ({})", specificProc->name(),
+                         getDetailsName(specificProc), fmt::ptr(specificProc));
+      sym = specificProc;
+    }
+  }
 
   std::string mangledName = Fortran::lower::mangle::mangleName(*sym);
 
