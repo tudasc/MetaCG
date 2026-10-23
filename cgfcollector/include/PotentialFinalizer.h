@@ -19,9 +19,10 @@ struct PotentialFinalizer {
   std::size_t argPos;
   std::vector<const Fortran::semantics::Symbol*> proceduresCalled;
   std::vector<EdgeSymbol> finalizerEdges;
+  const Fortran::semantics::Symbol* var;
 
-  explicit PotentialFinalizer(std::size_t pos, std::vector<const Fortran::semantics::Symbol*> procsCalled)
-      : argPos(pos), proceduresCalled(std::move(procsCalled)) {}
+  explicit PotentialFinalizer(std::size_t pos, std::vector<const Fortran::semantics::Symbol*> procsCalled, const Fortran::semantics::Symbol* var)
+      : argPos(pos), proceduresCalled(std::move(procsCalled)), var(var) {}
 
   void addFinalizerEdge(const EdgeSymbol& e) { finalizerEdges.emplace_back(e); }
 

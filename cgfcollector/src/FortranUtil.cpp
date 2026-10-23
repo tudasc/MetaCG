@@ -77,6 +77,11 @@ CanonicalSymbol canonicalizeSymbol(const Symbol* input, CanonicalMode mode) {
     // SubprogramDetails. TODO: here we ignore possibly multiple specific procedure definitions. For the comparison step
     // these need to be also considered. That's why this falls short when using generics.
     if (auto* gen = sym->detailsIf<GenericDetails>()) {
+      if (mode == CanonicalMode::ByType && gen->derivedType())
+      {
+        sym = gen->derivedType();
+        continue;
+      }
       if (!gen->specificProcs().empty()) {
         const Symbol* proc = &gen->specificProcs().front().get();
         sym = proc;
