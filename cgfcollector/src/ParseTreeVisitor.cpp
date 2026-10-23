@@ -7,7 +7,9 @@
 #include "ParseTreeVisitor.h"
 #include "Edge.h"
 #include "FortranUtil.h"
+#include "Procedure.h"
 #include "metacg/LoggerUtil.h"
+#include "spdlog/fmt/bundled/base.h"
 #include <flang/Parser/parse-tree.h>
 #include <flang/Semantics/symbol.h>
 
@@ -55,20 +57,27 @@ void ParseTreeVisitor::handleEndFuncSubStmt() {
 void ParseTreeVisitor::postProcess() {
   // handle potential finalizers from procedure calls
   for (PotentialFinalizer pf : potentialFinalizers) {
-    auto calledIt = std::find_if(procedures.begin(), procedures.end(),
-                                 [&](const Procedure& p) { return pf.isInProceduresCalled(p.symbol); });
-    if (calledIt == procedures.end())
-      continue;
+    bool initialized = false;
 
-    if (pf.argPos >= calledIt->dummyArgs.size()) {
-      continue;
+    for (const Procedure& p : procedures)
+    {
+      if (!pf.isInProceduresCalled(p.symbol))
+        continue;
+      if (pf.argPos >= p.dummyArgs.size())
+        continue;
+
+      const Procedure::DummyArg& arg = p.dummyArgs[pf.argPos];
+      if (!arg.hasBeenInitialized)
+        continue;
+      if (!compareSymbols(arg.symbol, pf.var, CanonicalMode::ByType))
+        continue;
+
+      initialized = true;
+      break;
     }
-    auto arg = calledIt->dummyArgs.begin() + pf.argPos;
 
-    if (!arg->hasBeenInitialized)
-      continue;
-
-    edgeM->addEdgesForFinalizers(pf);
+    if (initialized)
+      edgeM->addEdgesForFinalizers(pf);
   }
 
   edgeM->uniquifyEdges();
@@ -351,7 +360,7 @@ void ParseTreeVisitor::Post(const Call& c) {
       } else {
         calledProcedures.emplace_back(procName->symbol);
       }
-      PotentialFinalizer& pf = potentialFinalizers.emplace_back(argPos, calledProcedures);
+      PotentialFinalizer& pf = potentialFinalizers.emplace_back(argPos, calledProcedures, name->symbol);
       auto baseTypeIt = std::find_if(types.begin(), types.end(), [&](const Type& t) {
         return compareSymbols(t.typeSymbol, name->symbol, CanonicalMode::ByType);
       });
@@ -462,7 +471,7 @@ void ParseTreeVisitor::Post(const DerivedTypeDef&) {
 
   // finalizers (must be after extends discovery)
   Type& currentType = types.back();
-  const Symbol* canon = canonicalizeSymbol(currentType.typeSymbol).symbol;
+  const Symbol* canon = canonicalizeSymbol(currentType.typeSymbol, CanonicalMode::ByType).symbol;
   if (const DerivedTypeDetails* details = canon->detailsIf<DerivedTypeDetails>()) {
     for (const auto& final : details->finals()) {
       finalizers[getAbsoluteBaseSymbol(types, &currentType)].emplace_back(&final.second.get());
