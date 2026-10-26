@@ -60,15 +60,25 @@ static const Symbol* resolveUseHostSymbol(const Symbol* sym) {
   return sym;
 }
 
-static std::vector<const Symbol*> canonicalSet(const Symbol* s, CanonicalMode mode) {
+/**
+ * @brief Get a list of canonical symbols for a given symbol. This is used to handle generic symbols, which can have
+ * multiple specific procedures.
+ *
+ * @param s
+ * @param mode
+ * @return
+ */
+static std::vector<const Symbol*> canonicalList(const Symbol* s, CanonicalMode mode) {
   std::vector<const Symbol*> out;
-  if (!s) return out;
+  if (!s)
+    return out;
   const Symbol* r = resolveUseHostSymbol(s);
   if (const auto* gen = r->detailsIf<GenericDetails>()) {
     if (!(mode == CanonicalMode::ByType && gen->derivedType())) {
       for (const auto& sp : gen->specificProcs())
         out.push_back(canonicalizeSymbol(&sp.get(), mode).symbol);
-      if (!out.empty()) return out;
+      if (!out.empty())
+        return out;
     }
   }
   out.push_back(canonicalizeSymbol(s, mode).symbol);
@@ -89,10 +99,10 @@ CanonicalSymbol canonicalizeSymbol(const Symbol* input, CanonicalMode mode) {
     }
 
     // GenericDetails, unpack to specific procedure if it has one. This is forwarded to the next check for
-    // SubprogramDetails. This deliberatly picks the first specific as a representative, and the remaining cases are handled by `compareSymbols`
+    // SubprogramDetails. This deliberatly picks the first specific as a representative, and the remaining cases are
+    // handled by `compareSymbols`
     if (auto* gen = sym->detailsIf<GenericDetails>()) {
-      if (mode == CanonicalMode::ByType && gen->derivedType())
-      {
+      if (mode == CanonicalMode::ByType && gen->derivedType()) {
         sym = gen->derivedType();
         continue;
       }
@@ -154,9 +164,10 @@ bool compareSymbols(const Symbol* a, const Symbol* b, CanonicalMode mode) {
     return true;
 
   // generic-aware: any overlap counts
-  for (const Symbol* x : canonicalSet(a, mode))
-    for (const Symbol* y : canonicalSet(b, mode))
-      if (x == y) return true;
+  for (const Symbol* x : canonicalList(a, mode))
+    for (const Symbol* y : canonicalList(b, mode))
+      if (x == y)
+        return true;
 
   return false;
 }
