@@ -17,19 +17,28 @@ namespace metacg::cgfcollector {
 
 struct PotentialFinalizer {
   std::size_t argPos;
-  std::vector<const Fortran::semantics::Symbol*> proceduresCalled;
+  // This list captures potential procedures that may have initialized a variable. Together with the variable tracking
+  // information this is used to identify the generic implementation a variable has been initialized with.
+  std::vector<const Fortran::semantics::Symbol*> potentialInitSite;
   std::vector<EdgeSymbol> finalizerEdges;
   const Fortran::semantics::Symbol* var;
 
-  explicit PotentialFinalizer(std::size_t pos, std::vector<const Fortran::semantics::Symbol*> procsCalled, const Fortran::semantics::Symbol* var)
-      : argPos(pos), proceduresCalled(std::move(procsCalled)), var(var) {}
+  explicit PotentialFinalizer(std::size_t pos, std::vector<const Fortran::semantics::Symbol*> procsCalled,
+                              const Fortran::semantics::Symbol* var)
+      : argPos(pos), potentialInitSite(std::move(procsCalled)), var(var) {}
 
   void addFinalizerEdge(const EdgeSymbol& e) { finalizerEdges.emplace_back(e); }
 
-  bool isInProceduresCalled(const Fortran::semantics::Symbol* procedure) const {
-    return std::find_if(proceduresCalled.begin(), proceduresCalled.end(), [&](const Fortran::semantics::Symbol* p) {
+  /**
+   * @brief Checks whether a procedure symbol is a potential initialization site.
+   *
+   * @param procedure symbol
+   * @return
+   */
+  bool isAPotentialInitSite(const Fortran::semantics::Symbol* procedure) const {
+    return std::find_if(potentialInitSite.begin(), potentialInitSite.end(), [&](const Fortran::semantics::Symbol* p) {
              return compareSymbols(p, procedure);
-           }) != proceduresCalled.end();
+           }) != potentialInitSite.end();
   }
 };
 

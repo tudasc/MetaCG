@@ -59,9 +59,8 @@ void ParseTreeVisitor::postProcess() {
   for (PotentialFinalizer pf : potentialFinalizers) {
     bool initialized = false;
 
-    for (const Procedure& p : procedures)
-    {
-      if (!pf.isInProceduresCalled(p.symbol))
+    for (const Procedure& p : procedures) {
+      if (!pf.isAPotentialInitSite(p.symbol))
         continue;
       if (pf.argPos >= p.dummyArgs.size())
         continue;
@@ -352,15 +351,15 @@ void ParseTreeVisitor::Post(const Call& c) {
 
       MCGLogger::logDebug("Add potential finalizers for var: {} ({}) ({})", name->symbol->name(),
                           getDetailsName(name->symbol), fmt::ptr(name->symbol));
-      std::vector<const Symbol*> calledProcedures;
+      std::vector<const Symbol*> potInitSites;
       if (const auto* gen = procName->symbol->detailsIf<Fortran::semantics::GenericDetails>()) {
         for (const auto& specificProc : gen->specificProcs()) {
-          calledProcedures.emplace_back(&specificProc.get());
+          potInitSites.emplace_back(&specificProc.get());
         }
       } else {
-        calledProcedures.emplace_back(procName->symbol);
+        potInitSites.emplace_back(procName->symbol);
       }
-      PotentialFinalizer& pf = potentialFinalizers.emplace_back(argPos, calledProcedures, name->symbol);
+      PotentialFinalizer& pf = potentialFinalizers.emplace_back(argPos, potInitSites, name->symbol);
       auto baseTypeIt = std::find_if(types.begin(), types.end(), [&](const Type& t) {
         return compareSymbols(t.typeSymbol, name->symbol, CanonicalMode::ByType);
       });
