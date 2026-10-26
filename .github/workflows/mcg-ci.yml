@@ -40,8 +40,8 @@ on:
 
 jobs:
   build:
+    name: graph-lib-build
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v6
       - name: cmake
