@@ -25,17 +25,28 @@ const Symbol* getTypeAsDerivedTypeSymbol(const Symbol* sym) {
   return nullptr;
 }
 
-const Symbol* getAbsoluteBaseSymbol(const std::vector<Type>& types, const Type* type) {
-  const Symbol* base = type->typeSymbol;
-  const Symbol* current = type->extendsFrom;
-  while (current) {
-    base = current;
-    auto it = std::find_if(types.begin(), types.end(), [&](const Type& t) { return t.typeSymbol == current; });
-    if (it == types.end())
+const Symbol* getRootTypeOfSymbol(const Symbol* sym) {
+  if (!sym)
+    return nullptr;
+
+  const Symbol* current = canonicalizeSymbol(sym, CanonicalMode::ByType).symbol;
+  if (!current || !current->detailsIf<DerivedTypeDetails>())
+    return nullptr;
+
+  std::unordered_set<const Symbol*> visited;
+  while (visited.insert(current).second) {
+    const auto* details = current->detailsIf<DerivedTypeDetails>();
+    if (!details || !current->scope())
       break;
-    current = it->extendsFrom;
+
+    const Symbol* parentComp = details->GetParentComponent(*current->scope());
+    const Symbol* parent = parentComp ? getTypeAsDerivedTypeSymbol(parentComp) : nullptr;
+    if (!parent)
+      break;
+
+    current = canonicalizeSymbol(parent).symbol;
   }
-  return canonicalizeSymbol(base).symbol;
+  return current;
 }
 
 /**

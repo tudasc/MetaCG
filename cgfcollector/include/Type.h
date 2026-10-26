@@ -16,7 +16,6 @@ namespace metacg::cgfcollector {
 
 struct Type {
   const Fortran::semantics::Symbol* typeSymbol;
-  const Fortran::semantics::Symbol* extendsFrom;
 };
 
 }  // namespace metacg::cgfcollector
