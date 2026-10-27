@@ -21,7 +21,7 @@
             "_ZN19MyClassDeriveDerive3fooEv": {
                 "callees": {},
                 "functionName": "_ZN19MyClassDeriveDerive3fooEv",
-                "hasBody": false,
+                "hasBody": true,
                 "meta": {},
                 "origin": "tools/cage/test/input/virtualCalls/0021.cpp"
             },
