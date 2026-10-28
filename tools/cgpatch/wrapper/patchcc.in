@@ -64,6 +64,12 @@ fi
 COMPILER=$1;
 shift
 
+if ! printf '#ifndef __clang__\n#error Clang required\n#endif\n' |
+     "$COMPILER" -x c -E -o /dev/null - >/dev/null 2>&1; then
+    echo "[patchcxx] ERROR: Compiler '$COMPILER' must use Clang++." >&2
+    exit 1
+fi
+
 if [[ "$linking" == yes ]]
 then
   echo "[patchcc] Linking"
