@@ -5,30 +5,10 @@
  */
 
 #include "StatementCountCollector.h"
+#include "metacg/metadata/NumStatementsMD.h"
 
 #include <flang/Parser/parse-tree.h>
 #include <flang/Semantics/symbol.h>
-
-StatementCountMetadata::StatementCountMetadata(const nlohmann::json& j, metacg::StrToNodeMapping&) {
-  metacg::MCGLogger::instance().getConsole()->trace("Reading StatementCountMetadata from json");
-  if (j.is_null()) {
-    metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", "StatementCountMetadata");
-    return;
-  }
-  count = j.get<std::size_t>();
-  metacg::MCGLogger::instance().getConsole()->debug("Read {} statements from file", count);
-};
-
-void StatementCountMetadata::merge(const MetaData& toMerge, std::optional<metacg::MergeAction>,
-                                   const metacg::GraphMapping&) {
-  if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
-    metacg::MCGLogger::instance().getErrConsole()->error(
-        "The MetaData which was tried to merge with StatementCountMetadata was of a different MetaData type");
-    abort();
-  }
-  const auto* toMergeDerived = static_cast<const StatementCountMetadata*>(&toMerge);
-  count += toMergeDerived->getCount();
-}
 
 bool StatementCountVisitor::Pre(const Fortran::parser::MainProgram& p) {
   inProcedure = true;
@@ -86,7 +66,9 @@ void StatementCountVisitor::addStatementCountToNode(const std::string& mangledNa
   if (!node) {
     return;
   }
-  node->addMetaData(std::move(std::make_unique<StatementCountMetadata>(statementCounts.back())));
+  auto numStmt = std::make_unique<metacg::NumStatementsMD>();
+  numStmt->setNumberOfStatements(statementCounts.back());
+  node->addMetaData(std::move(numStmt));
 }
 
 void StatementCountVisitor::incrementCount() {

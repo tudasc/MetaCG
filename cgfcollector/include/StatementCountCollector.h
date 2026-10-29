@@ -10,34 +10,7 @@
 #include "FortranUtil.h"
 
 #include "metacg/Callgraph.h"
-#include "metacg/io/IdMapping.h"
-#include <cstddef>
 #include <flang/Parser/parse-tree.h>
-#include <optional>
-
-class StatementCountMetadata : public metacg::MetaData::Registrar<StatementCountMetadata> {
- public:
-  static constexpr const char* key = "statement_count";
-
-  StatementCountMetadata(std::size_t count) : count(count) {}
-  explicit StatementCountMetadata(const nlohmann::json& j, metacg::StrToNodeMapping&);
-
-  nlohmann::json toJson(metacg::NodeToStrMapping&) const final { return count; }
-
-  const char* getKey() const override { return key; }
-
-  void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final;
-
-  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<MetaData>(new StatementCountMetadata(*this)); }
-
-  void applyMapping(const metacg::GraphMapping&) override {}
-
-  void setCount(std::size_t c) { count = c; }
-  std::size_t getCount() const { return count; }
-
- private:
-  std::size_t count{0};
-};
 
 class StatementCountVisitor {
  public:
