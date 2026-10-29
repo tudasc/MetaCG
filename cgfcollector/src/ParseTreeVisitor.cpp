@@ -350,7 +350,7 @@ void ParseTreeVisitor::Post(const Call& c) {
       } else {
         potInitSites.emplace_back(procName->symbol);
       }
-      PotentialFinalizer& pf = potentialFinalizers.emplace_back(argPos, calledProcedures, name->symbol);
+      PotentialFinalizer& pf = potentialFinalizers.emplace_back(argPos, potInitSites, name->symbol);
       const Symbol* root = getRootTypeOfSymbol(name->symbol);
       if (!root)
         continue;
