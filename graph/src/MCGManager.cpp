@@ -94,7 +94,7 @@ bool MCGManager::addToManagedGraphs(const std::string& name, std::unique_ptr<Cal
   return true;
 }
 
-void MCGManager::mergeAllIntoActiveGraph(const MergePolicy& policy) {
+void MCGManager::mergeIntoActiveGraph(const MergePolicy& policy) {
   assert(activeGraph && "Graph manager could not merge into active Graph, no active graph exists");
 
   // We merge into whatever the active callgraph is

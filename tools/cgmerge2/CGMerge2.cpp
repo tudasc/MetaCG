@@ -6,10 +6,7 @@
 
 #include "metacg/config.h"
 
-#include <algorithm>
 #include <iostream>
-#include <memory>
-#include <vector>
 
 #include "metacg/LoggerUtil.h"
 #include "metacg/MCGManager.h"
@@ -23,10 +20,6 @@
 #include "metacg/metadata/BuiltinMD.h"
 
 using namespace metacg;
-
-// TODO: Let user set merge policy
-#pragma omp declare reduction(cgmerge : std::unique_ptr<Callgraph> : omp_out->merge(*omp_in, MergeByName())) \
-    initializer(omp_priv = std::make_unique<Callgraph>())
 
 int main(int argc, char** argv) {
   auto console = MCGLogger::instance().getConsole();
@@ -64,10 +57,6 @@ int main(int argc, char** argv) {
   auto& mcgManager = graph::MCGManager::get();
   mcgManager.resetManager();
 
-  // Every thread merges its input graphs into a private, initially empty graph; OpenMP then combines the private graphs.
-  auto mergedCg = std::make_unique<Callgraph>();
-
-  #pragma omp parallel for schedule(dynamic) reduction(cgmerge : mergedCg)
   for (auto& inFile : inputFiles) {
     io::FileSource fs(inFile);
     if (fs.get().is_null()) {
@@ -82,13 +71,13 @@ int main(int argc, char** argv) {
     auto mcgReader = io::createReader(fs);
     if (!mcgReader) {
       errConsole->error("Unsupported MetaCG format version: {}", versionStr);
-      exit(EXIT_FAILURE);
+      return EXIT_FAILURE;
     }
-    auto cg = mcgReader->read();
-    mergedCg->merge(*cg, MergeByName());
+    mcgManager.addToManagedGraphs(inFile, mcgReader->read());
   }
 
-  mcgManager.addToManagedGraphs("merged", std::move(mergedCg), true);
+  // TODO: Let user set merge policy
+  mcgManager.mergeIntoActiveGraph(MergeByName());
 
   auto mcgWriter = io::createWriter(mcgVersion);
   if (!mcgWriter) {
