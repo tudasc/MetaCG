@@ -1,162 +1,13 @@
-#include "cgcollector2/MetaDataFunctions.h"
-#include <algorithm>
+/**
+ * File: NumOperationsCollector.cpp
+ * License: Part of the MetaCG project. Licensed under BSD 3 clause license. See LICENSE.txt file at
+ * https://github.com/tudasc/metacg/LICENSE.txt
+ */
+
+#include "cgcollector2/collector/NumOperationsCollector.h"
 #include <clang/AST/RecursiveASTVisitor.h>
 
-int getNumStmtsInStmt(clang::Stmt* stmt) {
-  int numStmts = 0;
-  if (stmt == nullptr) {
-    return 0;
-  }
-
-  if (llvm::isa<clang::CompoundStmt>(stmt)) {
-    numStmts += getNumStmtsInCompoundStmt(llvm::dyn_cast<clang::CompoundStmt>(stmt));
-  } else if (llvm::isa<clang::IfStmt>(stmt)) {
-    numStmts += getNumStmtsInIfStmt(llvm::dyn_cast<clang::IfStmt>(stmt));
-  } else if (llvm::isa<clang::ForStmt>(stmt)) {
-    numStmts += getNumStmtsInForStmt(llvm::dyn_cast<clang::ForStmt>(stmt));
-  } else if (llvm::isa<clang::WhileStmt>(stmt)) {
-    numStmts += getNumStmtsInWhileStmt(llvm::dyn_cast<clang::WhileStmt>(stmt));
-  } else if (llvm::isa<clang::CXXForRangeStmt>(stmt)) {
-    numStmts += getNumStmtsInCXXForRangeStmt(llvm::dyn_cast<clang::CXXForRangeStmt>(stmt));
-  } else if (llvm::isa<clang::DoStmt>(stmt)) {
-    numStmts += getNumStmtsInDoStmt(llvm::dyn_cast<clang::DoStmt>(stmt));
-  } else if (llvm::isa<clang::CXXTryStmt>(stmt)) {
-    numStmts += getNumStmtsInTryStmt(llvm::dyn_cast<clang::CXXTryStmt>(stmt));
-  } else if (llvm::isa<clang::SwitchStmt>(stmt)) {
-    numStmts += getNumStmtsInSwitchCase(llvm::dyn_cast<clang::SwitchStmt>(stmt));
-  } else if (llvm::isa<clang::CaseStmt>(stmt)) {
-    numStmts += getNumStmtsInCaseStmt(llvm::dyn_cast<clang::CaseStmt>(stmt));
-  } else if (llvm::isa<clang::NullStmt>(stmt)) {
-    // The empty statement has no influence on the count
-  } else if (llvm::isa<clang::LambdaExpr>(stmt)) {
-    // Let's see if we hit that case -- I guess not
-  } else {
-    if (!llvm::isa<clang::DefaultStmt>(stmt)) {
-      numStmts += 1;
-    }
-  }
-  return numStmts;
-}
-
-int getNumStmtsInSwitchCase(clang::SwitchStmt* scStmt) {
-  int numStmts = 1;
-
-  for (auto child : scStmt->children()) {
-    numStmts += getNumStmtsInStmt(child);
-  }
-
-  return numStmts;
-}
-
-int getNumStmtsInCaseStmt(clang::CaseStmt* cStmt) {
-  if (cStmt == nullptr) {
-    return 0;
-  }
-
-  return getNumStmtsInStmt(cStmt->getSubStmt());
-}
-
-int getNumStmtsInTryStmt(clang::CXXTryStmt* tryst) {
-  int numStmts = 1;
-  numStmts += getNumStmtsInCompoundStmt(tryst->getTryBlock());
-  for (size_t i = 0; i < tryst->getNumHandlers(); i++) {
-    numStmts += getNumStmtsInCatchStmt(tryst->getHandler(i));
-  }
-  return numStmts;
-}
-int getNumStmtsInCatchStmt(clang::CXXCatchStmt* catchst) {
-  int numStmts = 1;
-  numStmts += getNumStmtsInStmt(catchst->getHandlerBlock());
-  return numStmts;
-}
-
-int getNumStmtsInCompoundStmt(clang::CompoundStmt* cpst) {
-  int numStmts = 0;
-  for (clang::CompoundStmt::body_iterator bi = cpst->body_begin(); bi != cpst->body_end(); ++bi) {
-    numStmts += getNumStmtsInStmt(*bi);
-  }
-  return numStmts;
-}
-
-int getNumStmtsInIfStmt(clang::IfStmt* is) {
-  int numStmts = 1;
-  if (is->getThen() != nullptr) {
-    numStmts += getNumStmtsInStmt(is->getThen());
-  }
-  if (is->getElse() != nullptr) {
-    numStmts += getNumStmtsInStmt(is->getElse());
-  }
-
-  return numStmts;
-}
-
-int getNumStmtsInForStmt(clang::ForStmt* fs) {
-  int numStmts = 1;
-  if (fs->getBody() != nullptr) {
-    numStmts += getNumStmtsInStmt(fs->getBody());
-  }
-  return numStmts;
-}
-
-int getNumStmtsInWhileStmt(clang::WhileStmt* ws) {
-  int numStmts = 1;
-  if (ws->getBody() != nullptr) {
-    numStmts += getNumStmtsInStmt(ws->getBody());
-  }
-  return numStmts;
-}
-
-int getNumStmtsInCXXForRangeStmt(clang::CXXForRangeStmt* frs) {
-  int numStmts = 1;
-  if (frs->getBody() != nullptr) {
-    numStmts += getNumStmtsInStmt(frs->getBody());
-  }
-  return numStmts;
-}
-
-int getNumStmtsInDoStmt(clang::DoStmt* ds) {
-  int numStmts = 1;
-  if (ds->getBody() != nullptr) {
-    numStmts += getNumStmtsInStmt(ds->getBody());
-  }
-  return numStmts;
-}
-
-class NumConditionalBranchVisitor : public clang::RecursiveASTVisitor<NumConditionalBranchVisitor> {
- public:
-  int count = 0;
-
-  bool shouldVisitTemplateInstantiations() const { return true; }
-
-  bool VisitStmt(clang::Stmt* stmt) {
-    switch (stmt->getStmtClass()) {
-      case clang::Stmt::IfStmtClass:
-      case clang::Stmt::ConditionalOperatorClass:        // ? operator
-      case clang::Stmt::BinaryConditionalOperatorClass:  // GNU extension
-      case clang::Stmt::WhileStmtClass:
-      case clang::Stmt::DoStmtClass:
-      case clang::Stmt::ForStmtClass:
-      case clang::Stmt::CXXForRangeStmtClass:
-      case clang::Stmt::SwitchStmtClass:
-        count += 1;
-        break;
-      default:
-        break;
-    }
-    return true;
-  }
-};
-
-int getNumConditionalBranchesInStmt(clang::Stmt* s) {
-  if (s == nullptr) {
-    return 0;
-  }
-  NumConditionalBranchVisitor visitor;
-  visitor.TraverseStmt(s);
-  // visitor.visitStmt(s);
-  return visitor.count;
-}
-
+namespace {
 // Operations Counting
 /**
  * This class is kinda experimental and does not handle all Code Constructs as can be seen in teh function VisitStmt
@@ -619,129 +470,18 @@ class NumOperationsVisitor : public clang::RecursiveASTVisitor<NumOperationsVisi
     }
   }
 };
-
-NumOperations getNumOperationsInStmt(clang::Stmt* s) {
-  if (s == nullptr) {
+};  // namespace
+std::unique_ptr<metacg::MetaData> NumOperationsCollector::computeForDecl(clang::FunctionDecl const* const decl) {
+  std::unique_ptr<metacg::NumOperationsMD> result = std::make_unique<metacg::NumOperationsMD>();
+  if (decl == nullptr) {
     return {};
   }
-  NumOperations result;
+
   NumOperationsVisitor visitor;
-  visitor.TraverseStmt(s);
-  result.numberOfIntOps = visitor.numIntOps;
-  result.numberOfFloatOps = visitor.numFloatOps;
-  result.numberOfControlFlowOps = visitor.numControlFlowOps;
-  result.numberOfMemoryAccesses = visitor.numMemoryAccesses;
+  visitor.TraverseStmt(decl->getBody());
+  result->numberOfIntOps = visitor.numIntOps;
+  result->numberOfFloatOps = visitor.numFloatOps;
+  result->numberOfControlFlowOps = visitor.numControlFlowOps;
+  result->numberOfMemoryAccesses = visitor.numMemoryAccesses;
   return result;
-}
-
-class LoopDepthVisitor : public clang::RecursiveASTVisitor<LoopDepthVisitor> {
- private:
-  int cur_loop_depth = 0;
-
- public:
-  int maxdepth = 0;
-
-  bool shouldVisitTemplateInstantiations() const { return true; }
-
-  bool TraverseDoStmt(clang::DoStmt* s, DataRecursionQueue* q = nullptr) {
-    (void)q;
-    cur_loop_depth++;
-    maxdepth = std::max(maxdepth, cur_loop_depth);
-    bool result = RecursiveASTVisitor::TraverseDoStmt(s, nullptr);
-    cur_loop_depth--;
-    return result;
-  }
-
-  bool TraverseWhileStmt(clang::WhileStmt* s, DataRecursionQueue* q = nullptr) {
-    (void)q;
-    cur_loop_depth++;
-    maxdepth = std::max(maxdepth, cur_loop_depth);
-    bool result = RecursiveASTVisitor::TraverseWhileStmt(s, nullptr);
-    cur_loop_depth--;
-    return result;
-  }
-
-  bool TraverseForStmt(clang::ForStmt* s, DataRecursionQueue* q = nullptr) {
-    (void)q;
-    cur_loop_depth++;
-    maxdepth = std::max(maxdepth, cur_loop_depth);
-    bool result = RecursiveASTVisitor::TraverseForStmt(s, nullptr);
-    cur_loop_depth--;
-    return result;
-  }
-
-  bool TraverseCXXForRangeStmt(clang::CXXForRangeStmt* s, DataRecursionQueue* q = nullptr) {
-    (void)q;
-    cur_loop_depth++;
-    maxdepth = std::max(maxdepth, cur_loop_depth);
-    bool result = RecursiveASTVisitor::TraverseCXXForRangeStmt(s, nullptr);
-    cur_loop_depth--;
-    return result;
-  }
-};
-
-int getLoopDepthInStmt(clang::Stmt* s) {
-  if (s == nullptr) {
-    return 0;
-  }
-  LoopDepthVisitor visitor;
-  visitor.TraverseStmt(s);
-  return visitor.maxdepth;
-}
-
-class CallDepthVisitor : public clang::RecursiveASTVisitor<CallDepthVisitor> {
- private:
-  int cur_loop_depth = 0;
-
- public:
-  llvm::SmallDenseMap<const clang::CallExpr*, int, 16> calls;
-
-  bool shouldVisitTemplateInstantiations() const { return true; }
-
-  bool TraverseDoStmt(clang::DoStmt* s, DataRecursionQueue* q = nullptr) {
-    (void)q;
-    cur_loop_depth++;
-    bool result = RecursiveASTVisitor::TraverseDoStmt(s, nullptr);
-    cur_loop_depth--;
-    return result;
-  }
-
-  bool TraverseWhileStmt(clang::WhileStmt* s, DataRecursionQueue* q = nullptr) {
-    (void)q;
-    cur_loop_depth++;
-    bool result = RecursiveASTVisitor::TraverseWhileStmt(s, nullptr);
-    cur_loop_depth--;
-    return result;
-  }
-
-  bool TraverseForStmt(clang::ForStmt* s, DataRecursionQueue* q = nullptr) {
-    (void)q;
-    cur_loop_depth++;
-    bool result = RecursiveASTVisitor::TraverseForStmt(s, nullptr);
-    cur_loop_depth--;
-    return result;
-  }
-
-  bool TraverseCXXForRangeStmt(clang::CXXForRangeStmt* s, DataRecursionQueue* q = nullptr) {
-    (void)q;
-    cur_loop_depth++;
-    bool result = RecursiveASTVisitor::TraverseCXXForRangeStmt(s, nullptr);
-    cur_loop_depth--;
-    return result;
-  }
-
-  bool VisitCallExpr(clang::CallExpr* ce) {
-    assert(calls.count(ce) == 0);
-    calls.try_emplace(ce, cur_loop_depth);
-    return true;
-  }
-};
-
-llvm::SmallDenseMap<const clang::CallExpr*, int, 16> getCallDepthsInStmt(clang::Stmt* s) {
-  if (s == nullptr) {
-    return llvm::SmallDenseMap<const clang::CallExpr*, int, 16>();
-  }
-  CallDepthVisitor visitor;
-  visitor.TraverseStmt(s);
-  return visitor.calls;
 }
