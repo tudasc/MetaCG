@@ -7,6 +7,12 @@ add_config_include(cgmerge2)
 add_metacg(cgmerge2)
 add_clang(cgmerge2)
 
+# OpenMP is optional: if available, input graphs are merged in parallel
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+  target_link_libraries(cgmerge2 PRIVATE OpenMP::OpenMP_CXX)
+endif()
+
 install(
   TARGETS cgmerge2
   EXPORT ${TARGETS_EXPORT_NAME}
