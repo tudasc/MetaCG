@@ -80,7 +80,19 @@ for tc in "${tests[@]}"; do
   fail=$?
   fails=$((fails + fail))
 done
-echo "Test failures: $fails"
 
+echo "Running integration test for merge Post Processing Task"
+tc="postProcessingTask"
+
+echo "Running test ${tc}"
+ipcgTaFile="${tc}_a.ipcg"
+ipcgTbFile="${tc}_b.ipcg"
+gtCombFile="${tc}_both.gtmcg"
+
+${PWD}/../../../../${build_dir}/graph/test/integration/CallgraphMerge/MergeTaskTest ./input/${ipcgTaFile} ./input/${ipcgTbFile} ./input/${gtCombFile} ./input/${tc}_both-${CI_CONCURRENT_ID}.ipcg >> log/testrun.log 2>&1
+fail=$?
+fails=$((fails + fail))
+
+echo "Test failures: $fails"
 
 exit $fails

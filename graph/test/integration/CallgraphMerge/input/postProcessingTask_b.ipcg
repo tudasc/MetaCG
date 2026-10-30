@@ -1,0 +1,174 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "_Z3getv": {
+                "callees": {
+                    "_ZN1BC2Ev": {},
+                    "_Znwm": {}
+                },
+                "functionName": "_Z3getv",
+                "hasBody": true,
+                "meta": {},
+                "origin": "lib.cpp"
+            },
+            "_Z4todov": {
+                "callees": {
+                    "_ZN1BC2Ev": {},
+                    "_ZN4Base4testEv": {},
+                    "_ZN4BaseC2Ev": {},
+                    "_ZN4BaseD2Ev": {},
+                    "_Znwm": {}
+                },
+                "functionName": "_Z4todov",
+                "hasBody": true,
+                "meta": {},
+                "origin": "lib.cpp"
+            },
+            "_ZN1B3fooEv": {
+                "callees": {
+                    "puts": {}
+                },
+                "functionName": "_ZN1B3fooEv",
+                "hasBody": true,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [],
+                        "overrides": [
+                            "_ZN4Base3fooEv"
+                        ]
+                    }
+                },
+                "origin": "lib.cpp"
+            },
+            "_ZN1BC2Ev": {
+                "callees": {
+                    "_ZN4BaseC2Ev": {}
+                },
+                "functionName": "_ZN1BC2Ev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "lib.cpp"
+            },
+            "_ZN1BD0Ev": {
+                "callees": {
+                    "_ZN1BD2Ev": {},
+                    "_ZdlPvm": {}
+                },
+                "functionName": "_ZN1BD0Ev",
+                "hasBody": true,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [],
+                        "overrides": [
+                            "_ZN4BaseD0Ev"
+                        ]
+                    }
+                },
+                "origin": "lib.cpp"
+            },
+            "_ZN1BD2Ev": {
+                "callees": {
+                    "_ZN4BaseD2Ev": {}
+                },
+                "functionName": "_ZN1BD2Ev",
+                "hasBody": true,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [],
+                        "overrides": [
+                            "_ZN4BaseD0Ev"
+                        ]
+                    }
+                },
+                "origin": "lib.cpp"
+            },
+            "_ZN4Base3fooEv": {
+                "callees": {},
+                "functionName": "_ZN4Base3fooEv",
+                "hasBody": false,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [
+                            "_ZN1B3fooEv"
+                        ],
+                        "overrides": []
+                    }
+                },
+                "origin": "placeholder"
+            },
+            "_ZN4Base4testEv": {
+                "callees": {},
+                "functionName": "_ZN4Base4testEv",
+                "hasBody": true,
+                "meta": {},
+                "origin": "./A.h"
+            },
+            "_ZN4BaseC2Ev": {
+                "callees": {},
+                "functionName": "_ZN4BaseC2Ev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "./A.h"
+            },
+            "_ZN4BaseD0Ev": {
+                "callees": {},
+                "functionName": "_ZN4BaseD0Ev",
+                "hasBody": false,
+                "meta": {
+                    "overrideMD": {
+                        "overriddenBy": [
+                            "_ZN1BD0Ev",
+                            "_ZN1BD2Ev"
+                        ],
+                        "overrides": []
+                    }
+                },
+                "origin": "placeholder"
+            },
+            "_ZN4BaseD2Ev": {
+                "callees": {},
+                "functionName": "_ZN4BaseD2Ev",
+                "hasBody": true,
+                "meta": {},
+                "origin": "./A.h"
+            },
+            "_ZdlPvm": {
+                "callees": {},
+                "functionName": "_ZdlPvm",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "_Znwm": {
+                "callees": {},
+                "functionName": "_Znwm",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "__gxx_personality_v0": {
+                "callees": {},
+                "functionName": "__gxx_personality_v0",
+                "hasBody": false,
+                "meta": {},
+                "origin": null
+            },
+            "puts": {
+                "callees": {},
+                "functionName": "puts",
+                "hasBody": false,
+                "meta": {},
+                "origin": "/usr/include/stdio.h"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CaGe",
+            "sha": "b3a68ccd48f798630bfe3a10aaec85779d4b1250",
+            "version": "0.1"
+        },
+        "version": "4.0"
+    }
+}
