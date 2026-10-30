@@ -61,7 +61,7 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_VERBOSE_MAKEFILE=ON \
       -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-20/build/utils/lit/lit.py
 
-RUN cmake --build build --parallel
+RUN cmake --build build --parallel 2
 
 RUN cmake --install build
 
