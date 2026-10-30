@@ -1,6 +1,19 @@
-project(CGPatch)
+set(PROJECT_NAME CGPatch)
+set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 
 include(GNUInstallDirs)
+
+# Enable MPI for CGPatch
+option(
+  CGPATCH_USE_MPI
+  "On or Off"
+  ON
+)
+
+if(CGPATCH_USE_MPI)
+  find_package(MPI REQUIRED)
+  message(STATUS "MPI VERSION: ${MPI_C_VERSION}")
+endif()
 
 # LLVM
 option(
@@ -33,6 +46,7 @@ foreach(tgt cgpatch-call-analysis cgpatch-inst-pass)
 endforeach()
 
 if(CGPATCH_USE_MPI)
+  target_include_directories(cgpatch-runtime PRIVATE ${MPI_C_INCLUDE_DIRS})
   target_compile_definitions(cgpatch-runtime PRIVATE USE_MPI=1)
 endif()
 
