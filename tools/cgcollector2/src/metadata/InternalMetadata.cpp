@@ -4,8 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 // We need a .cpp file for the registration to trigger
-#include "cgcollector2/metadata/external/AllAliasMetadata.h"
-#include "cgcollector2/metadata/external/FunctionSignatureMetadata.h"
+#include "cgcollector2/metadata/exported//AllAliasMetadata.h"
+#include "cgcollector2/metadata/exported/FunctionSignatureMetadata.h"
 
 
 
