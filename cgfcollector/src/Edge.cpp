@@ -21,20 +21,15 @@ void EdgeManager::addEdgesForFinalizers(
     const std::unordered_map<const Fortran::semantics::Symbol*, std::vector<const Fortran::semantics::Symbol*>>&
         finalizers,
     const Symbol* currentProcedureSymbol, const Symbol* symbol) {
-  auto baseTypeIt = std::find_if(types.begin(), types.end(), [&](const Type& t) {
-    return compareSymbols(t.typeSymbol, symbol, CanonicalMode::ByType);
-  });
-  if (baseTypeIt == types.end())
+  const Symbol* root = getRootTypeOfSymbol(symbol);
+  if (!root)
     return;
 
-  try {
-    auto final = finalizers.at(getAbsoluteBaseSymbol(types, &(*baseTypeIt)));
-    for (const Symbol* f : final) {
-      addEdge(currentProcedureSymbol, f);
-    }
-  } catch (const std::out_of_range& e) {
-    // no finalizer for this type, do nothing
-  }
+  auto it = finalizers.find(root);
+  if (it == finalizers.end())
+    return;
+  for (const Symbol* f : it->second)
+    addEdge(currentProcedureSymbol, f);
 }
 
 void EdgeManager::addEdgesForFinalizers(const PotentialFinalizer& e) {
