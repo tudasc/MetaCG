@@ -19,7 +19,7 @@ class FileInfoMetadata : public metacg::MetaData::Registrar<FileInfoMetadata> {
  public:
   static constexpr const char* key = "FilePropertiesMetaData";
   FileInfoMetadata() : origin("INVALID"), fromSystemInclude(false), lineNumber(0) {}
-  explicit FileInfoMetadata(const nlohmann::json& j, metacg::StrToNodeMapping& strToNode) {
+  explicit FileInfoMetadata(const nlohmann::json& j, metacg::StrToNodeMapping&) {
     if (j.is_null()) {
       metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for fileProperties");
       return;

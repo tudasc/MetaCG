@@ -5,9 +5,9 @@
  */
 
 #include "cgcollector2/CallGraphNodeGenerator.h"
-#include "cgcollector2/metadata/Internal/ASTNodeMetadata.h"
-#include "cgcollector2/metadata/Internal/AllAliasMetadata.h"
-#include "cgcollector2/metadata/Internal/FunctionSignatureMetadata.h"
+#include "cgcollector2/metadata/internal/ASTNodeMetadata.h"
+#include "cgcollector2/metadata/exported/AllAliasMetadata.h"
+#include "cgcollector2/metadata/exported/FunctionSignatureMetadata.h"
 #include "metacg/LoggerUtil.h"
 #include "metacg/metadata/OverrideMD.h"
 
