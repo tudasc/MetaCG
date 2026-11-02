@@ -61,7 +61,13 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_VERBOSE_MAKEFILE=ON \
       -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-22/bin/lit
 
-RUN cmake --build build --parallel
+#CGFCollector is a very heavy build
+#Build graphlib first in parallel
+RUN cmake --build build --target metacg --parallel $(nproc)
+#Then build cgfcollector with half as many threads
+RUN cmake --build build --target cgfcollector --parallel $((($(nproc)+1)/2))
+#Then build the rest of the project
+RUN cmake --build build --parallel $(nproc)
 
 RUN cmake --install build
 
