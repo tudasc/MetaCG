@@ -1,11 +1,8 @@
-
 #include "metacg/Callgraph.h"
 #include "metacg/MergePolicy.h"
-#include "metacg/io/NameMapping.h"
 #include "metacg/io/VersionFourMCGReader.h"
 #include "metacg/io/VersionFourMCGWriter.h"
-#include "metacg/metadata/CallTypeMD.h"
-#include "metacg/metadata/OverrideMD.h"
+#include "metacg/VirtualCallResolutionTask.h"
 
 #include <algorithm>
 #include <fstream>
@@ -13,43 +10,6 @@
 #include <string>
 
 using namespace metacg;
-
-void task(metacg::Callgraph* cg) {
-  for (const auto& [nodePair, namedMD] : cg->getEdges()) {
-    if (auto it = namedMD.find(metacg::CallTypeMD::key); it != namedMD.end()) {
-      if (auto* callTypeMD = dynamic_cast<metacg::CallTypeMD*>(it->second.get())) {
-        if (callTypeMD->callType == metacg::CallType::VIRTUAL) {
-          const NodeId& calleeId = nodePair.second;
-          const NodeId& callerId = nodePair.first;
-
-          const auto callee = cg->getNode(calleeId);
-          const auto caller = cg->getNode(callerId);
-
-          if (!callee || !caller) {
-            continue;
-          }
-          const auto& calleeMD = callee->getMetaDataContainer();
-
-          if (auto it2 = calleeMD.find(metacg::OverrideMD::key); it2 != calleeMD.end()) {
-            if (auto* overrideMD = dynamic_cast<metacg::OverrideMD*>(it2->second.get())) {
-              metacg::NameMapping m(*cg);
-
-              for (const auto& override : overrideMD->overriddenBy) {
-                const auto& node = cg->getNode(override);
-
-                if (!cg->existsEdge(*caller, *node)) {
-                  cg->addEdge(*caller, *node);
-                  auto md = std::make_unique<metacg::CallTypeMD>(metacg::CallType::VIRTUAL);
-                  cg->addEdgeMetaData(*caller, *node, std::move(md));
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
 
 // Compare two callgraphs, ignoring the ordering of arrays.
 bool check(nlohmann::json testGraph, nlohmann::json groundTruth) {
@@ -95,7 +55,7 @@ int main(int argc, char** argv) {
   auto cgA = readerA.read();
   auto cgB = readerB.read();
 
-  cgA->merge(*cgB, metacg::MergeByName{}, task);
+  cgA->merge(*cgB, metacg::MergeByName{}, metacg::VirtualCallResolutionTask());
 
   metacg::io::VersionFourMCGWriter writer;
   writer.setExportSorted(true);
