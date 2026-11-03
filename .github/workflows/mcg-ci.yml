@@ -225,13 +225,14 @@ jobs:
         with:
           image: metacg-llvm-${{ matrix.llvm }}-devel:latest
           run: |
+            set -e
             cd /opt/metacg
             cmake -S . -B build-noomp -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tmp/metacg-noomp -DMETACG_BUILD_GRAPH_TOOLS=ON -DCAGE_USE_METAVIRT=OFF -DCMAKE_DISABLE_FIND_PACKAGE_OpenMP=ON
             cmake --build build-noomp --target cgmerge2 --parallel $(nproc)
-            if ldd build-noomp/tools/cgmerge2/cgmerge2 | grep -q libgomp; then
-              echo "cgmerge2 links against OpenMP although OpenMP was disabled"
-              exit 1
-            fi
+            LDD_OUT=$(ldd build-noomp/tools/cgmerge2/cgmerge2)
+            echo "$LDD_OUT"
+            GOMP_COUNT=$(echo "$LDD_OUT" | grep -c libgomp || true)
+            test "$GOMP_COUNT" -eq 0
             cd build-noomp/tools/cgmerge2/
             ctest . --verbose
       - name: Run cgc2 Demo Plugin tests
