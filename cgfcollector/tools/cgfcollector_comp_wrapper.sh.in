@@ -25,11 +25,12 @@
 #     cgfcollector_comp_wrapper.sh [Flang options, source files, plugin options]
 #
 # Options:
-#     -d, --dot             # Additionally generate a DOT file. This is mostly used for debugging.
-#     --skip-gen-bin        # Skip the final compilation step. Only generate the call graph.
-#     -v, --verbose         # Print additional information during the generation process.
-#     --graph-name          # Set internal graph name
-#     --include-intrinsics  # Include intrinsic calls in the generated call graph.
+#     -d, --dot                  # Additionally generate a DOT file. This is mostly used for debugging.
+#     --skip-gen-bin             # Skip the final compilation step. Only generate the call graph.
+#     -v, --verbose              # Print additional information during the generation process.
+#     --graph-name               # Set internal graph name
+#     --include-intrinsics       # Include intrinsic calls in the generated call graph.
+#     --collect-statement-counts # Collect statement counts for each function in the call graph.
 
 flang_bin=${CGFCOLLECTOR_FLANG_BIN:-"flang"}
 flang_fc1_bin=${CGFCOLLECTOR_FLANG_FC1_BIN:-"flang"}
@@ -43,6 +44,7 @@ declare -A OPTION_MAP=(
     ["--verbose"]="--verbose"
     ["--graph-name"]="--graph-name"
     ["--include-intrinsics"]="--include-intrinsics"
+    ["--collect-statement-counts"]="--collect-statement-counts"
 )
 
 if [[ $# -gt 0 && "$1" != -* ]] && command -v "$1" &>/dev/null; then
