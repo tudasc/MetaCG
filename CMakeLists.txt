@@ -111,7 +111,7 @@ if(METACG_BUILD_GRAPH_TOOLS)
 
   else()
     set(BUILD_CAGE OFF)
-    message(STATUS "Skipping CaGe: requires LLVM version 16 or higher")
+    message(STATUS "Skipping CaGe: requires LLVM version 15 or higher")
   endif()
 
   add_subdirectory(tools)
