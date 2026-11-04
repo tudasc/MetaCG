@@ -19,6 +19,7 @@
 #include <cxxopts.hpp>
 
 #include <fstream>
+#include <iostream>
 #include <map>
 #include <set>
 #include <string>
@@ -53,9 +54,6 @@ static std::unordered_set<NodeId> getAllBaseOverrides(NodeId nodeId, const Callg
 }
 
 int main(int argc, char** argv) {
-  auto console = MCGLogger::instance().getConsole();
-  auto errConsole = MCGLogger::instance().getErrConsole();
-
   cxxopts::Options options(
       "cgvalidate2",
       "Validation of MCG files using cubex files.\n"
@@ -88,10 +86,10 @@ int main(int argc, char** argv) {
   const bool insertNewNodes = !(result["noNewNodes"].as<bool>());
   const bool useCubeCallCounts = result["useCubeCallCount"].as<bool>();
 
-  console->info("Running metacg::CGValidate2 (version {}.{})\nGit revision: {}", MetaCG_VERSION_MAJOR,
-                MetaCG_VERSION_MINOR, MetaCG_GIT_SHA);
-  console->info("{}", mcgFile);
-  console->info("{}", cubexFile);
+  MCGLogger::logInfo("Running metacg::CGValidate2 (version {}.{})\nGit revision: {}", MetaCG_VERSION_MAJOR,
+                     MetaCG_VERSION_MINOR, MetaCG_GIT_SHA);
+  MCGLogger::logInfo("MCG file: {}", mcgFile);
+  MCGLogger::logInfo("Cube file: {}", cubexFile);
 
   // Load MCG
   io::FileSource src(mcgFile);
@@ -99,18 +97,18 @@ int main(int argc, char** argv) {
   try {
     const std::string versionStr = src.getFormatVersion();
     if (versionStr == "unknown") {
-      errConsole->error("[Error] Could not determine MCG format version for {}", mcgFile);
+      MCGLogger::logError("Could not determine MCG format version for {}", mcgFile);
       return 2;
     }
     mcgVersion = std::stoi(versionStr);
   } catch (const std::exception& e) {
-    errConsole->error("[Error] MCG file {} not readable: {}", mcgFile, e.what());
+    MCGLogger::logError("MCG file {} not readable: {}", mcgFile, e.what());
     return 2;
   }
 
   auto reader = io::createReader(src);
   if (!reader) {
-    errConsole->error("[Error] Unsupported MCG format version {} for {}", mcgVersion, mcgFile);
+    MCGLogger::logError("Unsupported MCG format version {} for {}", mcgVersion, mcgFile);
     return 2;
   }
 
@@ -125,7 +123,7 @@ int main(int argc, char** argv) {
   try {
     cube.openCubeReport(cubexFile);
   } catch (const std::exception& e) {
-    errConsole->error("[Error] cube file {} not readable: {}", cubexFile, e.what());
+    MCGLogger::logError("Cube file {} not readable: {}", cubexFile, e.what());
     return 3;
   }
 
@@ -148,10 +146,10 @@ int main(int argc, char** argv) {
     if (!cg->hasNode(name)) {
       if (insertNewNodes) {
         auto& n = cg->insert(name);
-        console->warn("[Warning] Inserted previously undeclared node {}", name);
+        MCGLogger::logWarn("Inserted previously undeclared node {}", name);
         return &n;
       } else {
-        console->warn("[Warning] Not inserted undeclared node {}", name);
+        MCGLogger::logWarn("Not inserted undeclared node {}", name);
         return nullptr;
       }
     }
@@ -203,42 +201,42 @@ int main(int argc, char** argv) {
       const bool pHasBody = parentNode->getHasBody();
       const bool cHasBody = nodePtr->getHasBody();
       if (!pHasBody) {
-        errConsole->warn("[Warning] No CGCollector data for {} in MCG.", parentName);
+        MCGLogger::logWarn("No CGCollector data for {} in MCG.", parentName);
       }
       if (!cHasBody) {
-        errConsole->warn("[Warning] No CGCollector data for {} in MCG.", nodeName);
+        MCGLogger::logWarn("No CGCollector data for {} in MCG.", nodeName);
       }
       // If either side lacks a body we cannot expect the static edge to be present.
       edgeFound = edgeFound || !pHasBody || !cHasBody;
     }
 
     if (!edgeFound && !overrideEdgeFound) {
-      errConsole->info("[Error] {} does not contain parent {}", nodeName, parentName);
-      errConsole->info("[Error] {} does not contain callee {}", parentName, nodeName);
+      MCGLogger::logError("{} does not contain parent {}", nodeName, parentName);
+      MCGLogger::logError("{} does not contain callee {}", parentName, nodeName);
       verified = false;
       if (patch) {
         ensureNode(parentName);
         ensureNode(nodeName);
         cg->addEdge(parentName, nodeName);
-        console->info("[Info] patched in edge {} -> {} in {}", parentName, nodeName, outputFile);
+        MCGLogger::logInfo("Patched in edge {} -> {} in {}", parentName, nodeName, outputFile);
       }
     } else if (useCubeCallCounts) {
       const double total = totalCallCounts.count(parentName) ? totalCallCounts.at(parentName) : 0.0;
       const double count = (callCounts.count(parentName) && callCounts.at(parentName).count(nodeName))
                                ? callCounts.at(parentName).at(nodeName)
                                : 0.0;
-      console->info("[Info] Cube call count for {} -> {}: {:.6f}", parentName, nodeName,
-                    total > 0.0 ? count / total : 0.0);
+      MCGLogger::logInfo("Cube call count for {} -> {}: {:.6f}", parentName, nodeName,
+                               total > 0.0 ? count / total : 0.0);
     }
   }
 
-  console->info("[Info] Checked {} edges.", edgesChecked.size());
+  MCGLogger::logInfo("Checked {} edges.", edgesChecked.size());
 
   if (!verified) {
     if (patch) {
       auto writer = io::createWriter(mcgVersion);
       if (!writer) {
-        errConsole->error("Unable to create writer for format version {}", mcgVersion);
+        MCGLogger::logError("Unable to create writer for format version {}", mcgVersion);
         return 1;
       }
       io::JsonSink jsonSink;
@@ -249,6 +247,6 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  console->info("callgraph does match cube file");
+  MCGLogger::logInfo("Callgraph does match cube file");
   return 0;
 }
