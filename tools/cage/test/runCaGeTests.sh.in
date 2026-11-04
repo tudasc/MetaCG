@@ -43,12 +43,8 @@ function runTestCase {
   plugin_flags=()
 
   if [[ "$(basename "$testCasePath")" == "override" ]]; then
-    plugin_flags=(
-      -Xclang -load
-      -Xclang "$overrides_plugin"
-      -Xclang -add-plugin
-      -Xclang cage-overrides-plugin
-    )
+    #plugin_flags=`$mcgconfig --cage-overrides-plugin-cxxflags`
+    read -r -a plugin_flags <<< "$("$mcgconfig" --cage-overrides-plugin-cxxflags)"
   fi
 
   run_dir=$(realpath --relative-to="$test_src_dir" "$testCasePath")

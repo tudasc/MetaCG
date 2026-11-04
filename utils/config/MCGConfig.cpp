@@ -14,6 +14,10 @@
 #define CAGE_PLUGIN
 #endif
 
+#ifdef CAGE_OVERRIDE_PLUGIN
+constexpr const char* overridePluginPath = CAGE_OVERRIDE_PLUGIN;
+#endif
+
 int main(int argc, char** argv) {
   cxxopts::Options options("metacg-config", "MetaCG configuration tool");
   // clang-format off
@@ -23,6 +27,7 @@ int main(int argc, char** argv) {
       "cage-ldflags", "Prints the necessary ld flags.")(
       "cage-cflags", "Prints the necessary C compile flags.")(
       "cage-cxxflags", "Prints the necessary C++ compile flags.")(
+      "cage-overrides-plugin-cxxflags", "Prints the flags required to enable the cage overrides plugin.")(
       "cage-pass-option", "Sets a pass option", cxxopts::value<std::vector<std::string>>())(
       "h,help", "Print help");
   // clang-format on
@@ -35,7 +40,7 @@ int main(int argc, char** argv) {
   }
 
   bool cageOptionSet = result.count("cage-ldflags") + result.count("cage-cflags") + result.count("cage-cxxflags") +
-                       result.count("cage-pass-option");
+                       result.count("cage-pass-option") + result.count("cage-overrides-plugin-cxxflags");
 
 #ifndef HAVE_CAGE
   if (cageOptionSet) {
@@ -89,6 +94,11 @@ int main(int argc, char** argv) {
   if (result.contains("cage-ldflags")) {
     std::cout << " -flto -fuse-ld=lld -Wl,-mllvm=-load=" << CAGE_PLUGIN << " -Wl,--load-pass-plugin=" << CAGE_PLUGIN
               << processedPassOpts << " ";
+  }
+  if (result.contains("cage-overrides-plugin-cxxflags")) {
+    std::cout << "-Xclang -load -Xclang "
+              <<   overridePluginPath 
+              << " -Xclang -add-plugin -Xclang cage-overrides-plugin";
   }
 #endif
 
