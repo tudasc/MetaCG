@@ -20,7 +20,7 @@ Refer to the [pymetacg README](pymetacg/README.md) for more information how to b
 
 MetaCG consists of the graph library, CG construction tools, Python bindings, and an example analysis tool.
 The graph library is always built, while the other components can be selectively built.
-In the GitHub testing, MetaCG is built using GCC 12 and tests against LLVM versions 18 and 20.
+In the GitHub testing, MetaCG is built using GCC 12 and tests against LLVM versions 18, 20 and 22.
 Other version combinations *may* work.
 
 **Build Requirements (for graph lib)**

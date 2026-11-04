@@ -16,13 +16,14 @@ find_package(
 function(test_llvm_major_version version_string)
   # List of all supported major LLVM versions
   set(supported_llvm_versions
-      10
-      13
-      14
       15
       16
       17
       18
+      19
+      20
+      21
+      22
   )
   # Set to indicate after loop if supported version was found
   set(valid_version FALSE)
@@ -36,7 +37,7 @@ function(test_llvm_major_version version_string)
 
   if(NOT ${valid_version})
     message(WARNING "Support for LLVM Version ${version_string} is not tested! Proceed with care.")
-    message(WARNING "LLVM/Clang version 10, 13, 14, 15, 16, 17, 18 are supported and tested")
+    message(WARNING "LLVM/Clang version 15, 16, 17, 18, 19, 20, 21, and 22 are supported and tested")
   endif()
 endfunction()
 
