@@ -17,7 +17,7 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
   explicit InlineMD(const nlohmann::json& j, StrToNodeMapping&) {
     metacg::MCGLogger::logTrace("Reading inlineInfo from json");
     if (j.is_null()) {
-      metacg::MCGLogger::logTrace("Could not retrieve meta data for {}", "inlineInfo");
+      metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
     markedInline = j["markedInline"];

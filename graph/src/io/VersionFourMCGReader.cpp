@@ -214,7 +214,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
       cg->addMetaData(std::move(md));
     } else {
       if (MetaData::isRegistered(mdKey)) {
-        metacg::MCGLogger::logWarn("Could not create global metadata of type {}", mdKey);
+        metacg::MCGLogger::logWarnUnique("Could not create global metadata of type {}", mdKey);
       }
       if (failedMetadataCb) {
         (*failedMetadataCb)(std::nullopt, mdKey, mdValJ);

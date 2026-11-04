@@ -17,7 +17,7 @@ class FilePropertiesMD : public metacg::MetaData::Registrar<FilePropertiesMD> {
   FilePropertiesMD() : fromSystemInclude(false) {}
   explicit FilePropertiesMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
-      metacg::MCGLogger::logError("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
     fromSystemInclude = j["systemInclude"];

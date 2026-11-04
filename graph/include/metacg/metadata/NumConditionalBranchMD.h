@@ -16,7 +16,7 @@ class NumConditionalBranchMD : public metacg::MetaData::Registrar<NumConditional
   NumConditionalBranchMD() = default;
   explicit NumConditionalBranchMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
-      metacg::MCGLogger::logError("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
     int numberOfConditionalBranches = j.get<int>();
@@ -40,7 +40,7 @@ class NumConditionalBranchMD : public metacg::MetaData::Registrar<NumConditional
       numConditionalBranches += toMergeDerived->numConditionalBranches;
 
       if (numConditionalBranches != 0 && toMergeDerived->numConditionalBranches != 0) {
-        metacg::MCGLogger::logWarn(
+        metacg::MCGLogger::logWarnUnique(
             "Same function defined with different number of conditional branches found on merge.");
       }
     }

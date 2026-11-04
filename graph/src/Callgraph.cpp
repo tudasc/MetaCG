@@ -115,7 +115,7 @@ void Callgraph::clear() {
 
 bool Callgraph::addEdgeInternal(NodeId caller, NodeId callee) {
   if (edges.find({caller, callee}) != edges.end()) {
-    MCGLogger::logWarn("Edge between {} and {} already exist: Skipping edge insertion",
+    MCGLogger::logWarnUnique("Edge between {} and {} already exist: Skipping edge insertion",
                        getNode(caller)->getFunctionName(), getNode(callee)->getFunctionName());
     return false;
   }

@@ -17,7 +17,7 @@ class LoopDepthMD : public metacg::MetaData::Registrar<LoopDepthMD> {
   LoopDepthMD() = default;
   explicit LoopDepthMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
-      metacg::MCGLogger::logError("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
     loopDepth = j.get<int>();
@@ -53,7 +53,7 @@ class GlobalLoopDepthMD : public metacg::MetaData::Registrar<GlobalLoopDepthMD> 
 
   explicit GlobalLoopDepthMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
-      metacg::MCGLogger::logError("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
     globalLoopDepth = j.get<int>();
@@ -71,7 +71,7 @@ class GlobalLoopDepthMD : public metacg::MetaData::Registrar<GlobalLoopDepthMD> 
     assert(toMerge.getKey() == getKey() && "Trying to merge GlobalLoopDepthMD with meta data of different types");
 
     metacg::MCGLogger::logWarn(
-        "GlobalLoopDepth can not be merged. In order to get the correct values, a seperate pass through the merged "
+        "GlobalLoopDepth can not be merged. In order to get the correct values, a separate pass through the merged "
         "graph is needed.");
 
     // TODO: Implement global merge strategy. Fall back implementation below should be removed.
@@ -95,7 +95,7 @@ class LoopCallDepthMD : public metacg::MetaData::Registrar<LoopCallDepthMD> {
   explicit LoopCallDepthMD(const nlohmann::json& j, StrToNodeMapping&) {
     metacg::MCGLogger::logTrace("Running LoopCallDepthHandler::read from json");
     if (j.is_null()) {
-      metacg::MCGLogger::logError("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::logWarnUnique("Could not retrieve meta data for {}", key);
       return;
     }
 
