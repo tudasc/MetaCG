@@ -40,19 +40,18 @@ static list<std::string> pluginPaths("plugin-paths", desc("option list"), cat(ca
 namespace cage {
 
 Plugin* loadPlugin(const std::string& pluginPath) {
-  metacg::MCGLogger::instance().getConsole()->debug("Loading plugin");
+  metacg::MCGLogger::logDebug("Loading plugin");
   std::string err;
   auto lib = llvm::sys::DynamicLibrary::getPermanentLibrary(pluginPath.c_str(), &err);
   if (!lib.isValid()) {
-    metacg::MCGLogger::instance().getErrConsole()->error("cannot locate the library at {}!", pluginPath);
-    metacg::MCGLogger::instance().getErrConsole()->error("Reason: {}", err);
+    metacg::MCGLogger::logError("cannot locate the library at {}!", pluginPath);
+    metacg::MCGLogger::logError("Reason: {}", err);
     return nullptr;
   }
-  metacg::MCGLogger::instance().getConsole()->trace("Getting collection object from plugin {}", pluginPath);
+  metacg::MCGLogger::logTrace("Getting collection object from plugin {}", pluginPath);
   void* sym = lib.getAddressOfSymbol("getPlugin");
   if (!sym) {
-    metacg::MCGLogger::instance().getErrConsole()->error(
-        "Could not load collectors from plugin, no Function \"getPlugin()\"!");
+    metacg::MCGLogger::logError("Could not load collectors from plugin, no Function \"getPlugin()\"!");
     return nullptr;
   }
   auto getPlugin = reinterpret_cast<Plugin* (*)()>(sym);

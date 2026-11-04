@@ -19,7 +19,7 @@ struct UniqueTypeCollector : public cgcollector2::Plugin {
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
     std::set<const clang::Type*> uniqueTypes;
 
-    metacg::MCGLogger::instance().getConsole()->debug("Processing function {}", decl->getNameAsString());
+    metacg::MCGLogger::logDebug("Processing function {}", decl->getNameAsString());
 
     class DeclRefExprVisitor : public clang::StmtVisitor<DeclRefExprVisitor> {
       std::set<const clang::Type*>& fTypes;
@@ -48,7 +48,7 @@ struct UniqueTypeCollector : public cgcollector2::Plugin {
             fTypes.insert(ty);
           }
         } else {
-          metacg::MCGLogger::instance().getConsole()->debug("Found DeclGroup: Not Collecting Types.");
+          metacg::MCGLogger::logDebug("Found DeclGroup: Not Collecting Types.");
         }
       }
 

@@ -17,7 +17,7 @@ class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
 
   explicit NumOperationsMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::logError("Could not retrieve meta data for {}", key);
       return;
     }
     int jNumberOfIntOps = j["numberOfIntOps"].get<int>();
@@ -70,8 +70,7 @@ class NumOperationsMD : public metacg::MetaData::Registrar<NumOperationsMD> {
            numberOfControlFlowOps != toMergeDerived->numberOfControlFlowOps) ||
           (numberOfMemoryAccesses != 0 && toMergeDerived->numberOfMemoryAccesses != 0 &&
            numberOfMemoryAccesses != toMergeDerived->numberOfMemoryAccesses)) {
-        metacg::MCGLogger::instance().getErrConsole()->warn(
-            "Same function defined with different number of operations found on merge.");
+        metacg::MCGLogger::logWarn("Same function defined with different number of operations found on merge.");
       }
     }
   }

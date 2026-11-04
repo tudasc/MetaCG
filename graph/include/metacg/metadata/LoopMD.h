@@ -17,7 +17,7 @@ class LoopDepthMD : public metacg::MetaData::Registrar<LoopDepthMD> {
   LoopDepthMD() = default;
   explicit LoopDepthMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::logError("Could not retrieve meta data for {}", key);
       return;
     }
     loopDepth = j.get<int>();
@@ -53,7 +53,7 @@ class GlobalLoopDepthMD : public metacg::MetaData::Registrar<GlobalLoopDepthMD> 
 
   explicit GlobalLoopDepthMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::logError("Could not retrieve meta data for {}", key);
       return;
     }
     globalLoopDepth = j.get<int>();
@@ -70,7 +70,7 @@ class GlobalLoopDepthMD : public metacg::MetaData::Registrar<GlobalLoopDepthMD> 
   void merge(const MetaData& toMerge, std::optional<MergeAction>, const GraphMapping&) final {
     assert(toMerge.getKey() == getKey() && "Trying to merge GlobalLoopDepthMD with meta data of different types");
 
-    metacg::MCGLogger::instance().getErrConsole()->warn(
+    metacg::MCGLogger::logWarn(
         "GlobalLoopDepth can not be merged. In order to get the correct values, a seperate pass through the merged "
         "graph is needed.");
 
@@ -93,9 +93,9 @@ class LoopCallDepthMD : public metacg::MetaData::Registrar<LoopCallDepthMD> {
   static constexpr const char* key = "loopCallDepth";
   LoopCallDepthMD() = default;
   explicit LoopCallDepthMD(const nlohmann::json& j, StrToNodeMapping&) {
-    metacg::MCGLogger::instance().getConsole()->trace("Running LoopCallDepthHandler::read from json");
+    metacg::MCGLogger::logTrace("Running LoopCallDepthHandler::read from json");
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::logError("Could not retrieve meta data for {}", key);
       return;
     }
 

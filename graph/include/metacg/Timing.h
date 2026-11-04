@@ -24,8 +24,8 @@ class RuntimeTimer {
     if (printOnDestruct) {
       stop();
       auto durInMilliseconds = getTimePassed();
-      MCGLogger::instance().getConsole()->info("The region \"{}\" required {} milliseconds to finish.", region,
-                                               durInMilliseconds.count()/1000.0f);
+      MCGLogger::logInfo("The region \"{}\" required {} milliseconds to finish.", region,
+                         durInMilliseconds.count() / 1000.0f);
     }
   }
 

@@ -23,9 +23,9 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
   AllAliasMetadata(bool shouldExport) : shouldExport(shouldExport) {}
 
   explicit AllAliasMetadata(const nlohmann::json& j, metacg::StrToNodeMapping&) {
-    metacg::MCGLogger::instance().getConsole()->trace("AllAliasMetadata from json");
+    metacg::MCGLogger::logTrace("AllAliasMetadata from json");
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", "AllAliasMetadata");
+      metacg::MCGLogger::logTrace("Could not retrieve meta data for {}", "AllAliasMetadata");
       return;
     }
 
@@ -46,13 +46,13 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
 
   void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
-      metacg::MCGLogger::instance().getErrConsole()->error(
+      metacg::MCGLogger::logError(
           "The MetaData which was tried to merge with AllAliasMetadata was of a different MetaData type");
       abort();
     }
 
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
-      metacg::MCGLogger::instance().getErrConsole()->error(
+      metacg::MCGLogger::logError(
           "The MetaData which was tried to merge with FunctionSignatureMetadata was of a different MetaData type");
       abort();
     }

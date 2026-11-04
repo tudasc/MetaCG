@@ -16,7 +16,7 @@ class CodeStatisticsMD : public metacg::MetaData::Registrar<CodeStatisticsMD> {
   CodeStatisticsMD() = default;
   explicit CodeStatisticsMD(const nlohmann::json& j, StrToNodeMapping&) {
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::logError("Could not retrieve meta data for {}", key);
       return;
     }
     int jNumVars = j["numVars"].get<int>();
@@ -44,8 +44,7 @@ class CodeStatisticsMD : public metacg::MetaData::Registrar<CodeStatisticsMD> {
       numVars += toMergeDerived->numVars;
 
       if (numVars != 0 && toMergeDerived->numVars != 0) {
-        metacg::MCGLogger::instance().getErrConsole()->warn(
-            "Same function defined with different number of variables found on merge.");
+        metacg::MCGLogger::logWarn("Same function defined with different number of variables found on merge.");
       }
     }
   }
