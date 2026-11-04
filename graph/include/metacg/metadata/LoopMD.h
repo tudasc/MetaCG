@@ -95,7 +95,7 @@ class LoopCallDepthMD : public metacg::MetaData::Registrar<LoopCallDepthMD> {
   explicit LoopCallDepthMD(const nlohmann::json& j, StrToNodeMapping&) {
     metacg::MCGLogger::logTrace("Running LoopCallDepthHandler::read from json");
     if (j.is_null()) {
-      metacg::MCGLogger::logWarnUnique("Could not retrieve meta data for {}", key);
+      metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
 

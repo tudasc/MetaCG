@@ -25,7 +25,7 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
   explicit AllAliasMetadata(const nlohmann::json& j, metacg::StrToNodeMapping&) {
     metacg::MCGLogger::logTrace("AllAliasMetadata from json");
     if (j.is_null()) {
-      metacg::MCGLogger::logTrace("Could not retrieve meta data for {}", "AllAliasMetadata");
+      metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
 

@@ -21,7 +21,7 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
   explicit FunctionSignatureMetadata(const nlohmann::json& j, metacg::StrToNodeMapping&) {
     metacg::MCGLogger::logTrace("FunctionSignatureMetadata from json");
     if (j.is_null()) {
-      metacg::MCGLogger::logTrace("Could not retrieve meta data for {}", "FunctionSignatureMetadata");
+      metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
     ownSignature = j;
