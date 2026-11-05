@@ -73,7 +73,6 @@ target_sources(
 default_compile_options(cgcollector2-metadata)
 
 add_clang(cgcollector2-metadata PUBLIC)
-add_llvm(cgcollector2-metadata PUBLIC)
 add_metacg(cgcollector2-metadata)
 add_json(cgcollector2-metadata)
 install(
@@ -98,7 +97,6 @@ target_sources(
 )
 
 target_link_libraries(cgcollector2-plugin-interface INTERFACE metacg::metacg cgcollector2-metadata)
-add_llvm(cgcollector2-plugin-interface INTERFACE)
 
 install(
   TARGETS cgcollector2-plugin-interface
