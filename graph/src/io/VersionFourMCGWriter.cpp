@@ -74,11 +74,16 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
 
     for (auto& [key, md] : node->getMetaDataContainer()) {
       // Metadata is not attached, if the generated field is empty or null.
-      // TODO: Should this be considered an error instead?
+      // If the field is empty ({}), we assume the metadata doesn't want to be serialized
+      // If it is null, we assume something unintended happened and warn
       if (auto jMetaEntry = md->toJson(nodeToStr); !jMetaEntry.empty() && !jMetaEntry.is_null()) {
         jMeta[key] = std::move(jMetaEntry);
-      } else {
+      } else if (jMetaEntry.is_null()){
         MCGLogger::logWarn("Could not serialize metadata of type {} in node {}", key, node->getFunctionName());
+      } else {
+        // The metadata is not null but empty
+        // assume it doesn't want to be serialized
+        assert(jMetaEntry.empty() && "Potentially corrupt metadata found");
       }
     }
 
@@ -117,10 +122,16 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
   auto jMeta = nlohmann::json::object();
   for (auto& [key, md] : cg->getMetaDataContainer()) {
     // Metadata is not attached, if the generated field is empty or null.
+    // If the field is empty ({}), we assume the metadata doesn't want to be serialized
+    // If it is null, we assume something unintended happened and warn
     if (auto jMetaEntry = md->toJson(nodeToStr); !jMetaEntry.empty() && !jMetaEntry.is_null()) {
       jMeta[key] = std::move(jMetaEntry);
-    } else {
+    } else if (jMetaEntry.is_null()){
       MCGLogger::logWarn("Could not serialize global metadata of type {}", key);
+    } else {
+      // The metadata is not null but empty
+      // assume it doesn't want to be serialized
+      assert(jMetaEntry.empty() && "Potentially corrupt global metadata found");
     }
   }
   j["_CG"]["meta"] = std::move(jMeta);
