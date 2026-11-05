@@ -12,7 +12,6 @@
 class DotIOTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    metacg::loggerutil::getLogger();
     auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
     mcgm.addToManagedGraphs("emptyGraph", std::make_unique<metacg::Callgraph>());
