@@ -115,8 +115,8 @@ void Callgraph::clear() {
 
 bool Callgraph::addEdgeInternal(NodeId caller, NodeId callee) {
   if (edges.find({caller, callee}) != edges.end()) {
-    MCGLogger::instance().getErrConsole()->warn("Edge between {} and {} already exist: Skipping edge insertion",
-                                                getNode(caller)->getFunctionName(), getNode(callee)->getFunctionName());
+    MCGLogger::logWarnUnique("Edge between {} and {} already exist: Skipping edge insertion",
+                       getNode(caller)->getFunctionName(), getNode(callee)->getFunctionName());
     return false;
   }
   calleeList[caller].push_back(callee);
@@ -136,12 +136,12 @@ bool Callgraph::addEdge(const CgNode& parentNode, const CgNode& childNode) {
 bool Callgraph::addEdge(NodeId parentID, NodeId childID) {
   auto* parentNode = getNode(parentID);
   if (!parentNode) {
-    MCGLogger::instance().getErrConsole()->error("Source ID {} does not exist in graph", parentID);
+    MCGLogger::logError("Source ID {} does not exist in graph", parentID);
     return false;
   }
   auto* childNode = getNode(childID);
   if (!childNode) {
-    MCGLogger::instance().getErrConsole()->error("Target ID {} does not exist in graph", childID);
+    MCGLogger::logError("Target ID {} does not exist in graph", childID);
     return false;
   }
   return addEdgeInternal(parentID, childID);

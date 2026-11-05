@@ -23,7 +23,7 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
   std::string dumpString;
   llvm::raw_string_ostream llvmStringOstream(dumpString);
   Context.getTranslationUnitDecl()->dump(llvmStringOstream);
-  metacg::MCGLogger::instance().getConsole()->trace("\n{}\n", dumpString);
+  metacg::MCGLogger::logTrace("\n{}\n", dumpString);
 
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
@@ -43,7 +43,7 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
   metacg::MCGLogger::logInfo("Successfully Created Callgraph");
   metacg::MCGLogger::logInfo("Running Metadata Collectors");
   for (auto& c : mcs) {
-    metacg::MCGLogger::instance().getConsole()->debug("Running: {}", c->getPluginName());
+    metacg::MCGLogger::logDebug("Running: {}", c->getPluginName());
     for (const auto& node : callgraph->getNodes()) {
       if (!node->has<ASTNodeMetadata>()) {
         // This is because we currently do not attach ast node metadata to function pointers
@@ -86,16 +86,15 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
 }
 
 void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callgraph) {
-  metacg::MCGLogger::instance().getConsole()->trace("Available nodes:");
+  metacg::MCGLogger::logTrace("Available nodes:");
   // Build datastructure mapping a signature to all node id's with the same signature
   std::unordered_map<FunctionSignature, std::vector<size_t>> signatureToNodeIdMap;
   for (auto& node : callgraph->getNodes()) {
     if (node->has<FunctionSignatureMetadata>()) {
       std::ostringstream stream;
       stream << node->get<FunctionSignatureMetadata>()->ownSignature;
-      metacg::MCGLogger::instance().getConsole()->trace(
-          "{}'s signature is: {} with hash: {}", node->getFunctionName(), stream.str(),
-          std::hash<FunctionSignature>()(node->get<FunctionSignatureMetadata>()->ownSignature));
+      metacg::MCGLogger::logTrace("{}'s signature is: {} with hash: {}", node->getFunctionName(), stream.str(),
+                                  std::hash<FunctionSignature>()(node->get<FunctionSignatureMetadata>()->ownSignature));
       signatureToNodeIdMap[node->get<FunctionSignatureMetadata>()->ownSignature].push_back(node->getId());
     } else {
       metacg::MCGLogger::logError("{} has no signature attached", node->getFunctionName());
@@ -120,8 +119,8 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
           auto protoType = clang::cast<clang::FunctionProtoType>(
               md->getParamDecl(i)->getType()->getPointeeType().getDesugaredType(md->getASTContext()).IgnoreParens());
 
-          metacg::MCGLogger::instance().getConsole()->trace(
-              "The Node: {} has a pointer to a function as its {}th param", node->getFunctionName(), i);
+          metacg::MCGLogger::logTrace("The Node: {} has a pointer to a function as its {}th param",
+                                      node->getFunctionName(), i);
           FunctionSignature functionSignature;
           functionSignature.retType = protoType->getReturnType().getAsString();
           std::transform(protoType->getParamTypes().begin(), protoType->getParamTypes().end(),
@@ -143,21 +142,20 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
   metacg::MCGLogger::logInfo("Interfunction overestimation begins");
   // For all nodes, get the signature of a possible call target and add all functions with same signature as edges
   for (auto& node : callgraph->getNodes()) {
-    metacg::MCGLogger::instance().getConsole()->trace("Estimating for node {}", node->getFunctionName());
+    metacg::MCGLogger::logTrace("Estimating for node {}", node->getFunctionName());
     if (node->has<AllAliasMetadata>()) {
       for (const auto& pCallTarget : node->get<AllAliasMetadata>()->mightCall) {
         std::ostringstream stream;
         stream << pCallTarget;
-        metacg::MCGLogger::instance().getConsole()->debug("Node: {} might call: {} with hash: {}",
-                                                          node->getFunctionName(), stream.str(),
-                                                          std::hash<FunctionSignature>()(pCallTarget));
+        metacg::MCGLogger::logDebug("Node: {} might call: {} with hash: {}", node->getFunctionName(), stream.str(),
+                                    std::hash<FunctionSignature>()(pCallTarget));
         if (signatureToNodeIdMap.find(pCallTarget) == signatureToNodeIdMap.end()) {
-          metacg::MCGLogger::instance().getConsole()->debug("No function with matching signature found");
+          metacg::MCGLogger::logDebug("No function with matching signature found");
           continue;
         }
         for (const auto& id : signatureToNodeIdMap.at(pCallTarget)) {
-          metacg::MCGLogger::instance().getConsole()->debug("Found function with matching signature: {}",
-                                                            callgraph->getNode(id)->getFunctionName());
+          metacg::MCGLogger::logDebug("Found function with matching signature: {}",
+                                      callgraph->getNode(id)->getFunctionName());
           callgraph->addEdge(node->getId(), id);
         }
       }

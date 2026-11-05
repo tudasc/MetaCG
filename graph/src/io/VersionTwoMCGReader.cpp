@@ -13,20 +13,18 @@
 std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMCGReader::read() {
   const metacg::RuntimeTimer rtt("VersionTwoMCGReader::read");
   const metacg::MCGFileFormatInfo ffInfo{2, 0};
-  auto console = metacg::MCGLogger::instance().getConsole();
-  auto errConsole = metacg::MCGLogger::instance().getErrConsole();
 
   auto j = source.get();
 
   if (j.is_null()) {
     const std::string errorMsg = "JSON source did not contain any data.";
-    errConsole->error(errorMsg);
+    metacg::MCGLogger::logError("{}", errorMsg);
     throw std::runtime_error(errorMsg);
   }
 
   if (!j.contains(ffInfo.metaInfoFieldName) || j.at(ffInfo.metaInfoFieldName).is_null()) {
     const std::string errorMsg = "Could not read version info from metacg file.";
-    errConsole->error(errorMsg);
+    metacg::MCGLogger::logError("{}", errorMsg);
     throw std::runtime_error(errorMsg);
   }
 
@@ -38,7 +36,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMCGReader::read() {
 
   if (mcgVersion.compare(0, 1, std::string("2")) != 0) {
     const std::string errorMsg = "File is of version " + mcgVersion + ", this reader handles version 2.x";
-    errConsole->error(errorMsg);
+    metacg::MCGLogger::logError("{}", errorMsg);
     throw std::runtime_error(errorMsg);
   }
 
@@ -46,24 +44,24 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionTwoMCGReader::read() {
   auto generatorVersion = mcgInfo.at("generator").at("version").get<std::string>();
   const MCGGeneratorVersionInfo genVersionInfo{generatorName, metacg::util::getMajorVersionFromString(generatorVersion),
                                                metacg::util::getMinorVersionFromString(generatorVersion), ""};
-  console->info("The metacg (version {}) file was generated with {} (version: {})", mcgVersion, generatorName,
-                generatorVersion);
+  metacg::MCGLogger::logInfo("The metacg (version {}) file was generated with {} (version: {})", mcgVersion,
+                             generatorName, generatorVersion);
 
   MCGFileInfo fileInfo{ffInfo, genVersionInfo};
   if (j.at(ffInfo.cgFieldName).is_null()) {
     j[ffInfo.cgFieldName] = nlohmann::json::object();
     const std::string warningMsg = "Detected null call graph in metacg file; proceeding with an empty call graph.";
-    MCGLogger::logWarn(warningMsg);
+    MCGLogger::logWarn("{}", warningMsg);
   }
 
   if (!j.contains(ffInfo.cgFieldName)) {
     const std::string errorMsg = "The call graph in the metacg file was not found or null.";
-    errConsole->error(errorMsg);
+    metacg::MCGLogger::logError("{}", errorMsg);
     throw std::runtime_error(errorMsg);
   }
 
   auto& jsonCG = j[ffInfo.cgFieldName];
-  console->info("Lifting MetaCG version {} file to version 4", mcgVersion);
+  metacg::MCGLogger::logInfo("Lifting MetaCG version {} file to version 4", mcgVersion);
   upgradeV2FormatToV4Format(jsonCG);
   mcgInfo["version"] = "4.0";
 

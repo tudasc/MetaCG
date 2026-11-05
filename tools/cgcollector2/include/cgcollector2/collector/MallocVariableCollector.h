@@ -38,8 +38,8 @@ struct MallocVariableCollector : public cgcollector2::Plugin {
         if (ce->getCalleeDecl()) {
           if (const auto funSym = llvm::dyn_cast<clang::FunctionDecl>(ce->getCalleeDecl())) {
             if (!vd->isLocalVarDecl()) {
-              metacg::MCGLogger::instance().getConsole()->trace("Found {} call in assignment to {}",
-                                                                funSym->getNameAsString(), vd->getNameAsString());
+              metacg::MCGLogger::logTrace("Found {} call in assignment to {}", funSym->getNameAsString(),
+                                          vd->getNameAsString());
               return true;
             }
           }
@@ -66,7 +66,7 @@ struct MallocVariableCollector : public cgcollector2::Plugin {
                   const int indent = 0;
                   ds->printPretty(oss, nullptr, pp, indent, "\n", &ctx);
                   oss.flush();
-                  metacg::MCGLogger::instance().getConsole()->trace("{}", stmtStr);
+                  metacg::MCGLogger::logTrace("{}", stmtStr);
                   allocs.insert({d->getNameAsString(), stmtStr});
                 }
               }
@@ -103,8 +103,8 @@ struct MallocVariableCollector : public cgcollector2::Plugin {
               const int indent = 0;
               bo->printPretty(oss, nullptr, pp, indent, "\n", &ctx);
               oss.flush();
-              metacg::MCGLogger::instance().getConsole()->trace("Found new expression for {}\n{}\n",
-                                                                vRef->getDecl()->getNameAsString(), stmtStr);
+              metacg::MCGLogger::logTrace("Found new expression for {}\n{}\n", vRef->getDecl()->getNameAsString(),
+                                          stmtStr);
               allocs.insert({vRef->getDecl()->getNameAsString(), stmtStr});
             }
           }

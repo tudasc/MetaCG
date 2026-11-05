@@ -34,7 +34,7 @@ class ASTNodeMetadata : public metacg::MetaData::Registrar<ASTNodeMetadata> {
 
   void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
-      metacg::MCGLogger::instance().getErrConsole()->error(
+      metacg::MCGLogger::logError(
           "The MetaData which was tried to merge with ASTNodeMetadata was of a different MetaData type");
       abort();
     }

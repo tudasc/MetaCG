@@ -100,12 +100,10 @@ struct TempNodeData {
 std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
   const metacg::RuntimeTimer rtt("VersionFourMCGReader::read");
   const MCGFileFormatInfo ffInfo{4, 0};
-  auto console = metacg::MCGLogger::instance().getConsole();
-  auto errConsole = metacg::MCGLogger::instance().getErrConsole();
   auto j = source.get();
   auto mcgInfo = j[ffInfo.metaInfoFieldName];
   if (mcgInfo.is_null()) {
-    errConsole->error("Could not read version info from metacg file.");
+    metacg::MCGLogger::logError("Could not read version info from metacg file.");
     throw std::runtime_error("Could not read version info from metacg file");
   }
 
@@ -114,17 +112,17 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
   auto generatorVersion = mcgInfo["generator"]["version"].get<std::string>();
   const MCGGeneratorVersionInfo genVersionInfo{generatorName, metacg::util::getMajorVersionFromString(generatorVersion),
                                                metacg::util::getMinorVersionFromString(generatorVersion), ""};
-  console->info("The MetaCG (version {}) file was generated with {} (version: {})", mcgVersion, generatorName,
-                generatorVersion);
+  metacg::MCGLogger::logInfo("The MetaCG (version {}) file was generated with {} (version: {})", mcgVersion,
+                             generatorName, generatorVersion);
 
   if (mcgVersion.at(0) != '4') {
-    errConsole->error("This reader can only read MetaCG v4 files");
+    metacg::MCGLogger::logError("This reader can only read MetaCG v4 files");
     throw std::runtime_error("Trying to read incompatible file with V4 MCGReader");
   }
   const MCGFileInfo fileInfo{ffInfo, genVersionInfo};
   auto& jsonCG = j[ffInfo.cgFieldName];
   if (jsonCG.is_null()) {
-    errConsole->error("The call graph in the MetaCG file was null.");
+    metacg::MCGLogger::logError("The call graph in the MetaCG file was null.");
     throw std::runtime_error("CG in MetaCG file was null.");
   }
 
@@ -132,7 +130,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
 
   auto& jNodes = jsonCG["nodes"];
   if (jNodes.is_null()) {
-    errConsole->error("The 'nodes' entry was null.");
+    metacg::MCGLogger::logError("The 'nodes' entry was null.");
     throw std::runtime_error("Nodes entry in MetaCG file was null.");
   }
 
@@ -148,7 +146,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
 
     auto* node = createNodeFromJson(*cg, strId, jNode, strToNode);
     if (!node) {
-      errConsole->error("Encountered an error while processing node '{}'", strId);
+      metacg::MCGLogger::logError("Encountered an error while processing node '{}'", strId);
       throw std::runtime_error("Error while reading nodes");
     }
 
@@ -165,8 +163,8 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
       auto& mdJ = it.value();
       auto* calleeNode = strToNode.getNodeFromStr(calleeStr);
       if (!calleeNode) {
-        errConsole->error("Encountered unknown call target '{}' in edge from node '{}'", calleeStr,
-                          node->getFunctionName());
+        metacg::MCGLogger::logError("Encountered unknown call target '{}' in edge from node '{}'", calleeStr,
+                                    node->getFunctionName());
         throw std::runtime_error("Error while reading edges");
       }
       cg->addEdge(nodeData.nodeId, calleeNode->getId());
@@ -179,8 +177,8 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
             cg->addEdgeMetaData({nodeData.nodeId, calleeNode->getId()}, std::move(md));
           } else {
             if (MetaData::isRegistered(mdKey)) {
-              errConsole->warn("Could not create edge metadata of type {} for edge {} to {}", mdKey, nodeData.nodeId,
-                                calleeNode->getId());
+              metacg::MCGLogger::logWarn("Could not create edge metadata of type {} for edge {} to {}", mdKey,
+                                         nodeData.nodeId, calleeNode->getId());
             }
             if (failedMetadataCb) {
               (*failedMetadataCb)(nodeData.nodeId, mdKey, mdValJ);
@@ -197,7 +195,8 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
         node->addMetaData(std::move(md));
       } else {
         if (MetaData::isRegistered(mdKey)) {
-          errConsole->warn("Could not create metadata of type {} for node {}", mdKey, node->getFunctionName());
+          metacg::MCGLogger::logWarn("Could not create metadata of type {} for node {}", mdKey,
+                                     node->getFunctionName());
         }
         if (failedMetadataCb) {
           (*failedMetadataCb)(node->getId(), mdKey, mdVal);
@@ -215,7 +214,7 @@ std::unique_ptr<metacg::Callgraph> metacg::io::VersionFourMCGReader::read() {
       cg->addMetaData(std::move(md));
     } else {
       if (MetaData::isRegistered(mdKey)) {
-        errConsole->warn("Could not create global metadata of type {}", mdKey);
+        metacg::MCGLogger::logWarnUnique("Could not create global metadata of type {}", mdKey);
       }
       if (failedMetadataCb) {
         (*failedMetadataCb)(std::nullopt, mdKey, mdValJ);

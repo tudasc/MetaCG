@@ -19,10 +19,9 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
   FunctionSignatureMetadata(bool shouldExport) : shouldExport(shouldExport){};
 
   explicit FunctionSignatureMetadata(const nlohmann::json& j, metacg::StrToNodeMapping&) {
-    metacg::MCGLogger::instance().getConsole()->trace("FunctionSignatureMetadata from json");
+    metacg::MCGLogger::logTrace("FunctionSignatureMetadata from json");
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}",
-                                                        "FunctionSignatureMetadata");
+      metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
     ownSignature = j;
@@ -42,7 +41,7 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
 
   void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
-      metacg::MCGLogger::instance().getErrConsole()->error(
+      metacg::MCGLogger::logError(
           "The MetaData which was tried to merge with FunctionSignatureMetadata was of a different MetaData type");
       abort();
     }

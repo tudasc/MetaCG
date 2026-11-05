@@ -128,18 +128,17 @@ static opt<LogLevel> LoggingLevel("log-level", desc("Select log level"),
                                   init(LogLevel::Info), cat(cgc));
 
 cgcollector2::Plugin* loadPlugin(const std::string& pluginPath) {
-  metacg::MCGLogger::instance().getConsole()->debug("Loading plugin");
+  metacg::MCGLogger::logDebug("Loading plugin");
   std::string err;
   auto lib = llvm::sys::DynamicLibrary::getPermanentLibrary(pluginPath.c_str(), &err);
   if (!lib.isValid()) {
-    metacg::MCGLogger::instance().getErrConsole()->error("Cannot locate the library at {}!\n Reason: {}",  pluginPath, err);
+    metacg::MCGLogger::logError("Cannot locate the library at {}!\n Reason: {}", pluginPath, err);
     return nullptr;
   }
-  metacg::MCGLogger::instance().getConsole()->trace("Getting collection object from plugin {}", pluginPath);
+  metacg::MCGLogger::logTrace("Getting collection object from plugin {}", pluginPath);
   void* sym = lib.getAddressOfSymbol("getPlugin");
   if (!sym) {
-    metacg::MCGLogger::instance().getErrConsole()->error(
-        "Could not load collectors from plugin, no Function \"getPlugin()\"!");
+    metacg::MCGLogger::logError("Could not load collectors from plugin, no Function \"getPlugin()\"!");
     return nullptr;
   }
   auto getPlugin = reinterpret_cast<cgcollector2::Plugin* (*)()>(sym);
