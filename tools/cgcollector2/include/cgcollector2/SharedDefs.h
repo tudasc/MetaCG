@@ -18,7 +18,7 @@ struct FunctionSignature {
   std::vector<std::string> possibleFuncNames;
   std::vector<std::string> paramTypes;
   bool operator==(const FunctionSignature& other) const {
-    return retType == other.retType && possibleFuncNames == other.possibleFuncNames && paramTypes == paramTypes;
+    return retType == other.retType && possibleFuncNames == other.possibleFuncNames && paramTypes == other.paramTypes;
   }
 };
 namespace cgcollector2 {
