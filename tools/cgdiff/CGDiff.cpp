@@ -4,6 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
+#include "Completion.h"
+#include "CompletionCxxopts.h"
 #include "DiffFormatter.h"
 #include "GlobalMDDiff.h"
 #include "NodeSummary.h"
@@ -22,8 +24,8 @@ std::vector<std::unique_ptr<metacg::Diff>> compare(const metacg::Callgraph& mcgA
   using Set = std::unordered_set<NodeSummary, NodeSummaryHasher, NodeSummaryComparator>;
 
   ComparisonMode nameOnlyMode = ComparisonMode::ignoreBody | ComparisonMode::ignoreEdges |
-    ComparisonMode::ignoreMetadata | ComparisonMode::ignoreEdgeMetadata |
-    ComparisonMode::ignoreGlobalMetadata;
+                                ComparisonMode::ignoreMetadata | ComparisonMode::ignoreEdgeMetadata |
+                                ComparisonMode::ignoreGlobalMetadata;
 
   NodeSummaryHasher nameHasher{nameOnlyMode};
   NodeSummaryComparator nameComparator{nameOnlyMode};
@@ -51,7 +53,7 @@ std::vector<std::unique_ptr<metacg::Diff>> compare(const metacg::Callgraph& mcgA
           std::unordered_set<std::string> emd;
           for (auto& metadata : mcg.getAllEdgeMetaData(*node, *callee)) {
             std::string key = metadata.first;
-            std::string value = metadata.second->toJson(mapping).dump(); 
+            std::string value = metadata.second->toJson(mapping).dump();
 
             if (ignoredMdKeys.count(key)) {
               continue;
@@ -153,7 +155,7 @@ std::vector<std::unique_ptr<metacg::Diff>> compare(const metacg::Callgraph& mcgA
   return diffs;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, const char** argv) {
   try {
     cxxopts::Options options("cgdiff",
                              "Compare two call-graphs.\n"
@@ -168,6 +170,11 @@ int main(int argc, char** argv) {
         "ignore-md-key", "ignore specific metadata", cxxopts::value<std::vector<std::string>>())(
         "o,output", "output file for diff", cxxopts::value<std::string>())("h,help", "Print help");
 
+    if (const auto rc = metacg::completion::handleCompletion(argc, argv, [&](std::string_view partial) {
+          metacg::completion::completeCXXOptsOptions(partial, options);
+        })) {
+      return *rc;
+    }
     ComparisonMode mode = static_cast<ComparisonMode>(0);  // Start with 0
     std::vector<std::string> ignoring;
 

@@ -98,6 +98,10 @@ target_sources(
 )
 
 target_link_libraries(cgcollector2-plugin-interface INTERFACE metacg::metacg cgcollector2-metadata)
+target_link_libraries(cgcollector2
+    PRIVATE
+        MetaCGCompletion
+)
 add_llvm(cgcollector2-plugin-interface INTERFACE)
 
 install(
