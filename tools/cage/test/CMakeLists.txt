@@ -6,3 +6,5 @@ configure_file(
   ${CMAKE_CURRENT_BINARY_DIR}/runCaGeTests.sh
   @ONLY
 )
+
+add_subdirectory(overridePlugin)
