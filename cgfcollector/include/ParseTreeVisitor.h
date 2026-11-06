@@ -95,6 +95,8 @@ class ParseTreeVisitor {
    */
   void handleEndFuncSubStmt();
 
+  void ProcessModule(const Fortran::semantics::Symbol* moduleSymbol);
+
   /**
    * @brief Add uniquefied edges and potential finalizers edges to the call graph.
    *
@@ -253,13 +255,6 @@ class ParseTreeVisitor {
    * @return
    */
   bool Pre(const Fortran::parser::DerivedTypeStmt& t);
-
-  /**
-   * @brief Type attributes like extends
-   *
-   * @param a
-   */
-  void Post(const Fortran::parser::TypeAttrSpec& a);
 
   /**
    * @brief Collect type-bound procedures in derived type definitions

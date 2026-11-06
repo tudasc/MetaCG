@@ -43,14 +43,14 @@ echo "${test_command[@]}"
 
 echo "--- Now running diffs ---"
 
-diff -q ./src/foo.cpp${CI_CONCURRENT_ID}.ipcg ./src/foo.expected > /dev/null 2>&1
+diff -q ./src/foo.cpp${CI_CONCURRENT_ID}.mcg ./src/foo.expected > /dev/null 2>&1
 resultOfTest=$?
 if [ $resultOfTest -ne 0 ]; then
   echo "diff for foo failed"
 	exit 1
 fi
 
-diff -q ./src/main.cpp${CI_CONCURRENT_ID}.ipcg ./src/main.expected > /dev/null 2>&1
+diff -q ./src/main.cpp${CI_CONCURRENT_ID}.mcg ./src/main.expected > /dev/null 2>&1
 resultOfTest=$?
 if [ $resultOfTest -ne 0 ]; then
   echo "diff for main failed"
@@ -64,7 +64,7 @@ if [ $resultOfTest -ne 0 ]; then
 	exit 1
 fi
 
-rm ./src/foo.cpp${CI_CONCURRENT_ID}.ipcg
-rm ./src/main.cpp${CI_CONCURRENT_ID}.ipcg
+rm ./src/foo.cpp${CI_CONCURRENT_ID}.mcg
+rm ./src/main.cpp${CI_CONCURRENT_ID}.mcg
 rm ./src/wholeProgramCG-${CI_CONCURRENT_ID}.ipcg
 rm -rf build-${CI_CONCURRENT_ID}

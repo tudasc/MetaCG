@@ -11,12 +11,13 @@
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/Frontend/FrontendAction.h"
+#include "clang/Sema/SemaConsumer.h"
 
 namespace metacg {
 class Callgraph;
 }  // namespace metacg
 
-class CallGraphCollectorConsumer : public clang::ASTConsumer {
+class CallGraphCollectorConsumer : public clang::SemaConsumer {
  public:
   CallGraphCollectorConsumer(MetaCollectorVector& mcs, int mcgVersion, bool captureCtorsDtors,
                              bool captureNewDeleteCalls, bool captureImplicits, bool inferCtorsDtors, bool prune,
@@ -34,6 +35,11 @@ class CallGraphCollectorConsumer : public clang::ASTConsumer {
 
   virtual void HandleTranslationUnit(clang::ASTContext& Context);
 
+  // Sema is needed to resolve expressions that clang left uninstantiated inside template instantiations
+  void InitializeSema(clang::Sema& S) override { sema = &S; }
+
+  void ForgetSema() override { sema = nullptr; }
+
  private:
   void addOverestimationEdges(metacg::Callgraph* callgraph);
 
@@ -47,6 +53,7 @@ class CallGraphCollectorConsumer : public clang::ASTConsumer {
   bool standalone;
   AliasAnalysisLevel level;
   std::filesystem::path cgout;
+  clang::Sema* sema{nullptr};
 };
 
 class CallGraphCollectorAction : clang::ASTFrontendAction {

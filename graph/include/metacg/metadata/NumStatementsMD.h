@@ -15,13 +15,13 @@ class NumStatementsMD : public metacg::MetaData::Registrar<NumStatementsMD> {
   static constexpr const char* key = "numStatements";
   NumStatementsMD() = default;
   explicit NumStatementsMD(const nlohmann::json& j, StrToNodeMapping&) {
-    metacg::MCGLogger::instance().getConsole()->trace("Reading NumStatementsMD from json");
+    metacg::MCGLogger::logTrace("Reading NumStatementsMD from json");
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", "NumStatementsMD");
+      metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
     auto jsonNumStmts = j.get<long long int>();
-    metacg::MCGLogger::instance().getConsole()->debug("Read {} stmts from file", jsonNumStmts);
+    metacg::MCGLogger::logDebug("Read {} stmts from file", jsonNumStmts);
     setNumberOfStatements(jsonNumStmts);
   }
 
@@ -40,8 +40,7 @@ class NumStatementsMD : public metacg::MetaData::Registrar<NumStatementsMD> {
 
     if (numStmts != 0 && toMergeDerived->getNumberOfStatements() != 0 &&
         numStmts != toMergeDerived->getNumberOfStatements()) {
-      metacg::MCGLogger::instance().getErrConsole()->warn(
-          "Same function defined with different number of statements found on merge.");
+      metacg::MCGLogger::logWarnUnique("Same function defined with different number of statements found on merge.");
     }
     numStmts = std::max(numStmts, toMergeDerived->getNumberOfStatements());
   }

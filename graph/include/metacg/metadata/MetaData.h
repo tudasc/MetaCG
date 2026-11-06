@@ -48,7 +48,7 @@ class MetaDataFactory {
     friend T;
 
     static bool registerT() {
-      MCGLogger::instance().getConsole()->trace("Registering {} \n", T::key);
+      MCGLogger::logTrace("Registering {} \n", T::key);
       const auto name = T::key;
       MetaDataFactory::data()[name] = [](const nlohmann::json& j,
                                          StrToNodeMapping& strToNode) -> std::unique_ptr<CRTPBase> {
@@ -100,7 +100,7 @@ class MetaDataFactory {
 
     ABICheckedStaticData(int& instanceCtr) {
       if ((++instanceCtr) != 1) {
-        MCGLogger::instance().getErrConsole()->error(
+        MCGLogger::logError(
             "Detected multiple instances of the global metadata registry, likely due to ABI compatibility. Custom "
             "metadata will not work properly. To fix this, ensure that the metadata library is build with the same "
             "compiler as the rest of MetaCG.");

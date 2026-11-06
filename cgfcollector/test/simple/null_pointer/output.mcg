@@ -1,0 +1,22 @@
+{
+  "_CG": {
+    "meta": {},
+    "nodes": {
+      "0": {
+        "callees": {},
+        "functionName": "_QQmain",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      }
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "f44998688d53f8449b2eb356addf53ba6704d7ee",
+      "version": "1.0"
+    },
+    "version": "4.0"
+  }
+}

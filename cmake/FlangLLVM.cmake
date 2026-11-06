@@ -38,6 +38,7 @@ function(test_llvm_major_version version_string)
       19
       20
       21
+      22
   )
   # Set to indicate after loop if supported version was found
   set(valid_version FALSE)
@@ -51,7 +52,7 @@ function(test_llvm_major_version version_string)
 
   if(NOT ${valid_version})
     message(WARNING "Support for LLVM Version ${version_string} is not tested! Proceed with care.")
-    message(WARNING "LLVM/MLIR/Flang version 18 19 20 21 are supported and tested")
+    message(WARNING "LLVM/MLIR/Flang version 18, 19, 20, 21, and 22 are supported and tested")
   endif()
 endfunction()
 

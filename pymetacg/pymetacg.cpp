@@ -95,7 +95,7 @@ NB_MODULE(pymetacg, m) {
       .def("__len__", [](const metacg::Callgraph& self) { return self.getNodeCount(); })
       .def("get_nodes",
            [](const metacg::Callgraph& self, const std::string& name) {
-             const auto& nodes = self.getNodes(name);
+             const auto& nodes = self.getAllNodesWithName(name);
              if (nodes.size() == 0) {
                throw nb::key_error("Node not found in callgraph.");
              } else {
@@ -115,7 +115,7 @@ NB_MODULE(pymetacg, m) {
            })
       .def("get_single_node",
            [](const metacg::Callgraph& self, const std::string& name) {
-             const auto& nodes = self.getNodes(name);
+             const auto& nodes = self.getAllNodesWithName(name);
              const size_t n = nodes.size();
 
              if (n == 0) {
@@ -128,7 +128,7 @@ NB_MODULE(pymetacg, m) {
            })
       .def("__getitem__",
            [](const metacg::Callgraph& self, const std::string& name) {
-             const auto& nodes = self.getNodes(name);
+             const auto& nodes = self.getAllNodesWithName(name);
              const size_t n = nodes.size();
 
              if (n == 0) {

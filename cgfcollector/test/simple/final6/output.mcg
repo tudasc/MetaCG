@@ -1,0 +1,64 @@
+{
+  "_CG": {
+    "meta": {},
+    "nodes": {
+      "0": {
+        "callees": {},
+        "functionName": "_QMmodPcleanup_a",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "1": {
+        "callees": {},
+        "functionName": "_QMmodPcleanup_b",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "2": {
+        "callees": {},
+        "functionName": "_QMmodPsetup_a",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "3": {
+        "callees": {},
+        "functionName": "_QMmodPsetup_b",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "4": {
+        "callees": { "5": {}, "6": {} },
+        "functionName": "_QQmain",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "5": {
+        "callees": { "2": {} },
+        "functionName": "_QFPtest_a",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "6": {
+        "callees": { "1": {}, "3": {} },
+        "functionName": "_QFPtest_b",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      }
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "174ebd8197052a08268c2e3ddfb346c56a9fa488",
+      "version": "1.0"
+    },
+    "version": "4.0"
+  }
+}

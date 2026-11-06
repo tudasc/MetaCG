@@ -14,6 +14,8 @@ class LoggingTest : public ::testing::Test {
     // Default log level does not include trace and debug outputs
     spdlog::set_level(spdlog::level::trace);
     metacg::MCGLogger::instance().resetUniqueCache();
+    metacg::loggerutil::disableColor();
+
   }
 };
 

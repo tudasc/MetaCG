@@ -23,9 +23,9 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
   AllAliasMetadata(bool shouldExport) : shouldExport(shouldExport) {}
 
   explicit AllAliasMetadata(const nlohmann::json& j, metacg::StrToNodeMapping&) {
-    metacg::MCGLogger::instance().getConsole()->trace("AllAliasMetadata from json");
+    metacg::MCGLogger::logTrace("AllAliasMetadata from json");
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", "AllAliasMetadata");
+      metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
 
@@ -46,14 +46,8 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
 
   void merge(const MetaData& toMerge, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
-      metacg::MCGLogger::instance().getErrConsole()->error(
+      metacg::MCGLogger::logError(
           "The MetaData which was tried to merge with AllAliasMetadata was of a different MetaData type");
-      abort();
-    }
-
-    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
-      metacg::MCGLogger::instance().getErrConsole()->error(
-          "The MetaData which was tried to merge with FunctionSignatureMetadata was of a different MetaData type");
       abort();
     }
     const auto* toMergeDerived = static_cast<const AllAliasMetadata*>(&toMerge);
@@ -64,8 +58,9 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
     // mightCall.erase( unique( mightCall.begin(), mightCall.end() ), mightCall.end() );
     // but we would need a strict ordering relation between FunctionSignatureMetadata which we don't have
     mightCall.reserve(mightCall.size()+toMergeDerived->mightCall.size());
+    // Only add signatures we do not know yet
     for(const auto& elem : toMergeDerived->mightCall){
-      if(std::find(mightCall.begin(), mightCall.end(), elem)!=mightCall.end()){
+      if(std::find(mightCall.begin(), mightCall.end(), elem)==mightCall.end()){
         mightCall.push_back(elem);
       }
     }
