@@ -50,12 +50,6 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
           "The MetaData which was tried to merge with AllAliasMetadata was of a different MetaData type");
       abort();
     }
-
-    if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
-      metacg::MCGLogger::logError(
-          "The MetaData which was tried to merge with FunctionSignatureMetadata was of a different MetaData type");
-      abort();
-    }
     const auto* toMergeDerived = static_cast<const AllAliasMetadata*>(&toMerge);
 
     //This might be faster when using
@@ -64,8 +58,9 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
     // mightCall.erase( unique( mightCall.begin(), mightCall.end() ), mightCall.end() );
     // but we would need a strict ordering relation between FunctionSignatureMetadata which we don't have
     mightCall.reserve(mightCall.size()+toMergeDerived->mightCall.size());
+    // Only add signatures we do not know yet
     for(const auto& elem : toMergeDerived->mightCall){
-      if(std::find(mightCall.begin(), mightCall.end(), elem)!=mightCall.end()){
+      if(std::find(mightCall.begin(), mightCall.end(), elem)==mightCall.end()){
         mightCall.push_back(elem);
       }
     }
