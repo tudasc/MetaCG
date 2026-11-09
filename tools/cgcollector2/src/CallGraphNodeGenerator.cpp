@@ -392,6 +392,13 @@ bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
     auto prototype = clang::cast<clang::FunctionProtoType>(
         E->getCallee()->getType()->getPointeeType().getDesugaredType(topLevelFD->getASTContext()).IgnoreParens());
     addPointerMetadataFromPrototype(prototype);
+  } else if (auto* BO = dyn_cast<BinaryOperator>(E->getCallee()->IgnoreParens()); BO && BO->isPtrMemOp()) {
+    // The callee is the result of a pointer-to-member dereference operation, i.e. (obj.*expr)() or (ptr->*expr)().
+    const auto* memberPointerType = BO->getRHS()->getType()->getAs<clang::MemberPointerType>();
+    assert(memberPointerType && "RHS of a pointer-to-member operator must have member pointer type");
+    auto prototype = clang::cast<clang::FunctionProtoType>(
+        memberPointerType->getPointeeType().getDesugaredType(topLevelFD->getASTContext()).IgnoreParens());
+    addPointerMetadataFromPrototype(prototype);
   } else if (auto unresolvedLookupExpr = dyn_cast<UnresolvedLookupExpr>(E->getCallee())) {
     metacg::MCGLogger::logWarn("The callee {} is currently unresolvable, we do not handle this",
                                unresolvedLookupExpr->getName().getAsString());
