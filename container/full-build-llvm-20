@@ -21,8 +21,7 @@ RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.
     add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-20 main' && \
     add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-20 main' && \
     apt-get update && \
-apt-get install -y libllvm20 llvm-20 llvm-20-dev llvm-20-runtime \
-    llvm-20-tools \
+apt-get install -y libllvm20 llvm-20 llvm-20-dev llvm-20-runtime llvm-20-tools \
     clang-20 clang-tools-20 libclang-common-20-dev libclang-20-dev libclang1-20 \
     lld-20 libmlir-20-dev mlir-20-tools flang-20
 RUN bash -c "ln -s $(which clang-20) /usr/bin/clang" && \
