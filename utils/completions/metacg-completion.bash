@@ -18,9 +18,7 @@ _metacg_completion() {
     # The executable handles the --completion argument and print matching candidates,
     # one per line to stdout
 
-    # FIXME: This currently assumes cmd can be found through PATH and its name is words[0]
-
-    COMPREPLY=( $( "$cmd" --completion="$cur") )
+    COMPREPLY=( $( "$cmd" --completion="$cur" 2>/dev/null ) )
 }
 
 
@@ -29,3 +27,5 @@ _metacg_completion() {
 
 complete -F _metacg_completion cgcollector2
 complete -F _metacg_completion cgdiff
+complete -F _metacg_completion cgformat
+complete -F _metacg_completion cgtodot

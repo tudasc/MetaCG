@@ -4,10 +4,11 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
+#include "Completion.h"
 #include "metacg/config.h"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <string>
 
 #include "metacg/LoggerUtil.h"
@@ -15,13 +16,13 @@
 #include "metacg/io/MCGWriter.h"
 #include "metacg/metadata/FilePropertiesMD.h"
 
+#include "CompletionCxxopts.h"
 #include "cxxopts.hpp"
 
 using namespace metacg;
 
-static std::optional<std::string> replacePathPrefix(const std::string& originalPath,
-                                const std::string& targetDir,
-                                const std::string& newPrefix) {
+static std::optional<std::string> replacePathPrefix(const std::string& originalPath, const std::string& targetDir,
+                                                    const std::string& newPrefix) {
   std::string search = "/" + targetDir;
   size_t pos = originalPath.find(search);
   if (pos == std::string::npos) {
@@ -50,6 +51,12 @@ int main(int argc, char** argv) {
       "discard_failed_metadata", "continue formatting, even if there is metadata that cannot be parsed and would be lost.", cxxopts::value<bool>()->default_value("false"))(
       "h,help", "Print help");
   // clang-format on
+
+  if (const auto rc = metacg::completion::handleCompletion(argc, argv, [&](std::string_view partial) {
+        metacg::completion::completeCXXOptsOptions(partial, options);
+      })) {
+    return *rc;
+  }
 
   options.parse_positional("input");
 
@@ -100,14 +107,14 @@ int main(int argc, char** argv) {
             node->setOrigin(std::nullopt);
           }
         } else {
-
           bool isSysInclude = false;
           if (ignoreSysInclues) {
             auto md = node->get<metacg::FilePropertiesMD>();
             isSysInclude = md && md->fromSystemInclude;
           }
           // This can be done with "starts_with" in C++20
-          if (!isSysInclude && (origin->size() < originPrefix.size() || origin->compare(0, originPrefix.size(), originPrefix) != 0)) {
+          if (!isSysInclude &&
+              (origin->size() < originPrefix.size() || origin->compare(0, originPrefix.size(), originPrefix) != 0)) {
             if (checkOnly) {
               MCGLogger::logError("Origin field in node {} ('{}') does not match expected prefix. Value is: {}", node->getId(), node->getFunctionName(), *origin);
               checkSucceeded = false;
@@ -148,7 +155,6 @@ int main(int argc, char** argv) {
     }
     MCGLogger::logWarn("Continuing with export - some of the metadata might be lost");
   }
-
 
   int outputMcgVersion = std::stoi(fs.getFormatVersion());
 

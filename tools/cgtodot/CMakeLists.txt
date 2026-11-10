@@ -4,6 +4,7 @@ set(PROJECT_BINARY_NAME cgtodot)
 
 add_executable(${PROJECT_BINARY_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/CGToDot.cpp)
 
+add_metacg_completion(${PROJECT_BINARY_NAME})
 add_metacg(${PROJECT_BINARY_NAME})
 add_cxxopts(${PROJECT_BINARY_NAME})
 add_spdlog_libraries(${PROJECT_BINARY_NAME})
