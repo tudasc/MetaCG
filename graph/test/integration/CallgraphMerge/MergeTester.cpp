@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
 
   metacg::io::VersionTwoMCGWriter mcgWriter;
   mcgWriter.setExportSorted(true);
-  mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
+  mcgManager.mergeAllIntoActiveGraph(metacg::MergeByName());
 
   metacg::io::JsonSink jsonSink;
   mcgWriter.writeActiveGraph(jsonSink);

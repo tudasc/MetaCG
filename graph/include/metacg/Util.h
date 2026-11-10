@@ -63,7 +63,7 @@ inline std::string extract_between(const std::string& s, const std::string& patt
 inline int getVersionNoAtPosition(const std::string& versionStr, int index) {
   auto numOccurrences = std::count(versionStr.begin(), versionStr.end(), '.');
   if (numOccurrences < 1) {
-    metacg::MCGLogger::instance().getErrConsole()->error("Could not interpret version string");
+    metacg::MCGLogger::logError("Could not interpret version string");
     exit(-1);
   }
   auto versionParts = string_split(versionStr);

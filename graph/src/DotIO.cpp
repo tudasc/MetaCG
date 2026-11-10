@@ -69,7 +69,7 @@ std::vector<ParsedToken> Tokenizer::tokenize(const std::string& line) {
     } else if (str == "--") {
       // undirected edge: should we support it?
     } else {
-      metacg::MCGLogger::instance().getErrConsole()->error("Unexpected character found");
+      metacg::MCGLogger::logError("Unexpected character found");
       tokens.emplace_back(ParsedToken::TokenType::IGNORE, str);
     }
   }
@@ -91,7 +91,7 @@ void DotParser::parse(const std::string& line) {
         handleConnector(token);
         break;
       default:
-        metacg::MCGLogger::instance().getConsole()->error("Default case in DotParser.");
+        metacg::MCGLogger::logError("Default case in DotParser.");
     }
   }
 }
@@ -126,7 +126,7 @@ void DotParser::handleEntity(const dot::ParsedToken& token) {
       callgraph->getOrInsertNode(token.spelling);
     }
   } else {
-    MCGLogger::instance().getErrConsole()->warn("DotParser in unclear state");
+    MCGLogger::logWarn("DotParser in unclear state");
   }
 }
 
@@ -134,7 +134,7 @@ void DotParser::handleConnector(const dot::ParsedToken& token) { seenTokens.push
 
 void DotParser::reduceStack() {
   if (seenTokens.size() < 3) {
-    MCGLogger::instance().getErrConsole()->warn("One token on token stack. Improper dot?");
+    MCGLogger::logWarn("One token on token stack. Improper dot?");
     return;
   }
   while (!seenTokens.empty()) {
@@ -158,7 +158,6 @@ void DotParser::reduceStack() {
 
 bool DotReader::readAndManage(const std::string& cgName) {
   auto graph = std::make_unique<metacg::Callgraph>();
-  auto console = metacg::MCGLogger::instance().getConsole();
 
   auto& sourceStream = source.getDotString();
   std::string line;
@@ -167,13 +166,13 @@ bool DotReader::readAndManage(const std::string& cgName) {
   while (std::getline(sourceStream, line)) {
     parser.parse(line);
   }
-  console->debug("Read dot graph from {} into graph {}", source.getDescription(), cgName);
+  metacg::MCGLogger::logDebug("Read dot graph from {} into graph {}", source.getDescription(), cgName);
   return manager.addToManagedGraphs(cgName, std::move(graph), setActive);
 }
 
 void DotGenerator::output(DotOutputLocation outputLocation) {
   auto filename = outputLocation.path + '/' + outputLocation.fileBaseName + '-' + outputLocation.dotName + ".dot";
-  metacg::MCGLogger::instance().getConsole()->info("Exporting dot to file: {}", filename);
+  metacg::MCGLogger::logInfo("Exporting dot to file: {}", filename);
   std::ofstream outF(filename);
   outF << dotGraphStr << std::endl;
 }
@@ -280,8 +279,7 @@ void DotGenerator::generate() {
   }
 
   dotGraphStrStr << "}\n";
-  auto logger = metacg::MCGLogger::instance().getConsole();
-  logger->debug("The generated dot string:\n{}", dotGraphStrStr.str());
+  metacg::MCGLogger::logDebug("The generated dot string:\n{}", dotGraphStrStr.str());
 
   dotGraphStr = dotGraphStrStr.str();
 }

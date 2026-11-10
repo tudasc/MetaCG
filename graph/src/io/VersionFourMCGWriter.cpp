@@ -33,7 +33,7 @@ struct V4WriterMapping : public NodeToStrMapping {
   std::string convertToStr(const CgNode& node) {
     std::string idStr;
     if (useNameAsId) {
-      auto& allNodesWithName = cg.getNodes(node.getFunctionName());
+      auto& allNodesWithName = cg.getAllNodesWithName(node.getFunctionName());
       idStr = node.getFunctionName();
       if (allNodesWithName.size() > 1) {
         auto it = std::find(allNodesWithName.begin(), allNodesWithName.end(), node.getId());

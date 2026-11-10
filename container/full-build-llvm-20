@@ -14,8 +14,8 @@ RUN apt-get update -y && \
         openmpi-bin openmpi-common bison flex bear \
         lsb-release wget software-properties-common \
         python3-matplotlib python3-pyqt5 ninja-build \
-    libopenmpi-dev libhwloc-dev libevent-dev \
-    jq
+        libopenmpi-dev libhwloc-dev libevent-dev \
+        jq
 
 RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc && \
     add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-20 main' && \
@@ -28,7 +28,7 @@ RUN bash -c "ln -s $(which clang-20) /usr/bin/clang" && \
     bash -c "ln -s $(which clang++-20) /usr/bin/clang++" && \
     bash -c "ln -s $(which opt-20) /usr/bin/opt" && \
     bash -c "ln -s $(which llvm-config-20) /usr/bin/llvm-config" && \
-    bash -c "ln -s $(which flang-new-20) /usr/bin/flang-new"
+    bash -c "ln -s $(which flang-20) /usr/bin/flang"
 
 ARG extinstalldir=/opt/metacg/extern/install
 ENV EXTINSTALLDIR=$extinstalldir
@@ -61,7 +61,14 @@ RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_VERBOSE_MAKEFILE=ON \
       -DLLVM_EXTERNAL_LIT=/usr/lib/llvm-20/build/utils/lit/lit.py
 
-RUN cmake --build build --parallel
+#CGFCollector is a very heavy build
+#Build graphlib first in parallel
+RUN cmake --build build --target metacg --parallel $(nproc)
+#Then build cgfcollector with half as many threads
+RUN cmake --build build --target cgfcollector --parallel $((($(nproc)+1)/2))
+#Then build the rest of the project
+RUN cmake --build build --parallel $(nproc)
+
 
 RUN cmake --install build
 

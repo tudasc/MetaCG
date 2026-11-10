@@ -25,7 +25,7 @@
 
 #include "metacg/metadata/BuiltinMD.h"
 
-#include "spdlog/spdlog.h"
+#include "metacg/LoggerUtil.h"
 #include <filesystem>
 
 using namespace llvm::cl;
@@ -75,7 +75,7 @@ static bits<Collectors> collectorBits(
     desc("Builtin collections:"),
     values(clEnumValN(Collectors::None, "None", "don't use collectors"),
            clEnumValN(Collectors::CodeStatistics, "CodeStatistics", "number of declared variables"),
-           clEnumValN(Collectors::FileInfo, "FileInfo", "number of declared variables"),
+           clEnumValN(Collectors::FileInfo, "FileInfo", "Filename and whether it is a system include"),
            clEnumValN(Collectors::GlobalLoopDepth, "GlobalLoopDepth", "global nesting level of loops "),
            clEnumValN(Collectors::LoopDepth, "LoopDepth", "nesting level of loops"),
            clEnumValN(Collectors::MallocVariable, "MallocVariable", "number of mallocs"),
@@ -98,9 +98,10 @@ static opt<bool> unused1("disable-classic-cgc", cat(cgc),
                          desc("This is only here to allow for direct substitution of the old cgcollector in scripts"),
                          Hidden);
 
-static opt<bool> unused2("output", cat(cgc),
-                         desc("This is only here to allow for direct substitution of the old cgcollector in scripts"),
-                         Hidden);
+static opt<std::string> outputAlias(
+    "output", cat(cgc),
+    desc("Alias for --cg-file, only here to allow for direct substitution of the old cgcollector in scripts"),
+    callback([](const std::string& value) { cgout = value; }), Hidden);
 
 static opt<AliasAnalysisLevel> aliasAssumption(
     "alias-model", desc("How to handle function pointers:"),
@@ -127,18 +128,17 @@ static opt<LogLevel> LoggingLevel("log-level", desc("Select log level"),
                                   init(LogLevel::Info), cat(cgc));
 
 cgcollector2::Plugin* loadPlugin(const std::string& pluginPath) {
-  metacg::MCGLogger::instance().getConsole()->debug("Loading plugin");
+  metacg::MCGLogger::logDebug("Loading plugin");
   std::string err;
   auto lib = llvm::sys::DynamicLibrary::getPermanentLibrary(pluginPath.c_str(), &err);
   if (!lib.isValid()) {
-    metacg::MCGLogger::instance().getErrConsole()->error("Cannot locate the library at {}!\n Reason: {}",  pluginPath, err);
+    metacg::MCGLogger::logError("Cannot locate the library at {}!\n Reason: {}", pluginPath, err);
     return nullptr;
   }
-  metacg::MCGLogger::instance().getConsole()->trace("Getting collection object from plugin {}", pluginPath);
+  metacg::MCGLogger::logTrace("Getting collection object from plugin {}", pluginPath);
   void* sym = lib.getAddressOfSymbol("getPlugin");
   if (!sym) {
-    metacg::MCGLogger::instance().getErrConsole()->error(
-        "Could not load collectors from plugin, no Function \"getPlugin()\"!");
+    metacg::MCGLogger::logError("Could not load collectors from plugin, no Function \"getPlugin()\"!");
     return nullptr;
   }
   auto getPlugin = reinterpret_cast<cgcollector2::Plugin* (*)()>(sym);
@@ -159,29 +159,31 @@ int main(int argc, const char** argv) {
   clang::tooling::CommonOptionsParser& OP = ParseResult.get();
 #endif
 
+  spdlog::level::level_enum logLevel;
   switch (LoggingLevel) {
     case LogLevel::Trace:
-      spdlog::set_level(spdlog::level::trace);
+      logLevel = spdlog::level::trace;
       break;
     case LogLevel::Debug:
-      spdlog::set_level(spdlog::level::debug);
+      logLevel = spdlog::level::debug;
       break;
     case LogLevel::Info:
-      spdlog::set_level(spdlog::level::info);
+      logLevel = spdlog::level::info;
       break;
     case LogLevel::Warning:
-      spdlog::set_level(spdlog::level::warn);
+      logLevel = spdlog::level::warn;
       break;
     case LogLevel::Error:
-      spdlog::set_level(spdlog::level::err);
+      logLevel = spdlog::level::err;
       break;
     case LogLevel::Off:
-      spdlog::set_level(spdlog::level::off);
+      logLevel = spdlog::level::off;
       break;
     default:
       __builtin_unreachable();
   }
-  spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [errconsole] [%l] %v");
+  metacg::MCGLogger::instance().getConsole()->set_level(logLevel);
+  metacg::MCGLogger::instance().getErrConsole()->set_level(logLevel);
 
   clang::tooling::ClangTool CT(OP.getCompilations(), OP.getSourcePathList());
 
@@ -190,10 +192,10 @@ int main(int argc, const char** argv) {
   mcs.reserve(numberOfBuiltinCollectors + pluginPaths.size());
 
   if (collectorBits.getBits() == 0 || collectorBits.isSet(Collectors::None)) {
-    SPDLOG_INFO("No collector-suite specified, disabling all collectors");
+    metacg::MCGLogger::logInfo("No collector-suite specified, disabling all collectors");
   } else {
     if (collectorBits.isSet(Collectors::All)) {
-      SPDLOG_INFO("Enabling all built in collectors");
+      metacg::MCGLogger::logInfo("Enabling all built in collectors");
     }
     // Builtin Metadata Collection
     if (collectorBits.isSet(Collectors::CodeStatistics) || collectorBits.isSet(Collectors::All)) {
@@ -239,14 +241,14 @@ int main(int argc, const char** argv) {
 
   // Plugin Metadata Collection
   for (const auto& pluginPath : pluginPaths) {
-    SPDLOG_INFO("Loading external collector from: {}", pluginPath);
+    metacg::MCGLogger::logInfo("Loading external collector from: {}", pluginPath);
     if (cgcollector2::Plugin* p = loadPlugin(pluginPath); p) {
       mcs.push_back(p);
     }
   }
   std::filesystem::path cgoutPath;
 
-  if (cgout.getNumOccurrences() > 0) {
+  if (!cgout.getValue().empty()) {
     cgoutPath = std::filesystem::absolute(std::filesystem::path(cgout.getValue()));
   }
 

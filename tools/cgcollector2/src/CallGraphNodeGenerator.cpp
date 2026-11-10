@@ -5,9 +5,9 @@
  */
 
 #include "cgcollector2/CallGraphNodeGenerator.h"
-#include "cgcollector2/metadata/Internal/ASTNodeMetadata.h"
-#include "cgcollector2/metadata/Internal/AllAliasMetadata.h"
-#include "cgcollector2/metadata/Internal/FunctionSignatureMetadata.h"
+#include "cgcollector2/metadata/internal/ASTNodeMetadata.h"
+#include "cgcollector2/metadata/exported/AllAliasMetadata.h"
+#include "cgcollector2/metadata/exported/FunctionSignatureMetadata.h"
 #include "metacg/LoggerUtil.h"
 #include "metacg/metadata/OverrideMD.h"
 
@@ -17,11 +17,15 @@
 #include <clang/AST/Mangle.h>
 #include <clang/Basic/IdentifierTable.h>
 #include <clang/Basic/LLVM.h>
+#include <clang/Sema/Template.h>
 #include <llvm/Support/Casting.h>
 #include <llvm/Support/Compiler.h>
 #include <llvm/Support/GraphWriter.h>
 #if LLVM_VERSION_MAJOR > 10
 #include <clang/AST/ParentMapContext.h>
+#endif
+#if LLVM_VERSION_MAJOR >= 17
+#include <clang/Sema/EnterExpressionEvaluationContext.h>
 #endif
 
 #include <cassert>
@@ -58,7 +62,7 @@ std::vector<std::string> getMangledNames(clang::Decl const* const nd) {
 }
 
 bool CallGraphNodeGenerator::TraverseFunctionDecl(clang::FunctionDecl* D) {
-  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)D);
+  metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)D);
   // If function is ignored, we don't need to traverse its content
   if (!shouldIncludeFunction(D)) {
     return true;
@@ -71,7 +75,7 @@ bool CallGraphNodeGenerator::TraverseFunctionDecl(clang::FunctionDecl* D) {
 }
 
 bool CallGraphNodeGenerator::TraverseCXXMethodDecl(clang::CXXMethodDecl* MD) {
-  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)MD);
+  metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)MD);
   // If function is ignored, we don't need to traverse its content
   if (!shouldIncludeFunction(MD)) {
     return true;
@@ -84,7 +88,7 @@ bool CallGraphNodeGenerator::TraverseCXXMethodDecl(clang::CXXMethodDecl* MD) {
 }
 
 bool CallGraphNodeGenerator::TraverseCXXConstructorDecl(clang::CXXConstructorDecl* D) {
-  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)D);
+  metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)D);
   // If function is ignored, we don't need to traverse its content
   if (!shouldIncludeFunction(D)) {
     return true;
@@ -97,7 +101,7 @@ bool CallGraphNodeGenerator::TraverseCXXConstructorDecl(clang::CXXConstructorDec
 }
 
 bool CallGraphNodeGenerator::TraverseCXXDestructorDecl(clang::CXXDestructorDecl* D) {
-  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)D);
+  metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)D);
   // If function is ignored, we don't need to traverse its content
   if (!shouldIncludeFunction(D)) {
     return true;
@@ -110,25 +114,33 @@ bool CallGraphNodeGenerator::TraverseCXXDestructorDecl(clang::CXXDestructorDecl*
 }
 
 bool CallGraphNodeGenerator::TraverseFunctionTemplateDecl(clang::FunctionTemplateDecl* D) {
-  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)D);
-  // In case the FunctionTemplateDecl is a CXXMemberFunctionTemplateDecl we expect them to be available
-
-  for (const clang::FunctionDecl* const f : D->specializations()) {
+  metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)D);
+  // We do not traverse the uninstantiated function template description, but only their specializations, so calls
+  // inside them get attributed to the instantiated function. Uninstantiated templates therefore do not show up at all
+  for (clang::FunctionDecl* const f : D->specializations()) {
+    if (f->getTemplateSpecializationKind() == clang::TSK_ExplicitSpecialization) {
+      continue;  // Explicit specializations are regular decls in their decl context and are traversed from there
+    }
     if (!shouldIncludeFunction(f)) {
-      // ignoring
       continue;
     }
-    addNode(f);
+    if (traversedTemplates.find(f) == traversedTemplates.end()) {
+      traversedTemplates.insert(f);  // Stop infinite recursion
+      // Dispatches to TraverseFunctionDecl / TraverseCXXMethodDecl / ..., which add the node and set topLevelFD
+      if (!TraverseDecl(f)) {
+        return false;
+      }
+    }
   }
 
-  // We abort traversal of the template-class after traversing all specialisations
-  // I don't think an uninstantiated template-class has any information left after this
+  // We abort traversal of the template-function after traversing all specializations
+  // I don't think an uninstantiated template-function has any information left after this
   return true;  // high cuts: RecursiveASTVisitor::TraverseFunctionTemplateDecl(D);
 }
 
 bool CallGraphNodeGenerator::TraverseClassTemplateDecl(clang::ClassTemplateDecl* D) {
-  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)D);
-  // We do not traverse the uninstantiated class template description, but only their specialisations
+  metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)D);
+  // We do not traverse the uninstantiated class template description, but only their specializations
   for (clang::ClassTemplateSpecializationDecl* const c : D->specializations()) {
     if (isa<clang::ClassTemplatePartialSpecializationDecl>(c)) {
       continue;  // Don't traverse partially specialized templates ?
@@ -138,12 +150,139 @@ bool CallGraphNodeGenerator::TraverseClassTemplateDecl(clang::ClassTemplateDecl*
       RecursiveASTVisitor::TraverseCXXRecordDecl(c);
     }
   }
-  // We abort traversal of the template-class after traversing all specialisations
+  // We abort traversal of the template-class after traversing all specializations
   // I don't think an uninstantiated template-class has any information left after this
   return true;  // high cuts: RecursiveASTVisitor::TraverseClassTemplateDecl(D);
 }
 
-bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) {
+bool CallGraphNodeGenerator::TraverseStmt(clang::Stmt* S, DataRecursionQueue* Queue) {
+  // If we find any expression, that is inside a function but not fully instantiated, we need to resolve it with Sema
+  if (auto* E = dyn_cast_or_null<Expr>(S); E && topLevelFD && E->isInstantiationDependent()) {
+    // As we traverse top-down, E is the root of this uninstantiated part.
+    // Resolve it against the template arguments of topLevelFD.
+    return traverseUninstantiatedExpr(E);
+  }
+  return RecursiveASTVisitor::TraverseStmt(S, Queue);
+}
+
+#if LLVM_VERSION_MAJOR >= 15
+// Simplified version of the private Sema::addInstantiatedParametersToScope: Maps the parameters of the pattern to the
+// ones of the instantiation, so references to them can be substituted.
+// Returns false if the parameters of the instantiation do not line up with the ones of the pattern.
+static bool addInstantiatedParametersToScope(Sema& sema, FunctionDecl* function, const FunctionDecl* pattern,
+                                             const MultiLevelTemplateArgumentList& templateArgs,
+                                             LocalInstantiationScope& scope) {
+  const unsigned numPatternParams = pattern->getNumParams();
+  const unsigned numParams = function->getNumParams();
+  unsigned paramIdx = 0;
+
+  for (unsigned patternParamIdx = 0; patternParamIdx < numPatternParams; ++patternParamIdx) {
+    const ParmVarDecl* patternParam = pattern->getParamDecl(patternParamIdx);
+    if (!patternParam->isParameterPack()) {
+      if (paramIdx >= numParams) {
+        return false;
+      }
+      scope.InstantiatedLocal(patternParam, function->getParamDecl(paramIdx++));
+      continue;
+    }
+
+    // Ask Sema how many arguments the pack expands to for these template arguments, so multiple packs work as well
+    const auto packSize = sema.getNumArgumentsInExpansion(patternParam->getType(), templateArgs);
+    if (!packSize || numParams - paramIdx < *packSize) {
+      return false;
+    }
+    scope.MakeInstantiatedLocalArgPack(patternParam);
+    for (const unsigned packEnd = paramIdx + *packSize; paramIdx < packEnd; ++paramIdx) {
+      scope.InstantiatedLocalPackArg(patternParam, function->getParamDecl(paramIdx));
+    }
+  }
+  return paramIdx == numParams;
+}
+#endif
+
+bool CallGraphNodeGenerator::traverseUninstantiatedExpr(clang::Expr* E) {
+#if LLVM_VERSION_MAJOR >= 15
+
+  const FunctionDecl* pattern = topLevelFD->getTemplateInstantiationPattern(false);
+  if (!sema) {
+    metacg::MCGLogger::logDebug("Sema is unavailable for this run");
+    return true;
+  }
+
+  if (!pattern) {
+    metacg::MCGLogger::logDebug(
+        "Can not find original template description for {}. Left uninstantiated in expression {}, skipping it",
+        topLevelFD->getNameAsString(), (void*)E);
+    return true;
+  }
+
+  // Collect the template initialization args
+#if LLVM_VERSION_MAJOR >= 18
+  const MultiLevelTemplateArgumentList templateArgs = sema->getTemplateInstantiationArgs(
+      topLevelFD,  // D: decl we compute template args for
+      nullptr,     // DC: use topLevelFD's own decl context
+      false,       // Final: keep the type sugar of the substituted arguments
+      {},          // Innermost: no explicit innermost args, take them from topLevelFD's specialization info
+      true,        // RelativeToPrimary: compute the arguments relative to the primary template
+      nullptr,     // Pattern: let clang look up the template pattern of topLevelFD itself
+      true);       // ForConstraintInstantiation: also walk through generic lambdas and enclosing class templates
+#elif LLVM_VERSION_MAJOR >= 16
+  const MultiLevelTemplateArgumentList templateArgs = sema->getTemplateInstantiationArgs(
+      topLevelFD,  // D: decl we compute template args for
+      false,       // Final: keep the type sugar of the substituted arguments
+      nullptr,     // Innermost: no explicit innermost args, take them from topLevelFD's specialization info
+      true,        // RelativeToPrimary: compute the arguments relative to the primary template
+      nullptr,     // Pattern: let clang look up the template pattern of topLevelFD itself
+      true);       // ForConstraintInstantiation: also walk through generic lambdas and enclosing class templates
+#else
+  const MultiLevelTemplateArgumentList templateArgs = sema->getTemplateInstantiationArgs(
+      topLevelFD,  // D: decl we compute template args for
+      nullptr,     // Innermost: no explicit innermost args, take them from topLevelFD's specialization info
+      true,        // RelativeToPrimary: compute the arguments relative to the primary template
+      nullptr);    // Pattern: let clang look up the template pattern of topLevelFD itself
+#endif
+
+  ExprResult substituted = ExprError();
+  // AFAICT one communicates with SEMA via RAII constructor-destructor states
+  {
+    //Save the old Sema context from the current topLevel FD
+    //This will be restored to the whatever scope we need once the stack object is destroyed
+    Sema::ContextRAII savedContext(*sema, topLevelFD);
+
+    //Set up the SEMA RAII constructs for the substituion
+    LocalInstantiationScope scope(*sema);
+    EnterExpressionEvaluationContext unevaluated(*sema, Sema::ExpressionEvaluationContext::Unevaluated);
+    Sema::InstantiatingTemplate inst(*sema, E->getBeginLoc(), topLevelFD);
+    Sema::SFINAETrap trap(*sema);
+
+    if (!inst.isInvalid() && addInstantiatedParametersToScope(*sema, topLevelFD, pattern, templateArgs, scope)) {
+      substituted = sema->SubstExpr(E, templateArgs);
+    }
+
+    if (substituted.isInvalid() || trap.hasErrorOccurred() || !substituted.get() ||
+        substituted.get()->isInstantiationDependent()) {
+      // The expression is ill-formed for these template arguments (e.g. an unsatisfied requirement), so it can not call
+      // anything
+      metacg::MCGLogger::logDebug(
+          "Uninstantiated expression {} inside {} ({}) is not resolvable for its template arguments", (void*)E,
+          topLevelFD->getNameAsString(), (void*)topLevelFD);
+      return true;
+    }
+  }
+
+  metacg::MCGLogger::logDebug("Resolved uninstantiated expression {} inside {} ({}) to {}", (void*)E,
+                              topLevelFD->getNameAsString(), (void*)topLevelFD, (void*)substituted.get());
+  //Continue traversing the fully substituted statement as normal
+  return RecursiveASTVisitor::TraverseStmt(substituted.get());
+#else
+  metacg::MCGLogger::logDebug(
+      "Can not resolve uninstantiated expression {} inside {} ({}) with this LLVM version, skipping it", (void*)E,
+      topLevelFD->getNameAsString(), (void*)topLevelFD);
+  return true;
+#endif
+}
+
+bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) const {
   assert(D);
   // NOTE: It could make sense to check here that only FunctionDecls are included. Right now this function also returns
   // true for VarDecls/ParmVarDecls that are called because they contain a function pointer
@@ -188,7 +327,7 @@ bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) {
 }
 
 bool CallGraphNodeGenerator::VisitFunctionDecl(clang::FunctionDecl* FD) {
-  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)FD);
+  metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)FD);
   if (!shouldIncludeFunction(FD)) {
     return true;
   }
@@ -204,22 +343,30 @@ bool CallGraphNodeGenerator::VisitFunctionDecl(clang::FunctionDecl* FD) {
 }
 
 bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
-  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)E);
+  metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)E);
 
   if (!topLevelFD) {
-    SPDLOG_DEBUG("We are not inside a function, no call edge to be drawn for call {}", (void*)E);
+    metacg::MCGLogger::logDebug("We are not inside a function, no call edge to be drawn for call {}", (void*)E);
+    return true;
+  }
+
+  if (E->isInstantiationDependent()) {
+    // Usually resolved in TraverseStmt; if a substituted expression is still partly dependent
+    metacg::MCGLogger::logDebug("Skipping uninstantiated call {} inside {} ({})", (void*)E,
+                                topLevelFD->getNameAsString(), (void*)topLevelFD);
     return true;
   }
 
   if (E->getDirectCallee() != nullptr) {
-    SPDLOG_DEBUG("Handling direct call");
+    metacg::MCGLogger::logDebug("Handling direct call");
     const auto& directCallee = E->getDirectCallee();
     if (!shouldIncludeFunction(directCallee)) {
       return true;
     }
     addEdge(E->getDirectCallee());
   } else if (E->getCalleeDecl() != nullptr) {
-    SPDLOG_TRACE("There is no direct callee, but we can get some declaration this is going to be doable");
+    metacg::MCGLogger::logTrace(
+        "There is no direct callee, but we can get some declaration this is going to be doable");
     auto nonDirectCallee = E->getCalleeDecl();
     // nonDirectCallee->dump();
     switch (level) {
@@ -245,31 +392,38 @@ bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
     auto prototype = clang::cast<clang::FunctionProtoType>(
         E->getCallee()->getType()->getPointeeType().getDesugaredType(topLevelFD->getASTContext()).IgnoreParens());
     addPointerMetadataFromPrototype(prototype);
+  } else if (auto* BO = dyn_cast<BinaryOperator>(E->getCallee()->IgnoreParens()); BO && BO->isPtrMemOp()) {
+    // The callee is the result of a pointer-to-member dereference operation, i.e. (obj.*expr)() or (ptr->*expr)().
+    const auto* memberPointerType = BO->getRHS()->getType()->getAs<clang::MemberPointerType>();
+    assert(memberPointerType && "RHS of a pointer-to-member operator must have member pointer type");
+    auto prototype = clang::cast<clang::FunctionProtoType>(
+        memberPointerType->getPointeeType().getDesugaredType(topLevelFD->getASTContext()).IgnoreParens());
+    addPointerMetadataFromPrototype(prototype);
   } else if (auto unresolvedLookupExpr = dyn_cast<UnresolvedLookupExpr>(E->getCallee())) {
-    SPDLOG_WARN("The callee {} is currently unresolvable, we do not handle this",
-                unresolvedLookupExpr->getName().getAsString());
+    metacg::MCGLogger::logWarn("The callee {} is currently unresolvable, we do not handle this",
+                               unresolvedLookupExpr->getName().getAsString());
     return true;
   } else if (isa<CXXPseudoDestructorExpr>(E->getCallee())) {
     // We are calling a destructor in a template, but instantiated the template with a primitive.
     // As primitives don't have a destructor this only looks like a call but is none
     return true;
   } else {
-    SPDLOG_WARN("Wierd cases encountered!");
+    metacg::MCGLogger::logWarn("Found unsupported call expression construct");
     if (E->getCallee()->getType()->isDependentType()) {
       assert(E->getCallee()->getType()->isDependentType() == E->getCallee()->isTypeDependent());
-      SPDLOG_WARN(
+      metacg::MCGLogger::logWarn(
           "When calling from {} ({}) to {}, the callee type is uninstantiated and is supposed to be resolved later."
-          "We do not handle this.",
+          "We should have handled this and this should not happen anymore.",
           topLevelFD->getNameAsString(), (void*)topLevelFD, (void*)E->getCallee());
       return true;
     }
-
     if (topLevelFD != nullptr) {
-      SPDLOG_WARN("Totally unknown case for {} -> {}",
-                  E->getSourceRange().printToString(topLevelFD->getASTContext().getSourceManager()),
-                  E->getCallee()->getSourceRange().printToString(topLevelFD->getASTContext().getSourceManager()));
+      metacg::MCGLogger::logWarn(
+          "Totally unknown case for {} -> {}",
+          E->getSourceRange().printToString(topLevelFD->getASTContext().getSourceManager()),
+          E->getCallee()->getSourceRange().printToString(topLevelFD->getASTContext().getSourceManager()));
     } else {
-      SPDLOG_WARN("Totally unknown case for {} -> {}", (void*)E, (void*)E->getCallee());
+      metacg::MCGLogger::logWarn("Totally unknown case for {} -> {}", (void*)E, (void*)E->getCallee());
     }
     assert(false && "There are some other shenanigans going on with the callee");
   }
@@ -277,7 +431,7 @@ bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
 }
 
 bool CallGraphNodeGenerator::VisitCXXDestructorDecl(clang::CXXDestructorDecl* DD) {
-  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)DD);
+  metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)DD);
   if (!shouldIncludeFunction(DD) || !captureCtorsDtors) {
     return true;
   }
@@ -313,14 +467,15 @@ bool CallGraphNodeGenerator::VisitCXXDestructorDecl(clang::CXXDestructorDecl* DD
 }
 
 bool CallGraphNodeGenerator::VisitCXXDeleteExpr(clang::CXXDeleteExpr* DE) {
-  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)DE);
+  metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)DE);
   assert(DE != nullptr);
   if (!captureCtorsDtors) {
     // We should ignore calls to a destructor via delete
     return true;
   }
   if (!topLevelFD) {
-    SPDLOG_DEBUG("We are not inside a function, no call edge to be drawn for delete expression {}", (void*)DE);
+    metacg::MCGLogger::logDebug("We are not inside a function, no call edge to be drawn for delete expression {}",
+                                (void*)DE);
     return true;
   }
 
@@ -328,7 +483,7 @@ bool CallGraphNodeGenerator::VisitCXXDeleteExpr(clang::CXXDeleteExpr* DE) {
     assert(llvm::isa<DeclRefExpr>(*DE->child_begin()));
     assert(DE->getSourceRange().isValid());
     assert(topLevelFD != nullptr);
-    SPDLOG_WARN("Found a destruction of an unknown type");
+    metacg::MCGLogger::logWarn("Found a destruction of an unknown type");
     // We do not know the type that is to be destroyed, we skip this
     return true;
   }
@@ -351,9 +506,10 @@ bool CallGraphNodeGenerator::VisitCXXDeleteExpr(clang::CXXDeleteExpr* DE) {
 }
 
 bool CallGraphNodeGenerator::VisitCXXConstructExpr(clang::CXXConstructExpr* CE) {
-  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)CE);
+  metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)CE);
   if (!topLevelFD) {
-    SPDLOG_DEBUG("We are not inside a function, no call edge to be drawn for construct expression {}", (void*)CE);
+    metacg::MCGLogger::logDebug("We are not inside a function, no call edge to be drawn for construct expression {}",
+                                (void*)CE);
     return true;
   }
   assert(CE->getConstructor() != nullptr);
@@ -377,8 +533,16 @@ bool CallGraphNodeGenerator::VisitCXXConstructExpr(clang::CXXConstructExpr* CE) 
 // We need to visit the var decls and then filter for local CXXRecords as the underlying CXXConstructExpr does not allow
 // us to access the storage kind
 bool CallGraphNodeGenerator::VisitVarDecl(clang::VarDecl* VD) {
-  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)VD);
+  metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)VD);
   if (!inferCtorsDtors) {
+    return true;
+  }
+  if (!topLevelFD) {
+    // VardDecls can be outside of functions
+    // e.g. the parameters of a requires-expression in a concept at namespace scope have local storage, but there is
+    // no function we could attribute the destructor call to
+    metacg::MCGLogger::logDebug("We are not inside a function, no destructor edge to be drawn for var decl {}",
+                                (void*)VD);
     return true;
   }
 
@@ -387,6 +551,15 @@ bool CallGraphNodeGenerator::VisitVarDecl(clang::VarDecl* VD) {
   }
 
   if (const clang::CXXRecordDecl* RD = VD->getType()->getAsCXXRecordDecl()) {
+    // TODO: Edges to trivial destructors are order dependent.
+    //  Sema declares an implicit destructor lazily, so getDestructor() only returns it
+    //  if something else in the TU needed it (e.g. a temporary of the same type).
+    //  `C c;` alone yields no destructor edge, `C c; C{}.f();` does.
+    //  Either skip trivial destructors RD->hasNonTrivialDestructor()
+    //  or force the declaration (Sema::LookupDestructor) to make this consistent.
+    //  The ground truth of the cxxRecordCalls tests :
+    //  0006, 0008, 0014, 0016, 0018 and allCtorDtor 0010
+    //  rely on the current wrong behavior.
     if (RD->hasDefinition()) {
       if (auto Dtor = RD->getDestructor()) {
         addEdge(Dtor);
@@ -397,22 +570,35 @@ bool CallGraphNodeGenerator::VisitVarDecl(clang::VarDecl* VD) {
 }
 
 bool CallGraphNodeGenerator::VisitCXXBindTemporaryExpr(clang::CXXBindTemporaryExpr* CXXBTE) {
-  SPDLOG_TRACE("{} {}", __FUNCTION__, (void*)CXXBTE);
+  metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)CXXBTE);
   if (!inferCtorsDtors) {
     return true;
   }
-  assert(CXXBTE->getType()->getAsCXXRecordDecl() &&
-         "Could not get the CXXRecordDeclaration from the temporary construct expression");
-  assert(CXXBTE->getType()->getAsCXXRecordDecl()->getDestructor() &&
-         "Could not get the Destructor from the temporarily constructed CXXRecord");
-  const auto cxxbte = CXXBTE->getType()->getAsCXXRecordDecl()->getDestructor();
-  addEdge(cxxbte);
+  if (!topLevelFD) {
+    // e.g. a temporary in the initializer of a global variable, there is no function to attribute the call to
+    metacg::MCGLogger::logDebug("We are not inside a function, no destructor edge to be drawn for temporary {}",
+                                (void*)CXXBTE);
+    return true;
+  }
+
+  // Use the destructor Sema resolved for the temporary instead of deriving it from the type: the temporary can be an
+  // array of class type (e.g. the backing array of a std::initializer_list), which has no CXXRecordDecl itself.
+  // Sema stores the destructor of the base element type in that case.
+  const clang::CXXDestructorDecl* Dtor = CXXBTE->getTemporary()->getDestructor();
+  if (!Dtor) {
+    // e.g. temporaries in decltype operands are bound without a destructor
+    metacg::MCGLogger::logDebug("No destructor recorded for temporary {}, no destructor edge to be drawn",
+                                (void*)CXXBTE);
+    return true;
+  }
+  addEdge(const_cast<clang::CXXDestructorDecl*>(Dtor));
+
   return true;
 }
 
 void CallGraphNodeGenerator::addNode(const clang::FunctionDecl* const D) {
-  SPDLOG_TRACE("Adding node \"{}\" {} {}", D->getNameAsString(), (void*)topLevelFD,
-               col2str(getMangledNames(D), "(", ",", ")"));
+  metacg::MCGLogger::logTrace("Adding node \"{}\" {} {}", D->getNameAsString(), (void*)topLevelFD,
+                              col2str(getMangledNames(D), "(", ",", ")"));
   for (auto& name : getMangledNames(D)) {
     // Add the function to the callgraph
     metacg::CgNode& node = callgraph->getOrInsertNode(name);
@@ -440,8 +626,8 @@ void CallGraphNodeGenerator::addEdge(clang::Decl* Child) {
   assert(isa<clang::NamedDecl>(Child));
   assert(topLevelFD != nullptr);
   assert(Child != nullptr);
-  SPDLOG_DEBUG("Calling from: {} {} into {} {} ", topLevelFD->getNameAsString(), (void*)topLevelFD,
-               clang::cast<clang::NamedDecl>(Child)->getNameAsString(), (void*)Child);
+  metacg::MCGLogger::logDebug("Calling from: {} {} into {} {} ", topLevelFD->getNameAsString(), (void*)topLevelFD,
+                              clang::cast<clang::NamedDecl>(Child)->getNameAsString(), (void*)Child);
   for (auto& parentName : getMangledNames(topLevelFD)) {
     for (auto& childName : getMangledNames(clang::cast<clang::NamedDecl>(Child))) {
       assert(callgraph->hasNode(parentName));
@@ -450,7 +636,7 @@ void CallGraphNodeGenerator::addEdge(clang::Decl* Child) {
         // This can happen if we have an immediately invoked lambda,
         //  or infer a call to a destructor via a param variable declaration not referring to a definition
         //  FIXME: and other cases we do not understand.
-        SPDLOG_DEBUG(
+        metacg::MCGLogger::logDebug(
             "The call from {} ({}) into {} ({}) was to a previously unobserved function, adding node on the fly",
             parentName, (void*)topLevelFD, clang::cast<clang::NamedDecl>(Child)->getNameAsString(), (void*)Child);
         addNode(cast<FunctionDecl>(Child));
@@ -496,8 +682,8 @@ void CallGraphNodeGenerator::addOverestimationData(clang::Decl* nonDirectCallee)
 
 void CallGraphNodeGenerator::addPointerMetadataFromPrototype(const clang::FunctionProtoType* protoType) {
   for (const auto& possibleName : getMangledNames(topLevelFD)) {
-    assert(callgraph->getNodes(possibleName).size() == 1 && "We currently only handle name-unique nodes");
-    auto anyNodeID = callgraph->getNodes(possibleName)[0];
+    assert(callgraph->getAllNodesWithName(possibleName).size() == 1 && "We currently only handle name-unique nodes");
+    auto anyNodeID = callgraph->getAllNodesWithName(possibleName)[0];
     auto& md = callgraph->getNode(anyNodeID)->getOrCreate<AllAliasMetadata>(!standalone);
     FunctionSignature functionSignature;
     functionSignature.retType = protoType->getReturnType().getAsString();

@@ -1,0 +1,64 @@
+{
+  "_CG": {
+    "meta": {},
+    "nodes": {
+      "0": {
+        "callees": {},
+        "functionName": "_QMmodPnot",
+        "hasBody": false,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "1": {
+        "callees": {},
+        "functionName": "_QMmodPoperator",
+        "hasBody": false,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "2": {
+        "callees": {},
+        "functionName": "_QMmodPweird",
+        "hasBody": false,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "3": {
+        "callees": {},
+        "functionName": "_QMmodPconcrete_not",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "4": {
+        "callees": {},
+        "functionName": "_QMmodPconcrete_operator",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "5": {
+        "callees": {},
+        "functionName": "_QMmodPconcrete_weird",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      },
+      "6": {
+        "callees": { "0": {}, "1": {}, "2": {}, "3": {}, "4": {}, "5": {} },
+        "functionName": "_QQmain",
+        "hasBody": true,
+        "meta": {},
+        "origin": "main.f90"
+      }
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "f44998688d53f8449b2eb356addf53ba6704d7ee",
+      "version": "1.0"
+    },
+    "version": "4.0"
+  }
+}

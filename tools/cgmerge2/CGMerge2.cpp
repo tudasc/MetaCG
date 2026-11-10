@@ -6,7 +6,10 @@
 
 #include "metacg/config.h"
 
+#include <algorithm>
 #include <iostream>
+#include <memory>
+#include <vector>
 
 #include "metacg/LoggerUtil.h"
 #include "metacg/MCGManager.h"
@@ -21,15 +24,16 @@
 
 using namespace metacg;
 
-int main(int argc, char** argv) {
-  auto console = MCGLogger::instance().getConsole();
-  auto errConsole = MCGLogger::instance().getErrConsole();
+// TODO: Let user set merge policy
+#pragma omp declare reduction(cgmerge : std::unique_ptr<Callgraph> : omp_out->merge(*omp_in, MergeByName())) \
+    initializer(omp_priv = std::make_unique<Callgraph>())
 
-  console->info("Running metacg::CGMerge2 (version {}.{})\nGit revision: {}", MetaCG_VERSION_MAJOR,
-                MetaCG_VERSION_MINOR, MetaCG_GIT_SHA);
+int main(int argc, char** argv) {
+  MCGLogger::logInfo("Running metacg::CGMerge2 (version {}.{})\nGit revision: {}", MetaCG_VERSION_MAJOR,
+                     MetaCG_VERSION_MINOR, MetaCG_GIT_SHA);
 
   if (argc < 3) {
-    errConsole->error("Invalid input arguments. Usage: cgmerge <outfile> <infile1> <infile2> ...");
+    MCGLogger::logError("Invalid input arguments. Usage: cgmerge <outfile> <infile1> <infile2> ...");
     return EXIT_FAILURE;
   }
 
@@ -57,31 +61,35 @@ int main(int argc, char** argv) {
   auto& mcgManager = graph::MCGManager::get();
   mcgManager.resetManager();
 
+  // Every thread merges its input graphs into a private, initially empty graph; OpenMP then combines the private graphs.
+  auto mergedCg = std::make_unique<Callgraph>();
+
+  #pragma omp parallel for schedule(dynamic) reduction(cgmerge : mergedCg)
   for (auto& inFile : inputFiles) {
     io::FileSource fs(inFile);
     if (fs.get().is_null()) {
-      errConsole->error("Input file is NULL: {}", inFile);
+      MCGLogger::logError("Input file is NULL: {}", inFile);
       continue;
     }
 
     if (fs.getFormatVersion() != versionStr) {
-      errConsole->warn("File format version does not match for input file {}", inFile);
+      MCGLogger::logWarn("File format version does not match for input file {}", inFile);
     }
 
     auto mcgReader = io::createReader(fs);
     if (!mcgReader) {
-      errConsole->error("Unsupported MetaCG format version: {}", versionStr);
-      return EXIT_FAILURE;
+      MCGLogger::logError("Unsupported MetaCG format version: {}", versionStr);
+      exit(EXIT_FAILURE);
     }
-    mcgManager.addToManagedGraphs(inFile, mcgReader->read());
+    auto cg = mcgReader->read();
+    mergedCg->merge(*cg, MergeByName());
   }
 
-  // TODO: Let user set merge policy
-  mcgManager.mergeIntoActiveGraph(MergeByName());
+  mcgManager.addToManagedGraphs("merged", std::move(mergedCg), true);
 
   auto mcgWriter = io::createWriter(mcgVersion);
   if (!mcgWriter) {
-    errConsole->error("Unable to create a writer for format version {}", mcgVersion);
+    MCGLogger::logError("Unable to create a writer for format version {}", mcgVersion);
     return EXIT_FAILURE;
   }
 
@@ -92,6 +100,6 @@ int main(int argc, char** argv) {
   std::ofstream os(outfile);
   os << jsonSink.getJson() << std::endl;
 
-  console->info("Done merging");
+  MCGLogger::logInfo("Done merging");
   return EXIT_SUCCESS;
 }

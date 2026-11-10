@@ -16,13 +16,14 @@ find_package(
 function(test_llvm_major_version version_string)
   # List of all supported major LLVM versions
   set(supported_llvm_versions
-      10
-      13
-      14
       15
       16
       17
       18
+      19
+      20
+      21
+      22
   )
   # Set to indicate after loop if supported version was found
   set(valid_version FALSE)
@@ -36,7 +37,7 @@ function(test_llvm_major_version version_string)
 
   if(NOT ${valid_version})
     message(WARNING "Support for LLVM Version ${version_string} is not tested! Proceed with care.")
-    message(WARNING "LLVM/Clang version 10, 13, 14, 15, 16, 17, 18 are supported and tested")
+    message(WARNING "LLVM/Clang version 15, 16, 17, 18, 19, 20, 21, and 22 are supported and tested")
   endif()
 endfunction()
 
@@ -51,14 +52,16 @@ function(add_clang target)
   # clang specified as system lib to suppress all warnings from clang headers
   target_include_directories(${target} SYSTEM PUBLIC ${CLANG_INCLUDE_DIRS})
 
-  # Try clang-cpp first, fallback to individual libs
+  # Only use libclang-cpp if LLVM is linked as a dylib. Otherwise libclang-cpp embeds its own copy of the static LLVM
+  # libraries, and linking LLVMSupport again would create two separate llvm::cl option registries (options declared in
+  # our tools would then be unknown to the parser in libclang-cpp).
   find_library(
     CLANG_CPP_LIB clang-cpp
     PATHS ${LLVM_LIBRARY_DIR}
     NO_DEFAULT_PATH
   )
-  if(CLANG_CPP_LIB)
-    target_link_libraries(${target} PUBLIC clang-cpp)
+  if(CLANG_CPP_LIB AND LLVM_LINK_LLVM_DYLIB)
+    target_link_libraries(${target} PUBLIC clang-cpp LLVM)
   else()
     target_link_libraries(
       ${target}
@@ -69,14 +72,13 @@ function(add_clang target)
              clangBasic
              clangIndex
     )
-  endif()
-
-  # clang internally relies on llvm to be linked so we also link some llvm libs when we need clang
-  if(LLVM_LINK_LLVM_DYLIB)
-    target_link_libraries(${target} PUBLIC LLVM)
-  else()
-    llvm_map_components_to_libnames(llvm_libs support)
-    target_link_libraries(${target} PUBLIC ${llvm_libs})
+    # The static clang libraries rely on llvm, so we also link the llvm libs we need
+    if(LLVM_LINK_LLVM_DYLIB)
+      target_link_libraries(${target} PUBLIC LLVM)
+    else()
+      llvm_map_components_to_libnames(llvm_libs support)
+      target_link_libraries(${target} PUBLIC ${llvm_libs})
+    endif()
   endif()
 endfunction()
 

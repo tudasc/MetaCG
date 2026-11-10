@@ -18,9 +18,6 @@
 
 namespace SymbolRetriever {
 
-auto console = metacg::MCGLogger::instance().getConsole();
-auto errConsole = metacg::MCGLogger::instance().getErrConsole();
-
 struct RemoveEnvInScope {
   explicit RemoveEnvInScope(const char* varName) : varName(varName) {
     oldVal = getenv(varName);
@@ -86,7 +83,7 @@ std::vector<MemMapEntry> readMemoryMap() {
 
   std::ifstream memoryMap("/proc/self/maps");
   if (!memoryMap.is_open()) {
-    console->debug("Could not load memory map.");
+    metacg::MCGLogger::logDebug("Could not load memory map.");
     return entries;
   }
 
@@ -129,7 +126,7 @@ std::vector<std::string> readSharedObjectDependencies(const std::string& exec_fi
   char buffer[256];
   FILE* output = popen(command.c_str(), "r");
   if (!output) {
-    errConsole->error("Could not execute ldd.");
+    metacg::MCGLogger::logError("Could not execute ldd.");
     return {};
   }
 
@@ -162,7 +159,7 @@ SymbolTable loadSymbolTable(const std::string& object_file) {
   char buffer[256] = {0};
   FILE* output = popen(command.c_str(), "r");
   if (!output) {
-    errConsole->error("Unable to execute nm to resolve symbol names.");
+    metacg::MCGLogger::logError("Unable to execute nm to resolve symbol names.");
     return {};
   }
 
@@ -185,7 +182,7 @@ SymbolTable loadSymbolTable(const std::string& object_file) {
   pclose(output);
 
   if (table.empty()) {
-    errConsole->error("Unable to resolve symbol names for binary {}", object_file);
+    metacg::MCGLogger::logError("Unable to resolve symbol names for binary {}", object_file);
   }
 
   return table;
@@ -202,7 +199,7 @@ std::string getELFType(const std::string& object_file) {
   char buffer[256] = {0};
   FILE* output = popen(command.c_str(), "r");
   if (!output) {
-    errConsole->error("Unable to execute llvm-readelf.");
+    metacg::MCGLogger::logError("Unable to execute llvm-readelf.");
     return {};
   }
 
@@ -213,7 +210,7 @@ std::string getELFType(const std::string& object_file) {
     std::istringstream line(buffer);
     line >> desc >> type;
   } else {
-    console->debug("Output buffer is empty.");
+    metacg::MCGLogger::logDebug("Output buffer is empty.");
   }
   return type;
 }
@@ -259,7 +256,7 @@ MappedSymTableMap loadMappedSymTables(const std::string& execFile, bool printDeb
 
   if (printDebug) {
     auto elfType = getELFType(execFile);
-    errConsole->debug("ELF type: {}", elfType);
+    metacg::MCGLogger::logDebug("ELF type: {}", elfType);
   }
 
   // Load symbols from executable and shared libs
@@ -268,14 +265,14 @@ MappedSymTableMap loadMappedSymTables(const std::string& execFile, bool printDeb
     auto& filename = entry.path;
     auto table = loadSymbolTable(filename);
     if (table.empty()) {
-      console->error("Could not load symbols from {}", filename);
+      metacg::MCGLogger::logError("Could not load symbols from {}", filename);
       continue;
     }
 
     if (printDebug) {
-      console->debug("Loaded {} symbols from {}.", table.size(), filename);
-      console->debug("Starting address: 0x{}{}", std::hex, entry.addrBegin);
-      console->debug(" > Offset: 0x{}{}", entry.offset, std::dec);
+      metacg::MCGLogger::logDebug("Loaded {} symbols from {}.", table.size(), filename);
+      metacg::MCGLogger::logDebug("Starting address: 0x{}{}", std::hex, entry.addrBegin);
+      metacg::MCGLogger::logDebug(" > Offset: 0x{}{}", entry.offset, std::dec);
     }
     MappedSymTable mappedTable{std::move(table), entry};
     addrToSymTable[entry.addrBegin] = mappedTable;

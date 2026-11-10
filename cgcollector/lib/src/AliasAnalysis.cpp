@@ -657,11 +657,19 @@ bool ASTInformationExtractor::TraverseParmVarDecl(clang::ParmVarDecl* PD) {
   return Ret;
 }
 
+#if LLVM_VERSION_MAJOR >= 22
+bool ASTInformationExtractor::TraverseTypeLoc(clang::TypeLoc TL, [[maybe_unused]] bool TraverseQualifier ) {
+#else
 bool ASTInformationExtractor::TraverseTypeLoc(clang::TypeLoc TL) {
+#endif
   if (!TraverseTypeLocs) {
     return true;
   }
+#if LLVM_VERSION_MAJOR >= 22
+  return RecursiveASTVisitor::TraverseTypeLoc(TL, TraverseQualifier);
+#else
   return RecursiveASTVisitor::TraverseTypeLoc(TL);
+#endif
 }
 
 bool ASTInformationExtractor::TraverseCXXMethodDecl(clang::CXXMethodDecl* MD) {
@@ -988,7 +996,11 @@ bool ASTInformationExtractor::VisitRecordType(clang::RecordType* RT) {
 bool ASTInformationExtractor::TraverseCXXNoexceptExpr(clang::CXXNoexceptExpr*, DataRecursionQueue*) { return true; }
 
 // This is the expanded code from clangs AST visitor, modified to skip exception specifieres and similar
+#if LLVM_VERSION_MAJOR >= 22
+bool ASTInformationExtractor::TraverseFunctionProtoTypeLoc(clang::FunctionProtoTypeLoc TL, [[maybe_unused]] bool TraverseQualifier) {
+#else
 bool ASTInformationExtractor::TraverseFunctionProtoTypeLoc(clang::FunctionProtoTypeLoc TL) {
+#endif
   if (!getDerived().shouldTraversePostOrder()) {
     if (!getDerived().WalkUpFromFunctionProtoTypeLoc(TL))
       return false;
