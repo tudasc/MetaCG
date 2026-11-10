@@ -7,5 +7,6 @@ add_library(
 )
 
 add_cxxopts(MetaCGCompletion)
+add_llvm(MetaCGCompletion PUBLIC)
 
-target_include_directories(MetaCGCompletion PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/ ${LLVM_INCLUDE_DIRS})
+target_include_directories(MetaCGCompletion PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
