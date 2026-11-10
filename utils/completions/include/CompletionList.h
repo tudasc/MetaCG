@@ -4,5 +4,5 @@
 #include <vector>
 
 namespace metacg::completion {
-    void completeList(std::string_view partial, std::vector<std::string_view> options);
+void completeList(std::string_view partial, std::vector<std::string_view> options);
 }

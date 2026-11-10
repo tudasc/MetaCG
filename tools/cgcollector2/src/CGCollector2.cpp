@@ -150,10 +150,8 @@ cgcollector2::Plugin* loadPlugin(const std::string& pluginPath) {
 }
 
 int main(int argc, const char** argv) {
-
- if (auto result = metacg::completion::handleCompletion(argc, argv, [](std::string_view partial) {
-    metacg::completion::completeLLVMOptions(partial, cgc);})
-  ) {
+  if (auto result = metacg::completion::handleCompletion(
+          argc, argv, [](std::string_view partial) { metacg::completion::completeLLVMOptions(partial, cgc); })) {
     return *result;
   }
 #if (LLVM_VERSION_MAJOR >= 10) && (LLVM_VERSION_MAJOR <= 12)

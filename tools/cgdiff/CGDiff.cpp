@@ -24,8 +24,8 @@ std::vector<std::unique_ptr<metacg::Diff>> compare(const metacg::Callgraph& mcgA
   using Set = std::unordered_set<NodeSummary, NodeSummaryHasher, NodeSummaryComparator>;
 
   ComparisonMode nameOnlyMode = ComparisonMode::ignoreBody | ComparisonMode::ignoreEdges |
-                                ComparisonMode::ignoreMetadata | ComparisonMode::ignoreEdgeMetadata |
-                                ComparisonMode::ignoreGlobalMetadata;
+    ComparisonMode::ignoreMetadata | ComparisonMode::ignoreEdgeMetadata |
+    ComparisonMode::ignoreGlobalMetadata;
 
   NodeSummaryHasher nameHasher{nameOnlyMode};
   NodeSummaryComparator nameComparator{nameOnlyMode};
