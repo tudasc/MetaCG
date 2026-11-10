@@ -28,7 +28,7 @@ RUN bash -c "ln -s $(which clang-22) /usr/bin/clang" && \
     bash -c "ln -s $(which clang++-22) /usr/bin/clang++" && \
     bash -c "ln -s $(which opt-22) /usr/bin/opt" && \
     bash -c "ln -s $(which llvm-config-22) /usr/bin/llvm-config" && \
-    bash -c "ln -s $(which flang-22) /usr/bin/flang"
+    bash -c "ln -s $(which flang-22) /usr/bin/flang" && \
     bash -c "ln -s $(which FileCheck-22) /usr/bin/FileCheck"
 
 ARG extinstalldir=/opt/metacg/extern/install
