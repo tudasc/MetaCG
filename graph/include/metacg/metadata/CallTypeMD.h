@@ -20,7 +20,12 @@ class CallTypeMD final : public metacg::MetaData::Registrar<CallTypeMD> {
       metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve metadata for {}", key);
       return;
     }
-    const std::string value = j.get<std::string>();
+
+    if (!j.is_object() || !j.contains("type")) {
+      throw std::runtime_error("CallTypeMD: Expected JSON object with 'type' field");
+    }
+
+    const std::string value = j["type"].get<std::string>();
 
     if (value == "DIRECT") {
       callType = CallType::DIRECT;
@@ -36,11 +41,11 @@ class CallTypeMD final : public metacg::MetaData::Registrar<CallTypeMD> {
   nlohmann::json toJson(NodeToStrMapping&) const override {
     switch (callType) {
       case CallType::DIRECT:
-        return "DIRECT";
+        return {{"type", "DIRECT"}};
       case CallType::INDIRECT:
-        return "INDIRECT";
-      case CallType:: VIRTUAL:
-        return "VIRTUAL";
+        return {{"type", "INDIRECT"}};
+      case CallType::VIRTUAL:
+        return {{"type", "VIRTUAL"}};
     }
 
     return nullptr;

@@ -56,10 +56,14 @@
             "main": {
                 "callees": {
                     "_ZN4Base3fooEv": {
-                        "callType": "VIRTUAL"
+                        "callType": {
+                            "type": "VIRTUAL"
+                        }
                     },
                     "_ZN7Derived3fooEv": {
-                        "callType": "VIRTUAL"
+                        "callType": {
+                            "type": "VIRTUAL"
+                        }
                     },
                     "_ZN7DerivedC2Ev": {},
                     "_Znwm": {}

@@ -43,10 +43,14 @@
                 "callees": {
                     "_Z3getv": {},
                     "_ZN1A3fooEv": {
-                        "callType": "VIRTUAL"
+                        "callType": {
+                            "type": "VIRTUAL"
+                        }
                     },
                     "_ZN4Base3fooEv": {
-                        "callType": "VIRTUAL"
+                        "callType": {
+                            "type": "VIRTUAL"
+                        }
                     }
                 },
                 "functionName": "main",

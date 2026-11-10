@@ -104,13 +104,19 @@
                 "callees": {
                     "0": {},
                     "1": {
-                        "callType": "VIRTUAL"
+                        "callType": {
+                            "type": "VIRTUAL"
+                        }
                     },
                     "2": {
-                        "callType": "VIRTUAL"
+                        "callType": {
+                            "type": "VIRTUAL"
+                        }
                     },
                     "6": {
-                        "callType": "VIRTUAL"
+                        "callType": {
+                            "type": "VIRTUAL"
+                        }
                     }
                 },
                 "functionName": "main",
