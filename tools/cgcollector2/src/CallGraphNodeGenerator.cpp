@@ -580,12 +580,19 @@ bool CallGraphNodeGenerator::VisitCXXBindTemporaryExpr(clang::CXXBindTemporaryEx
                                 (void*)CXXBTE);
     return true;
   }
-  assert(CXXBTE->getType()->getAsCXXRecordDecl() &&
-         "Could not get the CXXRecordDeclaration from the temporary construct expression");
-  assert(CXXBTE->getType()->getAsCXXRecordDecl()->getDestructor() &&
-         "Could not get the Destructor from the temporarily constructed CXXRecord");
-  const auto cxxbte = CXXBTE->getType()->getAsCXXRecordDecl()->getDestructor();
-  addEdge(cxxbte);
+
+  // Use the destructor Sema resolved for the temporary instead of deriving it from the type: the temporary can be an
+  // array of class type (e.g. the backing array of a std::initializer_list), which has no CXXRecordDecl itself.
+  // Sema stores the destructor of the base element type in that case.
+  const clang::CXXDestructorDecl* Dtor = CXXBTE->getTemporary()->getDestructor();
+  if (!Dtor) {
+    // e.g. temporaries in decltype operands are bound without a destructor
+    metacg::MCGLogger::logDebug("No destructor recorded for temporary {}, no destructor edge to be drawn",
+                                (void*)CXXBTE);
+    return true;
+  }
+  addEdge(const_cast<clang::CXXDestructorDecl*>(Dtor));
+
   return true;
 }
 
