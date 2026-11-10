@@ -9,7 +9,6 @@
 
 #include "metacg/metadata/MetaData.h"
 #include "cgcollector2/SharedDefs.h"
-#include <clang/AST/Type.h>
 
 /**
  * This class models the data necessary for the "AllAlias" assumption
@@ -24,7 +23,7 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
 
   explicit AllAliasMetadata(const nlohmann::json& j, metacg::StrToNodeMapping&) {
     metacg::MCGLogger::logTrace("AllAliasMetadata from json");
-    if (j.is_null()) {
+    if (j.is_null() ) {
       metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
