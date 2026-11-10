@@ -4,7 +4,7 @@
 
 namespace metacg {
 
-enum CallType { DIRECT, INDIRECT, VIRTUAL };
+enum class CallType { DIRECT, INDIRECT, VIRTUAL };
 class CallTypeMD final : public metacg::MetaData::Registrar<CallTypeMD> {
  public:
   CallType callType;
@@ -23,11 +23,11 @@ class CallTypeMD final : public metacg::MetaData::Registrar<CallTypeMD> {
     const std::string value = j.get<std::string>();
 
     if (value == "DIRECT") {
-      callType = DIRECT;
+      callType = CallType::DIRECT;
     } else if (value == "INDIRECT") {
-      callType = INDIRECT;
+      callType = CallType::INDIRECT;
     } else if (value == "VIRTUAL") {
-      callType = VIRTUAL;
+      callType = CallType::VIRTUAL;
     } else {
       throw std::runtime_error("Unknown CallType: " + value);
     }
@@ -35,11 +35,11 @@ class CallTypeMD final : public metacg::MetaData::Registrar<CallTypeMD> {
 
   nlohmann::json toJson(NodeToStrMapping&) const override {
     switch (callType) {
-      case DIRECT:
+      case CallType::DIRECT:
         return "DIRECT";
-      case INDIRECT:
+      case CallType::INDIRECT:
         return "INDIRECT";
-      case VIRTUAL:
+      case CallType:: VIRTUAL:
         return "VIRTUAL";
     }
 
