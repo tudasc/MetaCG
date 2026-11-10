@@ -141,6 +141,20 @@ if(METACG_BUILD_PGIS)
   add_subdirectory(pgis)
 endif()
 
+# CGValidate2: graph-lib based MCG validation against Cube profiles
+option(
+  METACG_BUILD_CGVALIDATE2
+  "Build CGValidate2, the graph-lib based MCG validation tool (requires METACG_BUILD_GRAPH_TOOLS and CUBE_DIR)"
+  OFF
+)
+if(METACG_BUILD_CGVALIDATE2)
+  if(NOT METACG_BUILD_GRAPH_TOOLS)
+    message(FATAL_ERROR "CGValidate2 requires METACG_BUILD_GRAPH_TOOLS=ON")
+  endif()
+  include(CubeLib)
+  add_subdirectory(tools/cgvalidate2)
+endif()
+
 # If set to on, CMake looks for installed nlohmann::json
 option(
   METACG_USE_EXTERNAL_JSON
