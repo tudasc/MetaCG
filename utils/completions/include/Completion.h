@@ -8,6 +8,6 @@ namespace metacg::completion {
 
   using CompletionFunction = std::function<void(std::string_view)>;
 
-  std::optional<int> handleCompletion(int argc, const char** argv, CompletionFunction);
+  std::optional<int> handleCompletion(int argc, const char* const* argv, CompletionFunction);
 
 } // namespace metacg::completion

@@ -1,7 +1,7 @@
 #include "Completion.h"
 #include <string>
 
-std::optional<int> metacg::completion::handleCompletion(int argc, const char** argv,
+std::optional<int> metacg::completion::handleCompletion(int argc, const char* const* argv,
                                                         CompletionFunction completionFunction) {
   for (int i = 1; i < argc; ++i) {
     std::string arg = argv[i];
