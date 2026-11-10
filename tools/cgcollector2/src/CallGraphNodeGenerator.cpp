@@ -537,6 +537,14 @@ bool CallGraphNodeGenerator::VisitVarDecl(clang::VarDecl* VD) {
   if (!inferCtorsDtors) {
     return true;
   }
+  if (!topLevelFD) {
+    // VardDecls can be outside of functions
+    // e.g. the parameters of a requires-expression in a concept at namespace scope have local storage, but there is
+    // no function we could attribute the destructor call to
+    metacg::MCGLogger::logDebug("We are not inside a function, no destructor edge to be drawn for var decl {}",
+                                (void*)VD);
+    return true;
+  }
 
   if (!VD->hasLocalStorage()) {
     return true;  // Only check local variables
@@ -564,6 +572,12 @@ bool CallGraphNodeGenerator::VisitVarDecl(clang::VarDecl* VD) {
 bool CallGraphNodeGenerator::VisitCXXBindTemporaryExpr(clang::CXXBindTemporaryExpr* CXXBTE) {
   metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)CXXBTE);
   if (!inferCtorsDtors) {
+    return true;
+  }
+  if (!topLevelFD) {
+    // e.g. a temporary in the initializer of a global variable, there is no function to attribute the call to
+    metacg::MCGLogger::logDebug("We are not inside a function, no destructor edge to be drawn for temporary {}",
+                                (void*)CXXBTE);
     return true;
   }
   assert(CXXBTE->getType()->getAsCXXRecordDecl() &&
