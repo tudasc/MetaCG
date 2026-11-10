@@ -5,10 +5,7 @@ add_executable(cgdiff CGDiff.cpp)
 
 target_include_directories(cgdiff PRIVATE include)
 
-target_link_libraries(cgdiff
-    PRIVATE
-        MetaCGCompletion
-)
+add_metacg_completion(cgdiff)
 add_metacg(cgdiff)
 add_cxxopts(cgdiff)
 
