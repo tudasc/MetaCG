@@ -72,7 +72,6 @@ target_sources(
 )
 default_compile_options(cgcollector2-metadata)
 
-add_clang(cgcollector2-metadata PUBLIC)
 add_metacg(cgcollector2-metadata)
 add_json(cgcollector2-metadata)
 install(

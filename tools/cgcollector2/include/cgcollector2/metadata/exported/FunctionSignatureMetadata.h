@@ -7,7 +7,6 @@
 #ifndef CGCOLLECTOR2_FUNCTIONSIGNATUREMETADATA_H
 #define CGCOLLECTOR2_FUNCTIONSIGNATUREMETADATA_H
 
-#include <clang/AST/Type.h>
 
 #include "metacg/metadata/MetaData.h"
 
