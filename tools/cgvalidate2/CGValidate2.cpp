@@ -27,15 +27,6 @@
 
 using namespace metacg;
 
-static double getVisits(cube::Cube& cube, const cube::Cnode* cn) {
-  auto* metric = cube.get_met("visits");
-  double total = 0.0;
-  for (auto* thread : cube.get_thrdv()) {
-    total += cube.get_sev(metric, cn, thread);
-  }
-  return total;
-}
-
 // Recursively collects NodeIds of all base functions that nodeId overrides (follows OverrideMD::overrides chain).
 static std::unordered_set<NodeId> getAllBaseOverrides(NodeId nodeId, const Callgraph& cg) {
   std::unordered_set<NodeId> result;
@@ -131,9 +122,12 @@ int main(int argc, char** argv) {
   std::map<std::string, double> totalCallCounts;
   std::map<std::string, std::map<std::string, double>> callCounts;
   const auto& cnodes = cube.get_cnodev();
-  for (const auto* cnode : cnodes) {
+  auto* visitsMetric = cube.get_met("visits");
+  for (auto* cnode : cnodes) {
     const std::string calledName = cnode->get_callee()->get_mangled_name();
-    const double visits = getVisits(cube, cnode);
+    // Exclusive along the call tree (this call path only), summed over all threads
+    const double visits =
+        cube.get_sev(visitsMetric, cube::CUBE_CALCULATE_INCLUSIVE, cnode, cube::CUBE_CALCULATE_EXCLUSIVE);
     totalCallCounts[calledName] += visits;
     if (const auto* caller = cnode->get_caller()) {
       callCounts[caller->get_mangled_name()][calledName] += visits;
