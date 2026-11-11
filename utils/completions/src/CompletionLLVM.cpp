@@ -9,9 +9,17 @@ void metacg::completion::completeLLVMOptions(std::string_view partial, const llv
   }
 
   prefix = prefix.ltrim("-");
-  // TODO: Option value completion is currently not supported because llvm::cl
-  // does not provide a generic way to retrieve the list of possible values
-  // from a registered option.
+llvm::SmallVector<llvm::StringRef, 8> getOptionValues(llvm::cl::Option& option) {
+  llvm::SmallVector<llvm::StringRef, 8> values;
+
+  //If the ArgStr is empty, option.getExtraOptionNames outputs the values to a given vector
+  const llvm::StringRef argStr = option.ArgStr;
+  option.ArgStr = llvm::StringRef();
+  option.getExtraOptionNames(values);
+  option.ArgStr = argStr;
+  //TODO: one can technically have a value that is the empty string. This could break autocomplete
+  return values;
+}
 
   auto& options = llvm::cl::getRegisteredOptions();
 
