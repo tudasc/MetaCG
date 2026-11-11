@@ -2,17 +2,17 @@ set(PROJECT_NAME CGCollector2)
 set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 # Compile flags
 function(default_compile_options target)
-  cmake_parse_arguments(
-    ARG
-    ""
-    ""
-    "PRIVATE_FLAGS;PUBLIC_FLAGS"
-    ${ARGN}
-  )
+    cmake_parse_arguments(
+            ARG
+            ""
+            ""
+            "PRIVATE_FLAGS;PUBLIC_FLAGS"
+            ${ARGN}
+    )
 
-  target_compile_options(
-    ${target}
-    PRIVATE -Wall
+    target_compile_options(
+            ${target}
+            PRIVATE -Wall
             -Wextra
             -pedantic
             -Wunreachable-code
@@ -22,26 +22,27 @@ function(default_compile_options target)
             -Wcast-qual
             -fno-rtti
             -g
-  )
+    )
 
-  if(ARG_PRIVATE_FLAGS)
-    target_compile_options(${target} PRIVATE "${ARG_PRIVATE_FLAGS}")
-  endif()
+    if (ARG_PRIVATE_FLAGS)
+        target_compile_options(${target} PRIVATE "${ARG_PRIVATE_FLAGS}")
+    endif ()
 
-  if(ARG_PUBLIC_FLAGS)
-    target_compile_options(${target} PUBLIC "${ARG_PUBLIC_FLAGS}")
-  endif()
+    if (ARG_PUBLIC_FLAGS)
+        target_compile_options(${target} PUBLIC "${ARG_PUBLIC_FLAGS}")
+    endif ()
 endfunction()
 
 add_executable(
-  cgcollector2
-  src/CallGraphCollectionAction.cpp
-  src/CallGraphNodeGenerator.cpp
-  src/CGCollector2.cpp
-  src/collector/LoopDepthCollector.cpp
-  src/collector/NumConditionalBranchCollector.cpp
-  src/collector/NumOperationsCollector.cpp
-  src/collector/NumStatementsCollector.cpp
+        cgcollector2
+        src/CallGraphCollectionAction.cpp
+        src/CallGraphNodeGenerator.cpp
+        src/CGCollector2.cpp
+        src/FunctionSignatureUtil.cpp
+        src/collector/LoopDepthCollector.cpp
+        src/collector/NumConditionalBranchCollector.cpp
+        src/collector/NumOperationsCollector.cpp
+        src/collector/NumStatementsCollector.cpp
 )
 default_compile_options(cgcollector2)
 
@@ -53,54 +54,55 @@ add_metacg(cgcollector2)
 add_json(cgcollector2)
 
 install(
-  TARGETS cgcollector2
-  EXPORT ${TARGETS_EXPORT_NAME}
-  RUNTIME DESTINATION bin
+        TARGETS cgcollector2
+        EXPORT ${TARGETS_EXPORT_NAME}
+        RUNTIME DESTINATION bin
 )
 
 # Internal metadata as separate shared object. This allows us to load cgc2's metadata into other tools
-add_library(cgcollector2-metadata SHARED src/metadata/InternalMetadata.cpp)
+add_library(cgcollector2-metadata SHARED src/metadata/CGC2Metadata.cpp)
 
 target_sources(
-  cgcollector2-metadata
-  PUBLIC FILE_SET
-         HEADERS
-         BASE_DIRS
-         include
-         FILES
-         include/cgcollector2/metadata/exported/FunctionSignatureMetadata.h
-         include/cgcollector2/metadata/exported/AllAliasMetadata.h
+        cgcollector2-metadata
+        PUBLIC FILE_SET
+        HEADERS
+        BASE_DIRS
+        include
+        FILES
+        include/cgcollector2/metadata/exported/FunctionSignatureMetadata.h
+        include/cgcollector2/metadata/exported/AllAliasMetadata.h
+        include/cgcollector2/SharedDefs.h
 )
 default_compile_options(cgcollector2-metadata)
 
 add_metacg(cgcollector2-metadata)
 add_json(cgcollector2-metadata)
 install(
-  TARGETS cgcollector2-metadata
-  EXPORT ${TARGETS_EXPORT_NAME}
-  LIBRARY DESTINATION lib
-          FILE_SET HEADERS
-          DESTINATION include/
+        TARGETS cgcollector2-metadata
+        EXPORT ${TARGETS_EXPORT_NAME}
+        LIBRARY DESTINATION lib
+        FILE_SET HEADERS
+        DESTINATION include/
 )
 
 # Expose cgc2's plugin interface
 add_library(cgcollector2-plugin-interface INTERFACE)
 
 target_sources(
-  cgcollector2-plugin-interface
-  PUBLIC FILE_SET
-         HEADERS
-         BASE_DIRS
-         include
-         FILES
-         include/cgcollector2/interface/CGC2Plugin.h
+        cgcollector2-plugin-interface
+        PUBLIC FILE_SET
+        HEADERS
+        BASE_DIRS
+        include
+        FILES
+        include/cgcollector2/interface/CGC2Plugin.h
 )
 
 target_link_libraries(cgcollector2-plugin-interface INTERFACE metacg::metacg cgcollector2-metadata)
 
 install(
-  TARGETS cgcollector2-plugin-interface
-  EXPORT cgcollector2-plugin-interfaceExport
-  FILE_SET HEADERS
-  DESTINATION include/
+        TARGETS cgcollector2-plugin-interface
+        EXPORT cgcollector2-plugin-interfaceExport
+        FILE_SET HEADERS
+        DESTINATION include/
 )

@@ -13,12 +13,16 @@
 
 enum AliasAnalysisLevel { No, All };
 
+/// The type of a function, i.e. what a call through a function pointer must agree on to reach it
 struct FunctionSignature {
   std::string retType;
-  std::vector<std::string> possibleFuncNames;
   std::vector<std::string> paramTypes;
+  /// The implicit object parameter of a non-static member function
+  /// Empty for free functions, static member functions and member functions with an explicit object parameter
+  std::string thisType;
+
   bool operator==(const FunctionSignature& other) const {
-    return retType == other.retType && possibleFuncNames == other.possibleFuncNames && paramTypes == other.paramTypes;
+    return retType == other.retType && paramTypes == other.paramTypes && thisType == other.thisType;
   }
 };
 namespace cgcollector2 {
@@ -29,47 +33,37 @@ typedef std::vector<cgcollector2::Plugin*> MetaCollectorVector;
 
 
 namespace std {
-template <typename T>
-struct hash<std::vector<T>> {
-  size_t operator()(const std::vector<T> v) const {
-    size_t ret = 0;
-    for (auto& e : v) {
-      ret |= std::hash<T>()(e);
-    }
-    return ret;
-  }
-};
-
 template <>
 struct hash<FunctionSignature> {
   size_t operator()(const FunctionSignature& fs) const {
-    return hash<std::string>()(fs.retType) | hash<std::vector<std::string>>()(fs.paramTypes);
-  }
-};
-
-template <>
-struct equal_to<FunctionSignature> {
-  bool operator()(const FunctionSignature& lhs, const FunctionSignature& rhs) const {
-    return std::hash<FunctionSignature>()(lhs) == std::hash<FunctionSignature>()(rhs);
+    const auto combine = [](size_t seed, const std::string& s) {
+      return seed ^ (std::hash<std::string>()(s) + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2));
+    };
+    size_t ret = combine(0, fs.retType);
+    ret = combine(ret, fs.thisType);
+    for (const auto& param : fs.paramTypes) {
+      ret = combine(ret, param);
+    }
+    return ret;
   }
 };
 
 }  // namespace std
 
 inline void to_json(nlohmann::json& j, const FunctionSignature& fs) {
-  j = nlohmann::json{{"retType", fs.retType}, {"funcName", fs.possibleFuncNames}, {"paramTypes", fs.paramTypes}};
+  j = nlohmann::json{{"retType", fs.retType}, {"paramTypes", fs.paramTypes}, {"thisType", fs.thisType}};
 }
 
 inline void from_json(const nlohmann::json& J, FunctionSignature& fs) {
   J.at("retType").get_to(fs.retType);
-  J.at("funcName").get_to(fs.possibleFuncNames);
   J.at("paramTypes").get_to(fs.paramTypes);
+  J.at("thisType").get_to(fs.thisType);
 }
 
 inline std::ostream& operator<<(std::ostream& os, const FunctionSignature& fs) {
   os << fs.retType << " ";
-  for (const auto& elem : fs.possibleFuncNames) {
-    os << elem << "|";
+  if (!fs.thisType.empty()) {
+    os << '[' << fs.thisType << "]::";
   }
   os << '(';
   for (const auto& elem : fs.paramTypes) {

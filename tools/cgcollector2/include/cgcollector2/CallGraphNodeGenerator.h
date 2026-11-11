@@ -96,7 +96,9 @@ class CallGraphNodeGenerator : public clang::RecursiveASTVisitor<CallGraphNodeGe
 
   void addNode(const clang::FunctionDecl* D);
 
-  void addPointerMetadataFromPrototype(const clang::FunctionProtoType* protoType);
+  /// Records in the AllAliasMetadata of topLevelFD that it calls through a pointer to a function of the given type.
+  /// @param memberOf the class of a pointer to member function, nullptr for an ordinary function pointer
+  void addPointerMetadata(const clang::FunctionType* calleeType, const clang::CXXRecordDecl* memberOf);
 
   /// Substitutes the template arguments of topLevelFD into an expression clang left uninstantiated and traverses the
   /// result, so calls inside it point to the instantiated callees.
@@ -118,7 +120,10 @@ class CallGraphNodeGenerator : public clang::RecursiveASTVisitor<CallGraphNodeGe
   /// The Edge Gen Variables
   clang::FunctionDecl* topLevelFD = nullptr;
 
-  clang::QualType getFinalPointee(clang::QualType pointerType);
+  /// Strips all levels of pointers, references and member pointers from the given type.
+  /// @param memberOf if not nullptr, set to the class of the innermost pointer to member function, or nullptr if there
+  ///                 is none
+  clang::QualType getFinalPointee(clang::QualType pointerType, const clang::CXXRecordDecl** memberOf = nullptr);
 };
 
 #endif  // CGCOLLECTOR_CALLGRAPHNODEGENERATOR_H

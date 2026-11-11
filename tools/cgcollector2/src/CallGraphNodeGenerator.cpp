@@ -5,6 +5,7 @@
  */
 
 #include "cgcollector2/CallGraphNodeGenerator.h"
+#include "cgcollector2/FunctionSignatureUtil.h"
 #include "cgcollector2/metadata/exported/AllAliasMetadata.h"
 #include "cgcollector2/metadata/exported/FunctionSignatureMetadata.h"
 #include "cgcollector2/metadata/internal/ASTNodeMetadata.h"
@@ -391,14 +392,15 @@ bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
                ->isFunctionProtoType());
     auto prototype = clang::cast<clang::FunctionProtoType>(
         E->getCallee()->getType()->getPointeeType().getDesugaredType(topLevelFD->getASTContext()).IgnoreParens());
-    addPointerMetadataFromPrototype(prototype);
-  } else if (auto* BO = dyn_cast<BinaryOperator>(E->getCallee()->IgnoreParens()); BO && BO->isPtrMemOp()) {
-    // The callee is the result of a pointer-to-member dereference operation, i.e. (obj.*expr)() or (ptr->*expr)().
-    const auto* memberPointerType = BO->getRHS()->getType()->getAs<clang::MemberPointerType>();
-    assert(memberPointerType && "RHS of a pointer-to-member operator must have member pointer type");
-    auto prototype = clang::cast<clang::FunctionProtoType>(
-        memberPointerType->getPointeeType().getDesugaredType(topLevelFD->getASTContext()).IgnoreParens());
-    addPointerMetadataFromPrototype(prototype);
+    addPointerMetadata(prototype, nullptr);
+  } else if (const auto* ptrMemOp = dyn_cast<BinaryOperator>(E->getCallee()->IgnoreParens());
+             ptrMemOp && ptrMemOp->isPtrMemOp()) {
+    // A call through a pointer to member function that is not stored in a declaration, e.g. (obj.*getPtr())()
+    const auto* memberPointerType = ptrMemOp->getRHS()->getType()->getAs<clang::MemberPointerType>();
+    assert(memberPointerType && memberPointerType->isMemberFunctionPointer() &&
+           "The right hand side of a called pointer to member operator must be a pointer to member function");
+    addPointerMetadata(memberPointerType->getPointeeType()->castAs<clang::FunctionType>(),
+                       memberPointerType->getMostRecentCXXRecordDecl());
   } else if (auto unresolvedLookupExpr = dyn_cast<UnresolvedLookupExpr>(E->getCallee())) {
     metacg::MCGLogger::logWarn("The callee {} is currently unresolvable, we do not handle this",
                                unresolvedLookupExpr->getName().getAsString());
@@ -417,14 +419,11 @@ bool CallGraphNodeGenerator::VisitCallExpr(clang::CallExpr* E) {
           topLevelFD->getNameAsString(), (void*)topLevelFD, (void*)E->getCallee());
       return true;
     }
-    if (topLevelFD != nullptr) {
-      metacg::MCGLogger::logWarn(
-          "Totally unknown case for {} -> {}",
-          E->getSourceRange().printToString(topLevelFD->getASTContext().getSourceManager()),
-          E->getCallee()->getSourceRange().printToString(topLevelFD->getASTContext().getSourceManager()));
-    } else {
-      metacg::MCGLogger::logWarn("Totally unknown case for {} -> {}", (void*)E, (void*)E->getCallee());
-    }
+
+    metacg::MCGLogger::logWarn(
+        "Totally unknown case for {} -> {}",
+        E->getSourceRange().printToString(topLevelFD->getASTContext().getSourceManager()),
+        E->getCallee()->getSourceRange().printToString(topLevelFD->getASTContext().getSourceManager()));
     assert(false && "There are some other shenanigans going on with the callee");
   }
   return true;
@@ -633,13 +632,7 @@ void CallGraphNodeGenerator::addNode(const clang::FunctionDecl* const D) {
     node.getOrCreate<ASTNodeMetadata>().setFunctionDecl(D);
     if (!node.has<FunctionSignatureMetadata>()) {
       std::unique_ptr<FunctionSignatureMetadata> md = std::make_unique<FunctionSignatureMetadata>(!standalone);
-      // according to the standard constructor and destructor have return type void
-      md->ownSignature.possibleFuncNames.push_back(D->getNameAsString());
-      clang::isa<CXXDestructorDecl>(D) || clang::isa<CXXConstructorDecl>(D)
-          ? md->ownSignature.retType = ""
-          : md->ownSignature.retType = D->getReturnType().getAsString();
-      std::transform(D->parameters().begin(), D->parameters().end(), std::back_inserter(md->ownSignature.paramTypes),
-                     [](ParmVarDecl* p) { return p->getType().getAsString(); });
+      md->ownSignature = cgcollector2::getSignature(D);
       node.addMetaData(std::move(md));
     }
   }
@@ -692,35 +685,54 @@ void CallGraphNodeGenerator::addOverestimationData(clang::Decl* nonDirectCallee)
   assert(clang::isa<clang::DeclaratorDecl>(nonDirectCallee) &&
          "Field and Var decls share this base class, if this failed, we have an unkown callee type");
 
-  clang::QualType calleeType = getFinalPointee(clang::cast<clang::DeclaratorDecl>(nonDirectCallee)->getType());
-  if (calleeType.isNull()) {
-    // if the pointee type is null, it is unknown what type we are calling into
+  const clang::CXXRecordDecl* memberOf = nullptr;
+  clang::QualType calleeType =
+      getFinalPointee(clang::cast<clang::DeclaratorDecl>(nonDirectCallee)->getType(), &memberOf);
+  const auto* functionType = calleeType->getAs<clang::FunctionType>();
+  if (!functionType) {
+    // It is unknown what type we are calling into,
     // this should only happen if we call into a templateType via implicit interface.
-    assert(clang::isa<clang::TemplateTypeParmType>(calleeType));
+    metacg::MCGLogger::logDebug("The indirect callee {} in {} has no function type",
+                                clang::cast<clang::NamedDecl>(nonDirectCallee)->getNameAsString(),
+                                topLevelFD->getNameAsString());
     return;
   }
-  auto prototype = clang::cast<clang::FunctionProtoType>(calleeType);
-  addPointerMetadataFromPrototype(prototype);
+  addPointerMetadata(functionType, memberOf);
 }
 
-void CallGraphNodeGenerator::addPointerMetadataFromPrototype(const clang::FunctionProtoType* protoType) {
+void CallGraphNodeGenerator::addPointerMetadata(const clang::FunctionType* calleeType,
+                                                const clang::CXXRecordDecl* memberOf) {
+  const auto signatures = cgcollector2::getCalleeSignatures(calleeType, memberOf);
   for (const auto& possibleName : getMangledNames(topLevelFD)) {
     assert(callgraph->getAllNodesWithName(possibleName).size() == 1 && "We currently only handle name-unique nodes");
     auto anyNodeID = callgraph->getAllNodesWithName(possibleName)[0];
     auto& md = callgraph->getNode(anyNodeID)->getOrCreate<AllAliasMetadata>(!standalone);
-    FunctionSignature functionSignature;
-    functionSignature.retType = protoType->getReturnType().getAsString();
-    std::transform(protoType->getParamTypes().begin(), protoType->getParamTypes().end(),
-                   std::back_inserter(functionSignature.paramTypes), [](auto type) { return type.getAsString(); });
-    functionSignature.possibleFuncNames.emplace_back("");
-    md.mightCall.push_back(functionSignature);
+    for (const auto& signature : signatures) {
+      if (std::find(md.mightCall.begin(), md.mightCall.end(), signature) == md.mightCall.end()) {
+        md.mightCall.push_back(signature);
+      }
+    }
   }
 }
 
-clang::QualType CallGraphNodeGenerator::getFinalPointee(clang::QualType pointerType) {
+clang::QualType CallGraphNodeGenerator::getFinalPointee(clang::QualType pointerType,
+                                                        const clang::CXXRecordDecl** memberOf) {
+  if (memberOf) {
+    *memberOf = nullptr;
+  }
+  clang::QualType innermostPointer;
   clang::QualType finalType = pointerType.IgnoreParens().getCanonicalType().IgnoreParens();
   while (!finalType->getPointeeType().isNull()) {
+    innermostPointer = finalType;
     finalType = finalType->getPointeeType().IgnoreParens().getCanonicalType().IgnoreParens();
+  }
+  // A pointer to member function points to a function type, which has no pointee, so it can only be the innermost
+  // pointer. The function type itself does not know the class, so it has to be taken from the pointer.
+  if (memberOf && !innermostPointer.isNull()) {
+    if (const auto* memberPointer = innermostPointer->getAs<clang::MemberPointerType>();
+        memberPointer && memberPointer->isMemberFunctionPointer()) {
+      *memberOf = memberPointer->getMostRecentCXXRecordDecl();
+    }
   }
   return finalType;
 }
