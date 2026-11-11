@@ -12,6 +12,13 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "paramTypes": [
+                        "std::initializer_list<S>"
+                    ],
+                    "retType": "void",
+                    "thisType": ""
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0021.cpp",
@@ -30,6 +37,13 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "paramTypes": [
+                        "int"
+                    ],
+                    "retType": "",
+                    "thisType": "S"
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0021.cpp",
@@ -48,6 +62,13 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "paramTypes": [
+                        "int"
+                    ],
+                    "retType": "",
+                    "thisType": "S"
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0021.cpp",
@@ -66,6 +87,11 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "paramTypes": [],
+                    "retType": "",
+                    "thisType": "S"
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0021.cpp",
@@ -84,6 +110,11 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "paramTypes": [],
+                    "retType": "",
+                    "thisType": "S"
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0021.cpp",
@@ -102,6 +133,11 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "paramTypes": [],
+                    "retType": "",
+                    "thisType": "std::initializer_list<S>"
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0021.cpp",
@@ -120,6 +156,11 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "paramTypes": [],
+                    "retType": "",
+                    "thisType": "std::initializer_list<S>"
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0021.cpp",
@@ -142,6 +183,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "paramTypes": [],
+                    "retType": "int",
+                    "thisType": ""
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0021.cpp",

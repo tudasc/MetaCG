@@ -15440,9 +15440,6 @@
             "meta": {
                 "AllAliasMetadata": [
                     {
-                        "funcName": [
-                            ""
-                        ],
                         "paramTypes": [],
                         "retType": "void"
                     }
@@ -15729,9 +15726,6 @@
             "meta": {
                 "AllAliasMetadata": [
                     {
-                        "funcName": [
-                            ""
-                        ],
                         "paramTypes": [],
                         "retType": "void"
                     }
@@ -15798,9 +15792,6 @@
             "meta": {
                 "AllAliasMetadata": [
                     {
-                        "funcName": [
-                            ""
-                        ],
                         "paramTypes": [
                             "const void *",
                             "const void *"
@@ -22308,9 +22299,6 @@
             "meta": {
                 "AllAliasMetadata": [
                     {
-                        "funcName": [
-                            ""
-                        ],
                         "paramTypes": [
                             "int",
                             "void *"
@@ -22550,9 +22538,6 @@
             "meta": {
                 "AllAliasMetadata": [
                     {
-                        "funcName": [
-                            ""
-                        ],
                         "paramTypes": [
                             "const void *",
                             "const void *"
@@ -22574,9 +22559,6 @@
             "meta": {
                 "AllAliasMetadata": [
                     {
-                        "funcName": [
-                            ""
-                        ],
                         "paramTypes": [
                             "const void *",
                             "const void *",

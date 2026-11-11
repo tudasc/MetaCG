@@ -1,0 +1,83 @@
+{
+    "_CG": {
+        "_Z11callPointerPFvvE": {
+            "callees": [
+                "_Z12freeFunctionv",
+                "_ZN1A12staticMemberEv"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z12freeFunctionv": {
+            "callees": [],
+            "callers": [
+                "_Z11callPointerPFvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1A12staticMemberEv": {
+            "callees": [],
+            "callers": [
+                "_Z11callPointerPFvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1A6memberEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z11callPointerPFvvE"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 2
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "0bdb06545041da8ef83c1e4237915f296aa4b9d1",
+            "version": "1.0"
+        },
+        "version": "2.0"
+    }
+}

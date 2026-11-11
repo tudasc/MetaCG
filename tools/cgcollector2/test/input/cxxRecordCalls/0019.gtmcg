@@ -9,6 +9,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "paramTypes": [],
+                    "retType": "",
+                    "thisType": "S"
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0019.cpp",
@@ -27,6 +32,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "paramTypes": [],
+                    "retType": "",
+                    "thisType": "S"
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0019.cpp",
@@ -45,6 +55,11 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "paramTypes": [],
+                    "retType": "",
+                    "thisType": "S"
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0019.cpp",
@@ -63,6 +78,11 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "paramTypes": [],
+                    "retType": "",
+                    "thisType": "S"
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0019.cpp",
@@ -84,6 +104,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "paramTypes": [],
+                    "retType": "int",
+                    "thisType": ""
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0019.cpp",
