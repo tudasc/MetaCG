@@ -37,7 +37,7 @@ void metacg::completion::completeLLVMOptions(std::string_view partial, const llv
       return;
     }
 
-    auto* option = it->getValue();
+    auto* option = it->second;
 
     auto categories = option->Categories;
     
