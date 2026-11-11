@@ -9,13 +9,7 @@ _metacg_completion() {
     # cword - Index of the current word in the words array
     local cur prev words cword
 
-    # bash-completion >2.12 provides _comp_initialize, older versions only
-    # provide the equivalent (now deprecated) _init_completion
-    if declare -F _comp_initialize >/dev/null; then
-        _comp_initialize || return
-    else
-        _init_completion || return
-    fi
+    _comp_initialize
 
     # Determine executable
     local cmd="${words[0]}"
