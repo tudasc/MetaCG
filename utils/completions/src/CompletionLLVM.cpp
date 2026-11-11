@@ -55,11 +55,11 @@ void metacg::completion::completeLLVMOptions(std::string_view partial, const llv
   }
   for (const auto& entry : options) {
 #if LLVM_VERSION_MAJOR >= 22
-    llvm::StringRef name = entry.getFirst();
-    auto* option = entry.getValue();
+    llvm::StringRef name = entry.first();
+    auto* option = entry.second;
 #else
-    llvm::StringRef name = entry.getKey();
-    auto* option = entry.getValue();
+    llvm::StringRef name = entry.first();
+    auto* option = entry.second;
 #endif
 
     // Skip hidden options
