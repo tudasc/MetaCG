@@ -4,7 +4,7 @@
 void metacg::completion::completeLLVMOptions(std::string_view partial, const llvm::cl::OptionCategory& category) {
   llvm::StringRef prefix(partial.data(), partial.size());
 
-  if (!prefix.starts_with('-')) {
+  if (!prefix.starts_with("-")) {
     return;
   }
 
