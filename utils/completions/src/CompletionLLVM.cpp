@@ -40,8 +40,9 @@ void metacg::completion::completeLLVMOptions(std::string_view partial, const llv
     auto* option = it->second;
 
     auto categories = option->Categories;
-    
-    if (option->getOptionHiddenFlag() != llvm::cl::NotHidden || std::find(categories.begin(), categories.end(), &category) == categories.end()) {
+
+    if (option->getOptionHiddenFlag() != llvm::cl::NotHidden ||
+        std::find(categories.begin(), categories.end(), &category) == categories.end()) {
       return;
     }
 
@@ -56,11 +57,11 @@ void metacg::completion::completeLLVMOptions(std::string_view partial, const llv
   for (const auto& entry : options) {
 #if LLVM_VERSION_MAJOR >= 22
     llvm::StringRef name = entry.getFirst();
-    auto* option = entry.second;
 #else
     llvm::StringRef name = entry.getKey();
-    auto* option = entry.second;
 #endif
+
+    auto* option = entry.second;
 
     // Skip hidden options
     if (option->getOptionHiddenFlag() != llvm::cl::NotHidden) {
@@ -82,7 +83,7 @@ void metacg::completion::completeLLVMOptions(std::string_view partial, const llv
         llvm::outs() << "=";
       }
 
-    llvm::outs() << "\n";
+      llvm::outs() << "\n";
     }
   }
 }
