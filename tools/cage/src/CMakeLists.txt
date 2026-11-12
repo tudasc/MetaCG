@@ -7,3 +7,4 @@ target_include_directories(cage-plugin PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURC
 target_link_libraries(cage-plugin PRIVATE cage)
 
 add_subdirectory(generator)
+add_subdirectory(overridesPlugin)

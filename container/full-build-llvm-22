@@ -21,14 +21,15 @@ RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.
     add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-22 main' && \
     add-apt-repository -y 'deb http://apt.llvm.org/bookworm/  llvm-toolchain-bookworm-22 main' && \
     apt-get update && \
-    apt-get install -y libllvm22 llvm-22 llvm-22-dev llvm-22-runtime \
+    apt-get install -y libllvm22 llvm-22 llvm-22-dev llvm-22-runtime llvm-22-tools \
         clang-22 clang-tools-22 libclang-common-22-dev libclang-22-dev libclang1-22 \
     lld-22 libmlir-22-dev mlir-22-tools flang-22
 RUN bash -c "ln -s $(which clang-22) /usr/bin/clang" && \
     bash -c "ln -s $(which clang++-22) /usr/bin/clang++" && \
     bash -c "ln -s $(which opt-22) /usr/bin/opt" && \
     bash -c "ln -s $(which llvm-config-22) /usr/bin/llvm-config" && \
-    bash -c "ln -s $(which flang-22) /usr/bin/flang"
+    bash -c "ln -s $(which flang-22) /usr/bin/flang" && \
+    bash -c "ln -s $(which FileCheck-22) /usr/bin/FileCheck"
 
 ARG extinstalldir=/opt/metacg/extern/install
 ENV EXTINSTALLDIR=$extinstalldir
