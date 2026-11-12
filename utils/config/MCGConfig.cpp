@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
     std::cout << " -flto -fstandalone-debug";
     if (result.contains("cage-enable-overrides-plugin")) {
 #ifdef CAGE_OVERRIDE_PLUGIN
-      std::cout << "-Xclang -load -Xclang " << overridePluginPath
+      std::cout << " -Xclang -load -Xclang " << overridePluginPath
                 << " -Xclang -add-plugin -Xclang cage-overrides-plugin";
 #else
       std::cerr << "Error: Overrides plugin support is not available "
