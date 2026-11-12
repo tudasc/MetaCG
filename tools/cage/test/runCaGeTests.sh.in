@@ -41,10 +41,10 @@ function runTestCase {
   fail=0
 
   plugin_flags=()
+  extra_flags=()
 
   if [[ "$(basename "$testCasePath")" == "override" ]]; then
-    #plugin_flags=`$mcgconfig --cage-overrides-plugin-cxxflags`
-    read -r -a plugin_flags <<< "$("$mcgconfig" --cage-overrides-plugin-cxxflags)"
+    extra_flags="--cage-enable-overrides-plugin"
   fi
 
   run_dir=$(realpath --relative-to="$test_src_dir" "$testCasePath")
@@ -69,9 +69,9 @@ function runTestCase {
     failed=0
     tfile_out="$run_dir/$testTU.o"
     rm -f "$tfile_out"
-    clang++ -c -g `$mcgconfig --cage-cxxflags` "${plugin_flags[@]}" ${addFlags} -fno-exceptions "$testCasePath/$testTU" -o  "$tfile_out" >> log/testrun.log 2>&1 || failed=1
+    clang++ -c -g `$mcgconfig --cage-cxxflags $extra_flags` "${plugin_flags[@]}" ${addFlags} -fno-exceptions "$testCasePath/$testTU" -o  "$tfile_out" >> log/testrun.log 4>&1 || failed=1
     if [[ $failed -ne 0 ]] || [[ $verbose -eq 1 ]]; then
-      echo "Compile command: clang++ -c -g `$mcgconfig --cage-cxxflags` "${plugin_flags[@]}" ${addFlags} -fno-exceptions $testCasePath/$testTU -o $tfile_out"
+      echo "Compile command: clang++ -c -g `$mcgconfig --cage-cxxflags $extra_flags` "${plugin_flags[@]}" ${addFlags} -fno-exceptions $testCasePath/$testTU -o $tfile_out"
     fi
     if [[ $failed -ne 0 ]]; then
       echo "Compilation failed!"
