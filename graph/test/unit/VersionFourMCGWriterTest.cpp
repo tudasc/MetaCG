@@ -407,3 +407,66 @@ TEST_F(V4MCGWriterTest, SwitchBeforeWrite) {
       "\"origin\":\"main.cpp\"}}}"
       ",\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4.0\"}}");
 }
+static void removeLogDate(std::string& log) { log.erase(0, log.find_first_of(']') + 2); }
+
+TEST_F(V4MCGWriterTest, UnserializableNodeMetadataWarnsOnlyOnNull) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  const auto& cg = mcgm.getCallgraph();
+  auto& main = cg->insert("main", "main.cpp");
+  main.setHasBody(true);
+
+  main.addMetaData(std::make_unique<ExportEmptyTestMD<true>>());
+  main.addMetaData(std::make_unique<ExportEmptyTestMD<false>>());
+
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{4, 0}, {generatorName, 0, 1, "TestSha"}};
+  metacg::io::VersionFourMCGWriter mcgWriter(mcgFileInfo);
+  metacg::io::JsonSink jsonSink;
+
+  metacg::loggerutil::disableColor();
+  testing::internal::CaptureStdout();
+  mcgWriter.writeActiveGraph(jsonSink);
+  std::string output = testing::internal::GetCapturedStdout();
+  removeLogDate(output);
+
+  // Only the null-returning metadata should trigger a warning, the empty one is skipped silently
+  EXPECT_EQ(output, "[console] [warning] Could not serialize metadata of type NullExportTestMD in node main\n");
+
+  // Neither metadata is attached to the output
+  EXPECT_EQ(
+      jsonSink.getJson().dump(),
+      "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},"
+      "\"origin\":\"main.cpp\"}}},"
+      "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4.0\"}}");
+}
+
+TEST_F(V4MCGWriterTest, UnserializableGlobalMetadataWarnsOnlyOnNull) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  const auto& cg = mcgm.getCallgraph();
+  auto& main = cg->insert("main", "main.cpp");
+  main.setHasBody(true);
+
+  cg->addMetaData(std::make_unique<ExportEmptyTestMD<true>>());
+  cg->addMetaData(std::make_unique<ExportEmptyTestMD<false>>());
+
+  const std::string generatorName = "Test";
+  const metacg::MCGFileInfo mcgFileInfo = {{4, 0}, {generatorName, 0, 1, "TestSha"}};
+  metacg::io::VersionFourMCGWriter mcgWriter(mcgFileInfo);
+  metacg::io::JsonSink jsonSink;
+
+  metacg::loggerutil::disableColor();
+  testing::internal::CaptureStdout();
+  mcgWriter.writeActiveGraph(jsonSink);
+  std::string output = testing::internal::GetCapturedStdout();
+  removeLogDate(output);
+
+  // Only the null-returning metadata should trigger a warning, the empty one is skipped silently
+  EXPECT_EQ(output, "[console] [warning] Could not serialize global metadata of type NullExportTestMD\n");
+
+  // Neither metadata is attached to the output
+  EXPECT_EQ(
+      jsonSink.getJson().dump(),
+      "{\"_CG\":{\"meta\":{},\"nodes\":{\"0\":{\"callees\":{},\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},"
+      "\"origin\":\"main.cpp\"}}},"
+      "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4.0\"}}");
+}

@@ -121,7 +121,11 @@ bool MetaDataFactory<Base>::Registrar<T>::registered = MetaDataFactory<Base>::Re
 struct MetaData : MetaDataFactory<MetaData> {
   explicit MetaData(Key) {}
   static constexpr const char* key = "BaseClass";
-  virtual nlohmann::json toJson(NodeToStrMapping&) const = 0;
+  /**
+   *  If you want your metadata to be serialized and output overwrite this function
+   * @return a json representation for your metadata or nlohmann::json::object() if you do not want to be serialized
+   */
+  virtual nlohmann::json toJson(NodeToStrMapping&) const {return nlohmann::json::object(); }
   virtual const char* getKey() const = 0;
   virtual void merge(const MetaData&, std::optional<MergeAction>, const GraphMapping&) = 0;
   [[nodiscard]] virtual std::unique_ptr<MetaData> clone() const = 0;
