@@ -102,8 +102,7 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
     if (node->has<FunctionSignatureMetadata>()) {
       std::ostringstream stream;
       stream << node->get<FunctionSignatureMetadata>()->ownSignature;
-      metacg::MCGLogger::logTrace("{}'s signature is: {} with hash: {}", node->getFunctionName(), stream.str(),
-                                  std::hash<FunctionSignature>()(node->get<FunctionSignatureMetadata>()->ownSignature));
+      metacg::MCGLogger::logTrace("{}'s signature is: {} ", node->getFunctionName(), stream.str());
       signatureToNodeIdMap[node->get<FunctionSignatureMetadata>()->ownSignature].push_back(node->getId());
     } else {
       metacg::MCGLogger::logError("{} has no signature attached", node->getFunctionName());
