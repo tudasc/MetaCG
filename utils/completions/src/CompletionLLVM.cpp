@@ -19,6 +19,9 @@ void metacg::completion::completeLLVMOptions(std::string_view partial, const llv
   if (!prefix.starts_with("-")) {
     return;
   }
+  const bool singleDash = prefix.starts_with("-") && !prefix.starts_with("--");
+  const bool doubleDash = prefix.starts_with("--");
+  const bool shortOption = prefix.starts_with("-") && !doubleDash && prefix.size() > 1;
 
   prefix = prefix.ltrim("-");
 
@@ -45,10 +48,14 @@ void metacg::completion::completeLLVMOptions(std::string_view partial, const llv
         std::find(categories.begin(), categories.end(), &category) == categories.end()) {
       return;
     }
+    if ((singleDash && optionName.size() != 1) || (doubleDash && optionName.size() == 1)) {
+      return;
+    }
 
     for (const auto& value : getOptionValues(*option)) {
+      const auto optionPrefix = optionName.size() == 1 ? "-" : "--";
       if (value.starts_with(valuePrefix)) {
-        llvm::outs() << "--" << optionName << "=" << value << "\n";
+        llvm::outs() << optionPrefix << optionName << "=" << value << "\n";
       }
     }
 
@@ -56,9 +63,9 @@ void metacg::completion::completeLLVMOptions(std::string_view partial, const llv
   }
   for (const auto& entry : options) {
 #if LLVM_VERSION_MAJOR >= 22
-    llvm::StringRef name = entry.getFirst();
+    llvm::StringRef optionName = entry.getFirst();
 #else
-    llvm::StringRef name = entry.getKey();
+    llvm::StringRef optionName = entry.getKey();
 #endif
 
     auto* option = entry.second;
@@ -74,10 +81,15 @@ void metacg::completion::completeLLVMOptions(std::string_view partial, const llv
     if (std::find(categories.begin(), categories.end(), &category) == categories.end()) {
       continue;
     }
+    if ((doubleDash && optionName.size() == 1) || (shortOption && optionName.size() != 1)) {
+      continue;
+    }
+
+    const auto optionPrefix = optionName.size() == 1 ? "-" : "--";
 
     // Match the typed prefix
-    if (name.starts_with(prefix)) {
-      llvm::outs() << "--" << name;
+    if (optionName.starts_with(prefix)) {
+      llvm::outs() << optionPrefix << optionName;
 
       if (!getOptionValues(*option).empty()) {
         llvm::outs() << "=";
