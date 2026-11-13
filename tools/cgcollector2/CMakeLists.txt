@@ -48,6 +48,7 @@ default_compile_options(cgcollector2)
 add_clang(cgcollector2)
 target_include_directories(cgcollector2 PUBLIC include)
 target_link_libraries(cgcollector2 PUBLIC cgcollector2-metadata)
+add_metacg_completion(cgcollector2)
 add_metacg(cgcollector2)
 add_json(cgcollector2)
 

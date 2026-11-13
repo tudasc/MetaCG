@@ -4,6 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
+#include "Completion.h"
+#include "CompletionCxxopts.h"
 #include "metacg/config.h"
 
 #include <iostream>
@@ -34,9 +36,6 @@ static std::optional<std::string> replacePathPrefix(const std::string& originalP
 }
 
 int main(int argc, char** argv) {
-  MCGLogger::logInfo("Running metacg::CGFormat (version {}.{})\nGit revision: {}", MetaCG_VERSION_MAJOR,
-                     MetaCG_VERSION_MINOR, MetaCG_GIT_SHA);
-
   // clang-format off
   cxxopts::Options options("cgformat", "Formatting and canonicalization of MetaCG files");
   options.add_options()("input", "input MetaCG file", cxxopts::value<std::string>())(
@@ -50,6 +49,14 @@ int main(int argc, char** argv) {
       "discard_failed_metadata", "continue formatting, even if there is metadata that cannot be parsed and would be lost.", cxxopts::value<bool>()->default_value("false"))(
       "h,help", "Print help");
   // clang-format on
+  if (const auto rc = metacg::completion::handleCompletion(argc, argv, [&](std::string_view partial) {
+        metacg::completion::completeCXXOptsOptions(partial, options);
+      })) {
+    return *rc;
+  }
+
+  MCGLogger::logInfo("Running metacg::CGFormat (version {}.{})\nGit revision: {}", MetaCG_VERSION_MAJOR,
+                     MetaCG_VERSION_MINOR, MetaCG_GIT_SHA);
 
   options.parse_positional("input");
 

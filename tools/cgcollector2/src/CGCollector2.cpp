@@ -4,6 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
+#include "Completion.h"
+#include "CompletionLLVM.h"
 #include "cgcollector2/collector/CodeStatisticsCollector.h"
 #include "cgcollector2/collector/FileInfoCollector.h"
 #include "cgcollector2/collector/GlobalLoopDepthCollector.h"
@@ -152,6 +154,10 @@ int main(int argc, const char** argv) {
   clang::tooling::CommonOptionsParser OP(argc, argv, cgc);
 #else
   auto ParseResult = clang::tooling::CommonOptionsParser::create(argc, argv, cgc);
+  if (auto result = metacg::completion::handleCompletion(
+    argc, argv, [](std::string_view partial) { metacg::completion::completeLLVMOptions(partial, cgc); })) {
+    return *result;
+  }
   if (!ParseResult) {
     llvm::errs() << toString(ParseResult.takeError()) << "\n";
     return -1;
