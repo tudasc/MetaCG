@@ -8,6 +8,7 @@ _metacg_completion() {
     # words - Array containing command-line words
     # cword - Index of the current word in the words array
     local cur prev words cword
+    local COMP_WORDBREAKS="${COMP_WORDBREAKS//=/}"
 
     # bash-completion >2.12 provides _comp_initialize, older versions only
     # provide the equivalent (now deprecated) _init_completion
@@ -39,8 +40,8 @@ _metacg_completion() {
 
 
     # Prevent Bash from appending a space after options ending in '='
-    if [[ ${#COMPREPLY[@]} -eq 1 && "${COMPREPLY[0]}" == *= ]]; then
-      compopt -o nospace
+    if [[ "${COMPREPLY[0]}" == *= ]]; then
+        compopt -o nospace
     fi
 }
 
