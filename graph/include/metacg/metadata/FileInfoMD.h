@@ -32,7 +32,7 @@ class FileInfoMD : public metacg::MetaData::Registrar<FileInfoMD> {
       MCGLogger::logWarnUnique("Found fileProperties metadata without origin field");
     }
     fromSystemInclude = j["systemInclude"].get<bool>();
-    if (auto it = j.find("origin"); it != j.end() && it->is_string()) {
+    if (auto it = j.find("lineNumber"); it != j.end() && it->is_string()) {
       lineNumber = j["lineNumber"].get<int>();
     }else {
       MCGLogger::logWarnUnique("Found fileProperties metadata without lineNumber field");
