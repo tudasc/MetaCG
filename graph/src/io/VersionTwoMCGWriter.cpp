@@ -69,11 +69,12 @@ void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json
     // If fileProperties metadata is already attached, put the origin entry there.
     // Otherwise, create the metadata if the origin is not null.
     if (jMeta.contains("fileProperties")) {
-      // The expected behavior in V2 is to put an empty string if the origin is null
-      if (jNode["origin"].is_null()) {
-        jMeta["fileProperties"]["origin"] = "";
-      } else {
+      if (!jNode["origin"].is_null()) {
         jMeta["fileProperties"]["origin"] = jNode["origin"];
+      } else if (!jMeta["fileProperties"].contains("origin")) {
+        // The expected behavior in V2 is to put an empty string if the origin is null.
+        // An origin already stored in the metadata (e.g. by cgcollector2) is kept.
+        jMeta["fileProperties"]["origin"] = "";
       }
     } else if (!jNode["origin"].is_null()) {
       jMeta["fileProperties"] = nlohmann::json::object();

@@ -4,49 +4,77 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#ifndef CGCOLLECTOR2_FILEINFOMETADATA_H
-#define CGCOLLECTOR2_FILEINFOMETADATA_H
+#ifndef METACG_FILEINFOMD_H
+#define METACG_FILEINFOMD_H
 
 #include "metacg/metadata/MetaData.h"
 
-/**
- * This is the same metadata that is used inside the MetaCG library
- * The same restrictions apply:
- * Implement a static key, and the three virtual functions, and register your metadata via the Registrar
- */
+namespace metacg {
 
-class FileInfoMetadata : public metacg::MetaData::Registrar<FileInfoMetadata> {
+/**
+ * File related information of a function.
+ *
+ * The origin is a first-class node property since format version 4. The origin stored here is only used by collectors
+ * that can not set the node origin directly. It is optional in the serialized form and omitted when empty.
+ */
+class FileInfoMD : public metacg::MetaData::Registrar<FileInfoMD> {
  public:
-  static constexpr const char* key = "FilePropertiesMetaData";
-  FileInfoMetadata() : origin("INVALID"), fromSystemInclude(false), lineNumber(0) {}
-  explicit FileInfoMetadata(const nlohmann::json& j, metacg::StrToNodeMapping&) {
+  static constexpr const char* key = "fileProperties";
+  FileInfoMD() : fromSystemInclude(false), lineNumber(0) {}
+  explicit FileInfoMD(const nlohmann::json& j, StrToNodeMapping&) : fromSystemInclude(false), lineNumber(0) {
     if (j.is_null()) {
       metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
-    origin = j["origin"].get<std::string>();
+    if (auto it = j.find("origin"); it != j.end() && it->is_string()) {
+      origin = it->get<std::string>();
+    }else {
+      MCGLogger::logWarnUnique("Found fileProperties metadata without origin field");
+    }
     fromSystemInclude = j["systemInclude"].get<bool>();
+    if (auto it = j.find("origin"); it != j.end() && it->is_string()) {
+      lineNumber = j["lineNumber"].get<int>();
+    }else {
+      MCGLogger::logWarnUnique("Found fileProperties metadata without lineNumber field");
+    }
   }
 
-  FileInfoMetadata(const FileInfoMetadata& other)
+ private:
+  FileInfoMD(const FileInfoMD& other)
       : origin(other.origin), fromSystemInclude(other.fromSystemInclude), lineNumber(other.lineNumber) {}
 
-  nlohmann::json toJson(metacg::NodeToStrMapping&) const final {
+ public:
+  nlohmann::json toJson(NodeToStrMapping&) const final {
     nlohmann::json j;
     j["origin"] = origin;
     j["systemInclude"] = fromSystemInclude;
+    j["lineNumber"] = lineNumber;
     return j;
   }
 
-  void applyMapping(const metacg::GraphMapping&) final {}
-
-  void merge(const MetaData&, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {}
   const char* getKey() const final { return key; }
 
-  std::unique_ptr<MetaData> clone() const final { return std::make_unique<FileInfoMetadata>(*this); }
+  void merge(const MetaData& toMerge, std::optional<MergeAction> action, const GraphMapping&) final {
+    assert(toMerge.getKey() == getKey() && "Trying to merge FileInfoMD with metadata of different types");
+
+    // Adopt file info from the other node, if it's replacing this one
+    if (action && action->replace) {
+      const FileInfoMD* toMergeDerived = static_cast<const FileInfoMD*>(&toMerge);
+      this->origin = toMergeDerived->origin;
+      this->fromSystemInclude = toMergeDerived->fromSystemInclude;
+      this->lineNumber = toMergeDerived->lineNumber;
+    }
+  }
+
+  std::unique_ptr<MetaData> clone() const final { return std::unique_ptr<FileInfoMD>(new FileInfoMD(*this)); }
+
+  void applyMapping(const GraphMapping&) override {}
 
   std::string origin;
   bool fromSystemInclude;
   int lineNumber;
 };
-#endif  // CGCOLLECTOR2_FILEINFOMETADATA_H
+
+}  // namespace metacg
+
+#endif  // METACG_FILEINFOMD_H
