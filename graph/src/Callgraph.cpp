@@ -5,12 +5,7 @@
  */
 #include "metacg/Callgraph.h"
 
-#include "metacg/LoggerUtil.h"
-#include "metacg/io/IdMapping.h"
-#include "metacg/io/NameMapping.h"
-#include "metacg/metadata/BuiltinMD.h"
 #include "metacg/metadata/EntryFunctionMD.h"
-#include "metacg/metadata/OverrideMD.h"
 
 #include <algorithm>
 #include <string>
