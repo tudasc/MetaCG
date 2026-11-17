@@ -129,4 +129,4 @@ bool OverridesPluginAction::ParseArgs(const clang::CompilerInstance& compiler, c
 }  // namespace cage::overrides
 
 static clang::FrontendPluginRegistry::Add<cage::overrides::OverridesPluginAction> X(
-    "cage-overrides-plugin", "MetaCG CaGe overrides clang plugin skeleton");
+    "cage-overrides-plugin", "MetaCG CaGe overrides plugin");
