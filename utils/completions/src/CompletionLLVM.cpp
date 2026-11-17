@@ -1,5 +1,6 @@
 #include "CompletionLLVM.h"
 #include <algorithm>
+#include <llvm/Support/CommandLine.h>
 
 llvm::SmallVector<llvm::StringRef, 8> getOptionValues(llvm::cl::Option& option) {
   llvm::SmallVector<llvm::StringRef, 8> values;
@@ -13,8 +14,9 @@ llvm::SmallVector<llvm::StringRef, 8> getOptionValues(llvm::cl::Option& option) 
   return values;
 }
 
-void metacg::completion::completeLLVMOptions(std::string_view partial, const llvm::cl::OptionCategory& category) {
+void metacg::completion::completeLLVMOptions(std::string_view partial, llvm::cl::OptionCategory& category) {
   llvm::StringRef prefix(partial.data(), partial.size());
+  llvm::cl::HideUnrelatedOptions(category);
 
   if (!prefix.starts_with("-")) {
     return;
@@ -42,12 +44,6 @@ void metacg::completion::completeLLVMOptions(std::string_view partial, const llv
 
     auto* option = it->second;
 
-    auto categories = option->Categories;
-
-    if (option->getOptionHiddenFlag() != llvm::cl::NotHidden ||
-        std::find(categories.begin(), categories.end(), &category) == categories.end()) {
-      return;
-    }
     if ((singleDash && optionName.size() != 1) || (doubleDash && optionName.size() == 1)) {
       return;
     }
@@ -75,12 +71,6 @@ void metacg::completion::completeLLVMOptions(std::string_view partial, const llv
       continue;
     }
 
-    // Only include options belonging to CGCollector
-    const auto& categories = option->Categories;
-
-    if (std::find(categories.begin(), categories.end(), &category) == categories.end()) {
-      continue;
-    }
     if ((doubleDash && optionName.size() == 1) || (shortOption && optionName.size() != 1)) {
       continue;
     }
