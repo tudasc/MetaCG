@@ -14,10 +14,6 @@
 #define CAGE_PLUGIN
 #endif
 
-#ifdef CAGE_OVERRIDE_PLUGIN
-constexpr const char* overridePluginPath = CAGE_OVERRIDE_PLUGIN;
-#endif
-
 int main(int argc, char** argv) {
   cxxopts::Options options("metacg-config", "MetaCG configuration tool");
   // clang-format off
@@ -77,8 +73,7 @@ int main(int argc, char** argv) {
   std::stringstream passOptsStream;
   if (result.count("cage-pass-option")) {
     const auto& passOpts = result["cage-pass-option"].as<std::vector<std::string>>();
-    for (auto& opt : passOpts) {
-      passOptsStream << " -Wl,-mllvm=" << opt << " ";
+    for (auto& opt : passOpts) { passOptsStream << " -Wl,-mllvm=" << opt << " ";
     }
   }
   std::string processedPassOpts = passOptsStream.str();
@@ -91,7 +86,7 @@ int main(int argc, char** argv) {
     std::cout << " -flto -fstandalone-debug";
     if (result.contains("cage-enable-overrides-plugin")) {
 #ifdef CAGE_OVERRIDE_PLUGIN
-      std::cout << " -Xclang -load -Xclang " << overridePluginPath
+      std::cout << " -Xclang -load -Xclang " << CAGE_OVERRIDE_PLUGIN
                 << " -Xclang -add-plugin -Xclang cage-overrides-plugin";
 #else
       std::cerr << "Error: Overrides plugin support is not available "
