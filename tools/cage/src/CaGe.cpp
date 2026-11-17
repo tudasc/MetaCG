@@ -6,9 +6,7 @@
 #include "cage/CaGe.h"
 #include "cage/interface/CaGePlugin.h"
 
-#include "llvm/Passes/PassBuilder.h"
-#include "llvm/Passes/PassPlugin.h"
-
+#include "cage/generator/CallGraphEmbedder.h"
 #include "cage/generator/CallgraphGenerator.h"
 #include "cage/generator/FileExporter.h"
 
@@ -28,6 +26,13 @@ static opt<cage::PTAType> pta(
                "Treat all available valid function signatures for a given function pointer as potential call target ")),
     cat(cageOpts), init(cage::PTAType::No));
 
+enum class OutputTypes { File, Embed };
+static bits<OutputTypes> outputTypeBits(desc("Where to output the graph"),
+                                        values(clEnumValN(OutputTypes::File, "file", " Output into separate file"),
+                                               clEnumValN(OutputTypes::Embed, "embed",
+                                                          "Embed the graph into the metacg section of the binary")),
+                                        cat(cageOpts));
+
 static opt<std::string> cgout("cg-file", desc("Output file for the generated call graph"), cat(cageOpts), init(""));
 
 static list<std::string> pluginPaths("plugin-paths", desc("option list"), cat(cageOpts), CommaSeparated);
@@ -35,19 +40,18 @@ static list<std::string> pluginPaths("plugin-paths", desc("option list"), cat(ca
 namespace cage {
 
 Plugin* loadPlugin(const std::string& pluginPath) {
-  metacg::MCGLogger::instance().getConsole()->debug("Loading plugin");
+  metacg::MCGLogger::logDebug("Loading plugin");
   std::string err;
   auto lib = llvm::sys::DynamicLibrary::getPermanentLibrary(pluginPath.c_str(), &err);
   if (!lib.isValid()) {
-    metacg::MCGLogger::instance().getErrConsole()->error("cannot locate the library at {}!", pluginPath);
-    metacg::MCGLogger::instance().getErrConsole()->error("Reason: {}", err);
+    metacg::MCGLogger::logError("cannot locate the library at {}!", pluginPath);
+    metacg::MCGLogger::logError("Reason: {}", err);
     return nullptr;
   }
-  metacg::MCGLogger::instance().getConsole()->trace("Getting collection object from plugin {}", pluginPath);
+  metacg::MCGLogger::logTrace("Getting collection object from plugin {}", pluginPath);
   void* sym = lib.getAddressOfSymbol("getPlugin");
   if (!sym) {
-    metacg::MCGLogger::instance().getErrConsole()->error(
-        "Could not load collectors from plugin, no Function \"getPlugin()\"!");
+    metacg::MCGLogger::logError("Could not load collectors from plugin, no Function \"getPlugin()\"!");
     return nullptr;
   }
   auto getPlugin = reinterpret_cast<Plugin* (*)()>(sym);
@@ -61,9 +65,15 @@ PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
     outs() << "Running CaGe in verbose mode\n";
   }
 
-  // First check explicit option
+  // Write to file if:
+  // (1) Output file name is explicitly given
+  // (2) Option for file output is set, or
+  // (3) No alternative output option is specified.
+  bool writeToFile = !cgout.empty() || outputTypeBits.isSet(OutputTypes::File) || outputTypeBits.getBits() == 0;
+
+  // To determine output file, first check explicit option
   std::string outfile = cgout.getValue();
-  if (outfile.empty()) {
+  if (writeToFile && outfile.empty()) {
     // If empty, check environment variable
     if (const auto* cgNameEnv = std::getenv("CAGE_CG")) {
       outfile = cgNameEnv;
@@ -74,11 +84,16 @@ PreservedAnalyses CaGe::run(Module& M, ModuleAnalysisManager& MA) {
   }
 
   Generator gen(pta);
-  gen.addPlugin(std::make_unique<FileExporter>(outfile));
+  if (writeToFile) {
+    gen.addPlugin(std::make_unique<FileExporter>(outfile));
+  }
+  if (outputTypeBits.isSet(OutputTypes::Embed)) {
+    gen.addPlugin(std::make_unique<GraphEmbedder>(M));
+  }
 
   // Load external plugins
   for (const auto& pluginPath : pluginPaths) {
-    SPDLOG_INFO("Loading external plugin from: {}", pluginPath);
+    metacg::MCGLogger::logInfo("Loading external plugin from: {}", pluginPath);
     if (auto p = std::unique_ptr<Plugin>(loadPlugin(pluginPath))) {
       gen.addPlugin(std::move(p));
     }

@@ -64,7 +64,7 @@ class CaGeDemoMD : public metacg::MetaData::Registrar<CaGeDemoMD> {
   void merge(const MetaData& toMerge, std::optional<metacg::MergeAction> mergeAction,
              const metacg::GraphMapping& g) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
-      metacg::MCGLogger::instance().getErrConsole()->error(
+      metacg::MCGLogger::logError(
           "The MetaData which was tried to merge with ASTNodeMetadata was of a different MetaData type");
       abort();
     }

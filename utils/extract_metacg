@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+objcopy -O binary --only-section=metacg "$1" /dev/stdout | strings -n 1

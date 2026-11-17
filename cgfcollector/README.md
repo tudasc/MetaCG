@@ -29,10 +29,19 @@ Available options:
 
 Additionally these other tools are included:
 
-- `cgfcollector_comp_wrapper.sh`: Acts like a normal Flang compiler but also generates a call graph.
-- `cgfcollector_link_wrapper`: Acts like a normal Flang linker but also merges
+- `cgfcollector_comp_wrapper.sh`:
+  - This script acts as a normal Flang compiler while also generating a call graph.
+  - It supports two modes:
+    - Compiler wrapper – wraps an existing Flang compiler invocation.
+    - Drop-in replacement – acts as the compiler itself, using `CGFCOLLECTOR_FLANG_BIN` to locate the Flang binary.
+  - Recommended usage:
+    - The first mode is useful for hooking into CMake projects with `CMAKE_Fortran_COMPILER_LAUNCHER` see [here](#from-a-cmake-project).
+    - The second mode is useful for projects where you want to replace the
+      compiler directly, for example for autotools projects. See
+      [here](#from-an-autotools-project).
+- `cgfcollector_link_wrapper.sh`:
+  Acts like a normal Flang linker but also merges
   the generated call graphs.
-- `test_runner.sh`: Run tests.
 
 ## How to build
 
@@ -46,18 +55,22 @@ To build the cgfcollector the option `METACG_BUILD_CGFCOLLECTOR` must be set to
 Paste this into your CMakeLists.txt.
 
 ```
-set(CMAKE_Fortran_COMPILER "flang-new")
+set(CMAKE_Fortran_COMPILER "flang")
 set(CMAKE_Fortran_COMPILER_LAUNCHER <path to cgfcollector_comp_wrapper.sh>)
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.1")
-    set(CMAKE_Fortran_LINKER_LAUNCHER "<path to cgfcollector_link_wrapper.sh>" --skip-gen-bin)
+    set(CMAKE_Fortran_LINKER_LAUNCHER "<path to cgfcollector_link_wrapper.sh>")
 else()
-    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK "<path to cgfcollector_link_wrapper.sh> --skip-gen-bin")
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK "<path to cgfcollector_link_wrapper.sh>")
 endif()
 ```
 
 This will hook into the CMake build process and generate a call graph.
 
 An example can be found in `test/multi/deps`.
+
+### from an autotools project
+
+Set the `FC` environment variable to `cgfcollector_comp_wrapper.sh`.
 
 ### from other projects
 
@@ -71,7 +84,7 @@ you probably don't need this.
 
 ## Running test
 
-Run `test_runner.sh`
+Run `ctest`
 
 NOTE: The test `test/multi/fortdepend_deps` has a dependency on [fortdepend](https://fortdepend.readthedocs.io/en/latest/)
 
@@ -80,5 +93,5 @@ NOTE: The test `test/multi/fortdepend_deps` has a dependency on [fortdepend](htt
 ### print parse tree
 
 ```sh
-flang-new -fc1 -fdebug-dump-parse-tree file.f90
+flang -fc1 -fdebug-dump-parse-tree file.f90
 ```

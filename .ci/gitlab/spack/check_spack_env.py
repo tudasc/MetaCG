@@ -51,7 +51,7 @@ def check_environment_installed():
     # Check installation status of each spec
     for spec in all_specs:
         # Check if the spec is installed
-        if spec.installed:
+        if spec.installed or spec.external:
             installed_specs.append(spec)
             # Check if this is an external package
             # External packages can be detected via spec.external or spec.external_path

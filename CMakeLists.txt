@@ -111,7 +111,7 @@ if(METACG_BUILD_GRAPH_TOOLS)
 
   else()
     set(BUILD_CAGE OFF)
-    message(STATUS "Skipping CaGe: requires LLVM version 16 or higher")
+    message(STATUS "Skipping CaGe: requires LLVM version 15 or higher")
   endif()
 
   add_subdirectory(tools)
@@ -129,26 +129,6 @@ if(METACG_BUILD_CGCOLLECTOR)
   add_subdirectory(cgcollector)
 endif()
 
-# Build CGPatch: cgpatch-pass, cgpatch-runtime, wrappers, tests
-option(
-  METACG_BUILD_CGPATCH
-  "On or off"
-  OFF
-)
-if(METACG_BUILD_CGPATCH)
-  if(NOT METACG_BUILD_GRAPH_TOOLS)
-    message(FATAL_ERROR "CGPatch requires to build with METACG_BUILD_GRAPH_TOOLS=ON")
-  endif()
-  if(${LLVM_PACKAGE_VERSION}
-     GREATER
-     14
-  )
-    add_subdirectory(tools/cgpatch/)
-  else()
-    message(STATUS "Skipping CGPatch: requires LLVM version 15 or higher")
-  endif()
-endif()
-
 # PIRA analyzer Should PGIS be built
 option(
   METACG_BUILD_PGIS
@@ -159,6 +139,20 @@ if(METACG_BUILD_PGIS)
   include(ExtraP)
   include(CubeLib)
   add_subdirectory(pgis)
+endif()
+
+# CGValidate2: graph-lib based MCG validation against Cube profiles
+option(
+  METACG_BUILD_CGVALIDATE2
+  "Build CGValidate2, the graph-lib based MCG validation tool (requires METACG_BUILD_GRAPH_TOOLS and CUBE_DIR)"
+  OFF
+)
+if(METACG_BUILD_CGVALIDATE2)
+  if(NOT METACG_BUILD_GRAPH_TOOLS)
+    message(FATAL_ERROR "CGValidate2 requires METACG_BUILD_GRAPH_TOOLS=ON")
+  endif()
+  include(CubeLib)
+  add_subdirectory(tools/cgvalidate2)
 endif()
 
 # If set to on, CMake looks for installed nlohmann::json
@@ -174,18 +168,6 @@ option(
   "On or Off"
   OFF
 )
-
-# Enable MPI for CGPatch
-option(
-  CGPATCH_USE_MPI
-  "On or Off"
-  ON
-)
-
-if(METACG_BUILD_CGPATCH AND CGPATCH_USE_MPI)
-  find_package(MPI REQUIRED)
-  message(STATUS "MPI VERSION: ${MPI_C_VERSION}")
-endif()
 
 # Build MetaCG's Python interface
 option(

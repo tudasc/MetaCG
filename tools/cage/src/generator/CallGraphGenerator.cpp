@@ -138,8 +138,12 @@ struct CallBaseVisitor : public llvm::InstVisitor<CallBaseVisitor> {
       }
       origin = functionInfoMap[F]->getFilename().str();
     }
-
-    return mcg->getOrInsertNode(nameToUse.str(), std::move(origin), false, hasBody);
+    auto& node = mcg->getOrInsertNode(nameToUse.str());
+    if (origin) {
+      node.setOrigin(origin);
+    }
+    node.setHasBody(hasBody);
+    return node;
   }
 
   bool insertEdge(const metacg::CgNode& a, const metacg::CgNode& b) {

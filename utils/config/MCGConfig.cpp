@@ -79,11 +79,11 @@ int main(int argc, char** argv) {
   std::string processedPassOpts = passOptsStream.str();
 
   if (result.contains("cage-cflags")) {
-    std::cout << " -flto ";
+    std::cout << " -flto -fstandalone-debug";
   }
 
   if (result.contains("cage-cxxflags")) {
-    std::cout << " -flto ";
+    std::cout << " -flto -fstandalone-debug";
   }
 
   if (result.contains("cage-ldflags")) {

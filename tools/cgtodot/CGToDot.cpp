@@ -13,9 +13,6 @@
 #include <fstream>
 #include <iostream>
 
-static auto console = metacg::MCGLogger::instance().getConsole();
-static auto errConsole = metacg::MCGLogger::instance().getErrConsole();
-
 template <>
 struct fmt::formatter<std::filesystem::path> {
   constexpr auto parse(fmt::format_parse_context& ctx) { return ctx.begin(); }
@@ -48,14 +45,14 @@ int main(int argc, char* argv[]) {
   }
 
   if (!result.count("input")) {
-    errConsole->error("No input call graph file specified.");
+    metacg::MCGLogger::logError("No input call graph file specified.");
     std::cout << options.help() << std::endl;
     return EXIT_FAILURE;
   }
 
   std::filesystem::path inputFile = result["input"].as<std::string>();
   if (!std::filesystem::exists(inputFile)) {
-    errConsole->error("Specified input file does not exist: {}", inputFile);
+    metacg::MCGLogger::logError("Specified input file does not exist: {}", inputFile);
     return EXIT_FAILURE;
   }
 
@@ -66,20 +63,20 @@ int main(int argc, char* argv[]) {
     outputFile = inputFile.stem().string() + ".dot";
   }
   if (std::filesystem::exists(outputFile)) {
-    errConsole->warn("Output file already exists and will be overwritten: {}", outputFile);
+    metacg::MCGLogger::logWarn("Output file already exists and will be overwritten: {}", outputFile);
   }
 
   metacg::io::FileSource fs(inputFile);
 
   auto mcgReader = metacg::io::createReader(fs);
   if (!mcgReader) {
-    errConsole->error("Failed to create MCG reader for file: {}", inputFile);
+    metacg::MCGLogger::logError("Failed to create MCG reader for file: {}", inputFile);
     return EXIT_FAILURE;
   }
 
   auto cg = mcgReader->read();
   if (!cg) {
-    errConsole->error("Failed to read call graph from file.");
+    metacg::MCGLogger::logError("Failed to read call graph from file.");
     return EXIT_FAILURE;
   }
 
@@ -88,13 +85,13 @@ int main(int argc, char* argv[]) {
 
   std::ofstream outFile(outputFile);
   if (!outFile.is_open()) {
-    errConsole->error("Could not open output file for writing: {}", outputFile);
+    metacg::MCGLogger::logError("Could not open output file for writing: {}", outputFile);
     return EXIT_FAILURE;
   }
 
   outFile << dotGen.getDotString();
   outFile.close();
 
-  console->info("DOT file generated successfully: {}", outputFile);
+  metacg::MCGLogger::logInfo("DOT file generated successfully: {}", outputFile);
   return EXIT_SUCCESS;
 }

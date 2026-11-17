@@ -73,13 +73,12 @@ const Fortran::parser::Name* getNameFromClassWithDesignator(const T& t) {
 const Fortran::semantics::Symbol* getTypeAsDerivedTypeSymbol(const Fortran::semantics::Symbol* sym);
 
 /**
- * @brief Get the absolute base symbol for a given type. This is done by following the `extendsFrom` field of the type
- * until the `extendsFrom` field is null. This also canonicalizes the resulting symbol.
+ * @brief Get the root symbol for a given typeSymbol. This is used to find the root type of a derived type, e.g. if a
+ * derived type extends another derived type, this will return the root type of the hierarchy.
  *
- * @param types
- * @param type
+ * @param sym
  */
-const Fortran::semantics::Symbol* getAbsoluteBaseSymbol(const std::vector<Type>& types, const Type* type);
+const Fortran::semantics::Symbol* getRootTypeOfSymbol(const Fortran::semantics::Symbol* sym);
 
 enum class CanonicalMode {
   Identity,  // preserve variables/procedures by symbol
@@ -100,9 +99,9 @@ struct CanonicalSymbol {
 
 /**
  * @brief Canonicalizes a given symbol. This tries to resolve a symbol to its original construct, e.g. if it's defined
- * in a modules and therefore is a Use/Host associated symbol, it will be resolved to the original symbol in the module.
- * This function also handles generic symbols, and an short coming of older LLVM versions (18 and before). See function
- * body for details.
+ * in a modules and therefore is a Use/Host associated symbol, it will be resolved to the original symbol in the
+ * module. This function also handles generic symbols, and an short coming of older LLVM versions (18 and before). See
+ * function body for details.
  *
  * Note: Mainly used for comparing symbols.
  *

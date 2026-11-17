@@ -7,16 +7,12 @@
 #ifndef CGCOLLECTOR2_LOOPDEPTHCOLLECTOR_H
 #define CGCOLLECTOR2_LOOPDEPTHCOLLECTOR_H
 
-#include "cgcollector2/MetaDataFunctions.h"
 #include "cgcollector2/interface/CGC2Plugin.h"
 #include "metacg/metadata/LoopMD.h"
 
+
 struct LoopDepthCollector : public cgcollector2::Plugin {
-  virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) {
-    std::unique_ptr<metacg::LoopDepthMD> result = std::make_unique<metacg::LoopDepthMD>();
-    result->loopDepth = getLoopDepthInStmt(decl->getBody());
-    return result;
-  }
+  std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) override ;
 
   std::string getPluginName() const final { return "LoopDepthCollector"; }
 

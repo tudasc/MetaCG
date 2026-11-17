@@ -15,9 +15,9 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
   static constexpr const char* key = "inlineInfo";
   InlineMD() = default;
   explicit InlineMD(const nlohmann::json& j, StrToNodeMapping&) {
-    metacg::MCGLogger::instance().getConsole()->trace("Reading inlineInfo from json");
+    metacg::MCGLogger::logTrace("Reading inlineInfo from json");
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve meta data for {}", "inlineInfo");
+      metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
     markedInline = j["markedInline"];
@@ -46,7 +46,7 @@ class InlineMD : public metacg::MetaData::Registrar<InlineMD> {
 
     const InlineMD* toMergeDerived = static_cast<const InlineMD*>(&toMerge);
     if (this->isTemplateFunction != toMergeDerived->isTemplateFunction) {
-      metacg::MCGLogger::instance().getErrConsole()->warn("Merging functions with mismatched 'isTemplate' metadata");
+      metacg::MCGLogger::logWarn("Merging functions with mismatched 'isTemplate' metadata");
     }
     // For the rest of the metrics, adopt the stronger attributes
     markedInline |= toMergeDerived->markedInline;

@@ -17,9 +17,9 @@ class UniqueTypeMD : public metacg::MetaData::Registrar<UniqueTypeMD> {
   UniqueTypeMD() = default;
 
   explicit UniqueTypeMD(const nlohmann::json& j, StrToNodeMapping&) {
-    metacg::MCGLogger::instance().getConsole()->trace("Creating {} metadata from json", key);
+    metacg::MCGLogger::logTrace("Creating {} metadata from json", key);
     if (j.is_null()) {
-      metacg::MCGLogger::instance().getConsole()->trace("Could not retrieve metadata for {}", key);
+      metacg::MCGLogger::logErrorUnique("Could not retrieve metadata for {}", key);
     }
     numTypes = j;
   }
@@ -41,8 +41,7 @@ class UniqueTypeMD : public metacg::MetaData::Registrar<UniqueTypeMD> {
       numTypes += toMergeDerived->numTypes;
 
       if (numTypes != 0 && toMergeDerived->numTypes != 0) {
-        metacg::MCGLogger::instance().getErrConsole()->warn(
-            "Same function defined with different number of types found on merge.");
+        metacg::MCGLogger::logWarnUnique("Same function defined with different number of types found on merge.");
       }
     }
   }

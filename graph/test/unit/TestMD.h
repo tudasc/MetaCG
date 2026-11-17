@@ -37,7 +37,7 @@ struct SimpleTestMD final : metacg::MetaData::Registrar<SimpleTestMD> {
 
   void merge(const MetaData& toMerge, std::optional<metacg::MergeAction> action, const metacg::GraphMapping&) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
-      metacg::MCGLogger::instance().getErrConsole()->error(
+      metacg::MCGLogger::logError(
           "The MetaData which was tried to merge with SimpleTestMD was of a different MetaData type");
       abort();
     }
@@ -78,7 +78,7 @@ struct RefTestMD final : metacg::MetaData::Registrar<RefTestMD> {
   void merge(const MetaData& toMerge, std::optional<metacg::MergeAction> action,
              const metacg::GraphMapping& mapping) final {
     if (std::strcmp(toMerge.getKey(), getKey()) != 0) {
-      metacg::MCGLogger::instance().getErrConsole()->error(
+      metacg::MCGLogger::logError(
           "The MetaData which was tried to merge with RefTestMD was of a different MetaData type");
       abort();
     }

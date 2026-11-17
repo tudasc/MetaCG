@@ -49,6 +49,9 @@ class MCGLogger {
    */
   template <LogType lt = LogType::DEFAULT, Output outPutType = Output::StdConsole, typename MSG_t, typename... Args>
   void info(const MSG_t msg, Args&&... args) {
+    if (!shouldLog<outPutType>(spdlog::level::info)) {
+      return;
+    }
     const std::string& formattedMessage = fmt::vformat(std::string_view(msg), fmt::make_format_args(args...));
     if (ensureUnique<lt>(formattedMessage)) {
       return;
@@ -72,6 +75,9 @@ class MCGLogger {
    */
   template <LogType lt = LogType::DEFAULT, Output outPutType = Output::StdConsole, typename MSG_t, typename... Args>
   void error(const MSG_t msg, Args&&... args) {
+    if (!shouldLog<outPutType>(spdlog::level::err)) {
+      return;
+    }
     const std::string& formattedMessage = fmt::vformat(std::string_view(msg), fmt::make_format_args(args...));
     if (ensureUnique<lt>(formattedMessage)) {
       return;
@@ -95,6 +101,9 @@ class MCGLogger {
    */
   template <LogType lt = LogType::DEFAULT, Output outPutType = Output::StdConsole, typename MSG_t, typename... Args>
   void debug(const MSG_t msg, Args&&... args) {
+    if (!shouldLog<outPutType>(spdlog::level::debug)) {
+      return;
+    }
     const std::string& formattedMessage = fmt::vformat(std::string_view(msg), fmt::make_format_args(args...));
     if (ensureUnique<lt>(formattedMessage)) {
       return;
@@ -118,6 +127,9 @@ class MCGLogger {
    */
   template <LogType lt = LogType::DEFAULT, Output outPutType = Output::StdConsole, typename MSG_t, typename... Args>
   void warn(const MSG_t msg, Args&&... args) {
+    if (!shouldLog<outPutType>(spdlog::level::warn)) {
+      return;
+    }
     const std::string& formattedMessage = fmt::vformat(std::string_view(msg), fmt::make_format_args(args...));
     if (ensureUnique<lt>(formattedMessage)) {
       return;
@@ -141,6 +153,9 @@ class MCGLogger {
    */
   template <LogType lt = LogType::DEFAULT, Output outPutType = Output::StdConsole, typename MSG_t, typename... Args>
   void critical(const MSG_t msg, Args&&... args) {
+    if (!shouldLog<outPutType>(spdlog::level::critical)) {
+      return;
+    }
     const std::string& formattedMessage = fmt::vformat(std::string_view(msg), fmt::make_format_args(args...));
     if (ensureUnique<lt>(formattedMessage)) {
       return;
@@ -164,6 +179,9 @@ class MCGLogger {
    */
   template <LogType lt = LogType::DEFAULT, Output outPutType = Output::StdConsole, typename MSG_t, typename... Args>
   void trace(const MSG_t msg, Args&&... args) {
+    if (!shouldLog<outPutType>(spdlog::level::trace)) {
+      return;
+    }
     const std::string& formattedMessage = fmt::vformat(std::string_view(msg), fmt::make_format_args(args...));
     if (ensureUnique<lt>(formattedMessage)) {
       return;
@@ -264,6 +282,19 @@ class MCGLogger {
   }
 
   /**
+   * A shorthand to print a trace to the console
+   *
+   * @tparam MSG_t inferred from msg
+   * @tparam Args  inferred from args
+   * @param msg the msg to be formatted and printed
+   * @param args the arguments to format the message with
+   */
+  template <typename MSG_t, typename... Args>
+  static void logTrace(const MSG_t msg, Args&&... args) {
+    metacg::MCGLogger::instance().trace<LogType::DEFAULT, Output::StdConsole>(msg, std::forward<Args>(args)...);
+  }
+
+  /**
    * Resets the uniqueness-property for all messages.
    * Any message that has been previously logged as unique can now appear again
    *
@@ -276,6 +307,18 @@ class MCGLogger {
   }
 
  private:
+  /**
+   * Check the level before formatting, so disabled messages do not pay for formatting their arguments.
+   */
+  template <Output outPutType>
+  inline bool shouldLog(spdlog::level::level_enum level) {
+    if constexpr (outPutType == Output::StdConsole) {
+      return console->should_log(level);
+    } else {
+      return errconsole->should_log(level);
+    }
+  }
+
   MCGLogger() : console(spdlog::stdout_color_mt("console")), errconsole(spdlog::stderr_color_mt("errconsole")) {}
 
   template <LogType lt>
@@ -325,6 +368,17 @@ inline void getLogger() {
   console->set_level(console->level());
   errConsole->set_level(errConsole->level());
   disableErrors();
+}
+
+inline void disableColor() {
+  //Do not use color in output, helpful for unit-tests
+  //Even though we only have one sink per console, we iterate to catch future changes
+  for (auto& sink : metacg::MCGLogger::instance().getConsole()->sinks() ) {
+    static_cast<spdlog::sinks::stdout_color_sink_mt*>(sink.get())->set_color_mode(spdlog::color_mode::never);
+  }
+  for (auto& sink : metacg::MCGLogger::instance().getErrConsole()->sinks() ) {
+    static_cast<spdlog::sinks::stderr_color_sink_mt*>(sink.get())->set_color_mode(spdlog::color_mode::never);
+  }
 }
 
 /**

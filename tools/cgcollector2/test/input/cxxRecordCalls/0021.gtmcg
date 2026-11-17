@@ -1,0 +1,185 @@
+{
+    "_CG": {
+        "_Z4takeSt16initializer_listI1SE": {
+            "callees": [
+                "_ZNSt16initializer_listI1SED1Ev",
+                "_ZNSt16initializer_listI1SED2Ev"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "take"
+                    ],
+                    "paramTypes": [
+                        "std::initializer_list<S>"
+                    ],
+                    "retType": "void"
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1SC1Ei": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "S"
+                    ],
+                    "paramTypes": [
+                        "int"
+                    ],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1SC2Ei": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "S"
+                    ],
+                    "paramTypes": [
+                        "int"
+                    ],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1SD1Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "~S"
+                    ],
+                    "paramTypes": [],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1SD2Ev": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "~S"
+                    ],
+                    "paramTypes": [],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNSt16initializer_listI1SED1Ev": {
+            "callees": [],
+            "callers": [
+                "_Z4takeSt16initializer_listI1SE"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "~initializer_list"
+                    ],
+                    "paramTypes": [],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNSt16initializer_listI1SED2Ev": {
+            "callees": [],
+            "callers": [
+                "_Z4takeSt16initializer_listI1SE"
+            ],
+            "doesOverride": false,
+            "hasBody": false,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "~initializer_list"
+                    ],
+                    "paramTypes": [],
+                    "retType": ""
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z4takeSt16initializer_listI1SE",
+                "_ZN1SC1Ei",
+                "_ZN1SC2Ei",
+                "_ZN1SD1Ev",
+                "_ZN1SD2Ev"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": [
+                        "main"
+                    ],
+                    "paramTypes": [],
+                    "retType": "int"
+                }
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "f0e4846aba24f8da5d5342ee9211fb60e5b6a7de",
+            "version": "1.0"
+        },
+        "version": "2.0"
+    }
+}

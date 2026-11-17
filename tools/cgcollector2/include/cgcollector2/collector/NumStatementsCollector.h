@@ -6,19 +6,13 @@
 #ifndef CGCOLLECTOR2_NUMSTATEMENTSCOLLECTOR_H
 #define CGCOLLECTOR2_NUMSTATEMENTSCOLLECTOR_H
 
-#include "cgcollector2/MetaDataFunctions.h"
 #include "cgcollector2/interface/CGC2Plugin.h"
 #include "metacg/Callgraph.h"
 #include "metacg/metadata/NumStatementsMD.h"
 
-#include <clang/AST/Decl.h>
 
 struct NumberOfStatementsCollector : public cgcollector2::Plugin {
-  std::unique_ptr<metacg::MetaData> computeForDecl(const clang::FunctionDecl* const functionDecl) override {
-    std::unique_ptr<metacg::NumStatementsMD> result = std::make_unique<metacg::NumStatementsMD>();
-    result->setNumberOfStatements(getNumStmtsInStmt(functionDecl->getBody()));
-    return result;
-  }
+  std::unique_ptr<metacg::MetaData> computeForDecl(const clang::FunctionDecl* const functionDecl) override;
 
   void computeForGraph(metacg::Callgraph* const) override {}
 

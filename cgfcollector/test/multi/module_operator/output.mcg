@@ -1,0 +1,43 @@
+{
+  "_CG": {
+    "meta": {},
+    "nodes": {
+      "0": {
+        "callees": {},
+        "functionName": "compare_",
+        "hasBody": false,
+        "meta": {},
+        "origin": "op3.f90"
+      },
+      "1": {
+        "callees": { "2": {} },
+        "functionName": "_QQmain",
+        "hasBody": true,
+        "meta": {},
+        "origin": "op.f90"
+      },
+      "2": {
+        "callees": { "0": {}, "3": {} },
+        "functionName": "_QFPtest_compare",
+        "hasBody": true,
+        "meta": {},
+        "origin": "op.f90"
+      },
+      "3": {
+        "callees": {},
+        "functionName": "_QMmodPless_then_integer",
+        "hasBody": true,
+        "meta": {},
+        "origin": "op2.f90"
+      }
+    }
+  },
+  "_MetaCG": {
+    "generator": {
+      "name": "MetaCG",
+      "sha": "107a175edae5e4bdd70905e379b4c34eb5c6b36a",
+      "version": "1.0"
+    },
+    "version": "4.0"
+  }
+}

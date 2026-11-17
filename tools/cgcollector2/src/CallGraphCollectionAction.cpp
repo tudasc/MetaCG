@@ -6,16 +6,14 @@
 
 #include "cgcollector2/CallGraphCollectionAction.h"
 #include "cgcollector2/CallGraphNodeGenerator.h"
-#include "cgcollector2/SharedDefs.h"
 #include "cgcollector2/interface/CGC2Plugin.h"
-#include "cgcollector2/metadata/Internal/ASTNodeMetadata.h"
-#include "cgcollector2/metadata/Internal/AllAliasMetadata.h"
-#include "cgcollector2/metadata/Internal/FunctionSignatureMetadata.h"
-#include "metacg/MCGBaseInfo.h"
+#include "cgcollector2/metadata/internal/ASTNodeMetadata.h"
+#include "cgcollector2/metadata/exported/AllAliasMetadata.h"
+#include "cgcollector2/metadata/exported/FunctionSignatureMetadata.h"
+#include "metacg/LoggerUtil.h"
 
 #include "metacg/MCGManager.h"
-#include "metacg/io/VersionFourMCGWriter.h"
-#include "metacg/io/VersionTwoMCGWriter.h"
+#include "metacg/io/MCGWriter.h"
 
 #include "clang/AST/ASTDumper.h"
 
@@ -25,15 +23,14 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
   std::string dumpString;
   llvm::raw_string_ostream llvmStringOstream(dumpString);
   Context.getTranslationUnitDecl()->dump(llvmStringOstream);
-  SPDLOG_TRACE("\n{}\n", dumpString);
+  metacg::MCGLogger::logTrace("\n{}\n", dumpString);
 
-  // Todo: maybe use multigraph managing and write only after all files have been processed
   auto& mcgm = metacg::graph::MCGManager::get();
   mcgm.resetManager();
   mcgm.addToManagedGraphs("newGraph", std::make_unique<metacg::Callgraph>());
   auto callgraph = mcgm.getCallgraph();
   CallGraphNodeGenerator graphGenerator(callgraph, captureCtorsDtors, captureNewDeleteCalls, captureImplicits,
-                                        inferCtorsDtors, standalone, level);
+                                        inferCtorsDtors, standalone, level, sema);
 
   graphGenerator.TraverseDecl(Context.getTranslationUnitDecl());
 
@@ -43,10 +40,10 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
     addOverestimationEdges(callgraph);
   }
 
-  SPDLOG_INFO("Sucessfully Created Callgraph");
-  SPDLOG_INFO("Running Metadata Collectors");
+  metacg::MCGLogger::logInfo("Successfully Created Callgraph");
+  metacg::MCGLogger::logInfo("Running Metadata Collectors");
   for (auto& c : mcs) {
-    SPDLOG_DEBUG("Running: {}", c->getPluginName());
+    metacg::MCGLogger::logDebug("Running: {}", c->getPluginName());
     for (const auto& node : callgraph->getNodes()) {
       if (!node->has<ASTNodeMetadata>()) {
         // This is because we currently do not attach ast node metadata to function pointers
@@ -61,80 +58,53 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
     c->computeForGraph(callgraph);
   }
 
-  std::unique_ptr<metacg::io::MCGWriter> mcgWriter;
-
-  switch (mcgVersion) {
-    case 1:
-      SPDLOG_WARN("This tool can not generate output files in the V1 format, using V2 instead");
-      __attribute__((fallthrough));
-    case 2:
-      mcgWriter = std::make_unique<metacg::io::VersionTwoMCGWriter>(metacg::MCGFileInfo(
-          {2, 0},
-          {std::string("CGCollector2"), MetaCG_VERSION_MAJOR, MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}));
-      break;
-    case 3:
-      SPDLOG_WARN("V3 format was removed and is currently not supported, using V4 instead");
-      __attribute__((fallthrough));
-    case 4:
-      mcgWriter = std::make_unique<metacg::io::VersionFourMCGWriter>(metacg::MCGFileInfo(
-          {4, 0},
-          {std::string("CGCollector2"), MetaCG_VERSION_MAJOR, MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}));
-      break;
-    default:
-      assert(false && "The selected output format is not recognized");
-      SPDLOG_WARN("The selected output format {} is not recognized. Using default format (V2) instead", mcgVersion);
-      mcgWriter = std::make_unique<metacg::io::VersionTwoMCGWriter>();
-  }
-
-  metacg::io::JsonSink js;
-  mcgWriter->write(callgraph, js);
-  std::string filename;
-  if (cgout.empty()) {
-    auto& sm = Context.getSourceManager();
-    filename = sm.getFileEntryRefForID(sm.getMainFileID())->getName().str();
-    filename = filename.substr(0, filename.find_last_of('.')) + ".ipcg";
-  } else {
-    filename = cgout;
-  }
-  SPDLOG_INFO("Writing to file: {}", filename);
-  std::ofstream file(filename);
-  // Fixme: may be a very expensive copy;
-  nlohmann::json newJ = js.getJson();
   if (prune) {
-    // Fixme: implement deletion of nodes in metacg, it is ridiculous to do this on strings
-    for (auto iter = newJ.at("_CG").begin(); iter != newJ.at("_CG").end();) {
-      if (iter.value().at("hasBody") == false && iter.value().at("callers").empty()) {
-        SPDLOG_TRACE("Pruning: {}", iter.key());
-        newJ.at("_CG").erase(iter++);
-      } else {
-        ++iter;
+    metacg::MCGLogger::logInfo("Pruning callgraph");
+    for (const auto& node : callgraph->getNodes()) {
+      //Nodes without a body can have callers, so check for all three
+      if (!node->getHasBody() && callgraph->getCallees(node->getId()).empty() && callgraph->getCallers(node->getId()).empty()) {
+        callgraph->erase(node->getId());
       }
     }
   }
 
-  file << newJ << std::endl;
+  std::unique_ptr<metacg::io::MCGWriter> mcgWriter = metacg::io::createWriter(mcgVersion);
+  metacg::io::JsonSink js;
+  mcgWriter->write(callgraph, js);
+  std::string filename;
+
+  if (cgout.empty()) {
+    auto& sm = Context.getSourceManager();
+    filename = sm.getFileEntryRefForID(sm.getMainFileID())->getName().str();
+    filename = filename.substr(0, filename.find_last_of('.')) + ".mcg";
+  } else {
+    filename = cgout;
+  }
+  std::ofstream file(filename);
+  metacg::MCGLogger::logInfo("Writing to file: {}", filename);
+  file << js.getJson() << std::endl;
 }
 
 void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callgraph) {
-  SPDLOG_TRACE("Available nodes:");
+  metacg::MCGLogger::logTrace("Available nodes:");
   // Build datastructure mapping a signature to all node id's with the same signature
   std::unordered_map<FunctionSignature, std::vector<size_t>> signatureToNodeIdMap;
   for (auto& node : callgraph->getNodes()) {
     if (node->has<FunctionSignatureMetadata>()) {
       std::ostringstream stream;
       stream << node->get<FunctionSignatureMetadata>()->ownSignature;
-      SPDLOG_TRACE("{}'s signature is: {} with hash: {}", node->getFunctionName(), stream.str(),
-                   std::hash<FunctionSignature>()(node->get<FunctionSignatureMetadata>()->ownSignature));
+      metacg::MCGLogger::logTrace("{}'s signature is: {} with hash: {}", node->getFunctionName(), stream.str(),
+                                  std::hash<FunctionSignature>()(node->get<FunctionSignatureMetadata>()->ownSignature));
       signatureToNodeIdMap[node->get<FunctionSignatureMetadata>()->ownSignature].push_back(node->getId());
     } else {
-      SPDLOG_ERROR("{} has no signature attached", node->getFunctionName());
+      metacg::MCGLogger::logError("{} has no signature attached", node->getFunctionName());
     }
   }
 
   // This makes it so a potential function: foo(int (*funcptr)());
   // will potentially call all functions with the signature int (void)
-  // This is behaviour that was implemented in the classic cgcollector
-  SPDLOG_INFO("Overestimate parameter function pointers from body-less functions");
+  // This is behavior that was implemented in the classic cgcollector
+  metacg::MCGLogger::logInfo("Overestimate parameter function pointers from body-less functions");
   for (auto& node : callgraph->getNodes()) {
     // if the node has no body, we need to estimate potential callers via its parameters
     if (!node->getHasBody() && node->has<ASTNodeMetadata>()) {
@@ -149,7 +119,8 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
           auto protoType = clang::cast<clang::FunctionProtoType>(
               md->getParamDecl(i)->getType()->getPointeeType().getDesugaredType(md->getASTContext()).IgnoreParens());
 
-          SPDLOG_TRACE("The Node: {} has a pointer to a function as its {}th param", node->getFunctionName(), i);
+          metacg::MCGLogger::logTrace("The Node: {} has a pointer to a function as its {}th param",
+                                      node->getFunctionName(), i);
           FunctionSignature functionSignature;
           functionSignature.retType = protoType->getReturnType().getAsString();
           std::transform(protoType->getParamTypes().begin(), protoType->getParamTypes().end(),
@@ -168,22 +139,23 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
     return;
   }
 
-  SPDLOG_INFO("Interfunction overestimation begins");
+  metacg::MCGLogger::logInfo("Interfunction overestimation begins");
   // For all nodes, get the signature of a possible call target and add all functions with same signature as edges
   for (auto& node : callgraph->getNodes()) {
-    SPDLOG_TRACE("Estimating for node {}", node->getFunctionName());
+    metacg::MCGLogger::logTrace("Estimating for node {}", node->getFunctionName());
     if (node->has<AllAliasMetadata>()) {
       for (const auto& pCallTarget : node->get<AllAliasMetadata>()->mightCall) {
         std::ostringstream stream;
         stream << pCallTarget;
-        SPDLOG_DEBUG("Node: {} might call: {} with hash: {}", node->getFunctionName(), stream.str(),
-                     std::hash<FunctionSignature>()(pCallTarget));
+        metacg::MCGLogger::logDebug("Node: {} might call: {} with hash: {}", node->getFunctionName(), stream.str(),
+                                    std::hash<FunctionSignature>()(pCallTarget));
         if (signatureToNodeIdMap.find(pCallTarget) == signatureToNodeIdMap.end()) {
-          SPDLOG_DEBUG("No function with matching signature found");
+          metacg::MCGLogger::logDebug("No function with matching signature found");
           continue;
         }
         for (const auto& id : signatureToNodeIdMap.at(pCallTarget)) {
-          SPDLOG_DEBUG("Found function with matching signature: {}", callgraph->getNode(id)->getFunctionName());
+          metacg::MCGLogger::logDebug("Found function with matching signature: {}",
+                                      callgraph->getNode(id)->getFunctionName());
           callgraph->addEdge(node->getId(), id);
         }
       }

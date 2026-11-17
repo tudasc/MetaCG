@@ -18,9 +18,7 @@ nanobind_disable_stack_protector(pymetacg)
 add_metacg_library(pymetacg)
 
 if(NOT CMAKE_INSTALL_PYTHON_LIBDIR)
-  set(CMAKE_INSTALL_PYTHON_LIBDIR
-      "${CMAKE_INSTALL_LIBDIR}/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages"
-  )
+  set(CMAKE_INSTALL_PYTHON_LIBDIR ${Python_SITEARCH})
 endif()
 
 install(TARGETS pymetacg DESTINATION ${CMAKE_INSTALL_PYTHON_LIBDIR})

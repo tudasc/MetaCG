@@ -36,7 +36,7 @@ struct ReaderSource {
   virtual std::string getFormatVersion() {
     auto j = get();
     if (!j.contains("_MetaCG") || !j.at("_MetaCG").contains("version")) {
-      metacg::MCGLogger::instance().getErrConsole()->error("Unable to read version information from JSON source.");
+      metacg::MCGLogger::logError("Unable to read version information from JSON source.");
       return "unknown";
     }
     return j.at("_MetaCG").at("version");
@@ -59,12 +59,12 @@ struct FileSource : ReaderSource {
     }
 
     const std::string filename = filepath.string();
-    metacg::MCGLogger::instance().getConsole()->debug("Reading metacg file from: {}", filename);
+    metacg::MCGLogger::logDebug("Reading metacg file from: {}", filename);
     {
       std::ifstream in(filepath);
       if (!in.is_open()) {
         const std::string errorMsg = "Opening file " + filename + " failed.";
-        metacg::MCGLogger::instance().getErrConsole()->error(errorMsg);
+        metacg::MCGLogger::logError("{}", errorMsg);
         throw std::runtime_error(errorMsg);
       }
       in >> jsonContent;

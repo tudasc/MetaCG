@@ -115,8 +115,8 @@ void Callgraph::clear() {
 
 bool Callgraph::addEdgeInternal(NodeId caller, NodeId callee) {
   if (edges.find({caller, callee}) != edges.end()) {
-    MCGLogger::instance().getErrConsole()->warn("Edge between {} and {} already exist: Skipping edge insertion",
-                                                getNode(caller)->getFunctionName(), getNode(callee)->getFunctionName());
+    MCGLogger::logWarnUnique("Edge between {} and {} already exist: Skipping edge insertion",
+                       getNode(caller)->getFunctionName(), getNode(callee)->getFunctionName());
     return false;
   }
   calleeList[caller].push_back(callee);
@@ -136,20 +136,20 @@ bool Callgraph::addEdge(const CgNode& parentNode, const CgNode& childNode) {
 bool Callgraph::addEdge(NodeId parentID, NodeId childID) {
   auto* parentNode = getNode(parentID);
   if (!parentNode) {
-    MCGLogger::instance().getErrConsole()->error("Source ID {} does not exist in graph", parentID);
+    MCGLogger::logError("Source ID {} does not exist in graph", parentID);
     return false;
   }
   auto* childNode = getNode(childID);
   if (!childNode) {
-    MCGLogger::instance().getErrConsole()->error("Target ID {} does not exist in graph", childID);
+    MCGLogger::logError("Target ID {} does not exist in graph", childID);
     return false;
   }
   return addEdgeInternal(parentID, childID);
 }
 
 bool Callgraph::addEdge(const std::string& callerName, const std::string& calleeName) {
-  auto& callerMatches = getNodes(callerName);
-  auto& calleeMatches = getNodes(calleeName);
+  auto& callerMatches = getAllNodesWithName(callerName);
+  auto& calleeMatches = getAllNodesWithName(calleeName);
   if (callerMatches.size() != 1 || calleeMatches.size() != 1) {
     return false;
   }
@@ -177,8 +177,8 @@ bool Callgraph::removeEdge(const CgNode& parentNode, const CgNode& childNode) {
 }
 
 bool Callgraph::removeEdge(const std::string& callerName, const std::string& calleeName) {
-  auto& callerMatches = getNodes(callerName);
-  auto& calleeMatches = getNodes(calleeName);
+  auto& callerMatches = getAllNodesWithName(callerName);
+  auto& calleeMatches = getAllNodesWithName(calleeName);
   if (callerMatches.size() != 1 || calleeMatches.size() != 1) {
     return false;
   }
@@ -231,7 +231,7 @@ CgNode& Callgraph::getSingleNode(const std::string& name) const {
   return *node;
 }
 
-const Callgraph::NodeList& Callgraph::getNodes(const std::string& name) const {
+const Callgraph::NodeList& Callgraph::getAllNodesWithName(const std::string& name) const {
   if (auto it = nameIdMap.find(name); it != nameIdMap.end()) {
     return it->second;
   }
@@ -361,8 +361,8 @@ bool Callgraph::existsEdge(const CgNode& source, const CgNode& target) const {
 bool Callgraph::existsEdge(NodeId source, NodeId target) const { return edges.find({source, target}) != edges.end(); }
 
 bool Callgraph::existsAnyEdge(const std::string& source, const std::string& target) const {
-  auto& sourceNodes = getNodes(source);
-  auto& targetNodes = getNodes(target);
+  auto& sourceNodes = getAllNodesWithName(source);
+  auto& targetNodes = getAllNodesWithName(target);
   for (auto sourceId : sourceNodes) {
     for (auto targetId : targetNodes) {
       if (existsEdge(sourceId, targetId)) {

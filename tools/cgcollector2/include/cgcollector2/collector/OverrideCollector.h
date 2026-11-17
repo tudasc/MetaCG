@@ -8,7 +8,7 @@
 #define CGCOLLECTOR2_OVERRIDECOLLECTOR_H
 
 #include "cgcollector2/interface/CGC2Plugin.h"
-#include "cgcollector2/metadata/Internal/ASTNodeMetadata.h"
+#include "cgcollector2/metadata/internal/ASTNodeMetadata.h"
 #include "metacg/metadata/OverrideMD.h"
 
 #include <clang/AST/Mangle.h>
@@ -46,7 +46,7 @@ struct OverrideCollector : public cgcollector2::Plugin {
       // hierarchical overridden methods does not show up here
       for (auto om : MD->overridden_methods()) {
         for (auto& nodeName : getMangledName(om)) {
-          const auto& nodesWithMatchingName = cg->getNodes(nodeName);
+          const auto& nodesWithMatchingName = cg->getAllNodesWithName(nodeName);
           assert(nodesWithMatchingName.size() == 1 && "We currently only validated this for collision free names");
           const auto omNode = cg->getNode(nodesWithMatchingName[0]);
           if (omNode == nullptr) {

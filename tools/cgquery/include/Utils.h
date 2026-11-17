@@ -24,7 +24,7 @@ inline metacg::CgNode* findNode(metacg::Callgraph* cg, const std::string& spec, 
     node = cg->getNode(std::stoul(spec));
   } else {
     if (cg->countNodes(spec) > 1) {
-      metacg::MCGLogger::logWarn(role + " name '" + spec + "' is not unique; using first match.");
+      metacg::MCGLogger::logWarn("{}", role + " name '" + spec + "' is not unique; using first match.");
     }
     node = cg->getFirstNode(spec);
   }

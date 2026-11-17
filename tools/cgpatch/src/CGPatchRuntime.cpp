@@ -176,7 +176,7 @@ extern "C" int MPI_Finalize(void) {
       mcgManager.addToManagedGraphs(std::to_string(i), std::move(mcgReader.read()), false);
     }
 
-    mcgManager.mergeIntoActiveGraph(metacg::MergeByName());
+    mcgManager.mergeAllIntoActiveGraph(metacg::MergeByName());
   }
   return PMPI_Finalize();
 }

@@ -1,0 +1,22 @@
+{
+    "_CG": {
+        "meta": {},
+        "nodes": {
+            "foo": {
+                "callees": {},
+                "functionName": "foo",
+                "hasBody": true,
+                "meta": {},
+                "origin": "foo.c"
+            }
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "test",
+            "sha": "0",
+            "version": "0.1"
+        },
+        "version": "4.0"
+    }
+}

@@ -11,15 +11,7 @@
 #include "metacg/metadata/NumOperationsMD.h"
 
 struct NumOperationsCollector : public cgcollector2::Plugin {
-  virtual std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) override {
-    std::unique_ptr<metacg::NumOperationsMD> result = std::make_unique<metacg::NumOperationsMD>();
-    const auto counts = getNumOperationsInStmt(decl->getBody());
-    result->numberOfIntOps = counts.numberOfIntOps;
-    result->numberOfFloatOps = counts.numberOfFloatOps;
-    result->numberOfControlFlowOps = counts.numberOfControlFlowOps;
-    result->numberOfMemoryAccesses = counts.numberOfMemoryAccesses;
-    return result;
-  }
+  std::unique_ptr<metacg::MetaData> computeForDecl(clang::FunctionDecl const* const decl) override;
 
   std::string getPluginName() const final { return "NumOperationsCollector"; }
 
