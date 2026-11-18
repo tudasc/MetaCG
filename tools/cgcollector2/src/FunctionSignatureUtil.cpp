@@ -97,13 +97,13 @@ FunctionSignature getSignature(const clang::FunctionDecl* FD) {
   FunctionSignature signature;
   // according to the standard constructor and destructor have return type void
   if (!clang::isa<clang::CXXDestructorDecl>(FD) && !clang::isa<clang::CXXConstructorDecl>(FD)) {
-    signature.retType = FD->getReturnType().getAsString();
+    signature.retType = FD->getReturnType().getCanonicalType().getAsString();
   }
   std::transform(FD->parameters().begin(), FD->parameters().end(), std::back_inserter(signature.paramTypes),
-                 [](const clang::ParmVarDecl* p) { return p->getType().getAsString(); });
+                 [](const clang::ParmVarDecl* p) { return p->getType().getCanonicalType().getAsString(); });
   if (const auto* MD = clang::dyn_cast<clang::CXXMethodDecl>(FD);
       MD && hasImplicitObjectParameter(MD) && !isFunctionPointerConvertibleLambdaCallOperator(MD)) {
-    signature.thisType = getThisType(MD->getParent(), MD->getType()->getAs<clang::FunctionProtoType>());
+    signature.thisType = getThisType(MD->getParent(), MD->getType().getCanonicalType()->getAs<clang::FunctionProtoType>());
   }
   return signature;
 }
@@ -111,12 +111,12 @@ FunctionSignature getSignature(const clang::FunctionDecl* FD) {
 std::vector<FunctionSignature> getCalleeSignatures(const clang::FunctionType* calleeType,
                                                    const clang::CXXRecordDecl* memberOf) {
   FunctionSignature signature;
-  signature.retType = calleeType->getReturnType().getAsString();
+  signature.retType = calleeType->getReturnType().getCanonicalType().getAsString();
   // A function without prototype (C only) has no known parameters
   const auto* FPT = clang::dyn_cast<clang::FunctionProtoType>(calleeType);
   if (FPT) {
     std::transform(FPT->getParamTypes().begin(), FPT->getParamTypes().end(), std::back_inserter(signature.paramTypes),
-                   [](auto type) { return type.getAsString(); });
+                   [](auto type) { return type.getCanonicalType().getAsString(); });
   }
 
   if (!memberOf) {

@@ -10,8 +10,6 @@
 #include "cgcollector2/SharedDefs.h"
 #include "metacg/metadata/MetaData.h"
 
-#include <sstream>
-
 class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSignatureMetadata> {
  public:
   static constexpr const char* key = "FunctionSignatureMetadata";
@@ -47,16 +45,11 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
       abort();
     }
     const auto* toMergeDerived = static_cast<const FunctionSignatureMetadata*>(&toMerge);
-
     // Signatures should usually be identical.
     // Some templates can have the same name and origin but differing function signatures.
     // If this is the case, we inform the user to use a stronger merge policy.
     if (!(ownSignature == toMergeDerived->ownSignature)) {
-      std::ostringstream ownStr;
-      std::ostringstream otherStr;
-      ownStr << ownSignature;
-      otherStr << toMergeDerived->ownSignature;
-      metacg::MCGLogger::logDebug("Signature mismatch: {} <-> {}", ownStr.str(), otherStr.str());
+      metacg::MCGLogger::logDebug("Signature mismatch: {} <-> {}", ownSignature.toString(), toMergeDerived->ownSignature.toString());
       metacg::MCGLogger::logInfoUnique(
           "Found a signature mismatch between identically named nodes, this can be resolved by using a stronger merge "
           "policy");

@@ -24,6 +24,21 @@ struct FunctionSignature {
   bool operator==(const FunctionSignature& other) const {
     return retType == other.retType && paramTypes == other.paramTypes && thisType == other.thisType;
   }
+
+  std::string toString() const {
+    std::string ret;
+    ret+=retType + " ";
+    if (!thisType.empty()) {
+      ret+= '[' + thisType + "]::";
+    }
+    ret += '(';
+    for (const auto& elem : paramTypes) {
+      ret += elem + ",";
+    }
+    ret += ")";
+    return ret;
+  }
+
 };
 namespace cgcollector2 {
 struct Plugin;
