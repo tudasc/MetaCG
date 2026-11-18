@@ -29,6 +29,7 @@ set(MetacgGraphLibSources
     include/metacg/DotIO.h
     include/metacg/Timing.h
     include/metacg/ReachabilityAnalysis.h
+    include/metacg/DominatorAnalysis.h
     include/metacg/MergePolicy.h
 )
 

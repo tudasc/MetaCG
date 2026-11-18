@@ -4,7 +4,7 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 #include "commands/PostDomCommand.h"
-#include "DominatorAnalysis.h"
+#include "metacg/DominatorAnalysis.h"
 #include "cxxopts.hpp"
 #include "Utils.h"
 #include <iostream>
