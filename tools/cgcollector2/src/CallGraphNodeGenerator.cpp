@@ -327,9 +327,40 @@ bool CallGraphNodeGenerator::shouldIncludeFunction(const Decl* D) const {
   return true;
 }
 
+/// Instantiating a class template instantiates the declarations of all its members, but their definitions only when
+/// they are used. Such a declaration exists in the translation unit although nothing in it refers to the function.
+/// The same holds for declarations of function template specializations that are never used.
+/// They carry no information: they have no callees and no callers here, and their signature may not even be known yet
+/// (a return type of `auto` is only deduced when the definition is instantiated). Every translation unit that uses the
+/// function instantiates it and creates the node there.
+static bool isUnusedImplicitInstantiation(const clang::FunctionDecl* FD) {
+  if (FD->getTemplateSpecializationKind() != clang::TSK_ImplicitInstantiation) {
+    // Ordinary functions, explicit specializations and explicit instantiations (also `extern template`) are kept
+    return false;
+  }
+  if (FD->isDefined()) {
+    // The definition was instantiated, so the function is used in this translation unit
+    return false;
+  }
+  if (FD->isReferenced() || FD->isUsed(/*CheckUsedAttr=*/false)) {
+    // Referenced, possibly only in an unevaluated context (decltype, requires, ...)
+    return false;
+  }
+  if (const auto* MD = dyn_cast<CXXMethodDecl>(FD); MD && MD->isVirtual()) {
+    // Virtual functions may be reached through calls of the functions they override, keep them for the override data
+    return false;
+  }
+  return true;
+}
+
 bool CallGraphNodeGenerator::VisitFunctionDecl(clang::FunctionDecl* FD) {
   metacg::MCGLogger::logTrace("{} {}", __FUNCTION__, (void*)FD);
   if (!shouldIncludeFunction(FD)) {
+    return true;
+  }
+
+  if (isUnusedImplicitInstantiation(FD)) {
+    metacg::MCGLogger::logTrace("Skipping unused implicit instantiation {}", FD->getNameAsString());
     return true;
   }
 
