@@ -106,4 +106,36 @@ struct RefTestMD final : metacg::MetaData::Registrar<RefTestMD> {
   metacg::NodeId nodeRef;
 };
 
+/**
+ * Metadata that is never written to the output.
+ * intentional == true:  toJson returns an empty object ({}), i.e. the metadata intentionally does not want to be
+ *                serialized. The writer is expected to silently skip it.
+ * intentional == false: toJson returns null, i.e. serialization failed. The writer is expected to skip it and warn.
+ */
+template <bool intentional>
+struct ExportEmptyTestMD final : metacg::MetaData::Registrar<ExportEmptyTestMD<intentional>> {
+  static constexpr const char* key = intentional ? "EmptyExportTestMD" : "NullExportTestMD";
+
+  explicit ExportEmptyTestMD(const nlohmann::json&, metacg::StrToNodeMapping&) {}
+  ExportEmptyTestMD() = default;
+
+ private:
+  ExportEmptyTestMD(const ExportEmptyTestMD&) = default;
+
+ public:
+  nlohmann::json toJson(metacg::NodeToStrMapping&) const final {
+    return intentional ? nlohmann::json::object() : nlohmann::json(nullptr);
+  };
+
+  const char* getKey() const override { return key; }
+
+  void merge(const metacg::MetaData&, std::optional<metacg::MergeAction>, const metacg::GraphMapping&) final {}
+
+  std::unique_ptr<metacg::MetaData> clone() const final {
+    return std::unique_ptr<ExportEmptyTestMD>(new ExportEmptyTestMD(*this));
+  }
+
+  void applyMapping(const metacg::GraphMapping&) override {}
+};
+
 #endif  // METACG_TESTMD_H

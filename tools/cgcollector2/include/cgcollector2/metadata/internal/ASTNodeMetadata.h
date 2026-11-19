@@ -22,7 +22,7 @@ class ASTNodeMetadata : public metacg::MetaData::Registrar<ASTNodeMetadata> {
 
   nlohmann::json toJson(metacg::NodeToStrMapping&) const final {
     // This metadata will not be serialized as it contains memory locations that are run specific
-    return {};
+    return nlohmann::json::object();
   };
 
   ASTNodeMetadata(clang::FunctionDecl* FD) : functionDecl(FD){};
