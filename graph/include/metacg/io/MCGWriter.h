@@ -91,9 +91,10 @@ class MCGWriter {
 /**
  * Factory function to instantiate the correct writer implementation for the given format.
  * @param version The format version.
+ * @param gen The generator info written to the file header. Defaults to the MetaCG generator info.
  * @return A unique pointer to the instantiated writer. Empty, if there is no writer matching the format version.
  */
-std::unique_ptr<MCGWriter> createWriter(int version);
+std::unique_ptr<MCGWriter> createWriter(int version, MCGGeneratorVersionInfo gen = getMetaCGGeneratorInfo());
 
 }  // namespace metacg::io
 

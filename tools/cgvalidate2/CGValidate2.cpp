@@ -228,7 +228,7 @@ int main(int argc, char** argv) {
 
   if (!verified) {
     if (patch) {
-      auto writer = io::createWriter(mcgVersion);
+      auto writer = io::createWriter(mcgVersion, getMetaCGGeneratorInfo("CGValidate2"));
       if (!writer) {
         MCGLogger::logError("Unable to create writer for format version {}", mcgVersion);
         return 1;
