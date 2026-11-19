@@ -2,6 +2,8 @@ set(PROJECT_NAME CGFormat)
 set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 
 add_executable(cgformat CGFormat.cpp)
+
+add_metacg_completion(cgformat)
 add_metacg(cgformat)
 add_cxxopts(cgformat)
 
