@@ -72,7 +72,7 @@ class FileInfoMD : public metacg::MetaData::Registrar<FileInfoMD> {
 
   std::string origin;
   bool fromSystemInclude;
-  int lineNumber;
+  unsigned int lineNumber;
 };
 
 }  // namespace metacg

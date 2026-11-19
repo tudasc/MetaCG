@@ -37,7 +37,8 @@ struct FileInfoCollector : cgcollector2::Plugin {
     std::string fileNameStr = fileName.str();
     result->fromSystemInclude = astCtx.getSourceManager().isInSystemHeader(sourceLocation);
     result->origin = fileNameStr;
-    result->lineNumber = astCtx.getSourceManager().getLineNumber(sourceLocation);
+    result->lineNumber = astCtx.getSourceManager().getSpellingLineNumber(sourceLocation);
+
     return result;
   };
 
