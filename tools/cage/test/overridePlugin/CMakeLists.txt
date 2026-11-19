@@ -12,7 +12,7 @@ find_program(
 )
 find_program(
   FILECHECK_EXE
-  NAMES FileCheck-${LLVM_MAJOR_VERSION}
+  NAMES FileCheck-${LLVM_VERSION_MAJOR}
         FileCheck
         REQUIRED
 )
