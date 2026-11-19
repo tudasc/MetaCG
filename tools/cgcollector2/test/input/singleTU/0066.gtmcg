@@ -9,6 +9,11 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/singleTU/0066.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -23,6 +28,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/singleTU/0066.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 4
             },
             "overriddenBy": [],
@@ -32,8 +42,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "7f4afb25e43f74263aff689b1d42501c830a67eb",
-            "version": "0.4"
+            "sha": "5ad9a8bc7736e9709ea8c62aa80d30a6a1339459",
+            "version": "1.0"
         },
         "version": "2.0"
     }

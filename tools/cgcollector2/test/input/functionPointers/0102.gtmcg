@@ -7,6 +7,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/functionPointers/0102.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 1
             },
             "overriddenBy": [],
@@ -21,6 +26,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/functionPointers/0102.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 1
             },
             "overriddenBy": [],
@@ -35,6 +45,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/functionPointers/0102.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 1
             },
             "overriddenBy": [],
@@ -44,12 +59,17 @@
             "callees": [
                 "_Z4hit1v",
                 "_Z4hit2v"
-             ],
+            ],
             "callers": [],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/functionPointers/0102.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 3
             },
             "overriddenBy": [],
@@ -59,8 +79,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "a12c2adc9482ef0062fd27f104ab4dfd679cb91f",
-            "version": "0.2"
+            "sha": "5ad9a8bc7736e9709ea8c62aa80d30a6a1339459",
+            "version": "1.0"
         },
         "version": "2.0"
     }

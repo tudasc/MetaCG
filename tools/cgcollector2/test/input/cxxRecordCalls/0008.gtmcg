@@ -9,12 +9,10 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
-                "FunctionSignatureMetadata": {
-                    "funcName": [
-                        "localStruct"
-                    ],
-                    "paramTypes": [],
-                    "retType": ""
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0008.cpp",
+                    "systemInclude": false
                 }
             },
             "overriddenBy": [],
@@ -29,12 +27,10 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
-                "FunctionSignatureMetadata": {
-                    "funcName": [
-                        "localStruct"
-                    ],
-                    "paramTypes": [],
-                    "retType": ""
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0008.cpp",
+                    "systemInclude": false
                 }
             },
             "overriddenBy": [],
@@ -49,12 +45,10 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
-                "FunctionSignatureMetadata": {
-                    "funcName": [
-                        "~localStruct"
-                    ],
-                    "paramTypes": [],
-                    "retType": ""
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0008.cpp",
+                    "systemInclude": false
                 }
             },
             "overriddenBy": [],
@@ -69,12 +63,10 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
-                "FunctionSignatureMetadata": {
-                    "funcName": [
-                        "~localStruct"
-                    ],
-                    "paramTypes": [],
-                    "retType": ""
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0008.cpp",
+                    "systemInclude": false
                 }
             },
             "overriddenBy": [],
@@ -89,16 +81,10 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
-                "FunctionSignatureMetadata": {
-                    "funcName": [
-                        "operator()"
-                    ],
-                    "paramTypes": [
-                        "int",
-                        "int",
-                        "int"
-                    ],
-                    "retType": "int"
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0008.cpp",
+                    "systemInclude": false
                 }
             },
             "overriddenBy": [],
@@ -117,12 +103,10 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
-                "FunctionSignatureMetadata": {
-                    "funcName": [
-                        "main"
-                    ],
-                    "paramTypes": [],
-                    "retType": "int"
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0008.cpp",
+                    "systemInclude": false
                 }
             },
             "overriddenBy": [],
@@ -132,8 +116,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "3b1d4887dc89636023b0efc8327d39162bcc6ee0",
-            "version": "0.9"
+            "sha": "5ad9a8bc7736e9709ea8c62aa80d30a6a1339459",
+            "version": "1.0"
         },
         "version": "2.0"
     }

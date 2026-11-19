@@ -86,8 +86,13 @@ void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json
         jFileProps["origin"] = "";
       }
     } else if (!jNode["origin"].is_null()) {
+      // V2 does not support origin as a node member.
+      // Attach FileInfoMD with defaults for line and systemInclude
+      // Fixme: we have no way to tell "no system include" from unkown
       jMeta["fileProperties"] = nlohmann::json::object();
       jMeta["fileProperties"]["origin"] = jNode["origin"];
+      jMeta["fileProperties"]["lineNumber"] = 0;
+      jMeta["fileProperties"]["systemInclude"] = false;
     }
     jNode.erase("origin");
 

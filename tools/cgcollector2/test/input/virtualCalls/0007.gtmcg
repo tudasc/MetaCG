@@ -1,8 +1,7 @@
 {
     "_CG": {
         "_ZN7MyClassC1Ei": {
-            "callees": [
-            ],
+            "callees": [],
             "callers": [
                 "main"
             ],
@@ -10,16 +9,18 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/virtualCalls/0007.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 1
             },
-            "overriddenBy": [
-            ],
-            "overrides": [
-            ]
+            "overriddenBy": [],
+            "overrides": []
         },
         "_ZN7MyClassC2Ei": {
-            "callees": [
-            ],
+            "callees": [],
             "callers": [
                 "main"
             ],
@@ -27,85 +28,93 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/virtualCalls/0007.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 1
             },
-            "overriddenBy": [
-            ],
-            "overrides": [
-            ]
+            "overriddenBy": [],
+            "overrides": []
         },
         "_ZN7MyClassD0Ev": {
-            "callees": [
-            ],
-            "callers": [
-            ],
+            "callees": [],
+            "callers": [],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": true,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/virtualCalls/0007.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
-            "overriddenBy": [
-            ],
-            "overrides": [
-            ]
+            "overriddenBy": [],
+            "overrides": []
         },
         "_ZN7MyClassD1Ev": {
-            "callees": [
-            ],
-            "callers": [
-            ],
+            "callees": [],
+            "callers": [],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": true,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/virtualCalls/0007.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
-            "overriddenBy": [
-            ],
-            "overrides": [
-            ]
+            "overriddenBy": [],
+            "overrides": []
         },
         "_ZN7MyClassD2Ev": {
-            "callees": [
-            ],
-            "callers": [
-            ],
+            "callees": [],
+            "callers": [],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": true,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/virtualCalls/0007.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
-            "overriddenBy": [
-            ],
-            "overrides": [
-            ]
+            "overriddenBy": [],
+            "overrides": []
         },
         "main": {
             "callees": [
                 "_ZN7MyClassC1Ei",
                 "_ZN7MyClassC2Ei"
             ],
-            "callers": [
-            ],
+            "callers": [],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/virtualCalls/0007.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 3
             },
-            "overriddenBy": [
-            ],
-            "overrides": [
-            ]
+            "overriddenBy": [],
+            "overrides": []
         }
     },
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "00d2b8453cc08cb1aacd7df9ea1645bd086f80da",
-            "version": "0.4"
+            "sha": "5ad9a8bc7736e9709ea8c62aa80d30a6a1339459",
+            "version": "1.0"
         },
         "version": "2.0"
     }

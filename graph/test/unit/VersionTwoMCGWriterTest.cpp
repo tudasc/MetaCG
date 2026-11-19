@@ -364,4 +364,19 @@ TEST_F(V2MCGWriterTest, FilePropertiesEmptyOriginTakesNodeOrigin) {
   EXPECT_EQ(output.find("differs from origin"), std::string::npos) << output;
   EXPECT_EQ(jsonSink.getJson().at("_CG").at("main").at("meta").at("fileProperties").at("origin"), "main.cpp");
 }
+// Without fileProperties metadata, it is built from the node origin and the remaining fields get default values.
+TEST_F(V2MCGWriterTest, FilePropertiesCreatedFromOrigin) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  const auto& cg = mcgm.getCallgraph();
+  cg->insert("main", "main.cpp");
+
+  const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {"Test", 0, 1, "TestSha"}};
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
+  metacg::io::JsonSink jsonSink;
+  mcgWriter.writeActiveGraph(jsonSink);
+
+  EXPECT_EQ(jsonSink.getJson().at("_CG").at("main").at("meta").at("fileProperties"),
+            nlohmann::json({{"origin", "main.cpp"}, {"lineNumber", 0}, {"systemInclude", false}}));
+}
+
 #pragma GCC diagnostic pop
