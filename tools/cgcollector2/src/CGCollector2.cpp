@@ -15,8 +15,11 @@
 #include "cgcollector2/collector/OverrideCollector.h"
 #include "cgcollector2/collector/UniqueTypeCollector.h"
 
+#include <clang/Basic/Version.h>
+#include <clang/Tooling/ArgumentsAdjusters.h>
 #include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/Tooling.h>
+#include <llvm/Support/Path.h>
 
 #include "cgcollector2/CallGraphCollectionAction.h"
 
@@ -127,6 +130,63 @@ static opt<LogLevel> LoggingLevel("log-level", desc("Select log level"),
                                          clEnumValN(LogLevel::Off, "off", "Disable all logging")),
                                   init(LogLevel::Info), cat(cgc));
 
+static opt<std::string> toolchain(
+    "toolchain",
+    desc("Which clang based compiler toolchain to get compiler specific builtin headers from"),
+    value_desc("clang-20, amdclang"), cat(cgc), init("clang-"+std::to_string(LLVM_VERSION_MAJOR)));
+
+/**
+ * Asks the given compiler for its resource directory, which contains the compiler specific builtin headers
+ * (stddef.h, stdarg.h, intrinsics, ...)
+ * @param compiler the compiler to query, looked up via PATH if it is not a path
+ * @return the resource directory, or an empty string if the compiler could not be queried
+ */
+std::string queryResourceDir(const std::string& compiler) {
+  const std::string command = "'" + compiler + "' --print-resource-dir 2>/dev/null";
+  FILE* pipe = popen(command.c_str(), "r");
+  if (!pipe) {
+    metacg::MCGLogger::logError("Could not run {}", command);
+    return {};
+  }
+  std::string output;
+  std::array<char, 128> buffer{};
+  while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
+    output += buffer.data();
+  }
+  if (const int status = pclose(pipe); status != 0) {
+    metacg::MCGLogger::logError("Querying the resource dir of {} failed (exit status {})", compiler,
+                                WIFEXITED(status) ? WEXITSTATUS(status) : status);
+    return {};
+  }
+  const llvm::StringRef resourceDir = llvm::StringRef(output).trim().rtrim('/');
+  if (resourceDir.empty()) {
+    metacg::MCGLogger::logError("{} did not print a resource dir", compiler);
+    return {};
+  }
+
+  // The builtin headers in the resource dir need to fit the clang frontend cgcollector2 is linked against
+  const llvm::StringRef toolchainMajor = llvm::sys::path::filename(resourceDir).split('.').first;
+  if (toolchainMajor != std::to_string(CLANG_VERSION_MAJOR)) {
+    metacg::MCGLogger::logWarn(
+        "The toolchain's resource dir {} seems to belong to clang {}, but cgcollector2 uses clang {}",
+        resourceDir.str(), toolchainMajor.str(), CLANG_VERSION_MAJOR);
+  }
+  return resourceDir.str();
+}
+
+/**
+ * Creates an adjuster that makes the clang frontend use the given resource dir.
+ * The argument is inserted directly after the compiler, so a -resource-dir given in the compile command takes
+ * precedence. ClangTool only injects its own resource dir if none is present, so this replaces it.
+ */
+clang::tooling::ArgumentsAdjuster getResourceDirAdjuster(const std::string& resourceDir) {
+  return [resourceDir](const clang::tooling::CommandLineArguments& args, llvm::StringRef) {
+    clang::tooling::CommandLineArguments adjusted(args);
+    adjusted.insert(adjusted.empty() ? adjusted.end() : adjusted.begin() + 1, "-resource-dir=" + resourceDir);
+    return adjusted;
+  };
+}
+
 cgcollector2::Plugin* loadPlugin(const std::string& pluginPath) {
   metacg::MCGLogger::logDebug("Loading plugin");
   std::string err;
@@ -186,6 +246,14 @@ int main(int argc, const char** argv) {
   metacg::MCGLogger::instance().getErrConsole()->set_level(logLevel);
 
   clang::tooling::ClangTool CT(OP.getCompilations(), OP.getSourcePathList());
+  if (!toolchain.empty()) {
+    const std::string resourceDir = queryResourceDir(toolchain);
+    if (resourceDir.empty()) {
+      return -1;
+    }
+    metacg::MCGLogger::logDebug("Using resource dir of {} at {}", toolchain.getValue(), resourceDir);
+    CT.appendArgumentsAdjuster(getResourceDirAdjuster(resourceDir));
+  }
 
   std::vector<cgcollector2::Plugin*> mcs = {};
   constexpr int numberOfBuiltinCollectors = static_cast<std::underlying_type_t<Collectors>>(Collectors::All);
