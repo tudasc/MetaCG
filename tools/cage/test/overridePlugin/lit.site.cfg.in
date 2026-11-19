@@ -1,0 +1,24 @@
+@LIT_SITE_CFG_IN_HEADER@
+
+import lit.formats
+
+config.name = "cage-overrides-plugin-tests"
+
+config.test_source_root = "@CAGE_TEST_DIR@"
+
+config.test_exec_root = "@CMAKE_CURRENT_BINARY_DIR@"
+
+# Required: tells lit how to interpret tests (// RUN:)
+config.test_format = lit.formats.ShTest()
+
+# Tool paths (from CMake)
+config.clang = "@CLANG_COMPILER@"
+config.plugin = "@CAGE_OVERRIDES_PLUGIN@"
+config.filecheck = "@FILECHECK_EXE@"
+config.suffixes = ['.c', '.cpp']
+
+# Substitutions used inside tests
+config.substitutions.append(("%clang", config.clang))
+config.substitutions.append(("%clang_cc1", config.clang + " -cc1"))
+config.substitutions.append(("%plugin", config.plugin))
+config.substitutions.append(("%FileCheck", config.filecheck))

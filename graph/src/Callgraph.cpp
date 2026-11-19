@@ -5,7 +5,6 @@
  */
 #include "metacg/Callgraph.h"
 
-#include "metacg/LoggerUtil.h"
 #include "metacg/metadata/EntryFunctionMD.h"
 
 #include <algorithm>
@@ -252,11 +251,13 @@ size_t Callgraph::getNodeCount() const { return nodes.size() - numErased; }
 
 bool Callgraph::isEmpty() const { return getNodeCount() == 0; }
 
-MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::MergePolicy& policy) {
+
+MergeRecorder Callgraph::mergeImpl(const metacg::Callgraph& other, const metacg::MergePolicy& policy) {
   // Records performed merge actions to enable properly updating node references (in edges and metadata).
   MergeRecorder recorder;
 
-  // Step 1 & 2: iterate over all nodes, determine actions according to the policy, and merge the nodes into this graph.
+  // Step 1 & 2: iterate over all nodes, determine actions according to the policy, and merge the nodes into this
+  // graph.
   for (auto& node : other.nodes) {
     auto match = policy.findMatchingNode(*this, *node);
     if (match) {
@@ -285,8 +286,10 @@ MergeRecorder Callgraph::merge(const metacg::Callgraph& other, const metacg::Mer
   // IDs are finalized at this point, retrieve the mapping.
   auto& mapping = recorder.getMapping();
 
-  // Step 3: Update edges. This involves inserting edges from the source graph and mapping them to the correct node IDs.
-  //         Note that there is no need to update existing nodes in the destination graph, as the IDs remain unchanged.
+  // Step 3: Update edges. This involves inserting edges from the source graph and mapping them to the correct node
+  // IDs.
+  //         Note that there is no need to update existing nodes in the destination graph, as the IDs remain
+  //         unchanged.
   for (auto& edge : other.getEdges()) {
     auto& sourceIds = edge.first;
     assert(mapping.count(sourceIds.first) == 1 && mapping.count(sourceIds.second) == 1 &&
