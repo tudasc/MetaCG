@@ -5,13 +5,18 @@
                 "_Z3fooi"
             ],
             "callers": [
-                "main",
-                "_Z3fooi"
+                "_Z3fooi",
+                "main"
             ],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/singleTU/0215.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 3
             },
             "overriddenBy": [],
@@ -26,6 +31,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/singleTU/0215.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 2
             },
             "overriddenBy": [],
@@ -35,8 +45,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "3f6097119927b7bf04c0507f0bd75c65ae9f5088",
-            "version": "0.2"
+            "sha": "5ad9a8bc7736e9709ea8c62aa80d30a6a1339459",
+            "version": "1.0"
         },
         "version": "2.0"
     }

@@ -13,7 +13,7 @@
 #include "metacg/LoggerUtil.h"
 #include "metacg/io/MCGReader.h"
 #include "metacg/io/MCGWriter.h"
-#include "metacg/metadata/FilePropertiesMD.h"
+#include "metacg/metadata/FileInfoMD.h"
 
 #include "cxxopts.hpp"
 
@@ -98,12 +98,15 @@ int main(int argc, char** argv) {
             }
           } else {
             node->setOrigin(std::nullopt);
+            if (node->has<FileInfoMD>()) {
+              node->get<FileInfoMD>()->origin="";
+            }
           }
         } else {
 
           bool isSysInclude = false;
           if (ignoreSysInclues) {
-            auto md = node->get<metacg::FilePropertiesMD>();
+            auto md = node->get<metacg::FileInfoMD>();
             isSysInclude = md && md->fromSystemInclude;
           }
           // This can be done with "starts_with" in C++20
@@ -118,6 +121,10 @@ int main(int argc, char** argv) {
               auto newOrigin = replacePathPrefix(*origin, prefixToReplace, originPrefix);
               if (newOrigin) {
                 node->setOrigin(newOrigin);
+                //If we have FileInfo metadata attached we update the origin as well
+                if (node->has<FileInfoMD>()) {
+                  node->get<FileInfoMD>()->origin=*newOrigin;
+                }
               } else {
                 MCGLogger::logWarn("Unable to automatically replace prefix in origin path of node {} ('{}'): {}", node->getId(), node->getFunctionName(), *origin);
               }

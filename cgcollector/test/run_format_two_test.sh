@@ -10,7 +10,8 @@ if [ $? -eq 1 ]; then
   echo "The file seems also non-present in ../${build_dir}/cgdiff/. Aborting test. Failure! Please build CGDiff first."
   exit 1
 else
-  testerExe="../../${build_dir}/tools/cgdiff/cgdiff -o $diffFile"
+  # fileProperties contain absolute, machine-specific origin paths, so they are not compared
+  testerExe="../../${build_dir}/tools/cgdiff/cgdiff -o $diffFile --ignore-md-key=fileProperties"
 fi
 
 if [[ $(type -P $cgcollectorExe) ]]; then

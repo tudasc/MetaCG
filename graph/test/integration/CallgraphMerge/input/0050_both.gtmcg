@@ -11,6 +11,7 @@
                     "numVars": 0
                 },
                 "fileProperties": {
+                    "lineNumber": 0,
                     "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0050_b.cpp",
                     "systemInclude": false
                 },
@@ -41,6 +42,7 @@
                     "numVars": 0
                 },
                 "fileProperties": {
+                    "lineNumber": 0,
                     "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0050.h",
                     "systemInclude": false
                 },
@@ -72,6 +74,7 @@
                     "numVars": 0
                 },
                 "fileProperties": {
+                    "lineNumber": 0,
                     "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0050.h",
                     "systemInclude": false
                 },
@@ -104,6 +107,7 @@
                     "numVars": 0
                 },
                 "fileProperties": {
+                    "lineNumber": 0,
                     "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0050_a.cpp",
                     "systemInclude": false
                 },
@@ -127,8 +131,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "GITDIR-NOTFOUND",
-            "version": "0.7"
+            "sha": "9858ba98baa4d0677c78b6bc66153e4d5c3c7f15",
+            "version": "1.0"
         },
         "version": "2.0"
     }

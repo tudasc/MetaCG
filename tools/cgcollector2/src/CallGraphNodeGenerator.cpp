@@ -5,9 +5,9 @@
  */
 
 #include "cgcollector2/CallGraphNodeGenerator.h"
-#include "cgcollector2/metadata/internal/ASTNodeMetadata.h"
 #include "cgcollector2/metadata/exported/AllAliasMetadata.h"
 #include "cgcollector2/metadata/exported/FunctionSignatureMetadata.h"
+#include "cgcollector2/metadata/internal/ASTNodeMetadata.h"
 #include "metacg/LoggerUtil.h"
 #include "metacg/metadata/OverrideMD.h"
 
@@ -245,11 +245,11 @@ bool CallGraphNodeGenerator::traverseUninstantiatedExpr(clang::Expr* E) {
   ExprResult substituted = ExprError();
   // AFAICT one communicates with SEMA via RAII constructor-destructor states
   {
-    //Save the old Sema context from the current topLevel FD
-    //This will be restored to the whatever scope we need once the stack object is destroyed
+    // Save the old Sema context from the current topLevel FD
+    // This will be restored to the whatever scope we need once the stack object is destroyed
     Sema::ContextRAII savedContext(*sema, topLevelFD);
 
-    //Set up the SEMA RAII constructs for the substituion
+    // Set up the SEMA RAII constructs for the substituion
     LocalInstantiationScope scope(*sema);
     EnterExpressionEvaluationContext unevaluated(*sema, Sema::ExpressionEvaluationContext::Unevaluated);
     Sema::InstantiatingTemplate inst(*sema, E->getBeginLoc(), topLevelFD);
@@ -272,7 +272,7 @@ bool CallGraphNodeGenerator::traverseUninstantiatedExpr(clang::Expr* E) {
 
   metacg::MCGLogger::logDebug("Resolved uninstantiated expression {} inside {} ({}) to {}", (void*)E,
                               topLevelFD->getNameAsString(), (void*)topLevelFD, (void*)substituted.get());
-  //Continue traversing the fully substituted statement as normal
+  // Continue traversing the fully substituted statement as normal
   return RecursiveASTVisitor::TraverseStmt(substituted.get());
 #else
   metacg::MCGLogger::logDebug(
@@ -599,11 +599,34 @@ bool CallGraphNodeGenerator::VisitCXXBindTemporaryExpr(clang::CXXBindTemporaryEx
 void CallGraphNodeGenerator::addNode(const clang::FunctionDecl* const D) {
   metacg::MCGLogger::logTrace("Adding node \"{}\" {} {}", D->getNameAsString(), (void*)topLevelFD,
                               col2str(getMangledNames(D), "(", ",", ")"));
+
+  // Determine the file the function is declared in, used as the node's origin
+  std::string origin;
+  auto& astCtx = D->getASTContext();
+  const auto fullSrcLoc = astCtx.getFullLoc(D->getLocation());
+
+#if LLVM_VERSION_MAJOR < 18
+  const auto fileEntry = fullSrcLoc.getFileEntry();
+#else
+  const auto fileEntry = fullSrcLoc.getFileEntryRef();
+#endif
+
+  if (fileEntry) {
+    const auto fileName = fileEntry->getName();
+    std::string fileNameStr = fileName.str();
+    origin = fileNameStr;
+  }
+
   for (auto& name : getMangledNames(D)) {
     // Add the function to the callgraph
     metacg::CgNode& node = callgraph->getOrInsertNode(name);
+    node.setOrigin(origin);
     // This is so we overwrite if we ever find the body of a function after a predeclare
     node.setHasBody(D->hasBody());
+    // Same for the origin: prefer the location of the definition over a predeclaration
+    if (!node.getOrigin() || D->isThisDeclarationADefinition()) {
+      node.setOrigin(origin);
+    }
     if (auto cxxmethod = dyn_cast<CXXMethodDecl>(D); cxxmethod != nullptr && cxxmethod->isVirtual()) {
       node.getOrCreate<metacg::OverrideMD>();
     }

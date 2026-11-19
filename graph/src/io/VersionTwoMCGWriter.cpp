@@ -69,15 +69,30 @@ void metacg::io::VersionTwoMCGWriter::downgradeV4FormatToV2Format(nlohmann::json
     // If fileProperties metadata is already attached, put the origin entry there.
     // Otherwise, create the metadata if the origin is not null.
     if (jMeta.contains("fileProperties")) {
-      // The expected behavior in V2 is to put an empty string if the origin is null
-      if (jNode["origin"].is_null()) {
-        jMeta["fileProperties"]["origin"] = "";
+      auto& jFileProps = jMeta["fileProperties"];
+      const auto& jNodeOrigin = jNode["origin"];
+      if ( jFileProps.contains("origin")&& !jFileProps["origin"].get<std::string>().empty()) {
+        // An origin already stored in the metadata (e.g. by cgcollector2) is kept.
+        // Warn if it disagrees with the node origin.
+        if (!jNodeOrigin.is_null() && jNodeOrigin != jFileProps["origin"]) {
+          MCGLogger::logWarn(
+              "Node {}: origin {} differs from origin {} in fileProperties metadata. Keeping the metadata origin.",
+              it.key(), jNodeOrigin.dump(), jFileProps["origin"].dump());
+        }
+      } else if (!jNodeOrigin.is_null()) {
+        jFileProps["origin"] = jNodeOrigin;
       } else {
-        jMeta["fileProperties"]["origin"] = jNode["origin"];
+        // The expected behavior in V2 is to put an empty string if the origin is null.
+        jFileProps["origin"] = "";
       }
     } else if (!jNode["origin"].is_null()) {
+      // V2 does not support origin as a node member.
+      // Attach FileInfoMD with defaults for line and systemInclude
+      // Fixme: we have no way to tell "no system include" from unkown
       jMeta["fileProperties"] = nlohmann::json::object();
       jMeta["fileProperties"]["origin"] = jNode["origin"];
+      jMeta["fileProperties"]["lineNumber"] = 0;
+      jMeta["fileProperties"]["systemInclude"] = false;
     }
     jNode.erase("origin");
 

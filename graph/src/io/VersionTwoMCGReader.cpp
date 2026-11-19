@@ -91,14 +91,17 @@ void metacg::io::VersionTwoMCGReader::upgradeV2FormatToV4Format(nlohmann::json& 
     jNode.erase("callers");
     jNode["callees"] = std::move(jNewCallees);
 
-    // Create origin field by reading in fileProperties metadata
+    // Create origin field by copying the origin from the fileProperties metadata.
+    // The metadata itself is left untouched.
     auto& jMeta = jNode.at("meta");
-    if (jMeta.contains("fileProperties") && !jMeta.at("fileProperties").at("origin").get<std::string>().empty()) {
-      jNode["origin"] = jMeta.at("fileProperties").at("origin");
-      jMeta.at("fileProperties").erase("origin");
-    } else {
-      // if the V2 format did not contain origin data insert null
-      jNode["origin"] = nullptr;
+    // if the V2 format did not contain origin data insert null
+    jNode["origin"] = nullptr;
+    if (jMeta.contains("fileProperties")) {
+      const auto& jFileProps = jMeta.at("fileProperties");
+      if (auto jOrigin = jFileProps.find("origin");
+          jOrigin != jFileProps.end() && jOrigin->is_string() && !jOrigin->get<std::string>().empty()) {
+        jNode["origin"] = *jOrigin;
+      }
     }
 
     bool definesOverrideData = !jNode.at("overrides").empty() || !jNode.at("overriddenBy").empty();

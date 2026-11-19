@@ -47,10 +47,25 @@ only_metadata_diff() {
     return 0
 }
 
+# Decides whether a cgdiff run counts as a pass.
+# Param 1: The exit code of cgdiff (0: equal, 1: graphs differ, >1: cgdiff failed, e.g. could not read a file).
+# Only a real diff (exit code 1) may be tolerated, and only if it is limited to metadata covered by the generated file.
+# A failed cgdiff run writes no diff file, so the diff file must not be consulted in that case.
+diff_passed() {
+    local rc="$1"
+    if [ "$rc" -eq 0 ]; then
+        return 0
+    fi
+    if [ "$rc" -eq 1 ] && only_metadata_diff "$diffFile"; then
+        return 0
+    fi
+    return 1
+}
+
 jqExpr='if ._CG | type == "object" then
       ._CG |= with_entries(
         if (.value.meta.numOperations? // false) | type == "object" then
-          .value.meta.numOperations.numberOfControlFlowOps = "42"
+          .value.meta.numOperations.numberOfControlFlowOps = 42
         else
           .
         end
@@ -86,20 +101,18 @@ function applyFileFormatTwoToSingleTU {
   mv ${gfile}_ ${gfile}
 
   jq "$jqExpr" $tgt > $tgt2
-  jq "$jqExpr" $gfile  >  $gfile
+  # jq cannot write to its own input file, the shell would truncate it before jq reads it
+  jq "$jqExpr" $gfile > ${gfile}_
+  mv ${gfile}_ ${gfile}
 
   $testerExe $tgt2 $gfile >>log/testrun.log 2>&1
 
-  if [ $? -ne 0 ]; then
-    if only_metadata_diff $diffFile; then
-        rm $gfile
-        rm $tgt2
-    else 
-        echo "Failure for file: $gfile. Keeping generated file for inspection"
-        fail=$((fail + 1))
-    fi
-  else
+  if diff_passed $?; then
     rm $gfile
+    rm $tgt2
+  else
+    echo "Failure for file: $gfile. Keeping generated file for inspection"
+    fail=$((fail + 1))
   fi
 
   return $fail
@@ -133,7 +146,7 @@ function applyFileFormatTwoToMultiTU {
   $testerExe  ./input/multiTU/${gtaFile} ./input/multiTU/${ipcgTaFile} >>log/testrun.log 2>&1
   aErr=$?
 
-  if only_metadata_diff "$diffFile"; then
+  if diff_passed $aErr; then
     aErr=0
   else
     echo "[Info] aErr metadata diff"
@@ -143,7 +156,7 @@ function applyFileFormatTwoToMultiTU {
   $testerExe  ./input/multiTU/${gtbFile} ./input/multiTU/${ipcgTbFile} >>log/testrun.log 2>&1
   bErr=$?
 
-  if only_metadata_diff "$diffFile"; then
+  if diff_passed $bErr; then
     bErr=0
   else
     echo "[Info] bErr metadata diff"
@@ -162,7 +175,7 @@ function applyFileFormatTwoToMultiTU {
   ${testerExe} ./input/multiTU/${gtCombFile} ./input/multiTU/${combFile} >>log/testrun.log 2>&1
   cErr=$?
 
-  if only_metadata_diff "$diffFile"; then
+  if diff_passed $cErr; then
     cErr=0
   else
     echo "[Info] cErr metadata diff"

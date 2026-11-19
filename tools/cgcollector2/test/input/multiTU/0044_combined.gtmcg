@@ -9,6 +9,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/multiTU/0044_b.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 1
             },
             "overriddenBy": [],
@@ -25,6 +30,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/multiTU/0044_a.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 1
             },
             "overriddenBy": [],
@@ -40,6 +50,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/multiTU/0044_b.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 1
             },
             "overriddenBy": [],
@@ -54,6 +69,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/multiTU/0044_a.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 1
             },
             "overriddenBy": [],
@@ -63,8 +83,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "0d36c2c6619b53464d31d589be9bc2f9e11660f4",
-            "version": "0.2"
+            "sha": "5ad9a8bc7736e9709ea8c62aa80d30a6a1339459",
+            "version": "1.0"
         },
         "version": "2.0"
     }

@@ -12,7 +12,52 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0007.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 2
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1AC1Ev": {
+            "callees": [],
+            "callers": [
+                "_ZN1BC1Ev",
+                "_ZN1BC2Ev"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0007.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1AC2Ev": {
+            "callees": [],
+            "callers": [
+                "_ZN1BC1Ev",
+                "_ZN1BC2Ev"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0007.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 0
             },
             "overriddenBy": [],
             "overrides": []
@@ -28,6 +73,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0007.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -44,6 +94,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0007.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -61,6 +116,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0007.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -68,8 +128,8 @@
         },
         "_ZN1BC2Ev": {
             "callees": [
-                "_ZN1AC2Ev",
-                "_ZN1AC1Ev"
+                "_ZN1AC1Ev",
+                "_ZN1AC2Ev"
             ],
             "callers": [
                 "_Z3foov"
@@ -78,6 +138,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0007.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -93,6 +158,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0007.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -108,36 +178,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "_ZN1AC1Ev": {
-            "callees": [],
-            "callers": [
-                "_ZN1BC1Ev",
-                "_ZN1BC2Ev"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": false,
-            "meta": {
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "_ZN1AC2Ev": {
-            "callees": [],
-            "callers": [
-                "_ZN1BC1Ev",
-                "_ZN1BC2Ev"
-            ],
-            "doesOverride": false,
-            "hasBody": true,
-            "isVirtual": false,
-            "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0007.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -147,8 +192,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "GITDIR-NOTFOUND",
-            "version": "0.7"
+            "sha": "5ad9a8bc7736e9709ea8c62aa80d30a6a1339459",
+            "version": "1.0"
         },
         "version": "2.0"
     }

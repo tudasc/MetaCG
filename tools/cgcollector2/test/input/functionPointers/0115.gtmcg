@@ -9,6 +9,11 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/functionPointers/0115.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -23,6 +28,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/functionPointers/0115.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 4
             },
             "overriddenBy": [],
@@ -32,8 +42,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "470b9d4f8aa11a40a535bb01b744c6c355fac544",
-            "version": "0.3"
+            "sha": "5ad9a8bc7736e9709ea8c62aa80d30a6a1339459",
+            "version": "1.0"
         },
         "version": "2.0"
     }

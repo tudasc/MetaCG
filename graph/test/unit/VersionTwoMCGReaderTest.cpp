@@ -9,6 +9,7 @@
 
 #include "metacg/MCGManager.h"
 #include "metacg/io/VersionTwoMCGReader.h"
+#include "metacg/metadata/FileInfoMD.h"
 #include "metacg/metadata/OverrideMD.h"
 
 #pragma GCC diagnostic push
@@ -507,6 +508,9 @@ TEST_F(V2MCGReaderTest, OneNodeWithOriginCGRead) {
   EXPECT_TRUE(cg->getMain() != nullptr);
   EXPECT_TRUE(cg->getMain()->getFunctionName() == "main");
   EXPECT_TRUE(cg->getMain()->getOrigin() == "main.cpp");
+  // The fileProperties metadata is kept, including its origin
+  ASSERT_TRUE(cg->getMain()->has<metacg::FileInfoMD>());
+  EXPECT_EQ(cg->getMain()->get<metacg::FileInfoMD>()->origin, "main.cpp");
   EXPECT_TRUE(cg->getMain()->getHasBody());
   EXPECT_FALSE(cg->getMain()->isVirtual());
   EXPECT_TRUE(cg->getCallees(*cg->getMain()).empty());

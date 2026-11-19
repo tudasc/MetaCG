@@ -1,5 +1,7 @@
 cgcollectorExe=cgcollector2
 testerExe=cgdiff
+# fileProperties contain absolute, machine-specific origin paths, so they are not compared
+testerArgs="--ignore-md-key=fileProperties"
 cgmergeExe=cgmerge2
 build_dir=build # may be changed with opt 'b'
 
@@ -29,7 +31,7 @@ function applyFileFormatTwoToSingleTU {
   cat $gfile | python3 -m json.tool > ${gfile}_
   mv ${gfile}_ ${gfile}
 
-  $testerExe $tgt $gfile >> $LOGDIR/testrun.log 2>&1
+  $testerExe ${testerArgs} $tgt $gfile >> $LOGDIR/testrun.log 2>&1
 
   if [ $? -ne 0 ]; then
     echo "Failure for file: $gfile. Keeping generated file for inspection"
@@ -74,9 +76,9 @@ function applyFileFormatTwoToMultiTU {
   cat ${ipcgTbFile} | python3 -m json.tool > ${ipcgTbFile}_
   mv ${ipcgTbFile}_ ${ipcgTbFile}
 
-  $testerExe ${ipcgTaFile} ./input/multiTU/${gtaFile} >> $LOGDIR/testrun.log 2>&1
+  $testerExe ${testerArgs} ${ipcgTaFile} ./input/multiTU/${gtaFile} >> $LOGDIR/testrun.log 2>&1
   aErr=$?
-  $testerExe ${ipcgTbFile} ./input/multiTU/${gtbFile} >> $LOGDIR/testrun.log 2>&1
+  $testerExe ${testerArgs} ${ipcgTbFile} ./input/multiTU/${gtbFile} >> $LOGDIR/testrun.log 2>&1
   bErr=$?
 
 
@@ -92,7 +94,7 @@ function applyFileFormatTwoToMultiTU {
   cat ${combFile} | python3 -m json.tool > ${combFile}_
   mv ${combFile}_ ${combFile}
 
-  ${testerExe} ${combFile} ./input/multiTU/${gtCombFile} >> $LOGDIR/testrun.log 2>&1
+  ${testerExe} ${testerArgs} ${combFile} ./input/multiTU/${gtCombFile} >> $LOGDIR/testrun.log 2>&1
   cErr=$?
 
   echo "$aErr or $bErr or $mErr or $cErr"
@@ -206,7 +208,7 @@ testGlob="./input/cxxRecordCalls/*.cpp"
 for tc in ${testGlob}; do
   echo "Running test ${tc}"
   #we need to capture implicits here, as some calls are to implicit constructors/destructors
-  applyFileFormatTwoToSingleTU ${tc} "--capture-ctors-dtors --capture-new-delete-calls --capture-implicits --prune --infer-ctors-dtors"
+  applyFileFormatTwoToSingleTU ${tc} "--capture-ctors-dtors --capture-new-delete-calls --capture-implicits --prune --infer-ctors-dtors --whole-program"
   fail=$?
   sfails=$((sfails + fail))
 done

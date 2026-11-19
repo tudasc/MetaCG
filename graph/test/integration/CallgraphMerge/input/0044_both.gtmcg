@@ -13,6 +13,7 @@
                     "numVars": 0
                 },
                 "fileProperties": {
+                    "lineNumber": 0,
                     "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0044_b.cpp",
                     "systemInclude": false
                 },
@@ -48,6 +49,7 @@
                     "numVars": 0
                 },
                 "fileProperties": {
+                    "lineNumber": 0,
                     "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0044_a.cpp",
                     "systemInclude": false
                 },
@@ -82,6 +84,7 @@
                     "numVars": 0
                 },
                 "fileProperties": {
+                    "lineNumber": 0,
                     "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0044_b.cpp",
                     "systemInclude": false
                 },
@@ -112,6 +115,7 @@
                     "numVars": 0
                 },
                 "fileProperties": {
+                    "lineNumber": 0,
                     "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0044_a.cpp",
                     "systemInclude": false
                 },
@@ -136,8 +140,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "1981e5c40aa418ae7a445afd5fd158a06f277dbf",
-            "version": "0.7"
+            "sha": "9858ba98baa4d0677c78b6bc66153e4d5c3c7f15",
+            "version": "1.0"
         },
         "version": "2.0"
     }
