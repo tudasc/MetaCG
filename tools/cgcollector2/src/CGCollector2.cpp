@@ -132,9 +132,8 @@ static opt<LogLevel> LoggingLevel("log-level", desc("Select log level"),
 
 static opt<std::string> toolchain(
     "toolchain",
-    desc("Compiler whose resource directory (compiler specific builtin headers) is used, to emulate compiling with "
-         "that toolchain. The compiler is queried with --print-resource-dir, so it has to be clang based"),
-    value_desc("clang-20, amdclang"), cat(cgc));
+    desc("Which clang based compiler toolchain to get compiler specific builtin headers from"),
+    value_desc("clang-20, amdclang"), cat(cgc), init("clang-"+std::to_string(LLVM_VERSION_MAJOR)));
 
 /**
  * Asks the given compiler for its resource directory, which contains the compiler specific builtin headers
@@ -252,7 +251,7 @@ int main(int argc, const char** argv) {
     if (resourceDir.empty()) {
       return -1;
     }
-    metacg::MCGLogger::logInfo("Using resource dir of {} at {}", toolchain.getValue(), resourceDir);
+    metacg::MCGLogger::logDebug("Using resource dir of {} at {}", toolchain.getValue(), resourceDir);
     CT.appendArgumentsAdjuster(getResourceDirAdjuster(resourceDir));
   }
 
