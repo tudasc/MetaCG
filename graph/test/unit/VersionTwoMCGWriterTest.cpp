@@ -10,6 +10,7 @@
 #include "metacg/MCGBaseInfo.h"
 #include "metacg/MCGManager.h"
 #include "metacg/io/VersionTwoMCGWriter.h"
+#include "metacg/metadata/FileInfoMD.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -301,5 +302,66 @@ TEST_F(V2MCGWriterTest, SwitchBeforeWrite) {
             "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\","
             "\"version\":\"0.1\"},\"version\":\"2.0\"}}");
   mcgm.resetManager();
+}
+
+// The origin stored in fileProperties metadata is kept, but a mismatch with the node origin is reported.
+TEST_F(V2MCGWriterTest, FilePropertiesOriginMismatchWarns) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  const auto& cg = mcgm.getCallgraph();
+  auto& node = cg->insert("main", "node.cpp");
+  auto fileInfo = std::make_unique<metacg::FileInfoMD>();
+  fileInfo->origin = "metadata.cpp";
+  node.addMetaData(std::move(fileInfo));
+
+  const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {"Test", 0, 1, "TestSha"}};
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
+  metacg::io::JsonSink jsonSink;
+  testing::internal::CaptureStdout();
+  mcgWriter.writeActiveGraph(jsonSink);
+  std::string output = testing::internal::GetCapturedStdout();
+
+  EXPECT_NE(output.find("[warning] Node main: origin \"node.cpp\" differs from origin \"metadata.cpp\""),
+            std::string::npos)
+      << output;
+  EXPECT_EQ(jsonSink.getJson().at("_CG").at("main").at("meta").at("fileProperties").at("origin"), "metadata.cpp");
+}
+
+// Matching origins produce no warning.
+TEST_F(V2MCGWriterTest, FilePropertiesOriginMatchNoWarning) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  const auto& cg = mcgm.getCallgraph();
+  auto& node = cg->insert("main", "main.cpp");
+  auto fileInfo = std::make_unique<metacg::FileInfoMD>();
+  fileInfo->origin = "main.cpp";
+  node.addMetaData(std::move(fileInfo));
+
+  const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {"Test", 0, 1, "TestSha"}};
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
+  metacg::io::JsonSink jsonSink;
+
+  testing::internal::CaptureStdout();
+  mcgWriter.writeActiveGraph(jsonSink);
+  std::string output = testing::internal::GetCapturedStdout();
+
+  EXPECT_EQ(output.find("differs from origin"), std::string::npos) << output;
+  EXPECT_EQ(jsonSink.getJson().at("_CG").at("main").at("meta").at("fileProperties").at("origin"), "main.cpp");
+}
+
+// An empty metadata origin is filled with the node origin.
+TEST_F(V2MCGWriterTest, FilePropertiesEmptyOriginTakesNodeOrigin) {
+  auto& mcgm = metacg::graph::MCGManager::get();
+  const auto& cg = mcgm.getCallgraph();
+  auto& node = cg->insert("main", "main.cpp");
+  node.addMetaData(std::make_unique<metacg::FileInfoMD>());
+
+  const metacg::MCGFileInfo mcgFileInfo = {{2, 0}, {"Test", 0, 1, "TestSha"}};
+  metacg::io::VersionTwoMCGWriter mcgWriter(mcgFileInfo);
+  metacg::io::JsonSink jsonSink;
+  testing::internal::CaptureStdout();
+  mcgWriter.writeActiveGraph(jsonSink);
+  std::string output = testing::internal::GetCapturedStdout();
+
+  EXPECT_EQ(output.find("differs from origin"), std::string::npos) << output;
+  EXPECT_EQ(jsonSink.getJson().at("_CG").at("main").at("meta").at("fileProperties").at("origin"), "main.cpp");
 }
 #pragma GCC diagnostic pop

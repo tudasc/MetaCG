@@ -23,7 +23,7 @@ class FileInfoMD : public metacg::MetaData::Registrar<FileInfoMD> {
   FileInfoMD() : fromSystemInclude(false), lineNumber(0) {}
   explicit FileInfoMD(const nlohmann::json& j, StrToNodeMapping&) : fromSystemInclude(false), lineNumber(0) {
     if (j.is_null()) {
-      metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
+      MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
     if (auto it = j.find("origin"); it != j.end() && it->is_string()) {
@@ -31,8 +31,12 @@ class FileInfoMD : public metacg::MetaData::Registrar<FileInfoMD> {
     }else {
       MCGLogger::logWarnUnique("Found fileProperties metadata without origin field");
     }
-    fromSystemInclude = j["systemInclude"].get<bool>();
-    if (auto it = j.find("lineNumber"); it != j.end() && it->is_string()) {
+    if (auto it = j.find("systemInclude"); it != j.end()) {
+      fromSystemInclude = j["systemInclude"].get<bool>();
+    }else {
+      MCGLogger::logWarnUnique("Found fileProperties metadata without systemInclude field");
+    }
+    if (auto it = j.find("lineNumber"); it != j.end()) {
       lineNumber = j["lineNumber"].get<int>();
     }else {
       MCGLogger::logWarnUnique("Found fileProperties metadata without lineNumber field");

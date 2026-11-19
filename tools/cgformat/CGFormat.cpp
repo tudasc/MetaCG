@@ -98,6 +98,9 @@ int main(int argc, char** argv) {
             }
           } else {
             node->setOrigin(std::nullopt);
+            if (node->has<FileInfoMD>()) {
+              node->get<FileInfoMD>()->origin="";
+            }
           }
         } else {
 
@@ -118,6 +121,10 @@ int main(int argc, char** argv) {
               auto newOrigin = replacePathPrefix(*origin, prefixToReplace, originPrefix);
               if (newOrigin) {
                 node->setOrigin(newOrigin);
+                //If we have FileInfo metadata attached we update the origin as well
+                if (node->has<FileInfoMD>()) {
+                  node->get<FileInfoMD>()->origin=*newOrigin;
+                }
               } else {
                 MCGLogger::logWarn("Unable to automatically replace prefix in origin path of node {} ('{}'): {}", node->getId(), node->getFunctionName(), *origin);
               }
