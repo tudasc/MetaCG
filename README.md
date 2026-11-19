@@ -50,7 +50,8 @@ You can configure MetaCG to also build CGCollector, PGIS and other tools based o
 This requires additional dependencies.
 
 **Additional Build Requirements (for full build)**
-- Clang/LLVM version 13 (and above)
+- Clang/LLVM version 15 (and above)
+- Flang/LLVM version 18 (and above) for the Fortran call graph collector CGFCollector
 - Cube 4.5 [scalasca.org](https://www.scalasca.org/software/cube-4.x/download.html)
 - Extra-P 3.0 [.tar.gz](http://apps.fz-juelich.de/scalasca/releases/extra-p/extrap-3.0.tar.gz)
 - cxxopts [github](https://github.com/jarro2783/cxxopts)
