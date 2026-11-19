@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
 
   mcgManager.addToManagedGraphs("merged", std::move(mergedCg), true);
 
-  auto mcgWriter = io::createWriter(mcgVersion);
+  auto mcgWriter = io::createWriter(mcgVersion, getMetaCGGeneratorInfo("CGMerge2"));
   if (!mcgWriter) {
     MCGLogger::logError("Unable to create a writer for format version {}", mcgVersion);
     return EXIT_FAILURE;

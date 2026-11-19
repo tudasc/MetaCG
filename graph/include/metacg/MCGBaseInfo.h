@@ -60,6 +60,12 @@ struct MCGGeneratorVersionInfo {
   std::string sha;
 };
 
+/**
+ * Returns generator info carrying the MetaCG version and git SHA.
+ * @param name The generator name. Tools pass their own name; the writers default to "MetaCG".
+ */
+MCGGeneratorVersionInfo getMetaCGGeneratorInfo(std::string name = "MetaCG");
+
 struct MCGFileFormatInfo {
   MCGFileFormatInfo(int versionMajor, int versionMinor)
       : version(versionMajor, versionMinor), cgFieldName("_CG"), metaInfoFieldName("_MetaCG") {}

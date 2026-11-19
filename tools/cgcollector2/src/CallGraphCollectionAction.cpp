@@ -68,7 +68,7 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
     }
   }
 
-  std::unique_ptr<metacg::io::MCGWriter> mcgWriter = metacg::io::createWriter(mcgVersion);
+  std::unique_ptr<metacg::io::MCGWriter> mcgWriter = metacg::io::createWriter(mcgVersion, metacg::getMetaCGGeneratorInfo("CGCollector2"));
   metacg::io::JsonSink js;
   mcgWriter->write(callgraph, js);
   std::string filename;

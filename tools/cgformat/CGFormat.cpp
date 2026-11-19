@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
 
   int outputMcgVersion = std::stoi(fs.getFormatVersion());
 
-  auto mcgWriter = io::createWriter(outputMcgVersion);
+  auto mcgWriter = io::createWriter(outputMcgVersion, getMetaCGGeneratorInfo("CGFormat"));
   if (!mcgWriter) {
     MCGLogger::logError("Unable to create a writer for format version {}", outputMcgVersion);
     return EXIT_FAILURE;

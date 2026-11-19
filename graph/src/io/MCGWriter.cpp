@@ -30,12 +30,12 @@ void metacg::io::MCGWriter::writeNamedGraph(const std::string& cgName, metacg::i
   write(cg, js);
 }
 
-std::unique_ptr<metacg::io::MCGWriter> metacg::io::createWriter(int version) {
+std::unique_ptr<metacg::io::MCGWriter> metacg::io::createWriter(int version, MCGGeneratorVersionInfo gen) {
   if (version == 2) {
-    return std::make_unique<metacg::io::VersionTwoMCGWriter>();
+    return std::make_unique<metacg::io::VersionTwoMCGWriter>(getVersionTwoFileInfo(std::move(gen)));
   }
   if (version == 4) {
-    return std::make_unique<metacg::io::VersionFourMCGWriter>();
+    return std::make_unique<metacg::io::VersionFourMCGWriter>(MCGFileInfo{{4, 0}, std::move(gen)});
   }
   return {};
 }
