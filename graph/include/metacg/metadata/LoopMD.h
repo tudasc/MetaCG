@@ -20,14 +20,15 @@ class LoopDepthMD : public metacg::MetaData::Registrar<LoopDepthMD> {
       metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
-    loopDepth = j.get<int>();
+    // Legacy files store the depth directly instead of wrapping it in an object
+    loopDepth = j.is_object() ? j.at("depth").get<int>() : j.get<int>();
   }
 
  private:
   LoopDepthMD(const LoopDepthMD& other) : loopDepth(other.loopDepth) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping&) const final { return loopDepth; }
+  nlohmann::json toJson(NodeToStrMapping&) const final { return {{"depth", loopDepth}}; }
 
   const char* getKey() const final { return key; }
 
@@ -56,14 +57,15 @@ class GlobalLoopDepthMD : public metacg::MetaData::Registrar<GlobalLoopDepthMD> 
       metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
-    globalLoopDepth = j.get<int>();
+    // Legacy files store the depth directly instead of wrapping it in an object
+    globalLoopDepth = j.is_object() ? j.at("depth").get<int>() : j.get<int>();
   }
 
  private:
   GlobalLoopDepthMD(const GlobalLoopDepthMD& other) : globalLoopDepth(other.globalLoopDepth) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping&) const final { return globalLoopDepth; }
+  nlohmann::json toJson(NodeToStrMapping&) const final { return {{"depth", globalLoopDepth}}; }
 
   const char* getKey() const final { return key; }
 

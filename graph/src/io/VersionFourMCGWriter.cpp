@@ -54,6 +54,23 @@ struct V4WriterMapping : public NodeToStrMapping {
   std::unordered_map<NodeId, std::string> idToStr;
 };
 
+/**
+ * Serializes the given metadata and adds it to jMeta under its key.
+ * Metadata may serialize to null or an empty object to signal that it should not be written; this is skipped
+ * silently. Metadata must serialize to a JSON object; anything else is reported as an error and skipped.
+ */
+void serializeMetaData(nlohmann::json& jMeta, const std::string& key, const MetaData& md, NodeToStrMapping& nodeToStr) {
+  auto jMetaEntry = md.toJson(nodeToStr);
+  if (jMetaEntry.is_null() || (jMetaEntry.is_object() && jMetaEntry.empty())) {
+    return;
+  }
+  if (!jMetaEntry.is_object()) {
+    MCGLogger::logErrorUnique("{} does not serialize to jsonObject, skipping", key);
+    return;
+  }
+  jMeta[key] = std::move(jMetaEntry);
+}
+
 }  // namespace
 
 void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg::io::JsonSink& js) {
@@ -73,13 +90,7 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
     auto jMeta = nlohmann::json::object();
 
     for (auto& [key, md] : node->getMetaDataContainer()) {
-      // Metadata is not attached, if the generated field is empty or null.
-      // TODO: Should this be considered an error instead?
-      if (auto jMetaEntry = md->toJson(nodeToStr); !jMetaEntry.empty() && !jMetaEntry.is_null()) {
-        jMeta[key] = std::move(jMetaEntry);
-      } else {
-        MCGLogger::logWarn("Could not serialize metadata of type {} in node {}", key, node->getFunctionName());
-      }
+      serializeMetaData(jMeta, key, *md, nodeToStr);
     }
 
     nlohmann::json jNode = {{"functionName", node->getFunctionName()},
@@ -104,7 +115,7 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
     nlohmann::json jEdgeMD = nlohmann::json::object();
     auto& mdMap = cg->getAllEdgeMetaData({caller->getId(), callee->getId()});
     for (auto&& [key, val] : mdMap) {
-      jEdgeMD[key] = val->toJson(nodeToStr);
+      serializeMetaData(jEdgeMD, key, *val, nodeToStr);
     }
 
     jNodes[callerStr]["callees"][calleeStr] = jEdgeMD;
@@ -116,12 +127,7 @@ void metacg::io::VersionFourMCGWriter::write(const metacg::Callgraph* cg, metacg
   // Write global metadata
   auto jMeta = nlohmann::json::object();
   for (auto& [key, md] : cg->getMetaDataContainer()) {
-    // Metadata is not attached, if the generated field is empty or null.
-    if (auto jMetaEntry = md->toJson(nodeToStr); !jMetaEntry.empty() && !jMetaEntry.is_null()) {
-      jMeta[key] = std::move(jMetaEntry);
-    } else {
-      MCGLogger::logWarn("Could not serialize global metadata of type {}", key);
-    }
+    serializeMetaData(jMeta, key, *md, nodeToStr);
   }
   j["_CG"]["meta"] = std::move(jMeta);
 

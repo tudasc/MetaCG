@@ -18,15 +18,15 @@ class MergeCountMD : public metacg::MetaData::Registrar<MergeCountMD> {
       metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", "MergeCountMD");
       return;
     }
-    auto val = j.get<int>();
-    this->mergeCount = val;
+    // Legacy files store the count directly instead of wrapping it in an object
+    this->mergeCount = j.is_object() ? j.at("count").get<int>() : j.get<int>();
   }
 
  private:
   MergeCountMD(const MergeCountMD& other) : mergeCount(other.mergeCount) {}
 
  public:
-  nlohmann::json toJson(metacg::NodeToStrMapping&) const override { return mergeCount; }
+  nlohmann::json toJson(metacg::NodeToStrMapping&) const override { return {{"count", mergeCount}}; }
 
   const char* getKey() const override { return key; }
 

@@ -17,7 +17,8 @@ struct EntryFunctionMD final : metacg::MetaData::Registrar<EntryFunctionMD> {
   EntryFunctionMD() = default;
 
   explicit EntryFunctionMD(const nlohmann::json& j, StrToNodeMapping& strToNode) {
-    auto nodeStr = j.get<std::string>();
+    // Legacy files store the node string directly instead of wrapping it in an object
+    auto nodeStr = j.is_object() ? j.at("function").get<std::string>() : j.get<std::string>();
     auto node = strToNode.getNodeFromStr(nodeStr);
     if (!node) {
       MCGLogger::logError("Could not find entry function with ID '{}'", nodeStr);
@@ -33,7 +34,7 @@ struct EntryFunctionMD final : metacg::MetaData::Registrar<EntryFunctionMD> {
     if (entryFunction) {
       nodeStr = nodeToStr.getStrFromNode(*entryFunction);
     }
-    return nodeStr;
+    return {{"function", nodeStr}};
   }
 
  private:

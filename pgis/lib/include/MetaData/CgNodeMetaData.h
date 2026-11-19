@@ -180,7 +180,8 @@ public:
      metacg::MCGLogger::instance().getConsole()->error("Could not retrieve meta data for {}", key);
      return;
    }
-   auto jsonNumStmts = j.get<long long int>();
+   // Legacy files store the count directly instead of wrapping it in an object
+   auto jsonNumStmts = j.is_object() ? j.at("count").get<long long int>() : j.get<long long int>();
    metacg::MCGLogger::instance().getConsole()->debug("Read {} stmts from file", jsonNumStmts);
    setNumberOfStatements(jsonNumStmts);
  }
@@ -193,7 +194,9 @@ private:
        numStmts(other.numStmts) {}
 
 public:
- nlohmann::json toJson(metacg::NodeToStrMapping& nodeToStr) const final { return getNumberOfStatements(); };
+ nlohmann::json toJson(metacg::NodeToStrMapping& nodeToStr) const final {
+   return {{"count", getNumberOfStatements()}};
+ };
 
  const char* getKey() const final { return key; }
 

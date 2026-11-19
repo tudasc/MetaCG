@@ -22,9 +22,12 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
     metacg::MCGLogger::logTrace("Creating {} metadata from json", key);
     if (j.is_null()) {
       metacg::MCGLogger::logErrorUnique("Could not retrieve metadata for {}", key);
+      return;
     }
 
-    for (const auto& elem : j) {
+    // Legacy files store the array directly instead of wrapping it in an object
+    const auto& jAllocs = j.is_object() ? j.at("allocations") : j;
+    for (const auto& elem : jAllocs) {
       allocs[elem.at("global")] = elem.at("allocStmt");
     }
   }
@@ -34,13 +37,17 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
 
  public:
   nlohmann::json toJson(NodeToStrMapping&) const final {
+    // An empty result makes the writer skip this metadata, which avoids cluttering the output
+    if (allocs.empty()) {
+      return nlohmann::json::object();
+    }
     std::vector<nlohmann::json> jArray;
     jArray.reserve(allocs.size());
     for (const auto& [k, v] : allocs) {
       jArray.push_back({{"global", k}, {"allocStmt", v}});
     }
 
-    return jArray;
+    return {{"allocations", jArray}};
   }
 
   const char* getKey() const override { return key; }

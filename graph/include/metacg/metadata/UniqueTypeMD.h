@@ -20,15 +20,17 @@ class UniqueTypeMD : public metacg::MetaData::Registrar<UniqueTypeMD> {
     metacg::MCGLogger::logTrace("Creating {} metadata from json", key);
     if (j.is_null()) {
       metacg::MCGLogger::logErrorUnique("Could not retrieve metadata for {}", key);
+      return;
     }
-    numTypes = j;
+    // Legacy files store the count directly instead of wrapping it in an object
+    numTypes = j.is_object() ? j.at("count").get<int>() : j.get<int>();
   }
 
  private:
   UniqueTypeMD(const UniqueTypeMD& other) : numTypes(other.numTypes) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping&) const final { return numTypes; }
+  nlohmann::json toJson(NodeToStrMapping&) const final { return {{"count", numTypes}}; }
 
   const char* getKey() const override { return key; }
 
