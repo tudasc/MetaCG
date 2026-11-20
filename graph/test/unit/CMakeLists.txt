@@ -8,6 +8,7 @@ add_executable(
   GlobalMDTest.cpp
   LoggingTest.cpp
   MCGManagerTest.cpp
+  MergePolicyTest.cpp
   ReachabilityAnalysisTest.cpp
   ReaderFactoryTest.cpp
   UtilTest.cpp

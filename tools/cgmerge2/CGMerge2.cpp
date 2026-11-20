@@ -13,11 +13,9 @@
 
 #include "metacg/LoggerUtil.h"
 #include "metacg/MCGManager.h"
+#include "metacg/MergePolicy.h"
 #include "metacg/io/MCGReader.h"
-#include "metacg/io/VersionFourMCGReader.h"
-#include "metacg/io/VersionFourMCGWriter.h"
-#include "metacg/io/VersionTwoMCGReader.h"
-#include "metacg/io/VersionTwoMCGWriter.h"
+#include "metacg/io/MCGWriter.h"
 
 // This may appear to be unused, but the variables declared here have side effects on the graph lib
 #include "metacg/metadata/BuiltinMD.h"

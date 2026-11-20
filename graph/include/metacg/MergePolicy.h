@@ -81,6 +81,15 @@ struct MergeByName : public MergePolicy {
   std::optional<MergeAction> findMatchingNode(const Callgraph& targetCG, const CgNode& sourceNode) const override;
 };
 
+/**
+ * This policy matches nodes only if both their function name and their origin are identical.
+ * Nodes that share a name but differ in origin (e.g. static functions with the same name in different
+ * translation units) are kept as separate nodes. Two nodes without an origin are treated as having the same origin.
+ */
+struct MergeByNameAndOrigin : public MergePolicy {
+  std::optional<MergeAction> findMatchingNode(const Callgraph& targetCG, const CgNode& sourceNode) const override;
+};
+
 }  // namespace metacg
 
 #endif  // METACG_MERGEPOLICY_H
