@@ -13,7 +13,7 @@ find_program(
 find_program(
   FILECHECK_EXE
   NAMES FileCheck-${LLVM_VERSION_MAJOR} FileCheck
-        HINTS "${LLVM_TOOLS_BINARY_DIR}" REQUIRED
+  HINTS "${LLVM_TOOLS_BINARY_DIR}" REQUIRED
 )
 find_program(
   CLANG_COMPILER
