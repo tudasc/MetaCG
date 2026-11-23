@@ -140,7 +140,7 @@ class Callgraph : public MetadataMixin {
    * Merges the given call graph into this one.
    * The other call graph remains unchanged.
    *
-   * Merging is performed in four major steps:
+   * Merging is performed in five major steps:
    * 1. For each node in the source graph, the policy determines if there is matching node in the target graph. If yes,
    *    it emits an action to either keep or replace the existing node with the source node. Otherwise, the node is
    *    marked to be copied.
@@ -149,11 +149,19 @@ class Callgraph : public MetadataMixin {
    *    After this step, node references in the edges and metadata are invalid and need to be updated.
    * 3. New edges from the source graph are inserted, using the updated node IDs.
    * 4. Metadata is merged, taking into account the change of node IDs and the performed merge actions.
+   * 5. Post Processing Task is run on merged call graph
    *
    * @param other The call graph to merge.
    * @param policy The merge policy.
    */
-  MergeRecorder merge(const Callgraph& other, const MergePolicy& policy);
+  template <typename... PostProcessingTasks>
+  MergeRecorder merge(const metacg::Callgraph& other, const metacg::MergePolicy& policy,
+                                 PostProcessingTasks... tasks) {
+    auto recorder = mergeImpl(other, policy);
+    // Step 6: Call post processing tasks
+    (tasks(this), ...);
+    return recorder;
+  }
 
   /**
    * Clears the graph to an empty graph with no main node.
@@ -422,6 +430,8 @@ class Callgraph : public MetadataMixin {
 
  private:
   bool addEdgeInternal(NodeId caller, NodeId callee);
+
+  MergeRecorder mergeImpl(const metacg::Callgraph& other, const metacg::MergePolicy& policy);
 
  private:
   // this set represents the call graph during the actual computation
