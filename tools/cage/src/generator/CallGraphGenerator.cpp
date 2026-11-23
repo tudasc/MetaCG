@@ -13,6 +13,7 @@
 #include "metacg/metadata/MetaData.h"
 #include "metacg/metadata/MetadataMixin.h"
 #include "metacg/metadata/OverrideMD.h"
+#include "llvm/Config/llvm-config.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/raw_ostream.h"
 #include <exception>
@@ -41,6 +42,14 @@ using namespace llvm;
 namespace cage {
 
 namespace {
+
+[[nodiscard]] inline bool starts_with(llvm::StringRef Str, llvm::StringRef Prefix) {
+#if LLVM_VERSION_MAJOR < 17
+  return Str.startswith(Prefix);
+#else
+  return Str.starts_with(Prefix);
+#endif
+}
 
 void collectAnnotations(std::unordered_map<std::string, std::vector<std::string>>& overrides, llvm::Module& M) {
   auto* GlobalAnnots = M.getNamedGlobal("llvm.global.annotations");
@@ -94,7 +103,7 @@ void collectAnnotations(std::unordered_map<std::string, std::vector<std::string>
             if (auto* CDA = llvm::dyn_cast<llvm::ConstantDataArray>(PayloadGV->getInitializer())) {
               llvm::StringRef payload = CDA->getAsString();
 
-              if (payload.starts_with("overridePlugin")) {
+              if (starts_with(payload, "overridePlugin")) {
                 isOverridePlugin = true;
                 overrides[AnnotatedFuncName.str()].push_back(annotStr.str());
               }

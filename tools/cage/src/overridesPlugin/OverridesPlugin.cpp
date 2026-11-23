@@ -9,6 +9,7 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
+#include "llvm/Config/llvm-config.h"
 #include <cassert>
 #include <clang/AST/APValue.h>
 #include <clang/AST/ASTContext.h>
@@ -70,9 +71,13 @@ class OverridesVisitor final : public clang::RecursiveASTVisitor<OverridesVisito
     uint64_t stringLength = overridePluginString.size();
     clang::QualType charArrayTy = Context->getStringLiteralArrayType(Context->CharTy, stringLength);
 
-    clang::StringLiteral* StrLit =
-        clang::StringLiteral::Create(*Context, overridePluginString, clang::StringLiteralKind::Ordinary,
-                                     /*Pascal=*/false, charArrayTy, clang::SourceLocation());
+#if LLVM_VERSION_MAJOR >= 18
+    const auto ordinaryKind = clang::StringLiteralKind::Ordinary;
+#else
+    const auto ordinaryKind = clang::StringLiteral::Ordinary;
+#endif
+    clang::StringLiteral* StrLit = clang::StringLiteral::Create(*Context, overridePluginString, ordinaryKind,
+                                                                /*Pascal=*/false, charArrayTy, clang::SourceLocation());
 
     clang::APValue Value(clang::APValue::LValueBase(StrLit), clang::CharUnits::Zero(), clang::APValue::NoLValuePath());
 
