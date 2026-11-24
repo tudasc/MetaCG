@@ -124,25 +124,6 @@
             "overriddenBy": [],
             "overrides": []
         },
-        "_ZN1WI1SE5probeEv": {
-            "callees": [
-                "_ZNK1S3barEv"
-            ],
-            "callers": [],
-            "doesOverride": false,
-            "hasBody": false,
-            "isVirtual": false,
-            "meta": {
-                "fileProperties": {
-                    "lineNumber": 0,
-                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0011.cpp",
-                    "systemInclude": false
-                },
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
         "_ZN1WI1SEC1Ev": {
             "callees": [
                 "_ZN1SC1Ev",
@@ -189,9 +170,7 @@
         },
         "_ZNK1S3barEv": {
             "callees": [],
-            "callers": [
-                "_ZN1WI1SE5probeEv"
-            ],
+            "callers": [],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": false,
