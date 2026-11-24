@@ -37,10 +37,6 @@ class MallocVariableMD : public metacg::MetaData::Registrar<MallocVariableMD> {
 
  public:
   nlohmann::json toJson(NodeToStrMapping&) const final {
-    // An empty result makes the writer skip this metadata, which avoids cluttering the output
-    if (allocs.empty()) {
-      return nlohmann::json::object();
-    }
     std::vector<nlohmann::json> jArray;
     jArray.reserve(allocs.size());
     for (const auto& [k, v] : allocs) {
