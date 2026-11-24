@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
   auto mcgReader = io::createReader(fs);
   auto graph = mcgReader->read();
 
-  auto mcgWriter = io::createWriter(outputMcgVersion);
+  auto mcgWriter = io::createWriter(outputMcgVersion, getMetaCGGeneratorInfo("CGConvert"));
   if (!mcgWriter) {
     MCGLogger::logError("Unable to create a writer for format version {}", outputMcgVersion);
     return EXIT_FAILURE;

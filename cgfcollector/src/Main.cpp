@@ -86,7 +86,7 @@ class CollectCG : public Fortran::frontend::PluginParseTreeAction {
     }
 
     // create writer
-    auto mcgWriter = io::createWriter(4);
+    auto mcgWriter = io::createWriter(4, getMetaCGGeneratorInfo("CGFCollector"));
     if (!mcgWriter) {
       MCGLogger::logError("Unable to create a writer for format version {}", 4);
       return;

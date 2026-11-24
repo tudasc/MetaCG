@@ -14,7 +14,7 @@ namespace metacg::io {
 class VersionFourMCGWriter : public MCGWriter {
  public:
   explicit VersionFourMCGWriter(
-      MCGFileInfo fileInfo = {{4, 0}, {"MetaCG", MetaCG_VERSION_MAJOR, MetaCG_VERSION_MINOR, MetaCG_GIT_SHA}},
+      MCGFileInfo fileInfo = {{4, 0}, getMetaCGGeneratorInfo()},
       bool useNamesAsIds = false, bool exportSorted = false)
       : MCGWriter(std::move(fileInfo)), useNamesAsIds(useNamesAsIds), exportSorted(exportSorted) {}
 
