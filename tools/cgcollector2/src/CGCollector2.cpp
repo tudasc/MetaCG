@@ -133,7 +133,7 @@ static opt<LogLevel> LoggingLevel("log-level", desc("Select log level"),
 static opt<std::string> toolchain(
     "toolchain",
     desc("Which clang based compiler toolchain to get compiler specific builtin headers from"),
-    value_desc("clang-20, amdclang"), cat(cgc), init("clang-"+std::to_string(LLVM_VERSION_MAJOR)));
+    value_desc("clang based compiler to emulate"), init(""), cat(cgc));
 
 /**
  * Asks the given compiler for its resource directory, which contains the compiler specific builtin headers
