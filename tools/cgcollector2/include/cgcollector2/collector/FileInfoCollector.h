@@ -18,7 +18,7 @@
 
 struct FileInfoCollector : cgcollector2::Plugin {
   virtual std::unique_ptr<metacg::MetaData> computeForDecl(const clang::FunctionDecl* const functionDecl) {
-    std::unique_ptr<FileInfoMetadata> result = std::make_unique<FileInfoMetadata>();
+    auto result = std::make_unique<metacg::FileInfoMD>();
     const auto sourceLocation = functionDecl->getLocation();
     auto& astCtx = functionDecl->getASTContext();
     const auto fullSrcLoc = astCtx.getFullLoc(sourceLocation);
@@ -37,6 +37,8 @@ struct FileInfoCollector : cgcollector2::Plugin {
     std::string fileNameStr = fileName.str();
     result->fromSystemInclude = astCtx.getSourceManager().isInSystemHeader(sourceLocation);
     result->origin = fileNameStr;
+    result->lineNumber = astCtx.getSourceManager().getSpellingLineNumber(sourceLocation);
+
     return result;
   };
 

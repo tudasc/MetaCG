@@ -1,40 +1,50 @@
 {
-  "_CG": {
-    "_ZZ4mainENK3$_0clEii": {
-      "callees": [],
-      "callers": [
-        "main"
-      ],
-      "doesOverride": false,
-      "hasBody": true,
-      "isVirtual": false,
-      "meta": {
-        "numStatements": 5
-      },
-      "overriddenBy": [],
-      "overrides": []
+    "_CG": {
+        "_ZZ4mainENK3$_0clEii": {
+            "callees": [],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/functionPointers/0053.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 5
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_ZZ4mainENK3$_0clEii"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/functionPointers/0053.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
     },
-    "main": {
-      "callees": [
-        "_ZZ4mainENK3$_0clEii"
-      ],
-      "callers": [],
-      "doesOverride": false,
-      "hasBody": true,
-      "isVirtual": false,
-      "meta": {
-        "numStatements": 3
-      },
-      "overriddenBy": [],
-      "overrides": []
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "5ad9a8bc7736e9709ea8c62aa80d30a6a1339459",
+            "version": "1.0"
+        },
+        "version": "2.0"
     }
-  },
-  "_MetaCG": {
-    "generator": {
-      "name": "CGCollector",
-      "sha": "GITDIR-NOTFOUND",
-      "version": "0.4"
-    },
-    "version": "2.0"
-  }
 }

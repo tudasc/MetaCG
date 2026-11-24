@@ -24,7 +24,6 @@ static const char* const EXIT = "exit";
 class DominatorAnalysisTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    metacg::loggerutil::getLogger();
     auto& mcgm = metacg::graph::MCGManager::get();
     mcgm.resetManager();
     mcgm.addToManagedGraphs("testgraph", std::make_unique<metacg::Callgraph>());

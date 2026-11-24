@@ -7,6 +7,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/metaCollectors/numStatements/0027.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 7
             },
             "overriddenBy": [],
@@ -16,8 +21,8 @@
     "_MetaCG": {
         "generator": {
             "name": "CGCollector",
-            "sha": "a12c2adc9482ef0062fd27f104ab4dfd679cb91f",
-            "version": "0.2"
+            "sha": "5ad9a8bc7736e9709ea8c62aa80d30a6a1339459",
+            "version": "1.0"
         },
         "version": "2.0"
     }

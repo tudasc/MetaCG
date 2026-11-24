@@ -10,6 +10,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0012.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -25,6 +30,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0012.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -40,6 +50,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0012.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -55,6 +70,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0012.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -72,6 +92,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0012.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -89,6 +114,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0012.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -103,6 +133,11 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0012.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -120,6 +155,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0012.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -137,6 +177,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0012.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 0
             },
             "overriddenBy": [],
@@ -151,6 +196,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0012.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 1
             },
             "overriddenBy": [],
@@ -165,6 +215,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0012.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 1
             },
             "overriddenBy": [],
@@ -181,6 +236,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0012.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 1
             },
             "overriddenBy": [],
@@ -199,6 +259,11 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/allCtorDtor/0012.cpp",
+                    "systemInclude": false
+                },
                 "numStatements": 3
             },
             "overriddenBy": [],
@@ -207,8 +272,8 @@
     },
     "_MetaCG": {
         "generator": {
-            "name": "CGCollector2",
-            "sha": "c1812a501ff986a6e6a03f206955f2d880cf153d",
+            "name": "CGCollector",
+            "sha": "5ad9a8bc7736e9709ea8c62aa80d30a6a1339459",
             "version": "1.0"
         },
         "version": "2.0"

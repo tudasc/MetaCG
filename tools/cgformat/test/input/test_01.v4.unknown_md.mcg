@@ -10,7 +10,9 @@
                 "hasBody": true,
                 "meta": {
                     "fileProperties": {
-                        "systemInclude": false
+                        "origin": "/opt/metacg/mcg-local/cgformat_test_01_input.c",
+                        "systemInclude": false,
+                        "lineNumber" : 0
                     },
                     "numStatements": 1,
                     "unknown": "???"
@@ -23,7 +25,9 @@
                 "hasBody": false,
                 "meta": {
                     "fileProperties": {
-                        "systemInclude": false
+                        "origin": "/opt/metacg/mcg-local/cgformat_test_01_input.c",
+                        "systemInclude": false,
+                        "lineNumber" : 0
                     },
                     "numStatements": 0
                 },
@@ -37,7 +41,9 @@
                 "hasBody": true,
                 "meta": {
                     "fileProperties": {
-                        "systemInclude": false
+                        "origin": "/opt/metacg/mcg-local/cgformat_test_01_input.c",
+                        "systemInclude": false,
+                        "lineNumber" : 0
                     },
                     "numStatements": 1
                 },
