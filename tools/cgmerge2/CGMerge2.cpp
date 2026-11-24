@@ -7,9 +7,13 @@
 #include "metacg/config.h"
 
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 #include <memory>
+#include <string>
 #include <vector>
+
+#include <cxxopts.hpp>
 
 #include "metacg/LoggerUtil.h"
 #include "metacg/MCGManager.h"
@@ -22,30 +26,84 @@
 
 using namespace metacg;
 
-// TODO: Let user set merge policy
-#pragma omp declare reduction(cgmerge : std::unique_ptr<Callgraph> : omp_out->merge(*omp_in, MergeByName())) \
+// The merge policy selected on the command line. Must be set before any merging happens.
+static const MergePolicy* selectedMergePolicy = nullptr;
+
+// Merges `source` into `target` using the selected merge policy.
+// The OpenMP reduction combiner may only refer to omp_out/omp_in, so it accesses the policy through this function.
+static void mergeWithSelectedPolicy(Callgraph& target, const Callgraph& source) {
+  assert(selectedMergePolicy && "Merge policy must be set before merging");
+  target.merge(source, *selectedMergePolicy);
+}
+
+#pragma omp declare reduction(cgmerge : std::unique_ptr<Callgraph> : mergeWithSelectedPolicy(*omp_out, *omp_in)) \
     initializer(omp_priv = std::make_unique<Callgraph>())
+
+/**
+ * Creates the merge policy with the given command-line name.
+ * @return The policy, or nullptr if the name is unknown.
+ */
+static std::unique_ptr<MergePolicy> createMergePolicy(const std::string& name) {
+  if (name == "name") {
+    return std::make_unique<MergeByName>();
+  }
+  if (name == "name-and-origin") {
+    return std::make_unique<MergeByNameAndOrigin>();
+  }
+  return nullptr;
+}
 
 int main(int argc, char** argv) {
   MCGLogger::logInfo("Running metacg::CGMerge2 (version {}.{})\nGit revision: {}", MetaCG_VERSION_MAJOR,
                      MetaCG_VERSION_MINOR, MetaCG_GIT_SHA);
 
-  if (argc < 3) {
-    MCGLogger::logError("Invalid input arguments. Usage: cgmerge <outfile> <infile1> <infile2> ...");
+  cxxopts::Options options("cgmerge2", "Merges multiple MetaCG call graphs into a single call graph.");
+  options.positional_help("<outfile> <infile1> <infile2> ...");
+
+  // clang-format off
+  options.add_options()
+    ("h,help", "Show this help message")
+    ("p,merge-policy", "How nodes are matched during merging. 'name': nodes with the same function name are merged. "
+                       "'name-and-origin': nodes are merged only if both function name and origin are the same.",
+                       cxxopts::value<std::string>()->default_value("name"), "name|name-and-origin")
+    ("output", "Output call graph file", cxxopts::value<std::string>())
+    ("inputs", "Input call graph files", cxxopts::value<std::vector<std::string>>())
+  ;
+  // clang-format on
+
+  options.parse_positional({"output", "inputs"});
+
+  cxxopts::ParseResult result;
+  try {
+    result = options.parse(argc, argv);
+  } catch (const cxxopts::exceptions::exception& e) {
+    MCGLogger::logError("Invalid input arguments: {}", e.what());
+    std::cout << options.help() << std::endl;
     return EXIT_FAILURE;
   }
 
-  const int outfilePos = 1;
-  const int firstInputFilePos = outfilePos + 1;
-  const int numInputFiles = argc - firstInputFilePos;
-
-  const char* outfile = argv[outfilePos];
-
-  std::vector<std::string> inputFiles;
-  inputFiles.reserve(numInputFiles);
-  for (int i = firstInputFilePos; i < argc; ++i) {
-    inputFiles.emplace_back(argv[i]);
+  if (result.count("help")) {
+    std::cout << options.help() << std::endl;
+    return EXIT_SUCCESS;
   }
+
+  if (!result.count("output") || !result.count("inputs")) {
+    MCGLogger::logError("Invalid input arguments. Usage: cgmerge2 [options] <outfile> <infile1> <infile2> ...");
+    std::cout << options.help() << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  const auto policyName = result["merge-policy"].as<std::string>();
+  auto mergePolicy = createMergePolicy(policyName);
+  if (!mergePolicy) {
+    MCGLogger::logError("Unknown merge policy '{}'. Valid values are: name, name-and-origin", policyName);
+    return EXIT_FAILURE;
+  }
+  selectedMergePolicy = mergePolicy.get();
+  MCGLogger::logInfo("Using merge policy '{}'", policyName);
+
+  const auto outfile = result["output"].as<std::string>();
+  const auto inputFiles = result["inputs"].as<std::vector<std::string>>();
 
   // Detect format version
   int mcgVersion = 2;
@@ -80,7 +138,7 @@ int main(int argc, char** argv) {
       exit(EXIT_FAILURE);
     }
     auto cg = mcgReader->read();
-    mergedCg->merge(*cg, MergeByName());
+    mergeWithSelectedPolicy(*mergedCg, *cg);
   }
 
   mcgManager.addToManagedGraphs("merged", std::move(mergedCg), true);
