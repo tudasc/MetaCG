@@ -72,6 +72,7 @@ struct MergeRecorder {
 
 struct MergePolicy {
   virtual std::optional<MergeAction> findMatchingNode(const Callgraph& targetCG, const CgNode& sourceNode) const = 0;
+  virtual ~MergePolicy() = default;
 };
 
 /**
@@ -79,6 +80,7 @@ struct MergePolicy {
  */
 struct MergeByName : public MergePolicy {
   std::optional<MergeAction> findMatchingNode(const Callgraph& targetCG, const CgNode& sourceNode) const override;
+  ~MergeByName() override = default;
 };
 
 /**
@@ -88,6 +90,7 @@ struct MergeByName : public MergePolicy {
  */
 struct MergeByNameAndOrigin : public MergePolicy {
   std::optional<MergeAction> findMatchingNode(const Callgraph& targetCG, const CgNode& sourceNode) const override;
+  ~MergeByNameAndOrigin() override = default;
 };
 
 }  // namespace metacg
