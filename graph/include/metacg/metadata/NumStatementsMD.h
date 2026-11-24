@@ -20,7 +20,8 @@ class NumStatementsMD : public metacg::MetaData::Registrar<NumStatementsMD> {
       metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
-    auto jsonNumStmts = j.get<long long int>();
+    // Legacy files store the count directly instead of wrapping it in an object
+    auto jsonNumStmts = j.is_object() ? j.at("count").get<long long int>() : j.get<long long int>();
     metacg::MCGLogger::logDebug("Read {} stmts from file", jsonNumStmts);
     setNumberOfStatements(jsonNumStmts);
   }
@@ -29,7 +30,7 @@ class NumStatementsMD : public metacg::MetaData::Registrar<NumStatementsMD> {
   NumStatementsMD(const NumStatementsMD& other) : numStmts(other.numStmts) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping&) const final { return getNumberOfStatements(); }
+  nlohmann::json toJson(NodeToStrMapping&) const final { return {{"count", getNumberOfStatements()}}; }
 
   const char* getKey() const override { return key; }
 

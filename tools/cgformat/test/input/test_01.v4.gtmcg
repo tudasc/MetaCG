@@ -10,11 +10,13 @@
                 "hasBody": true,
                 "meta": {
                     "fileProperties": {
+                        "lineNumber": 0,
                         "origin": "/opt/metacg/mcg-local/cgformat_test_01_input.c",
-                        "systemInclude": false,
-                        "lineNumber" : 0
+                        "systemInclude": false
                     },
-                    "numStatements": 1
+                    "numStatements": {
+                        "count": 1
+                    }
                 },
                 "origin": "/opt/metacg/mcg-local/cgformat_test_01_input.c"
             },
@@ -24,11 +26,13 @@
                 "hasBody": false,
                 "meta": {
                     "fileProperties": {
+                        "lineNumber": 0,
                         "origin": "/opt/metacg/mcg-local/cgformat_test_01_input.c",
-                        "systemInclude": false,
-                        "lineNumber" : 0
+                        "systemInclude": false
                     },
-                    "numStatements": 0
+                    "numStatements": {
+                        "count": 0
+                    }
                 },
                 "origin": "/opt/metacg/mcg-local/cgformat_test_01_input.c"
             },
@@ -40,11 +44,13 @@
                 "hasBody": true,
                 "meta": {
                     "fileProperties": {
+                        "lineNumber": 0,
                         "origin": "/opt/metacg/mcg-local/cgformat_test_01_input.c",
-                        "systemInclude": false,
-                        "lineNumber" : 0
+                        "systemInclude": false
                     },
-                    "numStatements": 1
+                    "numStatements": {
+                        "count": 1
+                    }
                 },
                 "origin": "/opt/metacg/mcg-local/cgformat_test_01_input.c"
             }
@@ -52,9 +58,9 @@
     },
     "_MetaCG": {
         "generator": {
-            "name": "CGCollector",
-            "sha": "d28254fde4e10e5682c097563d425bff04142510",
-            "version": "0.9"
+            "name": "CGFormat",
+            "sha": "d1ba1e6adbcf486bcb31f1546ccef27565649fb9",
+            "version": "1.0"
         },
         "version": "4.0"
     }

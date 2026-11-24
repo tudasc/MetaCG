@@ -60,7 +60,7 @@ TEST(PIRAPGISMetadataTest, PiraOneData) {
   const auto& j = origMetadata->toJson(nodeMapping);
 
   // Compare all exported values
-  EXPECT_EQ(j.get<long long int>(), origMetadata->getNumberOfStatements());
+  EXPECT_EQ(j.at("count").get<long long int>(), origMetadata->getNumberOfStatements());
 
   // Import Json Object
   // Note: due to historical reasons, PiraOne Data is not a json object, but only a single value
@@ -148,7 +148,7 @@ TEST(PIRAPGISMetadataTest, NumConditionalBranchMetaData) {
   const auto& j = origMetadata->toJson(nodeMapping);
   // Compare all exported values
   // Note: due to historical reasons, NumConditionalBranchMD is not a json object, but only a single value
-  EXPECT_EQ(j.get<int>(), origMetadata->numConditionalBranches);
+  EXPECT_EQ(j.at("count").get<int>(), origMetadata->numConditionalBranches);
 
   // Import Json into new Object
   NoStrMapping strMapping;
@@ -198,7 +198,7 @@ TEST(PIRAPGISMetadataTest, LoopDepthMD) {
   const auto& j = origMetadata->toJson(nodeMapping);
   // Compare all exported values
   // Note: due to historical reasons, LoopDepthMD is not a json object, but only a single value
-  EXPECT_EQ(j.get<int>(), origMetadata->loopDepth);
+  EXPECT_EQ(j.at("depth").get<int>(), origMetadata->loopDepth);
 
   // Import Json into new Object
   NoStrMapping strMapping;
@@ -219,7 +219,7 @@ TEST(PIRAPGISMetadataTest, GlobalLoopDepthMD) {
   const auto& j = origMetadata->toJson(nodeMapping);
   // Compare all exported values
   // Note: due to historical reasons, GlobalLoopDepthMD is not a json object, but only a single value
-  EXPECT_EQ(j.get<int>(), origMetadata->globalLoopDepth);
+  EXPECT_EQ(j.at("depth").get<int>(), origMetadata->globalLoopDepth);
 
   // Import Json into new Object
 

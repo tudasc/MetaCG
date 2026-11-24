@@ -19,15 +19,15 @@ class NumConditionalBranchMD : public metacg::MetaData::Registrar<NumConditional
       metacg::MCGLogger::logErrorUnique("Could not retrieve meta data for {}", key);
       return;
     }
-    int numberOfConditionalBranches = j.get<int>();
-    numConditionalBranches = numberOfConditionalBranches;
+    // Legacy files store the count directly instead of wrapping it in an object
+    numConditionalBranches = j.is_object() ? j.at("count").get<int>() : j.get<int>();
   }
 
  private:
   NumConditionalBranchMD(const NumConditionalBranchMD& other) : numConditionalBranches(other.numConditionalBranches) {}
 
  public:
-  nlohmann::json toJson(NodeToStrMapping&) const final { return numConditionalBranches; }
+  nlohmann::json toJson(NodeToStrMapping&) const final { return {{"count", numConditionalBranches}}; }
 
   const char* getKey() const final { return key; }
 

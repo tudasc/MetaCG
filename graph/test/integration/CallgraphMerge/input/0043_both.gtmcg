@@ -17,16 +17,27 @@
                     "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0043_a.cpp",
                     "systemInclude": false
                 },
-                "globalLoopDepth": 0,
-                "loopDepth": 0,
-                "numConditionalBranches": 0,
+                "globalLoopDepth": {
+                    "depth": 0
+                },
+                "loopDepth": {
+                    "depth": 0
+                },
+                "mallocCollector": {
+                    "allocations": []
+                },
+                "numConditionalBranches": {
+                    "count": 0
+                },
                 "numOperations": {
                     "numberOfControlFlowOps": 1,
                     "numberOfFloatOps": 0,
                     "numberOfIntOps": 0,
                     "numberOfMemoryAccesses": 0
                 },
-                "numStatements": 1
+                "numStatements": {
+                    "count": 1
+                }
             },
             "overriddenBy": [],
             "overrides": []
@@ -46,16 +57,27 @@
                     "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0043_a.cpp",
                     "systemInclude": false
                 },
-                "globalLoopDepth": 0,
-                "loopDepth": 0,
-                "numConditionalBranches": 0,
+                "globalLoopDepth": {
+                    "depth": 0
+                },
+                "loopDepth": {
+                    "depth": 0
+                },
+                "mallocCollector": {
+                    "allocations": []
+                },
+                "numConditionalBranches": {
+                    "count": 0
+                },
                 "numOperations": {
                     "numberOfControlFlowOps": 1,
                     "numberOfFloatOps": 0,
                     "numberOfIntOps": 0,
                     "numberOfMemoryAccesses": 0
                 },
-                "numStatements": 1
+                "numStatements": {
+                    "count": 1
+                }
             },
             "overriddenBy": [],
             "overrides": []
@@ -77,19 +99,30 @@
                     "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0043_b.cpp",
                     "systemInclude": false
                 },
-                "globalLoopDepth": 0,
+                "globalLoopDepth": {
+                    "depth": 0
+                },
                 "loopCallDepth": {
                     "_Z3barv": 0
                 },
-                "loopDepth": 0,
-                "numConditionalBranches": 0,
+                "loopDepth": {
+                    "depth": 0
+                },
+                "mallocCollector": {
+                    "allocations": []
+                },
+                "numConditionalBranches": {
+                    "count": 0
+                },
                 "numOperations": {
                     "numberOfControlFlowOps": 2,
                     "numberOfFloatOps": 0,
                     "numberOfIntOps": 0,
                     "numberOfMemoryAccesses": 0
                 },
-                "numStatements": 1
+                "numStatements": {
+                    "count": 1
+                }
             },
             "overriddenBy": [],
             "overrides": []
@@ -109,16 +142,27 @@
                     "origin": "/opt/metacg/mcg-local/graph/test/integration/CallgraphMerge/input/0043_b.cpp",
                     "systemInclude": false
                 },
-                "globalLoopDepth": 0,
-                "loopDepth": 0,
-                "numConditionalBranches": 0,
+                "globalLoopDepth": {
+                    "depth": 0
+                },
+                "loopDepth": {
+                    "depth": 0
+                },
+                "mallocCollector": {
+                    "allocations": []
+                },
+                "numConditionalBranches": {
+                    "count": 0
+                },
                 "numOperations": {
                     "numberOfControlFlowOps": 1,
                     "numberOfFloatOps": 0,
                     "numberOfIntOps": 0,
                     "numberOfMemoryAccesses": 0
                 },
-                "numStatements": 1
+                "numStatements": {
+                    "count": 1
+                }
             },
             "overriddenBy": [],
             "overrides": []
@@ -126,8 +170,8 @@
     },
     "_MetaCG": {
         "generator": {
-            "name": "CGCollector",
-            "sha": "9858ba98baa4d0677c78b6bc66153e4d5c3c7f15",
+            "name": "MetaCG",
+            "sha": "d1ba1e6adbcf486bcb31f1546ccef27565649fb9",
             "version": "1.0"
         },
         "version": "2.0"

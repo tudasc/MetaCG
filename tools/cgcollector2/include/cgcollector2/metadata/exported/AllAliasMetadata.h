@@ -28,7 +28,8 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
       return;
     }
 
-    mightCall = j;
+    // Legacy files store the array directly instead of wrapping it in an object
+    mightCall = j.is_object() ? j.at("mightCall") : j;
   }
 
   virtual const char* getKey() const { return key; }
@@ -37,8 +38,10 @@ class AllAliasMetadata : public metacg::MetaData::Registrar<AllAliasMetadata> {
 
  public:
   nlohmann::json toJson(metacg::NodeToStrMapping&) const final {
+    // An empty result makes the writer skip this metadata, so only return one if it should not be exported.
+    // With nothing to call, this still writes {"mightCall": []}.
     if (shouldExport)
-      return mightCall;
+      return {{"mightCall", mightCall}};
     else
       return {};
   };

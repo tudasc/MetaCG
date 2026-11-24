@@ -15,7 +15,7 @@ def test_builtin_metadata(metadata_cg):
     assert "numStatements" in n.meta_data
     md = n.meta_data["numStatements"]
     assert md.key == "numStatements"
-    assert md.data == 42
+    assert md.data == {"count": 42}
 
 def test_custom_metadata(metadata_cg):
     n = metadata_cg["nodewithcustommetadata"]

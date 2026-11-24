@@ -294,8 +294,8 @@ TEST_F(V4MCGWriterTest, GlobalGraphMetadataWrite) {
 
   EXPECT_EQ(
       jsonSink.getJson().dump(),
-      "{\"_CG\":{\"meta\":{\"entryFunction\":\"0\"},\"nodes\":{\"0\":{\"callees\":{},\"functionName\":\"main\","
-      "\"hasBody\":true,\"meta\":{},\"origin\":\"main.cpp\"}}},"
+      "{\"_CG\":{\"meta\":{\"entryFunction\":{\"function\":\"0\"}},\"nodes\":{\"0\":{\"callees\":{},"
+      "\"functionName\":\"main\",\"hasBody\":true,\"meta\":{},\"origin\":\"main.cpp\"}}},"
       "\"_MetaCG\":{\"generator\":{\"name\":\"Test\",\"sha\":\"TestSha\",\"version\":\"0.1\"},\"version\":\"4.0\"}}");
 }
 

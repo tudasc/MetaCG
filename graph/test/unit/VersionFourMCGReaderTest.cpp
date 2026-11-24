@@ -274,6 +274,45 @@ TEST(V4MCGReaderTest, GlobalMetadata) {
       "{\n"
       "    \"_CG\": {\n"
       "      \"meta\": {"
+      "          \"entryFunction\": {\"function\": \"0\"}"
+      "        },\n"
+      "      \"nodes\": {\n"
+      "        \"0\": {\n"
+      "            \"callees\": null,\n"
+      "            \"functionName\": \"thisIsMain\",\n"
+      "            \"hasBody\": true,\n"
+      "            \"meta\": {},\n"
+      "            \"origin\": \"main.cpp\"\n"
+      "        }\n"
+      "      }\n"
+      "    },\n"
+      "    \"_MetaCG\": {\n"
+      "        \"generator\": {\n"
+      "            \"name\": \"MetaCG\",\n"
+      "            \"sha\": \"4ad73ebf7a108aa388d232ee4824bada13feaa4c\",\n"
+      "            \"version\": \"0.7\"\n"
+      "        },\n"
+      "        \"version\": \"4.0\"\n"
+      "    }\n"
+      "}"_json;
+
+  auto& mcgm = metacg::graph::MCGManager::get();
+  mcgm.resetManager();
+  metacg::io::JsonSource source(j);
+  metacg::io::VersionFourMCGReader reader(source);
+  mcgm.addToManagedGraphs("newCallgraph", reader.read());
+  const Callgraph& graph = *mcgm.getCallgraph();
+
+  EXPECT_TRUE(graph.has<metacg::EntryFunctionMD>());
+  EXPECT_EQ(graph.get<metacg::EntryFunctionMD>()->getEntryFunctionId(), graph.getSingleNode("thisIsMain").getId());
+  EXPECT_EQ(graph.getMain(), &graph.getSingleNode("thisIsMain"));
+}
+
+TEST(V4MCGReaderTest, GlobalMetadataLegacyFormat) {
+  const json j =
+      "{\n"
+      "    \"_CG\": {\n"
+      "      \"meta\": {"
       "          \"entryFunction\": \"0\""
       "        },\n"
       "      \"nodes\": {\n"
