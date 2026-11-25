@@ -71,10 +71,10 @@ void CallGraphCollectorConsumer::HandleTranslationUnit(clang::ASTContext& Contex
   }
 
   std::unique_ptr<metacg::io::MCGWriter> mcgWriter = metacg::io::createWriter(mcgVersion, metacg::getMetaCGGeneratorInfo("CGCollector2"));
-  if (mcgVersion==4) {
+  if (mcgVersion == 4) {
     static_cast<metacg::io::VersionFourMCGWriter*>(mcgWriter.get())->setUseNamesAsIds(outputDebugFormat);
     static_cast<metacg::io::VersionFourMCGWriter*>(mcgWriter.get())->setExportSorted(outputDebugFormat);
-  } else if (mcgVersion==2) {
+  } else if (mcgVersion == 2) {
     static_cast<metacg::io::VersionTwoMCGWriter*>(mcgWriter.get())->setExportSorted(outputDebugFormat);
   }
   metacg::io::JsonSink js;

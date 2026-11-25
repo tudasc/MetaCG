@@ -93,8 +93,9 @@ static bits<Collectors> collectorBits(
 static opt<int> metacgFormatVersion("metacg-format-version",
                                     desc("metacg file version to output, values={2,4}, default=2"), init(2), cat(cgc));
 
-static opt<bool> outputDebugFormat("output-debug-format",
-                                    desc("write additional, redundant, information to improve file readability for humans"), init(false), cat(cgc));
+static opt<bool> outputDebugFormat(
+    "output-debug-format", desc("write additional, redundant, information to improve file readability for humans"),
+    init(false), cat(cgc));
 /**
  * The classic CG construction and the AA one work a bit differently. The classic one inserts nodes for all function,
  * even if they are never called and do not call any functions themself, the AA one does only include functions that
@@ -324,8 +325,8 @@ int main(int argc, const char** argv) {
   }
 
   std::unique_ptr<CallGraphCollectorAction> const cgca2 = std::make_unique<CallGraphCollectorAction>(
-      mcs, metacgFormatVersion, outputDebugFormat, captureCtorsDtors, captureNewDeleteCalls, captureImplicits, inferCtorsDtors, prune,
-      standalone, aliasAssumption, cgoutPath);
+      mcs, metacgFormatVersion, outputDebugFormat, captureCtorsDtors, captureNewDeleteCalls, captureImplicits,
+      inferCtorsDtors, prune, standalone, aliasAssumption, cgoutPath);
 
   CT.run(clang::tooling::newFrontendActionFactory<CallGraphCollectorAction>(cgca2.get()).get());
 

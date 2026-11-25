@@ -60,9 +60,9 @@ class CallGraphCollectorConsumer : public clang::SemaConsumer {
 
 class CallGraphCollectorAction : clang::ASTFrontendAction {
  public:
-  CallGraphCollectorAction(MetaCollectorVector& mcs, int mcgVersion,bool outputDebugFormat, bool captureCtorsDtors, bool captureNewDeleteCalls,
-                           bool captureImplicits, bool infereCtorsDtors, bool prune, bool standalone,
-                           AliasAnalysisLevel level, std::filesystem::path cgout)
+  CallGraphCollectorAction(MetaCollectorVector& mcs, int mcgVersion, bool outputDebugFormat, bool captureCtorsDtors,
+                           bool captureNewDeleteCalls, bool captureImplicits, bool infereCtorsDtors, bool prune,
+                           bool standalone, AliasAnalysisLevel level, std::filesystem::path cgout)
       : mcs(mcs),
         mcgVersion(mcgVersion),
         outputDebugFormat(outputDebugFormat),
@@ -77,15 +77,15 @@ class CallGraphCollectorAction : clang::ASTFrontendAction {
 
   std::unique_ptr<clang::ASTConsumer> newASTConsumer() {
     return std::unique_ptr<clang::ASTConsumer>(
-        new CallGraphCollectorConsumer(mcs, mcgVersion,outputDebugFormat, captureCtorsDtors, captureNewDeleteCalls, captureImplicits,
-                                       inferCtorsDtors, prune, standalone, level, cgout));
+        new CallGraphCollectorConsumer(mcs, mcgVersion, outputDebugFormat, captureCtorsDtors, captureNewDeleteCalls,
+                                       captureImplicits, inferCtorsDtors, prune, standalone, level, cgout));
   }
 
   std::unique_ptr<clang::ASTConsumer> CreateASTConsumer([[maybe_unused]] clang::CompilerInstance& compiler,
                                                         [[maybe_unused]] llvm::StringRef sr) {
     return std::unique_ptr<clang::ASTConsumer>(
-        new CallGraphCollectorConsumer(mcs, mcgVersion,outputDebugFormat, captureCtorsDtors, captureNewDeleteCalls, captureImplicits,
-                                       inferCtorsDtors, prune, standalone, level, cgout));
+        new CallGraphCollectorConsumer(mcs, mcgVersion, outputDebugFormat, captureCtorsDtors, captureNewDeleteCalls,
+                                       captureImplicits, inferCtorsDtors, prune, standalone, level, cgout));
   }
 
  private:
