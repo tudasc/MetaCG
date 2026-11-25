@@ -7,9 +7,13 @@
 
 #include "metacg/Callgraph.h"
 #include "metacg/LoggerUtil.h"
+#include "metacg/metadata/MetaData.h"
+
+#include <algorithm>
+#include <string>
+#include <vector>
 
 namespace metacg {
-
 
 std::optional<MergeAction> MergeByName::findMatchingNode(const Callgraph& targetCG, const CgNode& sourceNode) const {
   auto& nameMatches = targetCG.getAllNodesWithName(sourceNode.getFunctionName());
@@ -33,7 +37,6 @@ std::optional<MergeAction> MergeByName::findMatchingNode(const Callgraph& target
 
   return MergeAction(targetNode->getId(), true);
 }
-
 
 namespace {
 
@@ -92,59 +95,53 @@ bool isHeaderSourcePair(const CgNode& targetNode, const CgNode& sourceNode) {
   return true;
 }
 
+/**
+ * Returns the nodes in the target graph that have the same function name and the same origin as the source node.
+ * If there are none, returns the nodes that are the header declaration / source definition counterpart of the source
+ * node instead (see isHeaderSourcePair). Nodes with matching names but non-matching origins are filtered out.
+ * Note: two nodes without an origin (std::nullopt) are considered to have the same origin.
+ */
+std::vector<const CgNode*> findOriginMatches(const Callgraph& targetCG, const CgNode& sourceNode) {
+  auto& nameMatches = targetCG.getAllNodesWithName(sourceNode.getFunctionName());
+
+  std::vector<const CgNode*> originMatches;
+  for (const auto nodeId : nameMatches) {
+    const auto* candidate = targetCG.getNode(nodeId);
+    assert(candidate && "Node must not be null");
+    if (candidate->getOrigin() == sourceNode.getOrigin()) {
+      originMatches.push_back(candidate);
+    }
+  }
+  if (!originMatches.empty()) {
+    return originMatches;
+  }
+
+  // No node with the same origin: check whether a node is the header declaration / source definition counterpart.
+  for (const auto nodeId : nameMatches) {
+    const auto* candidate = targetCG.getNode(nodeId);
+    assert(candidate && "Node must not be null");
+    if (isHeaderSourcePair(*candidate, sourceNode)) {
+      originMatches.push_back(candidate);
+    }
+  }
+  return originMatches;
+}
+
 }  // namespace
 
 std::optional<MergeAction> MergeByNameAndOrigin::findMatchingNode(const Callgraph& targetCG,
                                                                   const CgNode& sourceNode) const {
-  auto& nameMatches = targetCG.getAllNodesWithName(sourceNode.getFunctionName());
-  if (nameMatches.empty()) {
-    // There is no matching node: simply copy the source node into the target graph
+  const auto originMatches = findOriginMatches(targetCG, sourceNode);
+  if (originMatches.empty()) {
+    // There is no node with matching name and origin: simply copy the source node into the target graph
     return {};
   }
 
-  // Among the nodes with a matching name, find those that also have the same origin.
-  // Note: two nodes without an origin (std::nullopt) are considered to have the same origin.
-  const auto sourceOrigin = sourceNode.getOrigin();
-  CgNode* targetNode = nullptr;
-  size_t numMatches = 0;
-  for (const auto nodeId : nameMatches) {
-    auto* candidate = targetCG.getNode(nodeId);
-    assert(candidate && "Node must not be null");
-    if (candidate->getOrigin() == sourceOrigin) {
-      if (!targetNode) {
-        targetNode = candidate;
-      }
-      ++numMatches;
-    }
-  }
-
-  if (numMatches > 1) {
-    MCGLogger::logWarn("Found multiple nodes with matching name '{}' and origin '{}'! Merging with the first node.",
-                       sourceNode.getFunctionName(), sourceOrigin.value_or("<none>"));
-  }
-
-  if (!targetNode) {
-    // No node with the same origin: check whether a node is the header declaration / source definition counterpart.
-    for (const auto nodeId : nameMatches) {
-      auto* candidate = targetCG.getNode(nodeId);
-      assert(candidate && "Node must not be null");
-      if (isHeaderSourcePair(*candidate, sourceNode)) {
-        if (!targetNode) {
-          targetNode = candidate;
-        }
-        ++numMatches;
-      }
-    }
-    if (numMatches > 1) {
-      MCGLogger::logWarn(
-          "Found multiple header/source matches for '{}' with origin '{}'! Merging with the first node ('{}').",
-          sourceNode.getFunctionName(), sourceOrigin.value_or("<none>"), targetNode->getOrigin().value_or("<none>"));
-    }
-  }
-
-  if (!targetNode) {
-    // Nodes with the same name exist, but none with a matching origin: copy the source node into the target graph
-    return {};
+  const auto* targetNode = originMatches.front();
+  if (originMatches.size() > 1) {
+    MCGLogger::logWarn("Found multiple nodes matching name '{}' and origin '{}'! Merging with the first node ('{}').",
+                       sourceNode.getFunctionName(), sourceNode.getOrigin().value_or("<none>"),
+                       targetNode->getOrigin().value_or("<none>"));
   }
 
   // If the source node has no body (i.e. no definition) OR the target node has one, keep the target node.
@@ -155,5 +152,6 @@ std::optional<MergeAction> MergeByNameAndOrigin::findMatchingNode(const Callgrap
 
   return MergeAction(targetNode->getId(), true);
 }
+
 
 }  // namespace metacg

@@ -87,7 +87,7 @@ struct MergeByName : public MergePolicy {
  * This policy matches nodes only if both their function name and their origin are identical.
  *
  * An exception is headers which match to source files if:
- *  1. Their origins have the same name and differ only in the file ending.
+ *  1. Their origins have the same name and differ only in the file ending (very strict requirement).
  *  2. The sourcefile has a body and the header file does not have a body
  *
  * Nodes that share a name but differ in origin (e.g. static functions with the same name in different
@@ -97,6 +97,8 @@ struct MergeByNameAndOrigin : public MergePolicy {
   std::optional<MergeAction> findMatchingNode(const Callgraph& targetCG, const CgNode& sourceNode) const override;
   ~MergeByNameAndOrigin() override = default;
 };
+
+
 
 }  // namespace metacg
 
