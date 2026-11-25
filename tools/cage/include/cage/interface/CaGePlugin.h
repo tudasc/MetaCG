@@ -47,7 +47,7 @@ struct Plugin {
 };
 
 // Needs to be implemented so the plugin can be loaded
-cage::Plugin* getPlugin();
+cage::Plugin* getCaGePlugin();
 
 }  // namespace cage
 

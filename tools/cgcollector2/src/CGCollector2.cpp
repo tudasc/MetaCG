@@ -202,13 +202,12 @@ cgcollector2::Plugin* loadPlugin(const std::string& pluginPath) {
     return nullptr;
   }
   metacg::MCGLogger::logTrace("Getting collection object from plugin {}", pluginPath);
-  void* sym = lib.getAddressOfSymbol("getPlugin");
+  void* sym = lib.getAddressOfSymbol("getCGCollector2Plugin");
   if (!sym) {
-    metacg::MCGLogger::logError("Could not load collectors from plugin, no Function \"getPlugin()\"!");
+    metacg::MCGLogger::logError("Could not load collectors from plugin, no Function \"getCGCollector2Plugin()\"!");
     return nullptr;
   }
-  auto getPlugin = reinterpret_cast<cgcollector2::Plugin* (*)()>(sym);
-  cgcollector2::Plugin* loadedPlugin = getPlugin();
+  cgcollector2::Plugin* loadedPlugin = reinterpret_cast<cgcollector2::Plugin* (*)()>(sym)();
   metacg::MCGLogger::logInfo("Successfully loaded Plugin: {}", loadedPlugin->getPluginName());
   return loadedPlugin;
 }

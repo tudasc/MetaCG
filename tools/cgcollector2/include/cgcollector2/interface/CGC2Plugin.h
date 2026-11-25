@@ -66,7 +66,7 @@ struct Plugin {
 
 extern "C" {
 // Needs to be implemented so the plugin can be loaded
-cgcollector2::Plugin* getPlugin();
+cgcollector2::Plugin* getCGCollector2Plugin();
 }
 
 #endif  // CGCOLLECTOR2_PLUGIN_H

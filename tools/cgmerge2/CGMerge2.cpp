@@ -6,6 +6,8 @@
 
 #include "metacg/config.h"
 
+#include <dlfcn.h>
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -20,6 +22,8 @@
 #include "metacg/MergePolicy.h"
 #include "metacg/io/MCGReader.h"
 #include "metacg/io/MCGWriter.h"
+
+#include "cgmerge2/interface/CGMerge2Plugin.h"
 
 // This may appear to be unused, but the variables declared here have side effects on the graph lib
 #include "metacg/metadata/BuiltinMD.h"
@@ -53,6 +57,35 @@ static std::unique_ptr<MergePolicy> createMergePolicy(const std::string& name) {
   return nullptr;
 }
 
+/**
+ * Loads the merge policy plugin from the shared library at the given path.
+ * The library is never unloaded, as the returned plugin's code lives in it.
+ * @return The plugin, or nullptr if loading failed.
+ */
+static std::unique_ptr<cgmerge2::Plugin> loadPlugin(const std::string& pluginPath) {
+  MCGLogger::logDebug("Loading plugin {}", pluginPath);
+  void* lib = dlopen(pluginPath.c_str(), RTLD_NOW);
+  if (!lib) {
+    MCGLogger::logError("Cannot load the library at {}!\n Reason: {}", pluginPath, dlerror());
+    return nullptr;
+  }
+
+  MCGLogger::logTrace("Getting merge policy from plugin {}", pluginPath);
+  void* sym = dlsym(lib, "getCGMerge2Plugin");
+  if (!sym) {
+    MCGLogger::logError("Could not load merge policy from plugin {}, no function \"getCGMerge2Plugin()\"!", pluginPath);
+    return nullptr;
+  }
+
+  std::unique_ptr<cgmerge2::Plugin> loadedPlugin(reinterpret_cast<cgmerge2::Plugin* (*)()>(sym)());
+  if (!loadedPlugin) {
+    MCGLogger::logError("Plugin {} returned no merge policy", pluginPath);
+    return nullptr;
+  }
+  MCGLogger::logInfo("Successfully loaded Plugin: {}", loadedPlugin->getPluginName());
+  return loadedPlugin;
+}
+
 int main(int argc, char** argv) {
   MCGLogger::logInfo("Running metacg::CGMerge2 (version {}.{})\nGit revision: {}", MetaCG_VERSION_MAJOR,
                      MetaCG_VERSION_MINOR, MetaCG_GIT_SHA);
@@ -66,6 +99,8 @@ int main(int argc, char** argv) {
                        "'name-and-origin': nodes are merged only if both function name and origin are the same.",
                        cxxopts::value<std::string>()->default_value("name"), "name|name-and-origin")
     ("log-level", "The lowest severity of log messages to be emitted", cxxopts::value<std::string>(), "error|warning|info|debug|trace|off")
+    ("plugin-path", "Path to a shared library providing a user-defined merge policy. "
+                    "If set, --merge-policy is ignored.", cxxopts::value<std::string>(), "path")
     ("output", "Output call graph file", cxxopts::value<std::string>())
     ("inputs", "Input call graph files", cxxopts::value<std::vector<std::string>>())
   ;
@@ -116,14 +151,33 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  const auto policyName = result["merge-policy"].as<std::string>();
-  auto mergePolicy = createMergePolicy(policyName);
-  if (!mergePolicy) {
-    MCGLogger::logError("Unknown merge policy '{}'. Valid values are: name, name-and-origin", policyName);
-    return EXIT_FAILURE;
+  std::unique_ptr<MergePolicy> mergePolicy;
+  if (result.count("plugin-path")) {
+    if (result.count("plugin-path") > 1) {
+      MCGLogger::logError("Only a single plugin can be loaded, but --plugin-path was given {} times",
+                          result.count("plugin-path"));
+      return EXIT_FAILURE;
+    }
+    if (result.count("merge-policy")) {
+      MCGLogger::logWarn("A merge policy plugin is loaded, ignoring --merge-policy={}",
+                         result["merge-policy"].as<std::string>());
+    }
+    auto plugin = loadPlugin(result["plugin-path"].as<std::string>());
+    if (!plugin) {
+      return EXIT_FAILURE;
+    }
+    MCGLogger::logInfo("Using merge policy from plugin '{}'", plugin->getPluginName());
+    mergePolicy = std::move(plugin);
+  } else {
+    const auto policyName = result["merge-policy"].as<std::string>();
+    mergePolicy = createMergePolicy(policyName);
+    if (!mergePolicy) {
+      MCGLogger::logError("Unknown merge policy '{}'. Valid values are: name, name-and-origin", policyName);
+      return EXIT_FAILURE;
+    }
+    MCGLogger::logInfo("Using merge policy '{}'", policyName);
   }
   selectedMergePolicy = mergePolicy.get();
-  MCGLogger::logInfo("Using merge policy '{}'", policyName);
 
   const auto outfile = result["output"].as<std::string>();
   const auto inputFiles = result["inputs"].as<std::vector<std::string>>();
