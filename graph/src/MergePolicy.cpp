@@ -112,6 +112,9 @@ std::vector<const CgNode*> findOriginMatches(const Callgraph& targetCG, const Cg
       originMatches.push_back(candidate);
     }
   }
+  // Fixme: this skips the header to source file matching if we have found an exact match
+  //  each callgraph should only have either a header file node or a source code node.
+  //  if we ever encounter a graph containing both, this might become a problem
   if (!originMatches.empty()) {
     return originMatches;
   }
