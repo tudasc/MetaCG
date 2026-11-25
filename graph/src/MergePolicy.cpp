@@ -95,12 +95,8 @@ bool isHeaderSourcePair(const CgNode& targetNode, const CgNode& sourceNode) {
   return true;
 }
 
-/**
- * Returns the nodes in the target graph that have the same function name and the same origin as the source node.
- * If there are none, returns the nodes that are the header declaration / source definition counterpart of the source
- * node instead (see isHeaderSourcePair). Nodes with matching names but non-matching origins are filtered out.
- * Note: two nodes without an origin (std::nullopt) are considered to have the same origin.
- */
+}  // namespace
+
 std::vector<const CgNode*> findOriginMatches(const Callgraph& targetCG, const CgNode& sourceNode) {
   auto& nameMatches = targetCG.getAllNodesWithName(sourceNode.getFunctionName());
 
@@ -129,8 +125,6 @@ std::vector<const CgNode*> findOriginMatches(const Callgraph& targetCG, const Cg
   }
   return originMatches;
 }
-
-}  // namespace
 
 std::optional<MergeAction> MergeByNameAndOrigin::findMatchingNode(const Callgraph& targetCG,
                                                                   const CgNode& sourceNode) const {

@@ -104,3 +104,20 @@ install(
   FILE_SET HEADERS
   DESTINATION include/
 )
+
+# Merge policy plugin for cgmerge2 that additionally matches nodes by cgc2's function signature metadata
+add_library(cgcollector2-merge-policy SHARED src/cgmerge2Plugin/MergeByNameAndOriginAndSignature.cpp)
+default_compile_options(cgcollector2-merge-policy)
+target_link_libraries(cgcollector2-merge-policy PRIVATE cgmerge2-plugin-interface cgcollector2-metadata)
+
+install(
+  TARGETS cgcollector2-merge-policy
+  EXPORT ${TARGETS_EXPORT_NAME}
+  LIBRARY DESTINATION lib
+)
+
+add_test(
+  NAME cgcollector2_merge_policy_plugin_tests
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/test/mergePolicyPlugin/run_merge_policy_plugin_test.sh $<TARGET_FILE:cgmerge2>
+          $<TARGET_FILE:cgcollector2-merge-policy> ${CMAKE_CURRENT_SOURCE_DIR}/test/mergePolicyPlugin
+)

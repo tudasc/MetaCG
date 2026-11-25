@@ -64,8 +64,17 @@ extern "C" cgmerge2::Plugin* getCGMerge2Plugin() { return new MyPolicy(); }
 cgmerge2 --plugin-path ./libMyPolicy.so merged.mcg in_A.mcg in_B.mcg
 ```
 
+cgcollector2 ships the plugin `libcgcollector2-merge-policy.so` (policy `MergeByNameAndOriginAndSignature`).
+It matches nodes like `name-and-origin`, but additionally requires identical function signatures, taken from the
+`FunctionSignatureMetadata` that cgcollector2 emits when run without `--whole-program`.
+This keeps apart e.g. template instantiations with translation-unit-local types, which share mangled name and origin.
+Nodes without signature metadata are matched by name and origin only, and a warning is printed.
+
+```
+cgmerge2 --plugin-path libcgcollector2-merge-policy.so merged.mcg in_A.mcg in_B.mcg
+```
+
 If CGMerge2 is built with OpenMP, `findMatchingNode()` is called concurrently from multiple threads.
-See `cgmerge2/test/plugin/NeverMergePlugin.cpp` for a minimal example.
 
 ## CGFormat
 
