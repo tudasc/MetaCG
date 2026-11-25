@@ -5,6 +5,7 @@ add_executable(cgmerge2 CGMerge2.cpp)
 
 add_config_include(cgmerge2)
 add_metacg(cgmerge2)
+add_cxxopts(cgmerge2)
 add_clang(cgmerge2)
 
 # OpenMP is optional: if available, input graphs are merged in parallel

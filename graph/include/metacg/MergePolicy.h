@@ -72,6 +72,7 @@ struct MergeRecorder {
 
 struct MergePolicy {
   virtual std::optional<MergeAction> findMatchingNode(const Callgraph& targetCG, const CgNode& sourceNode) const = 0;
+  virtual ~MergePolicy() = default;
 };
 
 /**
@@ -79,7 +80,25 @@ struct MergePolicy {
  */
 struct MergeByName : public MergePolicy {
   std::optional<MergeAction> findMatchingNode(const Callgraph& targetCG, const CgNode& sourceNode) const override;
+  ~MergeByName() override = default;
 };
+
+/**
+ * This policy matches nodes only if both their function name and their origin are identical.
+ *
+ * An exception is headers which match to source files if:
+ *  1. Their origins have the same name and differ only in the file ending (very strict requirement).
+ *  2. The sourcefile has a body and the header file does not have a body
+ *
+ * Nodes that share a name but differ in origin (e.g. static functions with the same name in different
+ * translation units) are kept as separate nodes. Two nodes without an origin are treated as having the same origin.
+ */
+struct MergeByNameAndOrigin : public MergePolicy {
+  std::optional<MergeAction> findMatchingNode(const Callgraph& targetCG, const CgNode& sourceNode) const override;
+  ~MergeByNameAndOrigin() override = default;
+};
+
+
 
 }  // namespace metacg
 
