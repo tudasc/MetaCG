@@ -24,16 +24,20 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
       return;
     }
     ownSignature = j;
+    assert(j.find("funcName")!=j.end() && j.find("funcName")->is_string());
+    functionName= j["funcName"].get<std::string>();
   }
 
   FunctionSignatureMetadata(const FunctionSignatureMetadata& other)
-      : ownSignature(other.ownSignature), shouldExport(other.shouldExport) {}
+      : ownSignature(other.ownSignature), functionName(other.functionName), shouldExport(other.shouldExport) {}
 
   const char* getKey() const final { return key; }
 
   nlohmann::json toJson(metacg::NodeToStrMapping&) const final {
     if (shouldExport) {
-      return ownSignature;
+      nlohmann::json j = ownSignature;
+      j.at("funcName") = functionName;
+      return j;
     }
     return {};
   }
@@ -61,7 +65,13 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
   std::unique_ptr<MetaData> clone() const final { return std::make_unique<FunctionSignatureMetadata>(*this); }
   virtual void applyMapping(const metacg::GraphMapping&){};
 
+  /// The type of the function, used to match nodes (merging) and function pointers to functions
   FunctionSignature ownSignature;
+  /// The unqualified name of the function as written in the source (e.g. "foo", "operator()", "~A").
+  /// Informational only, for consumers of the graph: it is deliberately not part of FunctionSignature, so it never
+  /// takes part in signature matching.
+  std::string functionName;
   bool shouldExport = true;
+
 };
 #endif  // CGCOLLECTOR2_FUNCTIONSIGNATUREMETADATA_H
