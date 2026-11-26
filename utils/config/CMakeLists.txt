@@ -43,5 +43,7 @@ add_mcgconfig(
   DEFINITIONS
   ${MCGCONFIG_INSTALL_DEFS}
 )
+add_metacg_completion(metacg-config)
+add_metacg_completion(metacg-build-config)
 
 install(TARGETS metacg-config DESTINATION ${CMAKE_INSTALL_BINDIR})

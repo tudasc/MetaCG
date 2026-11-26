@@ -52,3 +52,5 @@ complete -F _metacg_completion cgcollector2
 complete -F _metacg_completion cgdiff
 complete -F _metacg_completion cgformat
 complete -F _metacg_completion cgtodot
+complete -F _metacg_completion TargetCollector.py
+complete -F _metacg_completion metacg-config
