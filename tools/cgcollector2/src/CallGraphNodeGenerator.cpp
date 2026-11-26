@@ -668,7 +668,7 @@ void CallGraphNodeGenerator::addNode(const clang::FunctionDecl* const D) {
     if (!node.has<FunctionSignatureMetadata>()) {
       std::unique_ptr<FunctionSignatureMetadata> md = std::make_unique<FunctionSignatureMetadata>(!standalone);
       md->ownSignature = cgcollector2::getSignature(D);
-      md->functionName = D->getNameAsString();
+      md->functionName = D->getQualifiedNameAsString();
       node.addMetaData(std::move(md));
     }
   }
