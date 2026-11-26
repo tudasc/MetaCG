@@ -155,7 +155,7 @@ int main(int argc, const char** argv) {
 #else
   auto ParseResult = clang::tooling::CommonOptionsParser::create(argc, argv, cgc);
   if (auto result = metacg::completion::handleCompletion(
-    argc, argv, [](std::string_view partial) { metacg::completion::completeLLVMOptions(partial, cgc); })) {
+          argc, argv, [](std::string_view partial) { metacg::completion::completeLLVMOptions(partial, cgc); })) {
     return *result;
   }
   if (!ParseResult) {

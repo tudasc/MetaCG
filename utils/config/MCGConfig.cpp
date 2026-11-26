@@ -5,8 +5,8 @@
  */
 #include "metacg/config.h"
 
-#include "CompletionCxxopts.h"
 #include "Completion.h"
+#include "CompletionCxxopts.h"
 #include <iostream>
 
 #include "cxxopts.hpp"
