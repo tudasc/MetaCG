@@ -3,10 +3,12 @@ add_library(
   src/Completion.cpp
   src/CompletionCxxopts.cpp
   src/CompletionList.cpp
-  src/CompletionLLVM.cpp
 )
 
 add_cxxopts(MetaCGCompletion)
-add_llvm(MetaCGCompletion PUBLIC)
+if(COMMAND add_llvm)
+  target_sources(MetaCGCompletion PRIVATE src/CompletionLLVM.cpp)
+  add_llvm(MetaCGCompletion PUBLIC)
+endif()
 
 target_include_directories(MetaCGCompletion PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
