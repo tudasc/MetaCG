@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     ("p,merge-policy", "How nodes are matched during merging. 'name': nodes with the same function name are merged. "
                        "'name-and-origin': nodes are merged only if both function name and origin are the same.",
                        cxxopts::value<std::string>()->default_value("name"), "name|name-and-origin")
-    ("log-level","The lowest severity of log messages to be emitted",cxxopts::value<std::string>(), "error|warning|info|debug|trace|off")
+    ("log-level", "The lowest severity of log messages to be emitted", cxxopts::value<std::string>(), "error|warning|info|debug|trace|off")
     ("output", "Output call graph file", cxxopts::value<std::string>())
     ("inputs", "Input call graph files", cxxopts::value<std::vector<std::string>>())
   ;
