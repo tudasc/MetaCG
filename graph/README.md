@@ -182,10 +182,9 @@ Version 4
   - `overriddenBy`: A set of functions that this function is overridden by.
   - `meta`: A special field into which a tool can export its (intermediate) results.
 
-The version 2 specification is mainly used for the PIRA profiler, to export various additional information about the 
-program's functions into the MetaCG file.
-It uses the meta field to export e.g. empirically determined performance models, runtime measurements, or loop nesting 
-depth per function.
+The version 2 specification uses the meta field to export various additional information about the program's functions
+into the MetaCG file, e.g. empirically determined performance models, runtime measurements, or loop nesting depth per
+function.
 
 ### Differences in file format v4
 Version 4 aims to reduce the file size, by eliminating redundant or superfluous information, and removing the necessity 

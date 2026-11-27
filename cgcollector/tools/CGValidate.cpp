@@ -138,7 +138,7 @@ void patchCallgraph(nlohmann::json& callgraph, const std::string& nodeName, cons
 
 std::set<std::pair<std::string, std::string>> edgesChecked;
 
-// Ripped from pgis
+// Sums up the given metric over all threads for a Cube call-path node
 const auto cMetric = [](std::string&& name, auto&& cube, auto cn) {
   if constexpr (std::is_pointer_v<decltype(cn)>) {
     const auto met = cube.get_met(name.c_str());

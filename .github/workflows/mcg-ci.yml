@@ -16,7 +16,6 @@ on:
       - "cgcollector/formatAllSrc.sh"
       - "cgcollector/.gitignore"
       - "graph/README.md"
-      - "pgis/README.md"
       - "tools/README.md"
       - "pymetacg/README.md"
   pull_request:
@@ -34,7 +33,6 @@ on:
       - "cgcollector/formatAllSrc.sh"
       - "cgcollector/.gitignore"
       - "graph/README.md"
-      - "pgis/README.md"
       - "tools/README.md"
       - "pymetacg/README.md"
 
@@ -110,11 +108,6 @@ jobs:
         with:
           image: metacg-llvm-${{ matrix.llvm }}-devel:latest
           run: /opt/metacg/build/graph/test/unit/libtests
-      - name: Run PGIS library tests
-        uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
-        with:
-          image: metacg-llvm-${{ matrix.llvm }}-devel:latest
-          run: /opt/metacg/build/pgis/test/unit/pgistests
       - name: Run target collector tests
         uses: maus007/docker-run-action-fork@207a4e2a8ebf7e4b985656ba990b1e53715dce2a
         with:
