@@ -10,6 +10,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "localStruct::localStruct",
                     "paramTypes": [],
                     "retType": "",
                     "thisType": "localStruct"
@@ -33,6 +34,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "localStruct::localStruct",
                     "paramTypes": [],
                     "retType": "",
                     "thisType": "localStruct"
@@ -56,6 +58,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "localStruct::~localStruct",
                     "paramTypes": [],
                     "retType": "",
                     "thisType": "localStruct"
@@ -79,6 +82,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "localStruct::~localStruct",
                     "paramTypes": [],
                     "retType": "",
                     "thisType": "localStruct"
@@ -102,6 +106,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "localStruct::operator()",
                     "paramTypes": [
                         "int",
                         "int",
@@ -133,6 +138,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "main",
                     "paramTypes": [],
                     "retType": "int",
                     "thisType": ""

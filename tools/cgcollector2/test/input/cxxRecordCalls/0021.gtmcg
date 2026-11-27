@@ -13,6 +13,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "take",
                     "paramTypes": [
                         "std::initializer_list<S>"
                     ],
@@ -38,6 +39,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "S::S",
                     "paramTypes": [
                         "int"
                     ],
@@ -63,6 +65,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "S::S",
                     "paramTypes": [
                         "int"
                     ],
@@ -88,6 +91,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "S::~S",
                     "paramTypes": [],
                     "retType": "",
                     "thisType": "S"
@@ -111,6 +115,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "S::~S",
                     "paramTypes": [],
                     "retType": "",
                     "thisType": "S"
@@ -134,6 +139,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "std::initializer_list<S>::~initializer_list",
                     "paramTypes": [],
                     "retType": "",
                     "thisType": "std::initializer_list<S>"
@@ -157,6 +163,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "std::initializer_list<S>::~initializer_list",
                     "paramTypes": [],
                     "retType": "",
                     "thisType": "std::initializer_list<S>"
@@ -184,6 +191,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "main",
                     "paramTypes": [],
                     "retType": "int",
                     "thisType": ""

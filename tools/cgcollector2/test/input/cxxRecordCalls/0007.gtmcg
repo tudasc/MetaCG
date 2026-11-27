@@ -10,6 +10,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "localClass::localClass",
                     "paramTypes": [],
                     "retType": "",
                     "thisType": "localClass"
@@ -33,6 +34,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "localClass::localClass",
                     "paramTypes": [],
                     "retType": "",
                     "thisType": "localClass"
@@ -56,6 +58,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "localClass::operator()",
                     "paramTypes": [
                         "int",
                         "int",
@@ -85,6 +88,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "main",
                     "paramTypes": [],
                     "retType": "int",
                     "thisType": ""

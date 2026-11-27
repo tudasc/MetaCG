@@ -36,7 +36,7 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
   nlohmann::json toJson(metacg::NodeToStrMapping&) const final {
     if (shouldExport) {
       nlohmann::json j = ownSignature;
-      j.at("funcName") = functionName;
+      j["funcName"] = functionName;
       return j;
     }
     return {};
@@ -53,7 +53,8 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
     // Some templates can have the same name and origin but differing function signatures.
     // If this is the case, we inform the user to use a stronger merge policy.
     if (!(ownSignature == toMergeDerived->ownSignature)) {
-      metacg::MCGLogger::logDebug("Signature mismatch: {} <-> {}", ownSignature.toString(), toMergeDerived->ownSignature.toString());
+      metacg::MCGLogger::logDebug("Signature mismatch: {} <-> {}", ownSignature.toString(),
+                                  toMergeDerived->ownSignature.toString());
       metacg::MCGLogger::logInfoUnique(
           "Found a signature mismatch between identically named nodes, this can be resolved by using a stronger merge "
           "policy");
@@ -67,11 +68,10 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
 
   /// The type of the function, used to match nodes (merging) and function pointers to functions
   FunctionSignature ownSignature;
-  /// The unqualified name of the function as written in the source (e.g. "foo", "operator()", "~A").
+  /// The qualified name of the function (e.g. "foo", "ns::A::bar", "ns::A::operator()", "ns::A::~A").
   /// Informational only, for consumers of the graph: it is deliberately not part of FunctionSignature, so it never
   /// takes part in signature matching.
   std::string functionName;
   bool shouldExport = true;
-
 };
 #endif  // CGCOLLECTOR2_FUNCTIONSIGNATUREMETADATA_H

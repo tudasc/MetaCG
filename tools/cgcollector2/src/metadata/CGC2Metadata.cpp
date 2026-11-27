@@ -6,6 +6,3 @@
 // We need a .cpp file for the registration to trigger
 #include "cgcollector2/metadata/exported/AllAliasMetadata.h"
 #include "cgcollector2/metadata/exported/FunctionSignatureMetadata.h"
-
-
-

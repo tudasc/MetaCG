@@ -27,9 +27,9 @@ struct FunctionSignature {
 
   std::string toString() const {
     std::string ret;
-    ret+=retType + " ";
+    ret += retType + " ";
     if (!thisType.empty()) {
-      ret+= '[' + thisType + "]::";
+      ret += '[' + thisType + "]::";
     }
     ret += '(';
     for (const auto& elem : paramTypes) {
@@ -38,14 +38,12 @@ struct FunctionSignature {
     ret += ")";
     return ret;
   }
-
 };
 namespace cgcollector2 {
 struct Plugin;
 }
 
 typedef std::vector<cgcollector2::Plugin*> MetaCollectorVector;
-
 
 namespace std {
 template <>

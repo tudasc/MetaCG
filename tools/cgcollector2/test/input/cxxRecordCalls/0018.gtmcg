@@ -10,6 +10,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "A::foo",
                     "paramTypes": [],
                     "retType": "int",
                     "thisType": "A"
@@ -33,6 +34,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "A::A",
                     "paramTypes": [],
                     "retType": "",
                     "thisType": "A"
@@ -56,6 +58,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "A::A",
                     "paramTypes": [],
                     "retType": "",
                     "thisType": "A"
@@ -79,6 +82,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "A::~A",
                     "paramTypes": [],
                     "retType": "",
                     "thisType": "A"
@@ -102,6 +106,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "A::~A",
                     "paramTypes": [],
                     "retType": "",
                     "thisType": "A"
@@ -129,6 +134,7 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "main",
                     "paramTypes": [],
                     "retType": "int",
                     "thisType": ""

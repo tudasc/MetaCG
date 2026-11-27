@@ -155,7 +155,8 @@ FunctionSignature getSignature(const clang::FunctionDecl* FD) {
                  [](const clang::ParmVarDecl* p) { return paramTypeToString(p->getType()); });
   if (const auto* MD = clang::dyn_cast<clang::CXXMethodDecl>(FD);
       MD && hasImplicitObjectParameter(MD) && !isFunctionPointerConvertibleLambdaCallOperator(MD)) {
-    signature.thisType = getThisType(MD->getParent(), MD->getType().getCanonicalType()->getAs<clang::FunctionProtoType>());
+    signature.thisType =
+        getThisType(MD->getParent(), MD->getType().getCanonicalType()->getAs<clang::FunctionProtoType>());
   }
   return signature;
 }
