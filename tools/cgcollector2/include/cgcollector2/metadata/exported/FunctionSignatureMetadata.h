@@ -24,8 +24,8 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
       return;
     }
     ownSignature = j;
-    assert(j.find("funcName")!=j.end() && j.find("funcName")->is_string());
-    functionName= j["funcName"].get<std::string>();
+    assert(j.find("funcName") != j.end() && j.find("funcName")->is_string());
+    functionName = j["funcName"].get<std::string>();
   }
 
   FunctionSignatureMetadata(const FunctionSignatureMetadata& other)
