@@ -36,7 +36,7 @@ static void mergeWithSelectedPolicy(Callgraph& target, const Callgraph& source) 
   target.merge(source, *selectedMergePolicy);
 }
 
-#pragma omp declare reduction(cgmerge : std::unique_ptr<Callgraph> : mergeWithSelectedPolicy(*omp_out, *omp_in)) \
+#pragma omp declare reduction(cgmerge : std::unique_ptr<Callgraph> : mergeWithSelectedPolicy(*omp_out, *omp_in))       \
     initializer(omp_priv = std::make_unique<Callgraph>())
 
 /**
@@ -59,13 +59,13 @@ int main(int argc, char** argv) {
 
   cxxopts::Options options("cgmerge2", "Merges multiple MetaCG call graphs into a single call graph.");
   options.positional_help("<outfile> <infile1> <infile2> ...");
-
   // clang-format off
   options.add_options()
     ("h,help", "Show this help message")
     ("p,merge-policy", "How nodes are matched during merging. 'name': nodes with the same function name are merged. "
                        "'name-and-origin': nodes are merged only if both function name and origin are the same.",
                        cxxopts::value<std::string>()->default_value("name"), "name|name-and-origin")
+    ("log-level", "The lowest severity of log messages to be emitted", cxxopts::value<std::string>(), "error|warning|info|debug|trace|off")
     ("output", "Output call graph file", cxxopts::value<std::string>())
     ("inputs", "Input call graph files", cxxopts::value<std::vector<std::string>>())
   ;
@@ -86,6 +86,29 @@ int main(int argc, char** argv) {
     std::cout << options.help() << std::endl;
     return EXIT_SUCCESS;
   }
+
+  spdlog::level::level_enum logLevel;
+  if (result.count("log-level")) {
+    if (result["log-level"].as<std::string>() == "error")
+      logLevel = spdlog::level::err;
+    else if (result["log-level"].as<std::string>() == "warning")
+      logLevel = spdlog::level::warn;
+    else if (result["log-level"].as<std::string>() == "info")
+      logLevel = spdlog::level::info;
+    else if (result["log-level"].as<std::string>() == "debug")
+      logLevel = spdlog::level::debug;
+    else if (result["log-level"].as<std::string>() == "trace")
+      logLevel = spdlog::level::trace;
+    else if (result["log-level"].as<std::string>() == "off")
+      logLevel = spdlog::level::off;
+    else {
+      MCGLogger::logError("Log-level: {} not supported", result["log-level"].as<std::string>());
+      return EXIT_FAILURE;
+    }
+  }
+
+  metacg::MCGLogger::instance().getConsole()->set_level(logLevel);
+  metacg::MCGLogger::instance().getErrConsole()->set_level(logLevel);
 
   if (!result.count("output") || !result.count("inputs")) {
     MCGLogger::logError("Invalid input arguments. Usage: cgmerge2 [options] <outfile> <infile1> <infile2> ...");
@@ -117,10 +140,11 @@ int main(int argc, char** argv) {
   auto& mcgManager = graph::MCGManager::get();
   mcgManager.resetManager();
 
-  // Every thread merges its input graphs into a private, initially empty graph; OpenMP then combines the private graphs.
+  // Every thread merges its input graphs into a private, initially empty graph; OpenMP then combines the private
+  // graphs.
   auto mergedCg = std::make_unique<Callgraph>();
 
-  #pragma omp parallel for schedule(dynamic) reduction(cgmerge : mergedCg)
+#pragma omp parallel for schedule(dynamic) reduction(cgmerge : mergedCg)
   for (auto& inFile : inputFiles) {
     io::FileSource fs(inFile);
     if (fs.get().is_null()) {
