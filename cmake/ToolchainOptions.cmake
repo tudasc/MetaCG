@@ -36,6 +36,10 @@ function(add_metacg_library target)
   target_link_libraries(${target} PUBLIC metacg::metacg)
 endfunction()
 
+function(add_metacg_completion target)
+  target_link_libraries(${target} PUBLIC MetaCGCompletion)
+endfunction()
+
 # Project compile options
 function(target_project_compile_options target)
   cmake_parse_arguments(

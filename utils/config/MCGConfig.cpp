@@ -5,6 +5,8 @@
  */
 #include "metacg/config.h"
 
+#include "Completion.h"
+#include "CompletionCxxopts.h"
 #include <iostream>
 
 #include "cxxopts.hpp"
@@ -28,6 +30,11 @@ int main(int argc, char** argv) {
       "h,help", "Print help");
   // clang-format on
 
+  if (const auto rc = metacg::completion::handleCompletion(argc, argv, [&](std::string_view partial) {
+        metacg::completion::completeCXXOptsOptions(partial, options);
+      })) {
+    return *rc;
+  }
   const cxxopts::ParseResult result = options.parse(argc, argv);
 
   if (result.contains("help")) {

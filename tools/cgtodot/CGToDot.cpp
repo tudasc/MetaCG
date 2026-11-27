@@ -4,6 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
+#include "Completion.h"
+#include "CompletionCxxopts.h"
 #include "metacg/Callgraph.h"
 #include "metacg/DotIO.h"
 #include "metacg/LoggerUtil.h"
@@ -35,6 +37,11 @@ int main(int argc, char* argv[]) {
   ;
   // clang-format on
 
+  if (const auto rc = metacg::completion::handleCompletion(argc, argv, [&](std::string_view partial) {
+        metacg::completion::completeCXXOptsOptions(partial, options);
+      })) {
+    return *rc;
+  }
   options.parse_positional({"input"});
 
   cxxopts::ParseResult result = options.parse(argc, argv);
