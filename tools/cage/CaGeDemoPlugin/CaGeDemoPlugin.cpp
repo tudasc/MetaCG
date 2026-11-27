@@ -44,5 +44,5 @@ struct CaGeDemoPlugin final : cage::Plugin {
 };
 
 extern "C" {
-cage::Plugin* getPlugin() { return new CaGeDemoPlugin(); }
+cage::Plugin* getCaGePlugin() { return new CaGeDemoPlugin(); }
 }

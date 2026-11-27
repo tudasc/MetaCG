@@ -49,13 +49,12 @@ Plugin* loadPlugin(const std::string& pluginPath) {
     return nullptr;
   }
   metacg::MCGLogger::logTrace("Getting collection object from plugin {}", pluginPath);
-  void* sym = lib.getAddressOfSymbol("getPlugin");
+  void* sym = lib.getAddressOfSymbol("getCaGePlugin");
   if (!sym) {
-    metacg::MCGLogger::logError("Could not load collectors from plugin, no Function \"getPlugin()\"!");
+    metacg::MCGLogger::logError("Could not load collectors from plugin, no Function \"getCaGePlugin()\"!");
     return nullptr;
   }
-  auto getPlugin = reinterpret_cast<Plugin* (*)()>(sym);
-  Plugin* loadedPlugin = getPlugin();
+  Plugin* loadedPlugin = reinterpret_cast<Plugin* (*)()>(sym)();
   metacg::MCGLogger::logInfo("Successfully loaded Plugin: {}", loadedPlugin->getPluginName());
   return loadedPlugin;
 }

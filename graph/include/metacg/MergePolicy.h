@@ -11,6 +11,7 @@
 #include "metacg/CgTypes.h"
 
 #include <unordered_map>
+#include <vector>
 
 namespace metacg {
 
@@ -97,6 +98,15 @@ struct MergeByNameAndOrigin : public MergePolicy {
   std::optional<MergeAction> findMatchingNode(const Callgraph& targetCG, const CgNode& sourceNode) const override;
   ~MergeByNameAndOrigin() override = default;
 };
+
+/**
+ * Returns the nodes in the target graph that have the same function name and the same origin as the source node.
+ * If there are none, returns the nodes that are the header declaration / source definition counterpart of the source
+ * node instead (see MergeByNameAndOrigin). Nodes with matching names but non-matching origins are filtered out.
+ * Two nodes without an origin (std::nullopt) are considered to have the same origin.
+ * This is the candidate search of MergeByNameAndOrigin, exposed so that custom merge policies can refine it.
+ */
+std::vector<const CgNode*> findOriginMatches(const Callgraph& targetCG, const CgNode& sourceNode);
 
 
 

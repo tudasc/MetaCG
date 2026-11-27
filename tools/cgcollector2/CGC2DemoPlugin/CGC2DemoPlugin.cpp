@@ -59,5 +59,5 @@ struct CGC2DemoPlugin final : cgcollector2::Plugin {
 };
 
 extern "C" {
-cgcollector2::Plugin* getPlugin() { return new CGC2DemoPlugin(); }
+cgcollector2::Plugin* getCGCollector2Plugin() { return new CGC2DemoPlugin(); }
 }

@@ -9,6 +9,7 @@
 #include "spdlog/fmt/bundled/core.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
+#include <mutex>
 #include <unordered_set>
 
 namespace metacg {
@@ -301,6 +302,7 @@ class MCGLogger {
    * @return the number of messages that now can appear again
    */
   size_t resetUniqueCache(){
+    std::lock_guard<std::mutex> lock(uniqueMutex);
     const size_t deletedEntries=alreadyPrintedMessages.size();
     alreadyPrintedMessages.clear();
     return deletedEntries;
@@ -325,11 +327,10 @@ class MCGLogger {
   inline bool ensureUnique(const std::string& formattedMessage) {
     if constexpr (lt == LogType::UNIQUE) {
       const size_t msg_hash = std::hash<std::string>()(formattedMessage);
-      // If we found the msg, we just return
-      if (alreadyPrintedMessages.find(msg_hash) != alreadyPrintedMessages.end()) {
-        return true;
-      }
-      alreadyPrintedMessages.insert(std::hash<std::string>()(formattedMessage));
+      // The logger is used from parallel regions (e.g. parallel merging), so the cache must be locked
+      std::lock_guard<std::mutex> lock(uniqueMutex);
+      // insert() reports whether the hash was new; if not, the message was already printed
+      return !alreadyPrintedMessages.insert(msg_hash).second;
     }
     return false;
   }
@@ -337,6 +338,8 @@ class MCGLogger {
   std::shared_ptr<spdlog::logger> console;
   std::shared_ptr<spdlog::logger> errconsole;
   std::unordered_set<size_t> alreadyPrintedMessages;
+  // Guards alreadyPrintedMessages
+  std::mutex uniqueMutex;
 };
 
 namespace loggerutil {

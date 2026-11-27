@@ -2,6 +2,9 @@ set(PROJECT_NAME CGMerge2)
 set(TARGETS_EXPORT_NAME ${PROJECT_NAME}-target)
 
 add_executable(cgmerge2 CGMerge2.cpp)
+target_include_directories(cgmerge2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# Merge policy plugins are loaded with dlopen
+target_link_libraries(cgmerge2 PRIVATE ${CMAKE_DL_LIBS})
 
 add_config_include(cgmerge2)
 add_metacg(cgmerge2)
@@ -27,6 +30,28 @@ configure_package_config_file(
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATION lib/cmake)
+
+# Expose cgmerge2's plugin interface
+add_library(cgmerge2-plugin-interface INTERFACE)
+
+target_sources(
+  cgmerge2-plugin-interface
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         include
+         FILES
+         include/cgmerge2/interface/CGMerge2Plugin.h
+)
+
+target_link_libraries(cgmerge2-plugin-interface INTERFACE metacg::metacg)
+
+install(
+  TARGETS cgmerge2-plugin-interface
+  EXPORT cgmerge2-plugin-interfaceExport
+  FILE_SET HEADERS
+  DESTINATION include/
+)
 
 # linker-launcher wrapper
 
