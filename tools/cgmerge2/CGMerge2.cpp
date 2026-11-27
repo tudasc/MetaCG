@@ -99,8 +99,8 @@ int main(int argc, char** argv) {
                        "'name-and-origin': nodes are merged only if both function name and origin are the same.",
                        cxxopts::value<std::string>()->default_value("name"), "name|name-and-origin")
     ("log-level", "The lowest severity of log messages to be emitted", cxxopts::value<std::string>(), "error|warning|info|debug|trace|off")
-    ("plugin-path", "Path to a shared library providing a user-defined merge policy. "
-                    "If set, --merge-policy is ignored.", cxxopts::value<std::string>(), "path")
+    ("mp,plugin-path", "Path to a shared library providing a user-defined merge policy. "
+                       "If set, --merge-policy is ignored.", cxxopts::value<std::string>(), "path")
     ("output", "Output call graph file", cxxopts::value<std::string>())
     ("inputs", "Input call graph files", cxxopts::value<std::vector<std::string>>())
   ;
