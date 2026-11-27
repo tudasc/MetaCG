@@ -110,7 +110,7 @@ class MCGReader {
   virtual ~MCGReader() = default;
 
   /**
-   * PiraMCGProcessor object to be filled with the CG
+   * Reads the source and constructs the call graph from it
    */
   [[nodiscard]] virtual std::unique_ptr<Callgraph> read() = 0;
 

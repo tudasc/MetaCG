@@ -4,8 +4,8 @@
  * https://github.com/tudasc/metacg/LICENSE.txt
  */
 
-#ifndef METACG_PGIS_TIMING_H
-#define METACG_PGIS_TIMING_H
+#ifndef METACG_TIMING_H
+#define METACG_TIMING_H
 
 #include "metacg/LoggerUtil.h"
 #include <chrono>
@@ -45,4 +45,4 @@ class RuntimeTimer {
 };
 }  // namespace metacg
 
-#endif
+#endif // METACG_TIMING_H

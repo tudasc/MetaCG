@@ -13,7 +13,7 @@ num_failures=0
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-target_folders=("graph/test/integration" "pgis/test/integration" "pymetacg/tests/resources" "tools/cgpatch/test/integration/input" "cgcollector/test/input")
+target_folders=("graph/test/integration" "pymetacg/tests/resources" "tools/cgpatch/test/integration/input" "cgcollector/test/input")
 
 for dir in "${target_folders[@]}"; do
   full_dir="$script_dir/$dir"

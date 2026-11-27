@@ -129,16 +129,9 @@ if(METACG_BUILD_CGCOLLECTOR)
   add_subdirectory(cgcollector)
 endif()
 
-# PIRA analyzer Should PGIS be built
-option(
-  METACG_BUILD_PGIS
-  "On or off"
-  OFF
-)
+# PGIS has been removed. Fail loudly if a build script still requests it.
 if(METACG_BUILD_PGIS)
-  include(ExtraP)
-  include(CubeLib)
-  add_subdirectory(pgis)
+  message(FATAL_ERROR "PGIS has been removed from MetaCG. The last release containing PGIS is v1.00.0.")
 endif()
 
 # CGValidate2: graph-lib based MCG validation against Cube profiles
