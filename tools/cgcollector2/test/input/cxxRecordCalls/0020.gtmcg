@@ -9,6 +9,12 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": "S::S",
+                    "paramTypes": [],
+                    "retType": "",
+                    "thisType": "S"
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0020.cpp",
@@ -27,6 +33,12 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": "S::S",
+                    "paramTypes": [],
+                    "retType": "",
+                    "thisType": "S"
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0020.cpp",
@@ -45,6 +57,12 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": "S::~S",
+                    "paramTypes": [],
+                    "retType": "",
+                    "thisType": "S"
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0020.cpp",
@@ -63,6 +81,12 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": "S::~S",
+                    "paramTypes": [],
+                    "retType": "",
+                    "thisType": "S"
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0020.cpp",
@@ -84,6 +108,12 @@
             "hasBody": true,
             "isVirtual": false,
             "meta": {
+                "FunctionSignatureMetadata": {
+                    "funcName": "main",
+                    "paramTypes": [],
+                    "retType": "int",
+                    "thisType": ""
+                },
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0020.cpp",

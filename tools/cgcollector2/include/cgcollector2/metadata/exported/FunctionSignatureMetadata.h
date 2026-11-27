@@ -10,8 +10,6 @@
 #include "cgcollector2/SharedDefs.h"
 #include "metacg/metadata/MetaData.h"
 
-#include <sstream>
-
 class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSignatureMetadata> {
  public:
   static constexpr const char* key = "FunctionSignatureMetadata";
@@ -26,16 +24,20 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
       return;
     }
     ownSignature = j;
+    assert(j.find("funcName") != j.end() && j.find("funcName")->is_string());
+    functionName = j["funcName"].get<std::string>();
   }
 
   FunctionSignatureMetadata(const FunctionSignatureMetadata& other)
-      : ownSignature(other.ownSignature), shouldExport(other.shouldExport) {}
+      : ownSignature(other.ownSignature), functionName(other.functionName), shouldExport(other.shouldExport) {}
 
   const char* getKey() const final { return key; }
 
   nlohmann::json toJson(metacg::NodeToStrMapping&) const final {
     if (shouldExport) {
-      return ownSignature;
+      nlohmann::json j = ownSignature;
+      j["funcName"] = functionName;
+      return j;
     }
     return {};
   }
@@ -47,16 +49,12 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
       abort();
     }
     const auto* toMergeDerived = static_cast<const FunctionSignatureMetadata*>(&toMerge);
-
     // Signatures should usually be identical.
     // Some templates can have the same name and origin but differing function signatures.
     // If this is the case, we inform the user to use a stronger merge policy.
     if (!(ownSignature == toMergeDerived->ownSignature)) {
-      std::ostringstream ownStr;
-      std::ostringstream otherStr;
-      ownStr << ownSignature;
-      otherStr << toMergeDerived->ownSignature;
-      metacg::MCGLogger::logDebug("Signature mismatch: {} <-> {}", ownStr.str(), otherStr.str());
+      metacg::MCGLogger::logDebug("Signature mismatch: {} <-> {}", ownSignature.toString(),
+                                  toMergeDerived->ownSignature.toString());
       metacg::MCGLogger::logInfoUnique(
           "Found a signature mismatch between identically named nodes, this can be resolved by using a stronger merge "
           "policy");
@@ -68,7 +66,12 @@ class FunctionSignatureMetadata : public metacg::MetaData::Registrar<FunctionSig
   std::unique_ptr<MetaData> clone() const final { return std::make_unique<FunctionSignatureMetadata>(*this); }
   virtual void applyMapping(const metacg::GraphMapping&){};
 
+  /// The type of the function, used to match nodes (merging) and function pointers to functions
   FunctionSignature ownSignature;
+  /// The qualified name of the function (e.g. "foo", "ns::A::bar", "ns::A::operator()", "ns::A::~A").
+  /// Informational only, for consumers of the graph: it is deliberately not part of FunctionSignature, so it never
+  /// takes part in signature matching.
+  std::string functionName;
   bool shouldExport = true;
 };
 #endif  // CGCOLLECTOR2_FUNCTIONSIGNATUREMETADATA_H

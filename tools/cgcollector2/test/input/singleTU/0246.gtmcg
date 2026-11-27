@@ -1,0 +1,88 @@
+{
+    "_CG": {
+        "_ZN1WI1SE5probeEv": {
+            "callees": [
+                "_ZNK1S3barEv"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/singleTU/0246.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNK1S3barEv": {
+            "callees": [],
+            "callers": [
+                "_ZN1WI1SE5probeEv"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/singleTU/0246.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNK1S3fooEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/singleTU/0246.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_ZN1WI1SE5probeEv"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "fileProperties": {
+                    "lineNumber": 0,
+                    "origin": "/opt/metacg/tools/cgcollector2/test/input/singleTU/0246.cpp",
+                    "systemInclude": false
+                },
+                "numStatements": 3
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "5ad9a8bc7736e9709ea8c62aa80d30a6a1339459",
+            "version": "1.0"
+        },
+        "version": "2.0"
+    }
+}

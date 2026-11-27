@@ -1,0 +1,258 @@
+{
+    "_CG": {
+        "_Z10callLvalueR1AMS_FvvRE": {
+            "callees": [
+                "_ZNR1A6lvalueEv"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z10callRvalueO1AMS_FvvOE": {
+            "callees": [
+                "_ZNO1A6rvalueEv"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z12getLvaluePtrv": {
+            "callees": [],
+            "callers": [
+                "_Z18callReturnedLvalueR1A"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z15callConstLvalueRK1AMS_KFvvRE": {
+            "callees": [
+                "_ZNKR1A11constLvalueEv"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z15callConstRvalueOK1AMS_KFvvOE": {
+            "callees": [
+                "_ZNKO1A11constRvalueEv"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z15callUnqualifiedR1AMS_FvvE": {
+            "callees": [
+                "_ZN1A11unqualifiedEv"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z17callDerivedRvalueO1BMS_FvvOE": {
+            "callees": [
+                "_ZNO1A6rvalueEv",
+                "_ZNO1B9ownRvalueEv"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z18callReturnedLvalueR1A": {
+            "callees": [
+                "_Z12getLvaluePtrv",
+                "_ZNR1A6lvalueEv"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1A11unqualifiedEv": {
+            "callees": [],
+            "callers": [
+                "_Z15callUnqualifiedR1AMS_FvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNKO1A11constRvalueEv": {
+            "callees": [],
+            "callers": [
+                "_Z15callConstRvalueOK1AMS_KFvvOE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNKR1A11constLvalueEv": {
+            "callees": [],
+            "callers": [
+                "_Z15callConstLvalueRK1AMS_KFvvRE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNO1A6rvalueEv": {
+            "callees": [],
+            "callers": [
+                "_Z10callRvalueO1AMS_FvvOE",
+                "_Z17callDerivedRvalueO1BMS_FvvOE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNO1B9ownRvalueEv": {
+            "callees": [],
+            "callers": [
+                "_Z17callDerivedRvalueO1BMS_FvvOE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNR1A6lvalueEv": {
+            "callees": [],
+            "callers": [
+                "_Z10callLvalueR1AMS_FvvRE",
+                "_Z18callReturnedLvalueR1A"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNR1B9ownLvalueEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z10callLvalueR1AMS_FvvRE",
+                "_Z10callRvalueO1AMS_FvvOE",
+                "_Z15callConstLvalueRK1AMS_KFvvRE",
+                "_Z15callConstRvalueOK1AMS_KFvvOE",
+                "_Z15callUnqualifiedR1AMS_FvvE",
+                "_Z17callDerivedRvalueO1BMS_FvvOE",
+                "_Z18callReturnedLvalueR1A"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 10
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "5143834bd421ac5199fe945beb39732f9200c2cd",
+            "version": "1.0"
+        },
+        "version": "2.0"
+    }
+}

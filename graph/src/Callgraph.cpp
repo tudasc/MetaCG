@@ -321,7 +321,6 @@ MergeRecorder Callgraph::mergeImpl(const metacg::Callgraph& other, const metacg:
     auto mappedNodeId = mapping.at(node->getId());
     auto targetNode = this->getNode(mappedNodeId);
     assert(targetNode && "Mapped node ID must be valid");
-
     for (auto& md : node->getMetaDataContainer()) {
       if (targetNode->has(md.first)) {
         auto action = recorder.getAction(node->getId());

@@ -42,6 +42,7 @@ add_executable(
   src/collector/NumConditionalBranchCollector.cpp
   src/collector/NumOperationsCollector.cpp
   src/collector/NumStatementsCollector.cpp
+  src/FunctionSignatureUtil.cpp
 )
 default_compile_options(cgcollector2)
 
@@ -59,7 +60,7 @@ install(
 )
 
 # Internal metadata as separate shared object. This allows us to load cgc2's metadata into other tools
-add_library(cgcollector2-metadata SHARED src/metadata/InternalMetadata.cpp)
+add_library(cgcollector2-metadata SHARED src/metadata/CGC2Metadata.cpp)
 
 target_sources(
   cgcollector2-metadata
@@ -70,6 +71,7 @@ target_sources(
          FILES
          include/cgcollector2/metadata/exported/FunctionSignatureMetadata.h
          include/cgcollector2/metadata/exported/AllAliasMetadata.h
+         include/cgcollector2/SharedDefs.h
 )
 default_compile_options(cgcollector2-metadata)
 

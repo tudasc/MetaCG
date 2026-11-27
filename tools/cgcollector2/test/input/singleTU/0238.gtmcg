@@ -1,46 +1,8 @@
 {
     "_CG": {
-        "_ZN1WI1NE5probeEv": {
-            "callees": [],
-            "callers": [],
-            "doesOverride": false,
-            "hasBody": false,
-            "isVirtual": false,
-            "meta": {
-                "fileProperties": {
-                    "lineNumber": 0,
-                    "origin": "/opt/metacg/tools/cgcollector2/test/input/singleTU/0238.cpp",
-                    "systemInclude": false
-                },
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "_ZN1WI1SE5probeEv": {
-            "callees": [
-                "_ZNK1S3barEv"
-            ],
-            "callers": [],
-            "doesOverride": false,
-            "hasBody": false,
-            "isVirtual": false,
-            "meta": {
-                "fileProperties": {
-                    "lineNumber": 0,
-                    "origin": "/opt/metacg/tools/cgcollector2/test/input/singleTU/0238.cpp",
-                    "systemInclude": false
-                },
-                "numStatements": 0
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
         "_ZNK1S3barEv": {
             "callees": [],
-            "callers": [
-                "_ZN1WI1SE5probeEv"
-            ],
+            "callers": [],
             "doesOverride": false,
             "hasBody": true,
             "isVirtual": false,
@@ -70,23 +32,6 @@
                     "systemInclude": false
                 },
                 "numStatements": 1
-            },
-            "overriddenBy": [],
-            "overrides": []
-        },
-        "_ZNK1WI1NE3getEv": {
-            "callees": [],
-            "callers": [],
-            "doesOverride": false,
-            "hasBody": false,
-            "isVirtual": false,
-            "meta": {
-                "fileProperties": {
-                    "lineNumber": 0,
-                    "origin": "/opt/metacg/tools/cgcollector2/test/input/singleTU/0238.cpp",
-                    "systemInclude": false
-                },
-                "numStatements": 0
             },
             "overriddenBy": [],
             "overrides": []
@@ -126,7 +71,7 @@
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/singleTU/0238.cpp",
                     "systemInclude": false
                 },
-                "numStatements": 3
+                "numStatements": 2
             },
             "overriddenBy": [],
             "overrides": []

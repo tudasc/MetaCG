@@ -38,7 +38,6 @@ struct FileInfoCollector : cgcollector2::Plugin {
     result->fromSystemInclude = astCtx.getSourceManager().isInSystemHeader(sourceLocation);
     result->origin = fileNameStr;
     result->lineNumber = astCtx.getSourceManager().getSpellingLineNumber(sourceLocation);
-
     return result;
   };
 

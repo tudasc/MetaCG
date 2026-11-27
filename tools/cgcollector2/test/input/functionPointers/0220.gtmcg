@@ -1,0 +1,158 @@
+{
+    "_CG": {
+        "_Z10callMemberR1BMS_FvvE": {
+            "callees": [
+                "_ZN1A9inheritedEv",
+                "_ZN1B3ownEv"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z12freeFunctionv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z15callConstMemberRK1AMS_KFvvE": {
+            "callees": [
+                "_ZNK1A14constQualifiedEv"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_Z17callDerivedMemberR1DMS_FvvE": {
+            "callees": [
+                "_ZN1A9inheritedEv",
+                "_ZN1B3ownEv"
+            ],
+            "callers": [
+                "main"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 1
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1A9inheritedEv": {
+            "callees": [],
+            "callers": [
+                "_Z10callMemberR1BMS_FvvE",
+                "_Z17callDerivedMemberR1DMS_FvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1B3ownEv": {
+            "callees": [],
+            "callers": [
+                "_Z10callMemberR1BMS_FvvE",
+                "_Z17callDerivedMemberR1DMS_FvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN1V14viaVirtualBaseEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZN9Unrelated9unrelatedEv": {
+            "callees": [],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "_ZNK1A14constQualifiedEv": {
+            "callees": [],
+            "callers": [
+                "_Z15callConstMemberRK1AMS_KFvvE"
+            ],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 0
+            },
+            "overriddenBy": [],
+            "overrides": []
+        },
+        "main": {
+            "callees": [
+                "_Z10callMemberR1BMS_FvvE",
+                "_Z15callConstMemberRK1AMS_KFvvE",
+                "_Z17callDerivedMemberR1DMS_FvvE"
+            ],
+            "callers": [],
+            "doesOverride": false,
+            "hasBody": true,
+            "isVirtual": false,
+            "meta": {
+                "numStatements": 5
+            },
+            "overriddenBy": [],
+            "overrides": []
+        }
+    },
+    "_MetaCG": {
+        "generator": {
+            "name": "CGCollector",
+            "sha": "0bdb06545041da8ef83c1e4237915f296aa4b9d1",
+            "version": "1.0"
+        },
+        "version": "2.0"
+    }
+}

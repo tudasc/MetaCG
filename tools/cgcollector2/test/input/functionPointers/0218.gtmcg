@@ -11,6 +11,13 @@
             "hasBody": false,
             "isVirtual": false,
             "meta": {
+                "AllAliasMetadata": [
+                    {
+                        "paramTypes": [],
+                        "retType": "void",
+                        "thisType": ""
+                    }
+                ],
                 "fileProperties": {
                     "lineNumber": 0,
                     "origin": "/opt/metacg/tools/cgcollector2/test/input/functionPointers/0218.cpp",

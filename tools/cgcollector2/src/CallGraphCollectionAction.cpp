@@ -6,10 +6,11 @@
 
 #include "cgcollector2/CallGraphCollectionAction.h"
 #include "cgcollector2/CallGraphNodeGenerator.h"
+#include "cgcollector2/FunctionSignatureUtil.h"
 #include "cgcollector2/interface/CGC2Plugin.h"
-#include "cgcollector2/metadata/internal/ASTNodeMetadata.h"
 #include "cgcollector2/metadata/exported/AllAliasMetadata.h"
 #include "cgcollector2/metadata/exported/FunctionSignatureMetadata.h"
+#include "cgcollector2/metadata/internal/ASTNodeMetadata.h"
 #include "metacg/LoggerUtil.h"
 
 #include "metacg/MCGManager.h"
@@ -101,8 +102,7 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
     if (node->has<FunctionSignatureMetadata>()) {
       std::ostringstream stream;
       stream << node->get<FunctionSignatureMetadata>()->ownSignature;
-      metacg::MCGLogger::logTrace("{}'s signature is: {} with hash: {}", node->getFunctionName(), stream.str(),
-                                  std::hash<FunctionSignature>()(node->get<FunctionSignatureMetadata>()->ownSignature));
+      metacg::MCGLogger::logTrace("{}'s signature is: {} ", node->getFunctionName(), stream.str());
       signatureToNodeIdMap[node->get<FunctionSignatureMetadata>()->ownSignature].push_back(node->getId());
     } else {
       metacg::MCGLogger::logError("{} has no signature attached", node->getFunctionName());
@@ -118,24 +118,34 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
     if (!node->getHasBody() && node->has<ASTNodeMetadata>()) {
       auto md = node->get<ASTNodeMetadata>()->getFunctionDecl();
       for (size_t i = 0; i < md->getNumParams(); i++) {
-        if (md->getParamDecl(i)->getType()->isPointerType() && md->getParamDecl(i)
-                                                                   ->getType()
-                                                                   ->getPointeeType()
-                                                                   .getDesugaredType(md->getASTContext())
-                                                                   .IgnoreParens()
-                                                                   ->isFunctionProtoType()) {
-          auto protoType = clang::cast<clang::FunctionProtoType>(
-              md->getParamDecl(i)->getType()->getPointeeType().getDesugaredType(md->getASTContext()).IgnoreParens());
+        const auto paramType = md->getParamDecl(i)->getType();
+        const clang::FunctionProtoType* protoType = nullptr;
+        // The class of a pointer to member function, nullptr for an ordinary function pointer
+        const clang::CXXRecordDecl* memberOf = nullptr;
+        if (paramType->isPointerType()) {
+          protoType = paramType->getPointeeType()
+                          .getDesugaredType(md->getASTContext())
+                          .IgnoreParens()
+                          ->getAs<clang::FunctionProtoType>();
+        } else if (const auto* memberPointer = paramType->getAs<clang::MemberPointerType>();
+                   memberPointer && memberPointer->isMemberFunctionPointer()) {
+          protoType = memberPointer->getPointeeType()
+                          .getDesugaredType(md->getASTContext())
+                          .IgnoreParens()
+                          ->getAs<clang::FunctionProtoType>();
+          memberOf = memberPointer->getMostRecentCXXRecordDecl();
+        }
+        if (!protoType) {
+          continue;
+        }
 
-          metacg::MCGLogger::logTrace("The Node: {} has a pointer to a function as its {}th param",
-                                      node->getFunctionName(), i);
-          FunctionSignature functionSignature;
-          functionSignature.retType = protoType->getReturnType().getAsString();
-          std::transform(protoType->getParamTypes().begin(), protoType->getParamTypes().end(),
-                         std::back_inserter(functionSignature.paramTypes),
-                         [](auto type) { return type.getAsString(); });
-          functionSignature.possibleFuncNames.emplace_back("");
-          node->getOrCreate<AllAliasMetadata>().mightCall.push_back(functionSignature);
+        metacg::MCGLogger::logTrace("The Node: {} has a pointer to a {}function as its {}th param",
+                                    node->getFunctionName(), memberOf ? "member " : "", i);
+        auto& mightCall = node->getOrCreate<AllAliasMetadata>().mightCall;
+        for (const auto& signature : cgcollector2::getCalleeSignatures(protoType, memberOf)) {
+          if (std::find(mightCall.begin(), mightCall.end(), signature) == mightCall.end()) {
+            mightCall.push_back(signature);
+          }
         }
       }
     }
@@ -155,8 +165,7 @@ void CallGraphCollectorConsumer::addOverestimationEdges(metacg::Callgraph* callg
       for (const auto& pCallTarget : node->get<AllAliasMetadata>()->mightCall) {
         std::ostringstream stream;
         stream << pCallTarget;
-        metacg::MCGLogger::logDebug("Node: {} might call: {} with hash: {}", node->getFunctionName(), stream.str(),
-                                    std::hash<FunctionSignature>()(pCallTarget));
+        metacg::MCGLogger::logDebug("Node: {} might call: {} ", node->getFunctionName(), stream.str());
         if (signatureToNodeIdMap.find(pCallTarget) == signatureToNodeIdMap.end()) {
           metacg::MCGLogger::logDebug("No function with matching signature found");
           continue;
