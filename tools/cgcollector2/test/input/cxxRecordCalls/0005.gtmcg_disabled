@@ -10,10 +10,12 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "(anonymous class)::(lambda at /opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:10:21)",
                     "paramTypes": [
-                        "const class (lambda at /opt/metacg/mcg-local/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:7:21) &"
+                        "const (lambda at /opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:10:21) &"
                     ],
-                    "retType": ""
+                    "retType": "",
+                    "thisType": "(lambda at /opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:10:21)"
                 }
             },
             "overriddenBy": [],
@@ -29,10 +31,12 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "(anonymous class)::(lambda at /opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:10:21)",
                     "paramTypes": [
-                        "const class (lambda at /opt/metacg/mcg-local/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:7:21) &"
+                        "const (lambda at /opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:10:21) &"
                     ],
-                    "retType": ""
+                    "retType": "",
+                    "thisType": "(lambda at /opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:10:21)"
                 }
             },
             "overriddenBy": [],
@@ -48,8 +52,10 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "(anonymous class)::~(lambda at /opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:10:21)",
                     "paramTypes": [],
-                    "retType": ""
+                    "retType": "",
+                    "thisType": "(lambda at /opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:10:21)"
                 }
             },
             "overriddenBy": [],
@@ -65,8 +71,10 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "(anonymous class)::~(lambda at /opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:10:21)",
                     "paramTypes": [],
-                    "retType": ""
+                    "retType": "",
+                    "thisType": "(lambda at /opt/metacg/tools/cgcollector2/test/input/cxxRecordCalls/0005.cpp:10:21)"
                 }
             },
             "overriddenBy": [],
@@ -82,12 +90,14 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "(anonymous class)::operator()",
                     "paramTypes": [
                         "int",
                         "int",
                         "int"
                     ],
-                    "retType": "int"
+                    "retType": "int",
+                    "thisType": ""
                 }
             },
             "overriddenBy": [],
@@ -107,8 +117,10 @@
             "isVirtual": false,
             "meta": {
                 "FunctionSignatureMetadata": {
+                    "funcName": "main",
                     "paramTypes": [],
-                    "retType": "int"
+                    "retType": "int",
+                    "thisType": ""
                 }
             },
             "overriddenBy": [],
